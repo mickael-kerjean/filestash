@@ -7,9 +7,6 @@ Call it a ftp client, an s3 viewer or a dropbox like web app, Nuage leverage you
 - Dropbox
 - Google Drive
 
-![edit interface](http://mickael.kerjean.free.fr/assets/images/screenshots/exploreur_0.png)
-![list files](http://mickael.kerjean.free.fr/assets/images/screenshots/exploreur_0.png)
-
 * Features
 - manage your files directly from your browser
 - listen to music
@@ -19,7 +16,6 @@ Call it a ftp client, an s3 viewer or a dropbox like web app, Nuage leverage you
 - upload files and folders
 - mobile friendly
 - emacs keybindings ;)
-- works great with elinks and eww.
 
 * What about my credentials?
 Credentials are stored in your browser in a http only cookie encrypted using aes-256-ctr and aren't persist in the server disk at all.
