@@ -1,0 +1,11 @@
+version: '2'
+services:
+  app:
+    container_name: nuage
+    image: nuage
+    restart: always
+    environment:
+    - NODE_ENV=production
+    - SECRET_KEY=my_secret_key
+    ports:
+    - "10006:3000"    

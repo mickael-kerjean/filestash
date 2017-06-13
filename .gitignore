@@ -1,0 +1,6 @@
+server/public/bundle.js
+node_modules/
+babel_cache/
+.DS_Store
+\#.*\#
+.\#.*

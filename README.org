@@ -1,0 +1,50 @@
+* What is it about?
+Call it a ftp client, an s3 viewer or a dropbox like web app, Nuage leverage your existing storage to help you manage your files in the cloud using any of the following protocols/platforms:
+- FTP
+- SFTP
+- Webdav
+- S3
+- Dropbox
+- Google Drive
+
+![edit interface](http://mickael.kerjean.free.fr/assets/images/screenshots/exploreur_0.png)
+![list files](http://mickael.kerjean.free.fr/assets/images/screenshots/exploreur_0.png)
+
+* Features
+- manage your files directly from your browser
+- listen to music
+- watch your videos
+- show images
+- work with multiple cloud providers and protocols
+- upload files and folders
+- mobile friendly
+- emacs keybindings ;)
+- works great with elinks and eww.
+
+* What about my credentials?
+Credentials are stored in your browser in a http only cookie encrypted using aes-256-ctr and aren't persist in the server disk at all.
+The remember me feature rely on localstorage to store your credentials encrypted using aes-256-ctr.
+
+Note that on the ftp and sftp session: connections aren't destroy on every request but are reused and kill after 2 minutes to make it feels faster and avoid reconnecting everytime you want to list some files.
+
+
+* Install
+It's a simple react app with node in the backend. Installation is easy with docker:
+```
+curl -X GET http://github.com/mickael-kerjean/nuage/master.zip > nuage.zip
+unzip nuage.zip && cd nuage
+docker-compose up -d
+```
+That's it !
+
+* Known Issues
+- Webdav: the underlying library (webdav-fs) doesn't support stream which make it memory greedy if you try to upload or fetch large files.
+- Google Drive: Google drive let you add multiple files with the same name in the same directory. You won't be able to see all those in Nuage as we assumed that all filenames in a directory are uniques.
+
+* Motivation
+I built this as a week end project initially to edit my org mode files on my mobile because I wasn't satisfied with any of the existing mobile client that try to force some predefined workflow or certain provider/protocols.
+
+As I realise it soon, it doesn't have to be tight to org mode specifically and once I delivered the MVP, I just couldn't help myself to add more and more features and that's what I ended up with
+
+* Credits
+Icon from www.flaticon.com

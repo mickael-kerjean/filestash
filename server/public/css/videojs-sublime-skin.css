@@ -1,0 +1,280 @@
+.video-js.my-skin .vjs-menu-button-inline.vjs-slider-active,.video-js.my-skin .vjs-menu-button-inline:focus,.video-js.my-skin .vjs-menu-button-inline:hover,.video-js.my-skin.vjs-no-flex .vjs-menu-button-inline {
+    width: 10em
+}
+.video-js.my-skin .vjs-volume-menu-button{display: none;}
+
+.video-js.my-skin .vjs-controls-disabled .vjs-big-play-button {
+    display: none!important
+}
+
+.video-js.my-skin .vjs-control {
+    width: 3em
+}
+
+.video-js.my-skin .vjs-menu-button-inline:before {
+    width: 1.5em
+}
+
+.vjs-menu-button-inline .vjs-menu {
+    left: 3em
+}
+
+.vjs-paused.vjs-has-started.video-js.my-skin .vjs-big-play-button,.video-js.my-skin.vjs-ended .vjs-big-play-button,.video-js.my-skin.vjs-paused .vjs-big-play-button {
+    display: block
+}
+
+.video-js.my-skin .vjs-load-progress div,.vjs-seeking .vjs-big-play-button,.vjs-waiting .vjs-big-play-button {
+    display: none!important
+}
+
+.video-js.my-skin .vjs-mouse-display:after,.video-js.my-skin .vjs-play-progress:after {
+    padding: 0 .4em .3em
+}
+
+.video-js.my-skin.vjs-ended .vjs-loading-spinner {
+    display: none;
+}
+
+.video-js.my-skin.vjs-ended .vjs-big-play-button {
+    display: block !important;
+}
+
+.video-js.my-skin *,.video-js.my-skin:after,.video-js.my-skin:before {
+    box-sizing: inherit;
+    font-size: inherit;
+    color: inherit;
+    line-height: inherit
+}
+
+.video-js.my-skin.vjs-fullscreen,.video-js.my-skin.vjs-fullscreen .vjs-tech {
+    width: 100%!important;
+    height: 100%!important
+}
+
+.video-js.my-skin {
+    font-size: 14px;
+    overflow: hidden
+}
+
+.video-js.my-skin .vjs-control {
+    color: inherit
+}
+
+.video-js.my-skin .vjs-menu-button-inline:hover,.video-js.my-skin.vjs-no-flex .vjs-menu-button-inline {
+    width: 8.35em
+}
+
+.video-js.my-skin .vjs-volume-menu-button.vjs-volume-menu-button-horizontal:hover .vjs-menu .vjs-menu-content {
+    height: 3em;
+    width: 6.35em
+}
+
+.video-js.my-skin .vjs-control:focus:before,.video-js.my-skin .vjs-control:hover:before {
+    text-shadow: 0 0 5px #fff;
+}
+
+.video-js.my-skin .vjs-spacer,.video-js.my-skin .vjs-time-control {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-flex: 1 1 auto;
+    -moz-box-flex: 1 1 auto;
+    -webkit-flex: 1 1 auto;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    padding: 0;
+}
+
+.video-js.my-skin .vjs-time-control {
+    -webkit-box-flex: 0 1 auto;
+    -moz-box-flex: 0 1 auto;
+    -webkit-flex: 0 1 auto;
+    -ms-flex: 0 1 auto;
+    flex: 0 1 auto;
+    width: auto
+}
+
+.video-js.my-skin .vjs-time-control.vjs-time-divider {
+    width: 14px
+}
+
+.video-js.my-skin .vjs-time-control.vjs-time-divider div {
+    width: 100%;
+    text-align: center
+}
+
+.video-js.my-skin .vjs-time-control.vjs-current-time {
+    margin-left: 20px;
+}
+
+.video-js.my-skin .vjs-time-control .vjs-current-time-display,.video-js.my-skin .vjs-time-control .vjs-duration-display {
+    width: 100%
+}
+
+.video-js.my-skin .vjs-time-control .vjs-current-time-display {
+    text-align: right
+}
+
+.video-js.my-skin .vjs-time-control .vjs-duration-display {
+    text-align: left
+}
+
+.video-js.my-skin .vjs-play-progress:before,.video-js.my-skin .vjs-progress-control .vjs-play-progress:before,.video-js.my-skin .vjs-remaining-time,.video-js.my-skin .vjs-volume-level:after,.video-js.my-skin .vjs-volume-level:before,.video-js.my-skin.vjs-live .vjs-time-control.vjs-current-time,.video-js.my-skin.vjs-live .vjs-time-control.vjs-duration,.video-js.my-skin.vjs-live .vjs-time-control.vjs-time-divider,.video-js.my-skin.vjs-no-flex .vjs-time-control.vjs-remaining-time {
+    display: none
+}
+
+.video-js.my-skin.vjs-no-flex .vjs-time-control {
+    display: table-cell;
+    width: 4em
+}
+
+.video-js.my-skin .vjs-progress-control {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 0.3em;
+    top: -0.3em;
+    -webkit-transition: all .1s ease 0s;
+    -moz-transition: all .1s ease 0s;
+    -ms-transition: all .1s ease 0s;
+    -o-transition: all .1s ease 0s;
+    transition: all .1s ease 0s
+}
+.video-js.my-skin .vjs-progress-control:hover {
+    height: 0.8em;
+    top: -0.8em;
+}
+
+
+.video-js.my-skin .vjs-progress-control .vjs-load-progress,.video-js.my-skin .vjs-progress-control .vjs-play-progress,.video-js.my-skin .vjs-progress-control .vjs-progress-holder {
+    height: 100%
+}
+
+.video-js.my-skin .vjs-progress-control .vjs-progress-holder {
+    margin: 0
+}
+
+
+.video-js.my-skin .vjs-control-bar {
+    -webkit-transition: -webkit-transform .1s ease 0s;
+    -moz-transition: -moz-transform .1s ease 0s;
+    -ms-transition: -ms-transform .1s ease 0s;
+    -o-transition: -o-transform .1s ease 0s;
+    transition: transform .1s ease 0s
+}
+
+.video-js.my-skin.not-hover.vjs-has-started.vjs-paused.vjs-user-active .vjs-control-bar,.video-js.my-skin.not-hover.vjs-has-started.vjs-paused.vjs-user-inactive .vjs-control-bar,.video-js.my-skin.not-hover.vjs-has-started.vjs-playing.vjs-user-active .vjs-control-bar,.video-js.my-skin.not-hover.vjs-has-started.vjs-playing.vjs-user-inactive .vjs-control-bar,.video-js.my-skin.vjs-has-started.vjs-playing.vjs-user-inactive .vjs-control-bar {
+    visibility: visible;
+    opacity: 1;
+    -webkit-backface-visibility: hidden;
+    -webkit-transform: translateY(3em);
+    -moz-transform: translateY(3em);
+    -ms-transform: translateY(3em);
+    -o-transform: translateY(3em);
+    transform: translateY(3em);
+    -webkit-transition: -webkit-transform 1s ease 0s;
+    -moz-transition: -moz-transform 1s ease 0s;
+    -ms-transition: -ms-transform 1s ease 0s;
+    -o-transition: -o-transform 1s ease 0s;
+    transition: transform 1s ease 0s
+}
+
+.video-js.my-skin.not-hover.vjs-has-started.vjs-paused.vjs-user-active .vjs-progress-control,.video-js.my-skin.not-hover.vjs-has-started.vjs-paused.vjs-user-inactive .vjs-progress-control,.video-js.my-skin.not-hover.vjs-has-started.vjs-playing.vjs-user-active .vjs-progress-control,.video-js.my-skin.not-hover.vjs-has-started.vjs-playing.vjs-user-inactive .vjs-progress-control,.video-js.my-skin.vjs-has-started.vjs-playing.vjs-user-inactive .vjs-progress-control {
+    height: .25em;
+    top: -.25em;
+    pointer-events: none;
+    -webkit-transition: height 1s,top 1s;
+    -moz-transition: height 1s,top 1s;
+    -ms-transition: height 1s,top 1s;
+    -o-transition: height 1s,top 1s;
+    transition: height 1s,top 1s
+}
+
+.video-js.my-skin.not-hover.vjs-has-started.vjs-paused.vjs-user-active.vjs-fullscreen .vjs-progress-control,.video-js.my-skin.not-hover.vjs-has-started.vjs-paused.vjs-user-inactive.vjs-fullscreen .vjs-progress-control,.video-js.my-skin.not-hover.vjs-has-started.vjs-playing.vjs-user-active.vjs-fullscreen .vjs-progress-control,.video-js.my-skin.not-hover.vjs-has-started.vjs-playing.vjs-user-inactive.vjs-fullscreen .vjs-progress-control,.video-js.my-skin.vjs-has-started.vjs-playing.vjs-user-inactive.vjs-fullscreen .vjs-progress-control {
+    opacity: 0;
+    -webkit-transition: opacity 1s ease 1s;
+    -moz-transition: opacity 1s ease 1s;
+    -ms-transition: opacity 1s ease 1s;
+    -o-transition: opacity 1s ease 1s;
+    transition: opacity 1s ease 1s
+}
+
+.video-js.my-skin.vjs-live .vjs-live-control {
+    margin-left: 1em
+}
+
+.video-js.my-skin .vjs-big-play-button {
+    top: 50%;
+    left: 50%;
+    margin-left: -1em;
+    margin-top: -1em;
+    width: 2em;
+    height: 2em;
+    line-height: 2em;
+    border: none;
+    border-radius: 50%;
+    font-size: 3.5em;
+    background-color: rgba(0,0,0,.45);
+    color: #fff;
+    -webkit-transition: border-color .4s,outline .4s,background-color .4s;
+    -moz-transition: border-color .4s,outline .4s,background-color .4s;
+    -ms-transition: border-color .4s,outline .4s,background-color .4s;
+    -o-transition: border-color .4s,outline .4s,background-color .4s;
+    transition: border-color .4s,outline .4s,background-color .4s
+}
+
+.video-js.my-skin .vjs-menu-button-popup .vjs-menu {
+    left: -3em
+}
+
+.video-js.my-skin .vjs-menu-button-popup .vjs-menu .vjs-menu-content {
+    background-color: transparent;
+    width: 12em;
+    left: -1.5em;
+    padding-bottom: .5em
+}
+
+.video-js.my-skin .vjs-menu-button-popup .vjs-menu .vjs-menu-item,.video-js.my-skin .vjs-menu-button-popup .vjs-menu .vjs-menu-title {
+    background-color: #151b17;
+    margin: .3em 0;
+    padding: .5em;
+    border-radius: .3em
+}
+
+.video-js.my-skin .vjs-menu-button-popup .vjs-menu .vjs-menu-item.vjs-selected {
+    background-color: #2483d5
+}
+
+.video-js.my-skin .vjs-big-play-button {
+    background-color: rgba(0,0,0,0.3);
+    font-size: 4em;
+    border-radius: 10px;
+    height: 1.3em !important;
+    line-height: 1.3em !important;
+    margin-top: -0.65em !important
+}
+
+.video-js.my-skin:hover .vjs-big-play-button,.video-js.my-skin .vjs-big-play-button:focus,.video-js.my-skin .vjs-big-play-button:active {
+    background-color: rgba(255,255,255,0.23)
+}
+
+.video-js.my-skin .vjs-loading-spinner {
+    border-color: rgba(255,255,255,0.7)
+}
+
+.video-js.my-skin .vjs-control-bar2 {
+    background-color: #fcfcfc
+}
+
+.video-js.my-skin .vjs-control-bar {
+    background-color: rgba(252,252,252,0.19) !important;
+    color: #ffffff;
+    font-size: 12px
+}
+
+.video-js.my-skin .vjs-play-progress,.video-js.my-skin  .vjs-volume-level {
+    background-color: #cccccc
+}

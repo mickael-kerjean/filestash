@@ -1,0 +1,48 @@
+html {
+    font-family:"San Francisco","Roboto","Arial",sans-serif;
+    -webkit-text-size-adjust:100%;
+    background: #f2f2f2;
+    color: #6f6f6f;
+}
+body, html{
+    height: 100%;
+    margin: 0;
+}
+
+a{color: inherit; text-decoration: none;}
+
+.scroll-y{
+    overflow-y: scroll!important;
+    overflow-x: hidden!important;
+    -webkit-overflow-scrolling: touch;
+}
+.scroll-x{
+    overflow-x: scroll!important;
+    overflow-y: hidden!important;
+    -webkit-overflow-scrolling: touch;
+}
+
+select{-moz-appearance: none;}
+select:-moz-focusring {
+    color: inherit;
+    outline: none;
+    border: none;
+}
+select::-ms-expand {
+    display: none;
+}
+
+
+
+.drag-drop{
+    z-index: 2;
+}
+.drag-drop.dragging > div{
+    background: rgba(0,0,0,0.1);
+}
+
+
+
+
+body {overflow: hidden;}
+body, body > div, body > div > div, body > div > div > div{ height: 100%;}
