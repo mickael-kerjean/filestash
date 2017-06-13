@@ -51,7 +51,8 @@
     "video.js": "^5.19.2",
     "wavesurfer.js": "^1.4.0",
     "webdav-fs": "^1.0.0",
-    "winston": "^2.3.1"
+    "winston": "^2.3.1",
+    "winston-couchdb": "^0.6.3"
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",
