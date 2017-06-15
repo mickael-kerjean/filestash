@@ -26,11 +26,15 @@ Note that on the ftp and sftp session: connections aren't destroy on every reque
 
 
 * Install
-It's a simple react app with node in the backend. Installation is easy with docker:
+It's a simple react app with node in the backend. Installation required docker, docker-compose and npm:
 #+BEGIN_SRC bash
-curl -X GET http://github.com/mickael-kerjean/nuage/master.zip > nuage.zip
-unzip nuage.zip && cd nuage
-docker-compose up -d
+# get the code
+curl -L -X GET https://github.com/mickael-kerjean/nuage/archive/master.zip > nuage.zip
+unzip nuage.zip && cd nuage-master 
+# install dependencies and create the actual image
+npm install && npm run image
+# start the application
+npm run start
 #+END_SRC
 That's it !
 
