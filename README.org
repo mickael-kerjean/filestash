@@ -1,3 +1,4 @@
+![app photo](https://raw.githubusercontent.com/mickael-kerjean/nuage/master/server/public/img/photo.jpg)
 * What is it about?
 Call it a ftp client, an s3 viewer or a dropbox like web app, Nuage leverage your existing storage to help you manage your files in the cloud using any of the following protocols/platforms:
 - FTP
