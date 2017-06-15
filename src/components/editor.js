@@ -13,6 +13,12 @@ import 'codemirror/addon/dialog/dialog.js';
 
 CodeMirror.defineSimpleMode("orgmode", {
     start: [
+        {regex: /(^\+[^\/]*\+)/, token: ["strikethrough"]},
+        {regex: /(^\*[^\/]*\*)/, token: ["header", "strong"]},
+        {regex: /(^\/[^\/]*\/)/, token: ["em"]},
+        {regex: /(^\_[^\/]*\_)/, token: ["link"]},
+        {regex: /(^\~[^\/]*\~)/, token: ["comment"]},
+        {regex: /(^\=[^\/]*\=)/, token: ["comment"]},        
         {regex: /(^[\*]+)(\s[TODO|NEXT|DONE|DEFERRED|REJECTED|WAITING]{2,})?(.*)/, token: ['comment', 'qualifier', 'header']}, // headline
         {regex: /\s*\:?[A-Z_]+\:.*/, token: "qualifier"}, // property drawers
         {regex: /(\#\+[A-Z_]*)(\:.*)/, token: ["keyword", 'qualifier']}, // environments
