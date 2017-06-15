@@ -27,11 +27,11 @@ Note that on the ftp and sftp session: connections aren't destroy on every reque
 
 * Install
 It's a simple react app with node in the backend. Installation is easy with docker:
-```
+#+BEGIN_SRC bash
 curl -X GET http://github.com/mickael-kerjean/nuage/master.zip > nuage.zip
 unzip nuage.zip && cd nuage
 docker-compose up -d
-```
+#+END_SRC
 That's it !
 
 * Known Issues
