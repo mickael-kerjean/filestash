@@ -1,4 +1,5 @@
 server/public/bundle.js
+server/public/index.html    
 node_modules/
 babel_cache/
 .DS_Store
