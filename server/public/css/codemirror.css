@@ -137,7 +137,11 @@
 
 /* DEFAULT THEME */
 
-.cm-s-default .cm-header {color: #3E7AA6;}
+.cm-s-default .cm-header {color: #3E7AA6; font-size: 1.15em;}
+.cm-s-default .cm-header.cm-org-level-star{color: #6f6f6f; position: relative; top: 2px;}
+.cm-s-default .cm-header.cm-org-todo{color: #FF8355;}
+.cm-s-default .cm-header.cm-org-done{color: #3BB27C;}
+
 .cm-s-default .cm-link{color: #555!important;}
 .cm-s-default .cm-url{color: #555!important;}
 .cm-s-default .cm-quote {color: #090;}
