@@ -144,8 +144,7 @@ export class Editor extends React.Component {
                 lineWrapping: true,
                 foldGutter: {
                     minFoldSize: 1
-                },
-                gutters: document.body.offsetWidth > size_small ? ["CodeMirror-linenumbers", "CodeMirror-foldgutter"] : []
+                }
             });
             if(mode === 'orgmode'){
                 let state = {
