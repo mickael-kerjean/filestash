@@ -1,4 +1,5 @@
-// https://www.dropbox.com/developers-v1/core/docs#oa2-authorize
+// doc: https://www.dropbox.com/developers/documentation/http/documentation
+
 var http = require('request-promise'),
     http_stream = require('request'),
     Path = require('path'),
