@@ -8,6 +8,9 @@ Call it a ftp client, an s3 viewer or a dropbox like web app, Nuage leverage you
 - Dropbox
 - Google Drive
 
+* Demo
+[[https://nuage.kerjean.me][Try]] before install
+
 * Features
 - manage your files directly from your browser
 - listen to music
@@ -48,4 +51,5 @@ I built this as a week end project initially to edit my org mode files on my mob
 As I realise it soon, it doesn't have to be tight to org mode specifically and once I delivered the MVP, I just couldn't help myself to add more and more features and that's what I ended up with
 
 * Credits
-Icon from www.flaticon.com
+- Icons from www.flaticon.com
+- The Folks that develop awesome [[https://github.com/mickael-kerjean/nuage/blob/master/package.json][libraries]]
