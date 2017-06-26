@@ -4,7 +4,8 @@ var backend = {
     webdav: require('./backend/webdav'),
     dropbox: require('./backend/dropbox'),
     gdrive: require('./backend/gdrive'),
-    s3: require('./backend/s3')
+    s3: require('./backend/s3'),
+    git: require('./backend/git')
 };
     
 exports.cat = function(path, params, res){

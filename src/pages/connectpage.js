@@ -14,6 +14,7 @@ export class ConnectPage extends React.Component {
             advanced_sftp: false, // state of checkbox in the UI
             advanced_webdav: false,
             advanced_s3: false,
+            advanced_git: false,
             credentials: {},
             password: password.get() || null,
             marginTop: this._marginTop()
@@ -78,6 +79,9 @@ export class ConnectPage extends React.Component {
                 }
                 if(this.state.credentials['s3'] && this.state.credentials['s3']['path']){
                     this.setState({advanced_s3: true})
+                }
+                if(this.state.credentials['git'] && (this.state.credentials['git']['username'] || this.state.credentials['git']['commit'] || this.state.credentials['git']['branch']  || this.state.credentials['git']['passphrase'] || this.state.credentials['git']['author_name'] || this.state.credentials['git']['author_email'] || this.state.credentials['git']['committer_name'] || this.state.credentials['git']['committer_email'])){
+                    this.setState({advanced_git: true})
                 }
             }
         }
@@ -189,16 +193,17 @@ export class ConnectPage extends React.Component {
         return (
             <div style={{background: '#f89e6b'}}>
             <ForkMe repo="https://github.com/mickael-kerjean/nuage" />  
-            <Container maxWidth="500px">
+            <Container maxWidth="565px">
               <NgIf cond={this.state.loading === true}>
                 <Loader/>
               </NgIf>
               <NgIf cond={this.state.loading === false}>
                 <Card style={{marginTop: this.state.marginTop+'px', whiteSpace: '', borderRadius: '3px', boxShadow: 'none'}}>
-                  <div style={{display: 'flex', margin: '-10px -11px 20px', padding: '0px 0px 6px 0'}} className={('ontouchstart' in window) ? 'scroll-x' : ''}>
+                  <div style={{display: 'flex', margin: '-10px -11px 20px', padding: '0px 0px 6px 0'}} className={window.innerWidth < 600 ? 'scroll-x' : ''}>
                     <Button theme={this.state.type === 'webdav'? 'primary' : null} style={{...style.top, borderBottomLeftRadius: 0}} onClick={this.onChange.bind(this, 'webdav')}>WebDav</Button>
                     <Button theme={this.state.type === 'ftp'? 'primary' : null} style={style.top} onClick={this.onChange.bind(this, 'ftp')}>FTP</Button>
                     <Button theme={this.state.type === 'sftp'? 'primary' : null} style={style.top} onClick={this.onChange.bind(this, 'sftp')}>SFTP</Button>
+                    <Button theme={this.state.type === 'git'? 'primary' : null} style={{...style.top, borderBottomRightRadius: 0}} onClick={this.onChange.bind(this, 'git')}>Git</Button>
                     <Button theme={this.state.type === 's3'? 'primary' : null} style={style.top} onClick={this.onChange.bind(this, 's3')}>S3</Button>
                     <Button theme={this.state.type === 'dropbox'? 'primary' : null} style={style.top} onClick={this.onChange.bind(this, 'dropbox')}>Dropbox</Button>
                     <Button theme={this.state.type === 'gdrive'? 'primary' : null} style={{...style.top, borderBottomRightRadius: 0}} onClick={this.onChange.bind(this, 'gdrive')}>Drive</Button>
@@ -244,6 +249,25 @@ export class ConnectPage extends React.Component {
                           <Input type="text" name="path" placeholder="Path" defaultValue={this.getDefault('sftp', 'path')} autoComplete="off" />
                           <Input type="text" name="port" placeholder="Port" defaultValue={this.getDefault('sftp', 'port')} autoComplete="off" />
                           <Textarea type="text" name="private_key" placeholder="Private Key" defaultValue={this.getDefault('sftp', 'private_key')} autoComplete="off" />
+                        </NgIf>
+                        <Button style={{marginTop: '15px', color: 'white'}} theme="emphasis">CONNECT</Button>
+                      </NgIf>
+                      <NgIf cond={this.state.type === 'git'}>
+                        <Input type="text" name="repo" placeholder="Repository*" defaultValue={this.getDefault('git', 'repo')} autoComplete="off" />
+                        <Textarea type="password" name="password" placeholder="Password" defaultValue={this.getDefault('git', 'password')} autoComplete="off" />
+                        <Input type="hidden" name="type" value="git"/>
+                        <label style={labelStyle}>
+                          <input checked={this.state.advanced_git} onChange={e => { this.setState({advanced_git: JSON.parse(e.target.checked)})}} type="checkbox" autoComplete="off"/> Advanced
+                        </label>
+                        <NgIf cond={this.state.advanced_git === true} style={{marginTop: '2px'}}>
+                          <Input type="text" name="username" placeholder="Username" defaultValue={this.getDefault('git', 'username')} autoComplete="off" />
+                          <Input type="text" name="passphrase" placeholder="Passphrase" defaultValue={this.getDefault('git', 'passphrase')} autoComplete="off" />
+                          <Input type="text" name="commit" placeholder="Commit Format: default to '{action}({filename}): {path}'" defaultValue={this.getDefault('git', 'format')} autoComplete="off" />
+                          <Input type="text" name="branch" placeholder="Branch: default to 'master'" defaultValue={this.getDefault('git', 'branch')} autoComplete="off" />
+                          <Input type="text" name="author_email" placeholder="Author email" defaultValue={this.getDefault('git', 'author_email')} autoComplete="off" />
+                          <Input type="text" name="author_name" placeholder="Author name" defaultValue={this.getDefault('git', 'author_name')} autoComplete="off" />
+                          <Input type="text" name="committer_email" placeholder="Committer email" defaultValue={this.getDefault('git', 'committer_email')} autoComplete="off" />
+                          <Input type="text" name="committer_name" placeholder="Committer name" defaultValue={this.getDefault('git', 'committer_name')} autoComplete="off" />
                         </NgIf>
                         <Button style={{marginTop: '15px', color: 'white'}} theme="emphasis">CONNECT</Button>
                       </NgIf>

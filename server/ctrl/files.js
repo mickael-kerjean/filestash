@@ -34,7 +34,7 @@ app.get('/cat', function(req, res){
             })
             .catch(function(err){
                 res.send({status: 'error', message: err.message || 'couldn\t read the file', trace: err})
-            })
+            });
     }else{
         res.send({status: 'error', message: 'unknown path'})
     }

@@ -20,16 +20,20 @@ app.post('/', function(req, res){
                 type: req.body.type,
                 payload: state
             };
-            res.cookie('auth', crypto.encrypt(persist), { maxAge: 365*24*60*60*1000, httpOnly: true });
-            res.send({status: 'ok', result: 'pong'});
+            const cookie = crypto.encrypt(persist);
+            if(Buffer.byteLength(cookie, 'utf-8') > 4096){
+                res.send({status: 'error', message: 'we can\'t authenticate you', })
+            }else{
+                res.cookie('auth', crypto.encrypt(persist), { maxAge: 365*24*60*60*1000, httpOnly: true });
+                res.send({status: 'ok', result: 'pong'});
+            }
         })
         .catch((err) => {
-            console.log(err)
             let message = function(err){
-                let t = 'could not establish a connection'
+                let t = err && err.message || 'could not establish a connection';
                 if(err.code){
-                    t += ' ('+err.code+')'
-                }             
+                    t += ' ('+err.code+')';
+                }
                 return t;
             }            
             res.send({status: 'error', message: message(err), code: err.code});
