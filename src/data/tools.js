@@ -18,7 +18,7 @@ export function invalidate(url){
     }else if(typeof url.exec === 'function'){ // regexp
         for(let key in cache){
             if(url.exec(key)){
-                delete cache[key]
+                delete cache[key];
             }
         }
     }else{
@@ -41,20 +41,22 @@ export function http_get(url, cache_expire = 0, type = 'json'){
                                 let data = JSON.parse(xhr.responseText);
                                 if(data.status === 'ok'){
                                     if(cache_expire > 0){
-                                        cache[url] = {data: data.results || data.result, date: new Date().getTime() + cache_expire * 1000}
+                                        cache[url] = {data: data.results || data.result, date: new Date().getTime() + cache_expire * 1000};
                                     }
-                                    done(data.results || data.result)
+                                    done(data.results || data.result);
+                                }else if(data.status === 'redirect'){
+                                    if(data.to === 'logout'){location.pathname = "/logout";}
                                 }else{
                                     err(data);
                                 }
                             }catch(error){
-                                err({message: 'oups', trace: error})
+                                err({message: 'oups', trace: error});
                             }
                         }else{
-                            done(xhr.responseText)
+                            done(xhr.responseText);
                         }                        
                     }else{
-                        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'})
+                        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
                     }
                 }
             }
@@ -72,7 +74,7 @@ export function http_post(url, data, type = 'json'){
         xhr.withCredentials = true;
         if(type === 'json'){
             data = JSON.stringify(data);
-            xhr.setRequestHeader('Content-Type', 'application/json')
+            xhr.setRequestHeader('Content-Type', 'application/json');
         }
         xhr.send(data);
         xhr.onload = function () {
@@ -80,41 +82,23 @@ export function http_post(url, data, type = 'json'){
                 if(xhr.status === 200){
                     try{
                         let data = JSON.parse(xhr.responseText);
-                        data.status === 'ok' ? done(data.results || data.result) : err(data);
+                        if(data.status === 'ok'){
+                            done(data.results || data.result);
+                        }else if(data.status === 'redirect'){
+                            if(data.to === 'logout'){location.pathname = "/logout";}
+                        }else{
+                            err(data);
+                        }
                     }catch(error){
-                        err({message: 'oups', trace: error})
+                        err({message: 'oups', trace: error});
                     }                
                 }else{
-                    err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'})
+                    err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
                 }
 	        }
         }
     });
 }
-
-// export function http_put(url, data){
-//     return new Promise((done, err) => {
-//         var xhr = new XMLHttpRequest();
-//         xhr.open("PUT", url, true);
-//         xhr.withCredentials = true;
-//         //xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
-//         xhr.send(data);
-//         xhr.onload = function () {
-// 	        if (xhr.readyState === XMLHttpRequest.DONE) {
-//                 if(xhr.status === 200){
-//                     try{
-//                         let data = JSON.parse(xhr.responseText);
-//                         data.status === 'ok' ? done(data.results || data.result) : err(data);
-//                     }catch(error){
-//                         err({message: 'oups', trace: error})
-//                     }                
-//                 }else{
-//                     err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'})
-//                 }
-// 	        }
-//         }
-//     });
-// }
 
 export function http_delete(url){
     return new Promise((done, err) => {
@@ -126,12 +110,18 @@ export function http_delete(url){
                 if(xhr.status === 200){
                     try{
                         let data = JSON.parse(xhr.responseText);
-                        data.status === 'ok' ? done(data.results || data.result) : err(data);
+                        if(data.status === 'ok'){
+                            done(data.results || data.result);
+                        }else if(data.status === 'redirect'){
+                            if(data.to === 'logout'){location.pathname = "/logout";}
+                        }else{
+                            err(data);
+                        }
                     }catch(error){
-                        err({message: 'oups', trace: error})
+                        err({message: 'oups', trace: error});
                     }                
                 }else{
-                    err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'})
+                    err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
                 }
 	        }
         }

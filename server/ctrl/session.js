@@ -6,7 +6,7 @@ var express = require('express'),
 
 app.get('/', function(req, res){
     let data = crypto.decrypt(req.cookies.auth);
-    if(data.type){
+    if(data && data.type){
         res.send({status: 'ok', result: true})
     }else{
         res.send({status: 'ok', result: false})

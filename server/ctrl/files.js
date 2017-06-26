@@ -5,12 +5,22 @@ var express = require('express'),
     multiparty = require('multiparty'),
     mime = require('../utils/mimetype.js');
 
+app.use(function(req, res, next){
+    req.cookies.auth = crypto.decrypt(req.cookies.auth);
+    if(req.cookies.auth !== null){
+        return next();
+    }else{
+        return res.send({status: 'redirect', to: 'logout'});
+    }
+});
+
+
 // list files
 app.get('/ls', function(req, res){
     let path = decodeURIComponent(req.query.path);
     if(path){
         Files
-            .ls(path, crypto.decrypt(req.cookies.auth))
+            .ls(path, req.cookies.auth)
             .then(function(results){
                 res.send({status: 'ok', results: results});
             })
@@ -27,7 +37,7 @@ app.get('/cat', function(req, res){
     let path = decodeURIComponent(req.query.path);
     res.cookie('download', path, { maxAge: 1000 })
     if(path){
-        Files.cat(path, crypto.decrypt(req.cookies.auth), res)
+        Files.cat(path, req.cookies.auth, res)
             .then(function(stream){
                 res.set('Content-Type',  mime.getMimeType(path));
                 stream.pipe(res);
@@ -49,11 +59,10 @@ app.post('/cat', function(req, res){
     if(path){
         form.on('part', function(part) {
             part.on('error', function(err){
-                console.log("ERROR", err);
                 res.send({status: 'error', message: 'internal error'})
             });
             
-            Files.write(path, part, crypto.decrypt(req.cookies.auth))
+            Files.write(path, part, req.cookies.auth)
                 .then(function(result){
                     res.send({status: 'ok'});
                 })
@@ -72,7 +81,7 @@ app.get('/mv', function(req, res){
     let from = decodeURIComponent(req.query.from),
         to = decodeURIComponent(req.query.to);
     if(from && to){
-        Files.mv(from, to, crypto.decrypt(req.cookies.auth))
+        Files.mv(from, to, req.cookies.auth)
             .then((message) => {
                 res.send({status: 'ok', result: message})
             })
@@ -88,7 +97,7 @@ app.get('/mv', function(req, res){
 app.get('/rm', function(req, res){
     let path = decodeURIComponent(req.query.path);
     if(path){
-        Files.rm(path, crypto.decrypt(req.cookies.auth))
+        Files.rm(path, req.cookies.auth)
             .then((message) => {
                 res.send({status: 'ok', result: message})
             })
@@ -104,7 +113,7 @@ app.get('/rm', function(req, res){
 app.get('/mkdir', function(req, res){
     let path = decodeURIComponent(req.query.path);
     if(path){
-        Files.mkdir(path, crypto.decrypt(req.cookies.auth))
+        Files.mkdir(path, req.cookies.auth)
             .then((message) => {
                 res.send({status: 'ok', result: message})
             })
@@ -119,7 +128,7 @@ app.get('/mkdir', function(req, res){
 app.get('/touch', function(req, res){
     let path = decodeURIComponent(req.query.path);
     if(path){
-        Files.touch(path, crypto.decrypt(req.cookies.auth))
+        Files.touch(path, req.cookies.auth)
             .then((message) => {
                 res.send({status: 'ok', result: message})
             })
