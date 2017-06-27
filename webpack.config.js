@@ -2,12 +2,10 @@ const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-
-
 let config = {
     entry: [
         'babel-polyfill',
-        path.join(__dirname, 'src', 'client.js')
+        path.join(__dirname, 'client', 'index.js')
     ],
     output: {
         path: path.join(__dirname, 'server', 'public'),
@@ -17,7 +15,7 @@ let config = {
     module: {
         loaders: [
             {
-                test: path.join(__dirname, 'src'),
+                test: path.join(__dirname, 'client'),
                 loader: ['babel-loader']
             },
             {
@@ -32,7 +30,7 @@ let config = {
         }),
         new webpack.optimize.OccurrenceOrderPlugin(),
         new HtmlWebpackPlugin({
-            template: __dirname + '/src/index.html',
+            template: path.join(__dirname, 'client', 'index.html'),
             inject:true
         })
     ]
@@ -57,7 +55,7 @@ if(process.env.NODE_ENV === 'production'){
             }
         }
     };
-    config.entry.push('webpack/hot/only-dev-server');
+    //config.entry.push('webpack/hot/only-dev-server');
 }
 
 
