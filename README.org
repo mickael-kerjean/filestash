@@ -4,6 +4,7 @@ Call it a ftp client, an s3 viewer or a dropbox like web app, Nuage leverage you
 - FTP
 - SFTP
 - Webdav
+- Git
 - S3
 - Dropbox
 - Google Drive
@@ -29,15 +30,13 @@ Note that on the ftp and sftp session: connections aren't destroy on every reque
 
 
 * Install
-It's a simple react app with node in the backend. Installation required docker, docker-compose and npm:
+It's a simple react app with node in the backend. Installation requires docker, docker-compose and npm:
 #+BEGIN_SRC bash
 # get the code
 curl -L -X GET https://github.com/mickael-kerjean/nuage/archive/master.zip > nuage.zip
 unzip nuage.zip && cd nuage-master 
 # install dependencies and create the actual image
-npm install && npm run image
-# start the application
-npm run start
+npm run image && npm run start
 #+END_SRC
 That's it !
 
