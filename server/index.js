@@ -4,7 +4,7 @@ var app = require('./bootstrap'),
     sessionRouter = require('./ctrl/session');
 
 
-app.get('/api/ping', function(req, res){ res.send('pong')})
+app.get('/ping', function(req, res){ res.send('pong')})
 app.use('/api/files', filesRouter)
 app.use('/api/session', sessionRouter);
 app.use('/', express.static(__dirname + '/public/'))
