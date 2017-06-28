@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { DropTarget } from 'react-dnd';
 import { EventEmitter }  from '../../data';
+import { theme, to_rgba } from '../../utilities';
 
 
 @EventEmitter
@@ -30,11 +31,13 @@ export class FileZone extends React.Component{
             border: '2px dashed',
             padding: '25px 0',
             marginBottom: '10px',
-            textAlign: 'center'
+            textAlign: 'center',
+            fontWeight: 'bold'
         }
         if(this.props.fileIsOver){
-            style.background = 'rgba(209, 255, 255,0.5)';
-            style.border = '2px dashed #38a6a6';
+            style.background = to_rgba(theme.colors.primary, 0.5);
+            style.border = '2px dashed '+theme.colors.primary;
+            style.color = 'white'
         }
         return this.props.connectDropFile(
             <div style={style}>

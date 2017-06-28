@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom'
-import { theme } from '../utilities/theme';
+import { theme, to_rgba } from '../utilities/theme';
 import { NgIf, Icon } from '../utilities/';
 import { EventEmitter, EventReceiver } from '../data';
 
@@ -138,8 +138,8 @@ export class PathElementWrapper extends React.Component {
             fontWeight: this.props.isLast ? '100': ''
         };
         if(this.props.highlight === true){
-            style.background = 'rgba(209, 255, 255,0.5)';
-            style.border = '2px solid #38a6a6';
+            style.background = to_rgba(theme.colors.primary, 0.5);
+            style.border = '2px solid '+theme.colors.primary;
             style.borderRadius = '2px';
             style.padding = '3px 20px';
         }

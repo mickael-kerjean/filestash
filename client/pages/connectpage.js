@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Card, NgIf, Input, Button, Textarea, Loader, Notification, encrypt, decrypt } from '../utilities';
+import { Container, Card, NgIf, Input, Button, Textarea, Loader, Notification, encrypt, decrypt, theme } from '../utilities';
 import { Session, invalidate, password } from '../data';
 import { Uploader } from '../utilities';
 
@@ -191,7 +191,7 @@ export class ConnectPage extends React.Component {
             top: {minWidth: '80px', borderTopLeftRadius: 0, borderTopRightRadius: 0, padding: '8px 5px'}
         }
         return (
-            <div style={{background: '#f89e6b'}}>
+            <div style={{background: theme.colors.primary}}>
             <ForkMe repo="https://github.com/mickael-kerjean/nuage" />  
             <Container maxWidth="565px">
               <NgIf cond={this.state.loading === true}>

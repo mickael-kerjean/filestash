@@ -13,6 +13,6 @@ export { Fab } from './fab';
 export { Icon } from './icon';
 export { Notification } from './notification';
 export { Uploader } from './uploader';
-export { theme }  from './theme';
+export { theme, to_rgba }  from './theme';
 export { encrypt, decrypt } from './crypto'
 export { pathBuilder } from './path';

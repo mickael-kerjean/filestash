@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Card, NgIf, Icon, pathBuilder } from '../../utilities';
+import { Card, NgIf, Icon, pathBuilder, theme, to_rgba } from '../../utilities';
 import { EventEmitter } from '../../data';
 import { DragSource, DropTarget } from 'react-dnd';
 
@@ -152,8 +152,8 @@ export class ExistingThing extends React.Component {
         let dragStyle = {whiteSpace: 'nowrap'};
         if(this.props.isDragging) { dragStyle.opacity = 0.15; }
         if((this.props.fileIsOver && this.props.canDropFile) || (this.props.nativeFileIsOver && this.props.canDropNativeFile)) {
-            dragStyle.background = 'rgba(209, 255, 255,0.5)';
-            dragStyle.border = '2px solid #38a6a6';
+            dragStyle.background = to_rgba(theme.colors.primary, 0.5);
+            dragStyle.border = '2px solid '+theme.colors.primary;
         }
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
