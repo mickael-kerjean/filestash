@@ -20,7 +20,7 @@ const IDE = (props) => (
 
 @EventReceiver
 export class ViewerPage extends React.Component {
-    constructor(props){        
+    constructor(props){
         super(props);
         this.state = {
             path: props.match.url.replace('/view', ''),
@@ -35,6 +35,34 @@ export class ViewerPage extends React.Component {
         };
         this.resetHeight = debounce(this.resetHeight.bind(this), 100);
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
+    }
+
+    componentWillMount(){
+        this.setState({loading: true, error: false});
+        let app = opener(this.state.path);
+        if(app === 'editor'){
+            Files.cat(this.state.path).then((content) => {
+                this.setState({data: content, loading: false, opener: app});
+            }).catch(err => {
+                if(err && err.code === 'CANCELLED'){ return }
+                if(err.code === 'BINARY_FILE'){
+                    Files.url(this.state.path).then((url) => {
+                        this.setState({data: url, loading: false, opener: 'download'});
+                    }).catch(err => {
+                        this.setState({error: err});
+                    });
+                }else{
+                    this.setState({error: err});
+                }
+            });
+        }else{
+            Files.url(this.state.path).then((url) => {
+                this.setState({data: url, loading: false, opener: app});
+            }).catch(err => {
+                if(err && err.code === 'CANCELLED'){ return }
+                this.setState({error: err});
+            });
+        }
     }
 
     componentWillUnmount() {
@@ -72,32 +100,6 @@ export class ViewerPage extends React.Component {
     componentDidMount(){
         this.resetHeight();
         window.addEventListener("resize", this.resetHeight);
-        this.setState({loading: true});
-        let app = opener(this.state.path);
-        if(app === 'editor'){
-            Files.cat(this.state.path).then((content) => {
-                this.setState({data: content, loading: false, opener: app});
-            }).catch(err => {
-                if(err && err.code === 'CANCELLED'){ return }
-                if(err.code === 'BINARY_FILE'){
-                    Files.url(this.state.path).then((url) => {
-                        this.setState({data: url, loading: false, opener: 'download'});
-                    }).catch(err => {
-                        this.setState({error: err});
-                    });                         
-                }else{
-                    this.setState({error: err});
-                }
-            });
-        }else{
-            Files.url(this.state.path).then((url) => {
-                this.setState({data: url, loading: false, opener: app});
-            }).catch(err => {
-                console.log("ERROR", err)
-                if(err && err.code === 'CANCELLED'){ return }
-                this.setState({error: err});
-            });
-        }
     }
 
     resetHeight(){
@@ -140,13 +142,12 @@ export class ViewerPage extends React.Component {
                   <NgIf cond={this.state.error === false}>
                     <Loader/>
                   </NgIf>
-                  <NgIf cond={this.state.error !== false}>
+                  <NgIf cond={this.state.error !== false} onClick={this.componentWillMount.bind(this)} style={{cursor: 'pointer'}}>
                     <Error err={this.state.error}/>
-                  </NgIf>                                
+                  </NgIf>
                 </NgIf>
               </div>
             </div>
         );
     }
 }
-

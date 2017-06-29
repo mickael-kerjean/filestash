@@ -54,14 +54,18 @@ export function http_get(url, cache_expire = 0, type = 'json'){
                             }
                         }else{
                             done(xhr.responseText);
-                        }                        
+                        }
                     }else{
-                        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
+                        if(navigator.onLine === false){
+                            err({status: xhr.status, code: "CONNECTION_LOST", message: 'Connection Lost'});
+                        }else{
+                            err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
+                        }
                     }
                 }
             }
             xhr.open('GET', url, true);
-            xhr.send(null);    
+            xhr.send(null);
         });
     }
 }
@@ -78,7 +82,7 @@ export function http_post(url, data, type = 'json'){
         }
         xhr.send(data);
         xhr.onload = function () {
-	        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
                 if(xhr.status === 200){
                     try{
                         let data = JSON.parse(xhr.responseText);
@@ -91,11 +95,15 @@ export function http_post(url, data, type = 'json'){
                         }
                     }catch(error){
                         err({message: 'oups', trace: error});
-                    }                
+                    }
                 }else{
-                    err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
+                    if(navigator.onLine === false){
+                        err({status: xhr.status, code: "CONNECTION_LOST", message: 'Connection Lost'});
+                    }else{
+                        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
+                    }
                 }
-	        }
+            }
         }
     });
 }
@@ -106,7 +114,7 @@ export function http_delete(url){
         xhr.open("DELETE", url, true);
         xhr.withCredentials = true;
         xhr.onload = function () {
-	        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
                 if(xhr.status === 200){
                     try{
                         let data = JSON.parse(xhr.responseText);
@@ -119,11 +127,15 @@ export function http_delete(url){
                         }
                     }catch(error){
                         err({message: 'oups', trace: error});
-                    }                
+                    }
                 }else{
-                    err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
+                    if(navigator.onLine === false){
+                        err({status: xhr.status, code: "CONNECTION_LOST", message: 'Connection Lost'});
+                    }else{
+                        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
+                    }
                 }
-	        }
+            }
         }
         xhr.send(null);
     });

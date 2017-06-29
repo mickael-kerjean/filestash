@@ -12,7 +12,7 @@ import Path from 'path';
 
 @EventReceiver
 @DragDropContext(('ontouchstart' in window)? HTML5Backend : HTML5Backend)
-export class FilesPage extends React.Component {    
+export class FilesPage extends React.Component {
     constructor(props){
         super(props);
         this.state = {
@@ -37,6 +37,7 @@ export class FilesPage extends React.Component {
 
 
     componentWillMount(){
+        this.setState({error: false});
         this.onPathUpdate(this.state.path, 'directory', true)
     }
 
@@ -58,9 +59,13 @@ export class FilesPage extends React.Component {
 
 
     onRefresh(path = this.state.path){
+        this.setState({error: false})
         return Files.ls(path).then((files) => {
             this.setState({files: files, loading: false})
-        });
+        }).catch((error) => {
+            this.setState({error: error});
+        })
+
     }
 
     onPathUpdate(path, type = 'directory', withLoader = true){
@@ -104,7 +109,7 @@ export class FilesPage extends React.Component {
                     icon: 'loading',
                     virtual: true
                 }
-            });            
+            });
             const files = JSON.parse(JSON.stringify(this.state.files));
             this.setState({files: [].concat(newfiles, files)});
             return Promise.resolve(_files);
@@ -150,7 +155,7 @@ export class FilesPage extends React.Component {
                 }
             };
         }
-       
+
         function job(it){
             let file = it.next();
             if(file){
@@ -168,12 +173,12 @@ export class FilesPage extends React.Component {
                 return job(it);
             }));
         }
-            
+
         const poolSize = 10;
         return createFilesInUI(files)
             .then((files) => Promise.resolve(generator(files)))
             .then((it) => process(it, poolSize))
-            .then((res) => Promise.resolve('ok'));        
+            .then((res) => Promise.resolve('ok'));
     }
 
 
@@ -183,9 +188,9 @@ export class FilesPage extends React.Component {
         });
     }
 
-    
+
     render() {
-        return (            
+        return (
               <div>
                 <BreadCrumb className="breadcrumb" path={this.state.path} />
                 <div style={{height: this.state.height+'px'}} className="scroll-y">
@@ -196,8 +201,8 @@ export class FilesPage extends React.Component {
                   <NgIf cond={this.state.loading}>
                     <NgIf cond={this.state.error === false}>
                       <Loader/>
-                    </NgIf>
-                    <NgIf cond={this.state.error !== false}>
+                   </NgIf>
+                   <NgIf cond={this.state.error !== false} onClick={this.componentWillMount.bind(this)} style={{cursor: 'pointer'}}>
                       <Error err={this.state.error}/>
                     </NgIf>
                   </NgIf>
@@ -206,6 +211,3 @@ export class FilesPage extends React.Component {
         );
     }
 }
-
-
-
