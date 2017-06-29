@@ -6,7 +6,6 @@ import CodeMirror from 'codemirror/lib/codemirror';
 // keybinding
 import 'codemirror/keymap/emacs.js';
 
-
 // search
 import 'codemirror/addon/search/searchcursor.js';
 import 'codemirror/addon/search/search.js';

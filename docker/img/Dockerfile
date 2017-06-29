@@ -6,13 +6,14 @@ WORKDIR "/app"
 
 RUN cd /app/ && \
     # remove dev stuff
-    npm run clean && \
+    npm run clear && \
     # build
     apt-get update -y && \
     apt install -y libssl-dev build-essential automake python libcurl3-dev && \
     npm install nodegit --build-from-source && \
     npm install && \
     npm run build && \
+    # prepare for production
     npm prune --production && \
     apt-get -y clean && \
     apt-get -y purge --auto-remove build-essential automake python && \

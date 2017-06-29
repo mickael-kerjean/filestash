@@ -16,3 +16,4 @@ export { Uploader } from './uploader';
 export { theme, to_rgba }  from './theme';
 export { encrypt, decrypt } from './crypto'
 export { pathBuilder } from './path';
+export { Bundle } from './bundle';
