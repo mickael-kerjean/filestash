@@ -11,7 +11,7 @@ export class BreadCrumb extends React.Component {
         this.state = {
             path: this._formatPath(props.path)
         };
-    }    
+    }
 
     componentWillReceiveProps(props){
         this.setState({path: this._formatPath(props.path)});
@@ -33,12 +33,12 @@ export class BreadCrumb extends React.Component {
         });
         return paths;
     }
-    
+
     render(Element) {
         const Path = Element? Element : PathElement;
         return (
             <div>
-              <BreadCrumbContainer className={this.props.className}>
+              <BreadCrumbContainer className={this.props.className+' no-select'}>
                 <Logout />
                 {
                     this.state.path.map((path, index) => {
@@ -63,8 +63,8 @@ BreadCrumb.propTypes = {
 
 
 const BreadCrumbContainer = (props) => {
-    let style1 = {background: 'white', margin: '0 0 0px 0', padding: '6px 0', boxShadow: '0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.2)', zIndex: '1000', position: 'relative'};
-    let style2 = {margin: '0 auto', width: '95%', maxWidth: '800px', padding: '0'};
+    let style1 = {background: theme.component.breadcrumb.bg, margin: '0 0 0px 0', padding: '6px 0', boxShadow: '0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.2)', zIndex: '1000', position: 'relative'};
+    let style2 = {margin: '0 auto', width: '95%', maxWidth: '800px', padding: '0', color: theme.component.breadcrumb.color};
     return (
         <div className={props.className} style={style1}>
           <ul style={style2}>
@@ -76,9 +76,8 @@ const BreadCrumbContainer = (props) => {
 const Logout = (props) => {
     let style = {
         float: 'right',
-        fontSize: '17px',
         display: 'inline-block',
-        padding: '6px 0px 6px 6px',
+        padding: '5px 0px 5px 5px',
         margin: '0 0px'
     }
     return (
@@ -109,8 +108,8 @@ const Saving = (props) => {
 
 const Separator = (props) => {
     return (
-        <NgIf cond={props.isLast === false} style={{display: 'inline', fontFamily: 'monospace', color: '#aaaaaa'}}>
-          >
+        <NgIf cond={props.isLast === false} style={{position: 'relative', top: '3px', display: 'inline'}}>
+          <img width="16" height="16" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAA30lEQVQ4T63T7Q2CMBAG4OuVPdQNcAPdBCYwDdclCAQ3ACfRDXQDZQMHgNRcAoYApfWjv0jIPX3b3gn4wxJjI03TUAhRBkGwV0o9ffaYIEVRrJumuQHA3ReaILxzl+bCkNZ660ozi/QQIl4BoCKieAmyIlyU53lkjCld0CIyhIwxSmt9nEvkRLgoyzIuPggh4iRJqjHkhXTQAwBWUsqNUoq/38sL+TlJf7lf38ngdU5EFNme2adPFgGGrR2LiGcAqIko/LhjeXbatuVOraWUO58hnJ1iRKx8AetxXPHH/1+y62USursaSgAAAABJRU5ErkJggg=="/>
         </NgIf>
     );
 }
@@ -120,6 +119,7 @@ const Separator = (props) => {
 export class PathElementWrapper extends React.Component {
     constructor(props){
         super(props);
+        this.state = {hover: false};
     }
 
     onClick(){
@@ -128,24 +128,38 @@ export class PathElementWrapper extends React.Component {
         }
     }
 
+    toggleHover(shouldHover){
+        if(('ontouchstart' in window) === false){
+            this.setState({hover: shouldHover})
+        }
+    }
+
+    limitSize(str){
+        if(str.length > 30){
+            return str.substring(0,23)+'...'
+        }
+        return str;
+    }
+
     render(){
         let style = {
-            cursor: 'pointer',
-            fontSize: '17px',
+            cursor: this.props.isLast ? '' : 'pointer',
+            background: this.state.hover && this.props.isLast !== true? theme.effects.hover : 'inherit',
+            borderRadius: '1px',
+            fontSize: '18px',
             display: 'inline-block',
-            padding: '5px 3px',
-            margin: '0 4px',
+            padding: '4px 5px',
             fontWeight: this.props.isLast ? '100': ''
         };
         if(this.props.highlight === true){
-            style.background = to_rgba(theme.colors.primary, 0.5);
+            style.background = theme.effects.selected;
             style.border = '2px solid '+theme.colors.primary;
             style.borderRadius = '2px';
-            style.padding = '3px 20px';
+            style.padding = '2px 20px';
         }
         return (
-            <li onClick={this.onClick.bind(this)} style={style}>
-              {this.props.path.label}
+            <li onClick={this.onClick.bind(this)} style={style} onMouseEnter={this.toggleHover.bind(this, true)} onMouseLeave={this.toggleHover.bind(this, false)}>
+              {this.limitSize(this.props.path.label)}
               <Saving isLast={this.props.isLast} needSaving={this.props.needSaving} isSaving={false} />
             </li>
         );
@@ -161,7 +175,7 @@ export class PathElement extends PathElementWrapper {
 
     render(highlight = false){
         return (
-            <div style={{display: 'inline-block'}}>
+            <div style={{display: 'inline-block', color: this.props.isLast? theme.component.breadcrumb.last : 'inherit'}}>
               <PathElementWrapper highlight={highlight} {...this.props} />
             </div>
         )
