@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Card, NgIf, Icon, pathBuilder, theme, to_rgba } from '../../utilities';
+import { Card, NgIf, Icon, pathBuilder, theme } from '../../utilities';
 import { EventEmitter } from '../../data';
 import { DragSource, DropTarget } from 'react-dnd';
 
@@ -100,7 +100,7 @@ export class ExistingThing extends React.Component {
             message: props.file.message || null,
         })
     }
-    
+
 
     onSelect(){
         if(this.state.icon !== 'loading'){
@@ -127,7 +127,7 @@ export class ExistingThing extends React.Component {
                 this.setState({icon: 'error', message: err.message, filename: oldFilename});
             });
     }
-    
+
     onDelete(filename){
         let toConfirm = this.props.file.name.length > 16? this.props.file.name.substring(0, 10).toLowerCase() : this.props.file.name;
         let answer = prompt('Confirm by tapping "'+toConfirm+'"');
@@ -151,20 +151,24 @@ export class ExistingThing extends React.Component {
         const { connectDragSource, connectDropFile, connectDropNativeFile } = this.props;
         let dragStyle = {whiteSpace: 'nowrap'};
         if(this.props.isDragging) { dragStyle.opacity = 0.15; }
+
+        if(this.state.hover === true){
+            dragStyle.background = theme.effects.hover;
+        }
         if((this.props.fileIsOver && this.props.canDropFile) || (this.props.nativeFileIsOver && this.props.canDropNativeFile)) {
-            dragStyle.background = to_rgba(theme.colors.primary, 0.5);
-            dragStyle.border = '2px solid '+theme.colors.primary;
+            dragStyle.background = theme.effects.selected;
         }
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div>
               <NgIf cond={this.state.appear}>
                 <Card onClick={this.onSelect.bind(this)} onMouseEnter={() => this.setState({hover: true})} onMouseLeave={() => this.setState({hover: false})} style={dragStyle}>
-                  <DateTime show={this.state.hover !== true || this.state.icon === 'loading'} timestamp={this.props.file.time}/>
+                  <DateTime show={this.state.hover !== true || this.state.icon === 'loading'} timestamp={this.props.file.time} background={dragStyle.background}/>
                   <Updater filename={this.state.filename}
                            icon={this.props.file.virtual? this.props.file.icon : this.state.icon}
                            can_move={this.props.file.can_move !== false}
                            can_delete={this.props.file.can_delete !== false}
+                           background={dragStyle.background}
                            show={this.state.hover === true && this.state.icon !== 'loading' && !('ontouchstart' in window)}
                            onRename={this.onRename.bind(this)}
                            onDelete={this.onDelete.bind(this)} />
@@ -215,7 +219,7 @@ class Updater extends React.Component {
         }
     }
 
-    
+
     preventSelect(e){
         e.stopPropagation();
     }
@@ -223,7 +227,7 @@ class Updater extends React.Component {
     render(){
         const style = {
             inline: {display: 'inline'},
-            el: {float: 'right', color: '#6f6f6f', height: '22px', background: 'white', margin: '0 -10px', padding: '0 10px', position: 'relative'},
+            el: {float: 'right', color: '#6f6f6f', height: '22px', background: this.props.background || 'white', margin: '0 -10px', padding: '0 10px', position: 'relative'},
             margin: {marginRight: '10px'}
         }
         return (
@@ -265,7 +269,7 @@ const DateTime = (props) => {
         }
     }
 
-    const style = {float: 'right', color: '#6f6f6f', lineHeight: '25px', background: 'white', margin: '0 -10px', padding: '0 10px', position: 'relative'};
+    const style = {float: 'right', color: '#6f6f6f', lineHeight: '25px', background: props.background || 'white', margin: '0 -10px', padding: '0 10px', position: 'relative'};
 
     return (
         <NgIf cond={props.show} style={style}>
@@ -289,7 +293,7 @@ const FileSize = (props) => {
         }
     }
     const style = {color: '#6f6f6f', fontSize: '0.85em'};
-    
+
     return (
         <NgIf cond={props.type === 'file'} style={{display: 'inline-block'}}>
           <span style={style}>({displaySize(props.size)})</span>
