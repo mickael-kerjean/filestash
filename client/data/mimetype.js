@@ -18,7 +18,7 @@ export function opener(file){
         return 'pdf';
     }else if(mime.split('/')[0] === 'image'){
         return 'image';
-    }else if(['application/javascript', 'application/xml', 'application/json'].indexOf(mime) !== -1){
+    }else if(['application/javascript', 'application/xml', 'application/json', 'application/x-perl'].indexOf(mime) !== -1){
         return 'editor';
     }else if(['audio/wav', 'audio/mp3', 'audio/flac'].indexOf(mime) !== -1){
         return 'audio';
