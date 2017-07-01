@@ -142,7 +142,7 @@ export class ExistingThing extends React.Component {
             }).catch((err) => {
                 if(err && err.code === 'CANCELLED'){ return }
                 this.setState({icon: 'error', message: err.message});
-            })
+            });
         }
     }
 

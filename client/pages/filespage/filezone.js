@@ -9,13 +9,7 @@ import { theme, to_rgba } from '../../utilities';
 @DropTarget('__NATIVE_FILE__', {
     drop(props, monitor){
         let files = monitor.getItem().files
-        props.emit('file.upload', props.path, files)
-            .then((ok) => {
-                console.log("DONE", ok)
-            })
-            .catch((err) => {
-                console.log("ERROR", err)
-            })
+        props.emit('file.upload', props.path, files);
     }
 }, (connect, monitor) => ({
     connectDropFile: connect.dropTarget(),

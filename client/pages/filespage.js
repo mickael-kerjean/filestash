@@ -122,12 +122,17 @@ export class FilesPage extends React.Component {
         const updateUI = (filename) => {
             const files = JSON.parse(JSON.stringify(this.state.files))
                   .map((file) => {
+                      // persist file in UI
                       if(file.name === filename){
                           file.virtual = false;
                           delete file.icon;
                       }
-                      return file;
-                  });
+                      // remove from ui if we upload the file in a different directory
+                      return path === this.state.path ? file : null;
+                  })
+                  .filter((file) => {
+                      return file === null? false : true;
+                  })
             this.setState({files: files});
             return Promise.resolve('ok')
         }
