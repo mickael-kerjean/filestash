@@ -1,8 +1,8 @@
 * What is it about?
-Call it a ftp client, an s3 viewer or a dropbox like web app, Nuage leverage your existing storage to help you manage your files in the cloud using any of the following protocols/platforms:
+Call it an FTP client, an S3 viewer or a Dropbox like web app, Nuage leverages your existing storage to help you manage your files in the cloud using any of the following protocols/platforms:
 - FTP
 - SFTP
-- Webdav
+- WebDAV
 - Git
 - S3
 - Dropbox
@@ -22,10 +22,10 @@ Call it a ftp client, an s3 viewer or a dropbox like web app, Nuage leverage you
 - emacs keybindings ;)
 
 * What about my credentials?
-Credentials are stored in your browser in a http only cookie encrypted using aes-256-ctr and aren't persist in the server disk at all.
-The remember me feature rely on localstorage to store your credentials encrypted using aes-256-ctr.
+Credentials are stored in your browser in a http only cookie encrypted using aes-256-ctr and aren't persistent in the server disk at all.
+The "remember me" feature relies on localstorage to store your credentials encrypted using aes-256-ctr.
 
-Note that on the ftp and sftp session: connections aren't destroy on every request but are reused and kill after 2 minutes to make it feels faster and avoid reconnecting everytime you want to list some files.
+Note that on the FTP and sFTP sessions connections aren't destroyed on every request but are reused and killed after 2 minutes to make it feel faster and avoid reconnecting everytime you want to list some files.
 
 
 * Install
@@ -40,13 +40,13 @@ npm run image && npm run start
 That's it !
 
 * Known Issues
-- Webdav: the underlying library (webdav-fs) doesn't support stream which make it memory greedy if you try to upload or fetch large files.
-- Google Drive: Google drive let you add multiple files with the same name in the same directory. You won't be able to see all those in Nuage as we assumed that all filenames in a directory are uniques.
+- WebDAV: the underlying library (webdav-fs) doesn't support stream which makes it memory greedy if you try to upload or fetch large files.
+- Google Drive: Google Drive lets you add multiple files with the same name in the same directory. You won't be able to see all those in Nuage as we assume that all filenames in a directory are uniques.
 
 * Motivation
-I built this as a week end project initially to edit my org mode files on my mobile because I wasn't satisfied with any of the existing mobile client that try to force some predefined workflow or certain provider/protocols.
+I built this as a weekend project initially to edit my org-mode files on my mobile because I wasn't satisfied with any of the existing mobile clients that try to force some predefined workflow or certain provider/protocols.
 
-As I realise it soon, it doesn't have to be tight to org mode specifically and once I delivered the MVP, I just couldn't help myself to add more and more features and that's what I ended up with
+As I realise it soon, it doesn't have to be tied to org-mode specifically and once I delivered the MVP, I just couldn't help myself to add more and more features and that's what I ended up with.
 
 * Credits
 - Icons from www.flaticon.com
