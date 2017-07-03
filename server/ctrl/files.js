@@ -61,7 +61,7 @@ app.post('/cat', function(req, res){
             part.on('error', function(err){
                 res.send({status: 'error', message: 'internal error'})
             });
-            
+
             Files.write(path, part, req.cookies.auth)
                 .then(function(result){
                     res.send({status: 'ok'});

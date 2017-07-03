@@ -125,9 +125,6 @@ export class Editor extends React.Component {
             mode = 'text';
         }
 
-        // haskell
-
-        console.log(mode)
         return import(/* webpackChunkName: "editor" */'../pages/viewerpage/editor/'+mode)
             .then((module) => Promise.resolve(module.default));
     }

@@ -31,7 +31,6 @@ module.exports = {
     cat: function(path, params){
         path = encode(path);
         return new Promise(function(done, err){
-            //path.replace(/\#/g, '%23')
             connect(params).readFile(path, 'binary', function(error, res){
                 if(error){ err(error) }
                 else{
@@ -45,8 +44,6 @@ module.exports = {
     },
     ls: function(path, params){
         return new Promise((done, err) => {
-            //path = encode(path);
-            //console.log(path)
             connect(params).readdir(path, function(error, contents) {
                 if (!error) {
                     done(contents.map((content) => {
@@ -73,15 +70,12 @@ module.exports = {
     },
     write: function(path, content, params){
         path = encode(path);
-        return toString(content)
-            .then((content) => {
-                return new Promise((done, err) => {
-                    connect(params).writeFile(path, content, function(error) {
-                        if(error){ err(error); }
-                        else{ done('done'); }
-                    });
-                });
+        return new Promise((done, err) => {
+            connect(params).writeFile(path, content, 'binary', function(error) {
+                if(error){ err(error); }
+                else{ done('done'); }
             });
+        });
     },
     rm: function(path, params){
         path = encode(path);
