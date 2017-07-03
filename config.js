@@ -9,15 +9,15 @@
 
 module.exports = {
     info: {
-        host: 'https://nuage.kerjean.me'
+        host: "application_url"
     },
     gdrive: {
-        redirectURI: "https://nuage.kerjean.me/login",
-        clientID: "client_id",
-        clientSecret: "client_secret"
+        redirectURI: "application_url/login",
+        clientID: "gdrive_client_id",
+        clientSecret: "gdrive_client_secret"
     },
     dropbox: {
-        clientID: "client_id",
-        redirectURI: "https://nuage.kerjean.me/login"
+        clientID: "dropbox_client_id",
+        redirectURI: "application_url/login"
     }
 }

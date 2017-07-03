@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+  - "7"
+
+services:
+  - docker
+
+before_install:
+  - docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD
+
+script:
+  - sed -i "s/application_url/$APPLICATION_URL/g" config.js
+  - sed -i "s/gdrive_client_id/$GOOGLE_CLIENTID/" config.js
+  - sed -i "s/gdrive_client_secret/$GOOGLE_CLIENTSECRET/" config.js
+  - sed -i "s/dropbox_client_id/$DROPBOX_CLIENTID/" config.js
+  - npm run image
+  - npm run publish
