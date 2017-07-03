@@ -82,7 +82,7 @@ export class Editor extends React.Component {
 
     updateHeight(height){
         if(height){
-            //document.querySelector('.CodeMirror').style.height = height+'px';
+            document.querySelector('.CodeMirror').style.height = height+'px';
         }
     }
 
@@ -142,12 +142,3 @@ Editor.propTypes = {
     onChange: PropTypes.func,
     onSave: PropTypes.func
 }
-
-// function load(mode){
-//     let url = 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.26.0/mode/'+mode+'/'+mode+'.js';
-//     var script = document.createElement('script');
-//     script.type = 'text/javascript';
-//     script.src = url;
-//     document.getElementsByTagName('head')[0].appendChild(script);
-//     return mode;
-// }

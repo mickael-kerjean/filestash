@@ -10,15 +10,12 @@ export class VideoPlayer extends React.Component {
 
     componentDidMount(){
         this.player = videojs(this.videoNode, {
-            //autoplay: true,
             controls: true,
             aspectRatio: '16:9',
             fluid: false,
             sources: [{
                 src: this.props.data
             }]
-        }, function onPlayerReady() {
-            //console.log('onPlayerReady', this)
         });
     }
 

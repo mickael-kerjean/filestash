@@ -82,12 +82,6 @@ export class FileSystem extends React.Component {
     onComponentPropsUpdate(props){
         this.setState({access_right: this._findAccessRight(props.files)});
     }
-
-    // IN NEW THING
-    // onCreating={(value) => this.setState({creating: value})} onCreate={this.onCreate.bind(this)}
-
-    // IN FILEZONE
-    //  onUpload={this.onUpload.bind(this)}
     
     render() {
         return this.props.connectDropFile(
