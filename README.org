@@ -43,10 +43,9 @@ That's it !
 - WebDAV: the underlying library (webdav-fs) doesn't support stream which makes it memory greedy if you try to upload or fetch large files.
 - Google Drive: Google Drive lets you add multiple files with the same name in the same directory. You won't be able to see all those in Nuage as we assume that all filenames in a directory are uniques.
 
-* Motivation
-I built this as a weekend project initially to edit my org-mode files on my mobile because I wasn't satisfied with any of the existing mobile clients that try to force some predefined workflow or certain provider/protocols.
+* Licensing
+Nuage is an open source software with its source code available under the AGPL license. Commercial license and support is available upon request, contact me for details: mickael@kerjean.me
 
-As I realise it soon, it doesn't have to be tied to org-mode specifically and once I delivered the MVP, I just couldn't help myself to add more and more features and that's what I ended up with.
 
 * Credits
 - Icons from www.flaticon.com
