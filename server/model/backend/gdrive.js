@@ -3,8 +3,7 @@
 var google = require('googleapis'),
     googleAuth = require('google-auth-library'),
     config = require('../../../config'),
-    Stream = require('stream'),
-    Readable = require('stream').Readable;
+    Stream = require('stream');
 
 var client = google.drive('v3');
 
@@ -42,41 +41,35 @@ function findMimeType(filename){
         html: 'text/html',
         htm: 'text/html'
     };
-    return list[ext] || 'application/octet-stream'    
+    return list[ext] || 'application/octet-stream';
 }
 
 
 function decode(path){
-    let tmp = path.split('/');
+    let tmp = path.trim().split('/');
     let filename = tmp.pop() || null;
-    let space = tmp.splice(0,2)[1];
-    space = space? space.toLowerCase() : null;
+    tmp.shift();
     return {
-        space: space || null,
         name: filename,
         parents: tmp,
         full: filename === null ? tmp : [].concat(tmp, [filename])
-    }
+    };
 }
 
-function findId(auth, folders, ids = []){
-    let name = folders.pop();
+function findId(auth, _folders, ids = []){
+    const folders = JSON.parse(JSON.stringify(_folders));
+    const name = folders.pop();
 
     return search(auth, name, folders)
         .then((files) => {
             let solutions = findSolutions(files, ids);
-            let newCache = [].concat(solutions, ids);
-            // console.log("=====")
-            // console.log("SEARCH ON", name)
-            // console.log("FILES", files.map((file) => file.id))
-            // console.log("CACHE", ids)
-            // console.log("> SOLUTIONS => ",solutions)
+            let aggregatedSolution = [].concat(solutions, ids);
             if(solutions.length === 0){
-                return Promise.reject({message: 'this path doesn\'t exist', code: 'UNKNOWN_PATH'})
+                return Promise.reject({message: 'this path doesn\'t exist', code: 'UNKNOWN_PATH'});
             }else if(solutions.length === 1){
-                return Promise.resolve(findLast(solutions[0].id, ids));
+                return Promise.resolve(findFolderId(solutions[0], ids));
             }else{
-                return findId(auth, folders, newCache);
+                return findId(auth, folders, aggregatedSolution);
             }
         });
 
@@ -96,25 +89,25 @@ function findId(auth, folders, ids = []){
                 pageSize: 1,
                 fields: "files(parents, id, name)"
             }, function(error, response){
-                if(error){_err(error)}
+                if(error){_err(error);}
                 else{
                     if(response.files.length > 0){
                         _done(response.files.map((file) => {
                             return {
                                 level: 0,
                                 id: file.parents[0],
-                                name: 'root'                            
-                            }
-                        }))
+                                name: 'root'
+                            };
+                        }));
                     }else{
                         _done([{
                             level: 0,
                             id: 'root',
                             name: 'root'
-                        }])
+                        }]);
                     }
                 }
-            })
+            });
         });
     }
 
@@ -122,42 +115,39 @@ function findId(auth, folders, ids = []){
         return new Promise((_done,_err) => {
             client.files.list({
                 auth: auth,
-                q: "name = '"+name+"'",
+                q: "name = '"+name+"' AND trashed = false",
                 pageSize: 500,
                 fields: "files(parents, id, name)"
             }, function(error, response){
-                if(error){_err(error)}
+                if(error){_err(error);}
                 else{
                     _done(response.files.map((file) => {
-                        file.level = _level
+                        file.level = _level;
                         return file;
                     }));
                 }
-            })
-        })
+            });
+        });
     }
 
-    function findLast(id, cache){
-        if(id === 'root'){ return id; }
+    function findFolderId(head, cache, result = 'root'){
         for(let i=0, l=cache.length; i<l; i++){
-            if(id === cache[i].parents[0]){
-                return findLast(cache[i].id, cache);
+            if(head.id === cache[i].parents[0] && head.level + 1 === cache[i].level){
+                return findFolderId(cache[i], cache);
             }
         }
-        return id;
+        return head.id;
     }
 
     function findSolutions(newFiles, cache){
         return newFiles.filter((newFile) => {
             if(cache.length === 0){ return true;}
-            else{
-                for(let i=0, j=cache.length; i<j; i++){
-                    if(newFile.id === cache[i].parents[0] && (newFile.level + 1) === cache[i].level){
-                        return true;
-                    }
+            for(let i=0, j=cache.length; i<j; i++){
+                if(newFile.id === cache[i].parents[0] && (newFile.level + 1) === cache[i].level){
+                    return true;
                 }
-                return false;
             }
+            return false;
         });
     }
 }
@@ -201,12 +191,9 @@ module.exports = {
             .then((auth) => {
                 return Promise.resolve(auth.generateAuthUrl({
                     access_type: 'online',
-                    scope: [
-                        "https://www.googleapis.com/auth/drive",
-                        "https://www.googleapis.com/auth/drive.photos.readonly"
-                    ]
+                    scope: [ "https://www.googleapis.com/auth/drive" ]
                 }));
-            })
+            });
     },
     test: function(params){
         return connect(params)
@@ -218,11 +205,11 @@ module.exports = {
                         pageSize: 5,
                         fields: "files(parents)"
                     }, function(error, response) {
-                        if(error){ err(error) }
-                        else{ done(auth.credentials) }
+                        if(error){ err(error); }
+                        else{ done(auth.credentials); }
                     });
-                })
-            })
+                });
+            });
     },
     cat: function(path, params){
         path = decode(path);
@@ -238,7 +225,6 @@ module.exports = {
                             }
                             return exporter(auth, file.id, type);
                         }else{
-                            console.log("DOWNLOAD",file)
                             return download(auth, file.id);
                         }
                     });
@@ -252,11 +238,11 @@ module.exports = {
                 },function(error, response){
                     if(error){ err(error); }
                     else{ done(response); }
-                })
+                });
             });
         }
         function download(auth, id){
-            var content = '';            
+            var content = '';
             return Promise.resolve(client.files.get({
                 auth: auth,
                 fileId: id,
@@ -265,7 +251,7 @@ module.exports = {
         }
         function exporter(auth, id, type){
             var content = '';
-            return new Promise((done, err) => {                            
+            return new Promise((done, err) => {
                 done(client.files.export({
                     auth: auth,
                     fileId: id,
@@ -278,44 +264,11 @@ module.exports = {
         path = decode(_path);
         return connect(params)
             .then((auth) => {
-                if(path.space === null){
-                    return Promise.resolve([
-                        {type: 'metadata', name: './', can_create_file: false, can_create_directory: false},
-                        {type: 'directory', name: 'Drive', can_read: true, can_write: false, can_delete: false, can_move: false},
-                        {type: 'directory', name: 'Photos', can_read: true, can_write: false, can_delete: false, can_move: false}
-                    ]);
-                }else{
-                    if(path.space === 'photos'){
-                        return findPhotos(auth)
-                            .then(parse)
-                            .then((files) => {
-                                files.push({type: 'metadata', name: '.', can_create_file: false, can_create_directory: false})
-                                return Promise.resolve(files)
-                            })
-                    }else{
-                        return findId(auth, JSON.parse(JSON.stringify(path.parents)))
-                            .then((id) => {
-                                return findDrive(auth, id)
-                                    .then(parse)
-                            });
-                    }
-                }
+                return findId(auth, path.parents)
+                    .then((id) => findDrive(auth, id))
+                    .then(parse);
             });
 
-        function findPhotos(auth){
-            return new Promise((done, err) => {
-                client.files.list({
-                    spaces: path.space,
-                    auth: auth,
-                    q: "trashed = false",
-                    pageSize: 500,
-                    fields: "files(id,mimeType,modifiedTime,name,size)"
-                }, function(error, response) {
-                    if(error){ err(error); }
-                    else{ done(response.files); }
-                });
-            });
-        }
         function findDrive(auth, id){
             return new Promise((done, err) => {
                 client.files.list({
@@ -341,32 +294,66 @@ module.exports = {
             }));
         }
     },
-    write: function(path, content, params){
+    write: function(path, content, params){ // TODO
         path = decode(path);
-        var readable = new Stream.Readable();
-        readable.push(content);
-        readable.push(null);
-        
         return connect(params)
             .then((auth) => {
-                return findId(auth, path.full)
-                    .then((id) => {
-                        return new Promise((done, err) => {
-                            client.files.update({                                
-                                auth: auth,
-                                fileId: id,
-                                fields: 'id',
-                                media: {
-                                    mimeType: findMimeType(path.name),
-                                    body: readable
-                                }
-                            }, function(error){
-                                if(error) {err(error) }
-                                else{ done('ok'); }
-                            })
-                        })
-                    })
-            })
+                return fileAlreadyExist(auth, path)
+                    .then((obj) => {
+                        if(obj.alreadyExist === true){
+                            return updateFile(auth, content, path.name, obj.id);
+                        }
+                        if(obj.alreadyExist === false){
+                            return createFile(auth, content, path.name, obj.id);
+                        }
+                    });
+            });
+
+        function fileAlreadyExist(auth, path){
+            return findId(auth, path.full)
+                .then((id) => Promise.resolve({alreadyExist: true, id: id}))
+                .catch((err) => {
+                    return findId(auth, path.parents)
+                        .then((id) => Promise.resolve({alreadyExist: false, id: id}))
+                });
+        }
+
+        function createFile(_auth, _stream, _filename, _folderId){
+            return new Promise((done, err) => {
+                client.files.create({
+                    auth: _auth,
+                    fields: 'id',
+                    media: {
+                        mimeType: 'text/plain',
+                        body: _stream
+                    },
+                    resource: {
+                        name: _filename,
+                        parents: [_folderId]
+                    }
+                }, function(error){
+                    if(error) {err(error); }
+                    else{ done('ok'); }
+                });
+            });
+        }
+        function updateFile(_auth, _stream, _filename, _folderId){
+            return new Promise((done, err) => {
+                client.files.update({
+                    auth: _auth,
+                    fileId: _folderId,
+                    fields: 'id',
+                    media: {
+                        mimeType: findMimeType(_filename),
+                        body: _stream
+                    }
+                }, function(error){
+                    if(error) {err(error); }
+                    else{ done('ok'); }
+                })
+            });
+        }
+
     },
     rm: function(path, params){
         path = decode(path);
@@ -392,15 +379,14 @@ module.exports = {
         return connect(params)
             .then((auth) => {
                 return Promise.all([findId(auth, from.full), findId(auth, from.parents), findId(auth, to.parents)])
-                    .then((res) => process(auth, res))
-                //.then(wait)
+                    .then((res) => process(auth, res));
             });
 
         function wait(res){
             return new Promise((done) => {
                 setTimeout(function(){
                     done(res);
-                }, 500)
+                }, 500);
             });
         }
         function process(auth, res){
@@ -408,9 +394,10 @@ module.exports = {
                 srcId = res[1],
                 destId = res[2];
             let fields = 'id';
-            let params = {fileId, fileId, auth: auth}
+            let params = {fileId, fileId, auth: auth};
+
             if(destId !== srcId){
-                fields += ', parents'
+                fields += ', parents';
                 params.addParents = destId;
                 params.removeParents = srcId;
             }
@@ -418,53 +405,74 @@ module.exports = {
                 fields += 'name';
                 params.resource = {
                     name: to.name
-                }
-            }           
+                };
+            }
             return new Promise((done, err) => {
                 client.files.update(params, function(error, response){
-                    if(error){ err(error) }
-                    else{ done('ok') }
+                    if(error){ err(error); }
+                    else{ done('ok'); }
                 });
             });
         }
     },
     mkdir: function(path, params){
         path = decode(path);
-        let name = path.parents.pop();
         return connect(params)
             .then((auth) => {
-                return findId(auth, path.parents)
+                return findId(auth, path.parents.slice(0, -1))
                     .then((folder) => {
                         return new Promise((done, err) => {
-                            done('ok');
                             client.files.create({
                                 fields: 'id',
                                 auth: auth,
                                 resource: {
-                                    name: name,
+                                    name: path.parents.slice(-1)[0],
                                     parents: [folder],
                                     mimeType: 'application/vnd.google-apps.folder'
                                 }
                             }, function(error){
-                                if(error) {err(error) }
-                                else{ done('ok'); }
-                            })
-                        }) 
+                                if(error) {err(error); }
+                                else{ done(auth); }
+                            });
+                        });
                     });
             })
+            .then((auth) => verifyFolderCreation(auth, path.full));
+
+        function verifyFolderCreation(_auth, _path, n = 10){
+            return sleep(Math.abs(10 - n) * 100)
+                .then(() => findId(_auth, _path))
+                .catch((err) => {
+                    if(n > 0 && err && err.code === 'UNKNOWN_PATH'){
+                        return verifyFolderCreation(_auth, _path, n - 1);
+                    }
+                    return Promise.reject(err);
+                });
+
+            function sleep(t=1000, arg){
+                return new Promise((done) => {
+                    setTimeout(function(){
+                        done(arg);
+                    }, t);
+                });
+            }
+        }
+        function copy(obj){
+            return JSON.parse(JSON.stringify(obj));
+        }
     },
     touch: function(path, params){
         path = decode(path);
         var readable = new Stream.Readable();
         readable.push('');
         readable.push(null);
-        
+
         return connect(params)
             .then((auth) => {
                 return findId(auth, path.parents)
                     .then((folder) => {
                         return new Promise((done, err) => {
-                            client.files.create({                                
+                            client.files.create({
                                 auth: auth,
                                 fields: 'id',
                                 media: {
@@ -476,11 +484,11 @@ module.exports = {
                                     parents: [folder]
                                 }
                             }, function(error){
-                                if(error) {err(error) }
+                                if(error) {err(error); }
                                 else{ done('ok'); }
-                            })
-                        })
-                    })
-            });       
+                            });
+                        });
+                    });
+            });
     }
-}
+};
