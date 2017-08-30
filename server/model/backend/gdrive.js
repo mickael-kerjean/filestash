@@ -231,8 +231,7 @@ module.exports = {
             })
             .then(function(stream){
                 stream.on('response', function(response) {
-                    delete response.headers['content-disposition'];
-                    delete response.headers['conection'];
+                    delete response.headers;
                 });
                 return Promise.resolve(stream);
             });
