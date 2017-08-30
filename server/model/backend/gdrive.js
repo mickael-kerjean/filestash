@@ -228,6 +228,13 @@ module.exports = {
                             return download(auth, file.id);
                         }
                     });
+            })
+            .then(function(stream){
+                stream.on('response', function(response) {
+                    delete response.headers['content-disposition'];
+                    delete response.headers['conection'];
+                });
+                return Promise.resolve(stream);
             });
 
         function fileInfo(auth, id){
