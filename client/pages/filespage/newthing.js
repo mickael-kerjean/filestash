@@ -48,10 +48,10 @@ export class NewThing extends React.Component {
     render(){
         return (
             <div>
-              <div style={{fontSize: '15px', lineHeight: '15px', height: '15px', marginTop: '5px', color: 'rgba(0,0,0,0.4)', margin: '0 0 10px 0'}}>                
+              <div style={{fontSize: '15px', lineHeight: '15px', height: '15px', marginTop: '5px', color: 'rgba(0,0,0,0.4)', margin: '0 0 10px 0'}}>
                 <NgIf cond={this.props.accessRight.can_create_file === true} onClick={this.onNew.bind(this, 'file')} style={{marginRight: '15px', cursor: 'pointer', display: 'inline'}}>New File</NgIf>
                 <NgIf cond={this.props.accessRight.can_create_directory === true} onClick={this.onNew.bind(this, 'directory')} style={{cursor: 'pointer', display: 'inline'}}>New Directory</NgIf>
-                <select value={this.props.sort} onChange={this.onSortUpdate.bind(this)} style={{float: 'right', color: 'rgba(0,0,0,0.4)', background: 'none', borderRadius: '5px', outline: 'none', border: '1px solid rgba(0,0,0,0.4)'}}>                  
+                <select value={this.props.sort} onChange={this.onSortUpdate.bind(this)} style={{float: 'right', color: 'rgba(0,0,0,0.4)', background: 'none', borderRadius: '5px', outline: 'none', border: '1px solid rgba(0,0,0,0.4)', fontSize: '12px'}}>
                   <option value="type">Sort By Type</option>
                   <option value="date">Sort By Date</option>
                   <option value="name">Sort By Name</option>
