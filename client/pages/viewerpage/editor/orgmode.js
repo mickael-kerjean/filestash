@@ -9,7 +9,7 @@ CodeMirror.defineSimpleMode("orgmode", {
         {regex: /(^\*[^\/]*\*)/, token: ["strong"]},
         {regex: /(^\/[^\/]*\/)/, token: ["em"]},
         {regex: /(^\_[^\/]*\_)/, token: ["link"]},
-        {regex: /(^\~[^\/]*\~)/, token: ["comment"]},
+        {regex: /(~[^~]+~)/, token: ["comment"]},
         {regex: /(^\=[^\/]*\=)/, token: ["comment"]},
         {regex: /\[\[[^\[\]]*\]\[[^\[\]]*\]\]/, token: "url"}, // links
         {regex: /\[[xX\s]?\]/, token: 'qualifier'}, // checkbox
