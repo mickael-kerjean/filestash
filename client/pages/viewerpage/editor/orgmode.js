@@ -5,12 +5,12 @@ CodeMirror.__mode = 'orgmode';
 CodeMirror.defineSimpleMode("orgmode", {
     start: [
         {regex: /^(^\*{1,6}\s)(TODO|DOING|WAITING|NEXT){0,1}(CANCELLED|CANCEL|DEFERRED|DONE|REJECTED|STOP|STOPPED){0,1}(.*)$/, token: ["header org-level-star", "header org-todo", "header org-done", "header"]},
-        {regex: /(^\+[^\/]*\+)/, token: ["strikethrough"]},
-        {regex: /(^\*[^\/]*\*)/, token: ["strong"]},
-        {regex: /(^\/[^\/]*\/)/, token: ["em"]},
-        {regex: /(^\_[^\/]*\_)/, token: ["link"]},
-        {regex: /(~[^~]+~)/, token: ["comment"]},
-        {regex: /(^\=[^\/]*\=)/, token: ["comment"]},
+        {regex: /(\+[^\+]+\+)/, token: ["strikethrough"]},
+        {regex: /(\*[^\*]+\*)/, token: ["strong"]},
+        {regex: /(\/[^\/]+\/)/, token: ["em"]},
+        {regex: /(\_[^\_]+\_)/, token: ["link"]},
+        {regex: /(\~[^\~]+\~)/, token: ["comment"]},
+        {regex: /(\=[^\=]+\=)/, token: ["comment"]},
         {regex: /\[\[[^\[\]]*\]\[[^\[\]]*\]\]/, token: "url"}, // links
         {regex: /\[[xX\s]?\]/, token: 'qualifier'}, // checkbox
         {regex: /\#\+BEGIN_[A-Z]*/, token: "comment", next: "env"}, // comments
