@@ -19,28 +19,27 @@ Call it an FTP client, an S3 viewer or a Dropbox like web app, Nuage leverages y
 - work with multiple cloud providers and protocols
 - upload files and folders
 - mobile friendly
-- emacs keybindings ;)
+- emacs keybindings `;)`
 
 * What about my credentials?
 Credentials are stored in your browser in a http only cookie encrypted using aes-256-ctr and aren't persistent in the server disk at all.
 The "remember me" feature relies on localstorage to store your credentials encrypted using aes-256-ctr.
 
-Note that on the FTP and sFTP sessions connections aren't destroyed on every request but are reused and killed after 2 minutes to make it feel faster and avoid reconnecting everytime you want to list some files.
-
+Note that on the FTP and sFTP, sessions connections aren't destroyed on every request but are reused and killed after 2 minutes. The reasoning is connections are expensive to create and this trick make the entire application feel much much faster for users who tries to navigate.
 
 * Install
 It's a simple react app with node in the backend. Installation requires docker, docker-compose and npm:
 #+BEGIN_SRC bash
 # get the code
 curl -L -X GET https://github.com/mickael-kerjean/nuage/archive/master.zip > nuage.zip
-unzip nuage.zip && cd nuage-master 
+unzip nuage.zip && cd nuage-master
 # install dependencies and create the actual image
 npm run image && npm run start
 #+END_SRC
 That's it !
 
 * Known Issues
-- WebDAV: the underlying library (webdav-fs) doesn't support stream which makes it memory greedy if you try to upload or fetch large files.
+- WebDAV: the underlying library (webdav-fs) doesn't support proper stream which makes it memory greedy if you try to upload or fetch large files.
 - Google Drive: Google Drive lets you add multiple files with the same name in the same directory. You won't be able to see all those in Nuage as we assume that all filenames in a directory are uniques.
 
 * Licensing
@@ -49,4 +48,4 @@ Nuage is an open source software with its source code available under the AGPL l
 
 * Credits
 - Icons from www.flaticon.com
-- The Folks that develop awesome [[https://github.com/mickael-kerjean/nuage/blob/master/package.json][libraries]]
+- Folks developing awesome [[https://github.com/mickael-kerjean/nuage/blob/master/package.json][libraries]] as Nuage is just butter and cream on top.
