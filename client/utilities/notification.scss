@@ -1,0 +1,22 @@
+.component_notification{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+
+    > div{
+        display: inline-block;
+        background: #637d8b;
+        min-width: 200px;
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 10px 15px;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        color: white;
+        text-align: left;
+        cursor: pointer;
+        box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+    }
+}

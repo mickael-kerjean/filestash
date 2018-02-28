@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { NgIf } from './';
-import { theme } from './theme'; 
+import { theme } from './theme';
+
+import './notification.scss';
 
 export class Notification extends React.Component {
     constructor(props){
@@ -10,7 +12,7 @@ export class Notification extends React.Component {
             visible: null,
             error: null,
             timeout: null
-        }
+        };
     }
 
     componentWillMount(){
@@ -38,26 +40,27 @@ export class Notification extends React.Component {
     formatError(err){
         if(typeof err === 'object'){
             if(err && err.message){
-                return err.message
+                return err.message;
             }else{
                 return JSON.stringify(err);
             }
         }else if(typeof err === 'string'){
             return err;
         }else{
-            throw('unrecognized notification')
+            throw('unrecognized notification');
         }
     }
-    
 
     render(){
         return (
-            <NgIf cond={this.state.visible === true} style={{position: 'fixed', bottom: 0, left: 0, right: 0, textAlign: 'center'}}>
-              <div onClick={this.toggleVisibility.bind(this)}  style={{display: 'inline-block', background: '#637d8b', minWidth: '200px', maxWidth: '400px', margin: '0 auto', padding: '10px 15px', borderTopLeftRadius: '3px', borderTopRightRadius: '3px', color: 'white', textAlign: 'left', cursor: 'pointer', boxShadow: theme.effects.shadow}}>
-                {this.formatError(this.state.error)}
+            <NgIf cond={this.state.visible === true}>
+              <div className="component_notification">
+                <div onClick={this.toggleVisibility.bind(this)}>
+                  {this.formatError(this.state.error)}
+                </div>
               </div>
             </NgIf>
-        )
+        );
     }
 }
 

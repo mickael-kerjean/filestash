@@ -1,11 +1,9 @@
 import React from 'react';
+import './loader.scss';
 
 export const Loader = (props) => {
-    let style = props.style || {};
-    style.textAlign = 'center';
-    style.marginTop = '50px';
     return (
-        <div style={style}>
+        <div className="component_loader">
           <svg width="120px" height="120px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
             <rect x="0" y="0" width="100" height="100" fill="none"></rect>
             <circle cx="50" cy="50" r="40" stroke="rgba(100%,100%,100%,0.679)" fill="none" strokeWidth="10" strokeLinecap="round"></circle>
@@ -16,4 +14,4 @@ export const Loader = (props) => {
           </svg>
         </div>
     );
-}
+};

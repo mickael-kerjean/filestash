@@ -15,15 +15,19 @@ let config = {
         chunkFilename: "js/chunk.[name].[id].js"
     },
     module: {
-        loaders: [
+        rules: [
             {
                 test: path.join(__dirname, 'client'),
-                loader: ['babel-loader'],
+                use: ['babel-loader'],
                 exclude: /node_modules/
             },
             {
                 test: /\.html$/,
                 loader: 'html-loader'
+            },
+            {
+                test: /\.scss$/,
+                loaders: ['style-loader', 'css-loader', 'sass-loader']
             }
         ]
     },
@@ -59,10 +63,6 @@ if(process.env.NODE_ENV === 'production'){
             }
         }
     };
-    //config.entry.push('webpack/hot/only-dev-server');
 }
-
-
-//config.plugins.push(new BundleAnalyzerPlugin())
 
 module.exports = config;

@@ -5,10 +5,13 @@ export class NgIf extends React.Component {
     constructor(props){
         super(props);
     }
-    
+
     render() {
+        let clean_prop = Object.assign({}, this.props);
+        delete clean_prop.cond;
+        delete clean_prop.children;
         if(this.props.cond){
-            return <div onClick={this.props.onClick} style={this.props.style}>{this.props.children}</div>;
+            return <div {...clean_prop}>{this.props.children}</div>;
         }else{
             return null;
         }

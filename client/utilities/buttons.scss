@@ -1,0 +1,26 @@
+button{
+    border: none;
+    margin: 0;
+    padding: 5px;
+    width: 100%;
+    display: inline-block;
+    outline: none;
+    cursor: pointer;
+    font-size: inherit;
+    border-radius: 2px;
+    color: inherit;
+    background: inherit;
+
+    &.primary{
+        background: var(--primary);
+        color: white;
+    }
+    &.secondary{
+        background: var(--secondary);
+        color: white;
+    }
+    &.emphasis{
+        background: var(--emphasis);
+        color: white
+    }
+}

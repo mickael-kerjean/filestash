@@ -5,9 +5,10 @@
 // DROPBOX
 // 1) create an third party app: https://www.dropbox.com/developers/apps/create
 //    -> dropbox api -> Full Dropbox -> whatever name you want ->
-//    -> set redirect URI to https://example.com/login ->  
+//    -> set redirect URI to https://example.com/login ->
 
 module.exports = {
+    // SERVER CONFIG
     info: {
         host: "application_url",
         usage_stats: true
@@ -20,5 +21,7 @@ module.exports = {
     dropbox: {
         clientID: "dropbox_client_id",
         redirectURI: "application_url/login"
-    }
+    },
+    // APPLICATION CONFIG
+    fork_button: true
 }

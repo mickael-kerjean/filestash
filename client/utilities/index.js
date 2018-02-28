@@ -1,8 +1,8 @@
 export { Input } from './input';
 export { Textarea } from './textarea';
 export { Button } from './button';
+export { Modal } from './modal';
 export { Container } from './container';
-export { LoremIpsum } from './loremipsum';
 export { NgIf } from './ngif';
 export { Card } from './card';
 export { URL_HOME, goToHome, URL_FILES, goToFiles, URL_VIEWER, goToViewer, URL_LOGIN, goToLogin, URL_LOGOUT, goToLogout } from './navigate';
@@ -17,3 +17,4 @@ export { theme, to_rgba }  from './theme';
 export { encrypt, decrypt } from './crypto'
 export { pathBuilder } from './path';
 export { Bundle } from './bundle';
+export { memory } from './memory';

@@ -15,7 +15,7 @@ export class LogoutPage extends React.Component {
             })
             .catch((res) => {
                 console.warn(res)
-            })
+            });
     }
     render() {
         return (

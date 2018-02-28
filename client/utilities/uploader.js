@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { DropTarget, DragSource } from 'react-dnd';
 import { NgIf } from './';
 
+import './uploader.scss';
+
 const FileTarget = {
     drop(props, monitor) {
         props.onUpload(props.path, monitor.getItem().files);
@@ -24,18 +26,12 @@ export class Uploader extends React.Component {
     }
 
     render(){
-        const style = {
-            position: 'absolute', top: 0, bottom: 0, left: 0, right: 0,
-            background: 'rgba(0,0,0,0.2)',
-            padding: '50% 0',
-            textAlign: 'center'
-        }
         return this.props.connectDropTarget(
             <div>
-              <NgIf cond={this.props.isOver && this.props.canDrop} style={style}>
+              <NgIf cond={this.props.isOver && this.props.canDrop}>
                 DRAG FILE HERE
               </NgIf>
-              <div>
+              <div className="component_uploader">
                 {this.props.children}
               </div>
             </div>

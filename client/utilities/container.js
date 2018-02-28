@@ -1,14 +1,16 @@
-import React from 'react'
+import React from 'react';
 import PropTypes from 'prop-types';
+
+import './container.scss';
 
 export class Container extends React.Component {
     constructor(props){
         super(props);
     }
     render() {
-        const style = Object.assign({width: '95%', maxWidth: this.props.maxWidth || '800px', margin: '0 auto', padding: '10px'}, this.props.style || {});
+        const style = this.props.maxWidth ? {maxWidth: this.props.maxWidth} : {};
         return (
-            <div style={style}>
+            <div className="component_container" style={style}>
               {this.props.children}
             </div>
         );

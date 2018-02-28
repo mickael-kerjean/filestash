@@ -1,4 +1,5 @@
 import React from 'react';
+import './icon.scss';
 
 export const Icon = (props) => {
     let url;
@@ -35,10 +36,8 @@ export const Icon = (props) => {
     }else{
         throw('unknown icon');
     }
-    let style = props.style || {};
-    style.verticalAlign = 'bottom';
-    style.maxHeight = '100%';
+
     return (
-        <img onClick={props.onClick} src={url} alt={props.name} style={style}/>
+        <img className="component_icon" style={props.style} onClick={props.onClick} src={url} alt={props.name}/>
     );
 }
