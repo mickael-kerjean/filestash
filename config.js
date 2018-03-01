@@ -22,6 +22,7 @@ module.exports = {
         clientID: "dropbox_client_id",
         redirectURI: "application_url/login"
     },
+    server_secret: 'not_so_secret_key',
     // APPLICATION CONFIG
     fork_button: true
 }
