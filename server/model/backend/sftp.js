@@ -44,39 +44,39 @@ module.exports = {
     ls: function(path, params){
         return connect(params)
             .then((sftp) => sftp.list(path))
-            .then((res) => {
-                return Promise.resolve(res.map((file) => {
-                    return {
-                        type: function(type){
-                            if(type === 'd'){
-                                return 'directory'
-                            }else if(type === 'l'){
-                                return 'link';
-                            }else if(type === '-'){
-                                return 'file';
-                            }else{
-                                return 'unknown';
-                            }
-                        }(file.type),
-                        name: file.name,
-                        size: file.size,
-                        time: file.modifyTime
-                    };
-                }));
-            });
+            .then((res) => Promise.resolve(res.map((file) => {
+                return {
+                    type: function(type){
+                        if(type === 'd'){
+                            return 'directory'
+                        }else if(type === 'l'){
+                            return 'link';
+                        }else if(type === '-'){
+                            return 'file';
+                        }else{
+                            return 'unknown';
+                        }
+                    }(file.type),
+                    name: file.name,
+                    size: file.size,
+                    time: file.modifyTime
+                };
+            })));
     },
     write: function(path, content, params){
         return connect(params)
             .then((sftp) => sftp.put(content, path))
     },
-    rm: function(path, params){ //TODO recursive
+    rm: function(path, params){
         return connect(params)
             .then((sftp) => {
                 return sftp.delete(path)
-                    .catch((err) => {
-                        return sftp.rmdir(path, true)
-                    })
-            })
+                    .catch((err) => sftp.rmdir(path, true))
+            });
+    },
+    mv: function(from, to, params){
+        return connect(params)
+            .then((sftp) => sftp.rename(from, to));
     },
     mkdir: function(path, params){
         return connect(params)
