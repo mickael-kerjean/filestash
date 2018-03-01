@@ -25,7 +25,7 @@ export class Editor extends React.Component {
         this.state = {
             editor: null,
             filename: this.props.filename
-        }
+        };
     }
 
     componentWillReceiveProps(props){
@@ -39,7 +39,7 @@ export class Editor extends React.Component {
 
     componentDidMount(){
         this.loadMode(this.props.filename)
-            .then(loadCodeMirror.bind(this))
+            .then(loadCodeMirror.bind(this));
 
         function loadCodeMirror(CodeMirror){
             const size_small = 500;
@@ -96,12 +96,12 @@ export class Editor extends React.Component {
         if(ext === 'org' || ext === 'org_archive'){ mode = 'orgmode'; }
         else if(ext === 'sh'){ mode = 'shell'; }
         else if(ext === 'py'){ mode = 'python'; }
-        else if(ext === 'html'){ mode = 'html'; }
+        else if(ext === 'html' || ext === 'htm'){ mode = 'html'; }
         else if(ext === 'css'){ mode = 'css'; }
-        else if(ext === 'less' || ext === 'scss'){ mode = 'sass'; }
+        else if(ext === 'less' || ext === 'scss' || ext === 'sass'){ mode = 'sass'; }
         else if(ext === 'js' || ext === 'json'){ mode = 'javascript'; }
         else if(ext === 'jsx'){ mode = 'jsx' }
-        else if(ext === 'php' || ext === 'php5'){ mode = 'php'; }
+        else if(ext === 'php' || ext === 'php5' || ext === 'php4'){ mode = 'php'; }
         else if(ext === 'elm'){ mode = 'elm'; }
         else if(ext === 'erl'){ mode = 'erlang'; }
         else if(ext === 'go'){mode = 'go'; }
@@ -114,12 +114,13 @@ export class Editor extends React.Component {
         else if(ext === 'Makefile'){ mode = 'cmake'; }
         else if(ext === 'rb'){ mode = 'ruby'; }
         else if(ext === 'sql'){ mode = 'sql'; }
-        else if(ext === 'xml'){ mode = 'xml'; }
+        else if(ext === 'xml' || ext === 'rss' || ext === 'svg' || ext === 'atom'){ mode = 'xml'; }
         else if(ext === 'yml'){ mode = 'yml'; }
         else if(ext === 'lua'){ mode = 'lua'; }
         else if(ext === 'csv'){ mode = 'csv'; }
         else if(ext === 'rs' || ext === 'rlib'){ mode = 'rust'; }
-        else if(ext === 'c' || ext === 'cpp' || ext === 'java'){
+        else if(ext === 'latex' || ext === 'tex'){ mode = 'stex'; }
+        else if(ext === 'c' || ext === 'cpp' || ext === 'java' || ext === 'h'){
             mode = 'clike';
         }else{
             mode = 'text';
