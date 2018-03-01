@@ -35,10 +35,14 @@ export class FilesPage extends React.Component {
         this.props.subscribe('file.refresh', this.onRefresh.bind(this));
     }
 
-
     componentWillMount(){
-        this.setState({error: false});
         this.onPathUpdate(this.state.path, 'directory', true)
+    }
+
+    componentDidMount(){
+        this.resetHeight();
+        this.setState({error: false});
+        window.addEventListener("resize", this.resetHeight);
     }
 
     componentWillUnmount() {
@@ -49,11 +53,6 @@ export class FilesPage extends React.Component {
         this.props.unsubscribe('file.delete');
         this.props.unsubscribe('file.refresh');
         window.removeEventListener("resize", this.resetHeight);
-    }
-
-    componentDidMount(){
-        this.resetHeight();
-        window.addEventListener("resize", this.resetHeight);
     }
 
 
@@ -207,7 +206,7 @@ export class FilesPage extends React.Component {
                     <NgIf cond={this.state.error === false}>
                       <Loader/>
                    </NgIf>
-                   <NgIf cond={this.state.error !== false} onClick={this.componentWillMount.bind(this)} style={{cursor: 'pointer'}}>
+                   <NgIf cond={this.state.error !== false} onClick={this.componentDidMount.bind(this)} style={{cursor: 'pointer'}}>
                       <Error err={this.state.error}/>
                     </NgIf>
                   </NgIf>
