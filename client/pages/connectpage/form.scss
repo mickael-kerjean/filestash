@@ -42,3 +42,23 @@
         }
     }
 }
+
+.component_page_connection_form.form-appear{
+    opacity: 0;
+}
+.component_page_connection_form.form-appear.form-appear-active{
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+
+
+.component_rememberme.remember-appear{
+    opacity: 0;
+    transform: translateX(40px);
+}
+.component_rememberme.remember-appear.remember-appear-active{
+    opacity: 1;
+    transform: translateX(0px);
+    transition: all 0.3s ease-out;
+    transition-delay: 0.5s;
+}

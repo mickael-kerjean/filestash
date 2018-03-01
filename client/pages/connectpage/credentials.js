@@ -36,7 +36,7 @@ export class Credentials extends React.Component {
         }
     }
 
-    componentWillMount(){
+    componentDidMount(){
         this.init();
         if(this.state.key) this.onSubmit();
     }
@@ -91,8 +91,8 @@ export class Credentials extends React.Component {
             }
         }else{
             this.setState({error: 'Password can\'t be empty'});
+            window.setTimeout(() => this.setState({error: null}), 1500);
         }
-        window.setTimeout(() => this.setState({error: null}), 1500);
     }
 
     render() {

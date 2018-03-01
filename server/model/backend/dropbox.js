@@ -43,7 +43,7 @@ module.exports = {
     test: function(params){
         return query(params, "https://api.dropboxapi.com/2/users/get_current_account", "POST")
             .then((opts) => Promise.resolve(params))
-            .catch((err) => Promise.reject({message: err && err.message || err, code: "NOT_AUTHENTICATED"}))
+            .catch((err) => Promise.reject({message: 'Dropbox didn\'t gave us access to your account', code: "NOT_AUTHENTICATED"}))
     },
     cat: function(path, params){
         return query_stream(params, "https://content.dropboxapi.com/2/files/download", "POST", null, {

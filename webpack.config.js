@@ -28,6 +28,10 @@ let config = {
             {
                 test: /\.scss$/,
                 loaders: ['style-loader', 'css-loader', 'sass-loader']
+            },
+            {
+                test: /\.(pdf|jpg|png|gif|svg|ico)$/,
+                loader: "url-loader?mimetype=image/png"
             }
         ]
     },

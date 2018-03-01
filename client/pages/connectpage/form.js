@@ -3,6 +3,8 @@ import { Container, Card, NgIf, Input, Button, Textarea, Loader, Notification, e
 import { Session, invalidate, password } from '../../data';
 
 import './form.scss';
+import img_drive from '../../assets/google-drive.png';
+import img_dropbox from '../../assets/dropbox.png';
 
 export class Form extends React.Component {
     constructor(props){
@@ -14,24 +16,14 @@ export class Form extends React.Component {
             advanced_sftp: false,
             advanced_webdav: false,
             advanced_s3: false,
-            advanced_git: false
+            advanced_git: false,
+            dummy: true
         };
-    }
-
-
-    _marginTop(){
-        let size = 300;
-        const $screen = document.querySelector('.login-form');
-        if($screen) size = $screen.offsetHeight;
-
-        size = Math.round((document.body.offsetHeight - size) / 2);
-        if(size < 0) return 0;
-        if(size > 150) return 150;
-        return size;
     }
 
     componentDidMount(){
         this.publishState(this.props.credentials);
+        window.addEventListener('resize', this.rerender.bind(this));
     }
 
     componentWillReceiveProps(props){
@@ -40,6 +32,9 @@ export class Form extends React.Component {
         }
     }
 
+    componentWillUnmount(){
+        window.removeEventListener('resize', this.rerender.bind(this));
+    }
 
     publishState(_credentials){
         const pushDOM = (credentials) => {
@@ -102,8 +97,31 @@ export class Form extends React.Component {
         this.props.onSubmit(auth_data, credentials);
     }
 
+    redirect_dropbox(e){
+        this.props.onThirdPartyLogin('dropbox');
+    }
+
+    redirect_google(e){
+        this.props.onThirdPartyLogin('google');
+    }
+
     onTypeChange(type){
         this.setState({type: type}, () => this.publishState(this.props.credentials));
+    }
+
+    rerender(){
+        this.setState({dummy: !this.state.dummy});
+    }
+
+    _marginTop(){
+        let size = 300;
+        const $screen = document.querySelector('.login-form');
+        if($screen) size = $screen.offsetHeight;
+
+        size = Math.round((document.body.offsetHeight - size) / 2);
+        if(size < 0) return 0;
+        if(size > 150) return 150;
+        return size;
     }
 
     render() {
@@ -122,9 +140,9 @@ export class Form extends React.Component {
               <div>
                 <form onSubmit={this.onSubmit.bind(this)} autoComplete="off" autoCapitalize="off" spellCheck="false" autoCorrect="off">
                   <NgIf cond={this.state.type === 'webdav'}>
-                    <Input type="text" name="url" placeholder="Address*" ref={(input) => {this.state.refs.webdav_url = input; }} autoComplete="new-password" />
-                    <Input type="text" name="username" placeholder="Username" ref={(input) => {this.state.refs.webdav_username = input; }} autoComplete="new-password" />
-                    <Input type="password" name="password" placeholder="Password" ref={(input) => {this.state.refs.webdav_password = input; }} autoComplete="new-password" />
+                    <Input type="text" name="url" placeholder="Address*" ref={(input) => { this.state.refs.webdav_url = input; }} autoComplete="new-password" />
+                    <Input type="text" name="username" placeholder="Username" ref={(input) => { this.state.refs.webdav_username = input; }} autoComplete="new-password" />
+                    <Input type="password" name="password" placeholder="Password" ref={(input) => { this.state.refs.webdav_password = input; }} autoComplete="new-password" />
                     <label>
                       <input checked={this.state.advanced_webdav} onChange={e => { this.setState({advanced_webdav: e.target.checked}); }} type="checkbox" autoComplete="new-password"/> Advanced
                         </label>
@@ -196,23 +214,23 @@ export class Form extends React.Component {
                       </NgIf>
                       <NgIf cond={this.state.type === 'dropbox'} className="third-party">
                         <a target="_blank" href={this.state.dropbox_url}>
-                          <div onClick={this.onSubmit.bind(this)}>
-                            <img src="/img/dropbox.png"/>
+                          <div onClick={this.redirect_dropbox.bind(this)}>
+                            <img src={img_dropbox} />
                           </div>
                           <Input type="hidden" name="type" value="dropbox"/>
-                          <Button type="submit" theme="emphasis">LOGIN WITH DROPBOX</Button>
+                          <Button type="button" onClick={this.redirect_dropbox.bind(this)} theme="emphasis">LOGIN WITH DROPBOX</Button>
                         </a>
                       </NgIf>
                       <NgIf cond={this.state.type === 'gdrive'} className="third-party">
-                        <div onClick={this.onSubmit.bind(this)}>
-                          <img src="/img/google-drive.png"/>
+                        <div onClick={this.redirect_google.bind(this)}>
+                          <img src={img_drive}/>
                         </div>
                         <Input type="hidden" name="type" value="gdrive"/>
-                        <Button type="submit" theme="emphasis">LOGIN WITH GOOGLE</Button>
+                        <Button type="button" onClick={this.redirect_google.bind(this)} theme="emphasis">LOGIN WITH GOOGLE</Button>
                       </NgIf>
                     </form>
                   </div>
-                </Card>
+               </Card>
         );
     }
 }

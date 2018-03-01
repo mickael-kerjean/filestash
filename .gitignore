@@ -1,12 +1,12 @@
 server/public/js
-server/public/index.html    
+server/public/index.html
 node_modules/
 babel_cache/
 .DS_Store
 \#*\#
-.\#*    
+.\#*
 *.log
 *~
 *.swp
 *.swo
-            
+.tern-port

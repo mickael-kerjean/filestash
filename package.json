@@ -79,6 +79,7 @@
     "sass-loader": "^6.0.6",
     "sass-variable-loader": "^0.1.2",
     "style-loader": "^0.20.2",
+    "url-loader": "^0.6.2",
     "webpack-bundle-analyzer": "^2.8.2",
     "webpack-dev-server": "^2.4.5"
   }
