@@ -22,8 +22,8 @@ Call it an FTP client, an S3 viewer or a Dropbox like web app, Nuage leverages y
 - emacs keybindings `;)`
 
 * What about my credentials?
-Credentials are stored in your browser in a http only cookie encrypted using aes-256-ctr and aren't persistent in the server disk at all.
-The "remember me" feature relies on localstorage to store your credentials encrypted using aes-256-ctr.
+Credentials are stored in your browser in a http only cookie encrypted using aes-256-cbc and aren't persistent in the server disk at all.
+The "remember me" feature relies on localstorage to store your credentials encrypted using aes-256-cbc.
 
 Note that on the FTP and sFTP, sessions connections aren't destroyed on every request but are reused and killed after 2 minutes. The reasoning is connections are expensive to create and this trick make the entire application feel much much faster for users who tries to navigate.
 

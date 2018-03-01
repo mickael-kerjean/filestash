@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-const algorithm = 'aes-256-ctr';
+const algorithm = 'aes-256-cbc';
 
 export function encrypt(obj, key){
     const cipher = crypto.createCipher(algorithm, key);
