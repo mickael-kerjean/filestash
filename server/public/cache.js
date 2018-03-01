@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v0.0';
+const CACHE_NAME = 'v1.0';
 const DELAY_BEFORE_SENDING_CACHE = 2000;
 
 /*
@@ -131,6 +131,7 @@ function smartCacheStrategy(request){
 function networkFirstStrategy(request){
     return new Promise(function(done, error){
         cache(request.clone && request.clone() || request).then(function(response){
+            if(!response || !response.headers) return;
             response.headers.append('Content-Stale', 'yes');
             done(response);
         });
