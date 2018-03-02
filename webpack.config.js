@@ -30,8 +30,12 @@ let config = {
                 loaders: ['style-loader', 'css-loader', 'sass-loader']
             },
             {
-                test: /\.(pdf|jpg|png|gif|svg|ico)$/,
-                loader: "url-loader?mimetype=image/png"
+                test: /\.css$/,
+                loaders: ['style-loader', 'css-loader']
+            },
+            {
+                test: /\.(pdf|jpg|png|gif|svg|ico|woff|woff2|eot|ttf)$/,
+                loader: "url-loader"
             }
         ]
     },
@@ -43,8 +47,7 @@ let config = {
         new HtmlWebpackPlugin({
             template: path.join(__dirname, 'client', 'index.html'),
             inject:true
-        }),
-        new webpack.optimize.CommonsChunkPlugin({name: "polyfill", filename: "js/polyfill.js"}),
+        })
     ]
 };
 

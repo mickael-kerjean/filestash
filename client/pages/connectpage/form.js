@@ -1,10 +1,11 @@
 import React from 'react';
-import { Container, Card, NgIf, Input, Button, Textarea, Loader, Notification, encrypt, decrypt, theme, Prompt } from '../../utilities';
-import { Session, invalidate, password } from '../../data';
+import { Container, Card, NgIf, Input, Button, Textarea, Loader, Notification, Prompt } from '../../components/';
+import { invalidate, encrypt, decrypt } from '../../helpers/';
+import { Session } from '../../model/';
 
 import './form.scss';
-import img_drive from '../../assets/google-drive.png';
-import img_dropbox from '../../assets/dropbox.png';
+import img_drive from '../../assets/img/google-drive.png';
+import img_dropbox from '../../assets/img/dropbox.png';
 
 export class Form extends React.Component {
     constructor(props){

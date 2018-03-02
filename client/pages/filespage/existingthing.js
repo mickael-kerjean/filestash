@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Card, NgIf, Icon, pathBuilder, theme } from '../../utilities';
-import { EventEmitter } from '../../data';
 import { DragSource, DropTarget } from 'react-dnd';
+
+import './existingthing.scss';
+import { Card, NgIf, Icon, EventEmitter} from '../../components/';
+import { pathBuilder } from '../../helpers/';
 
 const fileSource = {
     beginDrag(props, monitor, component) {
@@ -24,15 +26,15 @@ const fileSource = {
                 component.setState({icon: 'loading', message: null}, function(){
                     props.emit.apply(component, ['file.rename'].concat(result.args))
                         .then((ok) => {
-                            component.setState({appear: false})
+                            component.setState({appear: false});
                         })
                         .catch(err => {
-                            if(err && err.code === 'CANCELLED'){ return }
-                            component.setState({icon: 'error', message: err.message})
-                        })
+                            if(err && err.code === 'CANCELLED'){ return; }
+                            component.setState({icon: 'error', message: err.message});
+                        });
                 });
             }else{
-                throw 'unknown action'
+                throw 'unknown action';
             }
         }
     }
@@ -53,7 +55,7 @@ const fileTarget = {
 
         let from = pathBuilder(props.path, src.name, src.type);
         let to = pathBuilder(props.path, './'+dest.name+'/'+src.name, src.type);
-        return {action: 'rename', args: [from, to, src.type], ctx: 'existingfile'}
+        return {action: 'rename', args: [from, to, src.type], ctx: 'existingfile'};
     }
 };
 
@@ -90,15 +92,16 @@ export class ExistingThing extends React.Component {
             hover: null,
             message: null,
             icon: props.file.type,
-            filename: props.file.name
+            filename: props.file.name,
+            request_delete: false
         };
     }
 
     componentWillReceiveProps(props){
         this.setState({
             filename: props.file.name,
-            message: props.file.message || null,
-        })
+            message: props.file.message || null
+        });
     }
 
 
@@ -106,7 +109,7 @@ export class ExistingThing extends React.Component {
         if(this.state.icon !== 'loading'){
             this.props.emit('file.select', pathBuilder(this.props.path, this.props.file.name, this.props.file.type), this.props.file.type)
                 .catch((err) => {
-                    if(err && err.code === 'CANCELLED'){ return }
+                    if(err && err.code === 'CANCELLED'){ return; }
                     this.setState({icon: 'error', message: err.message});
                 });
         }
@@ -123,14 +126,17 @@ export class ExistingThing extends React.Component {
         )
             .then((ok) => this.props.emit('file.refresh', this.props.path))
             .catch((err) => {
-                if(err && err.code === 'CANCELLED'){ return }
+                if(err && err.code === 'CANCELLED'){ return; }
                 this.setState({icon: 'error', message: err.message, filename: oldFilename});
             });
     }
 
-    onDelete(filename){
+    onDeleteRequest(filename){
         let toConfirm = this.props.file.name.length > 16? this.props.file.name.substring(0, 10).toLowerCase() : this.props.file.name;
         let answer = prompt('Confirm by tapping "'+toConfirm+'"');
+        console.log(answer);
+    }
+    onDeleteConfirm(filename, toConfirm, answer){
         if(answer === toConfirm){
             this.setState({icon: 'loading'});
             this.props.emit(
@@ -138,9 +144,9 @@ export class ExistingThing extends React.Component {
                 pathBuilder(this.props.path, this.props.file.name),
                 this.props.file.type
             ).then((ok) => {
-                this.setState({appear: false})
+                this.setState({appear: false});
             }).catch((err) => {
-                if(err && err.code === 'CANCELLED'){ return }
+                if(err && err.code === 'CANCELLED'){ return; }
                 this.setState({icon: 'error', message: err.message});
             });
         }
@@ -153,14 +159,14 @@ export class ExistingThing extends React.Component {
         if(this.props.isDragging) { dragStyle.opacity = 0.15; }
 
         if(this.state.hover === true){
-            dragStyle.background = theme.effects.hover;
+            dragStyle.background = '#f5f5f5';
         }
         if((this.props.fileIsOver && this.props.canDropFile) || (this.props.nativeFileIsOver && this.props.canDropNativeFile)) {
-            dragStyle.background = theme.effects.selected;
+            dragStyle.background = '#c5e2f1';
         }
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
-            <div>
+            <div className="component_existingthing">
               <NgIf cond={this.state.appear}>
                 <Card onClick={this.onSelect.bind(this)} onMouseEnter={() => this.setState({hover: true})} onMouseLeave={() => this.setState({hover: false})} style={dragStyle}>
                   <DateTime show={this.state.hover !== true || this.state.icon === 'loading'} timestamp={this.props.file.time} background={dragStyle.background}/>
@@ -171,16 +177,19 @@ export class ExistingThing extends React.Component {
                            background={dragStyle.background}
                            show={this.state.hover === true && this.state.icon !== 'loading' && !('ontouchstart' in window)}
                            onRename={this.onRename.bind(this)}
-                           onDelete={this.onDelete.bind(this)} />
+                           onDelete={this.onDeleteRequest.bind(this)} />
                   <FileSize type={this.props.file.type} size={this.props.file.size} />
                   <Message message={this.state.message} />
                 </Card>
+              </NgIf>
+              <NgIf cond={this.state.request_delete}>
+
               </NgIf>
             </div>
         )));
     }
 }
-
+//                 <Prompt message="" onCancel={() => {}} onConfirm={this.onDeleteConfirm.bind(this, this.state.filename, 'test')} />
 ExistingThing.PropTypes = {
     connectDragSource: PropTypes.func.isRequired,
     isDragging: PropTypes.bool.isRequired,
@@ -192,21 +201,21 @@ ExistingThing.PropTypes = {
 
 class Updater extends React.Component {
     constructor(props){
-        super(props)
+        super(props);
         this.state = {
             editing: null
-        }
+        };
     }
 
     onRename(e){
         e.preventDefault();
         this.props.onRename(this.state.editing);
-        this.setState({editing: null})
+        this.setState({editing: null});
     }
 
     onDelete(e){
         e.stopPropagation();
-        this.props.onDelete()
+        this.props.onDelete();
     }
 
 
@@ -229,7 +238,7 @@ class Updater extends React.Component {
             inline: {display: 'inline'},
             el: {float: 'right', color: '#6f6f6f', height: '22px', background: this.props.background || 'white', margin: '0 -10px', padding: '0 10px', position: 'relative'},
             margin: {marginRight: '10px'}
-        }
+        };
         return (
             <div style={{display: 'inline'}}>
               <NgIf cond={this.props.show} style={style.el}>

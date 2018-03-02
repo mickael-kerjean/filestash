@@ -1,0 +1,16 @@
+.component_page_filespage{
+    .error{
+        cursor: pointer;
+    }
+    .container{
+        padding: 5px 0 20px 0;
+        height: 100%;
+        boxSizing: border-box;
+    }
+}
+
+.scroll-y{
+    overflow-y: auto!important;
+    overflow-x: hidden!important;
+    -webkit-overflow-scrolling: touch;
+}

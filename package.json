@@ -56,7 +56,6 @@
     "video.js": "^5.19.2",
     "wavesurfer.js": "^1.4.0",
     "webdav-fs": "^1.0.0",
-    "webpack": "^2.6.1",
     "winston": "^2.3.1",
     "winston-couchdb": "^0.6.3"
   },
@@ -75,12 +74,14 @@
     "http-server": "^0.9.0",
     "less-loader": "^4.0.6",
     "node-sass": "^4.7.2",
-    "nodemon": "^1.11.0",
+    "nodemon": "^1.17.1",
     "sass-loader": "^6.0.6",
     "sass-variable-loader": "^0.1.2",
     "style-loader": "^0.20.2",
     "url-loader": "^0.6.2",
+    "videojs-sublime-skin": "^1.0.3",
+    "webpack": "^2.7.0",
     "webpack-bundle-analyzer": "^2.8.2",
-    "webpack-dev-server": "^2.4.5"
+    "webpack-dev-server": "^3.1.0"
   }
 }

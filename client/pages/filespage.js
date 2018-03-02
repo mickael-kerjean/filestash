@@ -1,14 +1,14 @@
 import React from 'react';
-import { FileSystem } from '../components/';
-import BreadCrumb from './filespage/breadcrumb';
-import { Files, EventReceiver } from '../data/';
-import { NgIf, Loader, Error, debounce, goToFiles, goToViewer, Uploader } from '../utilities';
-
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { default as TouchBackend } from 'react-dnd-touch-backend';
 import Path from 'path';
 
+import './filespage.scss';
+import { Files } from '../model/';
+import { NgIf, Loader, Error, Uploader, EventReceiver } from '../components/';
+import { debounce, goToFiles, goToViewer } from '../helpers/';
+import { BreadCrumb, FileSystem } from './filespage/';
 
 @EventReceiver
 @DragDropContext(('ontouchstart' in window)? HTML5Backend : HTML5Backend)
@@ -25,7 +25,13 @@ export class FilesPage extends React.Component {
         this.resetHeight = debounce(this.resetHeight.bind(this), 100);
         this.goToFiles = goToFiles.bind(null, this.props.history);
         this.goToViewer = goToViewer.bind(null, this.props.history);
+    }
 
+    componentWillMount(){
+        this.onPathUpdate(this.state.path, 'directory', true);
+    }
+
+    componentDidMount(){
         // subscriptions
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
         this.props.subscribe('file.upload', this.onUpload.bind(this));
@@ -33,15 +39,9 @@ export class FilesPage extends React.Component {
         this.props.subscribe('file.rename', this.onRename.bind(this));
         this.props.subscribe('file.delete', this.onDelete.bind(this));
         this.props.subscribe('file.refresh', this.onRefresh.bind(this));
-    }
 
-    componentWillMount(){
-        this.onPathUpdate(this.state.path, 'directory', true)
-    }
-
-    componentDidMount(){
         this.resetHeight();
-        this.setState({error: false});
+        this.hideError();
         window.addEventListener("resize", this.resetHeight);
     }
 
@@ -55,28 +55,29 @@ export class FilesPage extends React.Component {
         window.removeEventListener("resize", this.resetHeight);
     }
 
-
+    hideError(){
+        this.setState({error: false});
+    }
 
     onRefresh(path = this.state.path){
-        this.setState({error: false})
+        this.setState({error: false});
         return Files.ls(path).then((files) => {
-            this.setState({files: files, loading: false})
+            this.setState({files: files, loading: false});
         }).catch((error) => {
             this.setState({error: error});
-        })
-
+        });
     }
 
     onPathUpdate(path, type = 'directory', withLoader = true){
         window.path = this.props.history;
         if(type === 'file'){
-            this.props.history.push('/view'+path)
+            this.props.history.push('/view'+path);
         }else{
             this.setState({path: path, loading: withLoader});
             if(path !== this.state.path){
-                this.props.history.push('/files'+path)
+                this.props.history.push('/files'+path);
             }
-            return this.onRefresh(path)
+            return this.onRefresh(path);
         }
     }
 
@@ -86,7 +87,7 @@ export class FilesPage extends React.Component {
         }else if(type === 'directory'){
             return Files.mkdir(path);
         }else{
-            return Promise.reject({message: 'internal error: can\'t create a '+type.toString(), code: 'UNKNOWN_TYPE'})
+            return Promise.reject({message: 'internal error: can\'t create a '+type.toString(), code: 'UNKNOWN_TYPE'});
         }
     }
     onRename(from, to, type){
@@ -107,16 +108,16 @@ export class FilesPage extends React.Component {
                     size: file.size,
                     icon: 'loading',
                     virtual: true
-                }
+                };
             });
             const files = JSON.parse(JSON.stringify(this.state.files));
             this.setState({files: [].concat(newfiles, files)});
             return Promise.resolve(_files);
-        }
+        };
 
         const processFile = (file) => {
             return this.onCreate(Path.join(path, file.name), 'file', file);
-        }
+        };
 
         const updateUI = (filename) => {
             const files = JSON.parse(JSON.stringify(this.state.files))
@@ -131,10 +132,10 @@ export class FilesPage extends React.Component {
                   })
                   .filter((file) => {
                       return file === null? false : true;
-                  })
+                  });
             this.setState({files: files});
-            return Promise.resolve('ok')
-        }
+            return Promise.resolve('ok');
+        };
 
         const showError = (filename, err) => {
             if(err && err.code === 'CANCELLED'){ return }
@@ -148,14 +149,14 @@ export class FilesPage extends React.Component {
                       return file;
                   });
             this.setState({files: files});
-            return Promise.resolve('ok')
-        }
+            return Promise.resolve('ok');
+        };
 
         function generator(arr){
             let store = arr;
             return {
                 next: function(){
-                    return store.pop()
+                    return store.pop();
                 }
             };
         }
@@ -166,7 +167,7 @@ export class FilesPage extends React.Component {
                 return processFile(file)
                     .then((ok) => updateUI(file.name))
                     .then(() => job(it))
-                    .catch((err) => showError(file.name, err))
+                    .catch((err) => showError(file.name, err));
             }else{
                 return Promise.resolve('ok');
             }
@@ -185,7 +186,6 @@ export class FilesPage extends React.Component {
             .then((res) => Promise.resolve('ok'));
     }
 
-
     resetHeight(){
         this.setState({
             height: document.body.clientHeight - document.querySelector('.breadcrumb').offsetHeight
@@ -195,23 +195,23 @@ export class FilesPage extends React.Component {
 
     render() {
         return (
-              <div>
-                <BreadCrumb className="breadcrumb" path={this.state.path} />
-                <div style={{height: this.state.height+'px'}} className="scroll-y">
-                <NgIf cond={!this.state.loading} style={{padding: '5px 0 20px 0', height: '100%', boxSizing: 'border-box'}}>
-                    <FileSystem path={this.state.path} files={this.state.files} />
-                    <Uploader path={this.state.path} />
+            <div className="component_page_filespage">
+              <BreadCrumb className="breadcrumb" path={this.state.path} />
+              <div style={{height: this.state.height+'px'}} className="scroll-y">
+                <NgIf className="container" cond={!this.state.loading}>
+                  <FileSystem path={this.state.path} files={this.state.files} />
+                  <Uploader path={this.state.path} />
+                </NgIf>
+                <NgIf cond={this.state.loading}>
+                  <NgIf cond={this.state.error === false}>
+                    <Loader/>
                   </NgIf>
-                  <NgIf cond={this.state.loading}>
-                    <NgIf cond={this.state.error === false}>
-                      <Loader/>
-                   </NgIf>
-                   <NgIf cond={this.state.error !== false} onClick={this.componentDidMount.bind(this)} style={{cursor: 'pointer'}}>
-                      <Error err={this.state.error}/>
-                    </NgIf>
+                  <NgIf className="error" cond={this.state.error !== false} onClick={this.componentDidMount.bind(this)}>
+                    <Error err={this.state.error}/>
                   </NgIf>
-                </div>
+                </NgIf>
               </div>
+            </div>
         );
     }
 }

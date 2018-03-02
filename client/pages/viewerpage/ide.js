@@ -1,20 +1,20 @@
 import React from 'react';
-import { Editor } from '../../components/editor';
-import { NgIf, Fab, Icon } from '../../utilities/'
-import { MenuBar } from './menubar';
 
+import { NgIf, Fab, Icon } from '../../components/';
+import { MenuBar } from './menubar';
+import { Editor } from './editor';
 
 export class IDE extends React.Component {
     constructor(props){
         super(props);
         this.state = {
             contentToSave: null
-        }
+        };
     }
 
     onContentUpdate(text){
         this.props.needSaving(true);
-        this.setState({contentToSave: text})
+        this.setState({contentToSave: text});
     }
 
     save(){
@@ -23,8 +23,8 @@ export class IDE extends React.Component {
             file = new window.File([blob], 'test.txt');
         }catch(err){
             // for crappy browser:
-            // https://stackoverflow.com/questions/33821631/alternative-for-file-constructor-for-safari            
-            file = blob; 
+            // https://stackoverflow.com/questions/33821631/alternative-for-file-constructor-for-safari
+            file = blob;
         }
         this.props.onSave(file);
     }

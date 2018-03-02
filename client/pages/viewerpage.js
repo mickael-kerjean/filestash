@@ -1,10 +1,10 @@
 import React from 'react';
-import { BreadCrumb } from '../components/';
-import { Bundle, debounce, NgIf, Loader, Error, Container } from '../utilities/';
-import { Files, opener, EventReceiver, EventEmitter } from '../data/';
-import { AudioPlayer, FileDownloader, ImageViewer, PDFViewer } from './viewerpage/';
 import Path from 'path';
 
+import { Files } from '../model/';
+import { BreadCrumb, Bundle, NgIf, Loader, Error, Container, EventReceiver, EventEmitter } from '../components/';
+import { debounce, opener } from '../helpers/';
+import { AudioPlayer, FileDownloader, ImageViewer, PDFViewer } from './viewerpage/';
 
 const VideoPlayer = (props) => (
     <Bundle loader={import(/* webpackChunkName: "video" */"../pages/viewerpage/videoplayer")} symbol="VideoPlayer">
@@ -16,7 +16,6 @@ const IDE = (props) => (
       {(Comp) => <Comp {...props}/>}
     </Bundle>
 );
-
 
 @EventReceiver
 export class ViewerPage extends React.Component {
@@ -66,35 +65,35 @@ export class ViewerPage extends React.Component {
     }
 
     componentWillUnmount() {
-        this.props.unsubscribe('file.select')
+        this.props.unsubscribe('file.select');
         window.removeEventListener("resize", this.resetHeight);
     }
 
 
     save(file){
-        this.setState({isSaving: true})
+        this.setState({isSaving: true});
         Files.save(this.state.path, file)
             .then(() => {
-                this.setState({isSaving: false})
-                this.setState({needSaving: false})
+                this.setState({isSaving: false});
+                this.setState({needSaving: false});
             })
             .catch((err) => {
-                if(err && err.code === 'CANCELLED'){ return }
-                this.setState({isSaving: false})
-                let message = "Oups, something went wrong"
+                if(err && err.code === 'CANCELLED'){ return; }
+                this.setState({isSaving: false});
+                let message = "Oups, something went wrong";
                 if(err.message){
-                    message += ':\n'+err.message
+                    message += ':\n'+err.message;
                 }
                 alert(message);
             });
     }
 
     onPathUpdate(path){
-        this.props.history.push('/files'+path)
+        this.props.history.push('/files'+path);
     }
 
     needSaving(bool){
-        this.setState({needSaving: bool})
+        this.setState({needSaving: bool});
     }
 
     componentDidMount(){

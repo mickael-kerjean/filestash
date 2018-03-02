@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom'
-import { theme, to_rgba } from '../utilities/theme';
-import { NgIf, Icon } from '../utilities/';
-import { EventEmitter, EventReceiver } from '../data';
+import { NgIf, Icon, EventEmitter, EventReceiver } from './';
 
 export class BreadCrumb extends React.Component {
     constructor(props){
@@ -63,8 +61,8 @@ BreadCrumb.propTypes = {
 
 
 const BreadCrumbContainer = (props) => {
-    let style1 = {background: theme.component.breadcrumb.bg, margin: '0 0 0px 0', padding: '6px 0', boxShadow: '0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.2)', zIndex: '1000', position: 'relative'};
-    let style2 = {margin: '0 auto', width: '95%', maxWidth: '800px', padding: '0', color: theme.component.breadcrumb.color};
+    let style1 = {background: 'white', margin: '0 0 0px 0', padding: '6px 0', boxShadow: '0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.2)', zIndex: '1000', position: 'relative'};
+    let style2 = {margin: '0 auto', width: '95%', maxWidth: '800px', padding: '0', color: 'rgba(#6f6f6f, 0.8)'};
     return (
         <div className={props.className} style={style1}>
           <ul style={style2}>
@@ -144,7 +142,7 @@ export class PathElementWrapper extends React.Component {
     render(){
         let style = {
             cursor: this.props.isLast ? '' : 'pointer',
-            background: this.state.hover && this.props.isLast !== true? theme.effects.hover : 'inherit',
+            background: this.state.hover && this.props.isLast !== true? '#f5f5f5' : 'inherit',
             borderRadius: '1px',
             fontSize: '18px',
             display: 'inline-block',
@@ -152,8 +150,8 @@ export class PathElementWrapper extends React.Component {
             fontWeight: this.props.isLast ? '100': ''
         };
         if(this.props.highlight === true){
-            style.background = theme.effects.selected;
-            style.border = '2px solid '+theme.colors.primary;
+            style.background = '#c5e2f1';
+            style.border = '2px solid #9AD1ED';
             style.borderRadius = '2px';
             style.padding = '2px 20px';
         }
@@ -175,7 +173,7 @@ export class PathElement extends PathElementWrapper {
 
     render(highlight = false){
         return (
-            <div style={{display: 'inline-block', color: this.props.isLast? theme.component.breadcrumb.last : 'inherit'}}>
+            <div style={{display: 'inline-block', color: this.props.isLast? '#6f6f6f' : 'inherit'}}>
               <PathElementWrapper highlight={highlight} {...this.props} />
             </div>
         )

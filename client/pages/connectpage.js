@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
-import config from '../../config.js';
-import { Container, NgIf, Loader, Notification, theme } from '../utilities/';
-import { Session, invalidate } from '../data';
-import { ForkMe, RememberMe, Credentials, Form } from './connectpage/';
-
 import './connectpage.scss';
+import { Session } from '../model/';
+import { Container, NgIf, Loader, Notification } from '../components/';
+import { ForkMe, RememberMe, Credentials, Form } from './connectpage/';
+import { invalidate } from '../helpers/';
+import config from '../../config.js';
 
 
 export class ConnectPage extends React.Component {

@@ -1,9 +1,10 @@
 import React from 'react';
-import { MenuBar } from './menubar';
-import { NgIf, Icon, theme } from '../../utilities/'
 import WaveSurfer from  'wavesurfer.js';
 
-export class AudioPlayer extends React.Component {   
+import { MenuBar } from './menubar';
+import { NgIf, Icon } from '../../components/'
+
+export class AudioPlayer extends React.Component {
     constructor(props){
         super(props);
         this.state = {
@@ -83,7 +84,7 @@ export class AudioPlayer extends React.Component {
                   <NgIf cond={this.state.loading === true}>
                     <Icon name="loading" />
                   </NgIf>
-                  <div style={{background: '#f1f1f1', boxShadow: theme.effects.shadow, opacity: this.state.loading? '0' : '1', position: 'relative'}}>
+                  <div style={{background: '#f1f1f1', boxShadow: 'rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px', opacity: this.state.loading? '0' : '1', position: 'relative'}}>
                     <div style={{position: 'absolute', top: '10px', right: '10px', zIndex: '2', height: '30px'}}>
                       <NgIf cond={this.state.isPlaying === false} style={{display: 'inline'}}>
                         <span style={{cursor: 'pointer'}} onClick={this.onPlay.bind(this)}><Icon name="play"/></span>

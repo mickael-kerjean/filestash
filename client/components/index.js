@@ -1,5 +1,21 @@
-export { BreadCrumb } from './breadcrumb';
-export { FileSystem } from './filesystem';
-export { Connect } from './connect';
+export { EventEmitter, EventReceiver } from './events';
+export { BreadCrumb, PathElement } from './breadcrumb';
+export { Input } from './input';
+export { Textarea } from './textarea';
+export { Button } from './button';
+export { Container } from './container';
+export { NgIf } from './ngif';
+export { Card } from './card';
+export { Loader } from './loader';
+export { Error } from './error';
+export { Fab } from './fab';
+export { Icon } from './icon';
+export { Notification } from './notification';
+export { Uploader } from './uploader';
+export { Bundle } from './bundle';
+export { Modal } from './modal';
+export { Prompt } from './prompt';
+export { Alert } from './alert';
+//export { Connect } from './connect';
 // Those are commented because they will delivered as a separate chunk
 // export { Editor } from './editor';

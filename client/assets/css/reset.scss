@@ -1,0 +1,122 @@
+:root {
+    --bg-color: #f2f2f2;
+    --color: #626469;
+    --emphasis: #375160;
+
+    --primary: #9AD1ED;
+    --emphasis-primary: #2b71bc;
+
+    --secondary: #466372;
+    --emphasis-secondary: #466372;
+
+    --super-light:  #ecf1f6;
+    --error: #f26d6d;
+    --success: #63d9b1;
+}
+
+
+html {
+    font-family:"San Francisco","Roboto","Arial",sans-serif;
+    -webkit-text-size-adjust:100%;
+    background: var(--bg-color);
+    color: var(--color);
+}
+body, html{
+    height: 100%;
+    margin: 0;
+}
+a{color: inherit; text-decoration: none;}
+
+select{-moz-appearance: none;}
+select:-moz-focusring {
+    color: inherit;
+    outline: none;
+    border: none;
+}
+select::-ms-expand {
+    display: none;
+}
+
+button::-moz-focus-inner {
+  border: 0;
+}
+
+
+input, textarea{
+    transition: border 0.2s;
+}
+input[type="checkbox"]{position: relative; top: 1px; margin: 0; padding: 0;}
+
+.no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+
+
+
+
+
+
+
+.connect-form input:hover, .connect-form textarea:hover,
+.connect-form input:focus, .connect-form textarea:focus{
+    border-color: rgb(154, 209, 237)!important;
+}
+
+
+
+.drag-drop{
+    z-index: 2;
+}
+.drag-drop.dragging > div{
+    background: rgba(0,0,0,0.1);
+}
+
+
+
+
+
+
+
+
+/* I know this looks weird but at least it doesn't rely on javascript to dynamically set element size */
+body {overflow: hidden;}
+body, body > div, body > div > div, body > div > div > div{ height: 100%;}
+
+
+
+
+
+
+/* CONNECTION FORM */
+.login-form button.active{
+    box-shadow: 0px 1px 5px rgba(0,0,0,0.20);
+}
+
+
+
+
+
+/* ANIMATION */
+.example-enter {
+  opacity: 0.01;
+}
+
+.example-enter.example-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+.example-leave {
+  opacity: 1;
+}
+
+.example-leave.example-leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}

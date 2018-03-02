@@ -1,6 +1,8 @@
 import React from 'react';
-import { Session, invalidate } from '../data';
-import { Loader } from '../utilities';
+
+import { Session } from '../model/';
+import { Loader } from '../components/';
+import { invalidate } from '../helpers/';
 
 export class LogoutPage extends React.Component {
     constructor(props){

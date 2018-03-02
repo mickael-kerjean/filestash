@@ -1,12 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { EventEmitter } from '../../data';
-import { BreadCrumb, PathElement } from '../../components/breadcrumb';
-import { pathBuilder } from '../../utilities';
 import { DropTarget } from 'react-dnd';
 
+import { EventEmitter, BreadCrumb, PathElement } from '../../components/';
+import { pathBuilder } from '../../helpers/';
 
-export default class BreadCrumbTargettable extends BreadCrumb{
+export class BreadCrumbTargettable extends BreadCrumb{
     constructor(props){
         super(props);
     }
@@ -38,7 +37,7 @@ const nativeFileTarget = {
     drop: function(props, monitor){
         let files = monitor.getItem().files;
         props.emit('file.upload', props.path.full, files);
-    }    
+    }
 }
 
 @EventEmitter

@@ -62,3 +62,9 @@
     transition: all 0.3s ease-out;
     transition-delay: 0.5s;
 }
+
+.scroll-x{
+    overflow-x: auto!important;
+    overflow-y: hidden!important;
+    -webkit-overflow-scrolling: touch;
+}

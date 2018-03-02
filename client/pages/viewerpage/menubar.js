@@ -1,5 +1,6 @@
 import React from 'react';
-import { theme, Container, NgIf, Icon } from '../../utilities/';
+
+import { Container, NgIf, Icon } from '../../components/';
 
 export class MenuBar extends React.Component{
     constructor(props){
@@ -23,10 +24,10 @@ export class MenuBar extends React.Component{
         window.clearInterval(this.state.id)
     }
 
-    
+
     render(){
         return (
-            <div style={{background: '#313538', color: '#f1f1f1', boxShadow: theme.effects.shadow_small}}>
+            <div style={{background: '#313538', color: '#f1f1f1', boxShadow: 'rgba(0, 0, 0, 0.14) 2px 2px 2px 0px'}}>
               <Container style={{padding: '9px 0', textAlign: 'center', color: '#f1f1f1', fontSize: '0.9em'}}>
                 <NgIf cond={this.props.hasOwnProperty('download')} style={{float: 'right', height: '1em'}}>
                   <NgIf cond={!this.state.loading} style={{display: 'inline'}}>

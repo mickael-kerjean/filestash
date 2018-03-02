@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { DropTarget } from 'react-dnd';
-import { EventEmitter }  from '../../data';
-import { theme, to_rgba } from '../../utilities';
 
+import { EventEmitter }  from '../../components/';
 
 @EventEmitter
 @DropTarget('__NATIVE_FILE__', {
@@ -29,8 +28,8 @@ export class FileZone extends React.Component{
             fontWeight: 'bold'
         }
         if(this.props.fileIsOver){
-            style.background = to_rgba(theme.colors.primary, 0.5);
-            style.border = '2px dashed '+theme.colors.primary;
+            style.background = '#B4EBFF';
+            style.border = '2px dashed #9AD1ED';
             style.color = 'white'
         }
         return this.props.connectDropFile(
@@ -43,4 +42,3 @@ export class FileZone extends React.Component{
 FileZone.PropTypes = {
     path: PropTypes.string.isRequired
 }
-

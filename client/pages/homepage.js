@@ -1,6 +1,7 @@
 import React from 'react';
-import { Session } from '../data';
-import { Loader } from '../utilities';
+
+import { Session } from '../model/';
+import { Loader } from '../components/';
 
 export class HomePage extends React.Component {
     constructor(props){

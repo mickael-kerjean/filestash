@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { EventEmitter } from '../../data';
-import { Card, NgIf, Icon, pathBuilder } from '../../utilities';
 
+import { Card, NgIf, Icon, EventEmitter } from '../../components/';
+import { pathBuilder } from '../../helpers/';
 
 @EventEmitter
 export class NewThing extends React.Component {

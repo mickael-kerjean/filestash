@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
-import { Input, Button, Modal, NgIf } from '../../utilities';
-import { encrypt, decrypt, memory } from '../../utilities';
+import { Input, Button, NgIf, Modal } from '../../components/';
+import { encrypt, decrypt, memory } from '../../helpers/';
 import './credentials.scss';
 
 export class Credentials extends React.Component {

@@ -8,4 +8,4 @@ services:
     - NODE_ENV=production
     - SECRET_KEY=my_secret_key
     ports:
-    - "10006:3000"    
+    - "10006:3000"
