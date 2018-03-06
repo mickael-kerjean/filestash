@@ -8,6 +8,7 @@ import { ForkMe, RememberMe, Credentials, Form } from './connectpage/';
 import { invalidate } from '../helpers/';
 import config from '../../config.js';
 
+import { Alert, Prompt } from '../components/';
 
 export class ConnectPage extends React.Component {
     constructor(props){
@@ -101,7 +102,6 @@ export class ConnectPage extends React.Component {
                 <NgIf cond={this.state.loading === true}>
                   <Loader/>
                 </NgIf>
-
                 <NgIf cond={this.state.loading === false}>
                   <ReactCSSTransitionGroup transitionName="form" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={500}>
                     <Form credentials={this.state.credentials}

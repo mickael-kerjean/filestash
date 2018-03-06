@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { DragSource, DropTarget } from 'react-dnd';
 
 import './existingthing.scss';
-import { Card, NgIf, Icon, EventEmitter} from '../../components/';
+import { Card, NgIf, Icon, EventEmitter, Prompt } from '../../components/';
 import { pathBuilder } from '../../helpers/';
 
 const fileSource = {
@@ -93,7 +93,9 @@ export class ExistingThing extends React.Component {
             message: null,
             icon: props.file.type,
             filename: props.file.name,
-            request_delete: false
+            delete_request: false,
+            delete_message: "Confirm by tapping \""+this._confirm_delete_text()+"\"",
+            delete_error: ''
         };
     }
 
@@ -132,13 +134,11 @@ export class ExistingThing extends React.Component {
     }
 
     onDeleteRequest(filename){
-        let toConfirm = this.props.file.name.length > 16? this.props.file.name.substring(0, 10).toLowerCase() : this.props.file.name;
-        let answer = prompt('Confirm by tapping "'+toConfirm+'"');
-        console.log(answer);
+        this.setState({delete_request: true});
     }
-    onDeleteConfirm(filename, toConfirm, answer){
-        if(answer === toConfirm){
-            this.setState({icon: 'loading'});
+    onDeleteConfirm(answer){
+        if(answer === this._confirm_delete_text()){
+            this.setState({icon: 'loading', delete_request: false});
             this.props.emit(
                 'file.delete',
                 pathBuilder(this.props.path, this.props.file.name),
@@ -149,7 +149,15 @@ export class ExistingThing extends React.Component {
                 if(err && err.code === 'CANCELLED'){ return; }
                 this.setState({icon: 'error', message: err.message});
             });
+        }else{
+            this.setState({delete_error: "Doesn't match"});
         }
+    }
+    onDeleteCancel(){
+        this.setState({delete_request: false});
+    }
+    _confirm_delete_text(){
+        return this.props.file.name.length > 16? this.props.file.name.substring(0, 10).toLowerCase() : this.props.file.name;
     }
 
 
@@ -182,14 +190,11 @@ export class ExistingThing extends React.Component {
                   <Message message={this.state.message} />
                 </Card>
               </NgIf>
-              <NgIf cond={this.state.request_delete}>
-
-              </NgIf>
+              <Prompt appear={this.state.delete_request} error={this.state.delete_error} message={this.state.delete_message} onCancel={this.onDeleteCancel.bind(this)} onSubmit={this.onDeleteConfirm.bind(this)}/>
             </div>
         )));
     }
 }
-//                 <Prompt message="" onCancel={() => {}} onConfirm={this.onDeleteConfirm.bind(this, this.state.filename, 'test')} />
 ExistingThing.PropTypes = {
     connectDragSource: PropTypes.func.isRequired,
     isDragging: PropTypes.bool.isRequired,
@@ -268,7 +273,7 @@ const DateTime = (props) => {
         function padding(number){
             let str = String(number),
                 pad = "00";
-            return pad.substring(0, pad.length - str.length) + str
+            return pad.substring(0, pad.length - str.length) + str;
         }
         if(timestamp){
             let t = new Date(timestamp);
@@ -298,7 +303,7 @@ const FileSize = (props) => {
         }else if(bytes < 1099511627776){
             return Math.round(bytes/(1024*1024*1024)*10)/10+'GB';
         }else{
-            return Math.round(bytes/(1024*1024*1024*1024))+'TB'
+            return Math.round(bytes/(1024*1024*1024*1024))+'TB';
         }
     }
     const style = {color: '#6f6f6f', fontSize: '0.85em'};
@@ -307,7 +312,7 @@ const FileSize = (props) => {
         <NgIf cond={props.type === 'file'} style={{display: 'inline-block'}}>
           <span style={style}>({displaySize(props.size)})</span>
         </NgIf>
-    )
+    );
 }
 const Message = (props) => {
     const style = {color: 'rgba(0,0,0,0.4)', fontSize: '0.9em', paddingLeft: '10px', display: 'inline'};
@@ -315,5 +320,5 @@ const Message = (props) => {
         <NgIf cond={props.message !== null} style={style}>
           - {props.message}
         </NgIf>
-    )
+    );
 }

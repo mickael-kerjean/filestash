@@ -20,11 +20,12 @@ export class Form extends React.Component {
             advanced_git: false,
             dummy: true
         };
+        this.rerender = this.rerender.bind(this);
     }
 
     componentDidMount(){
         this.publishState(this.props.credentials);
-        window.addEventListener('resize', this.rerender.bind(this));
+        window.addEventListener('resize', this.rerender);
     }
 
     componentWillReceiveProps(props){
@@ -34,7 +35,7 @@ export class Form extends React.Component {
     }
 
     componentWillUnmount(){
-        window.removeEventListener('resize', this.rerender.bind(this));
+        window.removeEventListener('resize', this.rerender);
     }
 
     publishState(_credentials){

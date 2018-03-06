@@ -2,9 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
-import { Input, Button, NgIf, Modal } from '../../components/';
+import { Prompt } from '../../components/';
 import { encrypt, decrypt, memory } from '../../helpers/';
-import './credentials.scss';
 
 export class Credentials extends React.Component {
     constructor(props){
@@ -13,7 +12,7 @@ export class Credentials extends React.Component {
         this.state = {
             modal_appear: key ? false : this.props.remember_me,
             key: key || '',
-            message: null,
+            message: '',
             error: null
         };
         // we use a clojure for the "key" because we want to persist it in memory
@@ -38,7 +37,7 @@ export class Credentials extends React.Component {
 
     componentDidMount(){
         this.init();
-        if(this.state.key) this.onSubmit();
+        if(this.state.key) this.onSubmit(this.state.key);
     }
 
     init(){
@@ -57,24 +56,19 @@ export class Credentials extends React.Component {
         }
     }
 
-    onKeyChange(e){
-        this.setState({key: e.target.value});
-        memory.set('credentials_key', e.target.value);
-    }
-
     onCancel(should_clear){
         memory.set('credentials_key', '');
         this.setState({modal_appear: false, key: ''});
     }
 
-    onSubmit(e){
-        e && e.preventDefault();
+    onSubmit(key){
+        this.setState({key: key});
+        memory.set('credentials_key', key);
         /*
          * 2 differents use cases:
          * - a user is creating a new master password
          * - a user want to unlock existing credentials
          */
-        const key = memory.get('credentials_key');
         if(key !== ''){
             let raw = window.localStorage.getItem('credentials');
             if(raw){
@@ -97,23 +91,14 @@ export class Credentials extends React.Component {
 
     render() {
         return (
-            <Modal isActive={this.state.modal_appear} onQuit={this.onCancel.bind(this)}>
-              <div className="component_password">
-                <p>
-                  {this.state.message}
-                </p>
-                <form id="key_manager" onSubmit={this.onSubmit.bind(this)}>
-                  <Input autoFocus={true} value={this.state.key} type="password" onChange={this.onKeyChange.bind(this)} autoComplete="new-password" />
-
-                  <div key={this.state.error} className="error">{this.state.error}&nbsp;</div>
-
-                  <div className="buttons">
-                    <Button type="button" onClick={this.onCancel.bind(this)}>CANCEL</Button>
-                    <Button type="submit" theme="secondary">OK</Button>
-                  </div>
-                </form>
-              </div>
-            </Modal>
+            <Prompt
+              type="password"
+              appear={this.state.modal_appear}
+              error={this.state.error}
+              message={this.state.message}
+              onCancel={this.onCancel.bind(this)}
+              onSubmit={this.onSubmit.bind(this)}
+              />
         );
     }
 }

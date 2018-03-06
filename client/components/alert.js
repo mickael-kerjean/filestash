@@ -2,32 +2,28 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Input, Button, Modal, NgIf } from './';
-import './prompt.scss';
+import "./alert.scss";
 
 export class Alert extends React.Component {
     constructor(props){
         super(props);
-        this.state = {
-            modal_appear: false
-        };
     }
 
     onSubmit(e){
-        e.preventDefault();
-        this.props.onConfirm();
-        this.setState({modal_appear: false});
+        e && e.preventDefault && e.preventDefault();
+        this.props.onConfirm && this.props.onConfirm();
     }
 
     render() {
         return (
-            <Modal isActive={this.state.modal_appear} onQuit={this.onSubmit.bind(this)}>
+            <Modal isActive={this.props.appear} onQuit={this.onSubmit.bind(this)}>
               <div className="component_alert">
-                <p>
+                <p className="modal-message">
                   {this.props.message}
                 </p>
-                <form id="key_manager" onSubmit={this.onSubmit.bind(this)}>
+                <form onSubmit={this.onSubmit.bind(this)}>
                   <div className="buttons">
-                    <Button type="submit" onClick={this.onSubmit.bind(this)}>OK</Button>
+                    <Button type="submit" theme="secondary" onClick={this.onSubmit.bind(this)}>OK</Button>
                   </div>
                 </form>
               </div>
@@ -37,6 +33,7 @@ export class Alert extends React.Component {
 }
 
 Alert.propTypes = {
+    appear: PropTypes.bool.isRequired,
     message: PropTypes.string.isRequired,
     onConfirm: PropTypes.func
 };

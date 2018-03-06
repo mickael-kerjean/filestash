@@ -1,0 +1,27 @@
+.filelist-item-appear{
+    opacity: 0;
+    transform: translateY(5px);
+}
+.filelist-item-appear.filelist-item-appear-active{
+    transition: all 0.2s ease-out;
+    transform: translateY(0px);
+    opacity: 1;
+}
+
+.component_filesystem{
+    height: 100%;
+    > div{
+        height: 100%;
+        .list{
+            clear: both;
+            padding-bottom: 150px;
+        }
+
+        .error{
+            font-size: 25px;
+            text-align: center;
+            font-weight: 100;
+            margin-top: 50px;
+        }
+    }
+}

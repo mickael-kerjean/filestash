@@ -1,7 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom';
 import { NgIf, Icon, EventEmitter, EventReceiver } from './';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
+import './breadcrumb.scss';
 
 export class BreadCrumb extends React.Component {
     constructor(props){
@@ -26,7 +29,7 @@ export class BreadCrumb extends React.Component {
             if(index === paths.length - 1){
                 return {full: null, label: label};
             }else{
-                return {full: sub_path+'/', label: label}
+                return {full: sub_path+'/', label: label};
             }
         });
         return paths;
@@ -35,21 +38,23 @@ export class BreadCrumb extends React.Component {
     render(Element) {
         const Path = Element? Element : PathElement;
         return (
-            <div>
+            <div className="component_breadcrumb">
               <BreadCrumbContainer className={this.props.className+' no-select'}>
                 <Logout />
-                {
-                    this.state.path.map((path, index) => {
-                        return (
-                            <span key={index}>
-                              <Path path={path} isLast={this.state.path.length === index + 1} needSaving={this.props.needSaving} />
-                              <Separator isLast={this.state.path.length === index + 1} />
-                            </span>
-                        )
-                    })
-                }
-              </BreadCrumbContainer>
-            </div>
+                <ReactCSSTransitionGroup transitionName="breadcrumb" transitionLeave={true} transitionEnter={true} transitionLeaveTimeout={500} transitionEnterTimeout={500} transitionAppear={false}>
+                  {
+                      this.state.path.map((path, index) => {
+                          return (
+                              <span key={"breadcrumb_"+index}>
+                                <Path path={path} isLast={this.state.path.length === index + 1} needSaving={this.props.needSaving} />
+                                <Separator isLast={this.state.path.length === index + 1} />
+                              </span>
+                          );
+                      })
+                 }
+               </ReactCSSTransitionGroup>
+             </BreadCrumbContainer>
+           </div>
         );
     }
 }
@@ -77,7 +82,7 @@ const Logout = (props) => {
         display: 'inline-block',
         padding: '5px 0px 5px 5px',
         margin: '0 0px'
-    }
+    };
     return (
         <li style={style}>
           <Link to="/logout">
@@ -176,6 +181,6 @@ export class PathElement extends PathElementWrapper {
             <div style={{display: 'inline-block', color: this.props.isLast? '#6f6f6f' : 'inherit'}}>
               <PathElementWrapper highlight={highlight} {...this.props} />
             </div>
-        )
+        );
     }
 }

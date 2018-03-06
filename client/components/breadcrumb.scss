@@ -1,0 +1,23 @@
+.component_breadcrumb{
+    .breadcrumb-leave{
+        display: inline-block;
+        opacity: 1;
+        transform: translateY(0px);
+    }
+    .breadcrumb-leave.breadcrumb-leave-active{
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.15s ease-out;
+    }
+
+    .breadcrumb-enter{
+        transform: translateX(10px);
+        opacity: 0;
+        display: inline-block;
+    }
+    .breadcrumb-enter.breadcrumb-enter-active{
+        opacity: 1;
+        transform: translateX(0);
+        transition: all 0.2s ease-out;
+    }
+}

@@ -97,7 +97,6 @@ export class FilesPage extends React.Component {
         return Files.rm(file, type);
     }
 
-
     onUpload(path, files){
         const createFilesInUI = (_files) => {
             const newfiles = _files.map((file) => {
