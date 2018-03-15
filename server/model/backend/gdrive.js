@@ -2,7 +2,7 @@
 // https://developers.google.com/apis-explorer/?hl=en_GB#p/drive/v3/
 var google = require('googleapis'),
     googleAuth = require('google-auth-library'),
-    config = require('../../../config'),
+    config = require('../../../config_server'),
     Stream = require('stream');
 
 var client = google.drive('v3');

@@ -1,0 +1,13 @@
+.component_error{
+    text-align: center;
+    margin-top: 50px;
+    font-size: 25px;
+    font-style: italic;
+    font-weight: 100;
+
+    .trace{
+        fontSize: 12px;
+        maxWidth: 500px;
+        margin: 10px auto 0 auto;
+    }
+}

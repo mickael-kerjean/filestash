@@ -1,11 +1,11 @@
 var bodyParser = require('body-parser'),
     cookieParser = require('cookie-parser'),
     cors = require('cors'),
-    config = require('../config'),
+    config = require('../config_server'),
     express = require('express'),
     winston = require('winston'),
     expressWinston = require('express-winston');
-    
+
 require('winston-couchdb');
 
 var app = express();

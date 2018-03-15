@@ -66,41 +66,28 @@ BreadCrumb.propTypes = {
 
 
 const BreadCrumbContainer = (props) => {
-    let style1 = {background: 'white', margin: '0 0 0px 0', padding: '6px 0', boxShadow: '0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.2)', zIndex: '1000', position: 'relative'};
-    let style2 = {margin: '0 auto', width: '95%', maxWidth: '800px', padding: '0', color: 'rgba(#6f6f6f, 0.8)'};
     return (
-        <div className={props.className} style={style1}>
-          <ul style={style2}>
+        <div className={props.className}>
+          <ul>
             {props.children}
           </ul>
         </div>
     );
 }
 const Logout = (props) => {
-    let style = {
-        float: 'right',
-        display: 'inline-block',
-        padding: '5px 0px 5px 5px',
-        margin: '0 0px'
-    };
     return (
-        <li style={style}>
+        <li className="component_logout">
           <Link to="/logout">
-            <Icon style={{height: '20px'}} name="power"/>
+            <Icon name="power"/>
           </Link>
         </li>
     );
 }
 
 const Saving = (props) => {
-    let style = {
-        display: 'inline',
-        padding: '0 3px'
-    };
-
     if(props.needSaving){
         return (
-            <NgIf style={style} cond={props.needSaving === true && props.isLast === true}>
+            <NgIf className="component_saving" cond={props.needSaving === true && props.isLast === true}>
               *
             </NgIf>
         );
@@ -111,7 +98,7 @@ const Saving = (props) => {
 
 const Separator = (props) => {
     return (
-        <NgIf cond={props.isLast === false} style={{position: 'relative', top: '3px', display: 'inline'}}>
+        <NgIf cond={props.isLast === false} className="component_separator">
           <img width="16" height="16" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAA30lEQVQ4T63T7Q2CMBAG4OuVPdQNcAPdBCYwDdclCAQ3ACfRDXQDZQMHgNRcAoYApfWjv0jIPX3b3gn4wxJjI03TUAhRBkGwV0o9ffaYIEVRrJumuQHA3ReaILxzl+bCkNZ660ozi/QQIl4BoCKieAmyIlyU53lkjCld0CIyhIwxSmt9nEvkRLgoyzIuPggh4iRJqjHkhXTQAwBWUsqNUoq/38sL+TlJf7lf38ngdU5EFNme2adPFgGGrR2LiGcAqIko/LhjeXbatuVOraWUO58hnJ1iRKx8AetxXPHH/1+y62USursaSgAAAABJRU5ErkJggg=="/>
         </NgIf>
     );
@@ -127,41 +114,29 @@ export class PathElementWrapper extends React.Component {
 
     onClick(){
         if(this.props.isLast === false){
-            this.props.emit('file.select', this.props.path.full, 'directory')
+            this.props.emit('file.select', this.props.path.full, 'directory');
         }
     }
 
     toggleHover(shouldHover){
         if(('ontouchstart' in window) === false){
-            this.setState({hover: shouldHover})
+            this.setState({hover: shouldHover});
         }
     }
 
     limitSize(str){
         if(str.length > 30){
-            return str.substring(0,23)+'...'
+            return str.substring(0,23)+'...';
         }
         return str;
     }
 
     render(){
-        let style = {
-            cursor: this.props.isLast ? '' : 'pointer',
-            background: this.state.hover && this.props.isLast !== true? '#f5f5f5' : 'inherit',
-            borderRadius: '1px',
-            fontSize: '18px',
-            display: 'inline-block',
-            padding: '4px 5px',
-            fontWeight: this.props.isLast ? '100': ''
-        };
-        if(this.props.highlight === true){
-            style.background = '#c5e2f1';
-            style.border = '2px solid #9AD1ED';
-            style.borderRadius = '2px';
-            style.padding = '2px 20px';
-        }
+        let className = "component_path-element-wrapper";
+        if(this.state.hover){ className += " hover"; }
+        if(this.props.highlight) { className += " highlight";}
         return (
-            <li onClick={this.onClick.bind(this)} style={style} onMouseEnter={this.toggleHover.bind(this, true)} onMouseLeave={this.toggleHover.bind(this, false)}>
+            <li className={className} onClick={this.onClick.bind(this)} onMouseEnter={this.toggleHover.bind(this, true)} onMouseLeave={this.toggleHover.bind(this, false)}>
               {this.limitSize(this.props.path.label)}
               <Saving isLast={this.props.isLast} needSaving={this.props.needSaving} isSaving={false} />
             </li>
@@ -177,8 +152,12 @@ export class PathElement extends PathElementWrapper {
     }
 
     render(highlight = false){
+        let className = "component_path-element";
+        if(this.props.isLast){
+            className += " is-last";
+        }
         return (
-            <div style={{display: 'inline-block', color: this.props.isLast? '#6f6f6f' : 'inherit'}}>
+            <div className={className}>
               <PathElementWrapper highlight={highlight} {...this.props} />
             </div>
         );

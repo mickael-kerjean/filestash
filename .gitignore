@@ -10,3 +10,4 @@ babel_cache/
 *.swp
 *.swo
 .tern-port
+.tern-project.js

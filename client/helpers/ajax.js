@@ -1,74 +1,38 @@
-let cache = {};
-
-// cleanup expired cache
-setInterval(() => {
-    for(let key in cache){
-        if(cache[key].date < new Date().getTime()){
-            delete cache[key];
-        }
-    }
-}, 120*1000)
-
-export function invalidate(url){
-    if(url === undefined){ cache = {}; }
-    else if(typeof url === 'string'){
-        if(cache[url]){
-            delete cache[url];
-        }
-    }else if(typeof url.exec === 'function'){ // regexp
-        for(let key in cache){
-            if(url.exec(key)){
-                delete cache[key];
-            }
-        }
-    }else{
-        throw 'invalidation error';
-    }
-}
-
-export function http_get(url, cache_expire = 0, type = 'json'){
-    if(cache_expire > 0 && cache[url] && cache[url].date > new Date().getTime()){
-        return new Promise((done) => done(cache[url].data));
-    }else{
-        if(cache[url]){ delete cache[url]; }
-        return new Promise((done, err) => {
-            var xhr = new XMLHttpRequest();
-            xhr.withCredentials = true;
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if(xhr.status === 200){
-                        if(type === 'json'){
-                            try{
-                                let data = JSON.parse(xhr.responseText);
-                                if(data.status === 'ok'){
-                                    if(cache_expire > 0){
-                                        cache[url] = {data: data.results || data.result, date: new Date().getTime() + cache_expire * 1000};
-                                    }
-                                    done(data.results || data.result);
-                                }else if(data.status === 'redirect'){
-                                    if(data.to === 'logout'){location.pathname = "/logout";}
-                                }else{
-                                    err(data);
-                                }
-                            }catch(error){
-                                err({message: 'oups', trace: error});
+export function http_get(url, type = 'json'){
+    return new Promise((done, err) => {
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if(xhr.status === 200){
+                    if(type === 'json'){
+                        try{
+                            let data = JSON.parse(xhr.responseText);
+                            if(data.status === 'ok'){
+                                done(data);
+                            }else if(data.status === 'redirect'){
+                                if(data.to === 'logout'){location.pathname = "/logout";}
+                            }else{
+                                err(data);
                             }
-                        }else{
-                            done(xhr.responseText);
+                        }catch(error){
+                            err({message: 'oups', trace: error});
                         }
                     }else{
-                        if(navigator.onLine === false){
-                            err({status: xhr.status, code: "CONNECTION_LOST", message: 'Connection Lost'});
-                        }else{
-                            err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
-                        }
+                        done(xhr.responseText);
+                    }
+                }else{
+                    if(navigator.onLine === false){
+                        err({status: xhr.status, code: "CONNECTION_LOST", message: 'Connection Lost'});
+                    }else{
+                        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
                     }
                 }
             }
-            xhr.open('GET', url, true);
-            xhr.send(null);
-        });
-    }
+        }
+        xhr.open('GET', url, true);
+        xhr.send(null);
+    });
 }
 
 
@@ -88,7 +52,7 @@ export function http_post(url, data, type = 'json'){
                     try{
                         let data = JSON.parse(xhr.responseText);
                         if(data.status === 'ok'){
-                            done(data.results || data.result);
+                            done(data);
                         }else if(data.status === 'redirect'){
                             if(data.to === 'logout'){location.pathname = "/logout";}
                         }else{
@@ -120,7 +84,7 @@ export function http_delete(url){
                     try{
                         let data = JSON.parse(xhr.responseText);
                         if(data.status === 'ok'){
-                            done(data.results || data.result);
+                            done(data);
                         }else if(data.status === 'redirect'){
                             if(data.to === 'logout'){location.pathname = "/logout";}
                         }else{

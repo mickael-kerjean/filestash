@@ -118,7 +118,7 @@ export class ViewerPage extends React.Component {
                     <IDE needSaving={this.needSaving.bind(this)}
                          isSaving={this.state.isSaving}
                          onSave={this.save.bind(this)}
-                         content={this.state.data}
+                         content={this.state.data || ''}
                          filename={this.state.filename}/>
                   </NgIf>
                   <NgIf cond={this.state.opener === 'image'} style={style}>

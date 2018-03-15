@@ -26,7 +26,7 @@ app.get('/ls', function(req, res){
             })
             .catch(function(err){
                 res.send({status: 'error', message: err.message || 'cannot fetch files', trace: err})
-            })
+            });
     }else{
         res.send({status: 'error', message: 'unknown path'})
     }
@@ -52,7 +52,7 @@ app.get('/cat', function(req, res){
 
 // create/update a file
 // https://github.com/pillarjs/multiparty
-app.post('/cat', function(req, res){        
+app.post('/cat', function(req, res){
     var form = new multiparty.Form(),
         path = decodeURIComponent(req.query.path);
 

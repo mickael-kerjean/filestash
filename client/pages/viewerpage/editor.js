@@ -55,6 +55,7 @@ export class Editor extends React.Component {
                     minFoldSize: 1
                 }
             });
+            window.mirror = editor;
 
             if(CodeMirror.afterInit){
                 CodeMirror.afterInit(editor);

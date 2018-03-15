@@ -6,8 +6,8 @@ import Path from 'path';
 
 import "./filesystem.scss";
 import { Container, NgIf } from '../../components/';
-import { NewThing } from './newthing';
-import { ExistingThing } from './existingthing';
+import { NewThing } from './thing-new';
+import { ExistingThing } from './thing-existing';
 import { FileZone } from './filezone';
 
 @DropTarget('__NATIVE_FILE__', {}, (connect, monitor) => ({
@@ -44,40 +44,43 @@ export class FileSystem extends React.Component {
         }
         function sortByType(files){
             return files.sort((fileA, fileB) => {
-                let idA = ['deleting', 'moving'].indexOf(fileA.state),
-                    idB = ['deleting', 'moving'].indexOf(fileB.state);
-
-                if(idA !== -1 && idB !== -1){ return 0; }
-                else if(idA !== -1 && idB === -1){ return +1; }
-                else if(idA === -1 && idB !== -1){ return -1; }
+                if(fileA.icon === 'loading' && fileB.icon !== 'loading'){return +1;}
+                else if(fileA.icon !== 'loading' && fileB.icon === 'loading'){return -1;}
                 else{
-                    if(['directory', 'link'].indexOf(fileA.type) !== -1 && ['directory', 'link'].indexOf(fileB.type) !== -1 ){ return 0; }
-                    else if(['directory', 'link'].indexOf(fileA.type) !== -1 && ['directory', 'link'].indexOf(fileB.type) === -1){ return -1; }
-                    else if(['directory', 'link'].indexOf(fileA.type) === -1 && ['directory', 'link'].indexOf(fileB.type) !== -1){ return +1; }
-                    else{ return fileA.name.toLowerCase() > fileB.name.toLowerCase();  }
+                    if(['directory', 'link'].indexOf(fileA.type) === -1 && ['directory', 'link'].indexOf(fileB.type) !== -1){
+                        return +1;
+                    }else if(['directory', 'link'].indexOf(fileA.type) !== -1 && ['directory', 'link'].indexOf(fileB.type) === -1){
+                        return -1;
+                    }else{
+                        if(fileA.name[0] === "." && fileB.name[0] !== ".") return +1;
+                        else if(fileA.name[0] !== "." && fileB.name[0] === ".") return -1;
+                        else{
+                            return fileA.name.toLowerCase() > fileB.name.toLowerCase() ? +1 : -1;
+                        }
+                    }
                 }
             });
         }
         function sortByName(files){
             return files.sort((fileA, fileB) => {
-                let idA = ['deleting', 'moving'].indexOf(fileA.state),
-                    idB = ['deleting', 'moving'].indexOf(fileB.state);
-
-                if(idA !== -1 && idB !== -1){ return 0; }
-                else if(idA !== -1 && idB === -1){ return +1; }
-                else if(idA === -1 && idB !== -1){ return -1; }
-                else{ return fileA.name.toLowerCase() > fileB.name.toLowerCase(); }
+                if(fileA.icon === 'loading' && fileB.icon !== 'loading'){return +1;}
+                else if(fileA.icon !== 'loading' && fileB.icon === 'loading'){return -1;}
+                else{
+                    if(fileA.name[0] === "." && fileB.name[0] !== ".") return +1;
+                    else if(fileA.name[0] !== "." && fileB.name[0] === ".") return -1;
+                    else{
+                        return fileA.name.toLowerCase() > fileB.name.toLowerCase() ? +1 : -1;
+                    }
+                }
             });
         }
         function sortByDate(files){
             return files.sort((fileA, fileB) => {
-                let idA = ['deleting', 'moving'].indexOf(fileA.state),
-                    idB = ['deleting', 'moving'].indexOf(fileB.state);
-
-                if(idA !== -1 && idB !== -1){ return 0; }
-                else if(idA !== -1 && idB === -1){ return +1; }
-                else if(idA === -1 && idB !== -1){ return -1; }
-                else{ return fileB.time - fileA.time; }
+                if(fileA.icon === 'loading' && fileB.icon !== 'loading'){return +1;}
+                else if(fileA.icon !== 'loading' && fileB.icon === 'loading'){return -1;}
+                else{
+                    return fileB.time - fileA.time;
+                }
             });
         }
     }

@@ -10,8 +10,13 @@ export class NgIf extends React.Component {
         let clean_prop = Object.assign({}, this.props);
         delete clean_prop.cond;
         delete clean_prop.children;
+        delete clean_prop.type;
         if(this.props.cond){
-            return <div {...clean_prop}>{this.props.children}</div>;
+            if(this.props.type === "inline"){
+                return <span {...clean_prop}>{this.props.children}</span>;
+            }else{
+                return <div {...clean_prop}>{this.props.children}</div>;
+            }
         }else{
             return null;
         }

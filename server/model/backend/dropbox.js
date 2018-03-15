@@ -3,7 +3,7 @@
 var http = require('request-promise'),
     http_stream = require('request'),
     Path = require('path'),
-    config = require('../../../config'),
+    config = require('../../../config_server'),
     toString = require('stream-to-string'),
     Readable = require('stream').Readable;
 

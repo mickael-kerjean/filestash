@@ -61,3 +61,9 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
     color: #6f6f6f;
     text-shadow: none;
 }
+
+/* BUGFIX */
+// https://github.com/codemirror/CodeMirror/issues/5056
+.CodeMirror-cursor {
+	width: 1px !important;
+}
