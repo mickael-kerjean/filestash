@@ -19,18 +19,20 @@ import { Bundle, URL_HOME, URL_FILES, URL_VIEWER, URL_LOGIN, URL_LOGOUT } from  
 export default class AppRouter extends React.Component {
     render() {
         return (
-            <BrowserRouter>
-              <div>
-                <Switch>
-                  <Route exact path="/" component={HomePage} />
-                  <Route path="/login" component={ConnectPage} />
-                  <Route path="/files/:path*" component={FilesPage} />
-                  <Route path="/view/:path*" component={ViewerPage} />
-                  <Route path="/logout" component={LogoutPage} />
-                  <Route component={NotFoundPage} />
-                </Switch>
-              </div>
-            </BrowserRouter>
+            <div>
+              <BrowserRouter>
+                <div>
+                  <Switch>
+                    <Route exact path="/" component={HomePage} />
+                    <Route path="/login" component={ConnectPage} />
+                    <Route path="/files/:path*" component={FilesPage} />
+                    <Route path="/view/:path*" component={ViewerPage} />
+                    <Route path="/logout" component={LogoutPage} />
+                    <Route component={NotFoundPage} />
+                  </Switch>
+                </div>
+              </BrowserRouter>
+            </div>
         );
     }
 }

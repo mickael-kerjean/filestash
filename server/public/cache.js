@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.0';
+const CACHE_NAME = 'v1.1';
 const DELAY_BEFORE_SENDING_CACHE = 2000;
 
 /*
@@ -9,20 +9,10 @@ self.addEventListener('fetch', function(event){
     if(is_a_ressource(event.request)){
         return event.respondWith(smartCacheStrategy(event.request));
     }else if(is_an_api_call(event.request)){
-        // TODO COOL FEATURE: https://github.com/mickael-kerjean/nuage/issues/11
-        // basically, it's all about cache invalidation sniffing inside event.request
-        if(event.request.method === "GET"){
-            if(navigator.onLine === false){
-                return event.respondWith(smartCacheStrategy(event.request));
-            }else{
-                return event.respondWith(networkFirstStrategy(event.request));
-            }
-        }
         return event;
     }else if(is_an_index(event.request)){
         return event.respondWith(smartCacheStrategy(event.request))
     }else{
-        //console.log("WTF? ", event);
         return event;
     }
 });

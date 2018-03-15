@@ -1,0 +1,11 @@
+.component_filezone{
+    border: 2px dashed;
+    padding: 25px 0;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
+    &.hover{
+        background: var(--emphasis-primary);
+        border: 2px dashed var(--primary);
+    }
+}

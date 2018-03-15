@@ -5,8 +5,8 @@ import './connectpage.scss';
 import { Session } from '../model/';
 import { Container, NgIf, Loader, Notification } from '../components/';
 import { ForkMe, RememberMe, Credentials, Form } from './connectpage/';
-import { invalidate } from '../helpers/';
-import config from '../../config.js';
+import { cache } from '../helpers/';
+import config from '../../config_client';
 
 import { Alert, Prompt } from '../components/';
 
@@ -48,7 +48,7 @@ export class ConnectPage extends React.Component {
         this.setState({loading: true});
         Session.authenticate(params)
             .then((ok) => {
-                invalidate();
+                cache.destroy();
                 const path = params.path && /^\//.test(params.path)? /\/$/.test(params.path) ? params.path : params.path+'/' :  '/';
                 this.props.history.push('/files'+path);
             })

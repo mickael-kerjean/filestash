@@ -62,7 +62,9 @@
 // box
 .modal-appear > div > div, .modal-enter > div > div{
     opacity: 0;
+    transform-origin: top center;
     transform: translateY(10px);
+
 }
 .modal-appear.modal-appear-active > div > div, .modal-enter.modal-enter-active > div > div{
     opacity: 1;

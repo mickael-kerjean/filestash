@@ -1,6 +1,6 @@
 const crypto = require('crypto'),
     algorithm = 'aes-256-cbc',
-    password = require('../../config.js')['server_secret'];
+    password = require('../../config_server')['secret_key'];
 
 module.exports = {
     encrypt: function(obj){

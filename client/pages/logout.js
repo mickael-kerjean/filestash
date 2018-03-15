@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Session } from '../model/';
 import { Loader } from '../components/';
-import { invalidate } from '../helpers/';
+import { cache } from '../helpers/';
 
 export class LogoutPage extends React.Component {
     constructor(props){
@@ -10,9 +10,9 @@ export class LogoutPage extends React.Component {
     }
 
     componentDidMount(){
-        invalidate();
         Session.logout()
             .then((res) => {
+                cache.destroy();
                 this.props.history.push('/');
             })
             .catch((res) => {

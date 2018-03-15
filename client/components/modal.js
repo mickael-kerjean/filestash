@@ -23,6 +23,9 @@ export class Modal extends React.Component {
         this.setState({marginTop: this._marginTop()});
     }
 
+    componentWillUnmount(){
+    }
+
     _marginTop(){
         let size = 300;
         const $box = document.querySelector('#modal-box > div');
@@ -35,7 +38,6 @@ export class Modal extends React.Component {
     }
 
     render() {
-
         return (
             <ReactCSSTransitionGroup transitionName="modal"
               transitionLeaveTimeout={300}

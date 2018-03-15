@@ -28,8 +28,9 @@ export class Card extends React.Component {
     }
 
     render() {
+        const _className = this.props.className ? this.props.className+" box" : "box";
         return (
-            <div {...this.props} className={this.props.className+" box"}>
+            <div {...this.props} className={_className}>
               {this.props.children}
             </div>
         );

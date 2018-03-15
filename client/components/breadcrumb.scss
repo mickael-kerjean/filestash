@@ -1,4 +1,77 @@
 .component_breadcrumb{
+    .breadcrumb{
+        background: white;
+        margin: 0 0 0px 0;
+        padding: 8px 0;
+        box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.2);
+        z-index: 1000;
+        position: relative;
+
+        ul{
+            list-style-type: none;
+            margin: 0 auto;
+            width: 95%;
+            max-width: 800px;
+            padding: 0;
+            span, div, li{display: inline-block;}
+        }
+    }
+    .component_logout{
+        float: right;
+        display: inline-block;
+        margin: 0 0px;
+        padding: 3px 0;
+        .component_icon{
+            height: 20px;
+        }
+    }
+
+    .component_saving{
+        display: inline;
+        padding: 0 3px;
+    }
+
+    .component_separator{
+        position: relative;
+        top: 3px;
+        display: inline;
+    }
+
+    .component_path-element{
+        display: inline-block;
+        color: var(--light);
+        cursor: pointer;
+        &.is-last{
+            cursor: inherit;
+            color: var(--color);
+            font-weight: inherit;
+            .component_path-element-wrapper.hover{
+                cursor: inherit;
+                background: inherit!important;
+            }
+        }
+
+        .component_path-element-wrapper{
+            font-size: 18px;
+            display: inline-block;
+            padding: 2px 5px;
+            border-radius: 2px;
+
+            &.hover{
+                background: var(--super-light);
+            }
+            &.highlight{
+                background: var(--emphasis-primary);
+                border: 2px solid var(--primary);
+                padding: 0px 20px;
+                box-sizing: border-box;
+            }
+        }
+    }
+}
+
+/* ANIMATION */
+.component_breadcrumb{
     .breadcrumb-leave{
         display: inline-block;
         opacity: 1;

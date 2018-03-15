@@ -13,3 +13,5 @@ if ('serviceWorker' in navigator) {
 window.onload = () => {
     ReactDOM.render(<Router/>, document.getElementById('main'));
 };
+
+window.log = function(){console.log.apply(this, arguments)};

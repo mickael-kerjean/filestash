@@ -7,7 +7,7 @@ import Path from 'path';
 import './filespage.scss';
 import { Files } from '../model/';
 import { NgIf, Loader, Error, Uploader, EventReceiver } from '../components/';
-import { debounce, goToFiles, goToViewer } from '../helpers/';
+import { debounce, goToFiles, goToViewer, event } from '../helpers/';
 import { BreadCrumb, FileSystem } from './filespage/';
 
 @EventReceiver
@@ -25,13 +25,12 @@ export class FilesPage extends React.Component {
         this.resetHeight = debounce(this.resetHeight.bind(this), 100);
         this.goToFiles = goToFiles.bind(null, this.props.history);
         this.goToViewer = goToViewer.bind(null, this.props.history);
-    }
-
-    componentWillMount(){
-        this.onPathUpdate(this.state.path, 'directory', true);
+        this.observers = {ls: null};
     }
 
     componentDidMount(){
+        this.onPathUpdate(this.state.path, 'directory');
+
         // subscriptions
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
         this.props.subscribe('file.upload', this.onUpload.bind(this));
@@ -53,6 +52,7 @@ export class FilesPage extends React.Component {
         this.props.unsubscribe('file.delete');
         this.props.unsubscribe('file.refresh');
         window.removeEventListener("resize", this.resetHeight);
+        if(this.observers.ls) this.observers.ls.unsubscribe();
     }
 
     hideError(){
@@ -60,24 +60,26 @@ export class FilesPage extends React.Component {
     }
 
     onRefresh(path = this.state.path){
-        this.setState({error: false});
-        return Files.ls(path).then((files) => {
-            this.setState({files: files, loading: false});
-        }).catch((error) => {
+        if(this.observers.ls) this.observers.ls.unsubscribe();
+        this.observers.ls = Files.ls(path).subscribe((files) => {
+            this.setState({files: files, loading: false})
+        }, (error) => {
+            console.log("ERROR", error);
             this.setState({error: error});
         });
+        this.setState({error: false});
     }
 
-    onPathUpdate(path, type = 'directory', withLoader = true){
-        window.path = this.props.history;
+    onPathUpdate(path, type = 'directory'){
+        window.timestamp = new Date();
         if(type === 'file'){
             this.props.history.push('/view'+path);
         }else{
-            this.setState({path: path, loading: withLoader});
+            this.setState({path: path, loading: true});
+            this.onRefresh(path)
             if(path !== this.state.path){
                 this.props.history.push('/files'+path);
             }
-            return this.onRefresh(path);
         }
     }
 
