@@ -3,13 +3,12 @@ Call it an FTP client, an S3 viewer or a Dropbox like web app, Nuage leverages y
 <p align="center">
   FTP • SFTP • WebDAV • Git • S3 <br>
   Dropbox • Google Drive
-
-  <a style="display:inline-block;background:#9AD1ED;color:#466372; padding: 5px 10px;border-radius:3px;" href="https://nuage.kerjean.me" target="_blank"> Demo </a>
-
 </p>
 
 ![screenshot](https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/photo.jpg)
 
+# Demo
+[Nuage Demo](https://nuage.kerjean.me)
 
 # Features
 - manage your files directly from your browser
