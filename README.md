@@ -8,7 +8,7 @@ Call it an FTP client, an S3 viewer or a Dropbox like web app, Nuage leverages y
 
 [Try it here](https://nuage.kerjean.me)
 
-![https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/photo.jpg][screenshot]
+![screenshot][https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/photo.jpg]
 
 
 # Features
