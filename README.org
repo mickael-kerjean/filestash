@@ -1,25 +1,24 @@
 * What is it about?
 Call it an FTP client, an S3 viewer or a Dropbox like web app, Nuage leverages your existing storage to help you manage your files in the cloud using any of the following protocols/platforms:
-- FTP
-- SFTP
-- WebDAV
-- Git
-- S3
-- Dropbox
-- Google Drive
+<p align="center">
+FTP • SFTP • WebDAV • Git • S3
+Dropbox • Google Drive
+</p>
 
-* Demo
 [[https://nuage.kerjean.me][Try]] before install
 [[https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/photo.jpg]]
+
+
 * Features
 - manage your files directly from your browser
-- listen to music
-- watch your videos
-- show images
-- work with multiple cloud providers and protocols
+- work with multiple cloud providers and protocols, easily extensible
 - upload files and folders
 - mobile friendly
-- emacs keybindings `;)`
+- super fast
+- audio player
+- video player
+- image viewer
+- emacs keybindings =;)=
 
 * What about my credentials?
 Credentials are stored in your browser in a http only cookie encrypted using aes-256-cbc and aren't persistent in the server disk at all.
