@@ -36,6 +36,7 @@
     "ssh2-sftp-client": "^1.1.0",
     "stream-to-string": "^1.1.0",
     "string-to-stream": "^1.1.0",
+    "cors": "^2.8.3",
     "webdav-fs": "^1.0.0",
     "winston": "^2.3.1",
     "winston-couchdb": "^0.6.3"
@@ -55,7 +56,6 @@
     "browserify": "^16.1.1",
     "chai": "^4.1.2",
     "codemirror": "^5.26.0",
-    "cors": "^2.8.3",
     "css-loader": "^0.28.10",
     "dropbox": "^2.5.3",
     "ejs": "^2.5.6",
