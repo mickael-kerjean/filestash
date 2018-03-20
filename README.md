@@ -8,7 +8,7 @@ Call it an FTP client, an S3 viewer or a Dropbox like web app, Nuage leverages y
 
 [Try it here](https://nuage.kerjean.me)
 
-![screenshot][https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/photo.jpg]
+![screenshot](https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/photo.jpg)
 
 
 # Features
@@ -20,7 +20,7 @@ Call it an FTP client, an S3 viewer or a Dropbox like web app, Nuage leverages y
 - audio player
 - video player
 - image viewer
-- emacs keybindings =;)=
+- emacs keybindings `;)`
 
 # What about my credentials?
 Credentials are stored in your browser in a http only cookie encrypted using aes-256-cbc and aren't persistent in the server disk at all.
