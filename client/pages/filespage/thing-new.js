@@ -33,6 +33,7 @@ export class NewThing extends React.Component {
         e.preventDefault();
         if(this.state.name !== null){
             this.props.emit('file.create', pathBuilder(this.props.path, this.state.name, this.state.type), this.state.type);
+            this.onDelete();
         }
     }
 

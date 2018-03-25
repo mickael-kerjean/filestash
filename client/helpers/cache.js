@@ -44,7 +44,7 @@ Data.prototype._vacuum = function(){
 /*
  * Fetch a record using its path, can be whether a file path or content
  */
-Data.prototype.get = function(type, path, _should_update = true){
+Data.prototype.get = function(type, path, _record_access = true){
     if(type !== this.FILE_PATH && type !== this.FILE_CONTENT) return Promise.reject({});
     return this.db.then((db) => {
         const tx = db.transaction(type, "readwrite");
@@ -52,15 +52,13 @@ Data.prototype.get = function(type, path, _should_update = true){
         const query = store.get(path);
         return new Promise((done, error) => {
             query.onsuccess = (e) => {
-                let data = query.result || null;
-                done(data);
-                if(data && _should_update === true){
-                    requestAnimationFrame(() => {
-                        data.last_access = new Date();
-                        if(!data.access_count) data.access_count = 0;
-                        data.access_count += 1;
-                        this.put(type, data.path, data);
-                    });
+                let data = query.result;
+                done(query.result || null);
+                if(data && _record_access === true){
+                    data.last_access = new Date();
+                    if(!data.access_count) data.access_count = 0;
+                    data.access_count += 1;
+                    this.put(type, data.path, data);
                 }
             };
             tx.onerror = error;
@@ -80,7 +78,6 @@ Data.prototype.put = function(type, path, data){
                 new_data.path = path;
             }else{
                 new_data = Object.assign(res, data);
-                new_data.last_update = new Date();
             }
 
             return this.db.then((db) => {
@@ -115,7 +112,7 @@ Data.prototype.remove = function(type, path, exact = true){
                 request.onsuccess = function(event) {
                     const cursor = event.target.result;
                     if(cursor){
-                        if(cursor.value.path.indexOf(path) === 0){
+                        if(cursor.value.path.indexOf(path) === 0 && path !== cursor.value.path){
                             store.delete(cursor.value.path);
                         }
                         cursor.continue();
@@ -181,4 +178,13 @@ Data.prototype.destroy = function(){
 
 
 export const cache = new Data();
-window.test = cache;
+window._cache = cache;
+
+_cache._debug = () => {
+    window._cache.update_path((e) => window.log("- path: "+e.path, e.results.slice(0,5).map((f) => {
+        if(f.type === 'directory'){ f.name = "d:"+f.name;} else{ f.name = "f:"+f.name;}
+        if(f.icon === 'loading') return "("+f.name+")";
+        else if(f.icon === 'error') return "_"+f.name+"_";
+        return f.name;
+    })));
+}

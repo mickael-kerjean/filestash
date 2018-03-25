@@ -20,6 +20,7 @@
     "aws-sdk": "^2.59.0",
     "body-parser": "^1.17.2",
     "cookie-parser": "^1.4.3",
+    "cors": "^2.8.3",
     "crypto": "0.0.3",
     "express": "^4.15.3",
     "express-winston": "^2.4.0",
@@ -36,8 +37,7 @@
     "ssh2-sftp-client": "^1.1.0",
     "stream-to-string": "^1.1.0",
     "string-to-stream": "^1.1.0",
-    "cors": "^2.8.3",
-    "webdav-fs": "^1.0.0",
+    "webdav-fs": "^1.10.1",
     "winston": "^2.3.1",
     "winston-couchdb": "^0.6.3"
   },

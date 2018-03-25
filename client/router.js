@@ -2,19 +2,7 @@ import React from 'react';
 import { BrowserRouter, Route, IndexRoute, Switch } from 'react-router-dom';
 import { NotFoundPage, ConnectPage, HomePage, LogoutPage, FilesPage, ViewerPage } from './pages/';
 import { Bundle, URL_HOME, URL_FILES, URL_VIEWER, URL_LOGIN, URL_LOGOUT } from  './helpers/';
-
-// import {FilesPage} from './pages/filespage';
-// import {ViewerPage} from './pages/viewerpage';
-// const FilesPage = (props) => (
-//     <Bundle loader={import(/* webpackChunkName: "route" */ "./pages/filespage")} symbol="FilesPage">
-//       {(Comp) => <Comp {...props}/>}
-//     </Bundle>
-// );
-// const ViewerPage = (props) => (
-//     <Bundle loader={import(/* webpackChunkName: "route" */"./pages/viewerpage")} symbol="ViewerPage">
-//       {(Comp) => <Comp {...props}/>}
-//     </Bundle>
-// );
+import { Audio, Video } from './components/';
 
 export default class AppRouter extends React.Component {
     render() {

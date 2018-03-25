@@ -16,6 +16,8 @@ export { Bundle } from './bundle';
 export { Modal } from './modal';
 export { Prompt } from './prompt';
 export { Alert } from './alert';
+export { Audio } from './audio';
+export { Video } from './video';
 //export { Connect } from './connect';
 // Those are commented because they will delivered as a separate chunk
 // export { Editor } from './editor';

@@ -1,0 +1,15 @@
+.component_video{
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 300px;
+    height: 200px;
+    background: var(--super-light);
+    border: 1px solid #e2e2e2;
+    border-radius: 2px;
+
+    .loader{
+        text-align: center;
+        margin-top: 30px;
+    }
+}

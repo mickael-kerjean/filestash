@@ -1,6 +1,6 @@
 "use strict";
 
-import { http_get, http_post, prepare } from '../helpers/';
+import { http_get, http_post, prepare, basename, dirname } from '../helpers/';
 import Path from 'path';
 
 import { Observable } from 'rxjs/Observable';
@@ -18,19 +18,20 @@ class FileSystem{
 
         return Observable.create((obs) => {
             this.obs = obs;
-            this._ls_from_cache(path);
-
-            let keep_pulling_from_http = false;
-            const fetch_from_http = (_path) => {
-                return this._ls_from_http(_path)
-                    .then(() => new Promise((done, err) => {
-                        window.setTimeout(() => done(), 2000);
-                    }))
-                    .then(() => {
-                        return keep_pulling_from_http === true? fetch_from_http(_path) : Promise.resolve();
-                    });
-            };
-            fetch_from_http(path);
+            let keep_pulling_from_http = true;
+            this._ls_from_cache(path, true)
+                .then(() => {
+                    const fetch_from_http = (_path) => {
+                        return this._ls_from_http(_path)
+                            .then(() => new Promise((done, err) => {
+                                window.setTimeout(() => done(), 2000);
+                            }))
+                            .then(() => {
+                                return keep_pulling_from_http === true? fetch_from_http(_path) : Promise.resolve();
+                            });
+                    };
+                    fetch_from_http(path);
+                });
 
             return () => {
                 keep_pulling_from_http = false;
@@ -43,7 +44,10 @@ class FileSystem{
         return http_get(url).then((response) => {
             return cache.get(cache.FILE_PATH, path, false).then((_files) => {
                 if(_files && _files.results){
-                    let _files_virtual_to_keep = _files.results.filter((file) => file.icon === 'loading');
+                    let _files_virtual_to_keep = _files.results.filter((file) => {
+                        return file.icon === 'loading' &&
+                            (new Date()).getTime() - file._timestamp < 1000*60*60;
+                    });
                     // update file results
                     for(let i=0; i<_files_virtual_to_keep.length; i++){
                         for(let j=0; j<response.results.length; j++){
@@ -67,8 +71,8 @@ class FileSystem{
             console.log(_err);
         });
     }
-    _ls_from_cache(path){
-        return cache.get(cache.FILE_PATH, path).then((_files) => {
+    _ls_from_cache(path, _record_access = false){
+        return cache.get(cache.FILE_PATH, path, _record_access).then((_files) => {
             if(_files && _files.results){
                 if(this.current_path === path){
                     this.obs && this.obs.next(_files.results);
@@ -80,15 +84,15 @@ class FileSystem{
 
     rm(path){
         const url = '/api/files/rm?path='+prepare(path);
-        this._replace(path, 'loading');
-        return http_get(url)
+        this._replace(path, 'loading')
+            .then(() => http_get(url))
             .then((res) => {
                 if(res.status === 'ok'){
-                    this._remove(path);
                     cache.remove(cache.FILE_CONTENT, path, false);
-                    cache.remove(cache.FILE_PATH, Path.dirname(path) + "/", false);
+                    cache.remove(cache.FILE_PATH, dirname(path), false);
+                    return this._remove(path);
                 }else{
-                    this._replace(path, 'error');
+                    return this._replace(path, 'error');
                 }
             });
     }
@@ -115,59 +119,53 @@ class FileSystem{
         const url = '/api/files/cat?path='+prepare(path);
         let formData = new window.FormData();
         formData.append('file', file);
-        this._replace(path, 'loading');
-        cache.put(cache.FILE_CONTENT, path, file);
-        return http_post(url, formData, 'multipart')
-            .then((res)=> {
-                res.status === 'ok'? this._replace(path) : this._replace(path, 'error');
-                return Promise.resolve(res);
-            });
+        return this._replace(path, 'loading')
+            .then(() => cache.put(cache.FILE_CONTENT, path, file))
+            .then(() => http_post(url, formData, 'multipart'))
+            .then((res)=> res.status === 'ok'? this._replace(path) : this._replace(path, 'error'));
     }
 
     mkdir(path){
         const url = '/api/files/mkdir?path='+prepare(path);
-        this._add(path, 'loading');
-        cache.remove(cache.FILE_PATH, Path.dirname(path) + "/");
-        return http_get(url)
-            .then((res) => {
-                return res.status === 'ok'? this._replace(path) : this._replace(path, 'error');
-            });
+        this._add(path, 'loading')
+            .then(() => this._add(path, 'loading'))
+            .then(() => http_get(url))
+            .then((res) => res.status === 'ok'? this._replace(path) : this._replace(path, 'error'));
     }
 
     touch(path, file){
-        this._add(path, 'loading');
-        let req;
-        if(file){
-            const url = '/api/files/cat?path='+prepare(path);
-            let formData = new window.FormData();
-            formData.append('file', file);
-            req = http_post(url, formData, 'multipart');
-        }else{
-            const url = '/api/files/touch?path='+prepare(path);
-            req = http_get(url);
-        }
-
-        return req
-            .then((res) => {
-                return res.status === 'ok'? this._replace(path) : this._replace(path, 'error');
-            });
+        this._add(path, 'loading')
+            .then(() => {
+                if(file){
+                    const url = '/api/files/cat?path='+prepare(path);
+                    let formData = new window.FormData();
+                    formData.append('file', file);
+                    return http_post(url, formData, 'multipart');
+                }else{
+                    const url = '/api/files/touch?path='+prepare(path);
+                    return http_get(url);
+                }
+            })
+            .then((res) => res.status === 'ok'? this._replace(path) : this._replace(path, 'error'));
     }
 
     mv(from, to){
         const url = '/api/files/mv?from='+prepare(from)+"&to="+prepare(to);
 
         ui_before_request(from, to)
-            .then(() => this._ls_from_cache(Path.dirname(from)+"/"))
+            .then(() => this._ls_from_cache(dirname(from)))
+            .then(() => this._ls_from_cache(dirname(to)))
             .then(() => http_get(url)
                   .then((res) => {
                       if(res.status === 'ok'){
-                          ui_when_success(from, to)
-                              .then(() => this._ls_from_cache(Path.dirname(from)+"/"));
+                          return ui_when_success.call(this, from, to)
+                              .then(() => this._ls_from_cache(dirname(from)))
+                              .then(() => this._ls_from_cache(dirname(to)));
                       }else{
-                          ui_when_fail(from, to)
-                              .then(() => this._ls_from_cache(Path.dirname(from)+"/"));
+                          return ui_when_fail.call(this, from, to)
+                              .then(() => this._ls_from_cache(dirname(from)))
+                              .then(() => this._ls_from_cache(dirname(to)));
                       }
-                      return Promise.resolve(res);
                   }));
 
         function ui_before_request(from, to){
@@ -180,26 +178,27 @@ class FileSystem{
                 });
 
             function update_from(){
-                return cache.get(cache.FILE_PATH, Path.dirname(from)+"/", false)
+                return cache.get(cache.FILE_PATH, dirname(from), false)
                     .then((res_from) => {
-                        let _file = {name: Path.basename(from), type: /\/$/.test(from) ? 'directory' : 'file'};
+                        let _file = {name: basename(from), type: /\/$/.test(from) ? 'directory' : 'file'};
                         res_from.results = res_from.results.map((file) => {
-                            if(file.name === Path.basename(from)){
-                                file.name = Path.basename(to);
+                            if(file.name === basename(from)){
+                                file.name = basename(to);
                                 file.icon = 'loading';
+                                file._timestamp = (new Date()).getTime();
                                 _file = file;
                             }
                             return file;
                         });
-                        return cache.put(cache.FILE_PATH, Path.dirname(from)+"/", res_from)
+                        return cache.put(cache.FILE_PATH, dirname(from), res_from)
                             .then(() => Promise.resolve(_file));
                     });
             }
             function update_to(file){
-                return cache.get(cache.FILE_PATH, Path.dirname(to)+"/", false).then((res_to) => {
+                return cache.get(cache.FILE_PATH, dirname(to), false).then((res_to) => {
                     if(!res_to || !res_to.results) return Promise.resolve();
                     res_to.results.push(file);
-                    return cache.put(cache.FILE_PATH, Path.dirname(to)+"/", res_to);
+                    return cache.put(cache.FILE_PATH, dirname(to), res_to);
                 });
             }
         }
@@ -213,38 +212,37 @@ class FileSystem{
                 });
 
             function update_from(){
-                return cache.get(cache.FILE_PATH, Path.dirname(from)+"/", false)
+                return cache.get(cache.FILE_PATH, dirname(from), false)
                     .then((res_from) => {
                         if(!res_from || !res_from.results) return Promise.reject();
                         res_from.results = res_from.results.map((file) => {
-                            if(file.name === Path.basename(from)){
+                            if(file.name === basename(from)){
                                 file.icon = 'error';
                             }
                             return file;
                         });
-                        return cache.put(cache.FILE_PATH, Path.dirname(from)+"/", res_from)
+                        return cache.put(cache.FILE_PATH, dirname(from), res_from)
                             .then(() => Promise.resolve());
                     });
             }
 
             function update_to(){
-                return cache.get(cache.FILE_PATH, Path.dirname(to)+"/", false)
+                return cache.get(cache.FILE_PATH, dirname(to), false)
                     .then((res_to) => {
                         if(!res_to || !res_to.results) return Promise.resolve();
                         res_to.results = res_to.results.filter((file) => {
-                            if(file.name === Path.basename(to)){
+                            if(file.name === basename(to)){
                                 return false;
                             }
                             return true;
-                       });
-                        return cache.put(cache.FILE_PATH, Path.dirname(from)+"/", res_to);
+                        });
+                        return cache.put(cache.FILE_PATH, dirname(from), res_to);
                     });
             }
         }
         function ui_when_success(from, to){
             if(Path.dirname(from) === Path.dirname(to)){
-                this._replace(Path.dirname(from)+"/"+Path.basename(to), null);
-                return Promise.resolve();
+                return this._replace(dirname(from)+basename(to), null);
             }else{
                 return update_from()
                     .then(update_to)
@@ -252,35 +250,35 @@ class FileSystem{
             }
 
             function update_from(){
-                return cache.get(cache.FILE_PATH, Path.dirname(from)+"/", false).then((res_from) => {
+                return cache.get(cache.FILE_PATH, dirname(from), false).then((res_from) => {
                     if(!res_from || !res_from.results) return Promise.resolve();
                     res_from.results = res_from.results.filter((file) => {
-                        if(file.name === Path.basename(to)){
+                        if(file.name === basename(to)){
                             return false;
                         }
                         return true;
                     });
-                    return cache.put(cache.FILE_PATH, Path.dirname(from)+"/", res_from);
+                    return cache.put(cache.FILE_PATH, dirname(from), res_from);
                 });
             }
             function update_to(){
-                return cache.get(cache.FILE_PATH, Path.dirname(to)+"/", false).then((res_to) => {
+                return cache.get(cache.FILE_PATH, dirname(to), false).then((res_to) => {
                     const target_already_exist = res_to && res_to.results ? true : false;
                     if(target_already_exist){
                         res_to.results = res_to.results.map((file) => {
-                            if(file.name === Path.basename(to)){
+                            if(file.name === basename(to)){
                                 delete file.icon;
                             }
                             return file;
                         });
-                        return cache.put(cache.FILE_PATH, Path.dirname(to)+"/", res_to);
+                        return cache.put(cache.FILE_PATH, dirname(to), res_to);
                     }else{
                         const data = {results: [{
-                            name: Path.basename(to),
+                            name: basename(to),
                             type: /\/$/.test(to) ? 'directory' : 'file',
                             time: (new Date()).getTime()
                         }]};
-                        return cache.put(cache.FILE_PATH, Path.dirname(to)+"/", data);
+                        return cache.put(cache.FILE_PATH, dirname(to), data);
                     }
                 });
             }
@@ -302,55 +300,53 @@ class FileSystem{
     }
 
     _replace(path, icon){
-        return cache.get(cache.FILE_PATH, Path.dirname(path) + "/", false)
+        return cache.get(cache.FILE_PATH, dirname(path), false)
             .then((res) => {
                 if(!res) return Promise.resolve();
                 let files = res.results.map((file) => {
-                    if(file.name === Path.basename(path)){
-                        if(!icon) delete file.icon;
-                        if(icon) file.icon = icon;
+                    if(file.name === basename(path)){
+                        if(!icon){
+                            delete file.icon;
+                            delete file._timestamp;
+                        }
+                        if(icon){
+                            file.icon = icon;
+                            file._timestamp = (new Date()).getTime();
+                        }
                     }
                     return file;
                 });
                 res.results = files;
-                return cache.put(cache.FILE_PATH, Path.dirname(path) + "/", res)
-                    .then((res) => {
-                        this._ls_from_cache(Path.dirname(path)+"/");
-                        return Promise.resolve(res);
-                    });
+                return cache.put(cache.FILE_PATH, dirname(path), res)
+                    .then((res) => this._ls_from_cache(Path.dirname(path)+"/"));
             });
     }
 
     _add(path, icon){
-        return cache.get(cache.FILE_PATH, Path.dirname(path) + "/", false)
+        return cache.get(cache.FILE_PATH, dirname(path), false)
             .then((res) => {
                 if(!res) return Promise.resolve();
                 let file = {
-                    name: Path.basename(path),
+                    name: basename(path),
                     type: /\/$/.test(path) ? 'directory' : 'file',
+                    _timestamp: (new Date()).getTime()
                 };
                 if(icon) file.icon = icon;
                 res.results.push(file);
-                return cache.put(cache.FILE_PATH, Path.dirname(path) + "/", res)
-                    .then((res) => {
-                        this._ls_from_cache(Path.dirname(path)+"/");
-                        return Promise.resolve(res);
-                    });
+                return cache.put(cache.FILE_PATH, dirname(path), res)
+                    .then((res) => this._ls_from_cache(Path.dirname(path)+"/"));
             });
     }
     _remove(path){
-        return cache.get(cache.FILE_PATH, Path.dirname(path) + "/", false)
+        return cache.get(cache.FILE_PATH, dirname(path), false)
             .then((res) => {
                 if(!res) return Promise.resolve();
                 let files = res.results.filter((file) => {
-                    return file.name === Path.basename(path) ? false : true;
+                    return file.name === basename(path) ? false : true;
                 });
                 res.results = files;
-                return cache.put(cache.FILE_PATH, Path.dirname(path) + "/", res)
-                    .then((res) => {
-                        this._ls_from_cache(Path.dirname(path)+"/");
-                        return Promise.resolve(res);
-                    });
+                return cache.put(cache.FILE_PATH, dirname(path), res)
+                    .then((res) => this._ls_from_cache(Path.dirname(path)+"/"));
             });
     }
 }

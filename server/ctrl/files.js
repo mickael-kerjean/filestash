@@ -83,7 +83,7 @@ app.get('/mv', function(req, res){
     if(from && to){
         Files.mv(from, to, req.cookies.auth)
             .then((message) => {
-                res.send({status: 'ok', result: message})
+                res.send({status: 'ok'})
             })
             .catch((err) => {
                 res.send({status: 'error', message: err.message || 'couldn\'t rename your file', trace: err})
@@ -115,7 +115,7 @@ app.get('/mkdir', function(req, res){
     if(path){
         Files.mkdir(path, req.cookies.auth)
             .then((message) => {
-                res.send({status: 'ok', result: message})
+                res.send({status: 'ok'})
             })
             .catch((err) => {
                 res.send({status: 'error', message: err.message || 'couldn\'t create a directory', trace: err})
@@ -130,7 +130,7 @@ app.get('/touch', function(req, res){
     if(path){
         Files.touch(path, req.cookies.auth)
             .then((message) => {
-                res.send({status: 'ok', result: message})
+                res.send({status: 'ok'})
             })
             .catch((err) => {
                 res.send({status: 'error', message: err.message || 'couldn\'t create a file', trace: err})
