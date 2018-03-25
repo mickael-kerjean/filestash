@@ -10,15 +10,6 @@ function connect(params){
     );
 }
 
-function encode(path){
-    return path
-        .split('/')
-        .map(function(link){
-            return encodeURIComponent(link);
-        })
-        .join('/')
-}
-
 module.exports = {
     test: function(params){
         return new Promise((done, err) => {
@@ -29,18 +20,7 @@ module.exports = {
         });
     },
     cat: function(path, params){
-        path = encode(path);
-        return new Promise(function(done, err){
-            connect(params).readFile(path, 'binary', function(error, res){
-                if(error){ err(error) }
-                else{
-                    var stream = new Readable();
-                    stream.push(res);
-                    stream.push(null);
-                    done(stream);
-                }
-            });
-        });
+        return Promise.resolve(connect(params).createReadStream(path));
     },
     ls: function(path, params){
         return new Promise((done, err) => {
@@ -69,16 +49,9 @@ module.exports = {
         });
     },
     write: function(path, content, params){
-        path = encode(path);
-        return new Promise((done, err) => {
-            connect(params).writeFile(path, content, 'binary', function(error) {
-                if(error){ err(error); }
-                else{ done('done'); }
-            });
-        });
+        return Promise.resolve(content.pipe(connect(params).createWriteStream(path)));
     },
     rm: function(path, params){
-        path = encode(path);
         return new Promise((done, err) => {
             connect(params).unlink(path, function (error) {
                 if(error){ err(error); }
@@ -87,8 +60,6 @@ module.exports = {
         });
     },
     mv: function(from, to, params){
-        from = encode(from);
-        to = encode(to);
         return new Promise((done, err) => {
             connect(params).rename(from, to, function (error) {
                 if(error){ err(error); }
@@ -97,7 +68,6 @@ module.exports = {
         });
     },
     mkdir: function(path, params){
-        path = encode(path);
         return new Promise((done, err) => {
             connect(params).mkdir(path, function(error) {
                 if(error){ err(error); }
@@ -106,7 +76,6 @@ module.exports = {
         });
     },
     touch: function(path, params){
-        path = encode(path);
         return new Promise((done, err) => {
             connect(params).writeFile(path, '', function(error) {
                 if(error){ err(error); }

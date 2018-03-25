@@ -18,7 +18,7 @@ class FileSystem{
 
         return Observable.create((obs) => {
             this.obs = obs;
-            let keep_pulling_from_http = true;
+            let keep_pulling_from_http = false;
             this._ls_from_cache(path, true)
                 .then(() => {
                     const fetch_from_http = (_path) => {
