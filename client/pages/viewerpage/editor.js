@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { NgIf, Loader } from '../../components/';
+
 import CodeMirror from 'codemirror/lib/codemirror';
 import 'codemirror/lib/codemirror.css';
 import './editor.scss';
@@ -25,6 +27,7 @@ export class Editor extends React.Component {
     constructor(props){
         super(props);
         this.state = {
+            loading: null,
             editor: null,
             filename: this.props.filename
         };
@@ -34,13 +37,16 @@ export class Editor extends React.Component {
         if(this.props.content !== props.content){
             this.state.editor.getDoc().setValue(props.content);
         }
-        if(this.props.height !== props.height){
-            this.updateHeight(props.height);
-        }
     }
 
     componentDidMount(){
+        this.setState({loading: null, error: false}, () => {
+            window.setTimeout(() => {
+                if(this.state.loading === null) this.setState({loading: true});
+            }, 200);
+        });
         this.loadMode(this.props.filename)
+            .then((res) => new Promise((done) => this.setState({loading: false}, () => done(res))))
             .then(loadCodeMirror.bind(this));
 
         function loadCodeMirror(CodeMirror){
@@ -62,7 +68,6 @@ export class Editor extends React.Component {
             }
 
             this.setState({editor: editor});
-            this.updateHeight(this.props.height);
 
             editor.on('change', (edit) => {
                 if(this.props.onChange){
@@ -83,13 +88,6 @@ export class Editor extends React.Component {
         this.state.editor.clearHistory();
     }
 
-    updateHeight(height){
-        if(height){
-            document.querySelector('.CodeMirror').style.height = height+'px';
-        }
-    }
-
-
     loadMode(file){
         let ext = file.split('.').pop(),
             mode = null;
@@ -103,7 +101,7 @@ export class Editor extends React.Component {
         else if(ext === 'css'){ mode = 'css'; }
         else if(ext === 'less' || ext === 'scss' || ext === 'sass'){ mode = 'sass'; }
         else if(ext === 'js' || ext === 'json'){ mode = 'javascript'; }
-        else if(ext === 'jsx'){ mode = 'jsx' }
+        else if(ext === 'jsx'){ mode = 'jsx'; }
         else if(ext === 'php' || ext === 'php5' || ext === 'php4'){ mode = 'php'; }
         else if(ext === 'elm'){ mode = 'elm'; }
         else if(ext === 'erl'){ mode = 'erlang'; }
@@ -112,7 +110,7 @@ export class Editor extends React.Component {
         else if(ext === 'pl' || ext === 'pm'){mode = 'perl'; }
         else if(ext === 'clj'){ mode = 'clojure'; }
         else if(ext === 'el' || ext === 'lisp' || ext === 'cl' || ext === 'emacs'){ mode = 'lisp'; }
-        else if(ext === 'Dockerfile'){ mode = 'dockerfile'}
+        else if(ext === 'Dockerfile'){ mode = 'dockerfile'; }
         else if(ext === 'R'){ mode = 'r'; }
         else if(ext === 'Makefile'){ mode = 'cmake'; }
         else if(ext === 'rb'){ mode = 'ruby'; }
@@ -130,12 +128,20 @@ export class Editor extends React.Component {
         }
 
         return import(/* webpackChunkName: "editor" */'./editor/'+mode)
+            .catch(() => import("./editor/text"))
             .then((module) => Promise.resolve(module.default));
     }
 
     render() {
         return (
+            <div style={{height: '100%'}}>
+              <NgIf cond={this.state.loading === true} style={{height: '100%'}}>
+                <Loader/>
+              </NgIf>
+              <NgIf cond={this.state.loading === false} style={{height: '100%'}}>
                 <div id="editor" style={{height: '100%'}}></div>
+              </NgIf>
+            </div>
         );
     }
 }

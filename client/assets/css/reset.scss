@@ -23,6 +23,7 @@ html {
     background: var(--bg-color);
     color: var(--color);
 }
+body {overflow: hidden;}
 body, html{
     height: 100%;
     margin: 0;
@@ -76,19 +77,6 @@ input[type="checkbox"]{position: relative; top: 1px; margin: 0; padding: 0;}
 .drag-drop.dragging > div{
     background: rgba(0,0,0,0.1);
 }
-
-
-
-
-
-
-
-
-/* I know this looks weird but at least it doesn't rely on javascript to dynamically set element size */
-body {overflow: hidden;}
-body, body > div, body > div > div, body > div > div > div{ height: 100%;}
-
-
 
 
 

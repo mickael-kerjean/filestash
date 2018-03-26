@@ -1,14 +1,16 @@
 import React from 'react';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import { NgIf, Fab, Icon } from '../../components/';
-import { MenuBar } from './menubar';
 import { Editor } from './editor';
+
+import './ide.scss';
 
 export class IDE extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            contentToSave: null
+            contentToSave: props.content
         };
     }
 
@@ -32,13 +34,16 @@ export class IDE extends React.Component {
     render(){
         return (
             <div style={{height: '100%'}}>
-              <Editor onSave={this.save.bind(this)} filename={this.props.filename} content={this.props.content} onChange={this.onContentUpdate.bind(this)} height={this.state.height}/>
-              <NgIf cond={!this.props.isSaving}>
-                <Fab onClick={this.save.bind(this)}><Icon name="save" style={{height: '100%', width: '100%'}}/></Fab>
-              </NgIf>
-              <NgIf cond={this.props.isSaving}>
-                <Fab><Icon name="loading_white" style={{height: '100%', width: '100%'}}/></Fab>
-              </NgIf>
+                <Editor onSave={this.save.bind(this)} filename={this.props.filename} content={this.props.content} onChange={this.onContentUpdate.bind(this)} />
+
+                <ReactCSSTransitionGroup transitionName="fab" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={25000}>
+                  <NgIf cond={!this.props.isSaving}>
+                    <Fab onClick={this.save.bind(this)}><Icon name="save" style={{height: '100%', width: '100%'}}/></Fab>
+                  </NgIf>
+                  <NgIf cond={this.props.isSaving}>
+                    <Fab><Icon name="loading_white" style={{height: '100%', width: '100%'}}/></Fab>
+                  </NgIf>
+                </ReactCSSTransitionGroup>
             </div>
         );
     }

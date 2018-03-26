@@ -7,9 +7,9 @@ import { Audio, Video } from './components/';
 export default class AppRouter extends React.Component {
     render() {
         return (
-            <div>
+            <div style={{height: '100%'}}>
               <BrowserRouter>
-                <div>
+                <div style={{height: '100%'}}>
                   <Switch>
                     <Route exact path="/" component={HomePage} />
                     <Route path="/login" component={ConnectPage} />

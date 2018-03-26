@@ -28,22 +28,24 @@ export class ViewerPage extends React.Component {
             data: '',
             needSaving: false,
             isSaving: false,
-            height: null,
             loading: true,
             error: false
         };
-        this.resetHeight = debounce(this.resetHeight.bind(this), 100);
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
     }
 
     componentWillMount(){
-        this.setState({loading: true, error: false});
+        this.setState({loading: null, error: false}, () => {
+            window.setTimeout(() => {
+                if(this.state.loading === null) this.setState({loading: true});
+            }, 500);
+        });
         let app = opener(this.state.path);
         if(app === 'editor'){
             Files.cat(this.state.path).then((content) => {
                 this.setState({data: content, loading: false, opener: app});
             }).catch(err => {
-                if(err && err.code === 'CANCELLED'){ return }
+                if(err && err.code === 'CANCELLED'){ return; }
                 if(err.code === 'BINARY_FILE'){
                     Files.url(this.state.path).then((url) => {
                         this.setState({data: url, loading: false, opener: 'download'});
@@ -58,7 +60,7 @@ export class ViewerPage extends React.Component {
             Files.url(this.state.path).then((url) => {
                 this.setState({data: url, loading: false, opener: app});
             }).catch(err => {
-                if(err && err.code === 'CANCELLED'){ return }
+                if(err && err.code === 'CANCELLED'){ return; }
                 this.setState({error: err});
             });
         }
@@ -66,7 +68,6 @@ export class ViewerPage extends React.Component {
 
     componentWillUnmount() {
         this.props.unsubscribe('file.select');
-        window.removeEventListener("resize", this.resetHeight);
     }
 
 
@@ -96,24 +97,13 @@ export class ViewerPage extends React.Component {
         this.setState({needSaving: bool});
     }
 
-    componentDidMount(){
-        this.resetHeight();
-        window.addEventListener("resize", this.resetHeight);
-    }
-
-    resetHeight(){
-        this.setState({
-            height: document.body.clientHeight - document.querySelector('.breadcrumb').offsetHeight
-        });
-    }
-
     render() {
         let style = {height: '100%'};
         return (
-            <div>
+            <div style={style}>
               <BreadCrumb needSaving={this.state.needSaving} className="breadcrumb" path={this.state.path} />
-              <div style={{height: this.state.height ? this.state.height + 'px' : '100%'}}>
-                <NgIf cond={this.state.loading === false} style={{height: '100%'}}>
+              <div style={style}>
+                <NgIf cond={this.state.loading === false} style={style}>
                   <NgIf cond={this.state.opener === 'editor'} style={style}>
                     <IDE needSaving={this.needSaving.bind(this)}
                          isSaving={this.state.isSaving}
