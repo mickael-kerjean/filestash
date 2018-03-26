@@ -11,15 +11,12 @@ export class HomePage extends React.Component {
     componentDidMount(){
         Session.isLogged()
             .then((res) => {
-                if(res === true){
+                if(res && res.result === true){
                     this.props.history.push('/files');
                 }else{
                     this.props.history.push('/login');
                 }
-            })
-            .catch((res) => {
-                console.warn(res)
-            })
+            });
     }
     render() {
         return (
