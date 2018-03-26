@@ -163,7 +163,6 @@ Data.prototype.destroy = function(){
     this._init();
 }
 
-
 // // test
 // cache = new Data();
 // cache.put(cache.FILE_PATH, '/', {a:3});

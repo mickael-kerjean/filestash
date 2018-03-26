@@ -171,7 +171,7 @@ class FileSystem{
         function ui_before_request(from, to){
             return update_from()
                 .then((file) => {
-                    if(Path.dirname(from) !== Path.dirname(to)){
+                    if(dirname(from) !== dirname(to)){
                         return update_to(file);
                     }
                     return Promise.resolve();
@@ -205,7 +205,7 @@ class FileSystem{
         function ui_when_fail(from, to){
             return update_from()
                 .then((file) => {
-                    if(Path.dirname(from) !== Path.dirname(to)){
+                    if(dirname(from) !== dirname(to)){
                         return update_to();
                     }
                     return Promise.resolve();
@@ -241,7 +241,7 @@ class FileSystem{
             }
         }
         function ui_when_success(from, to){
-            if(Path.dirname(from) === Path.dirname(to)){
+            if(dirname(from) === dirname(to)){
                 return this._replace(dirname(from)+basename(to), null);
             }else{
                 return update_from()
@@ -286,9 +286,9 @@ class FileSystem{
                 // manage nested directories when we try to rename a directory
                 if(/\/$/.test(from) === true){
                     return cache.update_path((data) => {
-                        if(data.path !== Path.dirname(to) + "/" && data.path !== Path.dirname(from) + "/" && data.path.indexOf(Path.dirname(from) + "/") === 0){
+                        if(data.path !== dirname(to) && data.path !== dirname(from) && data.path.indexOf(dirname(from)) === 0){
                             const old_path = data.path;
-                            data.path = data.path.replace(Path.dirname(from) + "/", Path.dirname(to) + "/");
+                            data.path = data.path.replace(dirname(from), dirname(to));
                             return cache.remove(cache.FILE_PATH, old_path)
                                 .then(() => cache.put(cache.FILE_PATH, data.path, data));
                         }
@@ -318,7 +318,7 @@ class FileSystem{
                 });
                 res.results = files;
                 return cache.put(cache.FILE_PATH, dirname(path), res)
-                    .then((res) => this._ls_from_cache(Path.dirname(path)+"/"));
+                    .then((res) => this._ls_from_cache(dirname(path)));
             });
     }
 
@@ -334,7 +334,7 @@ class FileSystem{
                 if(icon) file.icon = icon;
                 res.results.push(file);
                 return cache.put(cache.FILE_PATH, dirname(path), res)
-                    .then((res) => this._ls_from_cache(Path.dirname(path)+"/"));
+                    .then((res) => this._ls_from_cache(dirname(path)));
             });
     }
     _remove(path){
@@ -346,7 +346,7 @@ class FileSystem{
                 });
                 res.results = files;
                 return cache.put(cache.FILE_PATH, dirname(path), res)
-                    .then((res) => this._ls_from_cache(Path.dirname(path)+"/"));
+                    .then((res) => this._ls_from_cache(dirname(path)));
             });
     }
 }

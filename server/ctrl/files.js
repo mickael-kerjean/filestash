@@ -25,17 +25,17 @@ app.get('/ls', function(req, res){
                 res.send({status: 'ok', results: results});
             })
             .catch(function(err){
-                res.send({status: 'error', message: err.message || 'cannot fetch files', trace: err})
+                res.send({status: 'error', message: err.message || 'cannot fetch files', trace: err});
             });
     }else{
-        res.send({status: 'error', message: 'unknown path'})
+        res.send({status: 'error', message: 'unknown path'});
     }
 });
 
 // get a file content
 app.get('/cat', function(req, res){
     let path = decodeURIComponent(req.query.path);
-    res.cookie('download', path, { maxAge: 1000 })
+    res.cookie('download', path, { maxAge: 1000 });
     if(path){
         Files.cat(path, req.cookies.auth, res)
             .then(function(stream){
@@ -43,10 +43,10 @@ app.get('/cat', function(req, res){
                 stream.pipe(res);
             })
             .catch(function(err){
-                res.send({status: 'error', message: err.message || 'couldn\t read the file', trace: err})
+                res.send({status: 'error', message: err.message || 'couldn\t read the file', trace: err});
             });
     }else{
-        res.send({status: 'error', message: 'unknown path'})
+        res.send({status: 'error', message: 'unknown path'});
     }
 });
 
@@ -59,7 +59,7 @@ app.post('/cat', function(req, res){
     if(path){
         form.on('part', function(part) {
             part.on('error', function(err){
-                res.send({status: 'error', message: 'internal error'})
+                res.send({status: 'error', message: 'internal error'});
             });
 
             Files.write(path, part, req.cookies.auth)
@@ -67,12 +67,12 @@ app.post('/cat', function(req, res){
                     res.send({status: 'ok'});
                 })
                 .catch(function(err){
-                    res.send({status: 'error', message: err.message || 'couldn\'t write the file', code: err.code})
+                    res.send({status: 'error', message: err.message || 'couldn\'t write the file', code: err.code});
                 });
         });
         form.parse(req);
     }else{
-        res.send({status: 'error', message: 'unknown path'})
+        res.send({status: 'error', message: 'unknown path'});
     }
 });
 
@@ -83,13 +83,13 @@ app.get('/mv', function(req, res){
     if(from && to){
         Files.mv(from, to, req.cookies.auth)
             .then((message) => {
-                res.send({status: 'ok'})
+                res.send({status: 'ok'});
             })
             .catch((err) => {
-                res.send({status: 'error', message: err.message || 'couldn\'t rename your file', trace: err})
+                res.send({status: 'error', message: err.message || 'couldn\'t rename your file', trace: err});
             });
     }else{
-        res.send({status: 'error', message: 'unknown path'})
+        res.send({status: 'error', message: 'unknown path'});
     }
 });
 
@@ -99,13 +99,13 @@ app.get('/rm', function(req, res){
     if(path){
         Files.rm(path, req.cookies.auth)
             .then((message) => {
-                res.send({status: 'ok', result: message})
+                res.send({status: 'ok'});
             })
             .catch((err) => {
-                res.send({status: 'error', message: err.message || 'couldn\'t delete your file', trace: err})
+                res.send({status: 'error', message: err.message || 'couldn\'t delete your file', trace: err});
             });
     }else{
-        res.send({status: 'error', message: 'unknown path'})
+        res.send({status: 'error', message: 'unknown path'});
     }
 });
 
@@ -115,13 +115,13 @@ app.get('/mkdir', function(req, res){
     if(path){
         Files.mkdir(path, req.cookies.auth)
             .then((message) => {
-                res.send({status: 'ok'})
+                res.send({status: 'ok'});
             })
             .catch((err) => {
-                res.send({status: 'error', message: err.message || 'couldn\'t create a directory', trace: err})
+                res.send({status: 'error', message: err.message || 'couldn\'t create a directory', trace: err});
             });
     }else{
-        res.send({status: 'error', message: 'unknown path'})
+        res.send({status: 'error', message: 'unknown path'});
     }
 });
 
@@ -130,13 +130,13 @@ app.get('/touch', function(req, res){
     if(path){
         Files.touch(path, req.cookies.auth)
             .then((message) => {
-                res.send({status: 'ok'})
+                res.send({status: 'ok'});
             })
             .catch((err) => {
-                res.send({status: 'error', message: err.message || 'couldn\'t create a file', trace: err})
+                res.send({status: 'error', message: err.message || 'couldn\'t create a file', trace: err});
             });
     }else{
-        res.send({status: 'error', message: 'unknown path'})
+        res.send({status: 'error', message: 'unknown path'});
     }
 });
 
