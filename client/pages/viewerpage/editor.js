@@ -5,23 +5,21 @@ import { NgIf, Loader } from '../../components/';
 
 import CodeMirror from 'codemirror/lib/codemirror';
 import 'codemirror/lib/codemirror.css';
-import './editor.scss';
 window.CodeMirror = CodeMirror;
-
 // keybinding
 import 'codemirror/keymap/emacs.js';
-
 // search
 import 'codemirror/addon/search/searchcursor.js';
 import 'codemirror/addon/search/search.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/comment/comment.js';
 import 'codemirror/addon/dialog/dialog.js';
-
 // code folding
 import 'codemirror/addon/fold/foldcode';
 import 'codemirror/addon/fold/foldgutter';
 import 'codemirror/addon/fold/foldgutter.css';
+
+import './editor.scss';
 
 export class Editor extends React.Component {
     constructor(props){
@@ -78,7 +76,11 @@ export class Editor extends React.Component {
             CodeMirror.commands.save = () => {
                 let elt = editor.getWrapperElement();
                 elt.style.background = "rgba(0,0,0,0.1)";
-                window.setTimeout(function() { elt.style.background = ""; }, 300);
+                elt.style.transition = "";
+                window.setTimeout(function() {
+                    elt.style.transition = "background 0.5s ease-out";
+                    elt.style.background = "";
+                }, 200);
                 this.props.onSave && this.props.onSave();
             };
         }

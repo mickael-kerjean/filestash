@@ -15,8 +15,6 @@
     --success: #63d9b1;
 }
 
-// --super-light:  #ecf1f6;
-
 html {
     font-family:"San Francisco","Roboto","Arial",sans-serif;
     -webkit-text-size-adjust:100%;
@@ -28,6 +26,7 @@ body, html{
     height: 100%;
     margin: 0;
 }
+#main{height: 100%;}
 a{color: inherit; text-decoration: none;}
 
 select{-moz-appearance: none;}
@@ -47,6 +46,7 @@ button::-moz-focus-inner {
 
 input, textarea{
     transition: border 0.2s;
+    outline: none;
 }
 input[type="checkbox"]{position: relative; top: 1px; margin: 0; padding: 0;}
 
@@ -59,6 +59,23 @@ input[type="checkbox"]{position: relative; top: 1px; margin: 0; padding: 0;}
     user-select: none;
 }
 
+
+
+button:focus,
+a:focus, a:active,
+button::-moz-focus-inner,
+input[type="reset"]::-moz-focus-inner,
+input[type="button"]::-moz-focus-inner,
+input[type="submit"]::-moz-focus-inner,
+select::-moz-focus-inner,
+input[type="file"] > input[type="button"]::-moz-focus-inner {
+  outline: none !important;
+}
+
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 #000;
+}
 
 
 
@@ -84,4 +101,31 @@ input[type="checkbox"]{position: relative; top: 1px; margin: 0; padding: 0;}
 /* CONNECTION FORM */
 .login-form button.active{
     box-shadow: 0px 1px 5px rgba(0,0,0,0.20);
+}
+
+
+
+::-webkit-scrollbar{
+    height:6px;
+    width:6px
+}
+::-webkit-scrollbar-track{
+    background:rgba(0,0,0,.1)
+}
+::-webkit-scrollbar-thumb{
+    -webkit-border-radius:3px;
+    -moz-border-radius:2px;
+    -ms-border-radius:2px;
+    -o-border-radius:2px;
+    border-radius:2px;
+    background:rgba(0,0,0,.2)
+}
+.scroll-y{
+    scrollbar-3dlight-color:#7d7e94;
+    scrollbar-arrow-color:#c1c1d1;
+    scrollbar-darkshadow-color:#2d2c4d;
+    scrollbar-face-color:rgba(0,0,0,.1);
+    scrollbar-highlight-color:#7d7e94;
+    scrollbar-shadow-color:#2d2c4d;
+    scrollbar-track-color:rgba(0,0,0,.1);
 }

@@ -41,17 +41,14 @@ export class BreadCrumb extends React.Component {
             <div className="component_breadcrumb">
               <BreadCrumbContainer className={this.props.className+' no-select'}>
                 <Logout />
-                <ReactCSSTransitionGroup transitionName="breadcrumb" transitionLeave={true} transitionEnter={true} transitionLeaveTimeout={500} transitionEnterTimeout={500} transitionAppear={false}>
+                <ReactCSSTransitionGroup transitionName="breadcrumb" transitionLeave={true} transitionEnter={true} transitionLeaveTimeout={150} transitionEnterTimeout={200} transitionAppear={false}>
                   {
                       this.state.path.map((path, index) => {
                           return (
-                              <span key={"breadcrumb_"+index}>
-                                <Path path={path} isLast={this.state.path.length === index + 1} needSaving={this.props.needSaving} />
-                                <Separator isLast={this.state.path.length === index + 1} />
-                              </span>
+                              <Path key={"breadcrumb_"+index} path={path} isLast={this.state.path.length === index + 1} needSaving={this.props.needSaving} />
                           );
                       })
-                 }
+                }
                </ReactCSSTransitionGroup>
              </BreadCrumbContainer>
            </div>
@@ -85,22 +82,18 @@ const Logout = (props) => {
 }
 
 const Saving = (props) => {
-    if(props.needSaving){
-        return (
-            <NgIf className="component_saving" cond={props.needSaving === true && props.isLast === true}>
-              *
-            </NgIf>
-        );
-    }else{
-        return null;
-    }
+    return (
+        <NgIf className="component_saving" cond={props.needSaving === true}>
+          *
+        </NgIf>
+    );
 }
 
 const Separator = (props) => {
     return (
-        <NgIf cond={props.isLast === false} className="component_separator">
+        <div className="component_separator">
           <img width="16" height="16" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAA30lEQVQ4T63T7Q2CMBAG4OuVPdQNcAPdBCYwDdclCAQ3ACfRDXQDZQMHgNRcAoYApfWjv0jIPX3b3gn4wxJjI03TUAhRBkGwV0o9ffaYIEVRrJumuQHA3ReaILxzl+bCkNZ660ozi/QQIl4BoCKieAmyIlyU53lkjCld0CIyhIwxSmt9nEvkRLgoyzIuPggh4iRJqjHkhXTQAwBWUsqNUoq/38sL+TlJf7lf38ngdU5EFNme2adPFgGGrR2LiGcAqIko/LhjeXbatuVOraWUO58hnJ1iRKx8AetxXPHH/1+y62USursaSgAAAABJRU5ErkJggg=="/>
-        </NgIf>
+        </div>
     );
 }
 
@@ -109,19 +102,6 @@ const Separator = (props) => {
 export class PathElementWrapper extends React.Component {
     constructor(props){
         super(props);
-        this.state = {hover: false};
-    }
-
-    onClick(){
-        if(this.props.isLast === false){
-            this.props.emit('file.select', this.props.path.full, 'directory');
-        }
-    }
-
-    toggleHover(shouldHover){
-        if(('ontouchstart' in window) === false){
-            this.setState({hover: shouldHover});
-        }
     }
 
     limitSize(str){
@@ -133,12 +113,19 @@ export class PathElementWrapper extends React.Component {
 
     render(){
         let className = "component_path-element-wrapper";
-        if(this.state.hover){ className += " hover"; }
         if(this.props.highlight) { className += " highlight";}
         return (
-            <li className={className} onClick={this.onClick.bind(this)} onMouseEnter={this.toggleHover.bind(this, true)} onMouseLeave={this.toggleHover.bind(this, false)}>
-              {this.limitSize(this.props.path.label)}
-              <Saving isLast={this.props.isLast} needSaving={this.props.needSaving} isSaving={false} />
+            <li className={className}>
+              <NgIf cond={this.props.isLast === false}>
+                <Link to={"/files" + this.props.path.full || "/"} className="label">
+                  {this.limitSize(this.props.path.label)}
+                </Link>
+                <Separator/>
+              </NgIf>
+              <NgIf cond={this.props.isLast === true} className="label">
+                {this.limitSize(this.props.path.label)}
+                <Saving needSaving={this.props.needSaving} />
+              </NgIf>
             </li>
         );
     }

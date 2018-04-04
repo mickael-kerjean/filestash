@@ -15,3 +15,8 @@ window.onload = () => {
 };
 
 window.log = function(){console.log.apply(this, arguments)};
+
+window.addEventListener("DOMContentLoaded", () => {
+    const className = 'ontouchstart' in window ? 'touch-yes' : 'touch-no';
+    document.body.classList.add(className);
+});

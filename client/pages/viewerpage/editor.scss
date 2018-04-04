@@ -1,6 +1,7 @@
 .CodeMirror {
     height: 100%;
     color: #333333;
+    background: var(--bg-color);
 }
 .CodeMirror-scroll { -webkit-overflow-scrolling: touch; }
 
@@ -52,15 +53,13 @@
 .cm-s-default .cm-string, .cm-s-default .cm-string-2{ color: #c41a16; }
 .cm-s-default .cm-def { color: rgb(68, 85, 136); }
 
-
-div.CodeMirror span.CodeMirror-matchingbracket {color: #0f0;}
-div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
-
 .CodeMirror-foldmarker{
     padding-left: 5px;
-    color: #6f6f6f;
-    text-shadow: none;
+    color: var(--color);
+    text-shadow: 1px 1px 10px var(--color);
 }
+span.CodeMirror-matchingbracket {color: #0f0;}
+span.CodeMirror-nonmatchingbracket {color: #f22;}
 
 /* BUGFIX */
 // https://github.com/codemirror/CodeMirror/issues/5056

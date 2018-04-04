@@ -251,7 +251,7 @@ const DateTime = (props) => {
           <span>{displayTime(props.timestamp)}</span>
         </NgIf>
     );
-}
+};
 
 const FileSize = (props) => {
     function displaySize(bytes){
@@ -275,11 +275,12 @@ const FileSize = (props) => {
           <span>{displaySize(props.size)}</span>
         </NgIf>
     );
-}
+};
+
 const Message = (props) => {
     return (
         <NgIf cond={props.message !== null} className="component_message" type="inline">
           - {props.message}
         </NgIf>
     );
-}
+};

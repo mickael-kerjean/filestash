@@ -1,3 +1,4 @@
+// Menu for new file and directory
 .menubar{
     font-size: 15px;
     line-height: 15px;
@@ -17,43 +18,51 @@
         font-size: 12px;
     }
 }
+
 .component_thing{
+    &:hover .box{
+        background: var(--super-light);
+        .component_datetime{display: none;}
+        .component_action{display: block;}
+    }
+    .component_action{display: none;}
+
+
     .file-is-hover{
         background: var(--emphasis-primary);
-    }
-    .mouse-is-hover{
-        background: var(--super-light);
     }
     .file-is-dragging{
         opacity: 0.15;
     }
 
 
+    .file-details{
+        padding: 0 5px;
+        line-height: 22px;
+        white-space: nowrap;
+    }
+    form{
+        display: inline;
+    }
+
     .component_icon{
         width: 25px;
         height: 25px;
     }
-    form{
-        display: inline;
-        input{
-            outline: none;
+
+    .component_filesize{
+        span{
+            color: var(--light);
+            font-size: 0.85em;
         }
     }
 
-    .component_updater{
-        .action{
-            float: right;
-            color: #6f6f6f;
-            line-height: 25px;
-            margin: 0 -10px;
-            padding: 0 10px;
-            position: relative;
-            .component_icon{
-                padding: 1px 0;
-                box-sizing: border-box;
-            }
-        }
+    .component_message{
+        color: var(--light);
+        font-size: 0.9em;
+        padding-left: 10px;
     }
+
     .component_datetime{
         float: right;
         color: var(--light);
@@ -62,21 +71,18 @@
         padding: 0 10px;
         position: relative;
     }
-    .component_filesize{
-        span{
-            color: var(--light);
-            font-size: 0.85em;
+
+    .component_action{
+        float: right;
+        color: #6f6f6f;
+        line-height: 25px;
+        margin: 0 -10px;
+        padding: 0 10px;
+        position: relative;
+        .component_icon{
+            padding: 1px 0;
+            box-sizing: border-box;
         }
     }
-    .component_message{
-        color: var(--light);
-        font-size: 0.9em;
-        padding-left: 10px;
-    }
 
-    .file-details{
-        padding: 0 5px;
-        line-height: 22px;
-        white-space: nowrap;
-    }
 }

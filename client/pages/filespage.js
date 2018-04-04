@@ -189,7 +189,7 @@ export class FilesPage extends React.Component {
 
     resetHeight(){
         this.setState({
-            height: document.body.clientHeight - document.querySelector('.breadcrumb').offsetHeight
+            height: screenHeight()
         });
     }
 

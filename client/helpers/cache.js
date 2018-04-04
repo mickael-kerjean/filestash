@@ -20,7 +20,9 @@ Data.prototype._init = function(){
         request.onsuccess = (e) => {
             done(e.target.result);
         }
-        request.onerror = err;
+        request.onerror = (e) => {
+            err(e);
+        };
     });
 }
 
@@ -29,12 +31,10 @@ Data.prototype._setup = function(db){
     if(!db.objectStoreNames.contains(this.FILE_PATH)){
         store = db.createObjectStore(this.FILE_PATH, {keyPath: "path"});
     }
-    //store.createIndex("stale", ["last_access"])
 
     if(!db.objectStoreNames.contains(this.FILE_CONTENT)){
         store = db.createObjectStore(this.FILE_CONTENT, {keyPath: "path"});
     }
-    //store.createIndex("stale", ["last_access"])
 }
 
 Data.prototype._vacuum = function(){
