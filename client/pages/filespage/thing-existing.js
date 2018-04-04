@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import { DragSource, DropTarget } from 'react-dnd';
 
 import './thing.scss';
-import { Card, NgIf, Icon, EventEmitter, Prompt } from '../../components/';
-import { pathBuilder } from '../../helpers/';
+import { Card, NgIf, Icon, EventEmitter } from '../../components/';
+import { pathBuilder, prompt } from '../../helpers/';
 
 const fileSource = {
     beginDrag(props, monitor, component) {
@@ -146,19 +147,16 @@ export class ExistingThing extends React.Component {
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div className="component_thing">
-              <Card className={this.state.hover} onClick={this.onSelect.bind(this)} onMouseEnter={() => this.setState({hover: true})} onMouseLeave={() => this.setState({hover: false})} className={className}>
-                <DateTime show={this.state.hover !== true || this.state.icon === 'loading'} timestamp={this.props.file.time} />
-                <Updater filename={this.props.file.name}
-                         icon={this.props.file.icon || this.props.file.type}
-                         can_move={this.props.file.can_move !== false}
-                         can_delete={this.props.file.can_delete !== false}
-                         show={this.state.hover === true && this.state.icon !== 'loading' && !('ontouchstart' in window)}
-                         onRename={this.onRename.bind(this)}
-                         onDelete={this.onDeleteRequest.bind(this)} />
-                <FileSize type={this.props.file.type} size={this.props.file.size} />
-                <Message message={this.state.message} />
-              </Card>
-              <Prompt appear={this.state.delete_request} error={this.state.delete_error} message={this.state.delete_message} onCancel={this.onDeleteCancel.bind(this)} onSubmit={this.onDeleteConfirm.bind(this)}/>
+              <Link to={this.props.file.link}>
+                <Card className={this.state.hover} onClick={this.onSelect.bind(this)} onMouseEnter={() => this.setState({hover: true})} onMouseLeave={() => this.setState({hover: false})} className={className}>
+                  <Icon name={this.props.file.icon || this.props.file.type} />
+                  <Filename filename={this.props.file.name} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} />
+                  <FileSize type={this.props.file.type} size={this.props.file.size} />
+                  <Message message={this.state.message} />
+                  <DateTime show={this.state.icon !== 'loading'} timestamp={this.props.file.time} />
+                  <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} can_move={this.props.file.can_move !== false} can_delete={this.props.file.can_delete !== false} />
+                </Card>
+              </Link>
             </div>
         )));
     }

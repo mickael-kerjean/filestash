@@ -55,32 +55,37 @@ export class FilesPage extends React.Component {
         if(this.observers.ls) this.observers.ls.unsubscribe();
     }
 
+    componentWillReceiveProps(nextProps){
+        let new_path = function(path){
+            if(path === undefined){ path = "/"; }
+            if(/\/$/.test(path) === false){ path = path + "/"; }
+            if(/^\//.test(path) === false){ path = "/"+ path; }
+            return path;
+        }(nextProps.match.params.path);
+        if(new_path !== this.state.path){
+            this.setState({path: new_path, loading: true});
+            this.onRefresh(new_path);
+        }
+    }
+
     hideError(){
         this.setState({error: false});
     }
 
     onRefresh(path = this.state.path){
+        this.resetHeight();
         if(this.observers.ls) this.observers.ls.unsubscribe();
         this.observers.ls = Files.ls(path).subscribe((files) => {
-            this.setState({files: files, loading: false})
+            files = files.map((file) => {
+                let path = this.state.path+file.name;
+                file.link = file.type === "file" ? "/view"+path : "/files"+path+"/";
+                return file;
+            });
+            this.setState({files: files, loading: false});
         }, (error) => {
-            console.log("ERROR", error);
             this.setState({error: error});
         });
         this.setState({error: false});
-    }
-
-    onPathUpdate(path, type = 'directory'){
-        window.timestamp = new Date();
-        if(type === 'file'){
-            this.props.history.push('/view'+path);
-        }else{
-            this.setState({path: path, loading: true});
-            this.onRefresh(path)
-            if(path !== this.state.path){
-                this.props.history.push('/files'+path);
-            }
-        }
     }
 
     onCreate(path, type, file){
