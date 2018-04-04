@@ -8,7 +8,7 @@ import { ForkMe, RememberMe, Credentials, Form } from './connectpage/';
 import { cache } from '../helpers/';
 import config from '../../config_client';
 
-import { Alert, Prompt } from '../components/';
+import { Alert } from '../components/';
 
 export class ConnectPage extends React.Component {
     constructor(props){

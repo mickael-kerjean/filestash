@@ -7,7 +7,7 @@ import Path from 'path';
 import './filespage.scss';
 import { Files } from '../model/';
 import { NgIf, Loader, Error, Uploader, EventReceiver } from '../components/';
-import { debounce, goToFiles, goToViewer, event } from '../helpers/';
+import { debounce, goToFiles, goToViewer, event, screenHeight } from '../helpers/';
 import { BreadCrumb, FileSystem } from './filespage/';
 
 @EventReceiver
@@ -18,7 +18,7 @@ export class FilesPage extends React.Component {
         this.state = {
             path: props.match.url.replace('/files', '') || '/',
             files: [],
-            loading: false,
+            loading: true,
             error: false,
             height: null
         };
@@ -29,23 +29,21 @@ export class FilesPage extends React.Component {
     }
 
     componentDidMount(){
-        this.onPathUpdate(this.state.path, 'directory');
+        this.onRefresh(this.state.path, 'directory');
 
         // subscriptions
-        this.props.subscribe('file.select', this.onPathUpdate.bind(this));
         this.props.subscribe('file.upload', this.onUpload.bind(this));
         this.props.subscribe('file.create', this.onCreate.bind(this));
         this.props.subscribe('file.rename', this.onRename.bind(this));
         this.props.subscribe('file.delete', this.onDelete.bind(this));
         this.props.subscribe('file.refresh', this.onRefresh.bind(this));
 
-        this.resetHeight();
         this.hideError();
+        this.resetHeight();
         window.addEventListener("resize", this.resetHeight);
     }
 
     componentWillUnmount() {
-        this.props.unsubscribe('file.select');
         this.props.unsubscribe('file.upload');
         this.props.unsubscribe('file.create');
         this.props.unsubscribe('file.rename');
@@ -112,8 +110,7 @@ export class FilesPage extends React.Component {
                     name: file.name,
                     type: 'file',
                     size: file.size,
-                    icon: 'loading',
-                    virtual: true
+                    icon: 'loading'
                 };
             });
             const files = JSON.parse(JSON.stringify(this.state.files));
@@ -204,17 +201,15 @@ export class FilesPage extends React.Component {
             <div className="component_page_filespage">
               <BreadCrumb className="breadcrumb" path={this.state.path} />
               <div style={{height: this.state.height+'px'}} className="scroll-y">
-                <NgIf className="container" cond={!this.state.loading}>
+                <NgIf className="container" cond={this.state.loading === false}>
                   <FileSystem path={this.state.path} files={this.state.files} />
                   <Uploader path={this.state.path} />
                 </NgIf>
-                <NgIf cond={this.state.loading}>
-                  <NgIf cond={this.state.error === false}>
-                    <Loader/>
-                  </NgIf>
-                  <NgIf className="error" cond={this.state.error !== false} onClick={this.componentDidMount.bind(this)}>
-                    <Error err={this.state.error}/>
-                  </NgIf>
+                <NgIf cond={!!this.state.error} className="error" onClick={this.componentDidMount.bind(this)}>
+                  <Error err={this.state.error}/>
+                </NgIf>
+                <NgIf cond={this.state.loading && !this.state.error}>
+                  <Loader/>
                 </NgIf>
               </div>
             </div>

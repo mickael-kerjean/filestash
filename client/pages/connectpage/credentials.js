@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
-import { Prompt } from '../../components/';
+import { ModalPrompt } from '../../components/';
 import { encrypt, decrypt, memory } from '../../helpers/';
 
 export class Credentials extends React.Component {
@@ -91,7 +91,7 @@ export class Credentials extends React.Component {
 
     render() {
         return (
-            <Prompt
+            <ModalPrompt
               type="password"
               appear={this.state.modal_appear}
               error={this.state.error}

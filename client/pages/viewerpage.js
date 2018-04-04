@@ -3,7 +3,7 @@ import Path from 'path';
 
 import { Files } from '../model/';
 import { BreadCrumb, Bundle, NgIf, Loader, Error, Container, EventReceiver, EventEmitter } from '../components/';
-import { debounce, opener } from '../helpers/';
+import { debounce, opener, screenHeight } from '../helpers/';
 import { AudioPlayer, FileDownloader, ImageViewer, PDFViewer } from './viewerpage/';
 
 const VideoPlayer = (props) => (
@@ -29,9 +29,11 @@ export class ViewerPage extends React.Component {
             needSaving: false,
             isSaving: false,
             loading: true,
-            error: false
+            error: false,
+            height: 0
         };
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
+        this.resetHeight = debounce(this.resetHeight.bind(this), 100);
     }
 
     componentWillMount(){
@@ -48,6 +50,7 @@ export class ViewerPage extends React.Component {
                 if(err && err.code === 'CANCELLED'){ return; }
                 if(err.code === 'BINARY_FILE'){
                     Files.url(this.state.path).then((url) => {
+                        console.log(this.state.path);
                         this.setState({data: url, loading: false, opener: 'download'});
                     }).catch(err => {
                         this.setState({error: err});
@@ -68,8 +71,13 @@ export class ViewerPage extends React.Component {
 
     componentWillUnmount() {
         this.props.unsubscribe('file.select');
+        window.removeEventListener("resize", this.resetHeight);
     }
 
+    componentDidMount(){
+        this.resetHeight();
+        window.addEventListener("resize", this.resetHeight);
+    }
 
     save(file){
         this.setState({isSaving: true});
@@ -97,12 +105,18 @@ export class ViewerPage extends React.Component {
         this.setState({needSaving: bool});
     }
 
+    resetHeight(){
+        this.setState({
+            height: screenHeight()
+        });
+    }
+
     render() {
-        let style = {height: '100%'};
+        let style = {height: '100%'}; // {{height: this.state.height+'px'}}
         return (
             <div style={style}>
               <BreadCrumb needSaving={this.state.needSaving} className="breadcrumb" path={this.state.path} />
-              <div style={style}>
+              <div style={{height: this.state.height+'px'}}>
                 <NgIf cond={this.state.loading === false} style={style}>
                   <NgIf cond={this.state.opener === 'editor'} style={style}>
                     <IDE needSaving={this.needSaving.bind(this)}

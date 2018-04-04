@@ -2,49 +2,51 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Input, Button, Modal, NgIf } from './';
+import { prompt } from '../helpers/';
 
-export class Prompt extends React.Component {
+export class ModalPrompt extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            error: this.props.error,
-            value: ''
+            appear: false
         };
-        if(this.props.error) window.setTimeout(() => this.setState({error: ''}), 2000);
     }
 
-    componentWillReceiveProps(props){
-        if(props.error !== this.state.error){
-            this.setState({error: props.error});
-            window.setTimeout(() => this.setState({error: ''}), 2000);
-        }
+    componentDidMount(){
+        prompt.subscribe((text, okCallback, cancelCallback, type) => {
+            console.log("REQUEST FOR PROMPT");
+            this.setState({
+                appear: true,
+                error: null,
+                type: type || 'text',
+                text: text || '',
+                fns: {ok: okCallback, cancel: cancelCallback}
+            });
+        });
     }
 
-    onCancel(should_clear){
-        if(this.props.onCancel) this.props.onCancel();
+    onCancel(){
+        this.setState({appear: false});
+        this.state.fns.cancelCallback();
     }
 
     onSubmit(e){
         e && e.preventDefault && e.preventDefault();
-        if(this.props.onSubmit) this.props.onSubmit(this.state.value);
-    }
-
-    onInputChange(value){
-        this.setState({value: value});
+        this.state.fns.okCallback(this.state.value)
+            .then(() => this.setState({appear: false}))
+            .catch((message) => this.setState({error: message}));
     }
 
     render() {
         return (
-            <Modal isActive={this.props.appear} onQuit={this.onCancel.bind(this)}>
+            <Modal isActive={this.state.appear} onQuit={this.onCancel.bind(this)}>
               <div className="component_prompt">
                 <p className="modal-message">
-                  {this.props.message}
+                  {this.state.text}
                 </p>
                 <form onSubmit={this.onSubmit.bind(this)}>
-                  <Input autoFocus={true} value={this.state.value} type={this.props.type || 'text'} autoComplete="new-password" onChange={(e) => this.onInputChange(e.target.value)} />
-
+                <Input autoFocus={true} value={this.state.value} type={this.state.type} autoComplete="new-password" onChange={(e) =>  this.setState({value: e.target.value})} />
                   <div className="modal-error-message">{this.state.error}&nbsp;</div>
-
                   <div className="buttons">
                     <Button type="button" onClick={this.onCancel.bind(this)}>CANCEL</Button>
                     <Button type="submit" theme="secondary" onClick={this.onSubmit.bind(this)}>OK</Button>
@@ -55,12 +57,3 @@ export class Prompt extends React.Component {
         );
     }
 }
-
-Prompt.propTypes = {
-    appear: PropTypes.bool.isRequired,
-    type: PropTypes.string,
-    message: PropTypes.string.isRequired,
-    error: PropTypes.string,
-    onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
-};

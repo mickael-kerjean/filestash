@@ -81,19 +81,12 @@ export class ExistingThing extends React.Component {
             hover: null,
             message: null,
             filename: props.file.name,
-            delete_request: false,
-            delete_message: "Confirm by tapping \""+this._confirm_delete_text()+"\"",
-            delete_error: ''
+            is_renaming: false
         };
     }
 
     onSelect(){
         if(this.state.icon !== 'loading' && this.state.icon !== 'error'){
-            this.props.emit(
-                'file.select',
-                pathBuilder(this.props.path, this.props.file.name, this.props.file.type),
-                this.props.file.type
-            );
         }
     }
 
@@ -108,8 +101,28 @@ export class ExistingThing extends React.Component {
         }
     }
 
+    onRenameRequest(){
+        this.setState({is_renaming: !this.state.is_renaming});
+    }
+
     onDeleteRequest(filename){
-        this.setState({delete_request: true});
+        console.log(prompt);
+        prompt.emit(
+            "Confirm by tapping \""+this._confirm_delete_text()+"\"",
+            (answer) => { // click on ok
+                if(answer === this._confirm_delete_text()){
+                    this.setState({icon: 'loading'});
+                    this.props.emit(
+                        'file.delete',
+                        pathBuilder(this.props.path, this.props.file.name),
+                        this.props.file.type
+                    );
+                    return Promise.resolve();
+                }else{
+                    return Promise.reject("Doesn't match");
+                }
+            },
+            () => { /* click on cancel */ });
     }
     onDeleteConfirm(answer){
         if(answer === this._confirm_delete_text()){
@@ -136,9 +149,6 @@ export class ExistingThing extends React.Component {
         let className = "";
         if(this.props.isDragging) {
             className += "is-dragging ";
-        }
-        if(this.state.hover === true){
-            className += "mouse-is-hover ";
         }
         if((this.props.fileIsOver && this.props.canDropFile) || (this.props.nativeFileIsOver && this.props.canDropNativeFile)) {
             className += "file-is-hover ";
@@ -170,63 +180,62 @@ ExistingThing.PropTypes = {
     canDropNativeFile: PropTypes.bool.isRequired
 }
 
-class Updater extends React.Component {
+class Filename extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            editing: null
+            filename: props.filename
         };
     }
 
     onRename(e){
         e.preventDefault();
-        this.props.onRename(this.state.editing);
-        this.setState({editing: null});
-    }
-
-    onDelete(e){
         e.stopPropagation();
-        this.props.onDelete();
+        this.props.onRename(this.state.filename);
     }
-
-
-    onRenameRequest(e){
-        e.stopPropagation();
-        if(this.state.editing === null){
-            this.setState({editing: this.props.filename});
-        }else{
-            this.setState({editing: null});
-        }
-    }
-
 
     preventSelect(e){
-        e.stopPropagation();
+        e.preventDefault();
     }
 
     render(){
         return (
-            <span className="component_updater">
-              <NgIf className="action" cond={this.props.show}>
-                <NgIf cond={this.props.can_move} type="inline">
-                  <Icon name="edit" onClick={this.onRenameRequest.bind(this)} className="component_updater--icon" />
-                </NgIf>
-                <NgIf cond={this.props.can_delete !== false} type="inline">
-                  <Icon name="delete" onClick={this.onDelete.bind(this)} className="component_updater--icon"/>
-                </NgIf>
-              </NgIf>
-              <Icon className="component_updater--icon" name={this.props.icon} />
+            <span className="component_filename">
               <span className="file-details">
-                <NgIf cond={this.state.editing === null} type='inline'>{this.props.filename}</NgIf>
-                <NgIf cond={this.state.editing !== null} type='inline'>
+                <NgIf cond={this.props.is_renaming === false} type='inline'>{this.state.filename}</NgIf>
+                <NgIf cond={this.props.is_renaming === true} type='inline'>
                   <form onClick={this.preventSelect} onSubmit={this.onRename.bind(this)}>
-                    <input value={this.state.editing} onChange={(e) => this.setState({editing: e.target.value})} autoFocus />
+                    <input value={this.state.filename} onChange={(e) => this.setState({filename: e.target.value})} autoFocus />
                   </form>
                 </NgIf>
               </span>
             </span>
         );
     }
+}
+
+const ActionButton = (props) => {
+    const onRename = (e) => {
+        console.log(props);
+        e.preventDefault();
+        props.onClickRename();
+    };
+
+    const onDelete = (e) => {
+        e.preventDefault();
+        props.onClickDelete();
+    };
+
+    return (
+        <div className="component_action">
+          <NgIf cond={props.can_move === true} type="inline">
+            <Icon name="edit" onClick={onRename} className="component_updater--icon" />
+          </NgIf>
+          <NgIf cond={props.can_delete === true} type="inline">
+            <Icon name="delete" onClick={onDelete} className="component_updater--icon"/>
+          </NgIf>
+        </div>
+    );
 }
 
 const DateTime = (props) => {
