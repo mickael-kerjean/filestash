@@ -9,8 +9,9 @@ Call it an FTP client, an S3 viewer or a Dropbox like web app, Nuage leverages y
 
 ![screenshot](https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/photo.jpg)
 
-# Demo
-[Nuage Demo](https://nuage.kerjean.me)
+<h1 align="center">
+  <a href="https://nuage.kerjean.me"> DEMO </a>
+</h1>
 
 # Features
 - manage your files directly from your browser
