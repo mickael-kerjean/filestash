@@ -100,8 +100,7 @@ export class ExistingThing extends React.Component {
     }
 
     onDeleteRequest(filename){
-        console.log(prompt);
-        prompt.emit(
+        prompt.now(
             "Confirm by tapping \""+this._confirm_delete_text()+"\"",
             (answer) => { // click on ok
                 if(answer === this._confirm_delete_text()){

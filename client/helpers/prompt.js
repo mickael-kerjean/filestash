@@ -1,20 +1,15 @@
-import { Observable } from 'rxjs/Observable';
-
 const Prompt = function (){
-    let obs = null;
+    let fn = null;
+
     return {
-        emit: function(text, okCallback, cancelCallbck, type){
-            console.log(obs);
-            obs.emit(text, okCallback, cancelcallBack, type);
+        now: function(text, okCallback, cancelCallback, type){
+            if(!fn){ return window.setTimeout(() => this.now(text, okCallback, cancelCallback, type), 50); }
+            fn(text, okCallback, cancelCallback, type);
         },
-        subscribe: function(){
-            console.log("> SUBSCRIBE")
-            return new Observable((_obs) => {
-                console.log(_obs);
-                obs = _obs;
-            });
+        subscribe: function(_fn){
+            fn = _fn;
         }
-    }
-}
+    };
+};
 
 export const prompt = new Prompt();

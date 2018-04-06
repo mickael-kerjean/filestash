@@ -3,20 +3,32 @@ import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import { ModalPrompt } from '../../components/';
-import { encrypt, decrypt, memory } from '../../helpers/';
+import { encrypt, decrypt, memory, prompt } from '../../helpers/';
 
 export class Credentials extends React.Component {
     constructor(props){
         super(props);
-        const key = memory.get('credentials_key') || '';
+        const key = memory.get('credentials_key') || ''; // we use a clojure for the "key" because we
+                                                         // want to persist it in memory, not just in the
+                                                         // state which is kill whenever react decide
         this.state = {
-            modal_appear: key ? false : this.props.remember_me,
             key: key || '',
             message: '',
             error: null
         };
-        // we use a clojure for the "key" because we want to persist it in memory
-        // not just in the state which is kill whenever react decide
+
+        if(this.props.remember_me === true){
+            if(key === ""){
+                let raw = window.localStorage.hasOwnProperty('credentials');
+                if(raw){
+                    this.promptForExistingPassword();
+                }else{
+                    this.promptForNewPassword();
+                }
+            }else{
+                this.hidrate_credentials(key);
+            }
+        }
     }
 
     componentWillReceiveProps(new_props){
@@ -27,25 +39,58 @@ export class Credentials extends React.Component {
         }
 
         if(new_props.remember_me === true && this.props.remember_me === false){
-            this.setState({modal_appear: true});
-            this.init();
+            this.promptForNewPassword();
         }else if(new_props.remember_me === false && this.props.remember_me === true){
             memory.set('credentials_key', '');
-            this.setState({modal_appear: false, key: ''});
+            this.setState({key: ''});
         }
     }
 
-    componentDidMount(){
-        this.init();
-        if(this.state.key) this.onSubmit(this.state.key);
+    promptForExistingPassword(){
+        prompt.now(
+            "Your Master Password",
+            (key) => {
+                if(!key.trim()) return Promise.reject("Password can\'t be empty");
+                this.setState({key: key});
+                memory.set('credentials_key', key);
+                return this.hidrate_credentials(key);
+            },
+            () => {
+                memory.set('credentials_key', '');
+                this.setState({key: ''});
+            },
+            'password'
+        );
+    }
+    promptForNewPassword(){
+        prompt.now(
+            "Pick a Master Password",
+            (key) => {
+                if(!key.trim()) return Promise.reject("Password can\'t be empty");
+                memory.set('credentials_key', key);
+                this.setState({key: key}, () => {
+                    this.saveCreds(this.props.credentials);
+                });
+                return Promise.resolve();
+            },
+            () => {},
+            'password'
+        );
     }
 
-    init(){
-        let raw = window.localStorage.hasOwnProperty('credentials');
+    hidrate_credentials(key){
+        let raw = window.localStorage.getItem('credentials');
         if(raw){
-            this.setState({message: "Your Master Password:"});
+            try{
+                let credentials = decrypt(raw, key);
+                this.props.onCredentialsFound(credentials);
+                return Promise.resolve();
+            }catch(e){
+                return Promise.reject('Incorrect password');
+            }
         }else{
-            this.setState({message: "Pick a Master Password:"});
+            this.saveCreds(this.props.credentials);
+            return Promise.resolve();
         }
     }
 
@@ -56,52 +101,7 @@ export class Credentials extends React.Component {
         }
     }
 
-    onCancel(should_clear){
-        memory.set('credentials_key', '');
-        this.setState({modal_appear: false, key: ''});
-    }
-
-    onSubmit(key){
-        this.setState({key: key});
-        memory.set('credentials_key', key);
-        /*
-         * 2 differents use cases:
-         * - a user is creating a new master password
-         * - a user want to unlock existing credentials
-         */
-        if(key !== ''){
-            let raw = window.localStorage.getItem('credentials');
-            if(raw){
-                try{
-                    let credentials = decrypt(raw, key);
-                    this.setState({modal_appear: false});
-                    this.props.onCredentialsFound(credentials);
-                }catch(e){
-                    this.setState({error: 'Incorrect password'});
-                }
-            }else{
-                this.saveCreds(this.props.credentials);
-                this.setState({modal_appear: false});
-            }
-        }else{
-            this.setState({error: 'Password can\'t be empty'});
-            window.setTimeout(() => this.setState({error: null}), 1500);
-        }
-    }
-
     render() {
-        return (
-            <ModalPrompt
-              type="password"
-              appear={this.state.modal_appear}
-              error={this.state.error}
-              message={this.state.message}
-              onCancel={this.onCancel.bind(this)}
-              onSubmit={this.onSubmit.bind(this)}
-              />
-        );
+        return null;
     }
 }
-
-Credentials.propTypes = {
-};
