@@ -64,7 +64,7 @@ export class NewThing extends React.Component {
                   <NgIf className="component_message" cond={this.state.message !== null}>
                     {this.state.message}
                   </NgIf>
-                  <span className="component_updater">
+                  <span className="component_action">
                     <div className="action">
                       <div>
                         <Icon className="component_updater--icon" name="delete" onClick={this.onDelete.bind(this)} />

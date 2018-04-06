@@ -112,7 +112,7 @@ export class ViewerPage extends React.Component {
     }
 
     render() {
-        let style = {height: '100%'}; // {{height: this.state.height+'px'}}
+        let style = {height: '100%'};
         return (
             <div style={style}>
               <BreadCrumb needSaving={this.state.needSaving} className="breadcrumb" path={this.state.path} />

@@ -158,7 +158,7 @@ export class ExistingThing extends React.Component {
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div className="component_thing">
               <Link to={this.props.file.link}>
-                <Card className={this.state.hover} onClick={this.onSelect.bind(this)} onMouseEnter={() => this.setState({hover: true})} onMouseLeave={() => this.setState({hover: false})} className={className}>
+                <Card className={this.state.hover} className={className}>
                   <Icon name={this.props.file.icon || this.props.file.type} />
                   <Filename filename={this.props.file.name} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} />
                   <FileSize type={this.props.file.type} size={this.props.file.size} />
@@ -216,7 +216,6 @@ class Filename extends React.Component {
 
 const ActionButton = (props) => {
     const onRename = (e) => {
-        console.log(props);
         e.preventDefault();
         props.onClickRename();
     };
