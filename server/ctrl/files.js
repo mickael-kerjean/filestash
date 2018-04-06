@@ -80,7 +80,10 @@ app.post('/cat', function(req, res){
 app.get('/mv', function(req, res){
     let from = decodeURIComponent(req.query.from),
         to = decodeURIComponent(req.query.to);
-    if(from && to){
+
+    if(from === to){
+        res.send({status: 'ok'});
+    }else if(from && to){
         Files.mv(from, to, req.cookies.auth)
             .then((message) => {
                 res.send({status: 'ok'});

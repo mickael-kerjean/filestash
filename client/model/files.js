@@ -84,7 +84,7 @@ class FileSystem{
 
     rm(path){
         const url = '/api/files/rm?path='+prepare(path);
-        this._replace(path, 'loading')
+        return this._replace(path, 'loading')
             .then(() => http_get(url))
             .then((res) => {
                 if(res.status === 'ok'){
@@ -127,14 +127,14 @@ class FileSystem{
 
     mkdir(path){
         const url = '/api/files/mkdir?path='+prepare(path);
-        this._add(path, 'loading')
+        return this._add(path, 'loading')
             .then(() => this._add(path, 'loading'))
             .then(() => http_get(url))
             .then((res) => res.status === 'ok'? this._replace(path) : this._replace(path, 'error'));
     }
 
     touch(path, file){
-        this._add(path, 'loading')
+        return this._add(path, 'loading')
             .then(() => {
                 if(file){
                     const url = '/api/files/cat?path='+prepare(path);
@@ -152,7 +152,7 @@ class FileSystem{
     mv(from, to){
         const url = '/api/files/mv?from='+prepare(from)+"&to="+prepare(to);
 
-        ui_before_request(from, to)
+        return ui_before_request(from, to)
             .then(() => this._ls_from_cache(dirname(from)))
             .then(() => this._ls_from_cache(dirname(to)))
             .then(() => http_get(url)

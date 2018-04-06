@@ -5,7 +5,7 @@ import './connectpage.scss';
 import { Session } from '../model/';
 import { Container, NgIf, Loader, Notification } from '../components/';
 import { ForkMe, RememberMe, Credentials, Form } from './connectpage/';
-import { cache } from '../helpers/';
+import { cache, notify } from '../helpers/';
 import config from '../../config_client';
 
 import { Alert } from '../components/';
@@ -17,7 +17,6 @@ export class ConnectPage extends React.Component {
             credentials: {},
             remember_me: window.localStorage.hasOwnProperty('credentials') ? true : false,
             loading: false,
-            error: null,
             doing_a_third_party_login: false
         };
     }
@@ -52,9 +51,9 @@ export class ConnectPage extends React.Component {
                 const path = params.path && /^\//.test(params.path)? /\/$/.test(params.path) ? params.path : params.path+'/' :  '/';
                 this.props.history.push('/files'+path);
             })
-            .catch(err => {
-                this.setState({loading: false, error: err});
-                window.setTimeout(() => this.setState({error: null}), 1000);
+            .catch((err) => {
+                this.setState({loading: false});
+                notify.send(err, 'error');
             });
     }
 
@@ -64,16 +63,16 @@ export class ConnectPage extends React.Component {
             Session.url('dropbox').then((url) => {
                 window.location.href = url;
             }).catch((err) => {
-                this.setState({loading: false, error: err});
-                window.setTimeout(() => this.setState({error: null}), 1000);
+                this.setState({loading: false});
+                notify.send(err, 'error');
             });
         }else if(source === 'google'){
             this.setState({loading: true});
             Session.url('gdrive').then((url) => {
                 window.location.href = url;
             }).catch((err) => {
-                this.setState({loading: false, error: err});
-                window.setTimeout(() => this.setState({error: null}), 1000);
+                this.setState({loading: false});
+                notify.send(err, 'error');
             });
         }
     }
@@ -118,7 +117,6 @@ export class ConnectPage extends React.Component {
                                onCredentialsFound={this.setCredentials.bind(this)}
                                credentials={this.state.credentials} />
                 </NgIf>
-                <Notification error={this.state.error && this.state.error.message} />
               </Container>
             </div>
         );

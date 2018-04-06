@@ -2,8 +2,8 @@ import React from 'react';
 import Path from 'path';
 
 import { Files } from '../model/';
-import { BreadCrumb, Bundle, NgIf, Loader, Error, Container, EventReceiver, EventEmitter } from '../components/';
-import { debounce, opener, screenHeight } from '../helpers/';
+import { BreadCrumb, Bundle, NgIf, Loader, Container, EventReceiver, EventEmitter } from '../components/';
+import { debounce, opener, screenHeight, notify } from '../helpers/';
 import { AudioPlayer, FileDownloader, ImageViewer, PDFViewer } from './viewerpage/';
 
 const VideoPlayer = (props) => (
@@ -29,7 +29,6 @@ export class ViewerPage extends React.Component {
             needSaving: false,
             isSaving: false,
             loading: true,
-            error: false,
             height: 0
         };
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
@@ -37,7 +36,7 @@ export class ViewerPage extends React.Component {
     }
 
     componentWillMount(){
-        this.setState({loading: null, error: false}, () => {
+        this.setState({loading: null}, () => {
             window.setTimeout(() => {
                 if(this.state.loading === null) this.setState({loading: true});
             }, 500);
@@ -50,13 +49,12 @@ export class ViewerPage extends React.Component {
                 if(err && err.code === 'CANCELLED'){ return; }
                 if(err.code === 'BINARY_FILE'){
                     Files.url(this.state.path).then((url) => {
-                        console.log(this.state.path);
                         this.setState({data: url, loading: false, opener: 'download'});
                     }).catch(err => {
-                        this.setState({error: err});
+                        notify.send(err, 'error');
                     });
                 }else{
-                    this.setState({error: err});
+                    notify.send(err, 'error');
                 }
             });
         }else{
@@ -64,7 +62,7 @@ export class ViewerPage extends React.Component {
                 this.setState({data: url, loading: false, opener: app});
             }).catch(err => {
                 if(err && err.code === 'CANCELLED'){ return; }
-                this.setState({error: err});
+                notify.send(err, 'error');
             });
         }
     }
@@ -87,13 +85,10 @@ export class ViewerPage extends React.Component {
                 this.setState({needSaving: false});
             })
             .catch((err) => {
-                if(err && err.code === 'CANCELLED'){ return; }
-                this.setState({isSaving: false});
-                let message = "Oups, something went wrong";
-                if(err.message){
-                    message += ':\n'+err.message;
+                if(err && err.code === 'CANCELLED'){
+                    notify.send(err, 'error');
                 }
-                alert(message);
+                this.setState({isSaving: false});
             });
     }
 
@@ -142,12 +137,7 @@ export class ViewerPage extends React.Component {
                   </NgIf>
                 </NgIf>
                 <NgIf cond={this.state.loading === true}>
-                  <NgIf cond={this.state.error === false}>
-                    <Loader/>
-                  </NgIf>
-                  <NgIf cond={this.state.error !== false} onClick={this.componentWillMount.bind(this)} style={{cursor: 'pointer'}}>
-                    <Error err={this.state.error}/>
-                  </NgIf>
+                  <Loader/>
                 </NgIf>
               </div>
             </div>

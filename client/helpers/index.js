@@ -10,3 +10,4 @@ export { prepare } from './navigate';
 export { invalidate, http_get, http_post, http_delete } from './ajax';
 export { screenHeight } from './dom';
 export { prompt } from './prompt';
+export { notify } from './notify';

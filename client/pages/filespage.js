@@ -6,8 +6,8 @@ import Path from 'path';
 
 import './filespage.scss';
 import { Files } from '../model/';
-import { NgIf, Loader, Error, Uploader, EventReceiver } from '../components/';
-import { debounce, goToFiles, goToViewer, event, screenHeight } from '../helpers/';
+import { NgIf, Loader, Uploader, EventReceiver } from '../components/';
+import { notify, debounce, goToFiles, goToViewer, event, screenHeight } from '../helpers/';
 import { BreadCrumb, FileSystem } from './filespage/';
 
 @EventReceiver
@@ -81,6 +81,7 @@ export class FilesPage extends React.Component {
             });
             this.setState({files: files, loading: false});
         }, (error) => {
+            notify.send(error, 'error');
             this.setState({error: error});
         });
         this.setState({error: false});
@@ -88,18 +89,26 @@ export class FilesPage extends React.Component {
 
     onCreate(path, type, file){
         if(type === 'file'){
-            return Files.touch(path, file);
+            return Files.touch(path, file)
+                .then(() => notify.send('A file named "'+Path.basename(path)+'" was created', 'success'))
+                .catch((err) => notify.send(err, 'error'));
         }else if(type === 'directory'){
-            return Files.mkdir(path);
+            return Files.mkdir(path)
+                .then(() => notify.send('A folder named "'+Path.basename(path)+'" was created', 'success'))
+                .catch((err) => notify.send(err, 'error'));
         }else{
             return Promise.reject({message: 'internal error: can\'t create a '+type.toString(), code: 'UNKNOWN_TYPE'});
         }
     }
     onRename(from, to, type){
-        return Files.mv(from, to, type);
+        return Files.mv(from, to, type)
+            .then(() => notify.send('The file "'+Path.basename(from)+'" was renamed', 'success'))
+            .catch((err) => notify.send(err, 'error'));
     }
-    onDelete(file, type){
-        return Files.rm(file, type);
+    onDelete(path, type){
+        return Files.rm(path, type)
+            .then(() => notify.send('The file "'+Path.basename(path)+'" was deleted', 'success'))
+            .catch((err) => notify.send(err, 'error'));
     }
 
     onUpload(path, files){
@@ -205,10 +214,7 @@ export class FilesPage extends React.Component {
                   <FileSystem path={this.state.path} files={this.state.files} />
                   <Uploader path={this.state.path} />
                 </NgIf>
-                <NgIf cond={!!this.state.error} className="error" onClick={this.componentDidMount.bind(this)}>
-                  <Error err={this.state.error}/>
-                </NgIf>
-                <NgIf cond={this.state.loading && !this.state.error}>
+                <NgIf cond={this.state.loading}>
                   <Loader/>
                 </NgIf>
               </div>

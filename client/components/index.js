@@ -7,7 +7,6 @@ export { Container } from './container';
 export { NgIf } from './ngif';
 export { Card } from './card';
 export { Loader } from './loader';
-export { Error } from './error';
 export { Fab } from './fab';
 export { Icon } from './icon';
 export { Uploader } from './uploader';

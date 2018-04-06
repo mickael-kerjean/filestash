@@ -85,20 +85,14 @@ export class ExistingThing extends React.Component {
         };
     }
 
-    onSelect(){
-        if(this.state.icon !== 'loading' && this.state.icon !== 'error'){
-        }
-    }
-
     onRename(newFilename){
-        if(this.state.icon !== 'loading' && this.state.icon !== 'error'){
-            this.props.emit(
-                'file.rename',
-                pathBuilder(this.props.path, this.props.file.name),
-                pathBuilder(this.props.path, newFilename),
-                this.props.file.type
-            );
-        }
+        this.props.emit(
+            'file.rename',
+            pathBuilder(this.props.path, this.props.file.name),
+            pathBuilder(this.props.path, newFilename),
+            this.props.file.type
+        );
+        this.setState({is_renaming: false});
     }
 
     onRenameRequest(){

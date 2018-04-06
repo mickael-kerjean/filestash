@@ -1,22 +1,42 @@
 .component_notification{
     position: fixed;
-    bottom: 0;
-    left: 0;
+    bottom: 25px;
+    left: 25px;
     right: 0;
-    text-align: center;
+    font-size: 0.95em;
 
-    > div{
-        display: inline-block;
-        background: #637d8b;
-        min-width: 200px;
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 10px 15px;
-        border-top-left-radius: 3px;
-        border-top-right-radius: 3px;
-        color: white;
+    .component_notification--container{
+        width: 400px;
+
         text-align: left;
-        cursor: pointer;
-        box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+        display: inline-block;
+        padding: 15px 25px 15px 15px;
+        border-radius: 2px;
+        box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px;
+        display: flex;
+        align-items: center;
+
+        &.info{
+            background: rgba(0,0,0,0.6);
+            color: white;
+        }
+        &.error{
+            background: var(--error);
+            color: var(--secondary);
+        }
+        &.success{
+            background: var(--success);
+            color: var(--secondary);
+        }
+
+        .message{
+            flex: 1 1 auto;
+        }
+        .close{
+            color: rgba(0,0,0,0.3);
+            cursor: pointer;
+            padding: 0 2px;
+            font-size: 0.95em;
+        }
     }
 }

@@ -21,6 +21,7 @@ export default class AppRouter extends React.Component {
                 </div>
               </BrowserRouter>
               <ModalPrompt />
+              <Notification />
             </div>
         );
     }
