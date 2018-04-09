@@ -146,6 +146,9 @@ export class ExistingThing extends React.Component {
         if((this.props.fileIsOver && this.props.canDropFile) || (this.props.nativeFileIsOver && this.props.canDropNativeFile)) {
             className += "file-is-hover ";
         }
+        if(this.state.is_renaming){
+            className += "highlight ";
+        }
         className = className.trim();
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
@@ -153,8 +156,7 @@ export class ExistingThing extends React.Component {
               <Link to={this.props.file.link}>
                 <Card className={this.state.hover} className={className}>
                   <Icon name={this.props.file.icon || this.props.file.type} />
-                  <Filename filename={this.props.file.name} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} />
-                  <FileSize type={this.props.file.type} size={this.props.file.size} />
+                  <Filename filename={this.props.file.name} filesize={this.props.file.size} filetype={this.props.file.type} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} />
                   <Message message={this.state.message} />
                   <DateTime show={this.state.icon !== 'loading'} timestamp={this.props.file.time} />
                   <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} can_move={this.props.file.can_move !== false} can_delete={this.props.file.can_delete !== false} />
@@ -195,7 +197,9 @@ class Filename extends React.Component {
         return (
             <span className="component_filename">
               <span className="file-details">
-                <NgIf cond={this.props.is_renaming === false} type='inline'>{this.state.filename}</NgIf>
+                <NgIf cond={this.props.is_renaming === false} type='inline'>
+                  {this.state.filename} <FileSize type={this.props.filetype} size={this.props.filesize} />
+                </NgIf>
                 <NgIf cond={this.props.is_renaming === true} type='inline'>
                   <form onClick={this.preventSelect} onSubmit={this.onRename.bind(this)}>
                     <input value={this.state.filename} onChange={(e) => this.setState({filename: e.target.value})} autoFocus />

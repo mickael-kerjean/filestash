@@ -54,7 +54,7 @@ export class NewThing extends React.Component {
                 </select>
               </div>
               <NgIf cond={this.state.type !== null} className="component_thing">
-                <Card className="mouse-is-hover">
+                <Card className="mouse-is-hover highlight">
                   <Icon className="component_updater--icon" name={this.state.icon} />
                   <span className="file-details">
                     <form onSubmit={this.onSave.bind(this)}>

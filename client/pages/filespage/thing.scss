@@ -20,7 +20,7 @@
 }
 
 .component_thing{
-    &:hover .box{
+    &:hover .box, .highlight.box{
         background: var(--super-light);
         .component_datetime{display: none;}
         .component_action{display: block;}
@@ -40,7 +40,7 @@
         padding: 0 5px;
         line-height: 22px;
         white-space: nowrap;
-        span{
+        > span{
             display: inline-block;
             width: calc(100% - 130px);
             white-space: nowrap;
@@ -53,8 +53,12 @@
     form{
         display: inline-block;
         input{
+            font-size: 1em;
             border-width: 0px;
             padding: 0 2px 0 2px;
+            background: inherit;
+            border-bottom: 2px solid var(--emphasis-primary);
+            color: var(--color);
         }
     }
 

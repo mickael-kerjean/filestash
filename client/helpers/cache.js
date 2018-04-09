@@ -6,7 +6,7 @@
 function Data(){
     this.FILE_PATH = "file_path";
     this.FILE_CONTENT = "file_content";
-    this.db_version = 'v1.1';
+    this.db_version = 'v1.0';
     this.db = null;
     this.intervalId = window.setInterval(this._vacuum.bind(this), 5000);
     this._init();
