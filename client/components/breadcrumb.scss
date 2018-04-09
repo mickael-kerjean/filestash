@@ -39,7 +39,9 @@
             color: var(--light);
             span.title{
                 position: absolute;
-                background: var(--bg-color);
+                background: var(--color);
+                color: white;
+                font-size: 0.8em;
                 opacity: 0;
                 transform: translateY(5px);
                 border-radius: 2px;

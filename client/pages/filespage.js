@@ -25,7 +25,7 @@ export class FilesPage extends React.Component {
         this.resetHeight = debounce(this.resetHeight.bind(this), 100);
         this.goToFiles = goToFiles.bind(null, this.props.history);
         this.goToViewer = goToViewer.bind(null, this.props.history);
-        this.observers = {ls: null};
+        this.observers = [];
     }
 
     componentDidMount(){
@@ -50,7 +50,7 @@ export class FilesPage extends React.Component {
         this.props.unsubscribe('file.delete');
         this.props.unsubscribe('file.refresh');
         window.removeEventListener("resize", this.resetHeight);
-        if(this.observers.ls) this.observers.ls.unsubscribe();
+        this._cleanupListeners();
     }
 
     componentWillReceiveProps(nextProps){
@@ -72,19 +72,34 @@ export class FilesPage extends React.Component {
 
     onRefresh(path = this.state.path){
         this.resetHeight();
-        if(this.observers.ls) this.observers.ls.unsubscribe();
-        this.observers.ls = Files.ls(path).subscribe((files) => {
-            files = files.map((file) => {
-                let path = this.state.path+file.name;
-                file.link = file.type === "file" ? "/view"+path : "/files"+path+"/";
-                return file;
-            });
-            this.setState({files: files, loading: false});
+        this._cleanupListeners();
+        const observer = Files.ls(path).subscribe((res) => {
+            if(res.status === 'ok'){
+                let files = res.results;
+                files = files.map((file) => {
+                    let path = this.state.path+file.name;
+                    file.link = file.type === "file" ? "/view"+path : "/files"+path+"/";
+                    return file;
+                });
+                this.setState({files: files, loading: false});
+            }else{
+                notify.send(res, 'error');
+            }
         }, (error) => {
             notify.send(error, 'error');
             this.setState({error: error});
         });
+        this.observers.push(observer);
         this.setState({error: false});
+    }
+
+    _cleanupListeners(){
+        if(this.observers.length > 0) {
+            this.observers = this.observers.filter((observer) => {
+                observer.unsubscribe();
+                return false;
+            });
+        }
     }
 
     onCreate(path, type, file){

@@ -40,9 +40,22 @@
         padding: 0 5px;
         line-height: 22px;
         white-space: nowrap;
+        span{
+            display: inline-block;
+            width: calc(100% - 130px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: bottom;
+            color: inherit;
+        }
     }
     form{
-        display: inline;
+        display: inline-block;
+        input{
+            border-width: 0px;
+            padding: 0 2px 0 2px;
+        }
     }
 
     .component_icon{

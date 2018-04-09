@@ -85,10 +85,9 @@ export class ViewerPage extends React.Component {
                 this.setState({needSaving: false});
             })
             .catch((err) => {
-                if(err && err.code === 'CANCELLED'){
-                    notify.send(err, 'error');
-                }
+                if(err && err.code === 'CANCELLED'){ return; }
                 this.setState({isSaving: false});
+                notify.send(err, 'error');
             });
     }
 

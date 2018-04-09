@@ -23,9 +23,9 @@ export function http_get(url, type = 'json'){
                     }
                 }else{
                     if(navigator.onLine === false){
-                        err({status: xhr.status, code: "CONNECTION_LOST", message: 'Connection Lost'});
+                        err({status: xhr.status, code: "CONNECTION_LOST", message: 'Ooups! Looks like your internet has gone away'});
                     }else{
-                        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
+                        err({status: xhr.status, message: xhr.responseText || 'Oups! Something went wrong'});
                     }
                 }
             }
@@ -34,7 +34,6 @@ export function http_get(url, type = 'json'){
         xhr.send(null);
     });
 }
-
 
 export function http_post(url, data, type = 'json'){
     return new Promise((done, err) => {

@@ -27,7 +27,8 @@ class FileSystem{
                                 window.setTimeout(() => done(), 2000);
                             }))
                             .then(() => {
-                                return keep_pulling_from_http === true? fetch_from_http(_path) : Promise.resolve();
+                                if(keep_pulling_from_http === false) return Promise.resolve();
+                                return fetch_from_http(_path);
                             });
                     };
                     fetch_from_http(path);
@@ -64,18 +65,18 @@ class FileSystem{
                 }
                 // publish
                 cache.put(cache.FILE_PATH, path, {results: response.results});
-                if(this.current_path === path) this.obs && this.obs.next(response.results);
+                if(this.current_path === path) this.obs && this.obs.next({status: 'ok', results: response.results});
             });
         }).catch((_err) => {
-            // TODO: user is in offline mode, notify
-            console.log(_err);
+            this.obs.next(_err);
+            return Promise.reject();
         });
     }
     _ls_from_cache(path, _record_access = false){
         return cache.get(cache.FILE_PATH, path, _record_access).then((_files) => {
             if(_files && _files.results){
                 if(this.current_path === path){
-                    this.obs && this.obs.next(_files.results);
+                    this.obs && this.obs.next({status: 'ok', results: _files.results});
                 }
             };
             return Promise.resolve();
@@ -353,4 +354,3 @@ class FileSystem{
 
 
 export const Files = new FileSystem();
-window.Files = Files;

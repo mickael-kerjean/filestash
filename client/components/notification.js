@@ -13,41 +13,26 @@ export class Notification extends React.Component {
             message_text: null,
             message_type: null
         };
-
-        function TaskManager(){
-            let jobs = [];
-            let is_running = false;
-
-            const ret = {
-                addJob: (job) => {
-                    jobs.push(job);
-                    if(is_running === false){
-                        is_running = true;
-                        ret._executor();
-                    }
-                },
-                _executor: () => {
-                    let job = jobs.shift();
-                    if(!job){
-                        is_running = false;
-                        return Promise.resolve();
-                    }
-                    return job().then(ret._executor);
-                }
-            };
-            return ret;
-        }
         this.runner = new TaskManager();
+        this.notification_current = null;
+        this.notification_is_first = null;
+        this.notification_is_last = null;
     }
 
     componentDidMount(){
-        notify.subscribe((_message, type) => {
-            let job = playMessage.bind(this, {
-                text: stringify(_message),
-                type: type
-            });
-            this.runner.addJob(job);
+        this.runner.before_run((task, isFirst, isLast) => {
+            this.notification_current = task;
         });
+
+        notify.subscribe((message, type) => {
+            this.runner.addTask(Task(
+                this.openNotification.bind(this, {text: stringify(message), type: type}),
+                this.closeNotification.bind(this),
+                8000,
+                500
+            ));
+        });
+
         function stringify(data){
             if(typeof data === 'object' && data.message){
                 return data.message;
@@ -56,52 +41,134 @@ export class Notification extends React.Component {
             }
             return JSON.stringify(data);
         }
-        function playMessage(message){
-            const displayMessage = (message) => {
-                this.setState({
-                    appear: true,
-                    message_text: message.text,
-                    message_type: message.type
-                });
-                return Promise.resolve(message);
-            };
-            const waitForABit = (timeout, message) => {
-                return new Promise((done, err) => {
-                    window.setTimeout(() => {
-                        done(message);
-                    }, timeout);
-                });
-            };
-            const hideMessage = (message) => {
-                this.setState({
-                    appear: false
-                });
-                return Promise.resolve(message);
-            };
-
-            return displayMessage(message)
-                .then(waitForABit.bind(this, 5000))
-                .then(hideMessage)
-                .then(waitForABit.bind(this, 1000));
-        }
     }
 
-    close(){
-        this.setState({ appear: false });
+    closeNotification(){
+        return new Promise((done ,err) => {
+            this.setState({
+                appear: false
+            }, done);
+        });
+    }
+
+    openNotification(message){
+        return new Promise((done ,err) => {
+            this.setState({
+                appear: true,
+                message_text: message.text,
+                message_type: message.type
+            }, done);
+        });
+    }
+
+    cancelAnimation(){
+        return this.notification_current.cancel();
     }
 
     render(){
         return (
-            <NgIf cond={this.state.appear === true} className="component_notification no-select">
-              <ReactCSSTransitionGroup transitionName="notification" transitionLeave={true} transitionLeaveTimeout={200} transitionEnter={true} transitionEnterTimeout={500}>
+            <ReactCSSTransitionGroup transitionName="notification" transitionLeave={true} transitionLeaveTimeout={200} transitionEnter={true} transitionEnterTimeout={100} transitionAppear={false} className="component_notification">
+              <NgIf key={this.state.message_text+this.state.message_type+this.state.appear} cond={this.state.appear === true} className="no-select">
                 <div className={"component_notification--container "+(this.state.message_type || 'info')}>
                   <div className="message">
                     { this.state.message_text }
                   </div>
-                  <div className="close" onClick={this.close.bind(this)}>X</div>
+                  <div className="close" onClick={this.cancelAnimation.bind(this)}>X</div>
                 </div>
-              </ReactCSSTransitionGroup>
-            </NgIf>
+              </NgIf>
+            </ReactCSSTransitionGroup>
         );
     }
+}
+
+
+
+
+function TaskManager(){
+    let tasks = [];
+    let is_running = false;
+    let subscriber = null;
+    let current_task = null;
+    let is_first = null;
+    let is_last = null;
+
+    const ret ={
+        addTask: function(task){
+            current_task && current_task.cancel();
+            tasks.push(task);
+            if(is_running === false){
+                is_running = true;
+                ret._run();
+            }
+        },
+        before_run: function(fn){
+            subscriber = fn;
+        },
+        _run: function(){
+            current_task = tasks.shift();
+            is_last = tasks.length === 0;
+            if(!current_task){
+                is_running = false;
+                return Promise.resolve();
+            }else{
+                const mode = tasks.length > 0 ? 'minimal' : 'normal';
+                subscriber(current_task, mode);
+                return current_task.run(mode).then(ret._run);
+            }
+        }
+    };
+    return ret;
+}
+
+function Task(_runCallback, _finishCallback, wait_time_before_finish, minimum_running_time){
+    let start_date = null;
+    let done = null;
+    let promise = new Promise((_done) => { done = _done; });
+    let timeout = null;
+
+    const ret = {
+        run: function(mode = 'normal'){
+            const wait = mode === 'minimal' ? minimum_running_time : wait_time_before_finish;
+            start_date = new Date();
+
+            new Promise((_done, err) => {
+                timeout = window.setTimeout(() => {
+                    _done();
+                }, 200);
+            })
+                .then(_runCallback)
+                .then(() => new Promise((_done, err) => {
+                    timeout = window.setTimeout(() => {
+                        _done();
+                    }, wait);
+                }))
+                .then(() => {
+                    ret._complete();
+                });
+            return promise;
+        },
+        cancel: function(){
+            window.clearTimeout(timeout);
+            timeout = null;
+            let elapsed_time = new Date() - start_date;
+
+            if(elapsed_time < minimum_running_time){
+                window.setTimeout(() => {
+                    ret._complete();
+                }, minimum_running_time - elapsed_time);
+            }else{
+                ret._complete();
+            }
+            return promise;
+        },
+        _complete: function(){
+            if(done){
+                _finishCallback();
+                done();
+            }
+            done = null;
+            return Promise.resolve();
+        }
+    };
+    return ret;
 }

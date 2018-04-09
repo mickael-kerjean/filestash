@@ -1,23 +1,23 @@
 .component_notification{
     position: fixed;
-    bottom: 25px;
-    left: 25px;
+    bottom: 20px;
+    left: 20px;
     right: 0;
     font-size: 0.95em;
+    z-index: 10;
 
     .component_notification--container{
         width: 400px;
-
         text-align: left;
         display: inline-block;
-        padding: 15px 25px 15px 15px;
+        padding: 15px 20px 15px 15px;
         border-radius: 2px;
         box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px;
         display: flex;
         align-items: center;
 
         &.info{
-            background: rgba(0,0,0,0.6);
+            background: var(--color);
             color: white;
         }
         &.error{
@@ -38,5 +38,38 @@
             padding: 0 2px;
             font-size: 0.95em;
         }
+    }
+}
+
+@media (max-width: 450px){
+    .component_notification{
+        bottom: 0px;
+        left: 0px;
+        .component_notification--container{
+            width: 100%;
+            box-sizing: border-box;
+        }
+    }
+}
+
+
+.component_notification{
+    .notification-leave{
+        opacity: 1;
+    }
+    .notification-leave.notification-leave-active{
+        opacity: 0;
+        transition: opacity 0.2s ease-out;
+    }
+
+    .notification-enter{
+        transform: translateY(50px);
+        opacity: 0;
+        display: inline-block;
+    }
+    .notification-enter.notification-enter-active{
+        opacity: 1;
+        transform: translateY(0);
+        transition: all 0.1s ease-out;
     }
 }
