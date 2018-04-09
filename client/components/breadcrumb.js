@@ -25,11 +25,20 @@ export class BreadCrumb extends React.Component {
         }
         paths = paths.map((path, index) => {
             let sub_path = paths.slice(0, index+1).join('/'),
-                label = path === ''? 'Nuage' : path;
+                label = path === '' ? 'Nuage' : path;
             if(index === paths.length - 1){
                 return {full: null, label: label};
             }else{
-                return {full: sub_path+'/', label: label};
+                return {
+                    full: sub_path+'/',
+                    label: label,
+                    minify: function(){
+                        if(index === 0){ return false; }
+                        if(paths.length <= (document.body.clientWidth > 800 ? 5 : 4)){ return false; }
+                        if(index > paths.length - (document.body.clientWidth > 1000? 4 : 3)) return false;
+                        return true;
+                    }()
+                };
             }
         });
         return paths;
@@ -105,8 +114,8 @@ export class PathElementWrapper extends React.Component {
     }
 
     limitSize(str){
-        if(str.length > 30){
-            return str.substring(0,23)+'...';
+        if(str.length > 27){
+            return str.substring(0,20)+'...';
         }
         return str;
     }
@@ -118,7 +127,15 @@ export class PathElementWrapper extends React.Component {
             <li className={className}>
               <NgIf cond={this.props.isLast === false}>
                 <Link to={"/files" + this.props.path.full || "/"} className="label">
-                  {this.limitSize(this.props.path.label)}
+                  <NgIf cond={this.props.path.minify !== true}>
+                    {this.limitSize(this.props.path.label)}
+                  </NgIf>
+                  <NgIf cond={this.props.path.minify === true}>
+                    ...
+                    <span className="title">
+                      {this.limitSize(this.props.path.label)}
+                    </span>
+                  </NgIf>
                 </Link>
                 <Separator/>
               </NgIf>

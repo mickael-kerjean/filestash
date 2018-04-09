@@ -35,7 +35,20 @@
     .component_path-element{
         display: inline-block;
         .label{color: var(--color);padding: 2px 5px;}
-        a.label{color: var(--light);}
+        a.label{
+            color: var(--light);
+            span.title{
+                position: absolute;
+                background: var(--bg-color);
+                opacity: 0;
+                transform: translateY(5px);
+                border-radius: 2px;
+                white-space: nowrap;
+                padding: 1px 5px!important;
+                margin: 5px 0px 5px -5px;
+            }
+        }
+
 
         .component_path-element-wrapper{
             font-size: 18px;
@@ -56,8 +69,13 @@
 }
 
 body.touch-no{
-    .component_path-element-wrapper:hover a{
+    .component_path-element-wrapper a.label:hover{
         background: var(--super-light);
+        span.title{
+            opacity: 1;
+            transform: translateY(0px);
+            transition: all 0.2s ease-out;
+        }
     }
 }
 
