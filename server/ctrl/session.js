@@ -13,9 +13,11 @@ app.get('/', function(req, res){
     }
 });
 
-app.post('/', function(req, res){    
+app.post('/', function(req, res){
     Session.test(req.body)
         .then((state) => {
+            if(!state.path) state.path = "";
+            else{ state.path = state.path.replace(/\/$/, ''); }
             let persist = {
                 type: req.body.type,
                 payload: state
@@ -25,7 +27,7 @@ app.post('/', function(req, res){
                 res.send({status: 'error', message: 'we can\'t authenticate you', })
             }else{
                 res.cookie('auth', crypto.encrypt(persist), { maxAge: 365*24*60*60*1000, httpOnly: true });
-                res.send({status: 'ok', result: 'pong'});
+                res.send({status: 'ok'});
             }
         })
         .catch((err) => {
@@ -35,7 +37,7 @@ app.post('/', function(req, res){
                     t += ' ('+err.code+')';
                 }
                 return t;
-            }            
+            }
             res.send({status: 'error', message: message(err), code: err.code});
         });
 });

@@ -1,5 +1,6 @@
 var express = require('express'),
     app = express.Router(),
+    path = require('path'),
     crypto = require('../utils/crypto'),
     Files = require('../model/files'),
     multiparty = require('multiparty'),
@@ -17,7 +18,7 @@ app.use(function(req, res, next){
 
 // list files
 app.get('/ls', function(req, res){
-    let path = decodeURIComponent(req.query.path);
+    let path = pathBuilder(req);
     if(path){
         Files
             .ls(path, req.cookies.auth)
@@ -34,7 +35,7 @@ app.get('/ls', function(req, res){
 
 // get a file content
 app.get('/cat', function(req, res){
-    let path = decodeURIComponent(req.query.path);
+    let path = pathBuilder(req);
     res.cookie('download', path, { maxAge: 1000 });
     if(path){
         Files.cat(path, req.cookies.auth, res)
@@ -54,7 +55,7 @@ app.get('/cat', function(req, res){
 // https://github.com/pillarjs/multiparty
 app.post('/cat', function(req, res){
     var form = new multiparty.Form(),
-        path = decodeURIComponent(req.query.path);
+        path = pathBuilder(req);
 
     if(path){
         form.on('part', function(part) {
@@ -98,7 +99,7 @@ app.get('/mv', function(req, res){
 
 // delete a file/directory
 app.get('/rm', function(req, res){
-    let path = decodeURIComponent(req.query.path);
+    let path = pathBuilder(req);
     if(path){
         Files.rm(path, req.cookies.auth)
             .then((message) => {
@@ -114,7 +115,7 @@ app.get('/rm', function(req, res){
 
 // create a directory
 app.get('/mkdir', function(req, res){
-    let path = decodeURIComponent(req.query.path);
+    let path = pathBuilder(req);
     if(path){
         Files.mkdir(path, req.cookies.auth)
             .then((message) => {
@@ -129,7 +130,7 @@ app.get('/mkdir', function(req, res){
 });
 
 app.get('/touch', function(req, res){
-    let path = decodeURIComponent(req.query.path);
+    let path = pathBuilder(req);
     if(path){
         Files.touch(path, req.cookies.auth)
             .then((message) => {
@@ -145,3 +146,7 @@ app.get('/touch', function(req, res){
 
 
 module.exports = app;
+
+function pathBuilder(req){
+    return path.join(req.cookies.auth.payload.path, decodeURIComponent(req.query.path));
+}

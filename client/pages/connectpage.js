@@ -48,8 +48,7 @@ export class ConnectPage extends React.Component {
         Session.authenticate(params)
             .then((ok) => {
                 cache.destroy();
-                const path = params.path && /^\//.test(params.path)? /\/$/.test(params.path) ? params.path : params.path+'/' :  '/';
-                this.props.history.push('/files'+path);
+                this.props.history.push('/files/');
             })
             .catch((err) => {
                 this.setState({loading: false});
