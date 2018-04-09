@@ -300,6 +300,22 @@ class FileSystem{
         }
     }
 
+    frequents(){
+        let data = [];
+        return cache.update_path((value) => {
+            if(value.access_count >= 1 && value.path !== "/"){
+                data.push(value);
+            }
+        }).then(() => {
+            return Promise.resolve(
+                data
+                    .sort((a,b) => a.access_count > b.access_count? -1 : 1)
+                    .map((a) => a.path)
+                    .slice(0,6)
+            );
+        });
+    }
+
     _replace(path, icon){
         return cache.get(cache.FILE_PATH, dirname(path), false)
             .then((res) => {

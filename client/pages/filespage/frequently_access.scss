@@ -1,0 +1,30 @@
+.component_frequently-access{
+    display: flex;
+    a{
+        width: 50%;
+        background: var(--bg-color);
+        box-shadow: rgba(158, 163, 172, 0.3) 0px 19px 60px, rgba(158, 163, 172, 0.22) 0px 15px 20px;
+        overflow: hidden;
+        margin-right: 5px;
+        padding: 5px;
+        cursor: pointer;
+        img{
+            float: left;
+            height: 25px;
+            margin-right: 2px;
+        }
+        line-height: 25px;
+        display: block;
+        div{
+            width: calc(100% - 30px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+    @media (max-width: 800px){ a:nth-child(6){display: none;} }
+    @media (max-width: 750px){ a:nth-child(5){display: none;} }
+    @media (max-width: 650px){ a:nth-child(4){display: none;} }
+    @media (max-width: 450px){ a:nth-child(3){display: none;} }
+
+}

@@ -8,7 +8,7 @@ import './filespage.scss';
 import { Files } from '../model/';
 import { NgIf, Loader, Uploader, EventReceiver } from '../components/';
 import { notify, debounce, goToFiles, goToViewer, event, screenHeight } from '../helpers/';
-import { BreadCrumb, FileSystem } from './filespage/';
+import { BreadCrumb, FileSystem, FrequentlyAccess } from './filespage/';
 
 @EventReceiver
 @DragDropContext(('ontouchstart' in window)? HTML5Backend : HTML5Backend)
@@ -18,6 +18,7 @@ export class FilesPage extends React.Component {
         this.state = {
             path: props.match.url.replace('/files', '') || '/',
             files: [],
+            frequents: [],
             loading: true,
             error: false,
             height: null
@@ -91,6 +92,7 @@ export class FilesPage extends React.Component {
         });
         this.observers.push(observer);
         this.setState({error: false});
+        Files.frequents().then((s) => this.setState({frequents: s}));
     }
 
     _cleanupListeners(){
@@ -226,6 +228,9 @@ export class FilesPage extends React.Component {
               <BreadCrumb className="breadcrumb" path={this.state.path} />
               <div style={{height: this.state.height+'px'}} className="scroll-y">
                 <NgIf className="container" cond={this.state.loading === false}>
+                  <NgIf cond={this.state.path === '/'}>
+                    <FrequentlyAccess files={this.state.frequents}/>
+                  </NgIf>
                   <FileSystem path={this.state.path} files={this.state.files} />
                   <Uploader path={this.state.path} />
                 </NgIf>

@@ -106,19 +106,19 @@ select:-moz-focusring {
 
 
 ::-webkit-scrollbar{
-    height:6px;
-    width:6px
+    height:4px;
+    width:4px
 }
 ::-webkit-scrollbar-track{
     background:rgba(0,0,0,.1)
 }
 ::-webkit-scrollbar-thumb{
-    -webkit-border-radius:3px;
+    -webkit-border-radius:2px;
     -moz-border-radius:2px;
     -ms-border-radius:2px;
     -o-border-radius:2px;
     border-radius:2px;
-    background:rgba(0,0,0,.2)
+    background:rgba(0,0,0,.2);
 }
 .scroll-y{
     scrollbar-3dlight-color:#7d7e94;

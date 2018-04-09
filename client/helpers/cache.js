@@ -126,18 +126,19 @@ Data.prototype.remove = function(type, path, exact = true){
 }
 
 Data.prototype.update_path = function(updater_fn){
-    this.db.then((db) => {
+    return this.db.then((db) => {
         const tx = db.transaction(this.FILE_PATH, "readwrite");
         const store = tx.objectStore(this.FILE_PATH);
         const request = store.openCursor();
-        request.onsuccess = function(event) {
-            const cursor = event.target.result;
-            if(cursor){
+
+        return new Promise((done, error) => {
+            request.onsuccess = function(event) {
+                const cursor = event.target.result;
+                if(!cursor) return done();
                 updater_fn(cursor.value, store)
                 cursor.continue();
-            }
-        };
-
+            };
+        });
     });
 }
 Data.prototype.update_content = function(updater_fn){
