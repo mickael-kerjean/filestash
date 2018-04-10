@@ -46,7 +46,7 @@
                 transform: translateY(5px);
                 border-radius: 2px;
                 white-space: nowrap;
-                padding: 1px 5px!important;
+                padding: 3px 10px!important;
                 margin: 5px 0px 5px -5px;
             }
         }
@@ -76,7 +76,7 @@ body.touch-no{
         span.title{
             opacity: 1;
             transform: translateY(0px);
-            transition: all 0.2s ease-out;
+            transition: all 0.15s ease-out;
         }
     }
 }
