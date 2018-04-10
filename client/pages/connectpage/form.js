@@ -1,8 +1,9 @@
 import React from 'react';
+
 import { Container, Card, NgIf, Input, Button, Textarea, Loader, Notification, Prompt } from '../../components/';
 import { invalidate, encrypt, decrypt } from '../../helpers/';
 import { Session } from '../../model/';
-
+import config from '../../../config_client';
 import './form.scss';
 import img_drive from '../../assets/img/google-drive.png';
 import img_dropbox from '../../assets/img/dropbox.png';
@@ -10,20 +11,22 @@ import img_dropbox from '../../assets/img/dropbox.png';
 export class Form extends React.Component {
     constructor(props){
         super(props);
+        const protocols = Object.keys(config.connections);
         this.state = {
             refs: {},
-            type: 'sftp',
+            type: protocols.length > 2 ? protocols[1] : protocols[0] || null,
             advanced_ftp: false,
             advanced_sftp: false,
             advanced_webdav: false,
             advanced_s3: false,
             advanced_git: false,
-            dummy: true
+            _dummy: true
         };
         this.rerender = this.rerender.bind(this);
     }
 
     componentDidMount(){
+        this.publishState(config.connections);
         this.publishState(this.props.credentials);
         window.addEventListener('resize', this.rerender);
     }
@@ -44,7 +47,7 @@ export class Form extends React.Component {
                 let names = credentials[key];
                 for(let name in names){
                     const ref_name = [key,name].join("_");
-                    if(this.state.refs[ref_name]){
+                    if(this.state.refs[ref_name] && typeof credentials[key][name] !== 'boolean'){
                         this.state.refs[ref_name].ref.value = credentials[key][name];
                     }
                 }
@@ -108,11 +111,14 @@ export class Form extends React.Component {
     }
 
     onTypeChange(type){
-        this.setState({type: type}, () => this.publishState(this.props.credentials));
+        this.setState({type: type}, () => {
+            this.publishState(config.connections);
+            this.publishState(this.props.credentials);
+        });
     }
 
     rerender(){
-        this.setState({dummy: !this.state.dummy});
+        this.setState({_dummy: !this.state._dummy});
     }
 
     _marginTop(){
@@ -126,113 +132,202 @@ export class Form extends React.Component {
         return size;
     }
 
+    should_appear(type, key){
+        if(!config.connections[type]) return false;
+        let value = config.connections[type][key];
+        if(typeof value === 'string') return true;
+        if(value === false) return false;
+        return true;
+    }
+    input_type(type, key){
+        if(!config.connections[type]) return 'hidden';
+        let value = config.connections[type][key];
+        if(typeof value === 'string') return 'hidden';
+        else if(typeof value === 'number') return 'hidden';
+        else if(value === false) return 'hidden';
+        else if(key === 'password') return 'password';
+        else{
+            return 'text';
+        }
+    }
+
     render() {
         let className = (window.innerWidth < 600) ? 'scroll-x' : '';
         return (
             <Card style={{marginTop: this._marginTop()+'px'}} className="no-select component_page_connection_form">
-              <div className={"buttons "+className}>
-                <Button className={this.state.type === 'webdav'? 'active primary' : ''} onClick={this.onTypeChange.bind(this, 'webdav')} style={{borderBottomLeftRadius: 0}}>WebDav</Button>
-                <Button className={this.state.type === 'ftp'? 'active primary' : ''} onClick={this.onTypeChange.bind(this, 'ftp')}>FTP</Button>
-                <Button className={this.state.type === 'sftp'? 'active primary' : ''} onClick={this.onTypeChange.bind(this, 'sftp')}>SFTP</Button>
-                <Button className={this.state.type === 'git'? 'active primary' : ''} onClick={this.onTypeChange.bind(this, 'git')}>Git</Button>
-                <Button className={this.state.type === 's3'? 'active primary' : ''} onClick={this.onTypeChange.bind(this, 's3')}>S3</Button>
-                <Button className={this.state.type === 'dropbox'? 'active primary' : ''} onClick={this.onTypeChange.bind(this, 'dropbox')}>Dropbox</Button>
-                <Button className={this.state.type === 'gdrive'? 'active primary' : ''} onClick={this.onTypeChange.bind(this, 'gdrive')} style={{borderBottomRightRadius: 0}}>Drive</Button>
-              </div>
+              <NgIf cond={ Object.keys(config.connections).length > 1 }>
+                <div className={"buttons "+className}>
+                  {
+                      Object.keys(config.connections).map((type) => {
+                          return (
+                              <Button key={type} className={this.state.type === type? 'active primary' : ''} onClick={this.onTypeChange.bind(this, type)}>
+                                {config.connections[type].label}
+                              </Button>
+                          );
+                      })
+                  }
+                </div>
+              </NgIf>
               <div>
                 <form onSubmit={this.onSubmit.bind(this)} autoComplete="off" autoCapitalize="off" spellCheck="false" autoCorrect="off">
                   <NgIf cond={this.state.type === 'webdav'}>
-                    <Input type="text" name="url" placeholder="Address*" ref={(input) => { this.state.refs.webdav_url = input; }} autoComplete="new-password" />
-                    <Input type="text" name="username" placeholder="Username" ref={(input) => { this.state.refs.webdav_username = input; }} autoComplete="new-password" />
-                    <Input type="password" name="password" placeholder="Password" ref={(input) => { this.state.refs.webdav_password = input; }} autoComplete="new-password" />
+                    <NgIf cond={this.should_appear('webdav', 'url')}>
+                      <Input type={this.input_type('webdav', 'url')} name="url" placeholder="Address*" ref={(input) => { this.state.refs.webdav_url = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <NgIf cond={this.should_appear('webdav', 'username')}>
+                      <Input type={this.input_type('webdav', 'username')} name="username" placeholder="Username" ref={(input) => { this.state.refs.webdav_username = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <NgIf cond={this.should_appear('webdav', 'password')}>
+                      <Input type={this.input_type('webdav', 'password')} name="password" placeholder="Password" ref={(input) => { this.state.refs.webdav_password = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <NgIf cond={this.should_appear('webdav', 'advanced')}>
+                      <label>
+                        <input checked={this.state.advanced_webdav} onChange={e => { this.setState({advanced_webdav: e.target.checked}); }} type="checkbox" autoComplete="new-password"/> Advanced
+                      </label>
+                    </NgIf>
+                    <NgIf cond={this.state.advanced_webdav === true} className="advanced_form">
+                      <NgIf cond={this.should_appear('webdav', 'path')}>
+                        <Input type={this.input_type('webdav', 'path')} name="path" placeholder="Path" ref={(input) => {this.state.refs.webdav_path = input; }} autoComplete="new-password" />
+                     </NgIf>
+                    </NgIf>
+                    <Input type="hidden" name="type" value="webdav"/>
+                    <Button theme="emphasis">CONNECT</Button>
+                  </NgIf>
+                  <NgIf cond={this.state.type === 'ftp'}>
+                    <NgIf cond={this.should_appear('ftp', 'hostname')}>
+                      <Input type={this.input_type('ftp', 'hostname')} name="hostname" placeholder="Hostname*" ref={(input) => {this.state.refs.ftp_hostname = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <NgIf cond={this.should_appear('ftp', 'username')}>
+                      <Input type={this.input_type('ftp', 'username')} name="username" placeholder="Username" ref={(input) => {this.state.refs.ftp_username = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <NgIf cond={this.should_appear('ftp', 'password')}>
+                      <Input type={this.input_type('ftp', 'password')} name="password" placeholder="Password" ref={(input) => {this.state.refs.ftp_password = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <Input type="hidden" name="type" value="ftp"/>
+                    <NgIf cond={this.should_appear('ftp', 'advanced')}>
+                      <label>
+                        <input checked={this.state.advanced_ftp} onChange={e => { this.setState({advanced_ftp: e.target.checked}); }} type="checkbox" autoComplete="new-password"/> Advanced
+                      </label>
+                    </NgIf>
+                    <NgIf cond={this.state.advanced_ftp === true} className="advanced_form">
+                      <NgIf cond={this.should_appear('ftp', 'path')}>
+                        <Input type={this.input_type('ftp', 'path')} name="path" placeholder="Path" ref={(input) => {this.state.refs.ftp_path = input; }} autoComplete="new-password" />
+                      </NgIf>
+                      <NgIf cond={this.should_appear('ftp', 'port')}>
+                        <Input type={this.input_type('ftp', 'port')} name="port" placeholder="Port" ref={(input) => {this.state.refs.ftp_port = input; }} autoComplete="new-password" />
+                      </NgIf>
+                    </NgIf>
+                    <Button type="submit" theme="emphasis">CONNECT</Button>
+                  </NgIf>
+                  <NgIf cond={this.state.type === 'sftp'}>
+                    <NgIf cond={this.should_appear('sftp', 'host')}>
+                      <Input type={this.input_type('sftp', 'host')} name="host" placeholder="Hostname*" ref={(input) => {this.state.refs.sftp_host = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <NgIf cond={this.should_appear('sftp', 'username')}>
+                      <Input type={this.input_type('sftp', 'username')} name="username" placeholder="Username" ref={(input) => {this.state.refs.sftp_username = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <NgIf cond={this.should_appear('sftp', 'password')}>
+                      <Input type={this.input_type('sftp', 'password')} name="password" placeholder="Password" ref={(input) => {this.state.refs.sftp_password = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <Input type="hidden" name="type" value="sftp"/>
+                    <NgIf cond={this.should_appear('sftp', 'advanced')}>
+                      <label>
+                        <input checked={this.state.advanced_sftp} onChange={e => { this.setState({advanced_sftp: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
+                      </label>
+                    </NgIf>
+                    <NgIf cond={this.state.advanced_sftp === true} className="advanced_form">
+                      <NgIf cond={this.should_appear('sftp', 'path')}>
+                        <Input type={this.input_type('sftp', 'path')} name="path" placeholder="Path" ref={(input) => {this.state.refs.sftp_path = input; }} autoComplete="new-password" />
+                      </NgIf>
+                      <NgIf cond={this.should_appear('sftp', 'port')}>
+                        <Input type={this.input_type('sftp', 'port')} name="port" placeholder="Port" ref={(input) => {this.state.refs.sftp_port = input; }} autoComplete="new-password" />
+                      </NgIf>
+                      <NgIf cond={this.should_appear('sftp', 'private_key')}>
+                        <Textarea type="text" style={this.input_type('sftp', 'private_key') === 'hidden' ? {visibility: 'hidden', position: 'absolute'} : {} } rows="1" name="private_key" placeholder="Private Key" ref={(input) => {this.state.refs.sftp_private_key = input; }} autoComplete="new-password" />
+                      </NgIf>
+                    </NgIf>
+                    <Button type="submit" theme="emphasis">CONNECT</Button>
+                  </NgIf>
+                  <NgIf cond={this.state.type === 'git'}>
+                    <NgIf cond={this.should_appear('git', 'repo')}>
+                      <Input type={this.input_type('git', 'repo')} name="repo" placeholder="Repository*" ref={(input) => {this.state.refs.git_repo = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <NgIf cond={this.should_appear('git', 'username')}>
+                      <Input type={this.input_type('git', 'username')} name="username" placeholder="Username" ref={(input) => {this.state.refs.git_username = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <NgIf cond={this.should_appear('git', 'password')}>
+                      <Textarea type="text"  style={this.input_type('git', 'password') === 'hidden' ? {visibility: 'hidden', position: 'absolute'} : {} } rows="1" name="password" placeholder="Password" ref={(input) => {this.state.refs.git_password = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <Input type="hidden" name="type" value="git"/>
+                    <NgIf cond={this.should_appear('git', 'advanced')}>
                     <label>
-                      <input checked={this.state.advanced_webdav} onChange={e => { this.setState({advanced_webdav: e.target.checked}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                        </label>
-                        <NgIf cond={this.state.advanced_webdav === true} className="advanced_form">
-                          <Input type="text" name="path" placeholder="Path" ref={(input) => {this.state.refs.webdav_path = input; }} autoComplete="new-password" />
-                        </NgIf>
-                        <Input type="hidden" name="type" value="webdav"/>
-                        <Button theme="emphasis">CONNECT</Button>
+                      <input checked={this.state.advanced_git} onChange={e => { this.setState({advanced_git: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
+                    </label>
+                    </NgIf>
+                    <NgIf cond={this.state.advanced_git === true} className="advanced_form">
+                      <NgIf cond={this.should_appear('git', 'passphrase')}>
+                        <Input type={this.input_type('git', 'passphrase')} name="passphrase" placeholder="Passphrase" ref={(input) => {this.state.refs.git_passphrase = input; }} autoComplete="new-password" />
                       </NgIf>
-                      <NgIf cond={this.state.type === 'ftp'}>
-                        <Input type="text" name="hostname" placeholder="Hostname*" ref={(input) => {this.state.refs.ftp_hostname = input; }} autoComplete="new-password" />
-                        <Input type="text" name="username" placeholder="Username" ref={(input) => {this.state.refs.ftp_username = input; }} autoComplete="new-password" />
-                        <Input type="password" name="password" placeholder="Password" ref={(input) => {this.state.refs.ftp_password = input; }} autoComplete="new-password" />
-                        <Input type="hidden" name="type" value="ftp"/>
-                        <label>
-                          <input checked={this.state.advanced_ftp} onChange={e => { this.setState({advanced_ftp: e.target.checked}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                        </label>
-                        <NgIf cond={this.state.advanced_ftp === true} className="advanced_form">
-                          <Input type="text" name="path" placeholder="Path" ref={(input) => {this.state.refs.ftp_path = input; }} autoComplete="new-password" />
-                          <Input type="text" name="port" placeholder="Port" ref={(input) => {this.state.refs.ftp_port = input; }} autoComplete="new-password" />
-                        </NgIf>
-                        <Button type="submit" theme="emphasis">CONNECT</Button>
+                      <NgIf cond={this.should_appear('git', 'commit')}>
+                        <Input type={this.input_type('git', 'commit')} name="commit" placeholder="Commit Format: default to '{action}({filename}): {path}'" ref={(input) => {this.state.refs.git_commit = input; }} autoComplete="new-password" />
                       </NgIf>
-                      <NgIf cond={this.state.type === 'sftp'}>
-                        <Input type="text" name="host" placeholder="Hostname*" ref={(input) => {this.state.refs.sftp_host = input; }} autoComplete="new-password" />
-                        <Input type="text" name="username" placeholder="Username" ref={(input) => {this.state.refs.sftp_username = input; }} autoComplete="new-password" />
-                        <Input type="password" name="password" placeholder="Password" ref={(input) => {this.state.refs.sftp_password = input; }} autoComplete="new-password" />
-                        <Input type="hidden" name="type" value="sftp"/>
-                        <label>
-                          <input checked={this.state.advanced_sftp} onChange={e => { this.setState({advanced_sftp: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                        </label>
-                        <NgIf cond={this.state.advanced_sftp === true} className="advanced_form">
-                          <Input type="text" name="path" placeholder="Path" ref={(input) => {this.state.refs.sftp_path = input; }} autoComplete="new-password" />
-                          <Input type="text" name="port" placeholder="Port" ref={(input) => {this.state.refs.sftp_port = input; }} autoComplete="new-password" />
-                          <Textarea type="text" rows="1" name="private_key" placeholder="Private Key" ref={(input) => {this.state.refs.sftp_private_key = input; }} autoComplete="new-password" />
-                        </NgIf>
-                        <Button type="submit" theme="emphasis">CONNECT</Button>
+                      <NgIf cond={this.should_appear('git', 'branch')}>
+                        <Input type={this.input_type('git', 'branch')} name="branch" placeholder="Branch: default to 'master'" ref={(input) => {this.state.refs.git_branch = input; }} autoComplete="new-password" />
                       </NgIf>
-                      <NgIf cond={this.state.type === 'git'}>
-                        <Input type="text" name="repo" placeholder="Repository*" ref={(input) => {this.state.refs.git_repo = input; }} autoComplete="new-password" />
-                        <Textarea type="password" rows="1" name="password" placeholder="Password" ref={(input) => {this.state.refs.git_password = input; }} autoComplete="new-password" />
-                        <Input type="hidden" name="type" value="git"/>
-                        <label>
-                          <input checked={this.state.advanced_git} onChange={e => { this.setState({advanced_git: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                        </label>
-                        <NgIf cond={this.state.advanced_git === true} className="advanced_form">
-                          <Input type="text" name="username" placeholder="Username" ref={(input) => {this.state.refs.git_username = input; }} autoComplete="new-password" />
-                          <Input type="text" name="passphrase" placeholder="Passphrase" ref={(input) => {this.state.refs.git_passphrase = input; }} autoComplete="new-password" />
-                          <Input type="text" name="commit" placeholder="Commit Format: default to '{action}({filename}): {path}'" ref={(input) => {this.state.refs.git_commit = input; }} autoComplete="new-password" />
-                          <Input type="text" name="branch" placeholder="Branch: default to 'master'" ref={(input) => {this.state.refs.git_branch = input; }} autoComplete="new-password" />
-                          <Input type="text" name="author_email" placeholder="Author email" ref={(input) => {this.state.refs.git_author_email = input; }} autoComplete="new-password" />
-                          <Input type="text" name="author_name" placeholder="Author name" ref={(input) => {this.state.refs.git_author_name = input; }} autoComplete="new-password" />
-                          <Input type="text" name="committer_email" placeholder="Committer email" ref={(input) => {this.state.refs.git_committer_email = input; }} autoComplete="new-password" />
-                          <Input type="text" name="committer_name" placeholder="Committer name" ref={(input) => {this.state.refs.git_committer_name = input; }} autoComplete="new-password" />
-                        </NgIf>
-                        <Button type="submit" theme="emphasis">CONNECT</Button>
+                      <NgIf cond={this.should_appear('git', 'author_email')}>
+                        <Input type={this.input_type('git', 'author_email')} name="author_email" placeholder="Author email" ref={(input) => {this.state.refs.git_author_email = input; }} autoComplete="new-password" />
                       </NgIf>
-                      <NgIf cond={this.state.type === 's3'}>
-                        <Input type="text" name="access_key_id" placeholder="Access Key ID*" ref={(input) => {this.state.refs.s3_access_key_id = input; }} autoComplete="new-password" />
-                        <Input type="password" name="secret_access_key" placeholder="Secret Access Key*" ref={(input) => {this.state.refs.s3_secret_access_key = input; }} autoComplete="new-password" />
-                        <Input type="hidden" name="type" value="s3"/>
-                        <label>
-                          <input checked={this.state.advanced_s3} onChange={e => { this.setState({advanced_s3: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                        </label>
-                        <NgIf cond={this.state.advanced_s3 === true} className="advanced_form">
-                          <Input type="text" name="path" placeholder="Path" ref={(input) => {this.state.refs.s3_path = input; }} autoComplete="new-password" />
-                        </NgIf>
-                        <Button type="submit" theme="emphasis">CONNECT</Button>
+                      <NgIf cond={this.should_appear('git', 'author_name')}>
+                        <Input type={this.input_type('git', 'author_name')} name="author_name" placeholder="Author name" ref={(input) => {this.state.refs.git_author_name = input; }} autoComplete="new-password" />
                       </NgIf>
-                      <NgIf cond={this.state.type === 'dropbox'} className="third-party">
-                        <a target="_blank" href={this.state.dropbox_url}>
-                          <div onClick={this.redirect_dropbox.bind(this)}>
-                            <img src={img_dropbox} />
-                          </div>
-                          <Input type="hidden" name="type" value="dropbox"/>
-                          <Button type="button" onClick={this.redirect_dropbox.bind(this)} theme="emphasis">LOGIN WITH DROPBOX</Button>
-                        </a>
+                      <NgIf cond={this.should_appear('git', 'committer_email')}>
+                        <Input type={this.input_type('git', 'committer_email')} name="committer_email" placeholder="Committer email" ref={(input) => {this.state.refs.git_committer_email = input; }} autoComplete="new-password" />
                       </NgIf>
-                      <NgIf cond={this.state.type === 'gdrive'} className="third-party">
-                        <div onClick={this.redirect_google.bind(this)}>
-                          <img src={img_drive}/>
-                        </div>
-                        <Input type="hidden" name="type" value="gdrive"/>
-                        <Button type="button" onClick={this.redirect_google.bind(this)} theme="emphasis">LOGIN WITH GOOGLE</Button>
+                      <NgIf cond={this.should_appear('git', 'committer_name')}>
+                        <Input type={this.input_type('git', 'committer_name')} name="committer_name" placeholder="Committer name" ref={(input) => {this.state.refs.git_committer_name = input; }} autoComplete="new-password" />
                       </NgIf>
-                    </form>
-                  </div>
-               </Card>
+                    </NgIf>
+                    <Button type="submit" theme="emphasis">CONNECT</Button>
+                  </NgIf>
+                  <NgIf cond={this.state.type === 's3'}>
+                    <NgIf cond={this.should_appear('s3', 'access_key_id')}>
+                      <Input type={this.input_type('s3', 'access_key_id')} name="access_key_id" placeholder="Access Key ID*" ref={(input) => {this.state.refs.s3_access_key_id = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <NgIf cond={this.should_appear('s3', 'secret_access_key')}>
+                      <Input type={this.input_type('s3', 'secret_access_key')} name="secret_access_key" placeholder="Secret Access Key*" ref={(input) => {this.state.refs.s3_secret_access_key = input; }} autoComplete="new-password" />
+                    </NgIf>
+                    <Input type="hidden" name="type" value="s3"/>
+                    <NgIf cond={this.should_appear('s3', 'advanced')}>
+                      <label>
+                        <input checked={this.state.advanced_s3} onChange={e => { this.setState({advanced_s3: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
+                      </label>
+                    </NgIf>
+                    <NgIf cond={this.state.advanced_s3 === true} className="advanced_form">
+                      <NgIf cond={this.should_appear('s3', 'path')}>
+                        <Input type={this.input_type('s3', 'path')} name="path" placeholder="Path" ref={(input) => {this.state.refs.s3_path = input; }} autoComplete="new-password" />
+                      </NgIf>
+                    </NgIf>
+                    <Button type="submit" theme="emphasis">CONNECT</Button>
+                  </NgIf>
+                  <NgIf cond={this.state.type === 'dropbox'} className="third-party">
+                    <a target="_blank" href={this.state.dropbox_url}>
+                      <div onClick={this.redirect_dropbox.bind(this)}>
+                        <img src={img_dropbox} />
+                      </div>
+                      <Input type="hidden" name="type" value="dropbox"/>
+                      <Button type="button" onClick={this.redirect_dropbox.bind(this)} theme="emphasis">LOGIN WITH DROPBOX</Button>
+                    </a>
+                  </NgIf>
+                  <NgIf cond={this.state.type === 'gdrive'} className="third-party">
+                    <div onClick={this.redirect_google.bind(this)}>
+                      <img src={img_drive}/>
+                    </div>
+                    <Input type="hidden" name="type" value="gdrive"/>
+                    <Button type="button" onClick={this.redirect_google.bind(this)} theme="emphasis">LOGIN WITH GOOGLE</Button>
+                  </NgIf>
+                </form>
+              </div>
+            </Card>
         );
     }
 }
