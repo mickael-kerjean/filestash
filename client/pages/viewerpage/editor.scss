@@ -1,7 +1,9 @@
 .CodeMirror {
     height: 100%;
-    color: #333333;
+    color: #3b4045;
     background: var(--bg-color);
+    font-size: 14px;
+    font-family: Consolas,Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,sans-serif;
 }
 .CodeMirror-scroll { -webkit-overflow-scrolling: touch; }
 

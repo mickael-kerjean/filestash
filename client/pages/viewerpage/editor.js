@@ -20,6 +20,7 @@ import 'codemirror/addon/fold/foldgutter';
 import 'codemirror/addon/fold/foldgutter.css';
 
 import './editor.scss';
+import { debounce, screenHeightWithMenubar  } from '../../helpers/';
 
 export class Editor extends React.Component {
     constructor(props){
@@ -27,8 +28,10 @@ export class Editor extends React.Component {
         this.state = {
             loading: null,
             editor: null,
-            filename: this.props.filename
+            filename: this.props.filename,
+            height: 0
         };
+        this.resetHeight = debounce(this.resetHeight.bind(this), 100);
     }
 
     componentWillReceiveProps(props){
@@ -77,11 +80,21 @@ export class Editor extends React.Component {
                 this.props.onSave && this.props.onSave();
             };
         }
+        this.resetHeight();
+        window.addEventListener("resize", this.resetHeight);
     }
 
     componentWillUnmount(){
         this.state.editor.clearHistory();
+        window.removeEventListener("resize", this.resetHeight);
     }
+
+    resetHeight(){
+        this.setState({
+            height: screenHeightWithMenubar()
+        });
+    }
+
 
     loadMode(file){
         let ext = file.split('.').pop(),
@@ -134,7 +147,7 @@ export class Editor extends React.Component {
                 <Loader/>
               </NgIf>
               <NgIf cond={this.state.loading === false} style={{height: '100%'}}>
-                <div id="editor" style={{height: '100%'}}></div>
+                <div id="editor" style={{height: this.state.height+"px"}}></div>
               </NgIf>
             </div>
         );

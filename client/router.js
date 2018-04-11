@@ -9,16 +9,14 @@ export default class AppRouter extends React.Component {
         return (
             <div style={{height: '100%'}}>
               <BrowserRouter>
-                <div style={{height: '100%'}}>
-                  <Switch>
-                    <Route exact path="/" component={HomePage} />
-                    <Route path="/login" component={ConnectPage} />
-                    <Route path="/files/:path*" component={FilesPage} />
-                    <Route path="/view/:path*" component={ViewerPage} />
-                    <Route path="/logout" component={LogoutPage} />
-                    <Route component={NotFoundPage} />
-                  </Switch>
-                </div>
+                <Switch>
+                  <Route exact path="/" component={HomePage} />
+                  <Route path="/login" component={ConnectPage} />
+                  <Route path="/files/:path*" component={FilesPage} />
+                  <Route path="/view/:path*" component={ViewerPage} />
+                  <Route path="/logout" component={LogoutPage} />
+                  <Route component={NotFoundPage} />
+                </Switch>
               </BrowserRouter>
               <ModalPrompt />
               <Notification />
