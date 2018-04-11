@@ -24,7 +24,7 @@ app.post('/', function(req, res){
             };
             const cookie = crypto.encrypt(persist);
             if(Buffer.byteLength(cookie, 'utf-8') > 4096){
-                res.send({status: 'error', message: 'we can\'t authenticate you', })
+                res.status(413).send({status: 'error', message: 'we can\'t authenticate you', })
             }else{
                 res.cookie('auth', crypto.encrypt(persist), { maxAge: 365*24*60*60*1000, httpOnly: true, path: "/api/" });
                 res.send({status: 'ok'});
@@ -38,7 +38,7 @@ app.post('/', function(req, res){
                 }
                 return t;
             }
-            res.send({status: 'error', message: message(err), code: err.code});
+            res.status(401).send({status: 'error', message: message(err), code: err.code});
         });
 });
 
@@ -48,16 +48,16 @@ app.delete('/', function(req, res){
     // TODO in May 2019: remove the line below which was inserted to mitigate a cookie migration issue.
     res.clearCookie("auth"); // the issue was a change in the cookie path which would have make
                              // impossible for an existing user to logout
-    res.send({status: 'ok'})
+    res.send({status: 'ok'});
 });
 
 app.get('/auth/:id', function(req, res){
     Session.auth({type: req.params.id})
         .then((url) => {
-            res.send({status: 'ok', result: url})
+            res.send({status: 'ok', result: url});
         })
         .catch((err) => {
-            res.send({status: 'error', message: 'can\'t get authorization url', trace: err})
+            res.status(404).send({status: 'error', message: 'can\'t get authorization url', trace: err});
         });
 });
 

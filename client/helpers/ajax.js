@@ -10,8 +10,6 @@ export function http_get(url, type = 'json'){
                             let data = JSON.parse(xhr.responseText);
                             if(data.status === 'ok'){
                                 done(data);
-                            }else if(data.status === 'redirect'){
-                                if(data.to === 'logout'){location.pathname = "/logout";}
                             }else{
                                 err(data);
                             }
@@ -22,11 +20,7 @@ export function http_get(url, type = 'json'){
                         done(xhr.responseText);
                     }
                 }else{
-                    if(navigator.onLine === false){
-                        err({status: xhr.status, code: "CONNECTION_LOST", message: 'Ooups! Looks like your internet has gone away'});
-                    }else{
-                        err({status: xhr.status, message: xhr.responseText || 'Oups! Something went wrong'});
-                    }
+                    handle_error_response(xhr, err);
                 }
             }
         }
@@ -52,8 +46,6 @@ export function http_post(url, data, type = 'json'){
                         let data = JSON.parse(xhr.responseText);
                         if(data.status === 'ok'){
                             done(data);
-                        }else if(data.status === 'redirect'){
-                            if(data.to === 'logout'){location.pathname = "/logout";}
                         }else{
                             err(data);
                         }
@@ -61,11 +53,7 @@ export function http_post(url, data, type = 'json'){
                         err({message: 'oups', trace: error});
                     }
                 }else{
-                    if(navigator.onLine === false){
-                        err({status: xhr.status, code: "CONNECTION_LOST", message: 'Connection Lost'});
-                    }else{
-                        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
-                    }
+                    handle_error_response(xhr, err);
                 }
             }
         }
@@ -84,8 +72,6 @@ export function http_delete(url){
                         let data = JSON.parse(xhr.responseText);
                         if(data.status === 'ok'){
                             done(data);
-                        }else if(data.status === 'redirect'){
-                            if(data.to === 'logout'){location.pathname = "/logout";}
                         }else{
                             err(data);
                         }
@@ -93,14 +79,38 @@ export function http_delete(url){
                         err({message: 'oups', trace: error});
                     }
                 }else{
-                    if(navigator.onLine === false){
-                        err({status: xhr.status, code: "CONNECTION_LOST", message: 'Connection Lost'});
-                    }else{
-                        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
-                    }
+                    handle_error_response(xhr, err);
                 }
             }
         }
         xhr.send(null);
     });
+}
+
+
+
+function handle_error_response(xhr, err){
+    let message = (function(content){
+        let message = content;
+        try{
+            message = JSON.parse(content)['message'];
+        }catch(err){}
+        return message;
+    })(xhr.responseText);
+
+    if(xhr.status === 500){
+        err({message: message || "Oups something went wrong with our servers"})
+    }else if(xhr.status === 401){
+        if(location.pathname !== '/login'){ location.pathname = "/login"; }
+        err({message: message || "Authentication error"});
+    }else if(xhr.status === 403){
+        err({message: message || "You can\'t do that"});
+    }else if(xhr.status === 413){
+        err({message: message || "Payload too large"});
+    }else if(navigator.onLine === false){
+        err({status: xhr.status, code: "CONNECTION_LOST", message: 'Connection Lost'});
+    }else{
+        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
+    }
+
 }

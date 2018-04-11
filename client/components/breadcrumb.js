@@ -115,9 +115,15 @@ export class PathElementWrapper extends React.Component {
         super(props);
     }
 
-    limitSize(str){
-        if(str.length > 27){
-            return str.substring(0,20)+'...';
+    limitSize(str, is_highlight = false){
+        if(is_highlight === true){
+            if(str.length > 30){
+                return str.substring(0,12).trim()+'...'+str.substring(str.length - 10, str.length).trim();
+            }
+        }else{
+            if(str.length > 27){
+                return str.substring(0,20).trim()+'...';
+            }
         }
         return str;
     }
@@ -135,7 +141,7 @@ export class PathElementWrapper extends React.Component {
                   <NgIf cond={this.props.path.minify === true}>
                     ...
                     <span className="title">
-                      {this.limitSize(this.props.path.label)}
+                      {this.limitSize(this.props.path.label, true)}
                     </span>
                   </NgIf>
                 </Link>
