@@ -26,7 +26,7 @@ app.post('/', function(req, res){
             if(Buffer.byteLength(cookie, 'utf-8') > 4096){
                 res.send({status: 'error', message: 'we can\'t authenticate you', })
             }else{
-                res.cookie('auth', crypto.encrypt(persist), { maxAge: 365*24*60*60*1000, httpOnly: true });
+                res.cookie('auth', crypto.encrypt(persist), { maxAge: 365*24*60*60*1000, httpOnly: true, path: "/api/" });
                 res.send({status: 'ok'});
             }
         })
@@ -43,7 +43,11 @@ app.post('/', function(req, res){
 });
 
 app.delete('/', function(req, res){
-    res.clearCookie("auth");
+    res.clearCookie("auth", {path: "/api/"});
+
+    // TODO in May 2019: remove the line below which was inserted to mitigate a cookie migration issue.
+    res.clearCookie("auth"); // the issue was a change in the cookie path which would have make
+                             // impossible for an existing user to logout
     res.send({status: 'ok'})
 });
 

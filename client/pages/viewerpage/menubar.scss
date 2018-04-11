@@ -1,0 +1,24 @@
+.component_menubar{
+    background: #313538;
+    color: #f1f1f1;
+    border-bottom: 1px solid var(--color);
+
+    .component_container{
+        padding: 8px 0;
+        color: #f1f1f1;
+        font-size: 0.9em;
+    }
+}
+
+
+
+.menubar-appear{
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(2px);
+}
+.menubar-appear.menubar-appear-active{
+    opacity: 1;
+    transform: translateY(0px);
+    transition: all 0.15s ease-out;
+}

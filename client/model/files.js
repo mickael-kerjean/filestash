@@ -101,15 +101,27 @@ class FileSystem{
     cat(path){
         const url = '/api/files/cat?path='+prepare(path);
         return http_get(url, 'raw')
-            .then((res) => cache.put(cache.FILE_CONTENT, path, {result: res}))
+            .then((res) => {
+                if(is_binary(res) === false) cache.put(cache.FILE_CONTENT, path, {result: res});
+                return Promise.resolve(res);
+            })
             .catch((res) => {
                 return cache.get(cache.FILE_CONTENT, path)
                     .then((_res) => {
-                        if(!_res || !_res.result) return Promise.reject(_res);
+                        if(!_res || !_res.result) return Promise.reject(res);
                         return Promise.resolve(_res.result);
                     })
                     .catch(() => Promise.reject(res));
+            })
+            .then((res) => {
+                if(is_binary(res) === true) return Promise.reject({code: 'BINARY_FILE'});
+                return Promise.resolve(res);
             });
+
+        function is_binary(str){
+            // Reference: https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
+            return /\ufffd/.test(str);
+        }
     }
     url(path){
         const url = '/api/files/cat?path='+prepare(path);
@@ -181,7 +193,10 @@ class FileSystem{
             function update_from(){
                 return cache.get(cache.FILE_PATH, dirname(from), false)
                     .then((res_from) => {
-                        let _file = {name: basename(from), type: /\/$/.test(from) ? 'directory' : 'file'};
+                        let _file = {
+                            name: basename(from),
+                            type: /\/$/.test(from) ? 'directory' : 'file'
+                        };
                         res_from.results = res_from.results.map((file) => {
                             if(file.name === basename(from)){
                                 file.name = basename(to);

@@ -36,7 +36,7 @@ app.get('/ls', function(req, res){
 // get a file content
 app.get('/cat', function(req, res){
     let path = pathBuilder(req);
-    res.cookie('download', path, { maxAge: 1000 });
+    res.clearCookie("download");
     if(path){
         Files.cat(path, req.cookies.auth, res)
             .then(function(stream){
@@ -148,5 +148,5 @@ app.get('/touch', function(req, res){
 module.exports = app;
 
 function pathBuilder(req){
-    return path.join(req.cookies.auth.payload.path, decodeURIComponent(req.query.path));
+    return path.join(req.cookies.auth.payload.path || '', decodeURIComponent(req.query.path) || '');
 }

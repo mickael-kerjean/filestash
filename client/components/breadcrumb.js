@@ -92,9 +92,11 @@ const Logout = (props) => {
 
 const Saving = (props) => {
     return (
-        <NgIf className="component_saving" cond={props.needSaving === true}>
-          *
-        </NgIf>
+        <ReactCSSTransitionGroup transitionName="saving_indicator" transitionLeave={true} transitionEnter={true} transitionAppear={true} transitionLeaveTimeout={200} transitionEnterTimeout={500} transitionAppearTimeout={500}>
+          <NgIf key={props.needSaving} className="component_saving" cond={props.needSaving === true}>
+            *
+          </NgIf>
+        </ReactCSSTransitionGroup>
     );
 }
 

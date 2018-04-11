@@ -74,13 +74,6 @@ export class Editor extends React.Component {
             });
 
             CodeMirror.commands.save = () => {
-                let elt = editor.getWrapperElement();
-                elt.style.background = "rgba(0,0,0,0.1)";
-                elt.style.transition = "";
-                window.setTimeout(function() {
-                    elt.style.transition = "background 0.5s ease-out";
-                    elt.style.background = "";
-                }, 200);
                 this.props.onSave && this.props.onSave();
             };
         }

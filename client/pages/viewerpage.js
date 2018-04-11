@@ -23,9 +23,10 @@ export class ViewerPage extends React.Component {
         super(props);
         this.state = {
             path: props.match.url.replace('/view', ''),
+            url: null,
             filename: Path.basename(props.match.url.replace('/view', '')) || 'untitled.dat',
             opener: null,
-            data: '',
+            content: null,
             needSaving: false,
             isSaving: false,
             loading: true,
@@ -36,35 +37,38 @@ export class ViewerPage extends React.Component {
     }
 
     componentWillMount(){
-        this.setState({loading: null}, () => {
-            window.setTimeout(() => {
-                if(this.state.loading === null) this.setState({loading: true});
-            }, 500);
-        });
-        let app = opener(this.state.path);
-        if(app === 'editor'){
-            Files.cat(this.state.path).then((content) => {
-                this.setState({data: content, loading: false, opener: app});
-            }).catch(err => {
-                if(err && err.code === 'CANCELLED'){ return; }
-                if(err.code === 'BINARY_FILE'){
-                    Files.url(this.state.path).then((url) => {
-                        this.setState({data: url, loading: false, opener: 'download'});
-                    }).catch(err => {
-                        notify.send(err, 'error');
-                    });
-                }else{
+        const metadata = () => {
+            return new Promise((done, err) => {
+                let app_opener = opener(this.state.path);
+                Files.url(this.state.path).then((url) => {
+                    this.setState({
+                        url: url,
+                        opener: app_opener
+                    }, () => done(app_opener));
+                }).catch(err => {
                     notify.send(err, 'error');
-                }
+                    err(err);
+                });
             });
-        }else{
-            Files.url(this.state.path).then((url) => {
-                this.setState({data: url, loading: false, opener: app});
-            }).catch(err => {
-                if(err && err.code === 'CANCELLED'){ return; }
-                notify.send(err, 'error');
-            });
-        }
+        };
+        const data_fetch = (app) => {
+            if(app === 'editor'){
+                Files.cat(this.state.path).then((content) => {
+                    this.setState({content: content || "", loading: false});
+                }).catch(err => {
+                    if(err && err.code === 'CANCELLED'){ return; }
+                    if(err.code === 'BINARY_FILE'){
+                        this.setState({opener: 'download', loading: false});
+                    }else{
+                        notify.send(err, 'error');
+                    }
+                });
+            }else{
+                this.setState({loading: false});
+            }
+        };
+        return metadata()
+            .then(data_fetch);
     }
 
     componentWillUnmount() {
@@ -79,15 +83,16 @@ export class ViewerPage extends React.Component {
 
     save(file){
         this.setState({isSaving: true});
-        Files.save(this.state.path, file)
+        return Files.save(this.state.path, file)
             .then(() => {
-                this.setState({isSaving: false});
-                this.setState({needSaving: false});
+                this.setState({isSaving: false, needSaving: false});
+                return Promise.resolve();
             })
             .catch((err) => {
                 if(err && err.code === 'CANCELLED'){ return; }
                 this.setState({isSaving: false});
                 notify.send(err, 'error');
+                return Promise.reject();
             });
     }
 
@@ -116,23 +121,24 @@ export class ViewerPage extends React.Component {
                     <IDE needSaving={this.needSaving.bind(this)}
                          isSaving={this.state.isSaving}
                          onSave={this.save.bind(this)}
-                         content={this.state.data || ''}
+                         content={this.state.content}
+                         url={this.state.url}
                          filename={this.state.filename}/>
                   </NgIf>
                   <NgIf cond={this.state.opener === 'image'} style={style}>
-                    <ImageViewer data={this.state.data} filename={this.state.filename} />
+                    <ImageViewer data={this.state.url} filename={this.state.filename} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'pdf'} style={style}>
-                    <PDFViewer data={this.state.data} filename={this.state.filename} />
+                    <PDFViewer data={this.state.url} filename={this.state.filename} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'video'} style={style}>
-                    <VideoPlayer data={this.state.data} filename={this.state.filename} />
+                    <VideoPlayer data={this.state.url} filename={this.state.filename} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'audio'} style={style}>
-                    <AudioPlayer data={this.state.data} filename={this.state.filename} />
+                    <AudioPlayer data={this.state.url} filename={this.state.filename} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'download'} style={style}>
-                    <FileDownloader data={this.state.data} filename={this.state.filename} />
+                    <FileDownloader data={this.state.url} filename={this.state.filename} />
                   </NgIf>
                 </NgIf>
                 <NgIf cond={this.state.loading === true}>

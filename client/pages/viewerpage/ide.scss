@@ -1,7 +1,17 @@
-.fab-appear{
-    opacity: 0;
+.fab-appear, .fab-enter{
+    opacity: 0.5;
+    transform: translateX(70px);
 }
-.fab-appear.fab-appear-active{
+.fab-appear.fab-appear-active, .fab-enter.fab-enter-active{
     transition: all 0.2s ease-out;
+    transition-delay: 0.1s;
+    transform: translateX(0px);
     opacity: 1;
+}
+.fab-leave{
+    opacity: 1;
+}
+.fab-leave.fab-leave-active{
+    transition: opacity 0.2s ease-out;
+    opacity: 0;
 }
