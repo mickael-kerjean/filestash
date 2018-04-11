@@ -22,5 +22,5 @@ module.exports = {
         clientID: "dropbox_client_id",
         redirectURI: "application_url/login"
     },
-    secret_key: 'not_so_secret_key'
+    secret_key: process.env.SECRET_KEY || 'not_so_secret_key'
 }

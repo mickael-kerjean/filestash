@@ -39,10 +39,12 @@
         display: inline-block;
         .label{color: var(--color);padding: 2px 5px;}
         a.label{
+            position: relative;
             color: var(--light);
             span.title{
                 position: absolute;
-                background: var(--color);
+                left: 0;
+                background: var(--dark);
                 color: white;
                 font-size: 0.8em;
                 opacity: 0;
@@ -50,7 +52,7 @@
                 border-radius: 2px;
                 white-space: nowrap;
                 padding: 3px 10px!important;
-                margin: 5px 0px 5px -5px;
+                margin: 25px 0px 5px 0px;
             }
         }
 

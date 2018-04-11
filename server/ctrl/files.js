@@ -11,7 +11,7 @@ app.use(function(req, res, next){
     if(req.cookies.auth !== null){
         return next();
     }else{
-        return res.send({status: 'redirect', to: 'logout'});
+        return res.status(401).send({status: "error", message: "You need to authenticate first"});
     }
 });
 
