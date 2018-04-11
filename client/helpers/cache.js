@@ -46,8 +46,9 @@ Data.prototype._vacuum = function(){
  */
 Data.prototype.get = function(type, path, _record_access = true){
     if(type !== this.FILE_PATH && type !== this.FILE_CONTENT) return Promise.reject({});
+
     return this.db.then((db) => {
-        const tx = db.transaction(type, "readwrite");
+        const tx = db.transaction(type, "readonly");
         const store = tx.objectStore(type);
         const query = store.get(path);
         return new Promise((done, error) => {
@@ -58,7 +59,9 @@ Data.prototype.get = function(type, path, _record_access = true){
                     data.last_access = new Date();
                     if(!data.access_count) data.access_count = 0;
                     data.access_count += 1;
-                    this.put(type, data.path, data);
+                    window.requestAnimationFrame(() => {
+                        this.put(type, data.path, data);
+                    });
                 }
             };
             tx.onerror = error;

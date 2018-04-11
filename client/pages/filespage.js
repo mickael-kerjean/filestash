@@ -74,6 +74,7 @@ export class FilesPage extends React.Component {
     onRefresh(path = this.state.path){
         this.resetHeight();
         this._cleanupListeners();
+
         const observer = Files.ls(path).subscribe((res) => {
             if(res.status === 'ok'){
                 let files = res.results;
