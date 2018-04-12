@@ -33,7 +33,7 @@ const fileSource = {
 const fileTarget = {
     canDrop(props, monitor){
         let file = monitor.getItem();
-        if(props.file.type === 'directory' && file.name !== props.file.name){
+        if(props.file.type === 'directory' && file.name !== props.file.name && props.file.icon !== 'loading'){
             return true;
         }else{
             return false;
@@ -148,6 +148,10 @@ export class ExistingThing extends React.Component {
         if(this.state.is_renaming){
             className += "highlight ";
         }
+        if(this.props.file.icon === 'loading'){
+            className += "loading ";
+        }
+
         className = className.trim();
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
