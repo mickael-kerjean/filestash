@@ -98,19 +98,22 @@ function handle_error_response(xhr, err){
         return message;
     })(xhr.responseText);
 
-    if(xhr.status === 500){
-        err({message: message || "Oups something went wrong with our servers"})
+    if(navigator.onLine === false){
+        err({message: 'Connection Lost', code: "NO_INTERNET"});
+    }else if(xhr.status === 500){
+        err({message: message || "Oups something went wrong with our servers", code: "INTERNAL_SERVER_ERROR"});
     }else if(xhr.status === 401){
         if(location.pathname !== '/login'){ location.pathname = "/login"; }
-        err({message: message || "Authentication error"});
+        err({message: message || "Authentication error", code: "Unauthorized"});
     }else if(xhr.status === 403){
-        err({message: message || "You can\'t do that"});
+        err({message: message || "You can\'t do that", code: "Forbidden"});
     }else if(xhr.status === 413){
-        err({message: message || "Payload too large"});
-    }else if(navigator.onLine === false){
-        err({status: xhr.status, code: "CONNECTION_LOST", message: 'Connection Lost'});
+        err({message: message || "Payload too large", code: "PAYLOAD_TOO_LARGE"});
+    }else if(xhr.status === 502){
+        err({message: message || "The destination is acting weird", code: "BAD_GATEWAY"});
+    }else if(xhr.status === 409){
+        err({message: message || "Oups you just ran into a conflict", code: "CONFLICT"});
     }else{
-        err({status: xhr.status, message: xhr.responseText || 'Oups something went wrong'});
+        err({message: message || 'Oups something went wrong'});
     }
-
 }

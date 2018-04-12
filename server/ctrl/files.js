@@ -18,16 +18,12 @@ app.use(function(req, res, next){
 
 // list files
 app.get('/ls', function(req, res){
-    let path = pathBuilder(req);
+    const path = pathBuilder(req);
     if(path){
         Files
             .ls(path, req.cookies.auth)
-            .then(function(results){
-                res.send({status: 'ok', results: results});
-            })
-            .catch(function(err){
-                res.send({status: 'error', message: err.message || 'cannot fetch files', trace: err});
-            });
+            .then(function(results){ res.send({status: 'ok', results: results}); })
+            .catch(function(err){ errorHandler(res, err, 'cannot fetch files'); });
     }else{
         res.send({status: 'error', message: 'unknown path'});
     }
@@ -35,7 +31,7 @@ app.get('/ls', function(req, res){
 
 // get a file content
 app.get('/cat', function(req, res){
-    let path = pathBuilder(req);
+    const path = pathBuilder(req);
     res.clearCookie("download");
     if(path){
         Files.cat(path, req.cookies.auth, res)
@@ -43,9 +39,7 @@ app.get('/cat', function(req, res){
                 res.set('Content-Type',  mime.getMimeType(path));
                 stream.pipe(res);
             })
-            .catch(function(err){
-                res.send({status: 'error', message: err.message || 'couldn\t read the file', trace: err});
-            });
+            .catch(function(err){ errorHandler(res, err, 'couldn\'t read the file'); });
     }else{
         res.send({status: 'error', message: 'unknown path'});
     }
@@ -54,22 +48,20 @@ app.get('/cat', function(req, res){
 // create/update a file
 // https://github.com/pillarjs/multiparty
 app.post('/cat', function(req, res){
-    var form = new multiparty.Form(),
-        path = pathBuilder(req);
+    const form = new multiparty.Form(),
+          path = pathBuilder(req);
 
     if(path){
         form.on('part', function(part) {
             part.on('error', function(err){
-                res.send({status: 'error', message: 'internal error'});
+                errorHandler(res, {code: "INTERNAL_ERROR", message: "internal error"}, 'internal error');
             });
 
             Files.write(path, part, req.cookies.auth)
                 .then(function(result){
                     res.send({status: 'ok'});
                 })
-                .catch(function(err){
-                    res.send({status: 'error', message: err.message || 'couldn\'t write the file', code: err.code});
-                });
+                .catch(function(err){ errorHandler(res, err, 'couldn\'t write the file'); });
         });
         form.parse(req);
     }else{
@@ -79,19 +71,17 @@ app.post('/cat', function(req, res){
 
 // rename a file/directory
 app.get('/mv', function(req, res){
-    let from = decodeURIComponent(req.query.from),
-        to = decodeURIComponent(req.query.to);
+    req.query.path = req.query.from;
+    const from = pathBuilder(req);
+    req.query.path = req.query.to;
+    const to = pathBuilder(req)
 
     if(from === to){
         res.send({status: 'ok'});
     }else if(from && to){
         Files.mv(from, to, req.cookies.auth)
-            .then((message) => {
-                res.send({status: 'ok'});
-            })
-            .catch((err) => {
-                res.send({status: 'error', message: err.message || 'couldn\'t rename your file', trace: err});
-            });
+            .then(function(message){ res.send({status: 'ok'}); })
+            .catch(function(err){ errorHandler(res, err, 'couldn\'t rename your file'); });
     }else{
         res.send({status: 'error', message: 'unknown path'});
     }
@@ -99,15 +89,11 @@ app.get('/mv', function(req, res){
 
 // delete a file/directory
 app.get('/rm', function(req, res){
-    let path = pathBuilder(req);
+    const path = pathBuilder(req);
     if(path){
         Files.rm(path, req.cookies.auth)
-            .then((message) => {
-                res.send({status: 'ok'});
-            })
-            .catch((err) => {
-                res.send({status: 'error', message: err.message || 'couldn\'t delete your file', trace: err});
-            });
+            .then(function(message){ res.send({status: 'ok'}); })
+            .catch(function(err){ errorHandler(res, err, 'couldn\'t delete your file'); });
     }else{
         res.send({status: 'error', message: 'unknown path'});
     }
@@ -115,30 +101,22 @@ app.get('/rm', function(req, res){
 
 // create a directory
 app.get('/mkdir', function(req, res){
-    let path = pathBuilder(req);
+    const path = pathBuilder(req);
     if(path){
         Files.mkdir(path, req.cookies.auth)
-            .then((message) => {
-                res.send({status: 'ok'});
-            })
-            .catch((err) => {
-                res.send({status: 'error', message: err.message || 'couldn\'t create a directory', trace: err});
-            });
+            .then(function(message){ res.send({status: 'ok'}); })
+            .catch(function(err){ errorHandler(res, err, 'couldn\'t create the directory'); });
     }else{
         res.send({status: 'error', message: 'unknown path'});
     }
 });
 
 app.get('/touch', function(req, res){
-    let path = pathBuilder(req);
+    const path = pathBuilder(req);
     if(path){
         Files.touch(path, req.cookies.auth)
-            .then((message) => {
-                res.send({status: 'ok'});
-            })
-            .catch((err) => {
-                res.send({status: 'error', message: err.message || 'couldn\'t create a file', trace: err});
-            });
+            .then(function(message){ res.send({status: 'ok'}); })
+            .catch(function(err){ errorHandler(res, err, 'couldn\'t create the file'); });
     }else{
         res.send({status: 'error', message: 'unknown path'});
     }
@@ -149,4 +127,40 @@ module.exports = app;
 
 function pathBuilder(req){
     return path.join(req.cookies.auth.payload.path || '', decodeURIComponent(req.query.path) || '');
+}
+
+function errorHandler(res, err, defaultMessage){
+    const code = {
+        "INTERNAL_ERROR": {message: "Oops, it seems we had a problem", status: 500},
+        "ECONNREFUSED": {message: "Oops, the service you are connected on is not available", status: 502}
+    };
+    const status = function(_code, _status){
+        if(code[_code]){
+            return code[_code]['status'];
+        }
+        _status = parseInt(_status);
+        if(_status >= 400 && _status < 600){
+            return _status;
+        }
+        return 404;
+    }(err.code || err.errno, err.status);
+
+    if(code[err.code || err.errno]){
+        res.status(status).send({
+            status: 'error',
+            message: code[err.code]['message']
+        });
+    }else if(err.message){
+        res.status(status).send({
+            status: 'error',
+            message: err.message || 'cannot fetch files',
+            trace: err
+        });
+    }else{
+        res.status(status).send({
+            status: 'error',
+            message: defaultMessage,
+            trace: err
+        });
+    }
 }

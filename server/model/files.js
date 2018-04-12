@@ -7,7 +7,7 @@ var backend = {
     s3: require('./backend/s3'),
     git: require('./backend/git')
 };
-    
+
 exports.cat = function(path, params, res){
     try{
         if(backend[params.type] && typeof backend[params.type].cat === 'function'){
@@ -22,7 +22,7 @@ exports.cat = function(path, params, res){
 
 exports.write = function(path, content, params){
     try{
-        if(backend[params.type] && typeof backend[params.type].write === 'function'){        
+        if(backend[params.type] && typeof backend[params.type].write === 'function'){
             return backend[params.type].write(path, content, params.payload);
         }else{
             return error('not implemented');
@@ -46,7 +46,7 @@ exports.ls = function(path, params){
 
 exports.mv = function(from, to, params){
     try{
-        if(backend[params.type] && typeof backend[params.type].mv === 'function'){        
+        if(backend[params.type] && typeof backend[params.type].mv === 'function'){
             return backend[params.type].mv(from, to, params.payload);
         }else{
             return error('not implemented');

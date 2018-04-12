@@ -46,8 +46,7 @@ class FileSystem{
             return cache.get(cache.FILE_PATH, path, false).then((_files) => {
                 if(_files && _files.results){
                     let _files_virtual_to_keep = _files.results.filter((file) => {
-                        return file.icon === 'loading' &&
-                            (new Date()).getTime() - file._timestamp < 1000*60*60;
+                        return file.icon === 'loading';
                     });
                     // update file results
                     for(let i=0; i<_files_virtual_to_keep.length; i++){
@@ -95,6 +94,10 @@ class FileSystem{
                 }else{
                     return this._replace(path, 'error');
                 }
+            })
+            .catch((err) => {
+                this._replace(path, 'error');
+                return Promise.reject(err);
             });
     }
 
@@ -135,7 +138,11 @@ class FileSystem{
         return this._replace(path, 'loading')
             .then(() => cache.put(cache.FILE_CONTENT, path, file))
             .then(() => http_post(url, formData, 'multipart'))
-            .then((res)=> res.status === 'ok'? this._replace(path) : this._replace(path, 'error'));
+            .then((res)=> res.status === 'ok'? this._replace(path) : this._replace(path, 'error'))
+            .catch((err) => {
+                this._replace(path, 'error');
+                return Promise.reject(err);
+            });
     }
 
     mkdir(path){
@@ -143,7 +150,11 @@ class FileSystem{
         return this._add(path, 'loading')
             .then(() => this._add(path, 'loading'))
             .then(() => http_get(url))
-            .then((res) => res.status === 'ok'? this._replace(path) : this._replace(path, 'error'));
+            .then((res) => res.status === 'ok'? this._replace(path) : this._replace(path, 'error'))
+            .catch((err) => {
+                this._replace(path, 'error');
+                return Promise.reject(err);
+            });
     }
 
     touch(path, file){
@@ -159,7 +170,11 @@ class FileSystem{
                     return http_get(url);
                 }
             })
-            .then((res) => res.status === 'ok'? this._replace(path) : this._replace(path, 'error'));
+            .then((res) => res.status === 'ok'? this._replace(path) : this._replace(path, 'error'))
+            .catch((err) => {
+                this._replace(path, 'error');
+                return Promise.reject(err);
+            });
     }
 
     mv(from, to){
@@ -168,18 +183,23 @@ class FileSystem{
         return ui_before_request(from, to)
             .then(() => this._ls_from_cache(dirname(from)))
             .then(() => this._ls_from_cache(dirname(to)))
-            .then(() => http_get(url)
-                  .then((res) => {
-                      if(res.status === 'ok'){
-                          return ui_when_success.call(this, from, to)
-                              .then(() => this._ls_from_cache(dirname(from)))
-                              .then(() => this._ls_from_cache(dirname(to)));
-                      }else{
-                          return ui_when_fail.call(this, from, to)
-                              .then(() => this._ls_from_cache(dirname(from)))
-                              .then(() => this._ls_from_cache(dirname(to)));
-                      }
-                  }));
+            .then(() => http_get(url).then((res) => {
+                if(res.status === 'ok'){
+                    return ui_when_success.call(this, from, to)
+                        .then(() => this._ls_from_cache(dirname(from)))
+                        .then(() => this._ls_from_cache(dirname(to)));
+                }else{
+                    return ui_when_fail.call(this, from, to)
+                        .then(() => this._ls_from_cache(dirname(from)))
+                        .then(() => this._ls_from_cache(dirname(to)));
+                }
+            }))
+            .catch((err) => {
+                ui_when_fail.call(this, from, to)
+                    .then(() => this._ls_from_cache(dirname(from)))
+                    .then(() => this._ls_from_cache(dirname(to)));
+                return Promise.reject(err);
+            });
 
         function ui_before_request(from, to){
             return update_from()
@@ -201,7 +221,6 @@ class FileSystem{
                             if(file.name === basename(from)){
                                 file.name = basename(to);
                                 file.icon = 'loading';
-                                file._timestamp = (new Date()).getTime();
                                 _file = file;
                             }
                             return file;
@@ -232,7 +251,10 @@ class FileSystem{
                     .then((res_from) => {
                         if(!res_from || !res_from.results) return Promise.reject();
                         res_from.results = res_from.results.map((file) => {
-                            if(file.name === basename(from)){
+                            if(
+                                (dirname(from) === dirname(to) && file.name === basename(to)) ||
+                                    (dirname(from) !== dirname(to) && file.name === basename(from))
+                            ){
                                 file.icon = 'error';
                             }
                             return file;
@@ -339,11 +361,9 @@ class FileSystem{
                     if(file.name === basename(path)){
                         if(!icon){
                             delete file.icon;
-                            delete file._timestamp;
                         }
                         if(icon){
                             file.icon = icon;
-                            file._timestamp = (new Date()).getTime();
                         }
                     }
                     return file;
@@ -360,8 +380,7 @@ class FileSystem{
                 if(!res) return Promise.resolve();
                 let file = {
                     name: basename(path),
-                    type: /\/$/.test(path) ? 'directory' : 'file',
-                    _timestamp: (new Date()).getTime()
+                    type: /\/$/.test(path) ? 'directory' : 'file'
                 };
                 if(icon) file.icon = icon;
                 res.results.push(file);
