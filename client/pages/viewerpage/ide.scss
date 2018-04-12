@@ -1,11 +1,8 @@
 .fab-appear, .fab-enter{
-    opacity: 0.5;
-    transform: translateX(70px);
+    opacity: 0;
 }
 .fab-appear.fab-appear-active, .fab-enter.fab-enter-active{
-    transition: all 0.2s ease-out;
-    transition-delay: 0.1s;
-    transform: translateX(0px);
+    transition: all 0.4s ease-out;
     opacity: 1;
 }
 .fab-leave{

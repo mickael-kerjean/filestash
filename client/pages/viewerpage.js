@@ -118,7 +118,8 @@ export class ViewerPage extends React.Component {
               <div style={{height: this.state.height+'px'}}>
                 <NgIf cond={this.state.loading === false} style={style}>
                   <NgIf cond={this.state.opener === 'editor'} style={style}>
-                    <IDE needSaving={this.needSaving.bind(this)}
+                    <IDE needSavingUpdate={this.needSaving.bind(this)}
+                         needSaving={this.state.needSaving}
                          isSaving={this.state.isSaving}
                          onSave={this.save.bind(this)}
                          content={this.state.content}

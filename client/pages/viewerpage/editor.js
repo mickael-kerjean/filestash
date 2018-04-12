@@ -34,12 +34,6 @@ export class Editor extends React.Component {
         this.resetHeight = debounce(this.resetHeight.bind(this), 100);
     }
 
-    componentWillReceiveProps(props){
-        if(this.props.content !== props.content){
-            this.state.editor.getDoc().setValue(props.content);
-        }
-    }
-
     componentDidMount(){
         this.setState({loading: null, error: false}, () => {
             window.setTimeout(() => {

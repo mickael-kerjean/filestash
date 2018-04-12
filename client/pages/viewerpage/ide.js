@@ -17,11 +17,17 @@ export class IDE extends React.Component {
     }
 
     onContentUpdate(text){
-        this.props.needSaving(true);
-        this.setState({contentToSave: text, needSaving: true});
+        if(this.props.content === text){
+            this.props.needSavingUpdate(false);
+        }else{
+            this.props.needSavingUpdate(true);
+        }
+        this.setState({contentToSave: text})
     }
 
     save(){
+        if(this.props.needSaving === false) return;
+
         let file, blob = new window.Blob([this.state.contentToSave], {type : 'text/plain'});
         try{
             file = new window.File([blob], 'test.txt');
@@ -31,7 +37,7 @@ export class IDE extends React.Component {
             file = blob;
         }
         this.props.onSave(file)
-            .then(() => this.setState({needSaving: false}));
+            .then(() => this.props.needSavingUpdate(false))
     }
 
     render(){
@@ -40,8 +46,8 @@ export class IDE extends React.Component {
               <MenuBar title={this.props.filename} download={this.props.url} />
               <Editor onSave={this.save.bind(this)} filename={this.props.filename} content={this.props.content} onChange={this.onContentUpdate.bind(this)} />
 
-              <ReactCSSTransitionGroup transitionName="fab" transitionLeave={true} transitionEnter={true} transitionAppear={true} transitionAppearTimeout={300} transitionEnterTimeout={300} transitionLeaveTimeout={200}>
-                <NgIf key={this.state.needSaving} cond={this.state.needSaving}>
+              <ReactCSSTransitionGroup transitionName="fab" transitionLeave={true} transitionEnter={true} transitionAppear={true} transitionAppearTimeout={400} transitionEnterTimeout={400} transitionLeaveTimeout={200}>
+                <NgIf key={this.props.needSaving} cond={this.props.needSaving}>
                   <NgIf cond={!this.props.isSaving}>
                     <Fab onClick={this.save.bind(this)}><Icon name="save" style={{height: '100%', width: '100%'}}/></Fab>
                   </NgIf>
