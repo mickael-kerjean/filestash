@@ -1,4 +1,6 @@
 .component_breadcrumb{
+    position: relative;
+    z-index: 5;
     .breadcrumb{
         background: white;
         margin: 0 0 0px 0;

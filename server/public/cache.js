@@ -92,7 +92,7 @@ function smartCacheStrategy(request){
             .catch(function(err){
                 return fetchAndCache(request);
             });
-    }).catch(() => return request);
+    }).catch(() => request);
 
 
     function fetchAndCache(_request){
@@ -110,7 +110,7 @@ function smartCacheStrategy(request){
                     cache.put(_request, responseClone);
                 });
                 return response;
-            }).catch(() => return _request);
+            }).catch(() => _request);
     }
     function nil(e){}
 }
@@ -128,7 +128,7 @@ function networkFirstStrategy(request){
         network(request.clone && request.clone() || request)
             .then(done)
             .catch(error);
-    }).catch(() => return request);
+    }).catch(() => request);
 
     function network(request){
         return fetch(request)

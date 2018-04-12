@@ -136,7 +136,6 @@ export class ExistingThing extends React.Component {
         return this.props.file.name.length > 16? this.props.file.name.substring(0, 10).toLowerCase() : this.props.file.name;
     }
 
-
     render(highlight){
         const { connectDragSource, connectDropFile, connectDropNativeFile } = this.props;
         let className = "";
