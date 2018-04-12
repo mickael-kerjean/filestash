@@ -1,5 +1,11 @@
 module.exports = {
     fork_button: false,
+    search: {
+        enable: true,
+        max_depth: 15,
+        max_per_min: 20, // avoid DDOS your own server
+        max_folder_per_path: 30 // avoid indexing unecessary crapp like node_modules, etc...
+    },
     connections: {
         // Autofill form in the login page, this config is used to generate
         // custom login form
