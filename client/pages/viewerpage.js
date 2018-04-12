@@ -88,6 +88,19 @@ export class ViewerPage extends React.Component {
                 this.setState({isSaving: false, needSaving: false});
                 return Promise.resolve();
             })
+            .then(() => {
+                return new Promise((done, err) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        this.setState({content: reader.result});
+                        done();
+                    };
+                    reader.onerror = (e) => {
+                        err({message: 'Internal error 500'});
+                    };
+                    reader.readAsText(file);
+                });
+            })
             .catch((err) => {
                 if(err && err.code === 'CANCELLED'){ return; }
                 this.setState({isSaving: false});
