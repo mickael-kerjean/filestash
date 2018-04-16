@@ -5,12 +5,10 @@
   "repository": "https://github.com/mickael-kerjean/nuage",
   "main": "server/index.js",
   "scripts": {
-    "dev": "webpack-dev-server --config webpack.config.js --progress --inline --hot --host 0.0.0.0",
+    "dev": "webpack --watch",
     "build": "NODE_ENV=production webpack -p",
-    "image": "docker build -t nuage -f ./docker/img/Dockerfile .",
+    "image": "docker build -t nuage -f ./docker/Dockerfile .",
     "publish": "docker tag nuage machines/nuage && docker push machines/nuage",
-    "start": "cd docker && docker-compose up -d",
-    "stop": "cd docker && docker-compose down",
     "clean": "rm -rf server/public/js server/public/*.html || true",
     "clear": "npm run clean && rm -rf node_modules"
   },

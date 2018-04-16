@@ -3,6 +3,7 @@ MAINTAINER mickael.kerjean@gmail.com
 
 COPY . /app
 WORKDIR "/app"
+ENV NODE_ENV production
 
 RUN cd /app/ && \
     # remove dev stuff
@@ -18,5 +19,5 @@ RUN cd /app/ && \
     apt-get -y clean && \
     apt-get -y purge --auto-remove build-essential automake python && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-    
+
 CMD ["node", "/app/server/index"]
