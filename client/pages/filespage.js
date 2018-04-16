@@ -23,6 +23,7 @@ export class FilesPage extends React.Component {
             error: false,
             height: null
         };
+
         this.resetHeight = debounce(this.resetHeight.bind(this), 100);
         this.goToFiles = goToFiles.bind(null, this.props.history);
         this.goToViewer = goToViewer.bind(null, this.props.history);
@@ -105,11 +106,18 @@ export class FilesPage extends React.Component {
         }
     }
 
-    onCreate(path, type, file){
+    onCreate(path, type, file, id){
+        console.log("> creating ("+id+")\t:"+Path.basename(path));
         if(type === 'file'){
             return Files.touch(path, file)
-                .then(() => notify.send('A file named "'+Path.basename(path)+'" was created', 'success'))
-                .catch((err) => notify.send(err, 'error'));
+                .then(() => {
+                    notify.send('A file named "'+Path.basename(path)+'" was created', 'success')
+                    return Promise.resolve();
+                })
+                .catch((err) => {
+                    notify.send(err, 'error')
+                    return Promise.reject(err);
+                });
         }else if(type === 'directory'){
             return Files.mkdir(path)
                 .then(() => notify.send('A folder named "'+Path.basename(path)+'" was created', 'success'))
@@ -130,90 +138,25 @@ export class FilesPage extends React.Component {
     }
 
     onUpload(path, files){
-        const createFilesInUI = (_files) => {
-            const newfiles = _files.map((file) => {
-                return {
-                    time: new Date().getTime(),
-                    name: file.name,
-                    type: 'file',
-                    size: file.size,
-                    icon: 'loading'
-                };
-            });
-            const files = JSON.parse(JSON.stringify(this.state.files));
-            this.setState({files: [].concat(newfiles, files)});
-            return Promise.resolve(_files);
-        };
+        const MAX_POOL_SIZE = 2;
+        const processes = files.map((file) => {
+            return this.onCreate.bind(this, Path.join(path, file.name), 'file', file);
+        });
 
-        const processFile = (file) => {
-            return this.onCreate(Path.join(path, file.name), 'file', file);
-        };
+        console.log("- starting: "+processes.length);
+        Promise.all(Array.apply(null, Array(MAX_POOL_SIZE)).map((e,index) => {
+            return runner(index);
+        })).then(() => {
+            console.log("DONE: "+processes.length);
+        }).catch((err) => {
+            console.log("ERROR"+processes.length, err);
+        });
 
-        const updateUI = (filename) => {
-            const files = JSON.parse(JSON.stringify(this.state.files))
-                  .map((file) => {
-                      // persist file in UI
-                      if(file.name === filename){
-                          file.virtual = false;
-                          delete file.icon;
-                      }
-                      // remove from ui if we upload the file in a different directory
-                      return path === this.state.path ? file : null;
-                  })
-                  .filter((file) => {
-                      return file === null? false : true;
-                  });
-            this.setState({files: files});
-            return Promise.resolve('ok');
-        };
-
-        const showError = (filename, err) => {
-            if(err && err.code === 'CANCELLED'){ return }
-            const files = JSON.parse(JSON.stringify(this.state.files))
-                  .map((file) => {
-                      if(file.name === filename){
-                          file.icon = 'error';
-                          file.message = err && err.message || 'oups something went wrong';
-                          file.virtual = true;
-                      }
-                      return file;
-                  });
-            this.setState({files: files});
-            return Promise.resolve('ok');
-        };
-
-        function generator(arr){
-            let store = arr;
-            return {
-                next: function(){
-                    return store.pop();
-                }
-            };
+        function runner(id){
+            if(processes.length === 0) return Promise.resolve();
+            return processes.shift()(id)
+                .then(() => runner(id));
         }
-
-        function job(it){
-            let file = it.next();
-            if(file){
-                return processFile(file)
-                    .then((ok) => updateUI(file.name))
-                    .then(() => job(it))
-                    .catch((err) => showError(file.name, err));
-            }else{
-                return Promise.resolve('ok');
-            }
-        }
-
-        function process(it, pool){
-            return Promise.all(Array.apply(null, Array(pool)).map(() => {
-                return job(it);
-            }));
-        }
-
-        const poolSize = 10;
-        return createFilesInUI(files)
-            .then((files) => Promise.resolve(generator(files)))
-            .then((it) => process(it, poolSize))
-            .then((res) => Promise.resolve('ok'));
     }
 
     resetHeight(){

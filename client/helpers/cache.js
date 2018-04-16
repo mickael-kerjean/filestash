@@ -1,14 +1,9 @@
 "use strict";
-// window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-// window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction || {READ_WRITE: "readwrite"}; // This line should only be needed if it is needed to support the object's constants for older browsers
-// window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
 
 function Data(){
     this.FILE_PATH = "file_path";
     this.FILE_CONTENT = "file_content";
-    this.db_version = 'v1.0';
     this.db = null;
-    this.intervalId = window.setInterval(this._vacuum.bind(this), 5000);
     this._init();
 }
 
@@ -37,14 +32,10 @@ Data.prototype._setup = function(db){
     }
 }
 
-Data.prototype._vacuum = function(){
-
-}
-
 /*
  * Fetch a record using its path, can be whether a file path or content
  */
-Data.prototype.get = function(type, path, _record_access = true){
+Data.prototype.get = function(type, path){
     if(type !== this.FILE_PATH && type !== this.FILE_CONTENT) return Promise.reject({});
 
     return this.db.then((db) => {
@@ -55,47 +46,68 @@ Data.prototype.get = function(type, path, _record_access = true){
             query.onsuccess = (e) => {
                 let data = query.result;
                 done(query.result || null);
-                if(data && _record_access === true){
-                    data.last_access = new Date();
-                    if(!data.access_count) data.access_count = 0;
-                    data.access_count += 1;
-                    window.requestAnimationFrame(() => {
-                        this.put(type, data.path, data);
-                    });
-                }
             };
-            tx.onerror = error;
+            query.onerror = error;
         });
     });
 }
 
-Data.prototype.put = function(type, path, data){
+Data.prototype.update = function(type, path, fn, exact = true){
+    return this.db.then((db) => {
+        const tx = db.transaction(type, "readwrite");
+        const store = tx.objectStore(type);
+        const range = exact === true? IDBKeyRange.only(path) : IDBKeyRange.bound(
+            path,
+            path+'\uFFFF',
+            false, true
+        );
+        const request = store.openCursor(range);
+        let new_data = null;
+        return new Promise((done, err) => {
+            request.onsuccess = function(event) {
+                const cursor = event.target.result;
+                if(!cursor) return done(new_data);
+                new_data = fn(cursor.value || null);
+                cursor.delete(cursor.value.path);
+                store.put(new_data);
+                cursor.continue();
+            };
+        });
+    });
+}
+
+
+Data.prototype.upsert = function(type, path, fn){
+    return this.db.then((db) => {
+        const tx = db.transaction(type, "readwrite");
+        const store = tx.objectStore(type);
+        const query = store.get(path);
+        return new Promise((done, error) => {
+            query.onsuccess = (e) => {
+                const new_data = fn(query.result || null);
+                if(!new_data) return done(query.result);
+
+                const request = store.put(new_data);
+                request.onsuccess = () => done(new_data);
+                request.onerror = (e) => error(e);
+            };
+            query.onerror = error;
+        });
+    });
+}
+
+Data.prototype.add = function(type, path, data){
     if(type !== this.FILE_PATH && type !== this.FILE_CONTENT) return Promise.reject({});
 
-    return this.get(type, path, false)
-        .then((res) => {
-            let new_data;
-            if(res === null){
-                new_data = data;
-                new_data.last_update = new Date();
-                new_data.path = path;
-            }else{
-                new_data = Object.assign(res, data);
-            }
-
-            return this.db.then((db) => {
-                const tx = db.transaction(type, "readwrite");
-                const store = tx.objectStore(type);
-
-                return new Promise((done, error) => {
-                    let request = store.put(new_data);
-                    request.onsuccess = () => done(new_data.result || new_data.results);
-                    request.onerror = (e) => error(e);
-                    tx.onerror = (e) => error(e);
-                    tx.oncomplete = () => done(new_data.result || new_data.results);
-                });
-            });
+    return this.db.then((db) => {
+        return new Promise((done, error) => {
+            const tx = db.transaction(type, "readwrite");
+            const store = tx.objectStore(type);
+            const request = store.put(data);
+            request.onsuccess = () => done(data);
+            request.onerror = (e) => error(e);
         });
+    });
 }
 
 Data.prototype.remove = function(type, path, exact = true){
@@ -110,14 +122,16 @@ Data.prototype.remove = function(type, path, exact = true){
                 req.onerror = err;
             });
         }else{
-            const request = store.openCursor();
+            const request = store.openCursor(IDBKeyRange.bound(
+                path,
+                path+'\uFFFF',
+                true, true
+            ));
             return new Promise((done, err) => {
                 request.onsuccess = function(event) {
                     const cursor = event.target.result;
                     if(cursor){
-                        if(cursor.value.path.indexOf(path) === 0 && path !== cursor.value.path){
-                            store.delete(cursor.value.path);
-                        }
+                        cursor.delete(cursor.value.path);
                         cursor.continue();
                     }else{
                         done();
@@ -128,35 +142,20 @@ Data.prototype.remove = function(type, path, exact = true){
     });
 }
 
-Data.prototype.update_path = function(updater_fn){
+Data.prototype.fetchAll = function(fn, type = this.FILE_PATH){
     return this.db.then((db) => {
-        const tx = db.transaction(this.FILE_PATH, "readwrite");
-        const store = tx.objectStore(this.FILE_PATH);
+        const tx = db.transaction(type, "readwrite");
+        const store = tx.objectStore(type);
         const request = store.openCursor();
 
         return new Promise((done, error) => {
             request.onsuccess = function(event) {
                 const cursor = event.target.result;
                 if(!cursor) return done();
-                updater_fn(cursor.value, store)
+                const new_value = fn(cursor.value);
                 cursor.continue();
             };
         });
-    });
-}
-Data.prototype.update_content = function(updater_fn){
-    this.db.then((db) => {
-        const tx = db.transaction(this.FILE_CONTENT, "readwrite");
-        const store = tx.objectStore(this.FILE_CONTENT);
-        const request = store.openCursor();
-        request.onsuccess = function(event) {
-            const cursor = event.target.result;
-            if(cursor){
-                const action = updater_fn(cursor.value, store);
-                cursor.continue();
-            }
-        };
-
     });
 }
 
@@ -167,27 +166,6 @@ Data.prototype.destroy = function(){
     this._init();
 }
 
-// // test
-// cache = new Data();
-// cache.put(cache.FILE_PATH, '/', {a:3});
-// cache.get(cache.FILE_PATH, '/').then((r) => {
-//     console.log(r);
-//     cache.remove(cache.FILE_PATH, '/');
-//     cache.get(cache.FILE_PATH, '/').then((r) => {
-//         console.log(r);
-//         //cache.destroy();
-//     });
-// });
-
 
 export const cache = new Data();
 window._cache = cache;
-
-_cache._debug = () => {
-    window._cache.update_path((e) => window.log("- path: "+e.path, e.results.slice(0,5).map((f) => {
-        if(f.type === 'directory'){ f.name = "d:"+f.name;} else{ f.name = "f:"+f.name;}
-        if(f.icon === 'loading') return "("+f.name+")";
-        else if(f.icon === 'error') return "_"+f.name+"_";
-        return f.name;
-    })));
-}

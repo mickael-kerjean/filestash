@@ -102,7 +102,7 @@ export class FileSystem extends React.Component {
                   {
                       this.sort(this.props.files, this.state.sort).map((file, index) => {
                           if(file.type === 'directory' || file.type === 'file' || file.type === 'link' || file.type === 'bucket'){
-                              return <ExistingThing key={file.name} file={file} path={this.props.path} />
+                              return <ExistingThing key={file.name+(file.icon || '')} file={file} path={this.props.path} />
                           }
                       })
                   }

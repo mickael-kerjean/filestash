@@ -88,8 +88,8 @@ export class ExistingThing extends React.Component {
     onRename(newFilename){
         this.props.emit(
             'file.rename',
-            pathBuilder(this.props.path, this.props.file.name),
-            pathBuilder(this.props.path, newFilename),
+            pathBuilder(this.props.path, this.props.file.name, this.props.file.type),
+            pathBuilder(this.props.path, newFilename, this.props.file.type),
             this.props.file.type
         );
         this.setState({is_renaming: false});
@@ -156,7 +156,7 @@ export class ExistingThing extends React.Component {
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div className="component_thing">
-              <Link to={this.props.file.link}>
+              <Link to={this.props.file.link || "#"}>
                 <Card className={this.state.hover} className={className}>
                   <Icon name={this.props.file.icon || this.props.file.type} />
                   <Filename filename={this.props.file.name} filesize={this.props.file.size} filetype={this.props.file.type} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} />

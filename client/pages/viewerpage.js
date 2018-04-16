@@ -54,10 +54,9 @@ export class ViewerPage extends React.Component {
         const data_fetch = (app) => {
             if(app === 'editor'){
                 Files.cat(this.state.path).then((content) => {
-                    this.setState({content: content || "", loading: false});
+                    this.setState({content: content, loading: false});
                 }).catch(err => {
-                    if(err && err.code === 'CANCELLED'){ return; }
-                    if(err.code === 'BINARY_FILE'){
+                    if(err && err.code === 'BINARY_FILE'){
                         this.setState({opener: 'download', loading: false});
                     }else{
                         notify.send(err, 'error');
@@ -135,7 +134,7 @@ export class ViewerPage extends React.Component {
                          needSaving={this.state.needSaving}
                          isSaving={this.state.isSaving}
                          onSave={this.save.bind(this)}
-                         content={this.state.content}
+                         content={this.state.content || ""}
                          url={this.state.url}
                          filename={this.state.filename}/>
                   </NgIf>
