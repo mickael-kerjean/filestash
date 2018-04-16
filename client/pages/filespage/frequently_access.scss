@@ -1,7 +1,7 @@
 .component_frequently-access{
     display: flex;
     a{
-        width: 50%;
+        width: 33.33%;
         background: var(--bg-color);
         box-shadow: rgba(158, 163, 172, 0.3) 0px 19px 60px, rgba(158, 163, 172, 0.22) 0px 15px 20px;
         overflow: hidden;
@@ -26,5 +26,16 @@
     @media (max-width: 750px){ a:nth-child(5){display: none;} }
     @media (max-width: 650px){ a:nth-child(4){display: none;} }
     @media (max-width: 450px){ a:nth-child(3){display: none;} }
+}
 
+
+
+.frequent-access-appear{
+    opacity: 0;
+    transform: translateX(5px);
+}
+.frequent-access-appear.frequent-access-appear-active{
+    opacity: 1;
+    transform: translateX(0px);
+    transition: all 0.3s ease-out;
 }

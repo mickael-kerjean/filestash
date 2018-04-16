@@ -10,7 +10,7 @@ export const MenuBar = (props) => {
     return (
         <div className="component_menubar">
           <Container>
-            <ReactCSSTransitionGroup transitionName="menubar" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={150}>
+            <ReactCSSTransitionGroup transitionName="menubar" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={350}>
               <DownloadButton link={props.download} name={props.title} />
               <span style={{letterSpacing: '0.3px'}}>{props.title}</span>
             </ReactCSSTransitionGroup>
