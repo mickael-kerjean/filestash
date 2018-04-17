@@ -22,7 +22,7 @@ export class ViewerPage extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            path: props.match.url.replace('/view', ''),
+            path: props.match.url.replace('/view', '') + (location.hash || ""),
             url: null,
             filename: Path.basename(props.match.url.replace('/view', '')) || 'untitled.dat',
             opener: null,

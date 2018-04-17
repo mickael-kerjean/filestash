@@ -11,7 +11,7 @@ RUN cd /app/ && \
     # build
     apt-get update -y && \
     apt install -y libssl-dev build-essential automake python libcurl3-dev && \
-    npm install nodegit --build-from-source && \
+    npm install nodegit --build-from-source > /dev/null && \
     npm install && \
     npm run build && \
     # prepare for production
