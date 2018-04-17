@@ -1,3 +1,3 @@
 import 'codemirror/mode/erlang/erlang';
-CodeMirror.__mode = 'css';
+CodeMirror.__mode = 'erlang';
 export default CodeMirror;

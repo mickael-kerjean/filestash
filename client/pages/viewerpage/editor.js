@@ -44,19 +44,19 @@ export class Editor extends React.Component {
             .then((res) => new Promise((done) => this.setState({loading: false}, () => done(res))))
             .then(loadCodeMirror.bind(this));
 
-        function loadCodeMirror(CodeMirror){
+        function loadCodeMirror(data){
+            const [CodeMirror, mode] = data;
             const size_small = 500;
             let editor = CodeMirror(document.getElementById('editor'), {
                 value: this.props.content,
                 lineNumbers: document.body.offsetWidth > size_small ? true : false,
-                mode: CodeMirror.__mode,
+                mode: mode,
                 keyMap: "emacs",
                 lineWrapping: true,
                 foldGutter: {
                     minFoldSize: 1
                 }
             });
-            window.mirror = editor;
 
             if(CodeMirror.afterInit){
                 CodeMirror.afterInit(editor);
@@ -94,12 +94,15 @@ export class Editor extends React.Component {
         let ext = file.split('.').pop(),
             mode = null;
 
-        ext = ext.replace(/~$/, ''); // remove emacs mark when a file is opened
+        // remove emacs mark when a file is opened
+        ext = ext
+            .replace(/~$/, '')
+            .replace(/\#$/, '');
 
         if(ext === 'org' || ext === 'org_archive'){ mode = 'orgmode'; }
         else if(ext === 'sh'){ mode = 'shell'; }
         else if(ext === 'py'){ mode = 'python'; }
-        else if(ext === 'html' || ext === 'htm'){ mode = 'html'; }
+        else if(ext === 'html' || ext === 'htm'){ mode = 'htmlmixed'; }
         else if(ext === 'css'){ mode = 'css'; }
         else if(ext === 'less' || ext === 'scss' || ext === 'sass'){ mode = 'sass'; }
         else if(ext === 'js' || ext === 'json'){ mode = 'javascript'; }
@@ -108,7 +111,7 @@ export class Editor extends React.Component {
         else if(ext === 'elm'){ mode = 'elm'; }
         else if(ext === 'erl'){ mode = 'erlang'; }
         else if(ext === 'go'){mode = 'go'; }
-        else if(ext === 'markdown' || ext === 'md'){mode = 'markdown'; }
+        else if(ext === 'markdown' || ext === 'md'){mode = 'yaml-frontmatter'; }
         else if(ext === 'pl' || ext === 'pm'){mode = 'perl'; }
         else if(ext === 'clj'){ mode = 'clojure'; }
         else if(ext === 'el' || ext === 'lisp' || ext === 'cl' || ext === 'emacs'){ mode = 'lisp'; }
@@ -118,11 +121,13 @@ export class Editor extends React.Component {
         else if(ext === 'rb'){ mode = 'ruby'; }
         else if(ext === 'sql'){ mode = 'sql'; }
         else if(ext === 'xml' || ext === 'rss' || ext === 'svg' || ext === 'atom'){ mode = 'xml'; }
-        else if(ext === 'yml'){ mode = 'yml'; }
+        else if(ext === 'yml' || ext === 'yaml'){ mode = 'yaml'; }
         else if(ext === 'lua'){ mode = 'lua'; }
-        else if(ext === 'csv'){ mode = 'csv'; }
+        else if(ext === 'csv'){ mode = 'spreadsheet'; }
         else if(ext === 'rs' || ext === 'rlib'){ mode = 'rust'; }
         else if(ext === 'latex' || ext === 'tex'){ mode = 'stex'; }
+        else if(ext === 'diff' || ext === 'patch'){ mode = 'diff'; }
+        else if(ext === 'sparql'){ mode = 'sparql'; }
         else if(ext === 'c' || ext === 'cpp' || ext === 'java' || ext === 'h'){
             mode = 'clike';
         }else{
@@ -131,7 +136,7 @@ export class Editor extends React.Component {
 
         return import(/* webpackChunkName: "editor" */'./editor/'+mode)
             .catch(() => import("./editor/text"))
-            .then((module) => Promise.resolve(module.default));
+            .then((module) => Promise.resolve([module.default, mode: mode]));
     }
 
     render() {
