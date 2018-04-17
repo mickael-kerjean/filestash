@@ -3,7 +3,6 @@ MAINTAINER mickael.kerjean@gmail.com
 
 COPY . /app
 WORKDIR "/app"
-ENV NODE_ENV production
 
 RUN cd /app/ && \
     # remove dev stuff
@@ -11,7 +10,6 @@ RUN cd /app/ && \
     # build
     apt-get update -y && \
     apt install -y libssl-dev build-essential automake python libcurl3-dev && \
-    npm install nodegit --build-from-source > /dev/null && \
     npm install && \
     npm run build && \
     # prepare for production
@@ -20,4 +18,5 @@ RUN cd /app/ && \
     apt-get -y purge --auto-remove build-essential automake python && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+ENV NODE_ENV production
 CMD ["node", "/app/server/index"]
