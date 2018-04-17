@@ -21,6 +21,7 @@ import 'codemirror/addon/fold/foldgutter.css';
 
 import './editor.scss';
 import { debounce, screenHeightWithMenubar  } from '../../helpers/';
+import config from '../../../config_client';
 
 export class Editor extends React.Component {
     constructor(props){
@@ -51,7 +52,7 @@ export class Editor extends React.Component {
                 value: this.props.content,
                 lineNumbers: document.body.offsetWidth > size_small ? true : false,
                 mode: mode,
-                keyMap: "emacs",
+                keyMap: config.god_editor_mode ? "emacs" : "default",
                 lineWrapping: true,
                 foldGutter: {
                     minFoldSize: 1
@@ -69,6 +70,14 @@ export class Editor extends React.Component {
                     this.props.onChange(edit.getValue());
                 }
             });
+
+            if(config.god_editor_mode === true){
+                editor.addKeyMap({
+                    "Ctrl-X Ctrl-C": function(cm){
+                        history.back();
+                    }
+                });
+            }
 
             CodeMirror.commands.save = () => {
                 this.props.onSave && this.props.onSave();

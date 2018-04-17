@@ -1,4 +1,5 @@
 module.exports = {
+    god_editor_mode: true,
     fork_button: false,
     search: {
         enable: true,
