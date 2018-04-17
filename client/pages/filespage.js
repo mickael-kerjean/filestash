@@ -136,17 +136,20 @@ export class FilesPage extends React.Component {
     }
 
     onUpload(path, e){
-        console.log(e);
         const MAX_POOL_SIZE = 2;
-        let files = [];
-        extract_upload_directory_the_way_that_works_but_non_official(e.dataTransfer.items || [], files)
-            .then(() => {
+        extract_upload_directory_the_way_that_works_but_non_official(e.dataTransfer.items || [], [])
+            .then((files) => {
                 if(files.length === 0){
                     return extract_upload_crappy_hack_but_official_way(e.dataTransfer);
                 }
                 return Promise.resolve(files)
             })
-            .then(() => {
+            .then((files) => {
+                return Promise.resolve(files.sort((a,b) => {
+                    return a.type !== b.type && a.type === 'file' ? 1 : -1;
+                }));
+            })
+            .then((files) => {
                 const processes = files.map((file) => {
                     file.path = Path.join(path, file.path);
                     if(file.type === 'file'){
@@ -170,7 +173,7 @@ export class FilesPage extends React.Component {
                 });
             });
 
-        function extract_upload_directory_the_way_that_works_but_non_official(items, _files){
+        function extract_upload_directory_the_way_that_works_but_non_official(items, files = []){
             const traverseDirectory = (item, _files) => {
                 let file = {
                     path: item.fullPath,
@@ -183,7 +186,7 @@ export class FilesPage extends React.Component {
                                 file.file = _file;
                                 _files.push(file);
                             }
-                            done();
+                            done(_files);
                         });
                     });
                 }else if(item.isDirectory){
@@ -195,7 +198,7 @@ export class FilesPage extends React.Component {
                         item.createReader().readEntries(function(entries){
                             Promise.all(entries.map((entry) => {
                                 return traverseDirectory(entry, _files)
-                            })).then(() => done());
+                            })).then(() => done(_files));
                         });
                     });
                 }else{
@@ -203,14 +206,15 @@ export class FilesPage extends React.Component {
                 }
             }
             return Promise.all(
-                Array.prototype.slice.call(items)
-                    .map((item) => {
-                        if(typeof item.webkitGetAsEntry === 'function'){
-                            return traverseDirectory(item.webkitGetAsEntry(), _files);
-                        }
-                    })
-                    .filter((e) => e)
-            );
+                Array.prototype.slice.call(items).map((item) => {
+                    if(typeof item.webkitGetAsEntry === 'function'){
+                        return traverseDirectory(item.webkitGetAsEntry(), files.slice(0));
+                    }
+                }).filter((e) => e)
+            ).then((res) => {
+                // flatten
+                return Promise.resolve([].concat.apply([], res));
+            })
         }
 
         function extract_upload_crappy_hack_but_official_way(data){
