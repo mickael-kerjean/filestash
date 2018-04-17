@@ -1,7 +1,6 @@
 import React from 'react';
 import { DragDropContext } from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
-import { default as TouchBackend } from 'react-dnd-touch-backend';
+import HTML5Backend from 'react-dnd-html5-backend-filedrop';
 import Path from 'path';
 
 import './filespage.scss';
@@ -106,8 +105,7 @@ export class FilesPage extends React.Component {
         }
     }
 
-    onCreate(path, type, file, id){
-        console.log("> creating ("+id+")\t:"+Path.basename(path));
+    onCreate(path, type, file){
         if(type === 'file'){
             return Files.touch(path, file)
                 .then(() => {
@@ -137,25 +135,125 @@ export class FilesPage extends React.Component {
             .catch((err) => notify.send(err, 'error'));
     }
 
-    onUpload(path, files){
+    onUpload(path, e){
+        console.log(e);
         const MAX_POOL_SIZE = 2;
-        const processes = files.map((file) => {
-            return this.onCreate.bind(this, Path.join(path, file.name), 'file', file);
-        });
+        let files = [];
+        extract_upload_directory_the_way_that_works_but_non_official(e.dataTransfer.items || [], files)
+            .then(() => {
+                if(files.length === 0){
+                    return extract_upload_crappy_hack_but_official_way(e.dataTransfer);
+                }
+                return Promise.resolve(files)
+            })
+            .then(() => {
+                const processes = files.map((file) => {
+                    file.path = Path.join(path, file.path);
+                    if(file.type === 'file'){
+                        return this.onCreate.bind(this, file.path, 'file', file.file);
+                    }else{
+                        return this.onCreate.bind(this, file.path, 'directory');
+                    }
+                });
+                function runner(id){
+                    if(processes.length === 0) return Promise.resolve();
+                    return processes.shift()(id)
+                        .then(() => runner(id));
+                }
 
-        console.log("- starting: "+processes.length);
-        Promise.all(Array.apply(null, Array(MAX_POOL_SIZE)).map((e,index) => {
-            return runner(index);
-        })).then(() => {
-            console.log("DONE: "+processes.length);
-        }).catch((err) => {
-            console.log("ERROR"+processes.length, err);
-        });
+                Promise.all(Array.apply(null, Array(MAX_POOL_SIZE)).map((process,index) => {
+                    return runner();
+                })).then(() => {
+                    console.log("DONE: "+processes.length);
+                }).catch((err) => {
+                    console.log("ERROR"+processes.length, err);
+                });
+            });
 
-        function runner(id){
-            if(processes.length === 0) return Promise.resolve();
-            return processes.shift()(id)
-                .then(() => runner(id));
+        function extract_upload_directory_the_way_that_works_but_non_official(items, _files){
+            const traverseDirectory = (item, _files) => {
+                let file = {
+                    path: item.fullPath,
+                };
+                if(item.isFile){
+                    return new Promise((done, err) => {
+                        file.type = "file";
+                        item.file((_file, _err) => {
+                            if(!_err){
+                                file.file = _file;
+                                _files.push(file);
+                            }
+                            done();
+                        });
+                    });
+                }else if(item.isDirectory){
+                    file.type = "directory";
+                    file.path += "/";
+                    _files.push(file);
+
+                    return new Promise((done, err) => {
+                        item.createReader().readEntries(function(entries){
+                            Promise.all(entries.map((entry) => {
+                                return traverseDirectory(entry, _files)
+                            })).then(() => done());
+                        });
+                    });
+                }else{
+                    return Promise.resolve();
+                }
+            }
+            return Promise.all(
+                Array.prototype.slice.call(items)
+                    .map((item) => {
+                        if(typeof item.webkitGetAsEntry === 'function'){
+                            return traverseDirectory(item.webkitGetAsEntry(), _files);
+                        }
+                    })
+                    .filter((e) => e)
+            );
+        }
+
+        function extract_upload_crappy_hack_but_official_way(data){
+            const _files = data.files;
+            return Promise.all(
+                Array.prototype.slice.call(_files).map((_file) => {
+                    return detectType(_file)
+                        .then(transform);
+                    function detectType(_f){
+                        // the 4096 is an heuristic I've observed and taken from: https://stackoverflow.com/questions/25016442/how-to-distinguish-if-a-file-or-folder-is-being-dragged-prior-to-it-being-droppe
+                        // however the proposed answer is just wrong as it doesn't consider folder with name such as: test.png
+                        // and as Stackoverflow favor consanguinity with their point system, I couldn't rectify the proposed answer.
+                        // The following code is actually working as expected
+                        if(_file.size % 4096 !== 0){
+                            return Promise.resolve('file');
+                        }
+                        return new Promise((done, err) => {
+                            let reader = new FileReader();
+                            reader.onload = function() {
+                                done('file');
+                            };
+                            reader.onerror = function() {
+                                done('directory');
+                            }
+                            reader.readAsText(_f);
+                        });
+                    }
+
+                    function transform(_type){
+                        let file = {
+                            type: _type,
+                            path: _file.name
+                        };
+                        if(file.type === 'file'){
+                            file.file = _file;
+                        }else{
+                            file.path += "/";
+                        }
+                        files.push(file);
+                        return Promise.resolve();
+                    }
+                })
+            );
         }
     }
 

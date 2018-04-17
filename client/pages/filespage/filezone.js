@@ -8,8 +8,7 @@ import './filezone.scss';
 @EventEmitter
 @DropTarget('__NATIVE_FILE__', {
     drop(props, monitor){
-        let files = monitor.getItem().files;
-        props.emit('file.upload', props.path, files);
+        props.emit('file.upload', props.path, monitor.getItem());
     }
 }, (connect, monitor) => ({
     connectDropFile: connect.dropTarget(),
