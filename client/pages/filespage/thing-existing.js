@@ -52,9 +52,8 @@ const fileTarget = {
 const nativeFileTarget = {
     canDrop: fileTarget.canDrop,
     drop(props, monitor){
-        let files = monitor.getItem().files;
         let path = pathBuilder(props.path, props.file.name, 'directory');
-        props.emit('file.upload', path, files);
+        props.emit('file.upload', path, monitor.getItem());
     }
 }
 

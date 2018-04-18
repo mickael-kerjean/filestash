@@ -153,9 +153,11 @@ export class FilesPage extends React.Component {
                 const processes = files.map((file) => {
                     file.path = Path.join(path, file.path);
                     if(file.type === 'file'){
-                        return this.onCreate.bind(this, file.path, 'file', file.file);
+                        Files.touch(file.path, file.file, 'prepare_only');
+                        return Files.touch.bind(Files, file.path, file.file, 'execute_only');
                     }else{
-                        return this.onCreate.bind(this, file.path, 'directory');
+                        Files.mkdir(file.path, 'prepare_only');
+                        return Files.mkdir.bind(Files, file.path, 'execute_only');
                     }
                 });
                 function runner(id){
@@ -167,9 +169,9 @@ export class FilesPage extends React.Component {
                 Promise.all(Array.apply(null, Array(MAX_POOL_SIZE)).map((process,index) => {
                     return runner();
                 })).then(() => {
-                    console.log("DONE: "+processes.length);
+                    notify.send('Upload completed', 'success')
                 }).catch((err) => {
-                    console.log("ERROR"+processes.length, err);
+                    notify.send(err, 'error')
                 });
             });
 
@@ -211,10 +213,7 @@ export class FilesPage extends React.Component {
                         return traverseDirectory(item.webkitGetAsEntry(), files.slice(0));
                     }
                 }).filter((e) => e)
-            ).then((res) => {
-                // flatten
-                return Promise.resolve([].concat.apply([], res));
-            })
+            ).then((res) => Promise.resolve([].concat.apply([], res)));
         }
 
         function extract_upload_crappy_hack_but_official_way(data){

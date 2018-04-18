@@ -184,43 +184,74 @@ class FileSystem{
             });
     }
 
-    mkdir(path){
+    mkdir(path, step){
         const url = '/api/files/mkdir?path='+prepare(path),
               origin_path = pathBuilder(this.current_path, basename(path), 'directoy'),
               destination_path = path;
 
-        return this._add(destination_path, 'loading')
-            .then(() => origin_path !== destination_path ? this._add(origin_path, 'loading') : Promise.resolve())
-            .then(() => this._refresh(origin_path, destination_path))
-            .then(() => http_get(url))
-            .then(() => {
-                return this._replace(destination_path, null, 'loading')
-                  .then(() => origin_path !== destination_path ? this._remove(origin_path, 'loading') : Promise.resolve())
-                  .then(() => cache.add(cache.FILE_PATH, destination_path, {
-                      path: destination_path,
-                      results: [],
-                      access_count: 0,
-                      last_access: null,
-                      last_update: new Date()
-                  }))
-                  .then(() => this._refresh(origin_path, destination_path));
-            })
-            .catch((err) => {
-                this._replace(origin_path, 'error', 'loading')
-                    .then(() => origin_path !== destination_path ? this._remove(destination_path, 'loading') : Promise.resolve())
-                    .then(() => this._refresh(origin_path, destination_path));
-                return Promise.reject(err);
-            });
+        const action_prepare = () => {
+            return this._add(destination_path, 'loading')
+                .then(() => origin_path !== destination_path ? this._add(origin_path, 'loading') : Promise.resolve())
+                .then(() => this._refresh(origin_path, destination_path))
+        };
+
+        const action_execute = () => {
+            return http_get(url)
+                .then(() => {
+                    return this._replace(destination_path, null, 'loading')
+                        .then(() => origin_path !== destination_path ? this._remove(origin_path, 'loading') : Promise.resolve())
+                        .then(() => cache.add(cache.FILE_PATH, destination_path, {
+                            path: destination_path,
+                            results: [],
+                            access_count: 0,
+                            last_access: null,
+                            last_update: new Date()
+                        }))
+                        .then(() => this._refresh(origin_path, destination_path));
+                })
+                .catch((err) => {
+                    this._replace(origin_path, 'error', 'loading')
+                        .then(() => origin_path !== destination_path ? this._remove(destination_path, 'loading') : Promise.resolve())
+                        .then(() => this._refresh(origin_path, destination_path));
+                    return Promise.reject(err);
+                });
+        };
+
+
+        if(step === 'prepare_only'){
+            return action_prepare()
+        }else if(step === 'execute_only'){
+            return action_execute();
+        }else{
+            return action_prepare().then(action_execute);
+        }
     }
 
-    touch(path, file){
+    touch(path, file, step){
         const origin_path = pathBuilder(this.current_path, basename(path), 'file'),
               destination_path = path;
 
-        return this._add(destination_path, 'loading')
-            .then(() => origin_path !== destination_path ? this._add(origin_path, 'loading') : Promise.resolve())
-            .then(() => this._refresh(origin_path, destination_path))
-            .then(() => {
+        const action_prepare = () => {
+            return this._add(destination_path, 'loading')
+                .then(() => origin_path !== destination_path ? this._add(origin_path, 'loading') : Promise.resolve())
+                .then(() => this._refresh(origin_path, destination_path))
+        };
+        const action_execute = () => {
+            return query()
+                .then(() => {
+                    this._saveFileToCache(path, file)
+                        .then(() => this._replace(destination_path, null, 'loading'))
+                        .then(() => origin_path !== destination_path ? this._remove(origin_path, 'loading') : Promise.resolve())
+                        .then(() => this._refresh(origin_path, destination_path))
+                })
+                .catch((err) => {
+                    this._replace(origin_path, 'error', 'loading')
+                        .then(() => origin_path !== destination_path ? this._remove(destination_path, 'loading') : Promise.resolve())
+                        .then(() => this._refresh(origin_path, destination_path));
+                    return Promise.reject(err);
+                });
+
+            function query(){
                 if(file){
                     const url = '/api/files/cat?path='+prepare(path);
                     let formData = new window.FormData();
@@ -230,19 +261,16 @@ class FileSystem{
                     const url = '/api/files/touch?path='+prepare(path);
                     return http_get(url);
                 }
-            })
-            .then(() => {
-                this._saveFileToCache(path, file)
-                    .then(() => this._replace(destination_path, null, 'loading'))
-                    .then(() => origin_path !== destination_path ? this._remove(origin_path, 'loading') : Promise.resolve())
-                    .then(() => this._refresh(origin_path, destination_path))
-            })
-            .catch((err) => {
-                this._replace(origin_path, 'error', 'loading')
-                    .then(() => origin_path !== destination_path ? this._remove(destination_path, 'loading') : Promise.resolve())
-                    .then(() => this._refresh(origin_path, destination_path));
-                return Promise.reject(err);
-            });
+            }
+        };
+
+        if(step === 'prepare_only'){
+            return action_prepare()
+        }else if(step === 'execute_only'){
+            return action_execute();
+        }else{
+            return action_prepare().then(action_execute);
+        }
     }
 
     mv(from, to){

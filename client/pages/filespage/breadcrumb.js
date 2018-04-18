@@ -35,7 +35,7 @@ const nativeFileTarget = {
         return props.isLast ? false : true;
     },
     drop: function(props, monitor){
-        let files = monitor.getItem().files;
+        let files = monitor.getItem();
         props.emit('file.upload', props.path.full, files);
     }
 }
