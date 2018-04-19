@@ -109,11 +109,11 @@ export class FilesPage extends React.Component {
         if(type === 'file'){
             return Files.touch(path, file)
                 .then(() => {
-                    notify.send('A file named "'+Path.basename(path)+'" was created', 'success')
+                    notify.send('A file named "'+Path.basename(path)+'" was created', 'success');
                     return Promise.resolve();
                 })
                 .catch((err) => {
-                    notify.send(err, 'error')
+                    notify.send(err, 'error');
                     return Promise.reject(err);
                 });
         }else if(type === 'directory'){
@@ -136,49 +136,95 @@ export class FilesPage extends React.Component {
     }
 
     onUpload(path, e){
-        const MAX_POOL_SIZE = 2;
+        const MAX_POOL_SIZE = 10;
+        let PRIOR_STATUS = {};
         extract_upload_directory_the_way_that_works_but_non_official(e.dataTransfer.items || [], [])
             .then((files) => {
                 if(files.length === 0){
                     return extract_upload_crappy_hack_but_official_way(e.dataTransfer);
                 }
-                return Promise.resolve(files)
-            })
-            .then((files) => {
-                return Promise.resolve(files.sort((a,b) => {
-                    return a.type !== b.type && a.type === 'file' ? 1 : -1;
-                }));
+                return Promise.resolve(files);
             })
             .then((files) => {
                 const processes = files.map((file) => {
                     file.path = Path.join(path, file.path);
                     if(file.type === 'file'){
                         Files.touch(file.path, file.file, 'prepare_only');
-                        return Files.touch.bind(Files, file.path, file.file, 'execute_only');
+                        return {
+                            parent: file._prior || null,
+                            fn: Files.touch.bind(Files, file.path, file.file, 'execute_only')
+                        };
                     }else{
                         Files.mkdir(file.path, 'prepare_only');
-                        return Files.mkdir.bind(Files, file.path, 'execute_only');
+                        return {
+                            id: file._id || null,
+                            parent: file._prior || null,
+                            fn: Files.mkdir.bind(Files, file.path, 'execute_only')
+                        };
                     }
                 });
                 function runner(id){
+                    let current_process = null;
                     if(processes.length === 0) return Promise.resolve();
-                    return processes.shift()(id)
-                        .then(() => runner(id));
+
+                    for(let i=0; i<processes.length; i++){
+                        if(processes[i].parent === null || PRIOR_STATUS[processes[i].parent] === true){
+                            current_process = processes[i];
+                            processes.splice(i, 1);
+                            break;
+                        }
+                    }
+
+                    if(current_process){
+                        return current_process.fn(id)
+                            .then(() => {
+                                if(current_process.id) PRIOR_STATUS[current_process.id] = true;
+                                return runner(id);
+                            })
+                            .catch((err) => {
+                                notify.send(err, 'error');
+                                return runner(id);
+                            });
+                    }else{
+                        return waitABit()
+                            .then(() => runner(id));
+                        function waitABit(){
+                            return new Promise((done) => {
+                                window.setTimeout(() => {
+                                    requestAnimationFrame(() => {
+                                        done();
+                                    });
+                                }, 100);
+                            });
+                        }
+                    }
                 }
 
                 Promise.all(Array.apply(null, Array(MAX_POOL_SIZE)).map((process,index) => {
                     return runner();
                 })).then(() => {
-                    notify.send('Upload completed', 'success')
+                    notify.send('Upload completed', 'success');
                 }).catch((err) => {
-                    notify.send(err, 'error')
+                    notify.send(err, 'error');
                 });
             });
 
+
+
+        // adapted from: https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+        function _rand_id(){
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                    .toString(16)
+                    .substring(1);
+            }
+            return s4() + s4() + s4() + s4();
+        }
+
         function extract_upload_directory_the_way_that_works_but_non_official(items, files = []){
-            const traverseDirectory = (item, _files) => {
+            const traverseDirectory = (item, _files, parent_id) => {
                 let file = {
-                    path: item.fullPath,
+                    path: item.fullPath
                 };
                 if(item.isFile){
                     return new Promise((done, err) => {
@@ -186,6 +232,7 @@ export class FilesPage extends React.Component {
                         item.file((_file, _err) => {
                             if(!_err){
                                 file.file = _file;
+                                if(parent_id) file._prior = parent_id;
                                 _files.push(file);
                             }
                             done(_files);
@@ -194,19 +241,21 @@ export class FilesPage extends React.Component {
                 }else if(item.isDirectory){
                     file.type = "directory";
                     file.path += "/";
+                    file._id = _rand_id();
+                    if(parent_id) file._prior = parent_id;
                     _files.push(file);
 
                     return new Promise((done, err) => {
                         item.createReader().readEntries(function(entries){
                             Promise.all(entries.map((entry) => {
-                                return traverseDirectory(entry, _files)
+                                return traverseDirectory(entry, _files, file._id);
                             })).then(() => done(_files));
                         });
                     });
                 }else{
                     return Promise.resolve();
                 }
-            }
+            };
             return Promise.all(
                 Array.prototype.slice.call(items).map((item) => {
                     if(typeof item.webkitGetAsEntry === 'function'){
@@ -231,13 +280,13 @@ export class FilesPage extends React.Component {
                             return Promise.resolve('file');
                         }
                         return new Promise((done, err) => {
-                            let reader = new FileReader();
+                            let reader = new window.FileReader();
                             reader.onload = function() {
                                 done('file');
                             };
                             reader.onerror = function() {
                                 done('directory');
-                            }
+                            };
                             reader.readAsText(_f);
                         });
                     }
@@ -252,8 +301,7 @@ export class FilesPage extends React.Component {
                         }else{
                             file.path += "/";
                         }
-                        files.push(file);
-                        return Promise.resolve();
+                        return Promise.resolve(file);
                     }
                 })
             );

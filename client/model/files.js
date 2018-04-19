@@ -148,7 +148,6 @@ class FileSystem{
                 }).then((response) => Promise.resolve(response.result));
             })
             .catch((err) => {
-                console.log("ERROR");
                 if(err.code === 'BINARY_FILE') return Promise.reject(err);
 
                 return cache.update(cache.FILE_CONTENT, path, (response) => {
@@ -175,12 +174,12 @@ class FileSystem{
             .then(() => {
                 return this._saveFileToCache(path, file)
                     .then(() => this._replace(path, null, 'loading'))
-                    .then(() => this._refresh(path))
+                    .then(() => this._refresh(path));
             })
             .catch((err) => {
                 return this._replace(path, 'error', 'loading')
                     .then(() => this._refresh(path))
-                    .then(() => Promise.reject(err))
+                    .then(() => Promise.reject(err));
             });
     }
 
@@ -189,13 +188,31 @@ class FileSystem{
               origin_path = pathBuilder(this.current_path, basename(path), 'directoy'),
               destination_path = path;
 
-        const action_prepare = () => {
+        const action_prepare = (part_of_a_batch_operation = false) => {
+            if(part_of_a_batch_operation === true){
+                return this._add(destination_path, 'loading')
+                    .then(() => this._refresh(destination_path));
+            }
+
             return this._add(destination_path, 'loading')
                 .then(() => origin_path !== destination_path ? this._add(origin_path, 'loading') : Promise.resolve())
-                .then(() => this._refresh(origin_path, destination_path))
+                .then(() => this._refresh(origin_path, destination_path));
         };
 
-        const action_execute = () => {
+        const action_execute = (part_of_a_batch_operation = false) => {
+            if(part_of_a_batch_operation === true){
+                return http_get(url)
+                    .then(() => {
+                        return this._replace(destination_path, null, 'loading')
+                            .then(() => this._refresh(destination_path));
+                    })
+                    .catch((err) => {
+                        this._replace(destination_path, 'error', 'loading')
+                            .then(() => this._refresh(origin_path, destination_path));
+                        return Promise.reject(err);
+                    });
+            }
+
             return http_get(url)
                 .then(() => {
                     return this._replace(destination_path, null, 'loading')
@@ -219,9 +236,9 @@ class FileSystem{
 
 
         if(step === 'prepare_only'){
-            return action_prepare()
+            return action_prepare(true);
         }else if(step === 'execute_only'){
-            return action_execute();
+            return action_execute(true);
         }else{
             return action_prepare().then(action_execute);
         }
@@ -231,18 +248,35 @@ class FileSystem{
         const origin_path = pathBuilder(this.current_path, basename(path), 'file'),
               destination_path = path;
 
-        const action_prepare = () => {
-            return this._add(destination_path, 'loading')
-                .then(() => origin_path !== destination_path ? this._add(origin_path, 'loading') : Promise.resolve())
-                .then(() => this._refresh(origin_path, destination_path))
+        const action_prepare = (part_of_a_batch_operation = false) => {
+            if(part_of_a_batch_operation === true){
+                return this._add(destination_path, 'loading')
+                    .then(() => this._refresh(destination_path));
+            }else{
+                return this._add(destination_path, 'loading')
+                    .then(() => origin_path !== destination_path ? this._add(origin_path, 'loading') : Promise.resolve())
+                    .then(() => this._refresh(origin_path, destination_path));
+            }
         };
-        const action_execute = () => {
+        const action_execute = (part_of_a_batch_operation = false) => {
+            if(part_of_a_batch_operation === true){
+                return query()
+                    .then(() => {
+                        return this._replace(destination_path, null, 'loading')
+                            .then(() => this._refresh(destination_path));
+                    })
+                    .catch((err) => {
+                        this._replace(destination_path, null, 'error')
+                            .then(() => this._refresh(destination_path));
+                        return Promise.reject(err);
+                    });
+            }
             return query()
                 .then(() => {
-                    this._saveFileToCache(path, file)
+                    return this._saveFileToCache(path, file)
                         .then(() => this._replace(destination_path, null, 'loading'))
                         .then(() => origin_path !== destination_path ? this._remove(origin_path, 'loading') : Promise.resolve())
-                        .then(() => this._refresh(origin_path, destination_path))
+                        .then(() => this._refresh(origin_path, destination_path));
                 })
                 .catch((err) => {
                     this._replace(origin_path, 'error', 'loading')
@@ -265,9 +299,9 @@ class FileSystem{
         };
 
         if(step === 'prepare_only'){
-            return action_prepare()
+            return action_prepare(true);
         }else if(step === 'execute_only'){
-            return action_execute();
+            return action_execute(true);
         }else{
             return action_prepare().then(action_execute);
         }
