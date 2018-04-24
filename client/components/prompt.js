@@ -13,7 +13,6 @@ export class ModalPrompt extends React.Component {
         };
         this.onCancel = this.onCancel.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
-        this.onEscapeKeyPress = this.onEscapeKeyPress.bind(this);
     }
 
     componentDidMount(){
@@ -27,16 +26,12 @@ export class ModalPrompt extends React.Component {
                 fns: {ok: okCallback, cancel: cancelCallback}
             });
         });
-        window.addEventListener('keydown', this.onEscapeKeyPress);
     }
 
-    componentDidUmount(){
-        window.removeEventListener('keydown', this.onEscapeKeyPress);
-    }
 
     onCancel(){
         this.setState({appear: false});
-        this.state.fns.cancel();
+        this.state.fns && this.state.fns.cancel();
     }
 
     onSubmit(e){

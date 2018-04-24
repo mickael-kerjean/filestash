@@ -3,14 +3,17 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import PropTypes from 'prop-types';
 
 import { Input, Button, NgIf } from './';
+import { debounce } from '../helpers/';
 import './modal.scss';
 
 export class Modal extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            marginTop: this._marginTop()
+            marginTop: -1
         };
+        this._resetMargin = debounce(this._resetMargin.bind(this), 100);
+        this._onEscapeKeyPress = this._onEscapeKeyPress.bind(this);
     }
 
     onClick(e){
@@ -20,11 +23,25 @@ export class Modal extends React.Component {
     }
 
     componentDidMount(){
+        this._resetMargin();
+        window.addEventListener("resize", this._resetMargin);
+        window.addEventListener('keydown', this._onEscapeKeyPress);
+    }
+    componentWillUnmount(){
+        window.removeEventListener("resize", this._resetMargin);
+        window.removeEventListener('keydown', this._onEscapeKeyPress);
+    }
+
+    _resetMargin(){
         this.setState({marginTop: this._marginTop()});
     }
 
-    componentWillUnmount(){
+    _onEscapeKeyPress(e){
+        if(e.keyCode === 27){
+            this.props.onQuit && this.props.onQuit();
+        }
     }
+
 
     _marginTop(){
         let size = 300;
@@ -45,8 +62,8 @@ export class Modal extends React.Component {
               transitionAppear={true} transitionAppearTimeout={300}
               >
               <NgIf key={"modal-"+this.props.isActive} cond={this.props.isActive}>
-                <div className="component_modal" onClick={this.onClick.bind(this)} id="modal-box">
-                  <div key="random" style={{margin: this.state.marginTop+'px auto 0 auto'}}>
+                <div className={"component_modal"+(this.props.className? " " + this.props.className : "")} onClick={this.onClick.bind(this)} id="modal-box">
+                  <div style={{margin: this.state.marginTop+'px auto 0 auto', visibility: this.state.marginTop === -1 ? "hidden" : "visible"}}>
                     {this.props.children}
                   </div>
                 </div>

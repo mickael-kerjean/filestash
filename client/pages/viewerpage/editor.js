@@ -21,6 +21,7 @@ import 'codemirror/addon/fold/foldgutter.css';
 
 import './editor.scss';
 import { debounce, screenHeightWithMenubar  } from '../../helpers/';
+import { org_shifttab } from './editor/emacs-org';
 import config from '../../../config_client';
 
 export class Editor extends React.Component {
@@ -32,7 +33,7 @@ export class Editor extends React.Component {
             filename: this.props.filename,
             height: 0
         };
-        this.resetHeight = debounce(this.resetHeight.bind(this), 100);
+        this.resetHeight = debounce(this.resetHeight.bind(this), 0);
     }
 
     componentDidMount(){
@@ -41,12 +42,31 @@ export class Editor extends React.Component {
                 if(this.state.loading === null) this.setState({loading: true});
             }, 200);
         });
+
+
         this.loadMode(this.props.filename)
             .then((res) => new Promise((done) => this.setState({loading: false}, () => done(res))))
-            .then(loadCodeMirror.bind(this));
+            .then(loadCodeMirror.bind(this))
+            .then(() => {
+                this.props.event.subscribe((data) => {
+                    const [type, value] = data;
+                    if(type === "goTo"){
+                        const pY = this.state.editor.charCoords({line: value - 1, ch: 0}, "local").top;
+                        this.state.editor.scrollTo(null, pY);
+                        //this.state.editor.setCursor({line: new_props.currentLine, ch: 2});
+                    }else if(type === "refresh"){
+                        this.state.editor.setValue(this.props.content);
+                    }else if(type === "fold"){
+                        this.props.onFoldChange(
+                            org_shifttab(this.state.editor)
+                        );
+                    }
+                });
+            });
 
         function loadCodeMirror(data){
             const [CodeMirror, mode] = data;
+
             const size_small = 500;
             let editor = CodeMirror(document.getElementById('editor'), {
                 value: this.props.content,
@@ -59,11 +79,19 @@ export class Editor extends React.Component {
                 }
             });
 
+            //debugger;
+            if(!('ontouchstart' in window)) editor.focus();
+
             if(CodeMirror.afterInit){
-                CodeMirror.afterInit(editor);
+                CodeMirror.afterInit(editor, (key, value) => {
+                    if(key === "shifttab"){
+                        this.props.onFoldChange(value);
+                    }
+                });
             }
 
             this.setState({editor: editor});
+            this.props.onModeChange(mode);
 
             editor.on('change', (edit) => {
                 if(this.props.onChange){
@@ -71,13 +99,9 @@ export class Editor extends React.Component {
                 }
             });
 
-            if(config.god_editor_mode === true){
-                editor.addKeyMap({
-                    "Ctrl-X Ctrl-C": function(cm){
-                        history.back();
-                    }
-                });
-            }
+            CodeMirror.commands.quit = () => {
+                window.history.back();
+            };
 
             CodeMirror.commands.save = () => {
                 this.props.onSave && this.props.onSave();

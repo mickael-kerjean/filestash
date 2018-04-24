@@ -11,7 +11,12 @@ export const MenuBar = (props) => {
         <div className="component_menubar">
           <Container>
             <ReactCSSTransitionGroup transitionName="menubar" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={350}>
-              <DownloadButton link={props.download} name={props.title} />
+              <div className="action-item">
+                <span className="specific">
+                  {props.children}
+                </span>
+                <DownloadButton link={props.download} name={props.title} />
+              </div>
               <span style={{letterSpacing: '0.3px'}}>{props.title}</span>
             </ReactCSSTransitionGroup>
           </Container>
@@ -52,16 +57,16 @@ class DownloadButton extends React.Component {
 
     render(){
         return (
-            <div style={{float: 'right', height: '1em'}}>
-              <NgIf cond={!this.state.loading} style={{display: 'inline'}}>
+            <span>
+              <NgIf cond={!this.state.loading} type="inline">
                 <a href={this.props.link} download={this.props.name} onClick={this.onDownloadRequest.bind(this)}>
-                  <Icon name="download" style={{width: '15px', height: '15px'}} />
+                  <Icon name="download_white" />
                 </a>
               </NgIf>
-              <NgIf cond={this.state.loading} style={{display: 'inline'}}>
-                <Icon name="loading" style={{width: '15px', height: '15px'}} />
+              <NgIf cond={this.state.loading} type="inline">
+                <Icon name="loading_white" />
               </NgIf>
-            </div>
+            </span>
         );
     }
 }

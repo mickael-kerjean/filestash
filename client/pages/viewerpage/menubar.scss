@@ -11,6 +11,20 @@
         color: var(--bg-color);
         font-size: 0.9em;
     }
+
+    .action-item{
+        float: right;
+        .specific{ padding-right: 10px; }
+        .component_icon{
+            height: 17px;
+            width: 17px;
+            margin: 0px 5px;
+            cursor: pointer;
+        }
+        span:last-child .component_icon{
+            margin-right: 2px;
+        }
+    }
 }
 
 

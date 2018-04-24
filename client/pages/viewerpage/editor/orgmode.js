@@ -1,10 +1,15 @@
 import 'codemirror/addon/mode/simple';
+import {
+    org_cycle, org_shifttab, org_metaleft, org_metaright, org_meta_return, org_metaup,
+    org_metadown, org_insert_todo_heading, org_shiftleft, org_shiftright, fold, unfold,
+    isFold, org_set_default_fold
+} from './emacs-org';
 
 CodeMirror.__mode = 'orgmode';
 
 CodeMirror.defineSimpleMode("orgmode", {
     start: [
-        {regex: /^(^\*{1,}\s)(TODO|DOING|WAITING|NEXT){0,1}(CANCELLED|CANCEL|DEFERRED|DONE|REJECTED|STOP|STOPPED){0,1}(.*)$/, token: ["header org-level-star", "header org-todo", "header org-done", "header"]},
+        {regex: /^(\*{1,}\s)(TODO|DOING|WAITING|NEXT|)(CANCELLED|CANCEL|DEFERRED|DONE|REJECTED|STOP|STOPPED|)(.*?)(\:[\S]+\:|)$/, token: ["header org-level-star","header org-todo","header org-done","header", "comment"]},
         {regex: /(\+[^\+]+\+)/, token: ["strikethrough"]},
         {regex: /(\*[^\*]+\*)/, token: ["strong"]},
         {regex: /(\/[^\/]+\/)/, token: ["em"]},
@@ -16,7 +21,7 @@ CodeMirror.defineSimpleMode("orgmode", {
         {regex: /\#\+BEGIN_[A-Z]*/, token: "comment", next: "env"}, // comments
         {regex: /:?[A-Z_]+\:.*/, token: "comment"}, // property drawers
         {regex: /(\#\+[A-Z_]*)(\:.*)/, token: ["keyword", 'qualifier']}, // environments
-        {regex: /(CLOCK\:|SHEDULED\:)(\s.+)/, token: ["comment", "keyword"]}
+        {regex: /(CLOCK\:|SHEDULED\:|DEADLINE\:)(\s.+)/, token: ["comment", "keyword"]}
     ],
     env: [
         {regex: /.*?\#\+END_[A-Z]*/, token: "comment", next: "start"},
@@ -90,216 +95,35 @@ CodeMirror.registerGlobalHelper("fold", "drawer", function(mode) {
     }
 });
 
-CodeMirror.afterInit = function(editor){
-    let state = {
-        stab: 'SHOW_ALL'
-    };
+
+CodeMirror.afterInit = function(editor, fn){
+
     editor.setOption("extraKeys", {
-        "Tab": function(cm) {
-            let pos = cm.getCursor();
-            isFold(cm, pos) ? unfold(cm, pos) : fold(cm, pos);
-        },
-        "Shift-Tab": function(cm){
-            if(state.stab === "SHOW_ALL"){
-                state.stab = 'OVERVIEW';
-                cm.operation(function() {
-                    for (var i = cm.firstLine(), e = cm.lastLine(); i <= e; i++){
-                        fold(cm, CodeMirror.Pos(i, 0));
-                    }
-                });
-            }else if(state.stab === "OVERVIEW"){
-                state.stab = 'CONTENT';
-                cm.operation(function() {
-                    for (var i = cm.firstLine(), e = cm.lastLine(); i <= e; i++){
-                        if(/header/.test(cm.getTokenTypeAt(CodeMirror.Pos(i, 0))) === true){
-                            if(/^\* /.test(cm.getLine(i))){
-                                unfold(cm, CodeMirror.Pos(i, 0));
-                            }
-                        }
-                    }
-                });
-            }else if(state.stab === "CONTENT"){
-                state.stab = 'SHOW_ALL';
-                cm.operation(function() {
-                    for (var i = cm.firstLine(), e = cm.lastLine(); i <= e; i++){
-                        if(/header/.test(cm.getTokenTypeAt(CodeMirror.Pos(i, 0))) === true){
-                            unfold(cm, CodeMirror.Pos(i, 0));
-                        }
-                    }
-                });
-            }
-        },
-        "Alt-Left": function(cm){
-            const line = cm.getCursor().line,
-                  content = cm.getLine(line);
-            let p = null;
+        "Tab": function(cm) { org_cycle(cm); },
+        "Shift-Tab": function(cm){ fn('shifttab', org_shifttab(cm)); },
+        "Alt-Left": function(cm){ org_metaleft(cm); },
+        "Alt-Right": function(cm){ org_metaright(cm); },
+        "Alt-Enter": function(cm){ org_meta_return(cm); },
+        "Alt-Up": function(cm){ org_metaup(cm); },
+        "Alt-Down": function(cm){ org_metadown(cm); },
+        "Shift-Alt-Enter": function(cm){ org_insert_todo_heading(cm); },
+        "Shift-Left": function(cm){ org_shiftleft(cm); },
+        "Shift-Right": function(cm){ org_shiftright(cm); },
+    });
+    fn('shifttab', org_set_default_fold(editor));
 
-            if(p = isTitle(content)){
-                if(p['level'] > 1) cm.replaceRange('', {line: line, ch: 0}, {line: line, ch: 1});
-            }else if(p = isItemList(content)){
-                if(p['level'] > 0) cm.replaceRange('', {line: line, ch: 0}, {line: line, ch: 2});
-            }else if(isNumberedList(content)){
-            }
-        },
-        "Alt-Right": function(cm){
-            const line = cm.getCursor().line,
-                  content = cm.getLine(line);
-            let p = null;
-
-            if(p = isItemList(content)){
-                cm.replaceRange('  ', {line: line, ch: 0});
-            }else if(p = isNumberedList(content)){
-            }else if(p = isTitle(content)){
-                cm.replaceRange('*', {line: line, ch: 0});
-            }
-        },
-        "Alt-Enter": function(cm){
-            const line = cm.getCursor().line,
-                  content = cm.getLine(line);
-            let p = null;
-
-            if(p = isItemList(content)){
-                const level = p.level;
-                cm.replaceRange('\n'+" ".repeat(level*2)+'- ', {line: line, ch: content.length});
-                cm.setCursor({line: line+1, ch: 2+level*2});
-            }else if(p = isNumberedList(content)){
-            }else if(p = isTitle(content)){
-            }
-        },
-        "Alt-Up": function(cm){
-            const line = cm.getCursor().line,
-                  content = cm.getLine(line);
-            let p = null;
-
-            if(p = isItemList(content)){
-            }else if(p = isNumberedList(content)){
-            }else if(p = isTitle(content)){
-            }
-        },
-        "Alt-Down": function(cm){
-            const line = cm.getCursor().line,
-                  content = cm.getLine(line);
-            let p = null;
-
-            if(p = isItemList(content)){
-            }else if(p = isNumberedList(content)){
-            }else if(p = isTitle(content)){
-            }
-        },
-        "Shift-Alt-Enter": function(cm){
-            const line = cm.getCursor().line,
-                  content = cm.getLine(line);
-            let p = null;
-
-            if(p = isItemList(content)){
-            }else if(p = isNumberedList(content)){
-            }else if(p = isTitle(content)){
-            }
-        },
-        "Shift-Left": function(cm){
-            const cycles = ["TODO", "", "DONE", "TODO"],
-                  line = cm.getCursor().line,
-                  content = cm.getLine(line),
-                  params = isTitle(content);
-
-            if(params === null) return;
-            if(cycles.indexOf(params['status']) === -1) params['status'] = "";
-
-            params['status'] = cycles[cycles.indexOf(params['status']) + 1];
-            cm.replaceRange(makeTitle(params), {line: line, ch: 0}, {line: line, ch: content.length});
-        },
-        "Shift-Right": function(cm){
-            const cycles = ["TODO", "DONE", "", "TODO"],
-                  line = cm.getCursor().line,
-                  content = cm.getLine(line),
-                  params = isTitle(content);
-
-            if(params === null) return;
-            if(cycles.indexOf(params['status']) === -1) params['status'] = "TODO";
-
-            params['status'] = cycles[cycles.indexOf(params['status']) + 1];
-            cm.replaceRange(makeTitle(params), {line: line, ch: 0}, {line: line, ch: content.length});
+    editor.addKeyMap({
+        "Ctrl-X Ctrl-C": function(cm){
+            cm.execCommand('quit');
         }
     });
 
-    function makeTitle(p){
-        if(p['status'] === ""){
-            return "*".repeat(p['level'])+" "+p['content'];
-        }
-        return "*".repeat(p['level'])+" "+p['status']+" "+p['content'];
-    }
-    function makeNumberedList(p){
-    }
-    function makeItemList(p){
-    }
-
-    function previousOfType(cm, line){
-        let content, tmp, i;
-        for(i=line - 1, k=0; i>0; i--){
-            content = cm.getLine(line);
-            tmp = isItemList(content);
-            if(tmp !== null) return ['list', tmp];
-            tmp = isNumberedList(content);
-            if(tmp !== null) return ['numbered', tmp];
-            tmp = isTitle(content);
-            if(tmp !== null) return ['title', tmp];
-        }
-        return null;
-    }
-
-    function isItemList(content){
-        if(content.trimLeft()[0] !== "-" || content.trimLeft()[1] !== " ") return null;
-        const padding = content.replace(/^(\s*).*$/, "$1").length;
-        if(padding % 2 !== 0) return null;
-        return {
-            level: padding / 2,
-            content: content.trimLeft().replace(/^\s*\-\s(.*)$/, '$1')
-        };
-    }
-    function isNumberedList(content){
-        if(/^[0-9]+[\.\)]\s.*$/.test(content.trimLeft()) === false) return null;
-        const padding = content.replace(/^(\s*)[0-9]+.*$/, "$1").length;
-        if(padding % 2 !== 0) return null;
-        return {
-            level:padding / 2,
-            n: parseInt(content.trimLeft().replace(/^([0-9]+).*$/, "$1")),
-            content: content.trimLeft().replace(/^[0-9]+[\.\)]\s(.*)$/, '$1'),
-            separator: content.trimLeft().replace(/^[0-9]+([\.\)]).*$/, '$1')
-        };
-    }
-    function isTitle(content){
-        if(/^\*+\s/.test(content) === false) return null;
-        const match = content.match(/^(\*+)([\sA-Z]*)\s(.*)$/);
-        if(match === null) return null;
-        return {
-            level: match[1].length,
-            status: match[2].trim(),
-            content: match[3]
-        };
-    }
-
-    function isEmpty(content){
-        return content.trim() === "";
-    }
-
-    function fold(cm, start){
-        cm.foldCode(start, null, "fold");
-    }
-    function unfold(cm, start){
-        cm.foldCode(start, null, "unfold");
-    }
-    function isFold(cm, start){
-        const line = start.line;
-        const marks = cm.findMarks(CodeMirror.Pos(line, 0), CodeMirror.Pos(line + 1, 0));
-        for (let i = 0; i < marks.length; ++i)
-            if (marks[i].__isFold && marks[i].find().from.line == line) return marks[i];
-        return false;
-    }
     editor.on('touchstart', function(cm, e){
         setTimeout(() => {
             isFold(cm, cm.getCursor()) ? unfold(cm, cm.getCursor()) : fold(cm, cm.getCursor())
         }, 150);
     });
+
     // fold everything except headers by default
     editor.operation(function() {
         for (var i = 0; i < editor.lineCount() ; i++) {
@@ -308,17 +132,8 @@ CodeMirror.afterInit = function(editor){
             }
         }
     });
-
-    function collapseWidget(){
-        let $widget = document.createElement('span');
-        $widget.appendChild(document.createTextNode('colapse'));
-        return $widget;
-    }
-    function expandWidget(){
-        let $widget = document.createElement('span');
-        $widget.appendChild(document.createTextNode('expand'));
-        return $widget;
-    }
 }
+
+
 
 export default CodeMirror;

@@ -48,5 +48,5 @@ Note that on the FTP and sFTP, sessions connections aren't destroyed on every re
 Nuage is an open source software with its source code available under the AGPL license. Commercial license and support is available upon request, contact me for details: mickael@kerjean.me
 
 # Credits
-- Icons from www.flaticon.com
-- Folks developing awesome [libraries](https://github.com/mickael-kerjean/nuage/blob/master/package.json) as Nuage is just butter and cream on top.
+- Iconography: www.flaticon.com, fontawesome.com and material.io
+- Folks developing awesome [libraries](https://github.com/mickael-kerjean/nuage/blob/master/package.json)

@@ -7,6 +7,14 @@
 }
 .CodeMirror-scroll { -webkit-overflow-scrolling: touch; }
 
+.CodeMirror-foldmarker{
+    visibility: hidden;
+    &:before{
+        content: "...";
+        visibility: visible;
+    }
+}
+
 /* SEARCH */
 .CodeMirror-dialog {
 	position: fixed;
@@ -42,7 +50,7 @@
 }
 
 /* Highlight Theme */
-.cm-s-default .cm-header {color: #3E7AA6; font-size: 1.15em;}
+.cm-s-default .cm-header {color: #3E7AA6; font-size: 1.15em; line-height: 1em;}
 .cm-s-default .cm-keyword {color: #3E7AA6;}
 .cm-s-default .cm-header.cm-org-level-star{color: #6f6f6f;}
 .cm-s-default .cm-header.cm-org-todo{color: #FF8355;}
