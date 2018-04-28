@@ -1,32 +1,47 @@
-.component_menubar{
+.component_ide .component_menubar{
     background: var(--color);
-    background: linear-gradient(var(--color) 94%, var(--dark));
+    background: linear-gradient(#585b5d 94%, var(--dark));
+}
+
+.component_menubar{
+    background: var(--dark);
     color: #f1f1f1;
     position: relative;
     box-shadow: 0 0px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
     z-index: 4;
 
     .component_container{
-        padding: 8px 0;
+        padding: 0;
         color: var(--bg-color);
         font-size: 0.9em;
+        > span{ display: flex; }
+    }
+
+    .titlebar{
+        flex: 1; padding: 8px 0;
+
     }
 
     .action-item{
-        float: right;
         .specific{ padding-right: 10px; }
         .component_icon{
-            height: 17px;
-            width: 17px;
-            margin: 0px 5px;
+            height: 19px;
+            width: 19px;
             cursor: pointer;
+            padding: 6px 7px;
         }
-        span:last-child .component_icon{
-            margin-right: 2px;
+        .download-button .component_icon{
+            padding-right: 1px;
         }
     }
 }
 
+.touch-yes .component_menubar .action-item{
+    .component_icon{
+        height: 21px;
+        width: 21px;
+    }
+}
 
 
 .menubar-appear{
@@ -38,5 +53,5 @@
     opacity: 1;
     transform: translateY(0px);
     transition: all 0.15s ease-out;
-    transition-delay: 0.2s;
+    transition-delay: 0.35s;
 }

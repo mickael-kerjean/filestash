@@ -29,17 +29,18 @@
 
     .nothing{
         color: var(--light);
-        .big{
-            text-align: center;
-            padding: 40px 0;
-            font-size: 1.3em;
-            text-decoration: line-through;
-        }
-        a{color: var(--primary);}
+        text-align: center;
+        padding: 40px 0;
+        font-size: 1.3em;
+        text-decoration: line-through;
     }
 
     .container{
         margin: 10px 10px 10px 0px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 10px;
 
         .sticky_header{
             z-index: 2;

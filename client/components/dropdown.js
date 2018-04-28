@@ -58,10 +58,8 @@ export class Dropdown extends React.Component {
 
     render(){
         const button = this.props.children[0];
-        if(button.type.name !== 'DropdownButton') throw("First children should be of type DropdownButton");
 
         const dropdown = React.cloneElement(this.props.children[1], {onSelect: this.onSelect.bind(this)});
-        if(dropdown.type.name !== 'DropdownList') throw("Second children should be of type DropdownList");
 
         return (
             <div className={"component_dropdown"+(this.state.button ? " active" : "")}>

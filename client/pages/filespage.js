@@ -6,7 +6,7 @@ import Path from 'path';
 import './filespage.scss';
 import { Files } from '../model/';
 import { NgIf, Loader, Uploader, EventReceiver } from '../components/';
-import { notify, debounce, goToFiles, goToViewer, event, screenHeight } from '../helpers/';
+import { notify, debounce, goToFiles, goToViewer, event } from '../helpers/';
 import { BreadCrumb, FileSystem, FrequentlyAccess } from './filespage/';
 
 @EventReceiver
@@ -23,7 +23,6 @@ export class FilesPage extends React.Component {
             height: null
         };
 
-        this.resetHeight = debounce(this.resetHeight.bind(this), 100);
         this.goToFiles = goToFiles.bind(null, this.props.history);
         this.goToViewer = goToViewer.bind(null, this.props.history);
         this.observers = [];
@@ -40,8 +39,6 @@ export class FilesPage extends React.Component {
         this.props.subscribe('file.refresh', this.onRefresh.bind(this));
 
         this.hideError();
-        this.resetHeight();
-        window.addEventListener("resize", this.resetHeight);
     }
 
     componentWillUnmount() {
@@ -50,7 +47,6 @@ export class FilesPage extends React.Component {
         this.props.unsubscribe('file.rename');
         this.props.unsubscribe('file.delete');
         this.props.unsubscribe('file.refresh');
-        window.removeEventListener("resize", this.resetHeight);
         this._cleanupListeners();
     }
 
@@ -72,7 +68,6 @@ export class FilesPage extends React.Component {
     }
 
     onRefresh(path = this.state.path){
-        this.resetHeight();
         this._cleanupListeners();
 
         const observer = Files.ls(path).subscribe((res) => {
@@ -308,28 +303,24 @@ export class FilesPage extends React.Component {
         }
     }
 
-    resetHeight(){
-        this.setState({
-            height: screenHeight()
-        });
-    }
-
 
     render() {
         return (
             <div className="component_page_filespage">
               <BreadCrumb className="breadcrumb" path={this.state.path} />
-              <div style={{height: this.state.height+'px'}} className="scroll-y">
-                <NgIf className="container" cond={this.state.loading === false}>
-                  <NgIf cond={this.state.path === '/'}>
-                    <FrequentlyAccess files={this.state.frequents}/>
+              <div className="page_container">
+                <div className="scroll-y">
+                  <NgIf className="container" cond={this.state.loading === false}>
+                    <NgIf cond={this.state.path === '/'}>
+                      <FrequentlyAccess files={this.state.frequents}/>
+                    </NgIf>
+                    <FileSystem path={this.state.path} files={this.state.files} />
+                    <Uploader path={this.state.path} />
                   </NgIf>
-                  <FileSystem path={this.state.path} files={this.state.files} />
-                  <Uploader path={this.state.path} />
-                </NgIf>
-                <NgIf cond={this.state.loading}>
-                  <Loader/>
-                </NgIf>
+                  <NgIf cond={this.state.loading}>
+                    <Loader/>
+                  </NgIf>
+                </div>
               </div>
             </div>
         );

@@ -10,14 +10,14 @@ export const MenuBar = (props) => {
     return (
         <div className="component_menubar">
           <Container>
-            <ReactCSSTransitionGroup transitionName="menubar" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={350}>
+            <ReactCSSTransitionGroup transitionName="menubar" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={500}>
+              <div className="titlebar" style={{letterSpacing: '0.3px'}}>{props.title}</div>
               <div className="action-item">
                 <span className="specific">
                   {props.children}
                 </span>
                 <DownloadButton link={props.download} name={props.title} />
               </div>
-              <span style={{letterSpacing: '0.3px'}}>{props.title}</span>
             </ReactCSSTransitionGroup>
           </Container>
         </div>
@@ -57,7 +57,7 @@ class DownloadButton extends React.Component {
 
     render(){
         return (
-            <span>
+            <span className="download-button">
               <NgIf cond={!this.state.loading} type="inline">
                 <a href={this.props.link} download={this.props.name} onClick={this.onDownloadRequest.bind(this)}>
                   <Icon name="download_white" />

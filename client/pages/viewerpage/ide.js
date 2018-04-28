@@ -69,7 +69,7 @@ export class IDE extends React.Component {
 
     render(){
         return (
-            <div style={{height: '100%'}} className="no-select">
+            <div className="component_ide no-select">
               <MenuBar title={this.props.filename} download={this.props.url}>
                 <NgIf type="inline" cond={this.state.mode === 'orgmode'}>
                   <span onClick={this.onModeChange.bind(this)}>

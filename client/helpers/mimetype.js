@@ -25,7 +25,7 @@ export function opener(file){
     }else if(['video/webm', 'video/mp4', 'application/ogg'].indexOf(mime) !== -1){
         return 'video';
     }else{
-        return 'download';
+        return 'editor';
     }
 }
 

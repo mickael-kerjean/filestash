@@ -100,13 +100,10 @@ class OrgViewer extends React.Component {
                 <h1>{this.props.title}</h1>
               </div>
               <NgIf cond={this.props.headlines.length === 0} className="nothing">
-                <div className="big">Nothing</div>
-                <div className="contrib">
-                  If you got some free time, help us making Nuage better by <a href="https://github.com/mickael-kerjean/nuage">contributing</a>? ;)
-                </div>
+                Nothing
               </NgIf>
               <NgIf cond={this.props.headlines.length > 0}>
-                <StickyContainer className="container" style={{height: window.innerHeight > 650 ? 500 : window.innerHeight - 150, overflowY: "auto", padding: "0 10px"}}>
+                <StickyContainer className="container" style={{height: window.innerHeight > 650 ? 500 : window.innerHeight - 150}}>
                   {
                       Object.keys(this.state.headlines).map((list, i) => {
                           return (
@@ -136,6 +133,7 @@ class OrgViewer extends React.Component {
                                             line={headline.line}
                                             status={headline.status || null}
                                             todo_status={headline.todo_status}
+                                            todo_priority={headline.priority}
                                             goTo={this.navigate.bind(this, headline.line)} />
                                       );
                                   })
@@ -234,15 +232,21 @@ class Subtask extends React.Component {
     }
 
     updateState(e){
-        this.props.onStatusChange(e.target.checked ? "DONE" : "TODO");
-        this.setState({checked: e.target.checked});
+        const checked = e.target.checked;
+        this.setState({checked: checked}, () => {
+            // We don't want the interface to feel laggy while a task is beeing updated. Updating the content
+            // and reparsing the result is an expensive operation, this makes it feel like a piece of cake
+            window.setTimeout(() => {
+                window.requestAnimationFrame(() => this.props.onStatusChange(checked ? "DONE" : "TODO"));
+            }, 0);
+        });
     }
 
     render(){
         return (
             <div className="component_subtask no-select">
               <label>
-                <input type="checkbox" checked={this.props.status === "DONE"}
+                <input type="checkbox" checked={this.state.checked}
                        onChange={this.updateState.bind(this)} />
                   <span>{this.props.label}</span>
               </label>

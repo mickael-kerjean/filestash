@@ -20,7 +20,7 @@ import 'codemirror/addon/fold/foldgutter';
 import 'codemirror/addon/fold/foldgutter.css';
 
 import './editor.scss';
-import { debounce, screenHeightWithMenubar  } from '../../helpers/';
+import { debounce  } from '../../helpers/';
 import { org_shifttab } from './editor/emacs-org';
 import config from '../../../config_client';
 
@@ -30,10 +30,8 @@ export class Editor extends React.Component {
         this.state = {
             loading: null,
             editor: null,
-            filename: this.props.filename,
-            height: 0
+            filename: this.props.filename
         };
-        this.resetHeight = debounce(this.resetHeight.bind(this), 0);
     }
 
     componentDidMount(){
@@ -51,11 +49,13 @@ export class Editor extends React.Component {
                 this.props.event.subscribe((data) => {
                     const [type, value] = data;
                     if(type === "goTo"){
-                        const pY = this.state.editor.charCoords({line: value - 1, ch: 0}, "local").top;
+                        const pY = this.state.editor.charCoords({line: value, ch: 0}, "local").top;
                         this.state.editor.scrollTo(null, pY);
                         //this.state.editor.setCursor({line: new_props.currentLine, ch: 2});
                     }else if(type === "refresh"){
+                        const cursor = this.state.editor.getCursor();
                         this.state.editor.setValue(this.props.content);
+                        this.state.editor.setCursor(cursor);
                     }else if(type === "fold"){
                         this.props.onFoldChange(
                             org_shifttab(this.state.editor)
@@ -76,6 +76,9 @@ export class Editor extends React.Component {
                 lineWrapping: true,
                 foldGutter: {
                     minFoldSize: 1
+                },
+                foldOptions: {
+                    widget: "..."
                 }
             });
 
@@ -107,21 +110,11 @@ export class Editor extends React.Component {
                 this.props.onSave && this.props.onSave();
             };
         }
-        this.resetHeight();
-        window.addEventListener("resize", this.resetHeight);
     }
 
     componentWillUnmount(){
         this.state.editor.clearHistory();
-        window.removeEventListener("resize", this.resetHeight);
     }
-
-    resetHeight(){
-        this.setState({
-            height: screenHeightWithMenubar()
-        });
-    }
-
 
     loadMode(file){
         let ext = file.split('.').pop(),
@@ -174,12 +167,12 @@ export class Editor extends React.Component {
 
     render() {
         return (
-            <div style={{height: '100%'}}>
+            <div className="component_editor">
               <NgIf cond={this.state.loading === true} style={{height: '100%'}}>
                 <Loader/>
               </NgIf>
               <NgIf cond={this.state.loading === false} style={{height: '100%'}}>
-                <div id="editor" style={{height: this.state.height+"px"}}></div>
+                <div id="editor"></div>
               </NgIf>
             </div>
         );

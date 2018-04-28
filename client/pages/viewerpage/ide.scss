@@ -1,3 +1,11 @@
+.component_ide{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+
+
 .fab-appear, .fab-enter{
     opacity: 0;
 }

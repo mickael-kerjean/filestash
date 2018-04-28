@@ -7,8 +7,10 @@ export const org_cycle = (cm) => {
 let state = {
     stab: 'CONTENT'
 };
-export const org_set_default_fold = (cm) => {
+export const org_set_fold = (cm) => {
+    const cursor = cm.getCursor();
     set_folding_mode(cm, state.stab);
+    cm.setCursor(cursor);
     return state.stab;
 };
 /*
@@ -78,7 +80,9 @@ function set_folding_mode(cm, mode){
  */
 export const org_metaleft = (cm) => {
     const line = cm.getCursor().line;
-
+    _metaleft(cm, line);
+};
+function _metaleft(cm, line){
     let p = null;
     if(p = isTitle(cm, line)){
         if(p['level'] > 1) cm.replaceRange('', {line: p.start, ch: 0}, {line: p.start, ch: 1});
@@ -92,16 +96,19 @@ export const org_metaleft = (cm) => {
         }
         rearrange_list(cm, line);
     }
-};
+}
+
 /*
  * Demote a subtree, a list item or move table column to right.
  * In front of a drawer or a block keyword, indent it correctly.
  */
 export const org_metaright = (cm) => {
     const line = cm.getCursor().line;
+    _metaright(cm, line);
+};
+
+function _metaright(cm, line){
     let p = null, tmp = null;
-
-
     if(p = isTitle(cm, line)){
         cm.replaceRange('*', {line: p.start, ch: 0});
     }else if(p = isItemList(cm, line)){
@@ -122,8 +129,7 @@ export const org_metaright = (cm) => {
             }
         }
     }
-};
-
+}
 
 /*
  * Insert a new heading or wrap a region in a table
@@ -252,6 +258,19 @@ export const org_metaup = (cm) => {
                 rearrange_list(cm, line);
             }
         }else if(p = isTitle(cm, line)){
+            let _line = line,
+                a;
+            do{
+                _line -= 1;
+                if(a = isTitle(cm, _line, p.level)){
+                    break;
+                }
+            }while(_line > 0);
+
+            if(a){
+                swap(cm, [p.start, p.end], [a.start, a.end]);
+                org_set_fold(cm);
+            }
         }
     });
 }
@@ -278,10 +297,47 @@ export const org_metadown = (cm) => {
             }
             rearrange_list(cm, line);
         }else if(p = isTitle(cm, line)){
+            let a = isTitle(cm, p.end + 1, p.level);
+            if(a){
+                swap(cm, [p.start, p.end], [a.start, a.end]);
+                org_set_fold(cm);
+            }
         }
     });
 }
 
+
+
+export const org_shiftmetaright = function(cm){
+    cm.operation(() => {
+        const line = cm.getCursor().line;
+        let p = null;
+        if(p = isTitle(cm, line)){
+            _metaright(cm, line);
+            for(let i=p.start + 1; i<=p.end; i++){
+                if(isTitle(cm, i)){
+                    _metaright(cm, i);
+                }
+            }
+        }
+    });
+};
+
+export const org_shiftmetaleft = function(cm){
+    cm.operation(() => {
+        const line = cm.getCursor().line;
+        let p = null;
+        if(p = isTitle(cm, line)){
+            if(p.level === 1) return;
+            _metaleft(cm, line);
+            for(let i=p.start + 1; i<=p.end; i++){
+                if(isTitle(cm, i)){
+                    _metaleft(cm, i);
+                }
+            }
+        }
+    });
+};
 
 
 
@@ -408,19 +464,37 @@ function isNumberedList(cm, line){
         return null;
     }
 }
-function isTitle(cm, line){
+function isTitle(cm, line, level){
     const content = cm.getLine(line);
     if(/^\*+\s/.test(content) === false) return null;
     const match = content.match(/^(\*+)([\sA-Z]*)\s(.*)$/);
+    const reference_level = match[1].length;
+    if(level !== undefined && level !== reference_level){ return null; }
     if(match === null) return null;
     return {
         type: 'title',
-        level: match[1].length,
+        level: reference_level,
         content: match[3],
         start: line,
-        end: line,
+        end: function(_cm, _line){
+            let line_candidate = _line,
+                content = null;
+            do{
+                _line += 1;
+                content = _cm.getLine(_line);
+                if(content === undefined) break;
+                let match = content.match(/^(\*+)\s.*/);
+                if(match && match[1] && ( match[1].length === reference_level || match[1].length < reference_level)){
+                    break;
+                }else{
+                    line_candidate = _line;
+                    continue;
+                }
+            }while(_line <= _cm.lineCount())
+            return line_candidate;
+        }(cm, line),
         // specific
-        status: match[2].trim(),
+        status: match[2].trim()
     };
 }
 

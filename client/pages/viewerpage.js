@@ -1,9 +1,10 @@
 import React from 'react';
 import Path from 'path';
 
+import './viewerpage.scss';
 import { Files } from '../model/';
 import { BreadCrumb, Bundle, NgIf, Loader, Container, EventReceiver, EventEmitter } from '../components/';
-import { debounce, opener, screenHeight, notify } from '../helpers/';
+import { debounce, opener, notify } from '../helpers/';
 import { AudioPlayer, FileDownloader, ImageViewer, PDFViewer } from './viewerpage/';
 
 const VideoPlayer = (props) => (
@@ -30,10 +31,8 @@ export class ViewerPage extends React.Component {
             needSaving: false,
             isSaving: false,
             loading: true,
-            height: 0
         };
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
-        this.resetHeight = debounce(this.resetHeight.bind(this), 100);
     }
 
     componentWillMount(){
@@ -72,12 +71,6 @@ export class ViewerPage extends React.Component {
 
     componentWillUnmount() {
         this.props.unsubscribe('file.select');
-        window.removeEventListener("resize", this.resetHeight);
-    }
-
-    componentDidMount(){
-        this.resetHeight();
-        window.addEventListener("resize", this.resetHeight);
     }
 
     save(file){
@@ -116,20 +109,13 @@ export class ViewerPage extends React.Component {
         this.setState({needSaving: bool});
     }
 
-    resetHeight(){
-        this.setState({
-            height: screenHeight()
-        });
-    }
-
     render() {
-        let style = {height: '100%'};
         return (
-            <div style={style}>
+            <div className="component_page_viewerpage">
               <BreadCrumb needSaving={this.state.needSaving} className="breadcrumb" path={this.state.path} />
-              <div style={{height: this.state.height+'px'}}>
-                <NgIf cond={this.state.loading === false} style={style}>
-                  <NgIf cond={this.state.opener === 'editor'} style={style}>
+              <div className="page_container">
+                <NgIf cond={this.state.loading === false}>
+                  <NgIf cond={this.state.opener === 'editor'}>
                     <IDE needSavingUpdate={this.needSaving.bind(this)}
                          needSaving={this.state.needSaving}
                          isSaving={this.state.isSaving}
@@ -138,19 +124,19 @@ export class ViewerPage extends React.Component {
                          url={this.state.url}
                          filename={this.state.filename}/>
                   </NgIf>
-                  <NgIf cond={this.state.opener === 'image'} style={style}>
+                  <NgIf cond={this.state.opener === 'image'}>
                     <ImageViewer data={this.state.url} filename={this.state.filename} />
                   </NgIf>
-                  <NgIf cond={this.state.opener === 'pdf'} style={style}>
+                  <NgIf cond={this.state.opener === 'pdf'}>
                     <PDFViewer data={this.state.url} filename={this.state.filename} />
                   </NgIf>
-                  <NgIf cond={this.state.opener === 'video'} style={style}>
+                  <NgIf cond={this.state.opener === 'video'}>
                     <VideoPlayer data={this.state.url} filename={this.state.filename} />
                   </NgIf>
-                  <NgIf cond={this.state.opener === 'audio'} style={style}>
+                  <NgIf cond={this.state.opener === 'audio'}>
                     <AudioPlayer data={this.state.url} filename={this.state.filename} />
                   </NgIf>
-                  <NgIf cond={this.state.opener === 'download'} style={style}>
+                  <NgIf cond={this.state.opener === 'download'}>
                     <FileDownloader data={this.state.url} filename={this.state.filename} />
                   </NgIf>
                 </NgIf>

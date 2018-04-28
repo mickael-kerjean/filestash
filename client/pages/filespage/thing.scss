@@ -22,6 +22,7 @@
 .component_thing{
     &:hover .box, .highlight.box{
         background: var(--super-light);
+        border-color: var(--super-light);
     }
     &:hover .box:not(.loading){
         .component_datetime{display: none;}

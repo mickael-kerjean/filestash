@@ -55,6 +55,9 @@ export class FileSystem extends React.Component {
                         if(fileA.name[0] === "." && fileB.name[0] !== ".") return +1;
                         else if(fileA.name[0] !== "." && fileB.name[0] === ".") return -1;
                         else{
+                            if(fileA.name.toLowerCase() === fileB.name.toLowerCase()){
+                                return fileA.name > fileB.name ? +1 : -1;
+                            }
                             return fileA.name.toLowerCase() > fileB.name.toLowerCase() ? +1 : -1;
                         }
                     }
@@ -69,6 +72,9 @@ export class FileSystem extends React.Component {
                     if(fileA.name[0] === "." && fileB.name[0] !== ".") return +1;
                     else if(fileA.name[0] !== "." && fileB.name[0] === ".") return -1;
                     else{
+                        if(fileA.name.toLowerCase() === fileB.name.toLowerCase()){
+                            return fileA.name > fileB.name ? +1 : -1;
+                        }
                         return fileA.name.toLowerCase() > fileB.name.toLowerCase() ? +1 : -1;
                     }
                 }
@@ -79,6 +85,9 @@ export class FileSystem extends React.Component {
                 if(fileA.icon === 'loading' && fileB.icon !== 'loading'){return +1;}
                 else if(fileA.icon !== 'loading' && fileB.icon === 'loading'){return -1;}
                 else{
+                    if(fileB.time === fileA.time){
+                        return fileA.name > fileB.name ? +1 : -1;
+                    }
                     return fileB.time - fileA.time;
                 }
             });

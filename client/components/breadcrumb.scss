@@ -91,12 +91,13 @@ body.touch-no{
 body.touch-yes{
     ul span{
         overflow-x: auto;
+        overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
         box-sizing:border-box;
         -moz-box-sizing:border-box;
         white-space: nowrap;
         &::-webkit-scrollbar {
-            height: 3px;
+            height: 0px;
         }
 
         &::-webkit-scrollbar-track {

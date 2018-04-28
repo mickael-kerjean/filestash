@@ -8,7 +8,6 @@ export { pathBuilder, basename, dirname } from './path';
 export { memory } from './memory';
 export { prepare } from './navigate';
 export { invalidate, http_get, http_post, http_delete } from './ajax';
-export { screenHeight, screenHeightWithMenubar } from './dom';
 export { prompt } from './prompt';
 export { notify } from './notify';
 export { guid } from './random';
