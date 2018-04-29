@@ -44,6 +44,9 @@
 }
 
 
+
+
+
 .menubar-appear{
     display: inline-block;
     opacity: 0;
@@ -52,6 +55,6 @@
 .menubar-appear.menubar-appear-active{
     opacity: 1;
     transform: translateY(0px);
-    transition: all 0.15s ease-out;
-    transition-delay: 0.35s;
+    transition: all 0.25s ease-out;
+    transition-delay: 0.30s;
 }

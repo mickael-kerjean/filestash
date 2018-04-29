@@ -82,7 +82,6 @@ export class Editor extends React.Component {
                 }
             });
 
-            //debugger;
             if(!('ontouchstart' in window)) editor.focus();
 
             if(CodeMirror.afterInit){

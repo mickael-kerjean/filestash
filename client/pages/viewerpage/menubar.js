@@ -10,7 +10,7 @@ export const MenuBar = (props) => {
     return (
         <div className="component_menubar">
           <Container>
-            <ReactCSSTransitionGroup transitionName="menubar" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={500}>
+            <ReactCSSTransitionGroup transitionName="menubar" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={550}>
               <div className="titlebar" style={{letterSpacing: '0.3px'}}>{props.title}</div>
               <div className="action-item">
                 <span className="specific">

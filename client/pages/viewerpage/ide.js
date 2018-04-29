@@ -93,12 +93,14 @@ export class IDE extends React.Component {
                 </NgIf>
               </MenuBar>
 
-              <Editor onSave={this.save.bind(this)} filename={this.props.filename}
-                      content={this.state.contentToSave}
-                      event={this.state.event.asObservable()}
-                      onModeChange={this.onUpdate.bind(this, 'mode', false)}
-                      onFoldChange={this.onUpdate.bind(this, 'folding', false)}
-                      onChange={this.onUpdate.bind(this, 'contentToSave', false)} />
+              <ReactCSSTransitionGroup transitionName="editor" transitionAppear={true} transitionEnter={false} transitionLeave={false} transitionAppearTimeout={300} className="editor_container">
+                <Editor onSave={this.save.bind(this)} filename={this.props.filename}
+                        content={this.state.contentToSave}
+                        event={this.state.event.asObservable()}
+                        onModeChange={this.onUpdate.bind(this, 'mode', false)}
+                        onFoldChange={this.onUpdate.bind(this, 'folding', false)}
+                        onChange={this.onUpdate.bind(this, 'contentToSave', false)} />
+              </ReactCSSTransitionGroup>
 
               <ReactCSSTransitionGroup transitionName="fab" transitionLeave={true} transitionEnter={true} transitionAppear={true} transitionAppearTimeout={400} transitionEnterTimeout={400} transitionLeaveTimeout={200}>
                 <NgIf key={this.props.needSaving} cond={this.props.needSaving}>

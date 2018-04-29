@@ -2,6 +2,20 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    .editor_container{
+        height: 100%;
+        display: flex;
+    }
+}
+
+
+
+.editor-appear{
+    opacity: 0;
+}
+.editor-appear.editor-appear-active{
+    transition: opacity 0.3s ease-out;
+    opacity: 1;
 }
 
 
