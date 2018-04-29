@@ -14,13 +14,13 @@ module.exports = {
         usage_stats: true
     },
     gdrive: {
-        redirectURI: "application_url/login",
-        clientID: "gdrive_client_id",
-        clientSecret: "gdrive_client_secret"
+        redirectURI: process.env.APPLICATION_URL+"/login",
+        clientID: process.env.GDRIVE_CLIENT_ID,
+        clientSecret: process.env.GDRIVE_CLIENT_SECRET
     },
     dropbox: {
-        clientID: "dropbox_client_id",
-        redirectURI: "application_url/login"
+        clientID: process.env.DROPBOX_CLIENT_ID,
+        redirectURI: process.env.APPLICATION_URL+"/login"
     },
     secret_key: process.env.SECRET_KEY || 'not_so_secret_key'
-}
+};

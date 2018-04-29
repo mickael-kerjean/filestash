@@ -1,22 +1,20 @@
-FROM machines/node:7.0.0
+FROM alpine:latest
 MAINTAINER mickael.kerjean@gmail.com
 
-COPY . /app
-WORKDIR "/app"
-
-RUN cd /app/ && \
-    # remove dev stuff
-    npm run clear && \
-    # build
-    apt-get update -y && \
-    apt install -y libssl-dev build-essential automake python libcurl3-dev && \
+RUN apk add --no-cache git && \
+    # INSTALL DEPS
+	git clone https://github.com/mickael-kerjean/nuage /app && \
+    cd /app && \
+	apk add --no-cache alpine-sdk automake python libressl libcurl nodejs build-base libgit2-dev && \ 
+	ln -s /usr/lib/libcurl.so.4 /usr/lib/libcurl-gnutls.so.4 && \
+    # PRODUCTION BUILD
     npm install && \
-    npm run build && \
-    # prepare for production
-    npm prune --production && \
-    apt-get -y clean && \
-    apt-get -y purge --auto-remove build-essential automake python && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+	npm run build && \
+	npm prune --production && \
+	# CLEANUP
+	apk del alpine-sdk automake python git
 
+EXPOSE 8334
+WORKDIR "/app"
 ENV NODE_ENV production
 CMD ["node", "/app/server/index"]
