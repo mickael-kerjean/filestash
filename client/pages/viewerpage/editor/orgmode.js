@@ -17,7 +17,7 @@ CodeMirror.defineSimpleMode("orgmode", {
         {regex: /(\~[^\~]+\~)/, token: ["comment"]},
         {regex: /(\=[^\=]+\=)/, token: ["comment"]},
         {regex: /\[\[[^\[\]]*\]\[[^\[\]]*\]\]/, token: "url"}, // links
-        {regex: /\[[xX\s]?\]/, token: 'qualifier'}, // checkbox
+        {regex: /\[[xX\s\-]?\]/, token: 'qualifier org-toggle'}, // checkbox
         {regex: /\#\+BEGIN_[A-Z]*/, token: "comment", next: "env"}, // comments
         {regex: /:?[A-Z_]+\:.*/, token: "comment"}, // property drawers
         {regex: /(\#\+[A-Z_]*)(\:.*)/, token: ["keyword", 'qualifier']}, // environments
@@ -120,11 +120,56 @@ CodeMirror.afterInit = function(editor, fn){
         }
     });
 
-    editor.on('touchstart', function(cm, e){
-        setTimeout(() => {
-            isFold(cm, cm.getCursor()) ? unfold(cm, cm.getCursor()) : fold(cm, cm.getCursor())
-        }, 150);
+
+    // Toggle headline on org mode by clicking on the heading ;)
+    editor.on('mousedown', toggleHandler);
+    editor.on('touchstart', toggleHandler);
+    function toggleHandler(cm, e){
+        const className = e.target.getAttribute('class');
+        if(/cm-org-level-star/.test(className) === true){
+            _foldHeadline(cm, e);
+        }else if(/cm-org-toggle/.test(className) === true){
+            _toggleCheckbox(cm, e);
+        }
+
+        function _foldHeadline(){
+            const line = _init(e);
+            if(line >= 0){
+                const cursor = {line: line, ch: 0};
+                isFold(cm, cursor) ? unfold(cm, cursor) : fold(cm, cursor);
+            }
+        }
+        function _toggleCheckbox(){
+            const line = _init(e),
+                  reg =  /\[(x|X|\s|\-)]/;
+
+            if(line > 0 && reg.test(e.target.innerHTML)){
+                const old = cm.getLine(line),
+                      cursor = cm.getCursor(),
+                      content = RegExp.$1.toLowerCase() === "x" ? old.replace(reg, "[ ]") : old.replace(reg, "[X]");
+
+                cm.replaceRange(content, {line: line, ch:0}, {line: line, ch: old.length});
+                cm.setCursor(cursor);
+            }
+        }
+        function _init(e){
+            if('ontouchstart' in window) e.preventDefault();
+
+            // yes it's dirty but well code mirror doesn't let us the choice
+            let line = parseInt(
+                e.target
+                    .parentElement.parentElement.parentElement
+                    .firstElementChild.firstElementChild.textContent
+            ) - 1;
+            return line;
+        }
+    }
+    editor.on('gutterClick', function(cm, line){
+        const cursor = {line: line, ch: 0};
+        isFold(cm, cursor) ? unfold(cm, cursor) : fold(cm, cursor);
     });
+
+
 
     // fold everything except headers by default
     editor.operation(function() {

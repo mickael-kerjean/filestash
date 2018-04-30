@@ -32,9 +32,15 @@ export class Editor extends React.Component {
             editor: null,
             filename: this.props.filename
         };
+        this._refresh = this._refresh.bind(this);
+    }
+
+    _refresh(){
+        if(this.state.editor) this.state.editor.refresh();
     }
 
     componentDidMount(){
+        window.addEventListener('resize', this._refresh);
         this.setState({loading: null, error: false}, () => {
             window.setTimeout(() => {
                 if(this.state.loading === null) this.setState({loading: true});
@@ -60,6 +66,7 @@ export class Editor extends React.Component {
                         this.props.onFoldChange(
                             org_shifttab(this.state.editor)
                         );
+                        this.state.editor.refresh();
                     }
                 });
             });
@@ -70,17 +77,15 @@ export class Editor extends React.Component {
             const size_small = 500;
             let editor = CodeMirror(document.getElementById('editor'), {
                 value: this.props.content,
-                lineNumbers: document.body.offsetWidth > size_small ? true : false,
+                lineNumbers: true,
                 mode: mode,
                 keyMap: config.god_editor_mode ? "emacs" : "default",
                 lineWrapping: true,
-                foldGutter: {
-                    minFoldSize: 1
-                },
                 foldOptions: {
                     widget: "..."
                 }
             });
+            window._editor = editor;
 
             if(!('ontouchstart' in window)) editor.focus();
 
@@ -112,6 +117,7 @@ export class Editor extends React.Component {
     }
 
     componentWillUnmount(){
+        window.removeEventListener('resize', this._refresh);
         this.state.editor.clearHistory();
     }
 

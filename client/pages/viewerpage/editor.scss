@@ -35,6 +35,15 @@
     padding: 5px;
 }
 
+/* HIDE LINE NUMBERS ON MOBILE */
+// this hack is important as we rely on the dom to provide code folding for org mode
+@media screen and (max-width: 400px) {
+    .CodeMirror-sizer{ margin-left: 0!important; }
+    .CodeMirror-gutters{ display: none; }
+    .CodeMirror-gutter-wrapper{ display: none; }
+}
+
+
 /* SEARCH */
 .CodeMirror-dialog {
 	position: fixed;
@@ -82,6 +91,9 @@
 .cm-s-default .cm-header.cm-org-level-star{
     color: #6f6f6f;
     vertical-align: text-bottom;
+    display: inline-block;
+    padding-left: 4px;
+    margin-left: -4px;
 }
 .cm-s-default .cm-header.cm-org-todo{color: #FF8355; font-weight: normal;}
 .cm-s-default .cm-header.cm-org-done{color: #3BB27C; font-weight: normal;}
