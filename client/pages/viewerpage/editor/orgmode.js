@@ -9,7 +9,7 @@ CodeMirror.__mode = 'orgmode';
 
 CodeMirror.defineSimpleMode("orgmode", {
     start: [
-        {regex: /^(\*{1,}\s)(TODO|DOING|WAITING|NEXT|)(CANCELLED|CANCEL|DEFERRED|DONE|REJECTED|STOP|STOPPED|)(.*?)(?:(\s{10,}|))(\:[\S]+\:|)$/, token: ["header org-level-star","header org-todo","header org-done","header", "header void", "header comment"]},
+        {regex: /^(\*{1,}\s)(TODO|DOING|WAITING|NEXT|)(CANCELLED|CANCEL|DEFERRED|DONE|REJECTED|STOP|STOPPED|)(\s+\[\#[A-C]\]\s+|)(.*?)(?:(\s{10,}|))(\:[\S]+\:|)$/, token: ["header org-level-star","header org-todo","header org-done", "header org-priority", "header", "header void", "header comment"]},
         {regex: /(\+[^\+]+\+)/, token: ["strikethrough"]},
         {regex: /(\*[^\*]+\*)/, token: ["strong"]},
         {regex: /(\/[^\/]+\/)/, token: ["em"]},
@@ -17,7 +17,7 @@ CodeMirror.defineSimpleMode("orgmode", {
         {regex: /(\~[^\~]+\~)/, token: ["comment"]},
         {regex: /(\=[^\=]+\=)/, token: ["comment"]},
         {regex: /\[\[[^\[\]]*\]\[[^\[\]]*\]\]/, token: "url"}, // links
-        {regex: /\[[xX\s\-]?\]/, token: 'qualifier org-toggle'}, // checkbox
+        {regex: /\[[xX\s\-\_]?\]/, token: 'qualifier org-toggle'}, // checkbox
         {regex: /\#\+BEGIN_[A-Z]*/, token: "comment", next: "env"}, // comments
         {regex: /:?[A-Z_]+\:.*/, token: "comment"}, // property drawers
         {regex: /(\#\+[A-Z_]*)(\:.*)/, token: ["keyword", 'qualifier']}, // environments
@@ -96,8 +96,8 @@ CodeMirror.registerGlobalHelper("fold", "drawer", function(mode) {
 });
 
 
-CodeMirror.afterInit = function(editor, fn){
 
+CodeMirror.registerHelper("orgmode", "init", (editor, fn) => {
     editor.setOption("extraKeys", {
         "Tab": function(cm) { org_cycle(cm); },
         "Shift-Tab": function(cm){ fn('shifttab', org_shifttab(cm)); },
@@ -125,51 +125,67 @@ CodeMirror.afterInit = function(editor, fn){
     editor.on('mousedown', toggleHandler);
     editor.on('touchstart', toggleHandler);
     function toggleHandler(cm, e){
-        const className = e.target.getAttribute('class');
-        if(/cm-org-level-star/.test(className) === true){
-            _foldHeadline(cm, e);
-        }else if(/cm-org-toggle/.test(className) === true){
-            _toggleCheckbox(cm, e);
+        const position = cm.coordsChar({
+            left: e.clientX || (e.targetTouches && e.targetTouches[0].clientX),
+            top: e.clientY || (e.targetTouches && e.targetTouches[0].clientY)
+        }, "page"),
+              token = cm.getTokenAt(position);
+
+        if(/org-level-star/.test(token.type)){
+            _preventIfShould();
+            _foldHeadline();
+        }else if(/org-toggle/.test(token.type)){
+            _preventIfShould();
+            _toggleCheckbox();
+        }else if(/org-todo/.test(token.type)){
+            _preventIfShould();
+            _toggleTodo();
+        }else if(/org-done/.test(token.type)){
+            _preventIfShould();
+            _toggleDone();
+        }else if(/org-priority/.test(token.type)){
+            _preventIfShould();
+            _togglePriority();
+        }
+
+
+        function _preventIfShould(){
+            if('ontouchstart' in window) e.preventDefault();
         }
 
         function _foldHeadline(){
-            const line = _init(e);
+            const line = position.line;
             if(line >= 0){
                 const cursor = {line: line, ch: 0};
                 isFold(cm, cursor) ? unfold(cm, cursor) : fold(cm, cursor);
             }
         }
         function _toggleCheckbox(){
-            const line = _init(e),
-                  reg =  /\[(x|X|\s|\-)]/;
-
-            if(line > 0 && reg.test(e.target.innerHTML)){
-                const old = cm.getLine(line),
-                      cursor = cm.getCursor(),
-                      content = RegExp.$1.toLowerCase() === "x" ? old.replace(reg, "[ ]") : old.replace(reg, "[X]");
-
-                cm.replaceRange(content, {line: line, ch:0}, {line: line, ch: old.length});
-                cm.setCursor(cursor);
-            }
+            const line = position.line;
+            const content = cm.getRange({line: line, ch: token.start}, {line: line, ch: token.end});
+            let new_content = content === "[X]" || content === "[x]" ? "[ ]" : "[X]";
+            cm.replaceRange(new_content, {line: line, ch: token.start}, {line: line, ch: token.end});
         }
-        function _init(e){
-            if('ontouchstart' in window) e.preventDefault();
-
-            // yes it's dirty but well code mirror doesn't let us the choice
-            let line = parseInt(
-                e.target
-                    .parentElement.parentElement.parentElement
-                    .firstElementChild.firstElementChild.textContent
-            ) - 1;
-            return line;
+        function _toggleTodo(){
+            const line = position.line;
+            cm.replaceRange("DONE", {line: line, ch: token.start}, {line: line, ch: token.end});
+        }
+        function _toggleDone(){
+            const line = position.line;
+            cm.replaceRange("TODO", {line: line, ch: token.start}, {line: line, ch: token.end});
+        }
+        function _togglePriority(){
+            const PRIORITIES = [" [#A] ", " [#B] ", " [#C] ", " [#A] "];
+            const line = position.line;
+            const content = cm.getRange({line: line, ch: token.start}, {line: line, ch: token.end});
+            let new_content = PRIORITIES[PRIORITIES.indexOf(content) + 1];
+            cm.replaceRange(new_content, {line: line, ch: token.start}, {line: line, ch: token.end});
         }
     }
     editor.on('gutterClick', function(cm, line){
         const cursor = {line: line, ch: 0};
         isFold(cm, cursor) ? unfold(cm, cursor) : fold(cm, cursor);
     });
-
-
 
     // fold everything except headers by default
     editor.operation(function() {
@@ -179,8 +195,6 @@ CodeMirror.afterInit = function(editor, fn){
             }
         }
     });
-}
-
-
+});
 
 export default CodeMirror;

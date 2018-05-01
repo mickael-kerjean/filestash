@@ -85,12 +85,12 @@ export class Editor extends React.Component {
                     widget: "..."
                 }
             });
-            window._editor = editor;
 
             if(!('ontouchstart' in window)) editor.focus();
 
-            if(CodeMirror.afterInit){
-                CodeMirror.afterInit(editor, (key, value) => {
+
+            if(mode === "orgmode"){
+                CodeMirror.orgmode.init(editor, (key, value) => {
                     if(key === "shifttab"){
                         this.props.onFoldChange(value);
                     }
@@ -106,13 +106,14 @@ export class Editor extends React.Component {
                 }
             });
 
-            CodeMirror.commands.quit = () => {
-                window.history.back();
-            };
-
             CodeMirror.commands.save = () => {
                 this.props.onSave && this.props.onSave();
             };
+            editor.addKeyMap({
+                "Ctrl-X Ctrl-C": function(cm){
+                    window.history.back();
+                }
+            });
         }
     }
 
