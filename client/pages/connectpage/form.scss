@@ -68,4 +68,18 @@
     overflow-x: auto!important;
     overflow-y: hidden!important;
     -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar{
+        height:4px;
+    }
+    &::-webkit-scrollbar-track{
+        background: white;
+    }
+    &::-webkit-scrollbar-thumb{
+        -webkit-border-radius:2px;
+        -moz-border-radius:2px;
+        -ms-border-radius:2px;
+        -o-border-radius:2px;
+        border-radius:2px;
+        background:rgba(0,0,0,.1)
+    }
 }

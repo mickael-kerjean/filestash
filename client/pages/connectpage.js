@@ -21,7 +21,7 @@ export class ConnectPage extends React.Component {
         };
     }
 
-    componentDidMount(){
+    componentWillMount(){
         // adapted from: https://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
         function getParam(name) {
             const regex = new RegExp("[?&#]" + name.replace(/[\[\]]/g, "\\$&") + "(=([^&#]*)|&|#|$)");
@@ -33,13 +33,13 @@ export class ConnectPage extends React.Component {
 
         // dropbox login
         if(getParam('state') === 'dropbox'){
-            this.authenticate({bearer: getParam('access_token'), type: 'dropbox'});
             this.setState({doing_a_third_party_login: true});
+            this.authenticate({bearer: getParam('access_token'), type: 'dropbox'});
         }
         // google drive login
         if(getParam('code')){
-            this.authenticate({code: getParam('code'), type: 'gdrive'});
             this.setState({doing_a_third_party_login: true});
+            this.authenticate({code: getParam('code'), type: 'gdrive'});
         }
     }
 
