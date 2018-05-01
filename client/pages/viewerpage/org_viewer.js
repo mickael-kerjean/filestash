@@ -31,7 +31,8 @@ class OrgViewer extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            headlines: this.buildHeadlines(props.headlines)
+            headlines: this.buildHeadlines(props.headlines),
+            content: props.content
         };
     }
 
@@ -59,20 +60,11 @@ class OrgViewer extends React.Component {
         });
     }
 
-    navigate(line){
-        this.props.onQuit();
-        this.props.goTo(line);
-    }
-
-
     onTaskUpdate(type, line, value){
-        const content = this.props.content.split("\n");
+        const content = this.state.content.split("\n");
         switch(type){
         case "status":
-            const [status, state] = value;
-            let next = "DONE";
-            if(status === "DONE") next = "TODO";
-            content[line] = content[line].replace(status, next);
+            content[line] = content[line].replace(/^(\*+\s)[A-Z]{3,}(\s.*)$/, "$1"+value+"$2");
             break;
         case "subtask":
             if(value === "DONE"){
@@ -86,15 +78,25 @@ class OrgViewer extends React.Component {
         case "deadline":
             break;
         };
-        this.props.onUpdate(content.join("\n"));
+        this.setState({content: content.join("\n")});
+    }
+
+    navigate(line){
+        this.props.goTo(line);
+        this.onQuit();
+    }
+
+    onQuit(){
+        this.props.onUpdate(this.state.content);
+        this.props.onQuit();
     }
 
 
     render(){
         return (
-            <Modal className="todo-modal" isActive={this.props.isActive} onQuit={this.props.onQuit}>
+            <Modal className="todo-modal" isActive={this.props.isActive} onQuit={this.onQuit.bind(this)}>
               <div className="modal-top no-select">
-                <span onClick={this.props.onQuit}>
+                <span onClick={this.onQuit.bind(this)}>
                   <Icon name="close"/>
                 </span>
                 <h1>{this.props.title}</h1>
@@ -155,6 +157,7 @@ class Headline extends React.Component {
     constructor(props){
         super(props);
         this.state = {
+            status: props.todo_status,
             properties: false
         };
     }
@@ -167,11 +170,24 @@ class Headline extends React.Component {
         }
     }
 
+    onStatusToggle(){
+        if(!this.props.todo_status) return;
+
+        const new_status = this.state.status === 'todo' ? 'done' : 'todo';
+        this.setState({status: new_status});
+
+        const new_status_label = function(new_status, initial_status, initial_keyword){
+            if(new_status === initial_status) return initial_keyword;
+            return new_status === "todo" ? "TODO" : "DONE";
+        }(new_status, this.props.todo_status, this.props.status);
+        this.props.onTaskUpdate('status', this.props.line, new_status_label);
+    }
+
     render(){
         return (
             <div className="component_headline">
-              <div className={"no-select headline-main "+this.props.todo_status + " " +(this.props.is_overdue === true ? "overdue" : "")}>
-                <div className="title" onClick={this.props.onTaskUpdate.bind(this, 'status', this.props.line, [this.props.status, this.props.todo_status])}>
+              <div className={"no-select headline-main "+this.state.status + " " +(this.props.is_overdue === true ? "overdue" : "")}>
+                <div className="title" onClick={this.onStatusToggle.bind(this)}>
                   <div>
                     <span>{this.props.title}</span>
                     <div className="tags">
@@ -206,7 +222,7 @@ class Headline extends React.Component {
                   </label>
                 </div>
               </NgIf>
-              <NgIf cond={this.props.tasks.length > 0 && this.props.todo_status === "todo" && this.props.type === 'todos'} className="subtask_container">
+              <NgIf cond={this.props.tasks.length > 0 && this.state.status === "todo" && this.props.type === 'todos'} className="subtask_container">
                 {
                     this.props.tasks.map((task, i) => {
                         return (
