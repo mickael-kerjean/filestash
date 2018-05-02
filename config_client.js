@@ -1,6 +1,6 @@
 module.exports = {
     god_editor_mode: true,
-    fork_button: false,
+    fork_button: true,
     search: {
         enable: true,
         max_depth: 15,

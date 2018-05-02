@@ -3,7 +3,7 @@
     .dropdown_container{display: none; position: absolute; right: 0;}
 
     .dropdown_button{
-        border: 1px solid white;
+        border: 1px solid rgba(0,0,0,0);
         border-radius: 4px;
         padding: 5px;
         min-width: 20px;
@@ -37,8 +37,12 @@
     &.active{
         .dropdown_container{
             display: block;
-            li:hover{
-                background: var(--bg-color);
+            li{
+                background: white;
+                transition: background 0.1s ease-out;
+                &:hover{
+                    background: var(--bg-color);
+                }
             }
         }
         .dropdown_button{

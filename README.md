@@ -18,10 +18,11 @@
 - Upload files and folders
 - Works great on mobile
 - Multiple cloud providers and protocols, easily extensible
+- [Org Mode](https://orgmode.org/) friendly: see [org features](https://github.com/mickael-kerjean/nuage/wiki/Org-Mode)
 - Audio player
 - Video player
 - Image viewer
-- Emacs keybindings + [org mode](https://orgmode.org/) friendly `;)`
+- Emacs keybindings `;)`
 - Frequently access folders are pin to the homepage for quick access
 - Customise the connection page so that your users don't even have to know what protocol to use and where it is located ([example](http://files.kerjean.me))
 - Stateless (perfect candidate for AWS lamdba if that's your thing)
@@ -39,13 +40,7 @@ node server/index.js
 Or with [docker](https://hub.docker.com/r/machines/nuage/) and [Docker compose](https://github.com/mickael-kerjean/nuage/blob/master/docker/docker-compose.yml)
 
 # What about my credentials?
-Credentials are stored in your browser in a http only cookie encrypted using aes-256-cbc and aren't persistent in the server disk at all.
-The "remember me" feature relies on localstorage to store your credentials encrypted using aes-256-cbc.
-
-Note that on the FTP and sFTP, sessions connections aren't destroyed on every request but are reused and killed after 2 minutes. The reasoning is connections are expensive to create and this trick make the entire application feel much much faster for users who tries to navigate.
-
-# Licensing
-Nuage is an open source software with its source code available under the AGPL license. Commercial license and support is available upon request, contact me for details: mickael@kerjean.me
+Nuage is stateless, nothing is kept server side. Credentials are simply stored in an http only cookie encrypted using aes-256-cbc only the server has the key (in config_server.js).
 
 # Credits
 - Iconography: www.flaticon.com, fontawesome.com and material.io

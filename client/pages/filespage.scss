@@ -22,4 +22,7 @@
     overflow-y: scroll!important;
     overflow-x: hidden!important;
     -webkit-overflow-scrolling: touch;
+    > .container{
+        height: 100%;
+    }
 }

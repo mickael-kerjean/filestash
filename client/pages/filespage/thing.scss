@@ -20,6 +20,7 @@
 }
 
 .component_thing{
+    clear: both;
     &:hover .box, .highlight.box{
         background: var(--super-light);
         border-color: var(--super-light);

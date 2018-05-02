@@ -38,6 +38,8 @@ function set_folding_mode(cm, mode){
     }else if(mode === "CONTENT"){
         folding_mode_content(cm);
     }
+    cm.refresh();
+
     function folding_mode_overview(cm){
         cm.operation(function() {
             for (var i = cm.firstLine(), e = cm.lastLine(); i <= e; i++){

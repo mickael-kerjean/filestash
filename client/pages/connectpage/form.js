@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Container, Card, NgIf, Input, Button, Textarea, Loader, Notification, Prompt } from '../../components/';
-import { invalidate, encrypt, decrypt } from '../../helpers/';
+import { invalidate, encrypt, decrypt, gid } from '../../helpers/';
 import { Session } from '../../model/';
 import config from '../../../config_client';
 import './form.scss';
@@ -190,7 +190,6 @@ export class Form extends React.Component {
                         <Input type={this.input_type('webdav', 'path')} name="path" placeholder="Path" ref={(input) => {this.state.refs.webdav_path = input; }} autoComplete="new-password" />
                      </NgIf>
                     </NgIf>
-                    <Input type="hidden" name="type" value="webdav"/>
                     <Button theme="emphasis">CONNECT</Button>
                   </NgIf>
                   <NgIf cond={this.state.type === 'ftp'}>
@@ -203,7 +202,6 @@ export class Form extends React.Component {
                     <NgIf cond={this.should_appear('ftp', 'password')}>
                       <Input type={this.input_type('ftp', 'password')} name="password" placeholder="Password" ref={(input) => {this.state.refs.ftp_password = input; }} autoComplete="new-password" />
                     </NgIf>
-                    <Input type="hidden" name="type" value="ftp"/>
                     <NgIf cond={this.should_appear('ftp', 'advanced')}>
                       <label>
                         <input checked={this.state.advanced_ftp} onChange={e => { this.setState({advanced_ftp: e.target.checked}); }} type="checkbox" autoComplete="new-password"/> Advanced
@@ -229,7 +227,6 @@ export class Form extends React.Component {
                     <NgIf cond={this.should_appear('sftp', 'password')}>
                       <Input type={this.input_type('sftp', 'password')} name="password" placeholder="Password" ref={(input) => {this.state.refs.sftp_password = input; }} autoComplete="new-password" />
                     </NgIf>
-                    <Input type="hidden" name="type" value="sftp"/>
                     <NgIf cond={this.should_appear('sftp', 'advanced')}>
                       <label>
                         <input checked={this.state.advanced_sftp} onChange={e => { this.setState({advanced_sftp: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
@@ -256,13 +253,13 @@ export class Form extends React.Component {
                       <Input type={this.input_type('git', 'username')} name="username" placeholder="Username" ref={(input) => {this.state.refs.git_username = input; }} autoComplete="new-password" />
                     </NgIf>
                     <NgIf cond={this.should_appear('git', 'password')}>
-                      <Textarea type="text"  style={this.input_type('git', 'password') === 'hidden' ? {visibility: 'hidden', position: 'absolute'} : {} } rows="1" name="password" placeholder="Password" ref={(input) => {this.state.refs.git_password = input; }} autoComplete="new-password" />
+                      <Textarea type="text" style={this.input_type('git', 'password') === 'hidden' ? {visibility: 'hidden', position: 'absolute'} : {} } rows="1" name="password" placeholder="Password" ref={(input) => {this.state.refs.git_password = input; }} autoComplete="new-password" />
                     </NgIf>
-                    <Input type="hidden" name="type" value="git"/>
+                    <Input type="hidden" name="uid" value={gid()} ref={(input) => { this.state.refs.git_uid = input; }} />
                     <NgIf cond={this.should_appear('git', 'advanced')}>
-                    <label>
-                      <input checked={this.state.advanced_git} onChange={e => { this.setState({advanced_git: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                    </label>
+                      <label>
+                        <input checked={this.state.advanced_git} onChange={e => { this.setState({advanced_git: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
+                      </label>
                     </NgIf>
                     <NgIf cond={this.state.advanced_git === true} className="advanced_form">
                       <NgIf cond={this.should_appear('git', 'passphrase')}>
@@ -296,7 +293,6 @@ export class Form extends React.Component {
                     <NgIf cond={this.should_appear('s3', 'secret_access_key')}>
                       <Input type={this.input_type('s3', 'secret_access_key')} name="secret_access_key" placeholder="Secret Access Key*" ref={(input) => {this.state.refs.s3_secret_access_key = input; }} autoComplete="new-password" />
                     </NgIf>
-                    <Input type="hidden" name="type" value="s3"/>
                     <NgIf cond={this.should_appear('s3', 'advanced')}>
                       <label>
                         <input checked={this.state.advanced_s3} onChange={e => { this.setState({advanced_s3: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
@@ -314,7 +310,6 @@ export class Form extends React.Component {
                       <div onClick={this.redirect_dropbox.bind(this)}>
                         <img src={img_dropbox} />
                       </div>
-                      <Input type="hidden" name="type" value="dropbox"/>
                       <Button type="button" onClick={this.redirect_dropbox.bind(this)} theme="emphasis">LOGIN WITH DROPBOX</Button>
                     </a>
                   </NgIf>
@@ -322,7 +317,6 @@ export class Form extends React.Component {
                     <div onClick={this.redirect_google.bind(this)}>
                       <img src={img_drive}/>
                     </div>
-                    <Input type="hidden" name="type" value="gdrive"/>
                     <Button type="button" onClick={this.redirect_google.bind(this)} theme="emphasis">LOGIN WITH GOOGLE</Button>
                   </NgIf>
                 </form>

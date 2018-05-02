@@ -85,7 +85,7 @@ Data.prototype.upsert = function(type, path, fn){
         return new Promise((done, error) => {
             query.onsuccess = (e) => {
                 const new_data = fn(query.result || null);
-                if(!new_data) return done(query.result);
+                if(!new_data) return done(query.result || null);
 
                 const request = store.put(new_data);
                 request.onsuccess = () => done(new_data);

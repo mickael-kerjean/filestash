@@ -36,6 +36,14 @@ app.get('/cat', function(req, res){
     if(path){
         Files.cat(path, req.cookies.auth, res)
             .then(function(stream){
+                stream = stream.on('error', function (error) {
+                    let status = 404;
+                    if(typeof (error && error.status === "number")){
+                        status = error.status;
+                    }
+                    res.status(status).send({status: status, message: "There's nothing here"});
+                    this.end();
+                });
                 res.set('Content-Type',  mime.getMimeType(path));
                 stream.pipe(res);
             })

@@ -15,6 +15,17 @@ export class NewThing extends React.Component {
             message: null,
             icon: null
         };
+
+        this._onEscapeKeyPress = (e) => {
+            if(e.keyCode === 27) this.onDelete();
+        }
+    }
+
+    componentDidMount(){
+        window.addEventListener('keydown', this._onEscapeKeyPress);
+    }
+    componentWillUnmount(){
+        window.removeEventListener('keydown', this._onEscapeKeyPress);
     }
 
     onNew(type){

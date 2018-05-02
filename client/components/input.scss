@@ -2,7 +2,6 @@
     background: inherit;
     border: none;
     border-radius: 0;
-    border-bottom: 2px solid rgba(70, 99, 114, 0.1);
     width: 100%;
     display: inline-block;
     font-size: inherit;
@@ -11,4 +10,11 @@
     outline: none;
     box-sizing: border-box;
     color: inherit;
+
+
+    border-bottom: 2px solid rgba(70, 99, 114, 0.1);
+    transition: border-color 0.2s ease-out;
+    &:focus{
+        border-color: var(--emphasis-primary);
+    }
 }

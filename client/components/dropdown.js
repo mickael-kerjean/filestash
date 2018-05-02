@@ -8,7 +8,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { Icon, NgIf } from "./";
-import { debounce } from "../helpers/";
 import './dropdown.scss';
 
 export class Dropdown extends React.Component {

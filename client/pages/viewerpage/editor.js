@@ -30,9 +30,11 @@ export class Editor extends React.Component {
         this.state = {
             loading: null,
             editor: null,
-            filename: this.props.filename
+            filename: this.props.filename,
+            listeners: []
         };
         this._refresh = this._refresh.bind(this);
+        this.onEdit = this.onEdit.bind(this);
     }
 
     _refresh(){
@@ -56,12 +58,18 @@ export class Editor extends React.Component {
                     const [type, value] = data;
                     if(type === "goTo"){
                         const pY = this.state.editor.charCoords({line: value, ch: 0}, "local").top;
-                        this.state.editor.scrollTo(null, pY);
-                        //this.state.editor.setCursor({line: new_props.currentLine, ch: 2});
+                        this.state.editor.operation((cm) => {
+                            this.state.editor.scrollTo(null, pY);
+                            this.state.editor.setSelection({line: value, ch: 0}, {line: value, ch: this.state.editor.getLine(value).length});
+                        });
                     }else if(type === "refresh"){
                         const cursor = this.state.editor.getCursor();
+                        const selections = this.state.editor.listSelections();
                         this.state.editor.setValue(this.props.content);
                         this.state.editor.setCursor(cursor);
+                        if(selections.length > 0){
+                            this.state.editor.setSelection(selections[0].anchor, selections[0].head);
+                        }
                     }else if(type === "fold"){
                         this.props.onFoldChange(
                             org_shifttab(this.state.editor)
@@ -74,7 +82,7 @@ export class Editor extends React.Component {
         function loadCodeMirror(data){
             const [CodeMirror, mode] = data;
 
-            const size_small = 500;
+            let listeners = [];
             let editor = CodeMirror(document.getElementById('editor'), {
                 value: this.props.content,
                 lineNumbers: true,
@@ -85,26 +93,20 @@ export class Editor extends React.Component {
                     widget: "..."
                 }
             });
-
             if(!('ontouchstart' in window)) editor.focus();
+            editor.getWrapperElement().setAttribute("mode", mode);
+            this.props.onModeChange(mode);
 
+            editor.on('change', this.onEdit);
 
             if(mode === "orgmode"){
-                CodeMirror.orgmode.init(editor, (key, value) => {
+                listeners.push(CodeMirror.orgmode.init(editor, (key, value) => {
                     if(key === "shifttab"){
                         this.props.onFoldChange(value);
                     }
-                });
+                }));
             }
 
-            this.setState({editor: editor});
-            this.props.onModeChange(mode);
-
-            editor.on('change', (edit) => {
-                if(this.props.onChange){
-                    this.props.onChange(edit.getValue());
-                }
-            });
 
             CodeMirror.commands.save = () => {
                 this.props.onSave && this.props.onSave();
@@ -114,12 +116,24 @@ export class Editor extends React.Component {
                     window.history.back();
                 }
             });
+
+            return new Promise((done) => {
+                this.setState({editor: editor, listeners: listeners}, done);
+            });
+        }
+    }
+
+    onEdit(cm){
+        if(this.props.onChange){
+            this.props.onChange(cm.getValue());
         }
     }
 
     componentWillUnmount(){
         window.removeEventListener('resize', this._refresh);
+        this.state.editor.off('change', this.onEdit);
         this.state.editor.clearHistory();
+        this.state.listeners.map((fn) => fn());
     }
 
     loadMode(file){

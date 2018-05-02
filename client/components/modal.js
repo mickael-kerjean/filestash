@@ -22,8 +22,14 @@ export class Modal extends React.Component {
         }
     }
 
+    componentWillReceiveProps(){
+        // that's quite a bad hack but well it will do for now
+        requestAnimationFrame(() => {
+            this.setState({marginTop: this._marginTop()});
+        }, 0);
+    }
+
     componentDidMount(){
-        this._resetMargin();
         window.addEventListener("resize", this._resetMargin);
         window.addEventListener('keydown', this._onEscapeKeyPress);
     }

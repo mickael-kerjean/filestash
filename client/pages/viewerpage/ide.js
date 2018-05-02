@@ -54,11 +54,11 @@ export class IDE extends React.Component {
 
 
     /* Org Viewer specific stuff */
-    toggleAgenda(){
-        this.setState({appear_agenda: !this.state.appear_agenda});
+    toggleAgenda(force = null){
+        this.setState({appear_agenda: force === null ? !this.state.appear_agenda : !!force});
     }
-    toggleTodo(){
-        this.setState({appear_todo: !this.state.appear_todo});
+    toggleTodo(force = null){
+        this.setState({appear_todo: force === null ? !this.state.appear_todo : !!force});
     }
     onModeChange(){
         this.state.event.next(["fold"]);
@@ -115,10 +115,10 @@ export class IDE extends React.Component {
 
               <OrgEventsViewer isActive={this.state.appear_agenda} content={this.state.contentToSave}
                                onUpdate={this.onUpdate.bind(this, "contentToSave", true)} goTo={this.goTo.bind(this)}
-                               onQuit={this.toggleAgenda.bind(this)} />
+                               onQuit={this.toggleAgenda.bind(this, false)} />
               <OrgTodosViewer isActive={this.state.appear_todo} content={this.state.contentToSave}
                               onUpdate={this.onUpdate.bind(this, "contentToSave", true)} goTo={this.goTo.bind(this)}
-                              onQuit={this.toggleTodo.bind(this)} />
+                              onQuit={this.toggleTodo.bind(this, false)} />
             </div>
         );
     }

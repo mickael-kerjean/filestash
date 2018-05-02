@@ -49,13 +49,13 @@ module.exports = {
             .then(() => Promise.resolve(params))
     },
     cat: function(path, params){
-        return connect(params)        
+        return connect(params)
             .then((c) => {
                 return new Promise((done, err) => {
                     c.get(path, function(error, stream) {
                         if (error){ err(error); }
-                        else{ done(stream); }        
-                    }); 
+                        else{ done(stream); }
+                    });
                 });
             });
     },

@@ -20,7 +20,7 @@ class FileSystem{
             this.obs = obs;
             let keep_pulling_from_http = false;
             this._ls_from_cache(path, true)
-                .then(() => {
+                .then((cache) => {
                     const fetch_from_http = (_path) => {
                         return this._ls_from_http(_path)
                             .then(() => new Promise((done, err) => {
@@ -30,7 +30,11 @@ class FileSystem{
                                 if(keep_pulling_from_http === false) return Promise.resolve();
                                 return fetch_from_http(_path);
                             })
-                            .catch(() => {});
+                            .catch((e) => {
+                                if(cache === null){
+                                    this.obs && this.obs.error({message: "Unknown Path"});
+                                }
+                            });
                     };
                     fetch_from_http(path);
                 });
@@ -81,7 +85,7 @@ class FileSystem{
             });
         }).catch((_err) => {
             this.obs.next(_err);
-            return Promise.reject();
+            return Promise.reject(null);
         });
     }
 
@@ -92,7 +96,7 @@ class FileSystem{
                 if(this.current_path === path){
                     this.obs && this.obs.next({status: 'ok', results: response.results});
                 }
-                return Promise.resolve();
+                return response;
             });
         }else{
             return cache.upsert(cache.FILE_PATH, path, (response) => {

@@ -1,8 +1,6 @@
-export function guid(){
-    function s4() {
-        return Math.floor((1 + Math.random()) * 0x10000)
-            .toString(16)
-            .substring(1);
-    }
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+export function gid(prefix){
+    let id = prefix !== undefined ? prefix : '';
+    id += new Date().getTime().toString(32);
+    id += parseInt(Math.random()*Math.pow(10,16)).toString(32);
+    return id;
 }

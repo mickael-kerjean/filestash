@@ -4,6 +4,7 @@ import HTML5Backend from 'react-dnd-html5-backend-filedrop';
 import Path from 'path';
 
 import './filespage.scss';
+import './error.scss';
 import { Files } from '../model/';
 import { NgIf, Loader, Uploader, EventReceiver } from '../components/';
 import { notify, debounce, goToFiles, goToViewer, event } from '../helpers/';
@@ -19,7 +20,7 @@ export class FilesPage extends React.Component {
             files: [],
             frequents: [],
             loading: true,
-            error: false,
+            error: null,
             height: null
         };
 
@@ -64,7 +65,7 @@ export class FilesPage extends React.Component {
     }
 
     hideError(){
-        this.setState({error: false});
+        this.setState({error: null});
     }
 
     onRefresh(path = this.state.path){
@@ -83,11 +84,10 @@ export class FilesPage extends React.Component {
                 notify.send(res, 'error');
             }
         }, (error) => {
-            notify.send(error, 'error');
             this.setState({error: error});
         });
         this.observers.push(observer);
-        this.setState({error: false});
+        this.setState({error: null});
         Files.frequents().then((s) => this.setState({frequents: s}));
     }
 
@@ -310,15 +310,20 @@ export class FilesPage extends React.Component {
               <BreadCrumb className="breadcrumb" path={this.state.path} />
               <div className="page_container">
                 <div className="scroll-y">
-                  <NgIf className="container" cond={this.state.loading === false}>
+                  <NgIf className="container" cond={this.state.loading === false && this.state.error === null}>
                     <NgIf cond={this.state.path === '/'}>
                       <FrequentlyAccess files={this.state.frequents}/>
                     </NgIf>
                     <FileSystem path={this.state.path} files={this.state.files} />
                     <Uploader path={this.state.path} />
                   </NgIf>
-                  <NgIf cond={this.state.loading}>
+                  <NgIf cond={this.state.loading && this.state.error === null}>
                     <Loader/>
+                  </NgIf>
+                  <NgIf cond={this.state.error !== null} className="error">
+                    <h1>Oops!</h1>
+                    <h2>It seems this directory doesn't exist</h2>
+                    <p>{JSON.stringify(this.state.error)}</p>
                   </NgIf>
                 </div>
               </div>

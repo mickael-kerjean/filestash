@@ -2,6 +2,7 @@ import React from 'react';
 import Path from 'path';
 
 import './viewerpage.scss';
+import './error.scss';
 import { Files } from '../model/';
 import { BreadCrumb, Bundle, NgIf, Loader, Container, EventReceiver, EventEmitter } from '../components/';
 import { debounce, opener, notify } from '../helpers/';
@@ -31,6 +32,7 @@ export class ViewerPage extends React.Component {
             needSaving: false,
             isSaving: false,
             loading: true,
+            error: null
         };
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
     }
@@ -58,7 +60,7 @@ export class ViewerPage extends React.Component {
                     if(err && err.code === 'BINARY_FILE'){
                         this.setState({opener: 'download', loading: false});
                     }else{
-                        notify.send(err, 'error');
+                        this.setState({error: err});
                     }
                 });
             }else{
@@ -114,7 +116,7 @@ export class ViewerPage extends React.Component {
             <div className="component_page_viewerpage">
               <BreadCrumb needSaving={this.state.needSaving} className="breadcrumb" path={this.state.path} />
               <div className="page_container">
-                <NgIf cond={this.state.loading === false}>
+                <NgIf cond={this.state.loading === false && this.state.error === null}>
                   <NgIf cond={this.state.opener === 'editor'}>
                     <IDE needSavingUpdate={this.needSaving.bind(this)}
                          needSaving={this.state.needSaving}
@@ -140,8 +142,13 @@ export class ViewerPage extends React.Component {
                     <FileDownloader data={this.state.url} filename={this.state.filename} />
                   </NgIf>
                 </NgIf>
-                <NgIf cond={this.state.loading === true}>
+                <NgIf cond={this.state.loading === true && this.state.error === null}>
                   <Loader/>
+                </NgIf>
+                <NgIf cond={this.state.error !== null} className="error">
+                  <h1>Oops!</h1>
+                  <h2>There is nothing in here</h2>
+                  <p>{JSON.stringify(this.state.error)}</p>
                 </NgIf>
               </div>
             </div>

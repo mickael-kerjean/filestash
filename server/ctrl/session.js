@@ -24,7 +24,7 @@ app.post('/', function(req, res){
             };
             const cookie = crypto.encrypt(persist);
             if(Buffer.byteLength(cookie, 'utf-8') > 4096){
-                res.status(413).send({status: 'error', message: 'we can\'t authenticate you', })
+                res.status(413).send({status: 'error', message: 'we can\'t authenticate you'})
             }else{
                 res.cookie('auth', crypto.encrypt(persist), { maxAge: 365*24*60*60*1000, httpOnly: true, path: "/api/" });
                 res.send({status: 'ok'});

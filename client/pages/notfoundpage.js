@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import { Button } from '../components/';
-import './notfoundpage.scss';
+import './error.scss';
 
 export class NotFoundPage extends React.Component {
     constructor(props){
@@ -29,7 +29,7 @@ export class NotFoundPage extends React.Component {
 
     render() {
         return (
-            <div className="component_page_notfound">
+            <div className="component_page_notfound error">
               <h1>Oops!</h1>
               <h2>We can't seem to find the page you're looking for.</h2>
               <p>

@@ -90,13 +90,15 @@ export function http_delete(url){
 
 
 function handle_error_response(xhr, err){
-    let message = (function(content){
+    const response = (function(content){
         let message = content;
         try{
-            message = JSON.parse(content)['message'];
+            message = JSON.parse(content);
         }catch(err){}
-        return message;
+        return message || {};
     })(xhr.responseText);
+
+    const message = response.message || null;
 
     if(navigator.onLine === false){
         err({message: 'Connection Lost', code: "NO_INTERNET"});
@@ -112,7 +114,11 @@ function handle_error_response(xhr, err){
     }else if(xhr.status === 502){
         err({message: message || "The destination is acting weird", code: "BAD_GATEWAY"});
     }else if(xhr.status === 409){
-        err({message: message || "Oups you just ran into a conflict", code: "CONFLICT"});
+        if(response["error_summary"]){ // dropbox way to say doesn't exist
+            err({message: "Doesn\'t exist", code: "UNKNOWN_PATH"})
+        }else{
+            err({message: message || "Oups you just ran into a conflict", code: "CONFLICT"});
+        }
     }else{
         err({message: message || 'Oups something went wrong'});
     }
