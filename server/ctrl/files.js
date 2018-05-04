@@ -38,11 +38,11 @@ app.get('/cat', function(req, res){
             .then(function(stream){
                 stream = stream.on('error', function (error) {
                     let status = 404;
-                    if(typeof (error && error.status === "number")){
+                    if(error && typeof error.status === "number"){
                         status = error.status;
                     }
                     res.status(status).send({status: status, message: "There's nothing here"});
-                    this.end();
+                    if(typeof this.end ===  "function") this.end();
                 });
                 res.set('Content-Type',  mime.getMimeType(path));
                 stream.pipe(res);

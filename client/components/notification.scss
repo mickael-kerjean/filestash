@@ -7,6 +7,7 @@
     z-index: 10;
 
     .component_notification--container{
+        overflow: hidden;
         width: 400px;
         text-align: left;
         display: inline-block;

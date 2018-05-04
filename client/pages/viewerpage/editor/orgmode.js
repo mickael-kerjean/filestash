@@ -20,7 +20,7 @@ CodeMirror.defineSimpleMode("orgmode", {
         {regex: /(\~[^\~]+\~)/, token: ["comment"]},
         {regex: /(\=[^\=]+\=)/, token: ["comment"]},
         {regex: /\[\[[^\[\]]+\]\[[^\[\]]+\]\]/, token: "org-url"}, // links
-        {regex: /\!\[\[[^\[\]]+\]\]/, token: "org-image"}, // image
+        {regex: /\[\[[^\[\]]+\]\]/, token: "org-image"}, // image
         {regex: /\[[xX\s\-\_]\]/, token: 'qualifier org-toggle'}, // checkbox
         {regex: /\#\+BEGIN_[A-Z]*/, token: "comment", next: "env"}, // comments
         {regex: /:?[A-Z_]+\:.*/, token: "comment"}, // property drawers
@@ -234,7 +234,7 @@ function toggleHandler(cm, e){
             .filter((line) => line === position.line)[0];
 
         if(exist === false){
-            if(!token.string.match(/\!\[\[(.*)\]\]/)) return null;
+            if(!token.string.match(/\[\[(.*)\]\]/)) return null;
             let $node = _buildImage(RegExp.$1);
             const widget = cm.addLineWidget(position.line, $node, {coverGutter: false});
             widgets.push(position.line);

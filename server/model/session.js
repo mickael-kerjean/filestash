@@ -37,4 +37,3 @@ function error(message){
         err(message);
     });
 }
-

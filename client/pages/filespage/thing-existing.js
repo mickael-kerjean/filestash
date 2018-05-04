@@ -106,7 +106,7 @@ export class ExistingThing extends React.Component {
                     this.setState({icon: 'loading'});
                     this.props.emit(
                         'file.delete',
-                        pathBuilder(this.props.path, this.props.file.name),
+                        pathBuilder(this.props.path, this.props.file.name, this.props.file.type),
                         this.props.file.type
                     );
                     return Promise.resolve();
@@ -121,7 +121,7 @@ export class ExistingThing extends React.Component {
             this.setState({icon: 'loading', delete_request: false});
             this.props.emit(
                 'file.delete',
-                pathBuilder(this.props.path, this.props.file.name),
+                pathBuilder(this.props.path, this.props.file.name, this.props.file.type),
                 this.props.file.type
             );
         }else{

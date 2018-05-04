@@ -1,14 +1,18 @@
 const gitclient = require("nodegit"),
       toString = require('stream-to-string'),
-      crypto = require('crypto'),
       fs = require('fs'),
       Readable = require('stream').Readable,
-      Path = require('path');
+      Path = require('path'),
+      crypto = require("crypto"),
+      BASE_PATH = "/tmp/";
+
+let repos = {};
+setInterval(() => autoVacuum, 1000*60*60*10);
 
 module.exports = {
     test: function(params){
         if(!params || !params.repo){ return Promise.reject({message: 'invalid authentication', code: 'INVALID_PARAMS'}) };
-        if(!params.commit) params.commit = "{action}({filename}): {path}"
+        if(!params.commit) params.commit = "{action} ({filename}): {path}";
         if(!params.branch) params.branch = 'master';
         if(!params.author_name) params.author_name = "Nuage";
         if(!params.author_email) params.author_email = "https://nuage.kerjean.me";
@@ -18,46 +22,77 @@ module.exports = {
         if(params.password && params.password.length > 2700){
             return Promise.reject({message: "Your password couldn\'t fit in a cookie :/", code: "COOKIE_ERROR"})
         }
-        return git.clone(params);
+        return git.open(params)
+            .then(() => Promise.resolve(params));
     },
     cat: function(path, params){
-        return file.cat(Path.join(path_repo(params), path));
+        return git.open(params)
+            .then((repo) => git.refresh(repo, params))
+            .then(() => file.cat(calculate_path(params, path)));
     },
     ls: function(path, params){
-        return file.ls(Path.join(path_repo(params), path))
+        return git.open(params)
+            .then((repo) => git.refresh(repo, params))
+            .then(() => file.ls(calculate_path(params, path)))
             .then((files) => files.filter((file) => (file.name === '.git' && file.type === 'directory') ? false: true))
     },
     write: function(path, content, params){
-        return file.write(Path.join(path_repo(params), path), content)
+        return git.open(params)
+            .then(() => file.write(calculate_path(params, path), content))
             .then(() => git.save(params, path, "write"));
     },
     rm: function(path, params){
-        return file.rm(Path.join(path_repo(params), path))
+        return git.open(params)
+            .then(() => file.rm(calculate_path(params, path)))
             .then(() => git.save(params, path, "delete"));
     },
     mv: function(from, to, params){
-        return file.mv(Path.join(path_repo(params), from), Path.join(path_repo(params), to))
+        return git.open(params)
+            .then(() => file.mv(calculate_path(params, from), calculate_path(params, to)))
             .then(() => git.save(params, to, 'move'));
     },
     mkdir: function(path, params){
-        return file.mkdir(Path.join(path_repo(params), path));
+        return git.open(params)
+            .then(() => file.mkdir(calculate_path(params, path)))
+            .then(() => git.save(params, path, "create"))
     },
     touch: function(path, params){
         var stream = new Readable(); stream.push(''); stream.push(null);
-        return file.write(Path.join(path_repo(params), path), stream)
+        return git.open(params)
+            .then(() => file.write(calculate_path(params, path), stream))
             .then(() => git.save(params, path, 'create'));
+    }
+};
+
+function autovacuum(){
+    const MAXIMUM_DATE_BEFORE_CLEAN = new Date().getTime() - 1000*60*60*24;
+    for(let repo_path in repos){
+        if(repos[repo_path] > MAXIMUM_DATE_BEFORE_CLEAN){
+            fs.unlink(repo_path);
+            delete repos[repo_path];
+        }
     }
 }
 
+function calculate_path(params, path){
+    const repo = path_repo(params);
+    const full_path = Path.join(repo, path);
+    if(full_path.indexOf(BASE_PATH) !== 0 || full_path === BASE_PATH){
+        return BASE_PATH+"error";
+    }
+    return full_path;
+}
 
 function path_repo(obj){
-    let hash = crypto.createHash('md5').update('git_');
+    let hash = crypto.createHash('md5');
     for(let key in obj){
         if(typeof obj[key] === 'string'){
             hash.update(obj[key]);
         }
     }
-    return "/tmp/"+hash.digest('hex');
+    const path = BASE_PATH+"git_"+obj.uid+"_"+obj.repo.replace(/[^a-zA-Z]/g, "")+"_"+hash.digest('hex');
+    repos[path] = new Date().getTime();
+    return path;
 }
 
 const file = {};
@@ -87,14 +122,14 @@ file.mv = function(from, to){
             if(error){ return err(error); }
             return done("ok");
         });
-    });    
+    });
 }
 file.ls = function(path){
     return new Promise((done, err) => {
         fs.readdir(path, (error, files) => {
-            if(error){ return err(error); }                        
+            if(error){ return err(error); }
             Promise.all(files.map((file) => {
-                return stats(Path.join(path, file)).then((stat) => {                    
+                return stats(path+file).then((stat) => {
                     stat.name = file;
                     return Promise.resolve(stat);
                 });
@@ -122,19 +157,19 @@ file.ls = function(path){
 }
 file.rm = function(path){
     return rm(path);
-    
+
     function rm(path){
         return stat(path).then((_stat) => {
             if(_stat.isDirectory()){
                 return ls(path)
-                    .then((files) => Promise.all(files.map(file => rm(Path.join(path, file)))))
+                    .then((files) => Promise.all(files.map(file => rm(path+file))))
                     .then(() => removeEmptyFolder(path));
             }else{
                 return removeFileOrLink(path);
             }
         });
     }
-    
+
     function removeEmptyFolder(path){
         return new Promise((done, err) => {
             fs.rmdir(path, function(error){
@@ -175,50 +210,41 @@ file.cat = function(path){
 
 
 const git = {};
-git.clone = function(params, alreadyExist = false){
-    return new Promise((done, err) => {
-        gitclient.Clone(params.repo, path_repo(params), {fetchOpts: { callbacks: { credentials: git_creds.bind(null, params) }}})
-            .then((repo) => pull(repo, params.branch))
-            .then(() => done(params))
-            .catch((error) => {
-                if(error.errno === -4){
-                    return gitclient.Repository.open(path_repo(params))
-                        .then((repo) => {
-                            return pull(repo, params.branch)
-                                .then(() => _refresh(repo, params.branch, params))
+git.open = function(params){
+    count = 0;
+    return gitclient.Repository.open(path_repo(params))
+        .catch((err) => {
+            return gitclient.Clone(params.repo, path_repo(params), {fetchOpts: { callbacks: { credentials: git_creds.bind(null, params) }}})
+                .then((repo) => {
+                    const branch = params.branch;
+                    return repo.getBranchCommit("origin/"+branch)
+                        .catch(() => repo.getHeadCommit("origin"))
+                        .then((commit) => {
+                            return repo.createBranch(branch, commit)
+                                .then(() => repo.checkoutBranch(branch))
+                                .then(() => Promise.resolve(repo));
                         })
-                        .then(() => done(params))
-                        .catch((error) => {
-                            err({code: error && error.errno? "GIT_ERR"+error.errno : "GIT_ERR" , message: error && error.message || "can\'t clone the repo" });
-                        });
-                }
-                return err({code: error && error.errno? "GIT_ERR"+error.errno : "GIT_ERR" , message: error && error.message || "can\'t clone the repo" });
-            });
-    })
+                        .catch(() => Promise.resolve(repo));
+                });
+        });
+};
 
-    function pull(repo, branch){
-        return repo.getBranchCommit("origin/"+params.branch)
-            .then((commit) => {
-                return repo.createBranch(params.branch, commit)
-                    .catch(() => Promise.resolve())
-            })
-            .then(() => repo.checkoutBranch(params.branch));
-    }
-}
-
-function _refresh(repo, branch, params){
+git.refresh = function(repo, params){
+    count = 0;
     return repo.fetchAll({callbacks: { credentials: git_creds.bind(null, params) }})
-        .then(() => repo.mergeBranches(branch, "origin/"+branch, gitclient.Signature.default(repo), 2))
+        .then(() => repo.mergeBranches(params.branch, "origin/"+params.branch, gitclient.Signature.default(repo), 2))
         .catch(err => {
             if(err.errno === -13){
                 return git.save(params, '', 'merge')
-                    .then(() => _refresh(repo, branch, params))
+                    .then(() => git.refresh(repo, params))
+                    .then(() => Promise.resolve(repo));
             }
-            return Promise.reject(err);
-        })
-}
+            return Promise.resolve(repo);
+        });
+};
+
 git.save = function(params, path = '', type = ''){
-    let data = {repo: null, commit: null, index: null, oid: null}
+    count = 0;
     const author = gitclient.Signature.now(params.author_name, params.author_email);
     const committer = gitclient.Signature.now(params.committer_name, params.committer_email);
     const message = params.commit
@@ -226,38 +252,63 @@ git.save = function(params, path = '', type = ''){
           .replace("{dirname}", Path.dirname(path))
           .replace("{filename}", Path.basename(path))
           .replace("{path}", path || '');
-    
-    return new Promise((done, err) => {
-        gitclient.Repository.open(path_repo(params))
-            .then((repo) => {
-                data.repo = repo;
-                return repo.getBranchCommit(params.branch)
-            })
-            .then((commit) => {
-                data.commit = commit;
-                return commit.repo.refreshIndex();
-            })
-            .then((index) => {
-                data.index = index;
-                return index.addAll();
-            })
-            .then(() => data.index.write())
-            .then(() => data.index.writeTree())
-            .then((oid) => data.repo.createCommit("HEAD", author, committer, message, oid, [data.commit]))
-            .then((commit) => data.repo.getRemote("origin"))
-            .then((remote) => remote.push(["refs/heads/"+params.branch+":refs/heads/"+params.branch], { callbacks: { credentials: git_creds.bind(null, params) }}))
-            .then((ok) => done(ok))
-            .catch((error) => {
-                err(error)
+
+    return git.open(params)
+        .then((repo) => Promise.all([
+            Promise.resolve(repo),
+            getParent(repo, params),
+            refresh(repo, params)
+        ]))
+        .then((data) => {
+            const [repo, commit, oid] = data;
+            const parents = commit ? [commit] : [];
+            return repo.createCommit("HEAD", author, committer, message, oid, parents)
+                .then(() => Promise.resolve(repo));
+        })
+        .then((repo) => {
+            return repo.getRemote("origin")
+                .then((remote) => {
+                    return remote.push(
+                        ["refs/heads/"+params.branch+":refs/heads/"+params.branch],
+                        { callbacks: { credentials: git_creds.bind(null, params, true) }}
+                    );
+                })
+                .catch((err) => Promise.reject({status: 403, message: "Not authorized to push"}));
+        });
+
+    function getParent(repo, params){
+        return repo.getBranchCommit(params.branch)
+            .catch(() => {
+                return repo.getHeadCommit()
+                    .catch(() => Promise.resolve(null));
             });
-    });
-}
-function git_creds(params, url, username){
-    const user = username? username : params.username;
-    if(/http[s]?\:\/\//.test(url)){
-        return gitclient.Cred.userpassPlaintextNew(username, params.password);
-    }else{
-        return gitclient.Cred.sshKeyMemoryNew(username, "", params.password, params.passphrase || "")
     }
-            
+    function refresh(repo, params){
+        return repo.refreshIndex()
+            .then((index) => {
+                return index.addAll()
+                    .then(() => index.write())
+                    .then(() => index.writeTree());
+            });
+    }
+};
+
+
+
+
+
+// the count thinghy is used to see if the request succeeded or not
+// when something fail, nodegit would just run the callback again and again.
+// The only way to make it throw an error is to return the defaultNew thinghy
+let count = 0;
+function git_creds(params, fn, _count){
+    count += 1;
+
+    if(count > 1 && _count !== undefined){
+        return new gitclient.Cred.defaultNew();
+    }else if(/http[s]?\:\/\//.test(params.repo)){
+        return new gitclient.Cred.userpassPlaintextNew(params.username, params.password);
+    }else{
+        return new gitclient.Cred.sshKeyMemoryNew(params.username, "", params.password, params.passphrase || "")
+    }
 }
