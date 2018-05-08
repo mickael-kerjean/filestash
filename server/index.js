@@ -12,7 +12,7 @@ app.use('/*', function (req, res){
     res.sendFile(__dirname + '/public/index.html')
 });
 
-app.listen(8334, function(err){
+app.listen(process.env.PORT || 8334, function(err){
     if(err){ console.log(err); }
     else{ console.log("Running: http://127.0.0.1:8334"); }
 });
