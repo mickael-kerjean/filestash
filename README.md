@@ -25,7 +25,7 @@
 - Emacs keybindings `;)`
 - Frequently access folders are pin to the homepage for quick access
 - Customise the connection page so that your users don't even have to know what protocol to use and where it is located ([example](http://files.kerjean.me))
-- Stateless (perfect candidate for AWS lamdba if that's your thing)
+- Stateless (perfect candidate for AWS lambda if that's your thing)
 
 # Install
 Nuage is a react app with node in the backend. Installation:
