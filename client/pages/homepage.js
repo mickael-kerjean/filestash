@@ -1,4 +1,5 @@
 import React from 'react';
+import { Redirect } from 'react-router';
 
 import { Session } from '../model/';
 import { Loader } from '../components/';
@@ -6,21 +7,28 @@ import { Loader } from '../components/';
 export class HomePage extends React.Component {
     constructor(props){
         super(props);
+        this.state = {
+            redirection: null
+        };
     }
 
     componentDidMount(){
-        Session.isLogged()
+        Session.isLoggedIn()
             .then((res) => {
-                if(res && res.result === true){
-                    this.props.history.push('/files');
+                if(res === true){
+                    this.setState({redirection: "/files"});
                 }else{
-                    this.props.history.push('/login');
+                    this.setState({redirection: "/login"});
                 }
+            })
+            .catch((err) => {
+                this.setState({redirection: "/login"});
             });
     }
     render() {
-        return (
-            <div> <Loader /> </div>
-        );
+        if(this.state.redirection !== null){
+            return ( <Redirect to={this.state.redirection} /> );
+        }
+        return ( <div> <Loader /> </div> );
     }
 }
