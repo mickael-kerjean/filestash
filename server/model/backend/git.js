@@ -76,7 +76,7 @@ function autovacuum(){
 
 function calculate_path(params, path){
     const repo = path_repo(params);
-    const full_path = Path.join(repo, path);
+    const full_path = Path.posix.join(repo, path);
     if(full_path.indexOf(BASE_PATH) !== 0 || full_path === BASE_PATH){
         return BASE_PATH+"error";
     }
@@ -249,8 +249,8 @@ git.save = function(params, path = '', type = ''){
     const committer = gitclient.Signature.now(params.committer_name, params.committer_email);
     const message = params.commit
           .replace("{action}", type)
-          .replace("{dirname}", Path.dirname(path))
-          .replace("{filename}", Path.basename(path))
+          .replace("{dirname}", Path.posix.dirname(path))
+          .replace("{filename}", Path.posix.basename(path))
           .replace("{path}", path || '');
 
     return git.open(params)

@@ -131,7 +131,7 @@ function write_file(path, content, params){
 
 
 function verifyDropbox(keep, path, params, n = 10){
-    let folder_path = Path.dirname(path).replace(/\/$/, '');
+    let folder_path = Path.posix.dirname(path).replace(/\/$/, '');
     if(folder_path === '.'){
         folder_path = '';
     }

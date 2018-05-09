@@ -134,7 +134,7 @@ app.get('/touch', function(req, res){
 module.exports = app;
 
 function pathBuilder(req){
-    return path.join(req.cookies.auth.payload.path || '', decodeURIComponent(req.query.path) || '');
+    return path.posix.join(req.cookies.auth.payload.path || '', decodeURIComponent(req.query.path) || '');
 }
 
 function errorHandler(res, err, defaultMessage){
