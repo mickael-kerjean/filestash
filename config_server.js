@@ -10,7 +10,7 @@
 module.exports = {
     // SERVER CONFIG
     info: {
-        host: "application_url",
+        host: process.env.APPLICATION_URL || "http://nuage.kerjean.me",
         usage_stats: true
     },
     gdrive: {
@@ -22,5 +22,5 @@ module.exports = {
         clientID: process.env.DROPBOX_CLIENT_ID,
         redirectURI: process.env.APPLICATION_URL+"/login"
     },
-    secret_key: process.env.SECRET_KEY || 'not_so_secret_key'
+    secret_key: process.env.SECRET_KEY ||  (Math.random()*Math.pow(10,16)).toString(32)
 };
