@@ -5,7 +5,7 @@ import { DragSource, DropTarget } from 'react-dnd';
 
 import './thing.scss';
 import { Card, NgIf, Icon, EventEmitter } from '../../components/';
-import { pathBuilder, prompt } from '../../helpers/';
+import { pathBuilder, prompt, leftPad } from '../../helpers/';
 
 const fileSource = {
     beginDrag(props, monitor, component) {
@@ -238,14 +238,17 @@ const ActionButton = (props) => {
 
 const DateTime = (props) => {
     function displayTime(timestamp){
-        function padding(number){
-            let str = String(number),
-                pad = "00";
-            return pad.substring(0, pad.length - str.length) + str;
-        }
-        if(timestamp){
+        if(timestamp && Intl && typeof Intl.DateTimeFormat === "function"){
+            return Intl.DateTimeFormat()
+                .format(new Date(timestamp))
+                .split("/")
+                .map((n, i) => {
+                    return leftPad(n, 2);
+                })
+                .join("/");
+        }else if(timestamp){
             let t = new Date(timestamp);
-            return padding(t.getDate()) + '/'+ padding(t.getMonth()) + '/' + padding(t.getFullYear());
+            return t.getFullYear() + "-" + leftPad(t.getMonth().toString(), 2) + "-" + leftPad(t.getDate().toString(), 2);
         }else{
             return '';
         }
