@@ -145,7 +145,7 @@ export class ViewerPage extends React.Component {
                 <NgIf cond={this.state.loading === true && this.state.error === null}>
                   <Loader/>
                 </NgIf>
-                <NgIf cond={this.state.error !== null} className="error">
+                <NgIf cond={this.state.error !== null} className="error-page">
                   <h1>Oops!</h1>
                   <h2>There is nothing in here</h2>
                   <p>{JSON.stringify(this.state.error)}</p>

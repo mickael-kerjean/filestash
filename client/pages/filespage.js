@@ -320,7 +320,7 @@ export class FilesPage extends React.Component {
                   <NgIf cond={this.state.loading && this.state.error === null}>
                     <Loader/>
                   </NgIf>
-                  <NgIf cond={this.state.error !== null} className="error">
+                  <NgIf cond={this.state.error !== null} className="error-page">
                     <h1>Oops!</h1>
                     <h2>It seems this directory doesn't exist</h2>
                     <p>{JSON.stringify(this.state.error)}</p>

@@ -29,7 +29,7 @@ export class NotFoundPage extends React.Component {
 
     render() {
         return (
-            <div className="component_page_notfound error">
+            <div className="component_page_notfound error-page">
               <h1>Oops!</h1>
               <h2>We can't seem to find the page you're looking for.</h2>
               <p>
