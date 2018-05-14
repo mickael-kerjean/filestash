@@ -6,41 +6,38 @@
         Dropbox • Google Drive
 </p>
 <p align="center">
-    <i>Yes we have a</i> <b><a href="https://nuage.kerjean.me">DEMO</a></b>
+    <a href="http://nuage.kerjean.me">
+      <img src="https://raw.githubusercontent.com/mickael-kerjean/nuage/documentation/.assets/img/button_demo.png" alt="demo button" />
+    </a>
 </p>
-
 
 # Features
 - Manage your files directly from your browser
 - User friendly
+- Org mode friendly ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Org-Mode))
+- Customisable ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Customisation))
 - Super fast
 - Works offline
 - Upload files and folders
 - Works great on mobile
 - Multiple cloud providers and protocols, easily extensible
-- [Org Mode](https://orgmode.org/) friendly: see [org features](https://github.com/mickael-kerjean/nuage/wiki/Org-Mode)
 - Audio player
 - Video player
 - Image viewer
 - Emacs keybindings `;)`
 - Frequently access folders are pin to the homepage for quick access
-- Customise the connection page so that your users don't even have to know what protocol to use and where it is located ([example](http://files.kerjean.me))
-- Stateless (perfect candidate for AWS lambda if that's your thing)
+- Stateless
 
-# Install
-Nuage is a react app with node in the backend. Installation:
-```
-git clone https://github.com/mickael-kerjean/nuage
-cd nuage
-npm install
-npm run build
-node server/index.js
-```
+# Getting started - Installation
+Nuage can be used in different ways:
+- Selfhosting ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-Selhosting)): install it somewhere you have full control (with docker, without docker, on a server or even android)
+- Paas ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-PaaS)): deployment on Heroku or AWS Lambda
+- Saas ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-SaaS)): official instance or private instance fully managed
 
-Or with [docker](https://hub.docker.com/r/machines/nuage/) and [Docker compose](https://github.com/mickael-kerjean/nuage/blob/master/docker/docker-compose.yml)
+Using nuage? [Support my work on Patreon](https://www.patreon.com/mickaelk) to be notified of new releases, receive communication around security vulnerability (if it were to happen), requires dedicated support, need customisations, extra features, consulting or training.
 
-# What about my credentials?
-Nuage is stateless, nothing is kept server side. Credentials are simply stored in an http only cookie encrypted using aes-256-cbc only the server has the key (in config_server.js).
+# Documentation
+Everything is in the [wiki](https://github.com/mickael-kerjean/nuage/wiki). If we forgot something, feel free to open an issue.
 
 # Credits
 - Iconography: www.flaticon.com, fontawesome.com and material.io
