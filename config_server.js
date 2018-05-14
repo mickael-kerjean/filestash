@@ -4,7 +4,7 @@
 
 // DROPBOX
 // 1) create an third party app: https://www.dropbox.com/developers/apps/create
-//    -> dropbox api -> Full Dropbox -> whatever name you want ->
+//    -> dropbox api -> "Full Dropbox" or "App folder" -> whatever name you want ->
 //    -> set redirect URI to https://example.com/login ->
 
 module.exports = {
