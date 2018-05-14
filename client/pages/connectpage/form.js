@@ -67,7 +67,7 @@ export class Form extends React.Component {
             if(credentials['webdav'] && credentials['webdav']['path']){
                 this.setState({advanced_webdav: true});
             }
-            if(credentials['s3'] && credentials['s3']['path']){
+            if(credentials['s3'] && (credentials['s3']['path'] || credentials['s3']['endpoint'])){
                 this.setState({advanced_s3: true});
             }
             if(credentials['git'] && (
@@ -303,6 +303,9 @@ export class Form extends React.Component {
                     <NgIf cond={this.state.advanced_s3 === true} className="advanced_form">
                       <NgIf cond={this.should_appear('s3', 'path')}>
                         <Input type={this.input_type('s3', 'path')} name="path" placeholder="Path" ref={(input) => {this.state.refs.s3_path = input; }} autoComplete="new-password" />
+                      </NgIf>
+                      <NgIf cond={this.should_appear('s3', 'endpoint')}>
+                        <Input type={this.input_type('s3', 'endpoint')} name="endpoint" placeholder="Endpoint" ref={(input) => {this.state.refs.s3_endpoint = input; }} autoComplete="new-password" />
                       </NgIf>
                     </NgIf>
                     <Button type="submit" theme="emphasis">CONNECT</Button>

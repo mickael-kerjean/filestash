@@ -2,7 +2,7 @@
 
 <p align="center">
     A Dropbox-like file manager that let you manage your data anywhere it is located:<br>
-    FTP • SFTP • WebDAV • Git • S3 <br>
+    FTP • SFTP • WebDAV • Git • S3 • Minio <br>
         Dropbox • Google Drive
 </p>
 <p align="center">

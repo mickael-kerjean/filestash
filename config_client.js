@@ -56,6 +56,7 @@ module.exports = {
             // access_key_id: 'my_access_key',
             // secret_access_key: 'my_secret_key',
             // advanced: false,
+            // endpoint: 'http://127.0.0.1:9000', // eg: your minio instance
             // path: '/bucketname/'
         },
         dropbox: {label: 'Dropbox'},

@@ -11,12 +11,18 @@ function decode(path){
 }
 
 function connect(params){
-    var s3 = new AWS.S3({
+    let config = {
         apiVersion: '2006-03-01',
         accessKeyId: params.access_key_id,
         secretAccessKey: params.secret_access_key,
-        sslEnabled: true
-    });
+        signatureVersion: 'v4',
+        s3ForcePathStyle: true,
+        //sslEnabled: true
+    };
+    if(params.endpoint){
+        config.endpoint = new AWS.Endpoint(params.endpoint);
+    }
+    var s3 = new AWS.S3(config);
     return Promise.resolve(s3);
 }
 
