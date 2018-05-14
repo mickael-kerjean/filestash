@@ -15,10 +15,9 @@ function connect(params){
         apiVersion: '2006-03-01',
         accessKeyId: params.access_key_id,
         secretAccessKey: params.secret_access_key,
-        region: params.region,
         sslEnabled: true
-    });    
-    return Promise.resolve(s3);    
+    });
+    return Promise.resolve(s3);
 }
 
 module.exports = {

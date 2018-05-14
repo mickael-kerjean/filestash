@@ -92,7 +92,8 @@ export class Form extends React.Component {
         let credentials = Object.assign({}, this.props.credentials);
         for(let key in this.state.refs){
             if(this.state.refs[key]){
-                let [type, name] = key.split('_');
+                let [type, ...name] = key.split('_');
+                name = name.join("_");
                 if(!credentials[type]) credentials[type] = {};
                 credentials[type][name] = this.state.refs[key].ref.value;
             }
@@ -146,6 +147,7 @@ export class Form extends React.Component {
         else if(typeof value === 'number') return 'hidden';
         else if(value === false) return 'hidden';
         else if(key === 'password') return 'password';
+        else if(key === 'secret_access_key') return 'password';
         else{
             return 'text';
         }
