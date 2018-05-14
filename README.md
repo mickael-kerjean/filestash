@@ -29,19 +29,17 @@
 - Emacs keybindings `;)`
 
 # Screenshots
-
 <p align="center">
     <a href="http://nuage.kerjean.me">
         <img src="https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/navigation.gif" alt="user experience on navigation" />
-        Navigating in Nuage
     </a>
+    <i>Navigating in Nuage</i>
 </p>
-
 <p align="center">
     <a href="https://github.com/mickael-kerjean/nuage/wiki/Org-Mode">
-        <img src="https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/navigation.gif" alt="org mode" />
-        Bringing org mode everywhere
+        <img src="https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/orgmode.gif" alt="org mode" />
     </a>
+    <i>Bringing org mode everywhere</i>
 </p>
 
 # Getting started - Installation
