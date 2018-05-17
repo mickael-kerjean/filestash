@@ -64,7 +64,7 @@ module.exports = {
     }
 };
 
-function autovacuum(){
+function autoVacuum(){
     const MAXIMUM_DATE_BEFORE_CLEAN = new Date().getTime() - 1000*60*60*24;
     for(let repo_path in repos){
         if(repos[repo_path] > MAXIMUM_DATE_BEFORE_CLEAN){
