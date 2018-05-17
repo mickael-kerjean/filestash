@@ -7,7 +7,7 @@ const gitclient = require("nodegit"),
       BASE_PATH = "/tmp/";
 
 let repos = {};
-setInterval(() => autoVacuum, 1000*60*60*10);
+setInterval(autoVacuum, 1000*60*60); // autovacuum every hour
 
 module.exports = {
     test: function(params){
@@ -34,7 +34,7 @@ module.exports = {
         return git.open(params)
             .then((repo) => git.refresh(repo, params))
             .then(() => file.ls(calculate_path(params, path)))
-            .then((files) => files.filter((file) => (file.name === '.git' && file.type === 'directory') ? false: true))
+            .then((files) => files.filter((file) => (file.name === '.git' && file.type === 'directory') ? false: true));
     },
     write: function(path, content, params){
         return git.open(params)
@@ -64,13 +64,38 @@ module.exports = {
     }
 };
 
-function autovacuum(){
-    const MAXIMUM_DATE_BEFORE_CLEAN = new Date().getTime() - 1000*60*60*24;
-    for(let repo_path in repos){
-        if(repos[repo_path] > MAXIMUM_DATE_BEFORE_CLEAN){
-            fs.unlink(repo_path);
-            delete repos[repo_path];
-        }
+
+function autoVacuum(){
+    file.ls(BASE_PATH).then((files) => {
+        files.map((_file) => {
+            const filename = _file.name,
+                  full_path = BASE_PATH + filename;
+
+            if(wasCreatedByTheGitBackend(full_path) === false) return;
+
+            if(repos[full_path] === undefined){
+                // remove stuff that was created in a previous session
+                // => happen on server restart
+                remove(full_path);
+            }
+
+            // clean up after 5 hours without activity in the repo
+            const MAXIMUM_DATE_BEFORE_CLEAN = repos[full_path] + 1000*60*60*5;
+            if(new Date().getTime() > MAXIMUM_DATE_BEFORE_CLEAN){
+                remove(full_path);
+                delete repos[full_path];
+            }
+        });
+    });
+
+    function remove(path){
+        return file.rm(path).catch((err) => {
+            console.warn("WARNING: vacuum", err);
+        });
+    }
+
+    function wasCreatedByTheGitBackend(name){
+        return name.indexOf(BASE_PATH+"git_") === 0;
     }
 }
 
@@ -162,7 +187,7 @@ file.rm = function(path){
         return stat(path).then((_stat) => {
             if(_stat.isDirectory()){
                 return ls(path)
-                    .then((files) => Promise.all(files.map(file => rm(path+file))))
+                    .then((files) => Promise.all(files.map(file => rm(path+"/"+file))))
                     .then(() => removeEmptyFolder(path));
             }else{
                 return removeFileOrLink(path);
