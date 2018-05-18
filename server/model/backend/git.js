@@ -64,7 +64,6 @@ module.exports = {
     }
 };
 
-
 function autoVacuum(){
     file.ls(BASE_PATH).then((files) => {
         files.map((_file) => {
