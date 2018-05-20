@@ -5,6 +5,8 @@
     .editor_container{
         height: 100%;
         display: flex;
+        // https://stackoverflow.com/questions/44948158/flexbox-overflow-issue-in-firefox
+        min-height: 0;
     }
 }
 

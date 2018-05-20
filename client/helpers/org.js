@@ -11,8 +11,10 @@ export function extractTodos(text){
     }
     return todos
         .sort((a,b) => {
-            if(a.status === "TODO" && b.status !== "TODO" && b.todo_status === "todo") return -1;
-            else if(b.status === "TODO" && a.status !== "TODO" && a.todo_status === "todo") return +1;
+            if(a.status === "NEXT" && b.status !== "NEXT") return -1;
+            else if(b.status === "NEXT" && a.status !== "NEXT") return +1;
+            else if(a.status === "TODO" && b.status !== "TODO") return -1;
+            else if(b.status === "TODO" && a.status !== "TODO") return +1;
             else if(a.status === "DONE" && b.status !== "DONE" && b.todo_status === "done") return -1;
             else if(b.status === "DONE" && a.status !== "DONE" && a.todo_status === "done") return +1;
             else if(a.todo_status === "todo" && b.todo_status !== "todo") return -1;
@@ -26,7 +28,7 @@ export function extractTodos(text){
         });
 
     function formatTodo(thing){
-        const todo_status = ["TODO", "NEXT", "DOING", "WAITING"].indexOf(thing.header.todo_keyword) !== -1 ? 'todo' : 'done';
+        const todo_status = ["TODO", "NEXT", "DOING", "WAITING", "PENDING"].indexOf(thing.header.todo_keyword) !== -1 ? 'todo' : 'done';
         return {
             key: thing.header.todo_keyword,
             id: thing.id,
@@ -61,7 +63,7 @@ export function extractEvents(text){
             if(timestamp.active === false) continue;
             const todo_status = function(keyword){
                 if(!keyword) return null;
-                return ["TODO", "NEXT", "DOING", "WAITING"].indexOf(keyword) !== -1 ? 'todo' : 'done';
+                return ["TODO", "NEXT", "DOING", "WAITING", "PENDING"].indexOf(keyword) !== -1 ? 'todo' : 'done';
             }(thing.header.todo_keyword);
             let event = {
                 id: thing.id,
@@ -187,7 +189,7 @@ function parse_subtask(text, line){
 
 
 function parse_timestamp(text, line, _memory){
-    const reg = /(?:([A-Z]+)\:\s){0,1}([<\[])(\d{4}-\d{2}-\d{2})[^>](?:[A-Z][a-z]{2})(?:\s([0-9]{2}\:[0-9]{2})){0,1}(?:\-([0-9]{2}\:[0-9]{2})){0,1}(?:\s(\+{1,2}[0-9]+[dwmy])){0,1}[\>\]](?:--[<\[](\d{4}-\d{2}-\d{2})\s[A-Z][a-z]{2}\s(\d{2}:\d{2}){0,1}[>\]]){0,1}/;
+    const reg = /(?:([A-Z]+)\:\s){0,1}([<\[])(\d{4}-\d{2}-\d{2})[^>](?:[A-Z][a-z]{1,2})(?:\s([0-9]{2}\:[0-9]{2})){0,1}(?:\-([0-9]{2}\:[0-9]{2})){0,1}(?:\s(\+{1,2}[0-9]+[dwmy])){0,1}[\>\]](?:--[<\[](\d{4}-\d{2}-\d{2})\s[A-Z][a-z]{1,2}\s(\d{2}:\d{2}){0,1}[>\]]){0,1}/;
     const match = text.match(reg);
     if(!match) return _memory || null;
 
