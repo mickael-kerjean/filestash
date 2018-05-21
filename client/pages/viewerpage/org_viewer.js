@@ -264,7 +264,7 @@ class OrgViewer extends React.Component {
                 Nothing
               </NgIf>
               <NgIf cond={this.props.headlines.length > 0}>
-                <StickyContainer className="container" style={{height: window.innerHeight > 650 ? 500 : window.innerHeight - 150}}>
+                <StickyContainer className="container" style={{height: window.innerHeight > 750 ? 545 : window.innerHeight - 202}}>
                   {
                       Object.keys(this.state.headlines).map((list, i) => {
                           return (

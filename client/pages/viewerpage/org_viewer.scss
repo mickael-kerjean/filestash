@@ -3,10 +3,10 @@
     background: linear-gradient(var(--super-light), var(--bg-color));
 
     > div{
-        width: 90%;
+        width: calc(100% - 20px);
         max-width: 500px;
         padding: 5px;
-        border-bottom-right-radius: 20px;
+        border-bottom-right-radius: 15px;
         box-shadow: 1px 2px 1px rgba(0,00,0,0.05);
     }
     .modal-top{
@@ -63,7 +63,7 @@
     }
 
     .container{
-        margin: 10px 10px 10px 0px;
+        margin: 10px 5px 10px 0px;
         overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
@@ -112,6 +112,7 @@
     .headline-main{
         display: flex;
         cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
         border-top: 2px solid var(--super-light);
         border-bottom: 2px solid var(--super-light);
         margin-bottom: -2px;
