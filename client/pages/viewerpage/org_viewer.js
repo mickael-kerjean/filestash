@@ -192,7 +192,9 @@ class OrgViewer extends React.Component {
             return "<"+date.getFullYear()+"-"+leftPad((date.getMonth() + 1).toString(), 2)+"-"+leftPad(date.getDate().toString(), 2)+" "+day(date.getDay())+">";
 
             function day(n){
-                return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][n];
+                switch(navigator.language.split("-")[0]){
+                    default: return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][n];
+                }
             }
         }
     }

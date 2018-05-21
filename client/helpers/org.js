@@ -156,7 +156,7 @@ export function parse(content){
 
 
 function parse_header(text, line){
-    const match = text.match(/^(\*+)\s(?:([A-Z]{3,})\s){0,1}(?:\[\#([A-C])\]\s){0,1}(.*?)(?:\s+\:((?:[a-z]+\:){1,})){0,1}$/);
+    const match = text.match(/^(\*+)\s(?:([A-Z]{4,})\s){0,1}(?:\[\#([A-C])\]\s){0,1}(.*?)(?:\s+\:((?:[a-z]+\:){1,})){0,1}$/);
     if(!match) return null;
     return {
         line: line,

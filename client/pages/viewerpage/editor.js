@@ -160,7 +160,7 @@ export class Editor extends React.Component {
         else if(ext === 'markdown' || ext === 'md'){mode = 'yaml-frontmatter'; }
         else if(ext === 'pl' || ext === 'pm'){mode = 'perl'; }
         else if(ext === 'clj'){ mode = 'clojure'; }
-        else if(ext === 'el' || ext === 'lisp' || ext === 'cl' || ext === 'emacs'){ mode = 'lisp'; }
+        else if(ext === 'el' || ext === 'lisp' || ext === 'cl' || ext === 'emacs'){ mode = 'commonlisp'; }
         else if(ext === 'Dockerfile'){ mode = 'dockerfile'; }
         else if(ext === 'R'){ mode = 'r'; }
         else if(ext === 'Makefile'){ mode = 'cmake'; }
