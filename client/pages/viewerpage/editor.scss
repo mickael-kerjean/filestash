@@ -93,7 +93,12 @@
 
 /* Make things more confy */
 .CodeMirror{
-    .CodeMirror-code{ line-height: 1.3em; }
+    .CodeMirror-code{
+        line-height: 1.3em;
+        > div{
+            clear: both;
+        }
+    }
     &[mode="orgmode"] .CodeMirror-code, &[mode="yaml-frontmatter"] .CodeMirror-code{
         line-height: 1.5em;
     }
@@ -139,7 +144,7 @@
     overflow: hidden;
     white-space: nowrap;
 }
-.cm-s-default .cm-header.cm-comment{font-weight: normal; font-size: 0.9em!important; float: right; display: inline-block; color: var(--secondary);}
+.cm-s-default .cm-header.cm-comment{font-weight: normal; font-size: 0.9em!important; float: right; display: inline-block; color: var(--secondary); line-height: 23px;}
 pre.CodeMirror-line{clear: right;}
 
 

@@ -57,10 +57,19 @@ export class Editor extends React.Component {
                 this.props.event.subscribe((data) => {
                     const [type, value] = data;
                     if(type === "goTo"){
-                        const pY = this.state.editor.charCoords({line: value, ch: 0}, "local").top;
                         this.state.editor.operation((cm) => {
-                            this.state.editor.scrollTo(null, pY);
                             this.state.editor.setSelection({line: value, ch: 0}, {line: value, ch: this.state.editor.getLine(value).length});
+                        });
+
+                        requestAnimationFrame(() => {
+                            // For some reasons I ignore, codemirror would give different value for scroll position, depending on
+                            // when you ask for it. Based on a few debug sessions, I found out the results to be much more accurate when
+                            // wrapped around an async hack like that
+                            const pY = this.state.editor.charCoords({line: value, ch: 0}, "local").top;
+                            this.state.editor.operation((cm) => {
+                                this.state.editor.scrollTo(null, pY);
+                                this.state.editor.setSelection({line: value, ch: 0}, {line: value, ch: this.state.editor.getLine(value).length});
+                            });
                         });
                     }else if(type === "refresh"){
                         const cursor = this.state.editor.getCursor();
