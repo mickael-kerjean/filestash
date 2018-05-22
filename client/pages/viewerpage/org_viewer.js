@@ -193,6 +193,7 @@ class OrgViewer extends React.Component {
 
             function day(n){
                 switch(navigator.language.split("-")[0]){
+                    case "de": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][n];
                     default: return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][n];
                 }
             }
