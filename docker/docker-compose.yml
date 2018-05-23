@@ -7,4 +7,4 @@ services:
     environment:
     - SECRET_KEY=my_secret_key
     ports:
-    - "10006:3000"
+    - "8334:8334"
