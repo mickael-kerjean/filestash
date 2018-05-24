@@ -35,24 +35,20 @@
     </a>
     <i>Navigating in Nuage</i>
 </p>
-<p align="center">
-    <a href="https://github.com/mickael-kerjean/nuage/wiki/Org-Mode">
-        <img src="https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/orgmode.gif" alt="org mode" />
-    </a>
-    <i>Bringing org mode everywhere</i>
-</p>
 
 # Getting started - Installation
 Nuage can be used in different settings:
-- Selfhosting ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-Selhosting)): install it somewhere you have full control (with docker, without docker, on a server or even android)
+- Selfhosting ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-Selfhosting)): install it somewhere you have full control (with docker, without docker, on a server or even android)
 - Paas ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-PaaS)): deployment on Heroku or AWS Lambda
 - Saas ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-SaaS)): official instance or private instance fully managed
 
 Using nuage? [Support my work on Patreon](https://www.patreon.com/mickaelk) to be notified of new releases, receive communication around security vulnerability (if it were to happen), requires dedicated support, need customisations, extra features, consulting or training.
 
 # Documentation
-Everything is in the [wiki](https://github.com/mickael-kerjean/nuage/wiki). If we forgot something, feel free to open an issue.
+- [FAQ](https://github.com/mickael-kerjean/nuage/wiki)
+- [Customisation](https://github.com/mickael-kerjean/nuage/wiki/Customisation)
+- [Org Mode](https://github.com/mickael-kerjean/nuage/wiki/Org-Mode)
 
 # Credits
-- Iconography: www.flaticon.com, fontawesome.com and material.io
+- Iconography: [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)
 - Folks developing awesome [libraries](https://github.com/mickael-kerjean/nuage/blob/master/package.json)
