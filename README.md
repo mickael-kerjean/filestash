@@ -7,7 +7,7 @@
 </p>
 <p align="center">
     <a href="http://nuage.kerjean.me">
-      <img src="https://raw.githubusercontent.com/mickael-kerjean/nuage/documentation/.assets/img/button_demo.png" alt="demo button" />
+      <img src="https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/button_demo.png" alt="demo button" />
     </a>
 </p>
 
