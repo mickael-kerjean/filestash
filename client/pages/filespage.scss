@@ -15,6 +15,16 @@
         display: flex;
         overflow: hidden;
     }
+
+    .infinite_scroll_loading{
+        text-align: center;
+        .component_loader{
+            margin-top: -50px;
+            svg{
+                height: 40px;
+            }
+        }
+    }
 }
 
 .scroll-y{

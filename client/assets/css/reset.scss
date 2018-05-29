@@ -35,18 +35,16 @@ a{color: inherit; text-decoration: none;}
 
 select{-moz-appearance: none;}
 select:-moz-focusring {
-    color: inherit;
+    color: transparent;
     outline: none;
     border: none;
 }
-select::-ms-expand {
-    display: none;
-}
+select::-ms-expand { display: none; }
+
 
 button::-moz-focus-inner {
   border: 0;
 }
-
 
 input, textarea{
     transition: border 0.2s;

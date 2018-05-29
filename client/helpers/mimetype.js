@@ -20,11 +20,13 @@ export function opener(file){
         return 'image';
     }else if(['application/javascript', 'application/xml', 'application/json', 'application/x-perl'].indexOf(mime) !== -1){
         return 'editor';
-    }else if(['audio/wav', 'audio/mp3', 'audio/flac'].indexOf(mime) !== -1){
+    }else if(['audio/wav', 'audio/mp3', 'audio/flac', 'audio/ogg'].indexOf(mime) !== -1){
         return 'audio';
-    }else if(['video/webm', 'video/mp4', 'application/ogg'].indexOf(mime) !== -1){
+    }else if(['video/webm', 'video/mp4'].indexOf(mime) !== -1){
         return 'video';
-    }else{
+    }else if(mime.split('/')[0] === "application")
+        return 'download';
+    else{
         return 'editor';
     }
 }
@@ -55,7 +57,6 @@ const db = {
     'mp4': 'video/mp4',
     'mov': 'video/quicktime',
     'avi': 'video/x-msvideo',
-    'ogg': 'application/ogg',
     'ogv': 'application/ogg',
     'js': 'application/javascript',
     'xml': 'application/xml',
@@ -166,7 +167,6 @@ const db = {
     "mid": "audio/midi",
     "kar": "audio/midi",
     "midi": "audio/midi",
-    "ogg": "audio/ogg",
     "m4a": "audio/x-m4a",
     "ra": "audio/x-realaudio",
     "swf": "application/x-shockwave-flash",

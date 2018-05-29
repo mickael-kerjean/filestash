@@ -3,7 +3,10 @@ var express = require('express'),
     path = require('path'),
     crypto = require('../utils/crypto'),
     Files = require('../model/files'),
+    config = require('../../config_server'),
     multiparty = require('multiparty'),
+    request = require('request'),
+    FormData = require('form-data'),
     mime = require('../utils/mimetype.js');
 
 app.use(function(req, res, next){
@@ -35,8 +38,8 @@ app.get('/cat', function(req, res){
     res.clearCookie("download");
     if(path){
         Files.cat(path, req.cookies.auth, res)
-            .then(function(stream){
-                stream = stream.on('error', function (error) {
+            .then(function(_stream){
+                _stream = _stream.on('error', function (error) {
                     let status = 404;
                     if(error && typeof error.status === "number"){
                         status = error.status;
@@ -44,8 +47,33 @@ app.get('/cat', function(req, res){
                     res.status(status).send({status: status, message: "There's nothing here"});
                     if(typeof this.end ===  "function") this.end();
                 });
-                res.set('Content-Type',  mime.getMimeType(path));
-                stream.pipe(res);
+                const mType = mime.getMimeType(path);
+                res.set('Content-Type', mType);
+
+                if((/^image\//.test(mType) || /^video\//.test(mType) ) && config.transcoder.url){
+                    const form = new FormData();
+                    form.append('video', _stream, {
+                        filename: 'tmp',
+                        contentType: mType,
+                    });
+
+                    let endpoint = config.transcoder.url;
+                    if(req.query.size){
+                        endpoint += "?size="+req.query.size;
+                    }
+                    const post_request = request({
+                        method: "POST",
+                        url: endpoint,
+                        headers: form.getHeaders()
+                    });
+                    return form.pipe(post_request)
+                        .on('error', (err) => {
+                            console.log(err);
+                            res.status(500).end();
+                        })
+                        .pipe(res);
+                }
+                return _stream.pipe(res);
             })
             .catch(function(err){ errorHandler(res, err, 'couldn\'t read the file'); });
     }else{

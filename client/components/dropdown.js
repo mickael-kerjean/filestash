@@ -59,9 +59,11 @@ export class Dropdown extends React.Component {
         const button = this.props.children[0];
 
         const dropdown = React.cloneElement(this.props.children[1], {onSelect: this.onSelect.bind(this)});
-
+        let className = "component_dropdown ";
+        className += this.props.className ? this.props.className+" " : "";
+        className += this.state.button ? " active" : "";
         return (
-            <div className={"component_dropdown"+(this.state.button ? " active" : "")}>
+            <div className={className}>
               { button }
               { dropdown }
             </div>

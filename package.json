@@ -81,6 +81,7 @@
     "react-dnd-html5-backend-filedrop": "^1.0.0",
     "react-dom": "^15.3.2",
     "react-draggable": "^2.2.6",
+    "react-infinite-scroller": "^1.1.4",
     "react-router": "^4.1.1",
     "react-router-dom": "^4.1.1",
     "requirejs": "^2.3.5",

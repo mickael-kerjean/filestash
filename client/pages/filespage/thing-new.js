@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Card, NgIf, Icon, EventEmitter } from '../../components/';
+import { Card, NgIf, Icon, EventEmitter, Dropdown, DropdownButton, DropdownList, DropdownItem } from '../../components/';
 import { pathBuilder } from '../../helpers/';
 import "./thing.scss";
 
@@ -18,7 +18,7 @@ export class NewThing extends React.Component {
 
         this._onEscapeKeyPress = (e) => {
             if(e.keyCode === 27) this.onDelete();
-        }
+        };
     }
 
     componentDidMount(){
@@ -48,8 +48,12 @@ export class NewThing extends React.Component {
         }
     }
 
-    onSortUpdate(e){
-        this.props.onSortUpdate(e.target.value);
+    onViewChange(e){
+        this.props.onViewUpdate();
+    }
+
+    onSortChange(e){
+        this.props.onSortUpdate(e);
     }
 
     render(){
@@ -58,11 +62,17 @@ export class NewThing extends React.Component {
               <div className="menubar no-select">
                 <NgIf cond={this.props.accessRight.can_create_file === true} onClick={this.onNew.bind(this, 'file')} type="inline">New File</NgIf>
                 <NgIf cond={this.props.accessRight.can_create_directory === true} onClick={this.onNew.bind(this, 'directory')} type="inline">New Directory</NgIf>
-                <select value={this.props.sort} onChange={this.onSortUpdate.bind(this)}>
-                  <option value="type">Sort By Type</option>
-                  <option value="date">Sort By Date</option>
-                  <option value="name">Sort By Name</option>
-                </select>
+                <Dropdown className="view sort" onChange={this.onSortChange.bind(this)}>
+                  <DropdownButton>
+                    <Icon name="sort"/>
+                  </DropdownButton>
+                  <DropdownList>
+                    <DropdownItem name="type" icon={this.props.sort === "type" ? "check" : null}> Sort By Type </DropdownItem>
+                    <DropdownItem name="date" icon={this.props.sort === "date" ? "check" : null}> Sort By Date </DropdownItem>
+                    <DropdownItem name="name" icon={this.props.sort === "name" ? "check" : null}> Sort By Name </DropdownItem>
+                  </DropdownList>
+                </Dropdown>
+                <div className="view list-grid" onClick={this.onViewChange.bind(this)}><Icon name={this.props.view === "grid" ? "list" : "grid"}/></div>
               </div>
               <NgIf cond={this.state.type !== null} className="component_thing">
                 <Card className="mouse-is-hover highlight">
@@ -94,4 +104,4 @@ NewThing.PropTypes = {
     onCreate: PropTypes.func.isRequired,
     onSortUpdate: PropTypes.func.isRequired,
     sort: PropTypes.string.isRequired
-}
+};

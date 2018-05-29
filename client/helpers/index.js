@@ -12,3 +12,5 @@ export { prompt } from './prompt';
 export { notify } from './notify';
 export { gid } from './random';
 export { leftPad } from './common';
+export { getMimeType } from './mimetype';
+export { settings_get, settings_put } from './settings';

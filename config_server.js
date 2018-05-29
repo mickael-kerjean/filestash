@@ -22,5 +22,12 @@ module.exports = {
         clientID: process.env.DROPBOX_CLIENT_ID,
         redirectURI: process.env.APPLICATION_URL+"/login"
     },
+    transcoder: {
+        url: process.env.TRANSCODER_URL || null,
+        audio_bitrate: 128, // in kbps
+        audio_quality: 0,
+        video_codec: 'libx264',
+        video_bitrate: 1000 // in kbps
+    },
     secret_key: process.env.SECRET_KEY ||  (Math.random()*Math.pow(10,16)).toString(32)
 };

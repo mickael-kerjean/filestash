@@ -29,8 +29,13 @@ import img_arrow_down from '../assets/img/arrow-down.svg';
 import img_arrow_up_double from '../assets/img/arrow-up-double.svg';
 import img_arrow_down_double from '../assets/img/arrow-down-double.svg';
 import img_search from '../assets/img/search.svg';
+import img_grid from '../assets/img/grid.svg';
+import img_list from '../assets/img/list.svg';
+import img_sort from '../assets/img/sort.svg';
+import img_check from '../assets/img/check.svg';
 
 export const Icon = (props) => {
+    if(props.name === null) return null;
     let img;
     if(props.name === 'directory'){
         img = img_folder;
@@ -84,6 +89,14 @@ export const Icon = (props) => {
         img = img_arrow_down;
     }else if(props.name === 'search'){
         img = img_search;
+    }else if(props.name === 'grid'){
+        img = img_grid;
+    }else if(props.name === 'list'){
+        img = img_list;
+    }else if(props.name === 'sort'){
+        img = img_sort;
+    }else if(props.name === 'check'){
+        img = img_check;
     }else{
         throw('unknown icon');
     }

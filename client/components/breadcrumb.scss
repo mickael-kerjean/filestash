@@ -62,7 +62,7 @@
             font-size: 18px;
             display: inline-block;
 
-            a{border-radius: 2px;}
+            a{border-radius: 2px; letter-spacing: -0.5px;}
             &.highlight a{
                 background: var(--emphasis-primary);
                 border: 2px solid var(--primary);

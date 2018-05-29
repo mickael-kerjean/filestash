@@ -40,12 +40,20 @@
      id="namedview4654"
      showgrid="false"
      inkscape:zoom="49.75"
-     inkscape:cx="8.4924623"
+     inkscape:cx="7.4070352"
      inkscape:cy="8"
      inkscape:window-x="10"
      inkscape:window-y="37"
      inkscape:window-maximized="0"
-     inkscape:current-layer="svg4652" />
+     inkscape:current-layer="svg4652"
+     showguides="false"
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       position="-5.5075377,9.4874372"
+       orientation="1,0"
+       id="guide7161"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
   <path
      inkscape:connector-curvature="0"
      style="color:#000000;text-indent:0;text-transform:none;fill:#8c8c8c;fill-opacity:1;stroke-width:0.98481041"
@@ -60,8 +68,8 @@
      sodipodi:nodetypes="ccccccccccccc" />
   <path
      style="display:inline;fill:#8c8c8c;fill-opacity:1;stroke:#9e7575;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     d="m 10.63457,1.0286114 c -0.0416,3.1491307 -0.01814,3.1380869 3.3121,3.0978656 z"
+     d="m 10.63457,1.0286114 c -0.0416,3.7119448 -0.476797,3.1977577 3.3121,3.0978656 z"
      id="path5283"
      inkscape:connector-curvature="0"
-     sodipodi:nodetypes="csc" />
+     sodipodi:nodetypes="ccc" />
 </svg>

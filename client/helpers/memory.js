@@ -9,6 +9,9 @@ function Memory(){
         set: function(key, value){
             if(!data[key]) data[key] = {};
             data[key] = value;
+        },
+        all: function(){
+            return data;
         }
     }
 }
