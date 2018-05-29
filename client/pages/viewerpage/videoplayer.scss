@@ -1,0 +1,39 @@
+.component_videoplayer{
+    background: #525659;
+    height: 100%;
+    .video_container{
+        padding: 20px;
+        > div{
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            video{
+                outline: none;
+                boxShadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+            }
+        }
+    }
+}
+
+
+
+
+/* SKIN FOR VIDEOJS: */
+.video-js{
+    font-size: 14px; /* Chromium bug */
+
+    .vjs-control-bar{
+        background: rgba(255,255,255,0.15);
+    }
+    .vjs-load-progress div{
+        background: var(--primary);
+    }
+    .vjs-big-play-button{
+        background-color: var(--primary)!important;
+        border-color: var(--emphasis-primary)!important;
+        border-width: 2px;
+        margin-top: -40px;
+        border-radius: 10px;
+        &:before{ font-size: 45px; color: var(--bg-color); }
+    }
+}

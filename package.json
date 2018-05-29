@@ -91,6 +91,7 @@
     "style-loader": "^0.20.2",
     "url-loader": "^0.6.2",
     "video.js": "^5.19.2",
+    "videojs-contrib-hls": "^5.14.1",
     "videojs-sublime-skin": "^1.0.3",
     "watchify": "^3.11.0",
     "wavesurfer.js": "^1.4.0",
