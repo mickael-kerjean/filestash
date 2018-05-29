@@ -13,7 +13,7 @@
         display: inline-block;
         padding: 15px 20px 15px 15px;
         border-radius: 2px;
-        box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px;
+        box-shadow: rgba(158, 163, 172, 0.3) 5px 5px 20px;
         display: flex;
         align-items: center;
 
@@ -34,10 +34,11 @@
             flex: 1 1 auto;
         }
         .close{
-            color: rgba(0,0,0,0.3);
+            .component_icon{
+                height: 18px;
+            }
             cursor: pointer;
             padding: 0 2px;
-            font-size: 0.95em;
         }
     }
 }

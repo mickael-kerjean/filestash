@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
-import { NgIf } from './';
+import { NgIf, Icon } from './';
 import { notify } from '../helpers/';
 import './notification.scss';
 
@@ -73,7 +73,9 @@ export class Notification extends React.Component {
                   <div className="message">
                     { this.state.message_text }
                   </div>
-                  <div className="close" onClick={this.cancelAnimation.bind(this)}>X</div>
+                  <div className="close" onClick={this.cancelAnimation.bind(this)}>
+                    <Icon name="close" />
+                  </div>
                 </div>
               </NgIf>
             </ReactCSSTransitionGroup>
