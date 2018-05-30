@@ -1,0 +1,21 @@
+.component_metadata{
+    .label{
+        display: inline-block;
+        width: 70px;
+        font-size: 0.95em;
+        text-align: right;
+        padding-right: 10px;
+        color: var(--color);
+        vertical-align: top;
+    }
+    .value{
+        display: inline-block;
+        width: calc(100% - 80px);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: top;
+        letter-spacing: -0.5px;
+        &.small{font-size: 0.95em; letter-spacing: -1px;}
+    }
+}

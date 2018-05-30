@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Route, IndexRoute, Switch } from 'react-router-dom';
 import { NotFoundPage, ConnectPage, HomePage, LogoutPage, FilesPage, ViewerPage } from './pages/';
 import { Bundle, URL_HOME, URL_FILES, URL_VIEWER, URL_LOGIN, URL_LOGOUT } from  './helpers/';
-import { ModalPrompt, Notification, Audio, Video } from './components/';
+import { ModalPrompt, AlertModal, Notification, Audio, Video } from './components/';
 
 export default class AppRouter extends React.Component {
     render() {
@@ -19,6 +19,7 @@ export default class AppRouter extends React.Component {
                 </Switch>
               </BrowserRouter>
               <ModalPrompt />
+              <AlertModal />
               <Notification />
             </div>
         );

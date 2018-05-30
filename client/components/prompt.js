@@ -53,12 +53,12 @@ export class ModalPrompt extends React.Component {
                   {this.state.text}
                 </p>
                 <form onSubmit={this.onSubmit}>
-                <Input autoFocus={true} value={this.state.value} type={this.state.type} autoComplete="new-password" onChange={(e) =>  this.setState({value: e.target.value})} />
-                  <div className="modal-error-message">{this.state.error}&nbsp;</div>
-                  <div className="buttons">
-                    <Button type="button" onClick={this.onCancel}>CANCEL</Button>
-                    <Button type="submit" theme="secondary" onClick={this.onSubmit}>OK</Button>
-                  </div>
+                  <Input autoFocus={true} value={this.state.value} type={this.state.type} autoComplete="new-password" onChange={(e) =>  this.setState({value: e.target.value})} />
+                    <div className="modal-error-message">{this.state.error}&nbsp;</div>
+                    <div className="buttons">
+                      <Button type="button" onClick={this.onCancel}>CANCEL</Button>
+                      <Button type="submit" theme="secondary" onClick={this.onSubmit}>OK</Button>
+                    </div>
                 </form>
               </div>
             </Modal>

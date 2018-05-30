@@ -33,6 +33,7 @@ import img_grid from '../assets/img/grid.svg';
 import img_list from '../assets/img/list.svg';
 import img_sort from '../assets/img/sort.svg';
 import img_check from '../assets/img/check.svg';
+import img_info from '../assets/img/info.svg';
 
 export const Icon = (props) => {
     if(props.name === null) return null;
@@ -97,6 +98,8 @@ export const Icon = (props) => {
         img = img_sort;
     }else if(props.name === 'check'){
         img = img_check;
+    }else if(props.name === 'info'){
+        img = img_info;
     }else{
         throw('unknown icon');
     }

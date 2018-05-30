@@ -59,7 +59,7 @@ app.get('/cat', function(req, res){
 
                     let endpoint = config.transcoder.url;
                     if(req.query.size){
-                        endpoint += "?size="+req.query.size;
+                        endpoint += "?size="+req.query.size+"&meta="+(req.query.meta === "true" ? "true": "false");
                     }
                     const post_request = request({
                         method: "POST",
@@ -68,7 +68,6 @@ app.get('/cat', function(req, res){
                     });
                     return form.pipe(post_request)
                         .on('error', (err) => {
-                            console.log(err);
                             res.status(500).end();
                         })
                         .pipe(res);

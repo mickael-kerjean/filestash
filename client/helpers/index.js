@@ -9,6 +9,7 @@ export { memory } from './memory';
 export { prepare } from './navigate';
 export { invalidate, http_get, http_post, http_delete } from './ajax';
 export { prompt } from './prompt';
+export { alert } from './alert';
 export { notify } from './notify';
 export { gid } from './random';
 export { leftPad } from './common';
