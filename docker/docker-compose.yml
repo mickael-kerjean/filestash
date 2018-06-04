@@ -6,5 +6,18 @@ services:
     restart: always
     environment:
     - SECRET_KEY=my_secret_key
+    - TRANSCODER_URL=http://transcode:8335
     ports:
     - "8334:8334"
+
+  transcode:
+    container_name: nuage_transcode
+    image: machines/nuage_transcode
+    restart: always
+
+  reverse_proxy:
+    container_name: nuage_reverse_proxy
+    image: machines/nuage_reverse_proxy
+    restart: always
+    ports:
+    - "8888:80"

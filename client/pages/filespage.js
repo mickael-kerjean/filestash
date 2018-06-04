@@ -21,6 +21,7 @@ export class FilesPage extends React.Component {
         this.state = {
             path: props.match.url.replace('/files', '') || '/',
             sort: settings_get('filespage_sort') || 'type',
+            sort_reverse: true,
             view: settings_get('filespage_view') || 'grid',
             files: [],
             frequents: [],
@@ -107,13 +108,17 @@ export class FilesPage extends React.Component {
 
     onSort(_sort){
         settings_put('filespage_sort', _sort);
+        const same_sort = _sort === this.state.sort;
         this.setState({
             sort: _sort
         }, () => {
             requestAnimationFrame(() => {
+                let files = sort(this.state.files, _sort);
+                if(same_sort && this.state.sort_reverse) files = files.reverse();
                 this.setState({
                     page_number: PAGE_NUMBER_INIT,
-                    files: sort(this.state.files, _sort)
+                    sort_reverse: same_sort ? !this.state.sort_reverse : true,
+                    files: files
                 });
             });
         });

@@ -206,7 +206,7 @@ export class ExistingThing extends React.Component {
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div className={"component_thing view-"+this.props.view}>
               <Link to={this.props.file.link || "#"}>
-                <Card className={this.state.hover} className={className}>
+                <Card ref="$card"className={this.state.hover} className={className}>
                   <Image preview={this.state.preview} icon={this.props.file.icon || this.props.file.type} view={this.props.view} path={path.join(this.props.path, this.props.file.name)} />
                   <Filename filename={this.props.file.name} filesize={this.props.file.size} filetype={this.props.file.type} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} onRenameCancel={this.onRenameRequest.bind(this, false)}/>
                   <Message message={this.state.message} />
@@ -236,9 +236,13 @@ class Filename extends React.Component {
     }
 
 
-    moveCaretAtEnd(e){
-        const length = e.target.value.length;
-        e.target.setSelectionRange(length, length);
+    onInputFocus(e){
+        let value = e.target.value.split(".");
+        if(value.length > 1){
+            value.pop();
+        }
+        value = value.join(".");
+        e.target.setSelectionRange(0, value.length);
     }
 
     onRename(e){
@@ -248,6 +252,7 @@ class Filename extends React.Component {
     }
 
     onCancel(){
+        this.setState({filename: this.props.filename});
         this.props.onRenameCancel();
     }
 
@@ -264,7 +269,7 @@ class Filename extends React.Component {
                 </NgIf>
                 <NgIf cond={this.props.is_renaming === true} type='inline'>
                   <form onClick={this.preventSelect} onSubmit={this.onRename.bind(this)}>
-                    <input value={this.state.filename} onChange={(e) => this.setState({filename: e.target.value})} onBlur={this.onCancel.bind(this)} onFocus={this.moveCaretAtEnd.bind(this)} autoFocus />
+                    <input value={this.state.filename} onChange={(e) => this.setState({filename: e.target.value})} onBlur={this.onCancel.bind(this)} onFocus={this.onInputFocus.bind(this)} autoFocus />
                   </form>
                 </NgIf>
               </span>
@@ -386,7 +391,8 @@ class LazyLoadImage extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            appear: false
+            appear: false,
+            error: false
         };
         this.$scroll = document.querySelector(props.scroller);
         this.onScroll = debounce(this.onScroll.bind(this), 100);
@@ -411,14 +417,18 @@ class LazyLoadImage extends React.Component {
         }
     }
 
+    onError(){
+        this.setState({error: true});
+    }
+
     render(){
-        if(this.props.preview || memory.get(this.props.src) === null){
+        if((this.props.preview || memory.get(this.props.src) === null) || this.state.error === true){
             return (
                 <img ref="$el" className={this.props.className} src={img_placeholder} />
             );
         }
         return (
-            <img className={this.props.className} src={this.props.src} />
+            <img onError={this.onError.bind(this)} className={this.props.className} src={this.props.src} />
         );
     }
 }

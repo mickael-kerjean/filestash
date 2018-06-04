@@ -21,6 +21,8 @@ import img_calendar_white from '../assets/img/calendar_white.svg';
 import img_calendar from '../assets/img/calendar.svg';
 import img_alarm from '../assets/img/alarm.svg';
 import img_arrow_right from '../assets/img/arrow_right.svg';
+import img_arrow_right_white from '../assets/img/arrow_right_white.svg';
+import img_arrow_left_white from '../assets/img/arrow_left_white.svg';
 import img_more from '../assets/img/more.svg';
 import img_close from '../assets/img/close.svg';
 import img_schedule from '../assets/img/schedule.svg';
@@ -29,11 +31,13 @@ import img_arrow_down from '../assets/img/arrow-down.svg';
 import img_arrow_up_double from '../assets/img/arrow-up-double.svg';
 import img_arrow_down_double from '../assets/img/arrow-down-double.svg';
 import img_search from '../assets/img/search.svg';
+import img_search_dark from '../assets/img/search_dark.svg';
 import img_grid from '../assets/img/grid.svg';
 import img_list from '../assets/img/list.svg';
 import img_sort from '../assets/img/sort.svg';
 import img_check from '../assets/img/check.svg';
 import img_info from '../assets/img/info.svg';
+import img_fullscreen from '../assets/img/fullscreen.svg';
 
 export const Icon = (props) => {
     if(props.name === null) return null;
@@ -78,6 +82,10 @@ export const Icon = (props) => {
         img = img_todo_white;
     }else if(props.name === 'arrow_right'){
         img = img_arrow_right;
+    }else if(props.name === 'arrow_right_white'){
+        img = img_arrow_right_white;
+    }else if(props.name === 'arrow_left_white'){
+        img = img_arrow_left_white;
     }else if(props.name === 'more'){
         img = img_more;
     }else if(props.name === 'close'){
@@ -90,6 +98,8 @@ export const Icon = (props) => {
         img = img_arrow_down;
     }else if(props.name === 'search'){
         img = img_search;
+    }else if(props.name === 'search_dark'){
+        img = img_search_dark;
     }else if(props.name === 'grid'){
         img = img_grid;
     }else if(props.name === 'list'){
@@ -100,6 +110,8 @@ export const Icon = (props) => {
         img = img_check;
     }else if(props.name === 'info'){
         img = img_info;
+    }else if(props.name === 'fullscreen'){
+        img = img_fullscreen;
     }else{
         throw('unknown icon');
     }

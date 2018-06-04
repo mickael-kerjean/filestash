@@ -55,7 +55,11 @@ class FileSystem{
                     access_count: 0,
                 }, _files);
                 store.access_count += 1;
-                store.results = response.results;
+                store.results = response.results || [];
+                store.results = store.results.map((f) => {
+                    f.path = pathBuilder(path, f.name);
+                    return f;
+                });
 
                 if(_files && _files.results){
                     // find out which entry we want to keep from the cache
@@ -76,6 +80,7 @@ class FileSystem{
                     _files_virtual_to_keep = _files_virtual_to_keep.filter((e) => e);
                     store.results = store.results.concat(_files_virtual_to_keep);
                 }
+
                 if(this.current_path === path){
                     this.obs && this.obs.next({status: 'ok', results: store.results});
                 }

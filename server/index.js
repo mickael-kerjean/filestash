@@ -1,7 +1,8 @@
 var app = require('./bootstrap'),
     express = require('express'),
     filesRouter = require('./ctrl/files'),
-    sessionRouter = require('./ctrl/session');
+    sessionRouter = require('./ctrl/session'),
+    fs = require('fs');
 
 
 app.get('/api/ping', function(req, res){ res.send('pong')})
@@ -9,7 +10,7 @@ app.use('/api/files', filesRouter)
 app.use('/api/session', sessionRouter);
 app.use('/', express.static(__dirname + '/public/'))
 app.use('/*', function (req, res){
-    res.sendFile(__dirname + '/public/index.html')
+    fs.createReadStream(__dirname + '/public/index.html').pipe(res);
 });
 
 app.listen(8334, function(err){

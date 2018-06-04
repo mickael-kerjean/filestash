@@ -13,7 +13,8 @@ export class NewThing extends React.Component {
             name: null,
             type: null,
             message: null,
-            icon: null
+            icon: null,
+            search: "ServiceWorker" in window ? "" : null
         };
 
         this._onEscapeKeyPress = (e) => {
@@ -55,6 +56,14 @@ export class NewThing extends React.Component {
     onSortChange(e){
         this.props.onSortUpdate(e);
     }
+
+    // SEARCH BAR: WIP
+    //     <div className="search">
+    //   <label>
+    //     <input type="text" />
+    //     <Icon name="search_dark"/>
+    //   </label>
+    // </div>
 
     render(){
         return (

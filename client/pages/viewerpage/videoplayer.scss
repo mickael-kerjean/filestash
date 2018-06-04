@@ -2,14 +2,29 @@
     background: #525659;
     height: 100%;
     .video_container{
-        padding: 20px;
-        > div{
+        text-align: center;
+        background: #525659;
+        overflow: hidden;
+        padding: 15px 10px 65px 10px;
+        height: 100%;
+        box-sizing: border-box;
+        > span{
+            height: 100%;
+            display: flex;
+            flex-direction: column;
             max-width: 800px;
-            width: 100%;
             margin: 0 auto;
-            video{
-                outline: none;
-                boxShadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+            width: 100%;
+            > span{
+                display: flex;
+                height: 100%;
+                > div{
+                    margin: auto;
+                }
+                video{
+                    outline: none;
+                    box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+                }
             }
         }
     }
@@ -36,4 +51,30 @@
         border-radius: 10px;
         &:before{ font-size: 45px; color: var(--bg-color); }
     }
+}
+
+
+.video-enter, .video-appear{
+    opacity: 0;
+}
+.video-enter.video-enter-active, .video-appear.video-appear-active{
+    transition: top .3s,right .3s,bottom .3s,left .3s,max-width .3s,max-height .3s;
+    -webkit-animation-name: zoomIn;
+    animation-name: zoomIn;
+    animation-duration: .3s;
+    -webkit-animation-timing-function: cubic-bezier(.51,.92,.24,1.15);
+    animation-timing-function: cubic-bezier(.51,.92,.24,1.15);
+    opacity: 1;
+}
+
+
+@keyframes zoomIn {
+	0% {
+		opacity: 0;
+		transform: scale(.85);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
 }

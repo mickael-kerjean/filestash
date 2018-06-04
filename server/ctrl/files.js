@@ -50,9 +50,11 @@ app.get('/cat', function(req, res){
                 const mType = mime.getMimeType(path);
                 res.set('Content-Type', mType);
 
-                if((/^image\//.test(mType) || /^video\//.test(mType) ) && config.transcoder.url){
+                if(!config.transcoder.url){ return _stream.pipe(res); }
+
+                if(/^image\//.test(mType) && ["image/gif", "image/svg", "image/x-icon"].indexOf(mType) === -1){
                     const form = new FormData();
-                    form.append('video', _stream, {
+                    form.append('image', _stream, {
                         filename: 'tmp',
                         contentType: mType,
                     });

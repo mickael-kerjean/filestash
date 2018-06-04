@@ -37,6 +37,13 @@ export class ViewerPage extends React.Component {
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
     }
 
+    componentWillReceiveProps(props){
+        this.setState({
+            path: props.match.url.replace('/view', '') + (location.hash || ""),
+            filename: Path.basename(props.match.url.replace('/view', '')) || 'untitled.dat'
+        }, () => { this.componentWillMount(); });
+    }
+
     componentWillMount(){
         const metadata = () => {
             return new Promise((done, err) => {
@@ -46,9 +53,9 @@ export class ViewerPage extends React.Component {
                         url: url,
                         opener: app_opener
                     }, () => done(app_opener));
-                }).catch(err => {
+                }).catch(error => {
                     notify.send(err, 'error');
-                    err(err);
+                    err(error);
                 });
             });
         };
@@ -127,13 +134,13 @@ export class ViewerPage extends React.Component {
                          filename={this.state.filename}/>
                   </NgIf>
                   <NgIf cond={this.state.opener === 'image'}>
-                    <ImageViewer data={this.state.url} filename={this.state.filename} />
+                    <ImageViewer data={this.state.url} filename={this.state.filename} path={this.state.path} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'pdf'}>
                     <PDFViewer data={this.state.url} filename={this.state.filename} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'video'}>
-                    <VideoPlayer data={this.state.url} filename={this.state.filename} />
+                    <VideoPlayer data={this.state.url} filename={this.state.filename} path={this.state.path} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'audio'}>
                     <AudioPlayer data={this.state.url} filename={this.state.filename} />
