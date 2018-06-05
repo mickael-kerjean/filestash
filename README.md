@@ -13,8 +13,9 @@
 
 # Features
 - Manage your files from a browser
+- Org mode friendly ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Release-0.1:-Org-Mode-everywhere))
+- Photo management ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Release-0.2:-Photo-Management))
 - User friendly
-- Org mode friendly ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Org-Mode))
 - Mobile friendly
 - Customisable ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Customisation))
 - Super fast
@@ -42,13 +43,14 @@ Nuage can be used in different settings:
 - Paas ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-PaaS)): deployment on Heroku or AWS Lambda
 - Saas ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-SaaS)): official instance or private instance fully managed
 
-Using nuage? [Support my work on Patreon](https://www.patreon.com/mickaelk) to be notified of new releases, receive communication around security vulnerability (if it were to happen), requires dedicated support, need customisations, extra features, consulting or training.
+# Support the project
+[Support my work on Patreon](https://www.patreon.com/mickaelk) to be notified of new releases, receive communication around security vulnerability (if it were to happen), requires dedicated support, need customisations, extra features, consulting, training or simply want to give a tip for the hard work.
 
 # Documentation
 - [FAQ](https://github.com/mickael-kerjean/nuage/wiki)
 - [Customisation](https://github.com/mickael-kerjean/nuage/wiki/Customisation)
-- [Org Mode](https://github.com/mickael-kerjean/nuage/wiki/Org-Mode)
+- [Release Notes](https://github.com/mickael-kerjean/nuage/wiki/Releases)
 
 # Credits
 - Iconography: [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)
-- Folks developing awesome [libraries](https://github.com/mickael-kerjean/nuage/blob/master/package.json)
+- Our [contributors](https://github.com/mickael-kerjean/nuage/graphs/contributors) and folks developing awesome [libraries](https://github.com/mickael-kerjean/nuage/blob/master/package.json)
