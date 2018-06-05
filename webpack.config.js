@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 
 let config = {
     entry: {
@@ -47,29 +48,19 @@ let config = {
         new HtmlWebpackPlugin({
             template: path.join(__dirname, 'client', 'index.html'),
             inject:true
-        })
+        }),
+        //new BundleAnalyzerPlugin()
     ]
 };
 
 
 
 if(process.env.NODE_ENV === 'production'){
-    config.plugins.push(new webpack.optimize.UglifyJsPlugin());
+    config.plugins.push(new UglifyJSPlugin({
+        sourceMap: false
+    }));
 }else{
     config.devtool = '#inline-source-map';
-    config.devServer = {
-        contentBase: path.join(__dirname, "server", "public"),
-        disableHostCheck: true,
-        hot: true,
-        historyApiFallback: {
-            index: 'index.html'
-        },
-        proxy: {
-            '/api': {
-                target: 'http://127.0.0.1:3000'
-            }
-        }
-    };
 }
 
 module.exports = config;

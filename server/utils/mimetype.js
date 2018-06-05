@@ -1,4 +1,4 @@
-var path = require('path');
+const path = require('path');
 
 module.exports.getMimeType = function(file){
     let ext = path.extname(file).replace(/^\./, '').toLowerCase();
@@ -231,6 +231,6 @@ const db = {
     "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-}
+};
 
 module.exports.mime = db;

@@ -6,7 +6,7 @@
   "main": "server/index.js",
   "scripts": {
     "dev": "webpack --watch",
-    "build": "NODE_ENV=production webpack -p",
+    "build": "webpack",
     "image": "docker build -t nuage -f ./docker/Dockerfile .",
     "publish": "docker tag nuage machines/nuage && docker push machines/nuage",
     "clean": "rm -rf server/public/js server/public/*.html || true",
@@ -36,6 +36,7 @@
     "ssh2-sftp-client": "^1.1.0",
     "stream-to-string": "^1.1.0",
     "string-to-stream": "^1.1.0",
+    "uglifyjs-webpack-plugin": "^1.2.5",
     "webdav-fs": "^1.10.1",
     "winston": "^2.3.1",
     "winston-couchdb": "^0.6.3"

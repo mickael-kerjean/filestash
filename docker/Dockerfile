@@ -3,7 +3,7 @@ MAINTAINER mickael.kerjean@gmail.com
 
 RUN apk add --no-cache git && \
     # INSTALL SYSTEM DEPS
-	git clone https://github.com/mickael-kerjean/nuage /app && \
+    git clone https://github.com/mickael-kerjean/nuage /app && \
     cd /app && \
     apk add --no-cache nodejs libcurl && \
     # Nodegit
@@ -12,8 +12,8 @@ RUN apk add --no-cache git && \
     apk del .build-deps && \
     npm install && \
     # PRODUCTION BUILD
-	npm run build && \
-	npm prune --production
+    NODE_ENV=production npm run build && \
+    npm prune --production
 
 EXPOSE 8334
 WORKDIR "/app"

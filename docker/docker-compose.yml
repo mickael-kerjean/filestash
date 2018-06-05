@@ -14,10 +14,3 @@ services:
     container_name: nuage_transcode
     image: machines/nuage_transcode
     restart: always
-
-  reverse_proxy:
-    container_name: nuage_reverse_proxy
-    image: machines/nuage_reverse_proxy
-    restart: always
-    ports:
-    - "8888:80"
