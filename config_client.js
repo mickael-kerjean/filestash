@@ -1,5 +1,6 @@
 module.exports = {
-    god_editor_mode: true,
+    // editor keybinding can be either: "sublime", "emacs", "vim"
+    editor: "emacs",
     fork_button: true,
     search: {
         enable: true,

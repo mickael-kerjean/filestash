@@ -50,7 +50,8 @@ export class Editor extends React.Component {
         });
 
 
-        this.loadMode(this.props.filename)
+        this.loadKeybinding()
+            .then(() => this.loadMode(this.props.filename))
             .then((res) => new Promise((done) => this.setState({loading: false}, () => done(res))))
             .then(loadCodeMirror.bind(this))
             .then(() => {
@@ -96,7 +97,7 @@ export class Editor extends React.Component {
                 value: this.props.content,
                 lineNumbers: true,
                 mode: mode,
-                keyMap: config.god_editor_mode ? "emacs" : "default",
+                keyMap: config.editor,
                 lineWrapping: true,
                 foldOptions: {
                     widget: "..."
@@ -192,6 +193,13 @@ export class Editor extends React.Component {
         return import(/* webpackChunkName: "editor" */'./editor/'+mode)
             .catch(() => import("./editor/text"))
             .then((module) => Promise.resolve([module.default, mode: mode]));
+    }
+
+    loadKeybinding(){
+        if(config.editor === "emacs" || !config.editor){
+            return Promise.resolve();
+        }
+        return import(/* webpackChunkName: "editor" */'./editor/keymap_'+config.editor);
     }
 
     render() {

@@ -27,7 +27,7 @@
 - Image viewer
 - Quick access: frequently access folders are pin to the homepage
 - Stateless
-- Emacs keybindings `;)`
+- Emacs, VIM or Sublime keybindings `;)`
 
 # Screenshots
 <p align="center">
