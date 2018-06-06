@@ -12,41 +12,8 @@
         background: white;
         width: 80%;
         max-width: 310px;
-        padding: 40px 20px 0 20px;
+        padding: 20px 20px 0 20px;
         border-radius: 2px;
-    }
-}
-
-
-.component_prompt, .component_alert{
-    > p{
-        font-size: 1.1em;
-        margin: 0 0 10px 0;
-    }
-    .modal-error-message{
-        color: var(--error);
-    }
-    .buttons{
-        display: flex;
-        [type="submit"]{
-            border-radius: 10px 0 0;
-        }
-        > button{
-            width: 50%;
-            margin-left: auto;
-        }
-    }
-}
-.component_prompt .buttons{
-    margin: 15px -20px;
-    > p{
-        text-align: center;
-    }
-}
-.component_alert .buttons{
-    margin: 25px -20px 15px -20px;
-    > p{
-        text-align: justify;
     }
 }
 

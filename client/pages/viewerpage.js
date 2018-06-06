@@ -115,7 +115,9 @@ export class ViewerPage extends React.Component {
     }
 
     needSaving(bool){
-        this.setState({needSaving: bool});
+        return new Promise((done) => {
+            this.setState({needSaving: bool}, done);
+        });
     }
 
     render() {

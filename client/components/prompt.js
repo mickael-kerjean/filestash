@@ -3,16 +3,11 @@ import PropTypes from 'prop-types';
 
 import { Input, Button, Modal, NgIf } from './';
 import { prompt } from '../helpers/';
+import { Popup } from './popup';
 
-export class ModalPrompt extends React.Component {
+export class ModalPrompt extends Popup {
     constructor(props){
         super(props);
-        this.state = {
-            appear: false,
-            value: ''
-        };
-        this.onCancel = this.onCancel.bind(this);
-        this.onSubmit = this.onSubmit.bind(this);
     }
 
     componentDidMount(){
@@ -28,12 +23,6 @@ export class ModalPrompt extends React.Component {
         });
     }
 
-
-    onCancel(){
-        this.setState({appear: false});
-        this.state.fns && this.state.fns.cancel();
-    }
-
     onSubmit(e){
         e && e.preventDefault && e.preventDefault();
         this.state.fns.ok(this.state.value)
@@ -41,27 +30,25 @@ export class ModalPrompt extends React.Component {
             .catch((message) => this.setState({error: message}));
     }
 
-    onEscapeKeyPress(e){
-        if(e.keyCode === 27 && this.state.fns){ this.onCancel(); }
-    }
-
-    render() {
+    modalContentBody(){
         return (
-            <Modal isActive={this.state.appear} onQuit={this.onCancel}>
-              <div className="component_prompt">
-                <p className="modal-message">
-                  {this.state.text}
-                </p>
-                <form onSubmit={this.onSubmit}>
-                  <Input autoFocus={true} value={this.state.value} type={this.state.type} autoComplete="new-password" onChange={(e) =>  this.setState({value: e.target.value})} />
-                    <div className="modal-error-message">{this.state.error}&nbsp;</div>
-                    <div className="buttons">
-                      <Button type="button" onClick={this.onCancel}>CANCEL</Button>
-                      <Button type="submit" theme="secondary" onClick={this.onSubmit}>OK</Button>
-                    </div>
-                </form>
-              </div>
-            </Modal>
+            <div>
+              {this.state.text }
+              <form onSubmit={this.onSubmit.bind(this)} style={{marginTop: "10px"}}>
+                <Input autoFocus={true} value={this.state.value} type={this.state.type} autoComplete="new-password" onChange={(e) =>  this.setState({value: e.target.value})} />
+                <div className="modal-error-message">{this.state.error}&nbsp;</div>
+              </form>
+            </div>
         );
     }
+
+    modalContentFooter(){
+        return (
+            <div>
+              <Button type="button" onClick={this.onCancel.bind(this)}>CANCEL</Button>
+              <Button type="submit" theme="secondary" onClick={this.onSubmit.bind(this)}>OK</Button>
+            </div>
+        );
+    }
+
 }

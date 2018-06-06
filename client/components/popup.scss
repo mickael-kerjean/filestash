@@ -1,0 +1,27 @@
+.component_popup{
+    .popup--content{
+        font-size: 1.1em;
+        margin: 0;
+        p {margin: 0;}
+        .modal-error-message{font-size: 15px;}
+    }
+    .buttons{
+        margin: 15px -20px 0 -20px;
+        display: flex;
+        > div {
+            display: flex;
+            width: 100%;
+        }
+        [type="submit"]{
+            border-radius: 10px 0 0;
+        }
+        > button{
+            width: 50%;
+            margin-left: auto;
+        }
+    }
+    .modal-error-message{
+        color: var(--error);
+    }
+    .center{text-align: center;}
+}

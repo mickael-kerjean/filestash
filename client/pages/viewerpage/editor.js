@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
-import { NgIf, Loader } from '../../components/';
-
+import { withRouter } from 'react-router'
 import CodeMirror from 'codemirror/lib/codemirror';
 import 'codemirror/lib/codemirror.css';
 window.CodeMirror = CodeMirror;
@@ -19,11 +17,13 @@ import 'codemirror/addon/fold/foldcode';
 import 'codemirror/addon/fold/foldgutter';
 import 'codemirror/addon/fold/foldgutter.css';
 
-import './editor.scss';
+import { NgIf, Loader } from '../../components/';
 import { debounce  } from '../../helpers/';
 import { org_shifttab } from './editor/emacs-org';
 import config from '../../../config_client';
+import './editor.scss';
 
+@withRouter
 export class Editor extends React.Component {
     constructor(props){
         super(props);

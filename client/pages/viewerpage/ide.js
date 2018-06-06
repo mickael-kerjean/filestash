@@ -1,8 +1,11 @@
 import React from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { withRouter } from 'react-router';
+import { Prompt } from "react-router-dom";
 import { Subject } from 'rxjs/Subject';
 
 import { NgIf, Fab, Icon } from '../../components/';
+import { confirm } from '../../helpers/';
 import { Editor } from './editor';
 import { MenuBar } from './menubar';
 import { OrgTodosViewer, OrgEventsViewer } from './org_viewer';
@@ -10,18 +13,41 @@ import { OrgTodosViewer, OrgEventsViewer } from './org_viewer';
 
 import './ide.scss';
 
+@withRouter
 export class IDE extends React.Component {
     constructor(props){
         super(props);
         this.state = {
             event: new Subject(),
             contentToSave: props.content,
-            needSaving: false,
             appear_agenda: false,
             appear_todo: false,
             mode: null,
             folding: null
         };
+    }
+
+    componentDidMount(){
+        this.unblock = this.props.history.block((nextLocation)=>{
+            if(this.props.needSaving === false) return true;
+            confirm.now(
+                <div style={{textAlign: "center", paddingBottom: "5px"}}>
+                  Do you want to save the changes ?
+                </div>,
+                () =>{
+                    return this.save()
+                        .then(() => this.props.history.push(nextLocation));
+                },
+                () => {
+                    this.props.needSavingUpdate(false)
+                        .then(() => this.props.history.push(nextLocation));
+                }
+            );
+            return false;
+        });
+    }
+    componentWillUnmount(){
+        this.unblock();
     }
 
     save(){
@@ -35,8 +61,7 @@ export class IDE extends React.Component {
             // https://stackoverflow.com/questions/33821631/alternative-for-file-constructor-for-safari
             file = blob;
         }
-        this.props.onSave(file)
-            .then(() => this.props.needSavingUpdate(false));
+        return this.props.onSave(file).then(() => this.props.needSavingUpdate(false));
     }
 
     onUpdate(property, refresh, value){
