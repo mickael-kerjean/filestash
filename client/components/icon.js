@@ -38,6 +38,8 @@ import img_sort from '../assets/img/sort.svg';
 import img_check from '../assets/img/check.svg';
 import img_info from '../assets/img/info.svg';
 import img_fullscreen from '../assets/img/fullscreen.svg';
+import img_camera from '../assets/img/camera.svg';
+import img_location from '../assets/img/location.svg';
 
 export const Icon = (props) => {
     if(props.name === null) return null;
@@ -112,6 +114,10 @@ export const Icon = (props) => {
         img = img_info;
     }else if(props.name === 'fullscreen'){
         img = img_fullscreen;
+    }else if(props.name === 'camera'){
+        img = img_camera;
+    }else if(props.name === 'location'){
+        img = img_location;
     }else{
         throw('unknown icon');
     }

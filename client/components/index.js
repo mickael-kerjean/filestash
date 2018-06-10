@@ -19,6 +19,7 @@ export { Notification } from './notification';
 export { Audio } from './audio';
 export { Video } from './video';
 export { Dropdown, DropdownButton, DropdownList, DropdownItem } from './dropdown';
+export { MapShot } from './mapshot';
 //export { Connect } from './connect';
 // Those are commented because they will delivered as a separate chunk
 // export { Editor } from './editor';

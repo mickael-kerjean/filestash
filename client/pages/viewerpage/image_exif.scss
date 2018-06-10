@@ -1,0 +1,41 @@
+.component_metadata{
+    .label{
+        display: inline-block;
+        width: 70px;
+        font-size: 0.95em;
+        text-align: right;
+        padding-right: 10px;
+        color: var(--color);
+        vertical-align: top;
+    }
+    .value{
+        display: inline-block;
+        width: calc(100% - 80px);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: top;
+        letter-spacing: -0.5px;
+        &.small{font-size: 0.95em; letter-spacing: -1px;}
+    }
+}
+
+.text-appear, .text-enter{
+    opacity: 0;
+    display: inline-block;
+    transform: translateX(5px);
+    transition: 0.3s ease transform, 0.3s ease opacity;
+}
+.text-appear.text-appear-active, .text-enter.text-enter-active{
+    opacity: 1;
+    transform: translateX(0px);
+}
+.placeholder-appear, .placeholder-enter{
+    display: inline-block;
+    opacity: 0;
+    transition-delay: 0.5s;
+    transition: 0s ease opacity;
+}
+.placeholder-appear.placeholder-appear-active, .placeholder-enter.placeholder-enter-active{
+    opacity: 0;
+}

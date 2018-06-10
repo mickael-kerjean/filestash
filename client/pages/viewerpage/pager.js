@@ -42,6 +42,8 @@ export class Pager extends React.Component {
 
     componentWillUnmount(){
         window.removeEventListener("keyup", this.navigate);
+        this.props.unsubscribe('media::next');
+        this.props.unsubscribe('media::previous');
     }
 
     navigate(e){
