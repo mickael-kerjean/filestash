@@ -44,7 +44,9 @@ Nuage can be used in different settings:
 - Saas ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-SaaS)): official instance or private instance fully managed
 
 # Support the project
-[Support my work on Patreon](https://www.patreon.com/mickaelk) to be notified of new releases, receive communication around security vulnerability (if it were to happen), requires dedicated support, need customisations, extra features, consulting, training or simply want to give a tip for the hard work.
+- Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
+- [Patreon](https://www.patreon.com/mickaelk)
+
 
 # Documentation
 - [FAQ](https://github.com/mickael-kerjean/nuage/wiki)
@@ -53,4 +55,4 @@ Nuage can be used in different settings:
 
 # Credits
 - Iconography: [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)
-- Our [contributors](https://github.com/mickael-kerjean/nuage/graphs/contributors) and folks developing awesome [libraries](https://github.com/mickael-kerjean/nuage/blob/master/package.json)
+- [contributors](https://github.com/mickael-kerjean/nuage/graphs/contributors) and folks developing awesome [libraries](https://github.com/mickael-kerjean/nuage/blob/master/package.json)
