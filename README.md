@@ -54,5 +54,5 @@ Nuage can be used in different settings:
 - [Release Notes](https://github.com/mickael-kerjean/nuage/wiki/Releases)
 
 # Credits
-- Iconography: [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)
-- [contributors](https://github.com/mickael-kerjean/nuage/graphs/contributors) and folks developing awesome [libraries](https://github.com/mickael-kerjean/nuage/blob/master/package.json)
+- [Contributors](https://github.com/mickael-kerjean/nuage/graphs/contributors) and folks developing awesome [libraries](https://github.com/mickael-kerjean/nuage/blob/master/package.json)
+- Logo by [ssnjrthegr8](https://github.com/ssnjrthegr8) and Iconography from [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)
