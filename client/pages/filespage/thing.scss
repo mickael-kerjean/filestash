@@ -201,15 +201,23 @@
             }
             .info_extension{
                 position: absolute;
-                top: 50%;
+                top: 45%;
                 text-align: right;
                 left: 0; right: 20%;
                 margin: 0 auto;
+                text-transform: uppercase;
                 span{
                     background: var(--color);
                     color: var(--bg-color);
                     border-radius: 4px;
                     padding: 4px 12px;
+                    display: inline-block;
+                    text-align: center;
+                    min-width: 20px;
+                    max-width: 65px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
             }
             .component_filename{
