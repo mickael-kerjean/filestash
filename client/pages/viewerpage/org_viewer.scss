@@ -7,13 +7,13 @@
         max-width: 500px;
         padding: 5px;
         border-bottom-right-radius: 15px;
-        box-shadow: 1px 2px 1px rgba(0,00,0,0.05);
+        box-shadow: 1px 2px 10px rgba(0, 0, 0, 0.05);
     }
     .modal-top{
         margin: -5px -5px 0 -5px;
         padding: 30px 0px 0 30px;
         background: var(--primary);
-        border-bottom: 1px solid var(--emphasis-primary);
+        border-bottom: 2px solid var(--emphasis-primary);
         color: rgba(0,0,0,0.5);
         min-height: 65px;
         h1{margin: 0;}
@@ -31,8 +31,10 @@
             text-align: right;
             label{
                 background: white;
-                margin-bottom: -1px;
+                margin-bottom: -2px;
                 border-top-left-radius: 7px;
+                border-left: 2px solid var(--emphasis-primary);
+                border-top: 2px solid var(--emphasis-primary);
                 &.active input, &:hover input{width: 150px; padding: 2px 7px; transition: width 0.2s ease-out;}
                 display: inline-block;
                 input{
@@ -132,6 +134,7 @@
             line-height: 32px;
             .label{margin-right: 10px;}
             > div{
+                border-radius: 2px;
                 width: 100%;
                 white-space: nowrap;
                 overflow: hidden;
