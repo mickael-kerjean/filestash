@@ -4,6 +4,7 @@ import HTML5Backend from 'react-dnd-html5-backend-filedrop';
 
 import './filespage.scss';
 import './error.scss';
+import config from '../../config_client';
 import { Files } from '../model/';
 import { sort, onCreate, onRename, onDelete, onUpload } from './filespage.helper';
 import { NgIf, Loader, Uploader, EventReceiver } from '../components/';
@@ -22,6 +23,7 @@ export class FilesPage extends React.Component {
             path: props.match.url.replace('/files', '') || '/',
             sort: settings_get('filespage_sort') || 'type',
             sort_reverse: true,
+            show_hidden: settings_get('filespage_show_hidden') || config.display_hidden,
             view: settings_get('filespage_view') || 'grid',
             files: [],
             frequents: [],
@@ -33,6 +35,7 @@ export class FilesPage extends React.Component {
         this.goToFiles = goToFiles.bind(null, this.props.history);
         this.goToViewer = goToViewer.bind(null, this.props.history);
         this.observers = [];
+        this.toggleHiddenFilesVisibilityonCtrlK = this.toggleHiddenFilesVisibilityonCtrlK.bind(this);
     }
 
     componentDidMount(){
@@ -44,7 +47,7 @@ export class FilesPage extends React.Component {
         this.props.subscribe('file.rename', onRename.bind(this));
         this.props.subscribe('file.delete', onDelete.bind(this));
         this.props.subscribe('file.refresh', this.onRefresh.bind(this));
-
+        window.addEventListener('keydown', this.toggleHiddenFilesVisibilityonCtrlK);
         this.hideError();
     }
 
@@ -54,6 +57,7 @@ export class FilesPage extends React.Component {
         this.props.unsubscribe('file.rename');
         this.props.unsubscribe('file.delete');
         this.props.unsubscribe('file.refresh');
+        window.removeEventListener('keydown', this.toggleHiddenFilesVisibilityonCtrlK);
         this._cleanupListeners();
     }
 
@@ -74,6 +78,16 @@ export class FilesPage extends React.Component {
         this.setState({error: null});
     }
 
+    toggleHiddenFilesVisibilityonCtrlK(e){
+        if(e.keyCode === 72 && e.ctrlKey === true){
+            e.preventDefault();
+            this.setState({show_hidden: !this.state.show_hidden}, () => {
+                settings_put('filespage_show_hidden', this.state.show_hidden);
+            });
+            this.onRefresh();
+        }
+    }
+
     onRefresh(path = this.state.path){
         this._cleanupListeners();
 
@@ -85,6 +99,9 @@ export class FilesPage extends React.Component {
                     file.link = file.type === "file" ? "/view"+path : "/files"+path+"/";
                     return file;
                 });
+                if(this.state.show_hidden === false){
+                    files = files.filter((file) => file.name[0] === "." ? false : true);
+                }
                 this.setState({files: sort(files, this.state.sort), loading: false, page_number: PAGE_NUMBER_INIT});
             }else{
                 notify.send(res, 'error');

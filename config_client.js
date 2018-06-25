@@ -2,6 +2,7 @@ module.exports = {
     // editor keybinding can be either: "sublime", "emacs", "vim"
     editor: "emacs",
     fork_button: true,
+    display_hidden: false,
     search: {
         enable: true,
         max_depth: 15,
