@@ -171,7 +171,7 @@
         @media (max-width: 670px){.box{height: 170px}}
         @media (max-width: 550px){width: 50%; .box{height: 200px} }
         @media (max-width: 480px){.box{height: 170px}}
-        @media (max-width: 400px){.box{height: 140px; .info_extension{font-size: 0.85em; padding: 3px 10px;}}}
+        @media (max-width: 400px){.box{height: 140px; .info_extension{font-size: 0.8em!important; padding: 3px 10px;}}}
         @media (max-width: 340px){.box{height: 130px}}
         text-align: center;
         .box{
@@ -206,11 +206,13 @@
                 left: 0; right: 20%;
                 margin: 0 auto;
                 text-transform: uppercase;
+                font-size: 0.95em;
+                text-shadow: 0px 0px 2px rgba(0,0,0,0.2);
                 span{
                     background: var(--color);
                     color: var(--bg-color);
                     border-radius: 4px;
-                    padding: 4px 12px;
+                    padding: 3px 10px;
                     display: inline-block;
                     text-align: center;
                     min-width: 20px;
