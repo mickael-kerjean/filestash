@@ -137,7 +137,16 @@
 .cm-s-default .cm-header.cm-org-todo{ color: #FF8355; font-weight: normal; cursor: pointer; }
 .cm-s-default .cm-header.cm-org-done{ color: #3BB27C; font-weight: normal; cursor: pointer; }
 .cm-s-default .cm-header.cm-org-priority{ cursor: pointer; font-weight: normal; }
-.cm-s-default .cm-org-toggle{ cursor: pointer; }
+.cm-s-default .cm-org-toggle{
+    cursor: pointer;
+    background: var(--light);
+    color: var(--super-light);
+    border-radius: 3px;
+    font-weight: bold;
+    padding-bottom: 2px;
+    vertical-align: text-bottom;
+    opacity: 0.7;
+}
 .cm-s-default .cm-void {
     display: inline-block;
     max-width: 10px;
