@@ -3,6 +3,10 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
+
+
 
 let config = {
     entry: {
@@ -10,10 +14,10 @@ let config = {
         app: path.join(__dirname, 'client', 'index.js')
     },
     output: {
-        path: path.join(__dirname, 'server', 'public'),
+        path: path.join(__dirname, 'dist', 'data', 'public'),
         publicPath: '/',
-        filename: 'js/[name].js',
-        chunkFilename: "js/chunk.[name].[id].js"
+        filename: 'assets/js/[name].js',
+        chunkFilename: "assets/js/chunk.[name].[id].js"
     },
     module: {
         rules: [
@@ -49,16 +53,29 @@ let config = {
             template: path.join(__dirname, 'client', 'index.html'),
             inject:true
         }),
+        new CopyWebpackPlugin([
+            { from: 'client/manifest.json', to: 'assets/', context: "" },
+            { from: 'client/worker/*.js', to: 'assets/worker/', context: "" },
+            { from: 'client/assets/logo/*', to: 'assets/logo', context: "" }
+        ])
         //new BundleAnalyzerPlugin()
     ]
 };
-
 
 
 if(process.env.NODE_ENV === 'production'){
     config.plugins.push(new UglifyJSPlugin({
         sourceMap: false
     }));
+    config.plugins.push(new CompressionPlugin({
+        asset: "[path].gz[query]",
+        algorithm: "gzip",
+        test: /\.js$|\.json$|\.html$/,
+        threshold: 0,
+        minRatio: 0.8
+    }));
+)
+
 }else{
     config.devtool = '#inline-source-map';
 }

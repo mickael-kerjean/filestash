@@ -5,7 +5,7 @@ import Router  from './router';
 import './assets/css/reset.scss';
 
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/cache.js').catch(function(error) {
+    navigator.serviceWorker.register('/assets/worker/cache.js').catch(function(error) {
         console.log('ServiceWorker registration failed:', error);
     });
 }

@@ -56,6 +56,8 @@
     "browserify": "^16.1.1",
     "chai": "^4.1.2",
     "codemirror": "^5.26.0",
+    "compression-webpack-plugin": "^1.1.11",
+    "copy-webpack-plugin": "^4.5.2",
     "css-loader": "^0.28.10",
     "dropbox": "^2.5.3",
     "ejs": "^2.5.6",
