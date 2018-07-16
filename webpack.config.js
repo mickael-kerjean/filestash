@@ -7,7 +7,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
 
-
 let config = {
     entry: {
         polyfill: 'babel-polyfill',
@@ -16,8 +15,8 @@ let config = {
     output: {
         path: path.join(__dirname, 'dist', 'data', 'public'),
         publicPath: '/',
-        filename: 'assets/js/[name].js',
-        chunkFilename: "assets/js/chunk.[name].[id].js"
+        filename: 'assets/js/[name]_[chunkhash].js',
+        chunkFilename: "assets/js/chunk_[name]_[id]_[chunkhash].js"
     },
     module: {
         rules: [
@@ -54,10 +53,10 @@ let config = {
             inject:true
         }),
         new CopyWebpackPlugin([
-            { from: 'client/manifest.json', to: 'assets/', context: "" },
-            { from: 'client/worker/*.js', to: 'assets/worker/', context: "" },
-            { from: 'client/assets/logo/*', to: 'assets/logo', context: "" }
-        ])
+            { from: 'manifest.json', to: "assets/" },
+            { from: 'worker/*.js', to: "assets/" },
+            { from: 'assets/logo/*' }
+        ], { context: path.join(__dirname, 'client') }),
         //new BundleAnalyzerPlugin()
     ]
 };
@@ -74,8 +73,6 @@ if(process.env.NODE_ENV === 'production'){
         threshold: 0,
         minRatio: 0.8
     }));
-)
-
 }else{
     config.devtool = '#inline-source-map';
 }
