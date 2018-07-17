@@ -20,7 +20,6 @@ import 'codemirror/addon/fold/foldgutter.css';
 import { NgIf, Loader } from '../../components/';
 import { debounce  } from '../../helpers/';
 import { org_shifttab } from './editor/emacs-org';
-import config from '../../../config_client';
 import './editor.scss';
 
 @withRouter
@@ -97,7 +96,7 @@ export class Editor extends React.Component {
                 value: this.props.content,
                 lineNumbers: true,
                 mode: mode,
-                keyMap: config.editor,
+                keyMap: CONFIG["editor"],
                 lineWrapping: true,
                 foldOptions: {
                     widget: "..."
@@ -196,7 +195,7 @@ export class Editor extends React.Component {
     }
 
     loadKeybinding(){
-        if(config.editor === "emacs" || !config.editor){
+        if(CONFIG["editor"] === "emacs" || !CONFIG["editor"]){
             return Promise.resolve();
         }
         return import(/* webpackChunkName: "editor" */'./editor/keymap_'+config.editor);

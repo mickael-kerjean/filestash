@@ -6,7 +6,6 @@ import { Session } from '../model/';
 import { Container, NgIf, Loader, Notification } from '../components/';
 import { ForkMe, RememberMe, Credentials, Form } from './connectpage/';
 import { cache, notify } from '../helpers/';
-import config from '../../config_client';
 
 import { Alert } from '../components/';
 
@@ -22,7 +21,6 @@ export class ConnectPage extends React.Component {
     }
 
     componentWillMount(){
-        // adapted from: https://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
         function getParam(name) {
             const regex = new RegExp("[?&#]" + name.replace(/[\[\]]/g, "\\$&") + "(=([^&#]*)|&|#|$)");
             const results = regex.exec(window.location.href);

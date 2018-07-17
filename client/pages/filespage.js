@@ -4,7 +4,6 @@ import HTML5Backend from 'react-dnd-html5-backend-filedrop';
 
 import './filespage.scss';
 import './error.scss';
-import config from '../../config_client';
 import { Files } from '../model/';
 import { sort, onCreate, onRename, onDelete, onUpload } from './filespage.helper';
 import { NgIf, Loader, Uploader, EventReceiver } from '../components/';
@@ -23,7 +22,7 @@ export class FilesPage extends React.Component {
             path: props.match.url.replace('/files', '') || '/',
             sort: settings_get('filespage_sort') || 'type',
             sort_reverse: true,
-            show_hidden: settings_get('filespage_show_hidden') || config.display_hidden,
+            show_hidden: settings_get('filespage_show_hidden') || CONFIG["display_hidden"],
             view: settings_get('filespage_view') || 'grid',
             files: [],
             frequents: [],
