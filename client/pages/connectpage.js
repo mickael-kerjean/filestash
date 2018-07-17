@@ -42,9 +42,13 @@ export class ConnectPage extends React.Component {
     authenticate(params){
         this.setState({loading: true});
         Session.authenticate(params)
-            .then((ok) => {
+            .then((path) => {
+                let url = '/files/';
+                if(path){
+                    url += path.replace(/^\/?(.*?)\/?$/, "$1") + "/";
+                }
                 cache.destroy();
-                this.props.history.push('/files/');
+                this.props.history.push(url);
             })
             .catch((err) => {
                 this.setState({loading: false});
