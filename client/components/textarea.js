@@ -9,11 +9,41 @@ export class Textarea extends React.Component {
     }
 
     render() {
+        let className = "component_textarea";
+        if(this.refs.el && this.refs.el.value.length > 0){
+            className += " hasText";
+        }
+
+        const disabledEnter = (e) => {
+            if(e.key === "Enter" && e.shiftKey === false){
+                e.preventDefault();
+                const $form = getForm(this.refs.el);
+                if($form){
+                    $form.dispatchEvent(new Event('submit'));
+                }
+            }
+
+            function getForm($el){
+                if(!$el.parentElement) return $el;
+                if($el.parentElement.nodeName == "FORM"){
+                    return $el.parentElement;
+                }
+                return getForm($el.parentElement);
+            }
+        };
+        const inputProps = (p) => {
+            return Object.keys(p).reduce((acc, key) => {
+                if(key === "disabledEnter") return acc;
+                acc[key] = p[key];
+                return acc;
+            }, {});
+        };
         return (
             <textarea
-              {...this.props}
-              className='component_textarea'
-              ref={(comp) => { this.ref = comp; }}
+              onKeyPress={disabledEnter}
+              {...inputProps(this.props)}
+              className={className}
+              ref={"el"}
               ></textarea>
         );
     }
@@ -21,5 +51,6 @@ export class Textarea extends React.Component {
 
 Textarea.propTypes = {
     type: PropTypes.string,
-    placeholder: PropTypes.string
+    placeholder: PropTypes.string,
+    disabledEnter: PropTypes.bool
 };

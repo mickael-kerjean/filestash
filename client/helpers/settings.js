@@ -1,6 +1,9 @@
 let settings = JSON.parse(window.localStorage.getItem("settings")) || {};
 
 export function settings_get(key){
+    if(settings[key] === undefined){
+        return null;
+    }
     return settings[key];
 }
 

@@ -1,121 +1,73 @@
-import React from 'react';
-
-import { Container, Card, NgIf, Input, Button, Textarea, Loader, Notification, Prompt } from '../../components/';
-import { invalidate, encrypt, decrypt, gid } from '../../helpers/';
-import { Session } from '../../model/';
-import config from '../../../config_client';
-import './form.scss';
-import img_drive from '../../assets/img/google-drive.png';
-import img_dropbox from '../../assets/img/dropbox.png';
+import React from "react";
+import { Container, Card, NgIf, Input, Button, Textarea, Loader, Notification, Prompt } from "../../components/";
+import { invalidate, encrypt, decrypt, gid, settings_get, settings_put } from "../../helpers/";
+import { Session } from "../../model/";
+import "./form.scss";
+import img_drive from "../../assets/img/google-drive.png";
+import img_dropbox from "../../assets/img/dropbox.png";
 
 export class Form extends React.Component {
     constructor(props){
         super(props);
-        const protocols = Object.keys(config.connections);
         this.state = {
-            refs: {},
-            type: protocols.length > 2 ? protocols[1] : protocols[0] || null,
-            advanced_ftp: false,
-            advanced_sftp: false,
-            advanced_webdav: false,
-            advanced_s3: false,
-            advanced_git: false,
-            _dummy: true
+            select: CONFIG["connections"].length > 2 ? 2 : 0,
+            backends: JSON.parse(JSON.stringify(CONFIG["connections"])),
+            dummy: null
         };
+
+        const select = settings_get("login_tab");
+        if(select !== null){ this.state.select = select; }
         this.rerender = this.rerender.bind(this);
     }
 
     componentDidMount(){
-        this.publishState(config.connections);
-        this.publishState(this.props.credentials);
-        window.addEventListener('resize', this.rerender);
+        window.addEventListener("resize", this.rerender);
+        this.publishState(this.props);
+    }
+
+    componentWillUnmount(){
+        settings_put("login_tab", this.state.select);
+        window.removeEventListener("resize", this.rerender);
     }
 
     componentWillReceiveProps(props){
         if(JSON.stringify(props.credentials) !== JSON.stringify(this.props.credentials)){
-            this.publishState(props.credentials);
+            this.publishState(props);
         }
     }
 
-    componentWillUnmount(){
-        window.removeEventListener('resize', this.rerender);
-    }
-
-    publishState(_credentials){
-        const pushDOM = (credentials) => {
-            for(let key in credentials){
-                let names = credentials[key];
-                for(let name in names){
-                    const ref_name = [key,name].join("_");
-                    if(this.state.refs[ref_name] && typeof credentials[key][name] !== 'boolean'){
-                        this.state.refs[ref_name].ref.value = credentials[key][name];
-                    }
+    publishState(props){
+        for(let key in props.credentials){
+            this.state.backends = this.state.backends.map((backend) => {
+                if(backend["type"] + "_" + backend["label"] === key){
+                    backend = props.credentials[key];
                 }
-            }
-        };
-
-        const setAdvancedCheckbox = (credentials) => {
-            if(credentials['ftp'] && (credentials['ftp']['path'] || credentials['ftp']['port']) ){
-                this.setState({advanced_ftp: true});
-            }
-            if(credentials['sftp'] && (
-                credentials['sftp']['path'] || credentials['sftp']['port']
-                    || credentials['sftp']['private_key'])
-              ){
-                this.setState({advanced_sftp: true});
-            }
-            if(credentials['webdav'] && credentials['webdav']['path']){
-                this.setState({advanced_webdav: true});
-            }
-            if(credentials['s3'] && (credentials['s3']['path'] || credentials['s3']['endpoint'])){
-                this.setState({advanced_s3: true});
-            }
-            if(credentials['git'] && (
-                credentials['git']['username'] || credentials['git']['commit']
-                    || credentials['git']['branch']  || credentials['git']['passphrase']
-                    || credentials['git']['author_name'] || credentials['git']['author_email']
-                    || credentials['git']['committer_name'] || credentials['git']['committer_email'])
-              ){
-                this.setState({advanced_git: true});
-            }
-        };
-
-        setAdvancedCheckbox(_credentials);
-        window.setTimeout(() => pushDOM(_credentials));
-        // we made this async as DOM needs to be all set before we can insert the new state
+                return backend;
+            });
+        }
+        this.setState({backends: this.state.backends});
     }
-
 
     onSubmit(e){
         e.preventDefault();
-        // update the credentials object with data coming from the dom (aka "ref" in react language)
-        let credentials = Object.assign({}, this.props.credentials);
-        for(let key in this.state.refs){
-            if(this.state.refs[key]){
-                let [type, ...name] = key.split('_');
-                name = name.join("_");
-                if(!credentials[type]) credentials[type] = {};
-                credentials[type][name] = this.state.refs[key].ref.value;
-            }
-        }
-        // create the object we need to authenticate a user against a backend
-        const auth_data = Object.assign({type: this.state.type}, credentials[this.state.type]);
-        this.props.onSubmit(auth_data, credentials);
+        const authData = this.state.backends[this.state.select],
+              key = authData["type"]+"_"+authData["label"];
+
+        this.props.credentials[key] = authData;
+        this.props.onSubmit(authData, this.props.credentials);
     }
 
-    redirect_dropbox(e){
-        this.props.onThirdPartyLogin('dropbox');
+    onFormUpdate(n, values){
+        this.state.backends[n] = values;
+        this.setState({backends: this.state.backends});
     }
 
-    redirect_google(e){
-        this.props.onThirdPartyLogin('google');
+    redirect(service){
+        this.props.onThirdPartyLogin(service);
     }
 
-    onTypeChange(type){
-        this.setState({type: type}, () => {
-            this.publishState(config.connections);
-            this.publishState(this.props.credentials);
-        });
+    onTypeChange(n){
+        this.setState({select: n});
     }
 
     rerender(){
@@ -124,7 +76,7 @@ export class Form extends React.Component {
 
     _marginTop(){
         let size = 300;
-        const $screen = document.querySelector('.login-form');
+        const $screen = document.querySelector(".login-form");
         if($screen) size = $screen.offsetHeight;
 
         size = Math.round((document.body.offsetHeight - size) / 2);
@@ -133,200 +85,380 @@ export class Form extends React.Component {
         return size;
     }
 
-    should_appear(type, key){
-        if(!config.connections[type]) return false;
-        let value = config.connections[type][key];
-        if(typeof value === 'string') return true;
-        if(value === false) return false;
-        return true;
-    }
-    input_type(type, key){
-        if(!config.connections[type]) return 'hidden';
-        let value = config.connections[type][key];
-        if(typeof value === 'string') return 'hidden';
-        else if(typeof value === 'number') return 'hidden';
-        else if(value === false) return 'hidden';
-        else if(key === 'password') return 'password';
-        else if(key === 'secret_access_key') return 'password';
-        else{
-            return 'text';
-        }
-    }
-
     render() {
-        let className = (window.innerWidth < 600) ? 'scroll-x' : '';
+        let className = (window.innerWidth < 600) ? "scroll-x" : "";
         return (
-            <Card style={{marginTop: this._marginTop()+'px'}} className="no-select component_page_connection_form">
-              <NgIf cond={ Object.keys(config.connections).length > 1 }>
+            <Card style={{marginTop: this._marginTop()+"px"}} className="no-select component_page_connection_form">
+              <NgIf cond={ CONFIG["connections"].length > 1 }>
                 <div className={"buttons "+className}>
                   {
-                      Object.keys(config.connections).map((type) => {
+                      this.state.backends.map((backend, i) => {
                           return (
-                              <Button key={type} className={this.state.type === type? 'active primary' : ''} onClick={this.onTypeChange.bind(this, type)}>
-                                {config.connections[type].label}
+                              <Button key={"menu-"+i} className={i == this.state.select ? "active primary" : ""} onClick={this.onTypeChange.bind(this, i)}>
+                                {backend.label}
                               </Button>
                           );
                       })
                   }
-                </div>
-              </NgIf>
+                 </div>
+               </NgIf>
               <div>
                 <form onSubmit={this.onSubmit.bind(this)} autoComplete="off" autoCapitalize="off" spellCheck="false" autoCorrect="off">
-                  <NgIf cond={this.state.type === 'webdav'}>
-                    <NgIf cond={this.should_appear('webdav', 'url')}>
-                      <Input type={this.input_type('webdav', 'url')} name="url" placeholder="Address*" ref={(input) => { this.state.refs.webdav_url = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('webdav', 'username')}>
-                      <Input type={this.input_type('webdav', 'username')} name="username" placeholder="Username" ref={(input) => { this.state.refs.webdav_username = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('webdav', 'password')}>
-                      <Input type={this.input_type('webdav', 'password')} name="password" placeholder="Password" ref={(input) => { this.state.refs.webdav_password = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('webdav', 'advanced')}>
-                      <label>
-                        <input checked={this.state.advanced_webdav} onChange={e => { this.setState({advanced_webdav: e.target.checked}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                      </label>
-                    </NgIf>
-                    <NgIf cond={this.state.advanced_webdav === true} className="advanced_form">
-                      <NgIf cond={this.should_appear('webdav', 'path')}>
-                        <Input type={this.input_type('webdav', 'path')} name="path" placeholder="Path" ref={(input) => {this.state.refs.webdav_path = input; }} autoComplete="new-password" />
-                     </NgIf>
-                    </NgIf>
-                    <Button theme="emphasis">CONNECT</Button>
-                  </NgIf>
-                  <NgIf cond={this.state.type === 'ftp'}>
-                    <NgIf cond={this.should_appear('ftp', 'hostname')}>
-                      <Input type={this.input_type('ftp', 'hostname')} name="hostname" placeholder="Hostname*" ref={(input) => {this.state.refs.ftp_hostname = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('ftp', 'username')}>
-                      <Input type={this.input_type('ftp', 'username')} name="username" placeholder="Username" ref={(input) => {this.state.refs.ftp_username = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('ftp', 'password')}>
-                      <Input type={this.input_type('ftp', 'password')} name="password" placeholder="Password" ref={(input) => {this.state.refs.ftp_password = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('ftp', 'advanced')}>
-                      <label>
-                        <input checked={this.state.advanced_ftp} onChange={e => { this.setState({advanced_ftp: e.target.checked}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                      </label>
-                    </NgIf>
-                    <NgIf cond={this.state.advanced_ftp === true} className="advanced_form">
-                      <NgIf cond={this.should_appear('ftp', 'path')}>
-                        <Input type={this.input_type('ftp', 'path')} name="path" placeholder="Path" ref={(input) => {this.state.refs.ftp_path = input; }} autoComplete="new-password" />
-                      </NgIf>
-                      <NgIf cond={this.should_appear('ftp', 'port')}>
-                        <Input type={this.input_type('ftp', 'port')} name="port" placeholder="Port" ref={(input) => {this.state.refs.ftp_port = input; }} autoComplete="new-password" />
-                      </NgIf>
-                    </NgIf>
-                    <Button type="submit" theme="emphasis">CONNECT</Button>
-                  </NgIf>
-                  <NgIf cond={this.state.type === 'sftp'}>
-                    <NgIf cond={this.should_appear('sftp', 'host')}>
-                      <Input type={this.input_type('sftp', 'host')} name="host" placeholder="Hostname*" ref={(input) => {this.state.refs.sftp_host = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('sftp', 'username')}>
-                      <Input type={this.input_type('sftp', 'username')} name="username" placeholder="Username" ref={(input) => {this.state.refs.sftp_username = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('sftp', 'password')}>
-                      <Input type={this.input_type('sftp', 'password')} name="password" placeholder="Password" ref={(input) => {this.state.refs.sftp_password = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('sftp', 'advanced')}>
-                      <label>
-                        <input checked={this.state.advanced_sftp} onChange={e => { this.setState({advanced_sftp: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                      </label>
-                    </NgIf>
-                    <NgIf cond={this.state.advanced_sftp === true} className="advanced_form">
-                      <NgIf cond={this.should_appear('sftp', 'path')}>
-                        <Input type={this.input_type('sftp', 'path')} name="path" placeholder="Path" ref={(input) => {this.state.refs.sftp_path = input; }} autoComplete="new-password" />
-                      </NgIf>
-                      <NgIf cond={this.should_appear('sftp', 'port')}>
-                        <Input type={this.input_type('sftp', 'port')} name="port" placeholder="Port" ref={(input) => {this.state.refs.sftp_port = input; }} autoComplete="new-password" />
-                      </NgIf>
-                      <NgIf cond={this.should_appear('sftp', 'private_key')}>
-                        <Textarea type="text" style={this.input_type('sftp', 'private_key') === 'hidden' ? {visibility: 'hidden', position: 'absolute'} : {} } rows="1" name="private_key" placeholder="Private Key" ref={(input) => {this.state.refs.sftp_private_key = input; }} autoComplete="new-password" />
-                      </NgIf>
-                    </NgIf>
-                    <Button type="submit" theme="emphasis">CONNECT</Button>
-                  </NgIf>
-                  <NgIf cond={this.state.type === 'git'}>
-                    <NgIf cond={this.should_appear('git', 'repo')}>
-                      <Input type={this.input_type('git', 'repo')} name="repo" placeholder="Repository*" ref={(input) => {this.state.refs.git_repo = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('git', 'username')}>
-                      <Input type={this.input_type('git', 'username')} name="username" placeholder="Username" ref={(input) => {this.state.refs.git_username = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('git', 'password')}>
-                      <Textarea type="text" style={this.input_type('git', 'password') === 'hidden' ? {visibility: 'hidden', position: 'absolute'} : {} } rows="1" name="password" placeholder="Password" ref={(input) => {this.state.refs.git_password = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <Input type="hidden" name="uid" value={gid()} ref={(input) => { this.state.refs.git_uid = input; }} />
-                    <NgIf cond={this.should_appear('git', 'advanced')}>
-                      <label>
-                        <input checked={this.state.advanced_git} onChange={e => { this.setState({advanced_git: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                      </label>
-                    </NgIf>
-                    <NgIf cond={this.state.advanced_git === true} className="advanced_form">
-                      <NgIf cond={this.should_appear('git', 'passphrase')}>
-                        <Input type={this.input_type('git', 'passphrase')} name="passphrase" placeholder="Passphrase" ref={(input) => {this.state.refs.git_passphrase = input; }} autoComplete="new-password" />
-                      </NgIf>
-                      <NgIf cond={this.should_appear('git', 'commit')}>
-                        <Input type={this.input_type('git', 'commit')} name="commit" placeholder="Commit Format: default to '{action}({filename}): {path}'" ref={(input) => {this.state.refs.git_commit = input; }} autoComplete="new-password" />
-                      </NgIf>
-                      <NgIf cond={this.should_appear('git', 'branch')}>
-                        <Input type={this.input_type('git', 'branch')} name="branch" placeholder="Branch: default to 'master'" ref={(input) => {this.state.refs.git_branch = input; }} autoComplete="new-password" />
-                      </NgIf>
-                      <NgIf cond={this.should_appear('git', 'author_email')}>
-                        <Input type={this.input_type('git', 'author_email')} name="author_email" placeholder="Author email" ref={(input) => {this.state.refs.git_author_email = input; }} autoComplete="new-password" />
-                      </NgIf>
-                      <NgIf cond={this.should_appear('git', 'author_name')}>
-                        <Input type={this.input_type('git', 'author_name')} name="author_name" placeholder="Author name" ref={(input) => {this.state.refs.git_author_name = input; }} autoComplete="new-password" />
-                      </NgIf>
-                      <NgIf cond={this.should_appear('git', 'committer_email')}>
-                        <Input type={this.input_type('git', 'committer_email')} name="committer_email" placeholder="Committer email" ref={(input) => {this.state.refs.git_committer_email = input; }} autoComplete="new-password" />
-                      </NgIf>
-                      <NgIf cond={this.should_appear('git', 'committer_name')}>
-                        <Input type={this.input_type('git', 'committer_name')} name="committer_name" placeholder="Committer name" ref={(input) => {this.state.refs.git_committer_name = input; }} autoComplete="new-password" />
-                      </NgIf>
-                    </NgIf>
-                    <Button type="submit" theme="emphasis">CONNECT</Button>
-                  </NgIf>
-                  <NgIf cond={this.state.type === 's3'}>
-                    <NgIf cond={this.should_appear('s3', 'access_key_id')}>
-                      <Input type={this.input_type('s3', 'access_key_id')} name="access_key_id" placeholder="Access Key ID*" ref={(input) => {this.state.refs.s3_access_key_id = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('s3', 'secret_access_key')}>
-                      <Input type={this.input_type('s3', 'secret_access_key')} name="secret_access_key" placeholder="Secret Access Key*" ref={(input) => {this.state.refs.s3_secret_access_key = input; }} autoComplete="new-password" />
-                    </NgIf>
-                    <NgIf cond={this.should_appear('s3', 'advanced')}>
-                      <label>
-                        <input checked={this.state.advanced_s3} onChange={e => { this.setState({advanced_s3: JSON.parse(e.target.checked)}); }} type="checkbox" autoComplete="new-password"/> Advanced
-                      </label>
-                    </NgIf>
-                    <NgIf cond={this.state.advanced_s3 === true} className="advanced_form">
-                      <NgIf cond={this.should_appear('s3', 'path')}>
-                        <Input type={this.input_type('s3', 'path')} name="path" placeholder="Path" ref={(input) => {this.state.refs.s3_path = input; }} autoComplete="new-password" />
-                      </NgIf>
-                      <NgIf cond={this.should_appear('s3', 'endpoint')}>
-                        <Input type={this.input_type('s3', 'endpoint')} name="endpoint" placeholder="Endpoint" ref={(input) => {this.state.refs.s3_endpoint = input; }} autoComplete="new-password" />
-                      </NgIf>
-                    </NgIf>
-                    <Button type="submit" theme="emphasis">CONNECT</Button>
-                  </NgIf>
-                  <NgIf cond={this.state.type === 'dropbox'} className="third-party">
-                    <a target="_blank" href={this.state.dropbox_url}>
-                      <div onClick={this.redirect_dropbox.bind(this)}>
-                        <img src={img_dropbox} />
-                      </div>
-                      <Button type="button" onClick={this.redirect_dropbox.bind(this)} theme="emphasis">LOGIN WITH DROPBOX</Button>
-                    </a>
-                  </NgIf>
-                  <NgIf cond={this.state.type === 'gdrive'} className="third-party">
-                    <div onClick={this.redirect_google.bind(this)}>
-                      <img src={img_drive}/>
-                    </div>
-                    <Button type="button" onClick={this.redirect_google.bind(this)} theme="emphasis">LOGIN WITH GOOGLE</Button>
-                  </NgIf>
+                {
+                    this.state.backends.map((conn, i) => {
+                        return (
+                            <NgIf key={"form-"+i} cond={this.state.select == i}>
+                              <NgIf cond={conn.type === "webdav"}>
+                                <WebDavForm values={conn} config={CONFIG["connections"][i]} onChange={this.onFormUpdate.bind(this, i)} />
+                              </NgIf>
+                              <NgIf cond={conn.type === "ftp"}>
+                                <FtpForm values={conn} config={CONFIG["connections"][i]} onChange={this.onFormUpdate.bind(this, i)} />
+                              </NgIf>
+                              <NgIf cond={conn.type === "sftp"}>
+                                <SftpForm values={conn} config={CONFIG["connections"][i]} onChange={this.onFormUpdate.bind(this, i)} />
+                              </NgIf>
+                              <NgIf cond={conn.type === "git"}>
+                                <GitForm values={conn} config={CONFIG["connections"][i]} onChange={this.onFormUpdate.bind(this, i)} />
+                              </NgIf>
+                              <NgIf cond={conn.type === "s3"}>
+                                <S3Form values={conn} config={CONFIG["connections"][i]} onChange={this.onFormUpdate.bind(this, i)} />
+                              </NgIf>
+                              <NgIf cond={conn.type === "dropbox"} className="third-party">
+                                <DropboxForm values={conn} config={CONFIG["connections"][i]} onThirdPartyLogin={this.redirect.bind(this)} />
+                              </NgIf>
+                              <NgIf cond={conn.type === "gdrive"} className="third-party">
+                                <GDriveForm values={conn} config={CONFIG["connections"][i]} onThirdPartyLogin={this.redirect.bind(this)} />
+                              </NgIf>
+                            </NgIf>
+                        );
+                    })
+                }
                 </form>
               </div>
             </Card>
         );
     }
+}
+
+const WebDavForm = formHelper(function(props){
+    const onAdvanced = (value) => {
+        if(value == true){
+            props.values.path = "";
+        }else{
+            delete props.values.path;
+        }
+        props.onChange(props.values);
+    };
+    const is_advanced = props.advanced(props.values.path);
+
+    return (
+        <div>
+          <NgIf cond={props.should_appear("url")}>
+            <Input value={props.values["url"] || ""} onChange={(e) => props.onChange("url", e.target.value)} type={props.input_type("url")} name="url" placeholder="Address*" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("username")}>
+            <Input value={props.values["username"] || ""} onChange={(e) => props.onChange("username", e.target.value)} type={props.input_type("username")} name="username" placeholder="Username" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("password")}>
+            <Input value={props.values["password"] || ""} onChange={(e) => props.onChange("password", e.target.value)} type={props.input_type("password")} name="password" placeholder="Password" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("advanced")}>
+            <label>
+              <input checked={is_advanced} onChange={(e) => onAdvanced(e.target.checked)} type="checkbox" autoComplete="new-password"/> Advanced
+            </label>
+          </NgIf>
+          <NgIf cond={is_advanced} className="advanced_form">
+            <NgIf cond={props.should_appear("path")}>
+              <Input value={props.values["path"] || ""} onChange={(e) => props.onChange("path", e.target.value)} type={props.input_type("path")} name="path" placeholder="Path" autoComplete="new-password" />
+            </NgIf>
+          </NgIf>
+          <Button theme="emphasis">CONNECT</Button>
+        </div>
+    );
+});
+
+const FtpForm = formHelper(function(props){
+    const onAdvanced = (value) => {
+        if(value == true){
+            props.values.path = "";
+            props.values.port = "";
+        }else{
+            delete props.values.path;
+            delete props.values.port;
+        }
+        props.onChange(props.values);
+    };
+    const is_advanced = props.advanced(
+        props.values.path,
+        props.values.port
+    );
+
+    return (
+        <div>
+          <NgIf cond={props.should_appear("hostname")}>
+            <Input value={props.values["hostname"] || ""} onChange={(e) => props.onChange("hostname", e.target.value)} type={props.input_type("hostname")} name="hostname" placeholder="Hostname*" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("username")}>
+            <Input value={props.values["username"] || ""} onChange={(e) => props.onChange("username", e.target.value)} type={props.input_type("username")} name="username" placeholder="Username" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("password")}>
+            <Input value={props.values["password"] || ""} onChange={(e) => props.onChange("password", e.target.value)} type={props.input_type("password")} name="password" placeholder="Password" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("advanced")}>
+            <label>
+              <input checked={is_advanced} onChange={e => onAdvanced(e.target.checked)} type="checkbox" autoComplete="new-password"/> Advanced
+            </label>
+          </NgIf>
+          <NgIf cond={is_advanced} className="advanced_form">
+            <NgIf cond={props.should_appear("path")}>
+              <Input value={props.values["path"] || ""} onChange={(e) => props.onChange("path", e.target.value)} type={props.input_type("path")} name="path" placeholder="Path" autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("port")}>
+              <Input value={props.values["port"] || ""} onChange={(e) => props.onChange("port", e.target.value)} type={props.input_type("port")} name="port" placeholder="Port" autoComplete="new-password" />
+            </NgIf>
+          </NgIf>
+          <Button type="submit" theme="emphasis">CONNECT</Button>
+        </div>
+    );
+});
+
+const SftpForm = formHelper(function(props){
+    const onAdvanced = (value) => {
+        if(value == true){
+            props.values.path = "";
+            props.values.port = "";
+            props.values.passphrase = "";
+        }else{
+            delete props.values.path;
+            delete props.values.port;
+            delete props.values.passphrase;
+        }
+        props.onChange();
+    };
+    const is_advanced = props.advanced(
+        props.values.path,
+        props.values.port,
+        props.values.passphrase
+    );
+
+    return (
+        <div>
+          <NgIf cond={props.should_appear("hostname")}>
+            <Input value={props.values["hostname"] || ""} onChange={(e) => props.onChange("hostname", e.target.value)} value={props.values.hostname || ""} onChange={(e) => props.onChange("hostname", e.target.value)} type={props.input_type("hostname")} name="host" placeholder="Hostname*" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("username")}>
+            <Input value={props.values["username"] || ""} onChange={(e) => props.onChange("username", e.target.value)} type={props.input_type("username")} name="username" placeholder="Username" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("password")}>
+            <Textarea disabledEnter={true} value={props.values["password"] || ""} onChange={(e) => props.onChange("password", e.target.value)} type="text" style={props.input_type("password") === "hidden" ? {visibility: "hidden", position: "absolute"} : {} } rows="1" name="password" placeholder="Password"  autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("advanced")}>
+            <label>
+              <input checked={is_advanced} onChange={e => onAdvanced(e.target.checked)} type="checkbox" autoComplete="new-password"/> Advanced
+            </label>
+          </NgIf>
+          <NgIf cond={is_advanced} className="advanced_form">
+            <NgIf cond={props.should_appear("path")}>
+              <Input value={props.values["path"] || ""} onChange={(e) => props.onChange("path", e.target.value)} type={props.input_type("path")} name="path" placeholder="Path" autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("port")}>
+              <Input value={props.values["port"] || ""} onChange={(e) => props.onChange("port", e.target.value)} type={props.input_type("port")} name="port" placeholder="Port" autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("passphrase")}>
+              <Input value={props.values["passphrase"] || ""} onChange={(e) => props.onChange("passphrase", e.target.value)} type={props.input_type("passphrase")} name="port" placeholder="Passphrase" autoComplete="new-password" />
+            </NgIf>
+          </NgIf>
+          <Button type="submit" theme="emphasis">CONNECT</Button>
+        </div>
+    );
+});
+
+
+const GitForm = formHelper(function(props){
+    const onAdvanced = (value) => {
+        if(value == true){
+            props.values.path = "";
+            props.values.passphrase = "";
+            props.values.commit = "";
+            props.values.branch = "";
+            props.values.author_email = "";
+            props.values.author_name = "";
+            props.values.committer_email = "";
+            props.values.committer_name = "";
+        }else{
+            delete props.values.path;
+            delete props.values.passphrase;
+            delete props.values.commit;
+            delete props.values.branch;
+            delete props.values.author_email;
+            delete props.values.author_name;
+            delete props.values.committer_email;
+            delete props.values.committer_name;
+        }
+        props.onChange();
+    };
+    const is_advanced = props.advanced(
+        props.values.path,
+        props.values.passphrase,
+        props.values.commit,
+        props.values.branch,
+        props.values.author_email,
+        props.values.author_name,
+        props.values.committer_email,
+        props.values.committer_name
+    );
+
+    return (
+        <div>
+          <NgIf cond={props.should_appear("repo")}>
+            <Input value={props.values["repo"] || ""} onChange={(e) => props.onChange("repo", e.target.value)} type={props.input_type("repo")} name="repo" placeholder="Repository*" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("username")}>
+            <Input value={props.values["username"] || ""} onChange={(e) => props.onChange("username", e.target.value)} type={props.input_type("username")} name="username" placeholder="Username" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("password")}>
+            <Textarea disabledEnter={true} value={props.values["password"] || ""} onChange={(e) => props.onChange("password", e.target.value)} type="text" style={props.input_type("password") === "hidden" ? {visibility: "hidden", position: "absolute"} : {} } rows="1" name="password" placeholder="Password"  autoComplete="new-password" />
+          </NgIf>
+          <Input name="uid" value={gid()} type="hidden" />
+          <NgIf cond={props.should_appear("advanced")}>
+            <label>
+              <input checked={is_advanced} onChange={(e) => onAdvanced(e.target.checked)} type="checkbox" autoComplete="new-password"/> Advanced
+            </label>
+          </NgIf>
+          <NgIf cond={is_advanced} className="advanced_form">
+            <NgIf cond={props.should_appear("path")}>
+              <Input value={props.values["path"] || ""} onChange={(e) => props.onChange("path", e.target.value)} type={props.input_type("path")} name="path" placeholder="Path" autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("passphrase")}>
+              <Input value={props.values["passphrase"] || ""} onChange={(e) => props.onChange("passphrase", e.target.value)} type={props.input_type("passphrase")} name="passphrase" placeholder="Passphrase" autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("commit")}>
+              <Input value={props.values["commit"] || ""} onChange={(e) => props.onChange("commit", e.target.value)} type={props.input_type("commit")} name="commit" placeholder='Commit Format: default to \"{action}({filename}): {path}\"' autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("branch")}>
+              <Input value={props.values["branch"] || ""} onChange={(e) => props.onChange("branch", e.target.value)} type={props.input_type("branch")} name="branch" placeholder='Branch: default to "master"' autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("author_email")}>
+              <Input value={props.values["author_email"] || ""} onChange={(e) => props.onChange("author_email", e.target.value)} type={props.input_type("author_email")} name="author_email" placeholder="Author email" autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("author_name")}>
+              <Input value={props.values["author_name"] || ""} onChange={(e) => props.onChange("author_name", e.target.value)} type={props.input_type("author_name")} name="author_name" placeholder="Author name" autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("committer_email")}>
+              <Input value={props.values["committer_email"] || ""} onChange={(e) => props.onChange("committer_email", e.target.value)} type={props.input_type("committer_email")} name="committer_email" placeholder="Committer email" autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("committer_name")}>
+              <Input value={props.values["committer_name"] || ""} onChange={(e) => props.onChange("committer_name", e.target.value)} type={props.input_type("committer_name")} name="committer_name" placeholder="Committer name" autoComplete="new-password" />
+            </NgIf>
+          </NgIf>
+          <Button type="submit" theme="emphasis">CONNECT</Button>
+        </div>
+    );
+});
+
+const S3Form = formHelper(function(props){
+    const onAdvanced = (value) => {
+        if(value == true){
+            props.values.path = "";
+            props.values.endpoint = "";
+        }else{
+            delete props.values.path;
+            delete props.values.endpoint;
+        }
+        props.onChange();
+    };
+    const is_advanced = props.advanced(
+        props.values.path,
+        props.values.endpoint
+    );
+
+    return (
+        <div>
+          <NgIf cond={props.should_appear("access_key_id")}>
+            <Input value={props.values["access_key_id"] || ""} onChange={(e) => props.onChange("access_key_id", e.target.value)} value={props.values.access_key_id || ""} onChange={(e) => props.onChange("access_key_id", e.target.value)} type={props.input_type("access_key_id")} name="access_key_id" placeholder="Access Key ID*" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("secret_access_key")}>
+            <Input value={props.values["secret_access_key"] || ""} onChange={(e) => props.onChange("secret_access_key", e.target.value)} type={props.input_type("secret_access_key")} name="secret_access_key" placeholder="Secret Access Key*" autoComplete="new-password" />
+          </NgIf>
+          <NgIf cond={props.should_appear("advanced")}>
+            <label>
+              <input checked={is_advanced} onChange={(e) => onAdvanced(e.target.checked)} type="checkbox" autoComplete="new-password"/> Advanced
+            </label>
+          </NgIf>
+          <NgIf cond={is_advanced} className="advanced_form">
+            <NgIf cond={props.should_appear("path")}>
+              <Input value={props.values["path"] || ""} onChange={(e) => props.onChange("path", e.target.value)} type={props.input_type("path")} name="path" placeholder="Path" autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("endpoint")}>
+              <Input value={props.values["endpoint"] || ""} onChange={(e) => props.onChange("endpoint", e.target.value)} type={props.input_type("endpoint")} name="endpoint" placeholder="Endpoint" autoComplete="new-password" />
+            </NgIf>
+          </NgIf>
+          <Button type="submit" theme="emphasis">CONNECT</Button>
+        </div>
+    );
+});
+
+const DropboxForm = formHelper(function(props){
+    const redirect = () => {
+        return props.onThirdPartyLogin("dropbox");
+    };
+    return (
+        <div>
+          <div onClick={redirect}>
+            <img src={img_dropbox} />
+          </div>
+          <Button type="button" onClick={redirect} theme="emphasis">LOGIN WITH DROPBOX</Button>
+        </div>
+    );
+});
+
+const GDriveForm = formHelper(function(props){
+    const redirect = () => {
+        return props.onThirdPartyLogin("google");
+    };
+    return (
+        <div>
+          <div onClick={redirect}>
+            <img src={img_drive}/>
+          </div>
+          <Button type="button" onClick={redirect} theme="emphasis">LOGIN WITH GOOGLE</Button>
+        </div>
+    );
+});
+
+function formHelper(WrappedComponent){
+    return (props) => {
+        const helpers = {
+            should_appear: function(key){
+                const val = props.config[key];
+                if(val === false) return false;
+                else if(val === null) return false;
+                else if(val === undefined) return true;
+                return false;
+            },
+            input_type: function(key){
+                if(["password", "passphrase", "secret_access_key"].indexOf(key) !== -1){
+                    return "password";
+                }
+                return "text";
+            },
+            onChange: function(key, value){
+                let values = props.values;
+                if(typeof key === "string") values[key] = value;
+                props.onChange(values);
+            },
+            advanced: function(){
+                let res = false;
+                for (let i=0; i < arguments.length; i++){
+                    if(arguments[i] !== undefined) {
+                        return true;
+                    }
+                }
+                return res;
+            }
+        };
+        return (
+            <WrappedComponent {...props} {...helpers} />
+        );
+    };
 }

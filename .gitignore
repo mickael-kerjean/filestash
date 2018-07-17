@@ -1,7 +1,6 @@
-server/public/js
-server/public/index.html
 node_modules/
 babel_cache/
+dist/
 .DS_Store
 \#*\#
 .\#*

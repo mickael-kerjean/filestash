@@ -31,13 +31,11 @@ export class ConnectPage extends React.Component {
             return decodeURIComponent(results[2].replace(/\+/g, " "));
         }
 
-        // dropbox login
-        if(getParam('state') === 'dropbox'){
+        const state = getParam('state');
+        if(state === "dropbox"){
             this.setState({doing_a_third_party_login: true});
             this.authenticate({bearer: getParam('access_token'), type: 'dropbox'});
-        }
-        // google drive login
-        if(getParam('code')){
+        }else if(state === "googledrive"){
             this.setState({doing_a_third_party_login: true});
             this.authenticate({code: getParam('code'), type: 'gdrive'});
         }
@@ -93,7 +91,7 @@ export class ConnectPage extends React.Component {
     render() {
         return (
             <div className="component_page_connect">
-              <NgIf cond={config.fork_button}>
+              <NgIf cond={CONFIG["fork_button"]}>
                 <ForkMe repo="https://github.com/mickael-kerjean/nuage" />
               </NgIf>
               <Container maxWidth="565px">

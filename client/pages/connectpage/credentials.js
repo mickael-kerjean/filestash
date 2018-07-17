@@ -11,6 +11,7 @@ export class Credentials extends React.Component {
         const key = memory.get('credentials_key') || ''; // we use a clojure for the "key" because we
                                                          // want to persist it in memory, not just in the
                                                          // state which is kill whenever react decide
+
         this.state = {
             key: key || '',
             message: '',

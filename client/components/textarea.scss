@@ -1,11 +1,17 @@
+@font-face {
+    font-family: password;
+    src: url('textarea.woff');
+}
+
 .component_textarea{
     background: inherit;
     border: none;
     border-radius: 0;
     width: 100%;
     display: inline-block;
-    font-size: inherit;
-    font-family: inherit;
+    font-family: "San Francisco","Roboto","Arial",sans-serif;
+    -webkit-text-size-adjust: 100%;
+    font-size: 16px;
     padding: 5px 0px 5px 0px;
     margin: 0 0 8px 0;
     outline: none;
@@ -14,9 +20,13 @@
     vertical-align: top;
     min-width: 100%;
     max-width: 100%;
+    max-height: 31px; /* Firefox was doing some weird things */
 
     &[name="password"]{
-        -webkit-text-security: disc;
+        &.hasText{
+            font-family: 'password';
+        }
+        -webkit-text-security:disc!important;
     }
 
     border-bottom: 2px solid rgba(70, 99, 114, 0.1);
