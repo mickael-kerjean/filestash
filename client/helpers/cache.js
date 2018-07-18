@@ -49,7 +49,7 @@ Data.prototype.get = function(type, path){
             };
             query.onerror = error;
         });
-    });
+    }).catch(() => Promise.resolve(null))
 }
 
 Data.prototype.update = function(type, path, fn, exact = true){
@@ -73,7 +73,7 @@ Data.prototype.update = function(type, path, fn, exact = true){
                 cursor.continue();
             };
         });
-    });
+    }).catch(() => Promise.resolve(null))
 }
 
 
@@ -93,7 +93,7 @@ Data.prototype.upsert = function(type, path, fn){
             };
             query.onerror = error;
         });
-    });
+    }).catch(() => Promise.resolve(null))
 }
 
 Data.prototype.add = function(type, path, data){
@@ -107,7 +107,7 @@ Data.prototype.add = function(type, path, data){
             request.onsuccess = () => done(data);
             request.onerror = (e) => error(e);
         });
-    });
+    }).catch(() => Promise.resolve(null))
 }
 
 Data.prototype.remove = function(type, path, exact = true){
@@ -139,7 +139,7 @@ Data.prototype.remove = function(type, path, exact = true){
                 };
             });
         }
-    });
+    }).catch(() => Promise.resolve(null))
 }
 
 Data.prototype.fetchAll = function(fn, type = this.FILE_PATH){
@@ -156,11 +156,13 @@ Data.prototype.fetchAll = function(fn, type = this.FILE_PATH){
                 cursor.continue();
             };
         });
-    });
+    }).catch(() => Promise.resolve(null))
 }
 
 Data.prototype.destroy = function(){
-    this.db.then((db) => db.close())
+    this.db
+        .then((db) => db.close())
+        .catch(() => {})
     clearTimeout(this.intervalId);
     window.indexedDB.deleteDatabase('nuage');
     this._init();
@@ -168,4 +170,3 @@ Data.prototype.destroy = function(){
 
 
 export const cache = new Data();
-window._cache = cache;

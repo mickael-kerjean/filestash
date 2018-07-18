@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v1.0';
+const CACHE_NAME = 'v0.3';
 const DELAY_BEFORE_SENDING_CACHE = 2000;
 
 /*

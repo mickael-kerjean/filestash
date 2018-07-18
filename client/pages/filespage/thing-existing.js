@@ -123,7 +123,7 @@ export class ExistingThing extends React.Component {
             const type = getMimeType(_path).split("/")[0];
             if(type === "image"){
                 Files.url(_path).then((url) => {
-                    this.setState({preview: url+"&size=250"});
+                    this.setState({preview: url+"&thumbnail=true"});
                 });
             }
         }

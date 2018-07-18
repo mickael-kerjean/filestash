@@ -389,6 +389,9 @@ const S3Form = formHelper(function(props){
             <NgIf cond={props.should_appear("path")}>
               <Input value={props.values["path"] || ""} onChange={(e) => props.onChange("path", e.target.value)} type={props.input_type("path")} name="path" placeholder="Path" autoComplete="new-password" />
             </NgIf>
+            <NgIf cond={props.should_appear("region")}>
+              <Input value={props.values["region"] || ""} onChange={(e) => props.onChange("region", e.target.value)} type={props.input_type("region")} name="region" placeholder="Region" autoComplete="new-password" />
+            </NgIf>
             <NgIf cond={props.should_appear("endpoint")}>
               <Input value={props.values["endpoint"] || ""} onChange={(e) => props.onChange("endpoint", e.target.value)} type={props.input_type("endpoint")} name="endpoint" placeholder="Endpoint" autoComplete="new-password" />
             </NgIf>
