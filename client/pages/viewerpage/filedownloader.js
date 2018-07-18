@@ -10,10 +10,11 @@ export class FileDownloader extends React.Component{
     }
 
     onClick(){
+        document.cookie = "download=yes; path=/; max-age=120;";
         this.setState({
             loading: true,
             id: window.setInterval(function(){
-                if(document.cookie){
+                if(/download=yes/.test(document.cookie) === false){
                     this.setState({loading: false})
                     window.clearInterval(this.state.id);
                 }

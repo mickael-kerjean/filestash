@@ -53,6 +53,7 @@ class FileSystem{
                     path: path,
                     results: null,
                     access_count: 0,
+                    metadata: null
                 }, _files);
                 store.access_count += 1;
                 store.results = response.results || [];
@@ -60,6 +61,7 @@ class FileSystem{
                     f.path = pathBuilder(path, f.name);
                     return f;
                 });
+                store.metadata = response.metadata;
 
                 if(_files && _files.results){
                     // find out which entry we want to keep from the cache
@@ -82,7 +84,11 @@ class FileSystem{
                 }
 
                 if(this.current_path === path){
-                    this.obs && this.obs.next({status: 'ok', results: store.results});
+                    this.obs && this.obs.next({
+                        status: 'ok',
+                        results: store.results,
+                        metadata: store.metadata
+                    });
                 }
                 store.last_update = new Date();
                 store.last_access = new Date();
@@ -99,7 +105,11 @@ class FileSystem{
             return cache.get(cache.FILE_PATH, path).then((response) => {
                 if(!response || !response.results) return null;
                 if(this.current_path === path){
-                    this.obs && this.obs.next({status: 'ok', results: response.results});
+                    this.obs && this.obs.next({
+                        status: 'ok',
+                        results: response.results,
+                        metadata: response.metadata
+                    });
                 }
                 return response;
             });
@@ -107,7 +117,11 @@ class FileSystem{
             return cache.upsert(cache.FILE_PATH, path, (response) => {
                 if(!response || !response.results) return null;
                 if(this.current_path === path){
-                    this.obs && this.obs.next({status: 'ok', results: response.results});
+                    this.obs && this.obs.next({
+                        status: 'ok',
+                        results: response.results,
+                        metadata: response.metadata
+                    });
                 }
                 response.last_access = new Date();
                 response.access_count += 1;

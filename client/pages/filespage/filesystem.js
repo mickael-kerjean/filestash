@@ -18,31 +18,15 @@ import { FileZone } from './filezone';
 export class FileSystem extends React.Component {
     constructor(props){
         super(props);
-        this.state = {
-            creating: null,
-            access_right: this._findAccessRight(props.files)
-        };
-    }
-
-    _findAccessRight(files){
-        for(let i=0, l=files.length; i< l; i++){
-            let file = files[i];
-            if(file.name === './' && file.type === 'metadata'){
-                return file;
-            }
-        }
-        return {can_create_file: true, can_create_directory: true};
-    }
-
-    onComponentPropsUpdate(props){
-        this.setState({access_right: this._findAccessRight(props.files)});
     }
 
     render() {
+        const metadata = this.props.metadata || {};
+
         return this.props.connectDropFile(
             <div className="component_filesystem">
               <Container>
-                <NewThing path={this.props.path} sort={this.props.sort} view={this.props.view} onViewUpdate={(value) => this.props.onView(value)} onSortUpdate={(value) => {this.props.onSort(value);}} accessRight={this.state.access_right}></NewThing>
+                <NewThing path={this.props.path} sort={this.props.sort} view={this.props.view} onViewUpdate={(value) => this.props.onView(value)} onSortUpdate={(value) => {this.props.onSort(value);}} accessRight={metadata}></NewThing>
                 <NgIf cond={this.props.fileIsOver}>
                   <FileZone path={this.props.path} />
                 </NgIf>
@@ -51,13 +35,13 @@ export class FileSystem extends React.Component {
                   {
                       this.props.files.map((file, index) => {
                           if(file.type === 'directory' || file.type === 'file' || file.type === 'link' || file.type === 'bucket'){
-                              return ( <ExistingThing view={this.props.view} key={file.name+(file.icon || '')} file={file} path={this.props.path} /> );
+                              return ( <ExistingThing view={this.props.view} key={file.name+(file.icon || '')} file={file} path={this.props.path} metadata={metadata} /> );
                           }
                       })
                   }
                   </ReactCSSTransitionGroup>
                 </NgIf>
-                <NgIf className="error" cond={this.props.files.length === 0 && !this.state.creating}>
+                <NgIf className="error" cond={this.props.files.length === 0}>
                   There is nothing here
                 </NgIf>
               </Container>
@@ -68,5 +52,6 @@ export class FileSystem extends React.Component {
 
 FileSystem.PropTypes = {
     path: PropTypes.string.isRequired,
-    files: PropTypes.array.isRequired
+    files: PropTypes.array.isRequired,
+    metadata: PropTypes.object.isRequired
 }

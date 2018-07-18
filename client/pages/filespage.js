@@ -25,6 +25,7 @@ export class FilesPage extends React.Component {
             show_hidden: settings_get('filespage_show_hidden') || CONFIG["display_hidden"],
             view: settings_get('filespage_view') || 'grid',
             files: [],
+            metadata: null,
             frequents: [],
             page_number: PAGE_NUMBER_INIT,
             loading: true,
@@ -101,7 +102,12 @@ export class FilesPage extends React.Component {
                 if(this.state.show_hidden === false){
                     files = files.filter((file) => file.name[0] === "." ? false : true);
                 }
-                this.setState({files: sort(files, this.state.sort), loading: false, page_number: PAGE_NUMBER_INIT});
+                this.setState({
+                    metadata: res.metadata,
+                    files: sort(files, this.state.sort),
+                    loading: false,
+                    page_number: PAGE_NUMBER_INIT
+                });
             }else{
                 notify.send(res, 'error');
             }
@@ -172,7 +178,7 @@ export class FilesPage extends React.Component {
                       <NgIf cond={this.state.path === '/'}>
                         <FrequentlyAccess files={this.state.frequents}/>
                       </NgIf>
-                      <FileSystem path={this.state.path} sort={this.state.sort} view={this.state.view} onSort={this.onSort.bind(this)} onView={this.onView.bind(this)} files={this.state.files.slice(0, this.state.page_number * 24)} />
+                      <FileSystem path={this.state.path} sort={this.state.sort} view={this.state.view} onSort={this.onSort.bind(this)} onView={this.onView.bind(this)} files={this.state.files.slice(0, this.state.page_number * 24)} metadata={this.state.metadata} />
                       <Uploader path={this.state.path} />
                     </NgIf>
                   </InfiniteScroll>

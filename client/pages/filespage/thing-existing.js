@@ -19,6 +19,9 @@ const fileSource = {
         };
     },
     canDrag(props, monitor){
+        if (props.metadata.can_move === false){
+            return false;
+        }
         return props.file.icon === 'loading'? false : true;
     },
     endDrag(props, monitor, component){
@@ -211,7 +214,7 @@ export class ExistingThing extends React.Component {
                   <Filename filename={this.props.file.name} filesize={this.props.file.size} filetype={this.props.file.type} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} onRenameCancel={this.onRenameRequest.bind(this, false)}/>
                   <Message message={this.state.message} />
                   <DateTime show={this.state.icon !== 'loading'} timestamp={this.props.file.time} />
-                  <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} is_renaming={this.state.is_renaming} can_move={this.props.file.can_move !== false} can_delete={this.props.file.can_delete !== false} />
+                  <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} is_renaming={this.state.is_renaming} can_rename={this.props.metadata.can_rename !== false} can_delete={this.props.metadata.can_delete !== false} />
                 </Card>
               </Link>
             </div>
@@ -291,10 +294,10 @@ const ActionButton = (props) => {
 
     return (
         <div className="component_action">
-          <NgIf cond={props.can_move === true && props.is_renaming === false} type="inline">
+          <NgIf cond={props.can_rename !== false && props.is_renaming === false} type="inline">
             <Icon name="edit" onClick={onRename} className="component_updater--icon" />
           </NgIf>
-          <NgIf cond={props.can_delete === true} type="inline">
+          <NgIf cond={props.can_delete !== false} type="inline">
             <Icon name="delete" onClick={onDelete} className="component_updater--icon"/>
           </NgIf>
         </div>

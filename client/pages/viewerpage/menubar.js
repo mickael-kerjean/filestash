@@ -38,10 +38,6 @@ class DownloadButton extends React.Component {
             loading: true
         });
 
-        // This my friend is a dirty hack aiming to detect when we the download effectively start
-        // so that we can display a spinner instead of having a user clicking the download button
-        // 10 times. It works by sniffing a cookie in our session that will get destroy when
-        // the server actually send a response
         document.cookie = "download=yes; path=/; max-age=120;";
         this.state.id = window.setInterval(() => {
             if(/download=yes/.test(document.cookie) === false){

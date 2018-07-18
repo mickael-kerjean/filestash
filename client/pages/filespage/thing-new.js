@@ -57,20 +57,12 @@ export class NewThing extends React.Component {
         this.props.onSortUpdate(e);
     }
 
-    // SEARCH BAR: WIP
-    //     <div className="search">
-    //   <label>
-    //     <input type="text" />
-    //     <Icon name="search_dark"/>
-    //   </label>
-    // </div>
-
     render(){
         return (
             <div>
               <div className="menubar no-select">
-                <NgIf cond={this.props.accessRight.can_create_file === true} onClick={this.onNew.bind(this, 'file')} type="inline">New File</NgIf>
-                <NgIf cond={this.props.accessRight.can_create_directory === true} onClick={this.onNew.bind(this, 'directory')} type="inline">New Directory</NgIf>
+                <NgIf cond={this.props.accessRight.can_create_file !== false} onClick={this.onNew.bind(this, 'file')} type="inline">New File</NgIf>
+                <NgIf cond={this.props.accessRight.can_create_directory !== false} onClick={this.onNew.bind(this, 'directory')} type="inline">New Directory</NgIf>
                 <Dropdown className="view sort" onChange={this.onSortChange.bind(this)}>
                   <DropdownButton>
                     <Icon name="sort"/>
