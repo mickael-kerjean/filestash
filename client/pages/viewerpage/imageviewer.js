@@ -262,7 +262,7 @@ class Img extends React.Component{
 
     render(){
         const image_url = (url, size) => {
-            return url+"&meta=true&size="+parseInt(window.innerWidth*size);
+            return url+"&size="+parseInt(window.innerWidth*size);
         };
         if(!this.props.src) return null;
 

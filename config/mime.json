@@ -1,35 +1,4 @@
-const path = require('path');
-
-module.exports.getMimeType = function(file){
-    let ext = path.extname(file).replace(/^\./, '').toLowerCase();
-    let mime = db[ext];
-    if(mime){
-        return mime;
-    }else{
-        return 'text/plain';
-    }
-}
-
-module.exports.opener = function(file){
-    let mime = getMimeType(file);
-    if(mime.split('/')[0] === 'text'){
-        return 'editor';
-    }else if(mime === 'application/pdf'){
-        return 'pdf';
-    }else if(mime.split('/')[0] === 'image'){
-        return 'image';
-    }else if(['application/javascript', 'application/xml', 'application/x-perl'].indexOf(mime) !== -1){
-        return 'editor';
-    }else if(['audio/wav', 'audio/mp3', 'audio/flac'].indexOf(mime) !== -1){
-        return 'audio';
-    }else if(['video/webm', 'video/mp4', 'application/ogg'].indexOf(mime) !== -1){
-        return 'video';
-    }else{
-        return 'download';
-    }
-}
-
-const db = {
+{
     "html": "text/html",
     "shtml": "text/html",
     "htm": "text/html",
@@ -45,7 +14,6 @@ const db = {
     "jpeg": "image/jpeg",
     "svg": "image/svg",
     "png": "image/png",
-    "svg": "image/svg+xml",
     "svgz": "image/svg+xml",
     "webp": "image/webp",
     "gif": "image/gif",
@@ -228,9 +196,7 @@ const db = {
     "msi": "application/octet-stream",
     "msm": "application/octet-stream",
     "msp": "application/octet-stream",
-    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-};
-
-module.exports.mime = db;
+    "docx": "application/word",
+    "xlsx": "application/excel",
+    "pptx": "application/powerpoint"
+}

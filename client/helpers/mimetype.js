@@ -1,9 +1,8 @@
 import Path from 'path';
-import db from '../../server/common/mimetype.json';
 
 export function getMimeType(file){
     let ext = Path.extname(file).replace(/^\./, '').toLowerCase();
-    let mime = db[ext];
+    let mime = CONFIG.mime[ext];
     if(mime){
         return mime;
     }else{

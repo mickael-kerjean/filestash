@@ -1,0 +1,56 @@
+{
+    "general": {
+        "port": 8334,
+        "host": "http://127.0.0.1:8334",
+        "secret_key": "example key 1234",
+        "editor": "emacs",
+        "fork_button": true,
+        "display_hidden": false,
+        "client_search_enable": true,
+        "client_search_per_min": 20
+    },
+    "log": {
+        "enable": true,
+        "level": "INFO",
+        "telemetry": true
+    },
+    "oauth": {
+        "gdrive": {
+            "client_id": "691396016355-nheulkjivoacbi7v4i7oet24tfpcu8h0.apps.googleusercontent.com",
+            "client_secret": "xXziB6LMQNLPHGHFrpfHNUSR"
+        },
+        "dropbox": {
+            "client_id": "rwwexrciugmfkls"
+        }
+    },
+    "connections": [
+        {
+            "type": "webdav",
+            "label": "WebDav"
+        },
+        {
+            "type": "ftp",
+            "label": "FTP"
+        },
+        {
+            "type": "sftp",
+            "label": "SFTP"
+        },
+        {
+            "type": "git",
+            "label": "GIT"
+        },
+        {
+            "type": "s3",
+            "label": "S3"
+        },
+        {
+            "type": "dropbox",
+            "label": "Dropbox"
+        },
+        {
+            "type": "gdrive",
+            "label": "Drive"
+        }
+    ]
+}

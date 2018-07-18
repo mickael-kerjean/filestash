@@ -1,5 +1,4 @@
 node_modules/
-babel_cache/
 dist/
 .DS_Store
 package-lock.json

@@ -1,0 +1,201 @@
+package backend
+
+import (
+	"encoding/json"
+	. "github.com/mickael-kerjean/nuage/server/common"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"time"
+)
+
+type Dropbox struct {
+	ClientId string
+	Hostname string
+	Bearer   string
+}
+
+func NewDropbox(params map[string]string, app *App) (IBackend, error) {
+	backend := Dropbox{}
+	backend.ClientId = app.Config.OAuthProvider.Dropbox.ClientID
+	backend.Hostname = app.Config.General.Host
+	backend.Bearer = params["bearer"]
+
+	if backend.ClientId == "" {
+		return backend, NewError("Missing ClientID: Contact your admin", 502)
+	} else if backend.Hostname == "" {
+		return backend, NewError("Missing Hostname: Contact your admin", 502)
+	}
+	return backend, nil
+}
+
+func (d Dropbox) Info() string {
+	return "dropbox"
+}
+
+func (d Dropbox) OAuthURL() string {
+	url := "https://www.dropbox.com/oauth2/authorize?"
+	url += "client_id=" + d.ClientId
+	url += "&redirect_uri=" + d.Hostname + "/login"
+	url += "&response_type=token"
+	url += "&state=dropbox"
+	return url
+}
+
+func (d Dropbox) Ls(path string) ([]os.FileInfo, error) {
+	files := make([]os.FileInfo, 0)
+
+	args := struct {
+		Path             string `json:"path"`
+		Recursive        bool   `json:"recursive"`
+		IncludeDeleted   bool   `json:"include_deleted"`
+		IncludeMediaInfo bool   `json:"include_media_info"`
+	}{d.path(path), false, false, true}
+	res, err := d.request("POST", "https://api.dropboxapi.com/2/files/list_folder", d.toReader(args), nil)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	if res.StatusCode >= 400 {
+		return nil, NewError(HTTPFriendlyStatus(res.StatusCode)+": can't get things in"+filepath.Base(path), res.StatusCode)
+	}
+
+	var r struct {
+		Files []struct {
+			Type string    `json:".tag"`
+			Name string    `json:"name"`
+			Time time.Time `json:"client_modified"`
+			Size uint      `json:"size"`
+		} `json:"entries"`
+	}
+	decoder := json.NewDecoder(res.Body)
+	decoder.Decode(&r)
+
+	for _, obj := range r.Files {
+		files = append(files, File{
+			FName: obj.Name,
+			FType: func(p string) string {
+				if p == "folder" {
+					return "directory"
+				}
+				return "file"
+			}(obj.Type),
+			FTime: obj.Time.UnixNano() / 1000,
+			FSize: int64(obj.Size),
+		})
+	}
+	return files, nil
+}
+
+func (d Dropbox) Cat(path string) (io.Reader, error) {
+	res, err := d.request("POST", "https://content.dropboxapi.com/2/files/download", nil, func(req *http.Request) {
+		arg := struct {
+			Path string `json:"path"`
+		}{d.path(path)}
+		json, _ := ioutil.ReadAll(d.toReader(arg))
+		req.Header.Set("Dropbox-API-Arg", string(json))
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res.Body, nil
+}
+
+func (d Dropbox) Mkdir(path string) error {
+	args := struct {
+		Path       string `json:"path"`
+		Autorename bool   `json:"autorename"`
+	}{d.path(path), false}
+	res, err := d.request("POST", "https://api.dropboxapi.com/2/files/create_folder_v2", d.toReader(args), nil)
+	if err != nil {
+		return err
+	}
+	res.Body.Close()
+	if res.StatusCode >= 400 {
+		return NewError(HTTPFriendlyStatus(res.StatusCode)+": can't create "+filepath.Base(path), res.StatusCode)
+	}
+	return nil
+}
+
+func (d Dropbox) Rm(path string) error {
+	args := struct {
+		Path string `json:"path"`
+	}{d.path(path)}
+	res, err := d.request("POST", "https://api.dropboxapi.com/2/files/delete_v2", d.toReader(args), nil)
+	if res.StatusCode >= 400 {
+		return NewError(HTTPFriendlyStatus(res.StatusCode)+": can't remove "+filepath.Base(path), res.StatusCode)
+	}
+	res.Body.Close()
+	return err
+}
+
+func (d Dropbox) Mv(from string, to string) error {
+	args := struct {
+		FromPath string `json:"from_path"`
+		ToPath   string `json:"to_path"`
+	}{d.path(from), d.path(to)}
+	res, err := d.request("POST", "https://api.dropboxapi.com/2/files/move_v2", d.toReader(args), nil)
+	if res.StatusCode >= 400 {
+		return NewError(HTTPFriendlyStatus(res.StatusCode)+": can't do that", res.StatusCode)
+	}
+	res.Body.Close()
+	return err
+}
+
+func (d Dropbox) Touch(path string) error {
+	return d.Save(path, strings.NewReader(""))
+}
+
+func (d Dropbox) Save(path string, file io.Reader) error {
+	res, err := d.request("POST", "https://content.dropboxapi.com/2/files/upload", file, func(req *http.Request) {
+		arg := struct {
+			Path       string `json:"path"`
+			AutoRename bool   `json:"autorename"`
+			Mode       string `json:"mode"`
+		}{d.path(path), false, "overwrite"}
+		json, _ := ioutil.ReadAll(d.toReader(arg))
+		req.Header.Set("Dropbox-API-Arg", string(json))
+		req.Header.Set("Content-Type", "application/octet-stream")
+	})
+	if err != nil {
+		return err
+	}
+	res.Body.Close()
+	if res.StatusCode >= 400 {
+		return NewError(HTTPFriendlyStatus(res.StatusCode)+": can't do that", res.StatusCode)
+	}
+	return err
+}
+
+func (d Dropbox) request(method string, url string, body io.Reader, fn func(*http.Request)) (*http.Response, error) {
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+d.Bearer)
+	if fn == nil {
+		req.Header.Set("Content-Type", "application/json")
+	} else {
+		fn(req)
+	}
+	if req.Body != nil {
+		defer req.Body.Close()
+	}
+	return HTTPClient.Do(req)
+}
+
+func (d Dropbox) toReader(a interface{}) io.Reader {
+	j, err := json.Marshal(a)
+	if err != nil {
+		return nil
+	}
+	return strings.NewReader(string(j))
+}
+
+func (d Dropbox) path(path string) string {
+	return regexp.MustCompile(`\/$`).ReplaceAllString(path, "")
+}
