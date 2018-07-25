@@ -1,36 +1,79 @@
 package images
 
+// Some specs was found here: https://www.media.mit.edu/pia/Research/deepview/exif.html
+// Considering RAW images is wild territory, common approaches use some library with a database
+// of existing marker but it doesn't work great.
+// This is a very simple approach to preview extraction consisting of extracting whatever jpeg
+// in embed inside a RAW picture as we can identify those by looking at the binary:
+// FFD8 (SOI marker)
+// .....
+// FFDA (start of stream)
+// .....
+// FFD9 (EOI marker)
+
 import (
-	"bytes"
-	"github.com/rwcarlsen/goexif/exif"
+	. "github.com/mickael-kerjean/nuage/server/common"
 	"io"
-	"io/ioutil"
-	"log"
+	"os"
+	//"github.com/rwcarlsen/goexif/exif"
 )
 
-type ExifMeta struct {
-	Orientation string
-	Preview     []byte
+const (
+// SOI = []byte{f, f, d, 8}
+// SOS = []byte{}
+// EOI = []byte{}
+)
+
+type JpegMarker struct {
+	Hint     string
+	Position int
 }
 
-func ExtractExif(file io.Reader) (io.Reader, *ExifMeta, error) {
-	meta := &ExifMeta{}
-	buf, err := ioutil.ReadAll(file)
+type JpegImageCoords struct {
+	Start int
+	End   int
+}
+
+func ExtractPreview2(t *Transform, mType string) error {
+	f, err := os.Open(t.Temporary)
 	if err != nil {
-		return bytes.NewReader(buf), nil, err
+		return err
 	}
 
-	x, err := exif.Decode(bytes.NewReader(buf))
+	markers := findMarker(f)
+	solutions := findPossibleSolutions(markers)
+	_ = getBestSolution(solutions)
 
-	if err != nil {
-		log.Println("0")
-		return bytes.NewReader(buf), meta, err
-	}
-	o, err := x.Get(exif.Orientation)
-	if err != nil {
-		return bytes.NewReader(buf), meta, err
-	}
-	meta.Preview, _ = x.JpegThumbnail()
-	meta.Orientation = o.String()
-	return bytes.NewReader(buf), meta, nil
+	// push preview in filesystem
+
+	return NewError("Not implemented", 501)
+}
+
+func findMarker(r io.Reader) []JpegMarker {
+	// iterate through the reader and annotate
+	// positions with predefined markers
+	header := make([]byte, 4)
+	_, _ = io.ReadFull(r, header)
+
+	return nil
+}
+
+func findPossibleSolutions(m []JpegMarker) []JpegImageCoords {
+	// iterate throught marker in order
+	// and extract possible solutions with custom rules
+	return nil
+}
+
+func getBestSolution([]JpegImageCoords) *JpegImageCoords {
+	// sort solutions by order of size
+	// solutions_sorted := func() {
+	// 	return nil
+	// }()
+
+	// take the first solution where the jpeg transcoder
+	// is getting a non error
+	// solution := func() {
+	// }()
+
+	return nil
 }

@@ -30,3 +30,19 @@ func IsRaw(mType string) bool {
 	}
 	return true
 }
+
+func ExtractPreview(t Transform) {
+	filename := C.CString(t.Temporary)
+	defer C.free(unsafe.Pointer(filename))
+
+	var buffer unsafe.Pointer
+	len := C.size_t(0)
+
+	if C.raw_process(filename, &buffer, &len) != 0 {
+		return nil, NewError("", 500)
+	}
+
+	buf := C.GoBytes(buffer, C.int(len))
+	C.free(unsafe.pointer(buffer))
+	return bytes.NewReader(buf), nil
+}

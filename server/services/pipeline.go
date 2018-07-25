@@ -1,81 +1,95 @@
 package services
 
 import (
-	"bytes"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/services/images"
 	"io"
+	"log"
+	"math/rand"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
 
-func ProcessFileBeforeSend(file io.Reader, ctx *App, req *http.Request, res *http.ResponseWriter) (io.Reader, error) {
+const (
+	ImageCachePath = "data/cache/image/"
+)
+
+var Letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+func init() {
+	cachePath := filepath.Join(GetCurrentDir(), ImageCachePath)
+	os.RemoveAll(cachePath)
+	os.MkdirAll(cachePath, os.ModePerm)
+}
+
+func ProcessFileBeforeSend(reader io.Reader, ctx *App, req *http.Request, res *http.ResponseWriter) (io.Reader, error) {
 	query := req.URL.Query()
 	mType := ctx.Helpers.MimeType(query.Get("path"))
 	(*res).Header().Set("Content-Type", mType)
 
 	if strings.HasPrefix(mType, "image/") {
 		if query.Get("thumbnail") != "true" && query.Get("size") == "" {
-			return file, nil
-		}
-		if mType != "image/jpeg" && mType != "image/png" && mType != "image/gif" && mType != "image/tiff" {
-			return file, nil
+			return reader, nil
 		}
 
 		transform := &images.Transform{
-			Rotate: 0,
-			Mirror: false,
-			Size:   300,
+			Temporary: ctx.Helpers.AbsolutePath(ImageCachePath + "image_" + RandomString(10)),
+			Size:      300,
+			Crop:      true,
+			Quality:   50,
+			Exif:      false,
 		}
 
-		file, ex, err := images.ExtractExif(file)
-		if err == nil {
-			// see: https://www.daveperrett.com/images/articles/2012-07-28-exif-orientation-handling-is-a-ghetto/EXIF_Orientations.jpg
-			switch ex.Orientation {
-			case "1":
-				transform.Rotate = 0
-				transform.Mirror = false
-			case "2":
-				transform.Rotate = 0
-				transform.Mirror = true
-			case "3":
-				transform.Rotate = 180
-				transform.Mirror = false
-			case "4":
-				transform.Rotate = 180
-				transform.Mirror = true
-			case "5":
-				transform.Rotate = 90
-				transform.Mirror = true
-			case "6":
-				transform.Rotate = 90
-				transform.Mirror = false
-			case "7":
-				transform.Rotate = 270
-				transform.Mirror = true
-			case "8":
-				transform.Rotate = 270
-				transform.Mirror = false
-			}
+		file, err := os.OpenFile(transform.Temporary, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+		if err != nil {
+			log.Println("error:", err)
+			return reader, NewError("Can't use filesystem", 500)
 		}
+		io.Copy(file, reader)
+		file.Close()
+		if obj, ok := reader.(interface{ Close() error }); ok {
+			obj.Close()
+		}
+		defer func() {
+			os.Remove(transform.Temporary)
+		}()
 
 		if images.IsRaw(mType) {
-			mType = "image/jpeg"
-			file = bytes.NewReader(ex.Preview)
+			// mType = "image/jpeg"
+			// file = bytes.NewReader(ex.Preview)
+			//images.Extract
+		}
+
+		if mType != "image/jpeg" && mType != "image/png" && mType != "image/gif" && mType != "image/tiff" {
+			return reader, nil
 		}
 
 		if query.Get("thumbnail") == "true" {
-			(*res).Header().Set("Cache-Control", "max-age=259200") // 3 days
+			(*res).Header().Set("Cache-Control", "max-age=259200")
 		} else if query.Get("size") != "" {
 			(*res).Header().Set("Cache-Control", "max-age=600")
 			size, err := strconv.ParseInt(query.Get("size"), 10, 64)
 			if err != nil {
-				return file, nil
+				return reader, nil
 			}
 			transform.Size = int(size)
+			transform.Crop = false
+			transform.Quality = 90
+			transform.Exif = true
+
 		}
-		return images.CreateThumbnail(transform, file)
+		return images.CreateThumbnail(transform)
 	}
-	return file, nil
+	return reader, nil
+}
+
+func RandomString(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = Letters[rand.Intn(len(Letters))]
+	}
+	return string(b)
 }
