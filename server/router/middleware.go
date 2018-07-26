@@ -1,6 +1,7 @@
 package router
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -84,8 +85,13 @@ func extractBackend(req *http.Request, ctx *App) (IBackend, error) {
 func telemetry(req *http.Request, res *ResponseWriter, start time.Time, backendType string) {
 	if os.Getenv("ENV") != "dev" {
 		point := logPoint(req, res, start, backendType)
-		body, _ := json.Marshal(point)
-		r, _ := http.NewRequest("POST", "https://log.kerjean.me/nuage", strings.NewReader(string(body)))
+		body, err := json.Marshal(point)
+		if err != nil {
+			return
+		}
+		formData := bytes.NewReader(body)
+
+		r, _ := http.NewRequest("POST", "https://log.kerjean.me/nuage", formData)
 		r.Header.Set("Content-Type", "application/json")
 		HTTPClient.Do(r)
 	}

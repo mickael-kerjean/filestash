@@ -35,6 +35,8 @@ func ProcessFileBeforeSend(reader io.Reader, ctx *App, req *http.Request, res *h
 			return reader, nil
 		}
 
+		/////////////////////////
+		// Specify transformation
 		transform := &images.Transform{
 			Temporary: ctx.Helpers.AbsolutePath(ImageCachePath + "image_" + RandomString(10)),
 			Size:      300,
@@ -42,31 +44,6 @@ func ProcessFileBeforeSend(reader io.Reader, ctx *App, req *http.Request, res *h
 			Quality:   50,
 			Exif:      false,
 		}
-
-		file, err := os.OpenFile(transform.Temporary, os.O_WRONLY|os.O_CREATE, os.ModePerm)
-		if err != nil {
-			log.Println("error:", err)
-			return reader, NewError("Can't use filesystem", 500)
-		}
-		io.Copy(file, reader)
-		file.Close()
-		if obj, ok := reader.(interface{ Close() error }); ok {
-			obj.Close()
-		}
-		defer func() {
-			os.Remove(transform.Temporary)
-		}()
-
-		if images.IsRaw(mType) {
-			// mType = "image/jpeg"
-			// file = bytes.NewReader(ex.Preview)
-			//images.Extract
-		}
-
-		if mType != "image/jpeg" && mType != "image/png" && mType != "image/gif" && mType != "image/tiff" {
-			return reader, nil
-		}
-
 		if query.Get("thumbnail") == "true" {
 			(*res).Header().Set("Cache-Control", "max-age=259200")
 		} else if query.Get("size") != "" {
@@ -79,7 +56,40 @@ func ProcessFileBeforeSend(reader io.Reader, ctx *App, req *http.Request, res *h
 			transform.Crop = false
 			transform.Quality = 90
 			transform.Exif = true
+		}
 
+		/////////////////////////////
+		// Insert file in the fs
+		// => lower RAM usage while processing
+		file, err := os.OpenFile(transform.Temporary, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+		if err != nil {
+			return reader, NewError("Can't use filesystem", 500)
+		}
+		io.Copy(file, reader)
+		file.Close()
+		if obj, ok := reader.(interface{ Close() error }); ok {
+			obj.Close()
+		}
+		defer func() {
+			os.Remove(transform.Temporary)
+		}()
+
+		/////////////////////////
+		// Transcode RAW image
+		if images.IsRaw(mType) {
+			if images.ExtractPreview(transform) == nil {
+				mType = "image/jpeg"
+				(*res).Header().Set("Content-Type", mType)
+			} else {
+				log.Println("> preview nope")
+				return reader, nil
+			}
+		}
+
+		/////////////////////////
+		// Final stage: resizing
+		if mType != "image/jpeg" && mType != "image/png" && mType != "image/gif" && mType != "image/tiff" {
+			return reader, nil
 		}
 		return images.CreateThumbnail(transform)
 	}

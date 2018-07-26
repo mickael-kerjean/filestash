@@ -1,5 +1,21 @@
 package images
 
+// #cgo CFLAGS: -I/usr/local/include
+// #cgo LDFLAGS: -L/usr/local/lib -lraw
+// #include <libraw/libraw.h>
+// #include <raw.h>
+// #include <stdlib.h>
+import "C"
+
+import (
+	. "github.com/mickael-kerjean/nuage/server/common"
+	"math/rand"
+	"time"
+	"unsafe"
+)
+
+const LIBRAW_MEMORY_ERROR = -1
+
 func IsRaw(mType string) bool {
 	switch mType {
 	case "image/x-tif":
@@ -31,18 +47,21 @@ func IsRaw(mType string) bool {
 	return true
 }
 
-func ExtractPreview(t Transform) {
+func ExtractPreview(t *Transform) error {
 	filename := C.CString(t.Temporary)
-	defer C.free(unsafe.Pointer(filename))
-
-	var buffer unsafe.Pointer
-	len := C.size_t(0)
-
-	if C.raw_process(filename, &buffer, &len) != 0 {
-		return nil, NewError("", 500)
+	err := C.raw_process(filename, C.int(t.Size))
+	if err == LIBRAW_MEMORY_ERROR {
+		// libraw acts weird sometimes and I couldn't
+		// find a way to increase its available memory :(
+		r := rand.Intn(2000) + 500
+		time.Sleep(time.Duration(r) * time.Millisecond)
+		C.free(unsafe.Pointer(filename))
+		return ExtractPreview(t)
+	} else if err != 0 {
+		C.free(unsafe.Pointer(filename))
+		return NewError("", 500)
 	}
 
-	buf := C.GoBytes(buffer, C.int(len))
-	C.free(unsafe.pointer(buffer))
-	return bytes.NewReader(buf), nil
+	C.free(unsafe.Pointer(filename))
+	return nil
 }

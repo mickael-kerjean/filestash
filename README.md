@@ -40,13 +40,11 @@
 # Getting started - Installation
 Nuage can be used in different settings:
 - Selfhosting ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-Selfhosting)): install it somewhere you have full control (with docker, without docker, on a server or even android)
-- Paas ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-PaaS)): deployment on Heroku or AWS Lambda
 - Saas ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Installation:-SaaS)): official instance or private instance fully managed
 
 # Support the project
 - Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
 - [Patreon](https://www.patreon.com/mickaelk)
-
 
 # Documentation
 - [FAQ](https://github.com/mickael-kerjean/nuage/wiki)
@@ -54,5 +52,5 @@ Nuage can be used in different settings:
 - [Release Notes](https://github.com/mickael-kerjean/nuage/wiki/Releases)
 
 # Credits
-- [Contributors](https://github.com/mickael-kerjean/nuage/graphs/contributors) and folks developing awesome [libraries](https://github.com/mickael-kerjean/nuage/blob/master/package.json)
+- [Contributors](https://github.com/mickael-kerjean/nuage/graphs/contributors) and folks developing awesome libraries (libvips, libraw, ...)
 - Logo by [ssnjrthegr8](https://github.com/ssnjrthegr8) and Iconography from [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)

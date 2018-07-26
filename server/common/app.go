@@ -33,3 +33,7 @@ var HTTPClient = http.Client{
 		ResponseHeaderTimeout: 60 * time.Second,
 	},
 }
+
+var HTTP = http.Client{
+	Timeout: 800 * time.Millisecond,
+}
