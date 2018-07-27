@@ -4,7 +4,7 @@ MAINTAINER mickael.kerjean@gmail.com
 RUN mkdir -p /tmp/go/src/github.com/mickael-kerjean/ && \
     #################
     # Dependencies
-    apk --no-cache --virtual .build-deps add make gcc g++&& \
+    apk --no-cache --virtual .build-deps add make gcc g++ curl && \
     # libvips
     apk --no-cache add ca-certificates libc-dev libpng tiff libjpeg-turbo giflib fftw-dev && \
     #apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing vips-dev && \
