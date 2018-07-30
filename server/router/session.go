@@ -11,7 +11,7 @@ import (
 
 const (
 	COOKIE_NAME = "auth"
-	COOKIE_PATH = "/api"
+	COOKIE_PATH = "/api/"
 )
 
 func SessionIsValid(ctx App, res http.ResponseWriter, req *http.Request) {

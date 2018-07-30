@@ -68,7 +68,7 @@ type Config struct {
 		ConfigPath string
 		FirstSetup bool
 	} `-`
-	MimeTypes map[string]string `json:"mimetypes"`
+	MimeTypes map[string]string `json:"mimetypes,omitempty"`
 }
 
 func (c *Config) Initialise() {
@@ -133,7 +133,7 @@ func (c *Config) populateDefault(path string) {
 	}
 	if c.General.SecretKey == "" {
 		c.General.SecretKey = RandomString(16)
-		j, err := json.Marshal(c)
+		j, err := json.MarshalIndent(c, "", "    ")
 		if err == nil {
 			f, err := os.OpenFile(path, os.O_WRONLY, os.ModePerm)
 			if err == nil {

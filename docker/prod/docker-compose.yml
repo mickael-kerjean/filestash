@@ -1,0 +1,13 @@
+version: '2'
+services:
+  app:
+    container_name: nuage
+    image: machines/nuage
+    restart: always
+    environment:
+    - APPLICATION_URL=<app_url>
+    - GDRIVE_CLIENT_ID=<gdrive_client>
+    - GDRIVE_CLIENT_SECRET=<gdrive_secret>
+    - DROPBOX_CLIENT_ID=<dropbox_key>
+    ports:
+    - "8334:8334"

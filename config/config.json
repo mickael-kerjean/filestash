@@ -1,8 +1,8 @@
 {
     "general": {
         "port": 8334,
-        "host": "http://127.0.0.1:8334",
-        "secret_key": "example key 1234",
+        "host": "https://nuage.kerjean.me",
+        "secret_key": "",
         "editor": "emacs",
         "fork_button": true,
         "display_hidden": false,
