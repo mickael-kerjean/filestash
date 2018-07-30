@@ -12,6 +12,7 @@ import { BreadCrumb, FileSystem, FrequentlyAccess } from './filespage/';
 import InfiniteScroll from 'react-infinite-scroller';
 
 const PAGE_NUMBER_INIT = 3;
+const LOAD_PER_SCROLL = 24;
 
 @EventReceiver
 @DragDropContext(('ontouchstart' in window)? HTML5Backend : HTML5Backend)
@@ -83,6 +84,11 @@ export class FilesPage extends React.Component {
             e.preventDefault();
             this.setState({show_hidden: !this.state.show_hidden}, () => {
                 settings_put('filespage_show_hidden', this.state.show_hidden);
+                if(!!this.state.show_hidden){
+                    notify.send("Display hidden files", 'info');
+                }else{
+                    notify.send("Hide hidden files", 'info');
+                }
             });
             this.onRefresh();
         }
@@ -168,17 +174,24 @@ export class FilesPage extends React.Component {
     }
 
     render() {
+        let $moreLoading = ( <div className="infinite_scroll_loading" key={-1}><Loader/></div> );
+        if(this.state.files.length <= this.state.page_number * LOAD_PER_SCROLL){
+            $moreLoading = null;
+        }
         return (
             <div className="component_page_filespage">
               <BreadCrumb className="breadcrumb" path={this.state.path} />
               <div className="page_container">
                 <div className="scroll-y">
-                  <InfiniteScroll pageStart={0} hasMore={this.state.files.length > 70} initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={40} loader={<div className="infinite_scroll_loading" key={-1}><Loader/></div>}>
+                  <InfiniteScroll pageStart={0} loader={$moreLoading} hasMore={this.state.files.length > 70}
+                    initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={40}>
                     <NgIf className="container" cond={this.state.loading === false && this.state.error === null}>
                       <NgIf cond={this.state.path === '/'}>
                         <FrequentlyAccess files={this.state.frequents}/>
                       </NgIf>
-                      <FileSystem path={this.state.path} sort={this.state.sort} view={this.state.view} onSort={this.onSort.bind(this)} onView={this.onView.bind(this)} files={this.state.files.slice(0, this.state.page_number * 24)} metadata={this.state.metadata} />
+                      <FileSystem path={this.state.path} sort={this.state.sort} view={this.state.view}
+                                  files={this.state.files.slice(0, this.state.page_number * LOAD_PER_SCROLL)}
+                                  metadata={this.state.metadata} onSort={this.onSort.bind(this)} onView={this.onView.bind(this)} />
                       <Uploader path={this.state.path} />
                     </NgIf>
                   </InfiniteScroll>

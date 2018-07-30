@@ -274,7 +274,7 @@ class OrgViewer extends React.Component {
                                 {
                                   ({isSticky, wasSticky, style, distanceFromTop, distanceFromBottom, calculatedHeight}) => {
                                     return (
-                                        <div className="sticky_header no-select" style={{...style, overflow: "auto", background: "white"}}>
+                                            <div className="sticky_header no-select" style={{...style, overflow: "auto", background: "white", zIndex: 4}}>
                                           <h2>{list} <span>{this.state.headlines[list].length}</span></h2>
                                         </div>
                                     );

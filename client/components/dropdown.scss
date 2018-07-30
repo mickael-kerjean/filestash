@@ -10,7 +10,18 @@
         text-align: center;
     }
     .dropdown_container{
-        padding-top: 3px;
+        &:before{
+            content: ' ';
+            position: absolute;
+            right: 10px;
+            top: 1px;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid white;
+        }
+        padding-top: 5px;
         z-index: 3;
         ul{
             margin: 0;
