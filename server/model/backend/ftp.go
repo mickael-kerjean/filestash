@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -43,10 +44,18 @@ func NewFtp(params map[string]string, app *App) (IBackend, error) {
 		params["password"] = "anonymous"
 	}
 
+	conn := 5
+	if params["conn"] != "" {
+		i, err := strconv.Atoi(params["conn"])
+		if err == nil && i > 0 {
+			conn = i
+		}
+	}
+
 	config := goftp.Config{
 		User:               params["username"],
 		Password:           params["password"],
-		ConnectionsPerHost: 2,
+		ConnectionsPerHost: conn,
 		Timeout:            10 * time.Second,
 	}
 	client, err := goftp.DialConfig(config, params["hostname"]+":"+params["port"])

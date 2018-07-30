@@ -45,7 +45,10 @@ export class ConnectPage extends React.Component {
             .then((path) => {
                 let url = '/files/';
                 if(path){
-                    url += path.replace(/^\/?(.*?)\/?$/, "$1") + "/";
+                    path = path.replace(/^\/?(.*?)\/?$/, "$1");
+                    if(path !== ""){
+                        url += path + "/";
+                    }
                 }
                 cache.destroy();
                 this.props.history.push(url);

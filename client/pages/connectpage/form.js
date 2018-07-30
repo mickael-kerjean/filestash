@@ -216,6 +216,9 @@ const FtpForm = formHelper(function(props){
             <NgIf cond={props.should_appear("port")}>
               <Input value={props.values["port"] || ""} onChange={(e) => props.onChange("port", e.target.value)} type={props.input_type("port")} name="port" placeholder="Port" autoComplete="new-password" />
             </NgIf>
+            <NgIf cond={props.should_appear("conn")}>
+              <Input value={props.values["conn"] || ""} onChange={(e) => props.onChange("conn", e.target.value)} type={props.input_type("conn")} name="conn" placeholder="Number of connections" autoComplete="new-password" />
+            </NgIf>
           </NgIf>
           <Button type="submit" theme="emphasis">CONNECT</Button>
         </div>
