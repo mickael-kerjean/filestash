@@ -112,10 +112,15 @@ func (s S3Backend) Cat(path string) (io.Reader, error) {
 	p := s.path(path)
 	client := s3.New(s.createSession(p.bucket))
 
-	obj, err := client.GetObject(&s3.GetObjectInput{
+	input := &s3.GetObjectInput{
 		Bucket: aws.String(p.bucket),
 		Key:    aws.String(p.path),
-	})
+	}
+	if s.params["encryption_key"] != "" {
+		input.SSECustomerAlgorithm = aws.String("AES256")
+		input.SSECustomerKey = aws.String(s.params["encryption_key"])
+	}
+	obj, err := client.GetObject(input)
 	if err != nil {
 		return nil, err
 	}
@@ -200,11 +205,20 @@ func (s S3Backend) Mv(from string, to string) error {
 	if f.path == "" {
 		return NewError("Can't move this", 403)
 	}
-	_, err := client.CopyObject(&s3.CopyObjectInput{
+
+	input := &s3.CopyObjectInput{
 		Bucket:     aws.String(t.bucket),
 		CopySource: aws.String(f.bucket + "/" + f.path),
 		Key:        aws.String(t.path),
-	})
+	}
+	if s.params["encryption_key"] != "" {
+		input.CopySourceSSECustomerAlgorithm = aws.String("AES256")
+		input.CopySourceSSECustomerKey = aws.String(s.params["encryption_key"])
+		input.SSECustomerAlgorithm = aws.String("AES256")
+		input.SSECustomerKey = aws.String(s.params["encryption_key"])
+	}
+
+	_, err := client.CopyObject(input)
 	if err != nil {
 		return err
 	}
@@ -218,12 +232,18 @@ func (s S3Backend) Touch(path string) error {
 	if p.bucket == "" {
 		return NewError("Can't do that on S3", 403)
 	}
-	_, err := client.PutObject(&s3.PutObjectInput{
+
+	input := &s3.PutObjectInput{
 		Body:          strings.NewReader(""),
 		ContentLength: aws.Int64(0),
 		Bucket:        aws.String(p.bucket),
 		Key:           aws.String(p.path),
-	})
+	}
+	if s.params["encryption_key"] != "" {
+		input.SSECustomerAlgorithm = aws.String("AES256")
+		input.SSECustomerKey = aws.String(s.params["encryption_key"])
+	}
+	_, err := client.PutObject(input)
 	return err
 }
 
@@ -234,11 +254,16 @@ func (s S3Backend) Save(path string, file io.Reader) error {
 		return NewError("Can't do that on S3", 403)
 	}
 	uploader := s3manager.NewUploader(s.createSession(path))
-	_, err := uploader.Upload(&s3manager.UploadInput{
+	input := s3manager.UploadInput{
 		Body:   file,
 		Bucket: aws.String(p.bucket),
 		Key:    aws.String(p.path),
-	})
+	}
+	if s.params["encryption_key"] != "" {
+		input.SSECustomerAlgorithm = aws.String("AES256")
+		input.SSECustomerKey = aws.String(s.params["encryption_key"])
+	}
+	_, err := uploader.Upload(&input)
 	return err
 }
 

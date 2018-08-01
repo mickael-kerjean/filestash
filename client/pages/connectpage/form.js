@@ -364,15 +364,21 @@ const S3Form = formHelper(function(props){
         if(value == true){
             props.values.path = "";
             props.values.endpoint = "";
+            props.values.region = "";
+            props.values.encryption_key = "";
         }else{
             delete props.values.path;
             delete props.values.endpoint;
+            delete props.values.region;
+            delete props.values.encryption_key;
         }
         props.onChange();
     };
     const is_advanced = props.advanced(
         props.values.path,
-        props.values.endpoint
+        props.values.endpoint,
+        props.values.region,
+        props.values.encryption_key
     );
 
     return (
@@ -391,6 +397,9 @@ const S3Form = formHelper(function(props){
           <NgIf cond={is_advanced} className="advanced_form">
             <NgIf cond={props.should_appear("path")}>
               <Input value={props.values["path"] || ""} onChange={(e) => props.onChange("path", e.target.value)} type={props.input_type("path")} name="path" placeholder="Path" autoComplete="new-password" />
+            </NgIf>
+            <NgIf cond={props.should_appear("encryption_key")}>
+              <Input value={props.values["encryption_key"] || ""} onChange={(e) => props.onChange("encryption_key", e.target.value)} type={props.input_type("encryption_key")} name="encryption_key" placeholder="Encryption Key" autoComplete="new-password" />
             </NgIf>
             <NgIf cond={props.should_appear("region")}>
               <Input value={props.values["region"] || ""} onChange={(e) => props.onChange("region", e.target.value)} type={props.input_type("region")} name="region" placeholder="Region" autoComplete="new-password" />
