@@ -61,8 +61,12 @@ export class NewThing extends React.Component {
         return (
             <div>
               <div className="menubar no-select">
-                <NgIf cond={this.props.accessRight.can_create_file !== false} onClick={this.onNew.bind(this, 'file')} type="inline">New File</NgIf>
-                <NgIf cond={this.props.accessRight.can_create_directory !== false} onClick={this.onNew.bind(this, 'directory')} type="inline">New Directory</NgIf>
+                <NgIf cond={this.props.accessRight.can_create_file !== false} onClick={this.onNew.bind(this, 'file')} type="inline">
+                  New File
+                </NgIf>
+                <NgIf cond={this.props.accessRight.can_create_directory !== false} onClick={this.onNew.bind(this, 'directory')} type="inline">
+                  New Directory
+                </NgIf>
                 <Dropdown className="view sort" onChange={this.onSortChange.bind(this)}>
                   <DropdownButton>
                     <Icon name="sort"/>
