@@ -191,7 +191,7 @@ class FileSystem{
     save(path, file){
         const url = '/api/files/cat?path='+prepare(path);
         let formData = new window.FormData();
-        formData.append('file', file);
+        formData.append('file', file, "test");
         return this._replace(path, 'loading')
             .then(() => http_post(url, formData, 'multipart'))
             .then(() => {

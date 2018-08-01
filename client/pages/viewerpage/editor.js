@@ -204,10 +204,10 @@ export class Editor extends React.Component {
     render() {
         return (
             <div className="component_editor">
-              <NgIf cond={this.state.loading === true} style={{height: '100%'}}>
+              <NgIf cond={this.state.loading === true}>
                 <Loader/>
               </NgIf>
-              <NgIf cond={this.state.loading === false} style={{height: '100%'}}>
+              <NgIf cond={this.state.loading === false}>
                 <div id="editor"></div>
               </NgIf>
             </div>

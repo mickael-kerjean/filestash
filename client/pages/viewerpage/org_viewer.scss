@@ -200,26 +200,36 @@
     }
 
     .headline-properties{
+        display: flex;
         > div{
-            display: inline-block;
-            width: 50%;
+            display: flex;
+            width: 100%;
+            label{
+                display: flex;
+                width: 100%;
+                > div {
+                    width: 100%;
+                }
+            }
             @media screen and (max-width: 440px) {
                 width: 100%;
             }
         }
 
         input[type="date"] {
-            width: calc(100% - 26px);
+            width: 100%;
             background: inherit;
             border: none;
             font-size: inherit;
             font-family: inherit;
             color: inherit;
+            margin: 0;
+            padding: 0;
+            line-height: 20px;
         }
         .component_icon{
             width: 20px;
             height: 20px;
-            float: left;
             margin-right: 4px;
         }
         background: var(--super-light);

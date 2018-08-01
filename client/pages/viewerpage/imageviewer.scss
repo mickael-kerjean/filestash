@@ -1,7 +1,9 @@
 .component_imageviewer{
     &, .component_image_container > .images_wrapper, .component_image_container > .images_wrapper > span, .component_image_container > .images_wrapper > span > div{
-        height: 100%;
+        flex: 1;
         display: flex;
+        overflow: hidden;
+        width: 100%;
         flex-direction: column;
     }
 
@@ -17,7 +19,8 @@
             }
         }
         display: flex;
-        width: 100%;
+        flex-grow: 1;
+        height: 100%;
         text-align: center;
         background: #525659;
         overflow: hidden;
@@ -39,8 +42,8 @@
         .images_wrapper{
             width: 100%;
             position: relative;
+            justify-content: center;
             > span{
-                display: block;
                 position: absolute;
                 top: 0;
                 bottom: 0;
@@ -50,7 +53,7 @@
             .component_loader svg{width: 40px;}
         }
         .images_aside{
-            flex: inherit;
+            flex: 0;
             text-align: left;
             width: 0;
             z-index: 1;

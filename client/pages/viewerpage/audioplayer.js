@@ -2,7 +2,8 @@ import React from 'react';
 import WaveSurfer from  'wavesurfer.js';
 
 import { MenuBar } from './menubar';
-import { NgIf, Icon } from '../../components/'
+import { NgIf, Icon } from '../../components/';
+import './audioplayer.scss';
 
 export class AudioPlayer extends React.Component {
     constructor(props){
@@ -74,23 +75,23 @@ export class AudioPlayer extends React.Component {
 
     render(){
         return (
-            <div style={{height: '100%'}}>
+            <div className="component_audioplayer">
               <MenuBar title={this.props.filename} download={this.props.data} />
-              <div style={{textAlign: 'center', background: '#525659', height: '100%', overflow: 'hidden', padding: '20px', boxSizing: 'border-box'}}>
-                <NgIf cond={this.state.error !== null} style={{color: 'white', marginTop: '30px'}}>
+              <div className="audioplayer_container">
+                <NgIf cond={this.state.error !== null} className="audioplayer_error">
                   {this.state.error}
                 </NgIf>
                 <NgIf cond={this.state.error === null}>
                   <NgIf cond={this.state.loading === true}>
                     <Icon name="loading" />
                   </NgIf>
-                  <div style={{background: '#f1f1f1', boxShadow: 'rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px', opacity: this.state.loading? '0' : '1', position: 'relative'}}>
-                    <div style={{position: 'absolute', top: '10px', right: '10px', zIndex: '2', height: '30px'}}>
-                      <NgIf cond={this.state.isPlaying === false} style={{display: 'inline'}}>
-                        <span style={{cursor: 'pointer'}} onClick={this.onPlay.bind(this)}><Icon name="play"/></span>
+                  <div className="audioplayer_box" style={{opacity: this.state.loading? '0' : '1'}}>
+                    <div className="audioplayer_control">
+                      <NgIf cond={this.state.isPlaying === false}>
+                        <span onClick={this.onPlay.bind(this)}><Icon name="play"/></span>
                       </NgIf>
-                      <NgIf cond={this.state.isPlaying === true} style={{display: 'inline'}}>
-                        <span style={{cursor: 'pointer'}} onClick={this.onPause.bind(this)}><Icon name="pause"/></span>
+                      <NgIf cond={this.state.isPlaying === true}>
+                        <span onClick={this.onPause.bind(this)}><Icon name="pause"/></span>
                       </NgIf>
                     </div>
                     <div id="waveform"></div>

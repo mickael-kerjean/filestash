@@ -1,0 +1,26 @@
+.component_filedownloader {
+    text-align: center;
+    background: #525659;
+    width: 100%;
+
+    .download_button{
+        padding: 15px 20px;
+        background: #323639;
+        border-radius: 2px;
+        color: inherit;
+        display: inline-block;
+        margin-top: 50px;
+        box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+
+        // normal download button
+        a > div {
+            font-size: 17px;
+            display: inline-block;
+        }
+        // loading
+        > div {
+            display: inline-block;
+            height: 20px;
+        }
+    }
+}

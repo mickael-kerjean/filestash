@@ -22,7 +22,7 @@ export function opener(file){
         return 'editor';
     }else if(['audio/wav', 'audio/mp3', 'audio/flac', 'audio/ogg'].indexOf(mime) !== -1){
         return 'audio';
-    }else if(mime.split('/')[0] === 'video'){
+    }else if(mime.split('/')[0] === 'video' || mime === "application/ogg"){
         return 'video';
     }else if(mime.split('/')[0] === "application")
         return 'download';

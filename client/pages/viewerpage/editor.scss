@@ -1,13 +1,19 @@
 .component_editor{
+    display: flex;
+    flex-grow: 1;
+    min-height: 0;
     width: 100%;
+
     > div{
+        width: 100%;
+        position: relative;
 
         #editor{
-            height: 100%;
-            flex: 1;
-            display: flex;
-            overflow: hidden;
             width: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
         }
     }
 }

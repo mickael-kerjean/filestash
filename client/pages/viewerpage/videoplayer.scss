@@ -1,7 +1,14 @@
 .component_videoplayer{
     background: #525659;
-    height: 100%;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+
     .video_container{
+        display: flex;
+        flex: 1;
+
         text-align: center;
         background: #525659;
         overflow: hidden;
@@ -29,8 +36,6 @@
         }
     }
 }
-
-
 
 
 /* SKIN FOR VIDEOJS: */

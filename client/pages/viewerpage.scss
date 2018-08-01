@@ -9,11 +9,19 @@
         overflow: hidden;
         width: 100%;
         > div{
+            flex: 1;
+            display: flex;
+            overflow: hidden;
             width: 100%;
-            height: 100%;
-            > div{
+            > div, > span{
+                flex: 1;
+                display: flex;
+                overflow: hidden;
                 width: 100%;
-                height: 100%;
+            }
+            // loader
+            > span {
+                justify-content: center;
             }
         }
     }

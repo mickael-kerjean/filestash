@@ -1,10 +1,11 @@
 .component_ide{
     display: flex;
     flex-direction: column;
-    height: 100%;
+    width: 100%;
+
     .editor_container{
-        height: 100%;
         display: flex;
+        flex-grow: 1;
         // https://stackoverflow.com/questions/44948158/flexbox-overflow-issue-in-firefox
         min-height: 0;
     }

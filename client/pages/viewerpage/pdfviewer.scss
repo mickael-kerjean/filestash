@@ -1,0 +1,15 @@
+.component_pdfviewer{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    flex-grow: 1;
+
+    .pdfviewer_container{
+        text-align: center;
+        background: #525659;
+        height: 100%;
+        width: 100%;
+        flex-grow: 1;
+    }
+}

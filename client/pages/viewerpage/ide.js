@@ -52,16 +52,9 @@ export class IDE extends React.Component {
 
     save(){
         if(this.props.needSaving === false) return;
-
-        let file, blob = new window.Blob([this.state.contentToSave], {type : 'text/plain'});
-        try{
-            file = new window.File([blob], 'test.txt');
-        }catch(err){
-            // for crappy browser:
-            // https://stackoverflow.com/questions/33821631/alternative-for-file-constructor-for-safari
-            file = blob;
-        }
-        return this.props.onSave(file).then(() => this.props.needSavingUpdate(false));
+        // the ipad is the new IE, they don't support the file object so we got to fallback :(
+        let blob = new window.Blob([this.state.contentToSave], {type : 'text/plain'});
+        return this.props.onSave(blob).then(() => this.props.needSavingUpdate(false));
     }
 
     onUpdate(property, refresh, value){
@@ -94,7 +87,7 @@ export class IDE extends React.Component {
 
     render(){
         return (
-            <div className="component_ide no-select">
+            <div className="component_ide">
               <MenuBar title={this.props.filename} download={this.props.url}>
                 <NgIf type="inline" cond={this.state.mode === 'orgmode'}>
                   <span onClick={this.onModeChange.bind(this)}>

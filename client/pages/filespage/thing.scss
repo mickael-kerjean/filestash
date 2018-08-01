@@ -199,8 +199,9 @@
             > span > img.component_icon{
                 padding: 30px;
                 box-sizing: border-box;
-                width: auto;
+                width: 100%;
                 height: 100%;
+                object-fit: contain;
                 margin: 0 auto;
                 z-index: 0;
             }
