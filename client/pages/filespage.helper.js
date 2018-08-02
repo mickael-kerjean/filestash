@@ -1,6 +1,8 @@
 import { Files } from '../model/';
 import { notify } from '../helpers/';
 import Path from 'path';
+import Worker from "../worker/search.worker.js";
+import { Observable } from "rxjs/Observable";
 
 export const sort = function(files, type){
     if(type === 'name'){
@@ -269,4 +271,21 @@ export const onUpload = function(path, e){
             })
         );
     }
+};
+
+
+
+
+const worker = new Worker();9
+export const onSearch = (keyword, path = "/") => {
+    worker.postMessage({
+        action: "search::find",
+        path: path,
+        keyword: keyword
+    });
+    return new Observable((obs) => {
+        worker.onmessage = (m) => {
+            obs.next(m.data);
+        }
+    });
 };

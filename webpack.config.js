@@ -40,6 +40,11 @@ let config = {
             {
                 test: /\.(pdf|jpg|png|gif|svg|ico|woff|woff2|eot|ttf)$/,
                 loader: "url-loader"
+            },
+            {
+                test: /[a-z]+\.worker\.js$/,
+                loader: "worker-loader",
+                options: { name: 'assets/js/[name]_[hash].js' }
             }
         ]
     },

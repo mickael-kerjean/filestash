@@ -8,7 +8,7 @@ function Data(){
 }
 
 Data.prototype._init = function(){
-    const request = window.indexedDB.open('nuage', 1);
+    const request = indexedDB.open('nuage', 2);
     request.onupgradeneeded = (e) => this._setup(e.target.result);
 
     this.db = new Promise((done, err) => {
@@ -23,13 +23,14 @@ Data.prototype._init = function(){
 
 Data.prototype._setup = function(db){
     let store;
-    if(!db.objectStoreNames.contains(this.FILE_PATH)){
-        store = db.createObjectStore(this.FILE_PATH, {keyPath: "path"});
-    }
+    db.deleteObjectStore(this.FILE_PATH);
+    db.deleteObjectStore(this.FILE_CONTENT);
 
-    if(!db.objectStoreNames.contains(this.FILE_CONTENT)){
-        store = db.createObjectStore(this.FILE_CONTENT, {keyPath: "path"});
-    }
+    store = db.createObjectStore(this.FILE_PATH, {keyPath: "path"});
+    store.createIndex("idx_path", "path", { unique: true });
+
+    store = db.createObjectStore(this.FILE_CONTENT, {keyPath: "path"});
+    store.createIndex("idx_path", "path", { unique: true });
 }
 
 /*
@@ -142,30 +143,47 @@ Data.prototype.remove = function(type, path, exact = true){
     }).catch(() => Promise.resolve(null))
 }
 
-Data.prototype.fetchAll = function(fn, type = this.FILE_PATH){
+Data.prototype.fetchAll = function(fn, type = this.FILE_PATH, key = "/"){
     return this.db.then((db) => {
-        const tx = db.transaction(type, "readwrite");
+        const tx = db.transaction([type], "readonly");
         const store = tx.objectStore(type);
-        const request = store.openCursor();
+        const index = store.index("idx_path");
+        const request = index.openCursor(IDBKeyRange.lowerBound(key));
 
         return new Promise((done, error) => {
             request.onsuccess = function(event) {
                 const cursor = event.target.result;
                 if(!cursor) return done();
-                const new_value = fn(cursor.value);
-                cursor.continue();
+                const ret = fn(cursor.value);
+                if(ret !== false){
+                    cursor.continue();
+                    return
+                }
+                db.close();
             };
+            request.onerror = () => {
+                db.close();
+                done();
+            }
         });
     }).catch(() => Promise.resolve(null))
 }
 
 Data.prototype.destroy = function(){
-    this.db
-        .then((db) => db.close())
-        .catch(() => {})
     clearTimeout(this.intervalId);
-    window.indexedDB.deleteDatabase('nuage');
-    this._init();
+    return new Promise((done, err) => {
+        this.db.then((db) => {
+            purgeAll(db, this.FILE_PATH);
+            purgeAll(db, this.FILE_CONTENT);
+        });
+        done();
+
+        function purgeAll(db, type){
+            const tx = db.transaction(type, "readwrite");
+            const store = tx.objectStore(type);
+            store.clear();
+        }
+    });
 }
 
 

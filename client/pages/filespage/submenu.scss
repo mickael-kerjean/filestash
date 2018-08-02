@@ -1,0 +1,77 @@
+@import "../../assets/css/mixin.scss";
+.component_submenu{
+    .component_container{
+        padding-left: 0;
+        padding-right: 0;
+        padding-bottom: 0;
+        margin-bottom: -10px;
+
+        .menubar{
+            font-size: 15px;
+            line-height: 15px;
+            height: 15px;
+            margin-top: 5px;
+            color: var(--light);
+            margin: 5px 0 10px 0;
+
+            /* Create Buttons */
+            > span, form label {
+                display: inline-block;
+                margin-right: 5px;
+                margin-top: -2px;
+                border-radius: 2px;
+                cursor: pointer;
+
+                &:active, &:hover{
+                    color: var(--color);
+                }
+                @include ripple(var(--bg-color));
+            }
+            > span{padding: 3px 5px;}
+
+            > div {cursor: pointer; margin-right: 15px;}
+            .view{
+                float: right;
+                padding: 2px;
+                transition: 0.15s ease-out background;
+                margin-right: 0px;
+                margin-left: 0px;
+                & .search, &.list-grid, > .dropdown_button, form > label {
+                    min-width: inherit;
+                    border-radius: 2px;
+                    padding: 5px;
+                    margin: 2px 0 2px 0;
+                }
+                &.list-grid, & .dropdown_button, & .search{ @include ripple(var(--bg-color)); }
+
+                .dropdown_container .component_icon{
+                    box-sizing: border-box;
+                    border: 2px solid rgba(0,0,0,0);
+                }
+                &.list-grid, & .search{margin-top: -5px!important;}
+                &.component_dropdown { margin-top: -10px; }
+            }
+            &.search_focus form input{transition: 0.2s width ease-in;}
+            form{
+                float: right;
+                margin-top: -3px;
+                input{
+                    font-size: 1em;
+                    margin-top: -3px;
+                    border: none;
+                    background: inherit;
+                    border-bottom: 2px solid var(--light);
+                    color: var(--color);
+                }
+            }
+            &.search_focus > span {
+                display: none;
+            }
+
+            .component_icon{
+                height: 15px;
+                width: 15px;
+            }
+        }
+    }
+}

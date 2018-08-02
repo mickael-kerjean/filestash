@@ -119,10 +119,9 @@ export class ExistingThing extends React.Component {
 
     updateThumbnail(props){
         if(props.view === "grid" && props.icon !== "loading"){
-            const _path = path.join(props.path, props.file.name);
-            const type = getMimeType(_path).split("/")[0];
+            const type = getMimeType(props.file.path).split("/")[0];
             if(type === "image"){
-                Files.url(_path).then((url) => {
+                Files.url(props.file.path).then((url) => {
                     this.setState({preview: url+"&thumbnail=true"});
                 });
             }

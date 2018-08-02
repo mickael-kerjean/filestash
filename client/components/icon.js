@@ -25,6 +25,7 @@ import img_arrow_right_white from '../assets/img/arrow_right_white.svg';
 import img_arrow_left_white from '../assets/img/arrow_left_white.svg';
 import img_more from '../assets/img/more.svg';
 import img_close from '../assets/img/close.svg';
+import img_close_dark from '../assets/img/close_dark.svg';
 import img_schedule from '../assets/img/schedule.svg';
 import img_deadline from '../assets/img/deadline.svg';
 import img_arrow_down from '../assets/img/arrow-down.svg';
@@ -92,6 +93,8 @@ export const Icon = (props) => {
         img = img_more;
     }else if(props.name === 'close'){
         img = img_close;
+    }else if(props.name === 'close_dark'){
+        img = img_close_dark;
     }else if(props.name === 'arrow_up_double'){
         img = img_arrow_up_double;
     }else if(props.name === 'arrow_down_double'){

@@ -1,11 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Ripples from 'react-ripples';
 
-import { Card, NgIf, Icon, EventEmitter, Dropdown, DropdownButton, DropdownList, DropdownItem } from '../../components/';
-import { pathBuilder } from '../../helpers/';
+import { Card, NgIf, Icon, EventEmitter, EventReceiver, Dropdown, DropdownButton, DropdownList, DropdownItem } from '../../components/';
+import { pathBuilder, debounce } from '../../helpers/';
 import "./thing.scss";
 
 @EventEmitter
+@EventReceiver
 export class NewThing extends React.Component {
     constructor(props){
         super(props);
@@ -14,19 +16,41 @@ export class NewThing extends React.Component {
             type: null,
             message: null,
             icon: null,
-            search: "ServiceWorker" in window ? "" : null
+            search_enabled: "ServiceWorker" in window ? true : false,
+            search_input_visible: false,
+            search_keyword: ""
         };
 
         this._onEscapeKeyPress = (e) => {
             if(e.keyCode === 27) this.onDelete();
         };
+        this._onSearchEvent = debounce((state) => {
+            if(typeof state === "boolean"){
+                if(this.state.search_keyword.length != 0) return;
+                this.setState({search_input_visible: state});
+                return;
+            }
+            this.setState({search_input_visible: !this.state.search_input_visible});
+        }, 200);
+
+        this.onPropageSearch = debounce(() => {
+            this.props.onSearch(this.state.search_keyword);
+        }, 1000);
     }
 
     componentDidMount(){
         window.addEventListener('keydown', this._onEscapeKeyPress);
+        this.props.subscribe('new::file', () => {
+            this.onNew("file");
+        });
+        this.props.subscribe('new::directory', () => {
+            this.onNew("directory");
+        });
     }
     componentWillUnmount(){
         window.removeEventListener('keydown', this._onEscapeKeyPress);
+        this.props.unsubscribe('new::file');
+        this.props.unsubscribe('new::directory');
     }
 
     onNew(type){
@@ -57,28 +81,14 @@ export class NewThing extends React.Component {
         this.props.onSortUpdate(e);
     }
 
+    onSearchChange(search){
+        this.setState({search_keyword: search});
+        console.log(search);
+    }
+
     render(){
         return (
             <div>
-              <div className="menubar no-select">
-                <NgIf cond={this.props.accessRight.can_create_file !== false} onClick={this.onNew.bind(this, 'file')} type="inline">
-                  New File
-                </NgIf>
-                <NgIf cond={this.props.accessRight.can_create_directory !== false} onClick={this.onNew.bind(this, 'directory')} type="inline">
-                  New Directory
-                </NgIf>
-                <Dropdown className="view sort" onChange={this.onSortChange.bind(this)}>
-                  <DropdownButton>
-                    <Icon name="sort"/>
-                  </DropdownButton>
-                  <DropdownList>
-                    <DropdownItem name="type" icon={this.props.sort === "type" ? "check" : null}> Sort By Type </DropdownItem>
-                    <DropdownItem name="date" icon={this.props.sort === "date" ? "check" : null}> Sort By Date </DropdownItem>
-                    <DropdownItem name="name" icon={this.props.sort === "name" ? "check" : null}> Sort By Name </DropdownItem>
-                  </DropdownList>
-                </Dropdown>
-                <div className="view list-grid" onClick={this.onViewChange.bind(this)}><Icon name={this.props.view === "grid" ? "list" : "grid"}/></div>
-              </div>
               <NgIf cond={this.state.type !== null} className="component_thing">
                 <Card className="mouse-is-hover highlight">
                   <Icon className="component_updater--icon" name={this.state.icon} />

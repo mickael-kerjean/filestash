@@ -4,7 +4,7 @@ import { Link, withRouter } from 'react-router-dom';
 import { Files } from '../../model/';
 import { sort } from '../../pages/filespage.helper.js';
 import { Icon, NgIf, EventReceiver, EventEmitter } from '../../components/';
-import { dirname, basename, settings_get, getMimeType, debounce } from '../../helpers/';
+import { dirname, basename, settings_get, getMimeType, debounce, gid } from '../../helpers/';
 import './pager.scss';
 
 
@@ -57,7 +57,7 @@ export class Pager extends React.Component {
 
     navigatePage(n){
         if(this.state.files[n]){
-            this.props.history.push(this.state.files[n].link);
+            this.props.history.push(this.state.files[n].link+"?once="+gid());
             if(this.refs.$page) this.refs.$page.blur();
             let preload_index = (n >= this.state.n || (this.state.n === this.state.files.length - 1 && n === 0)) ? this.calculateNextPageNumber(n) : this.calculatePrevPageNumber(n);
             if(!this.state.files[preload_index].path){
