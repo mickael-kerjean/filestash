@@ -10,7 +10,7 @@ export class Textarea extends React.Component {
 
     render() {
         let className = "component_textarea";
-        if(this.refs.el && this.refs.el.value.length > 0){
+        if((this.refs.el !== undefined && this.refs.el.value.length > 0) || (this.props.value !== undefined && this.props.value.length > 0)){
             className += " hasText";
         }
 
