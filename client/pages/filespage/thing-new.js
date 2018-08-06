@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Ripples from 'react-ripples';
 
 import { Card, NgIf, Icon, EventEmitter, EventReceiver, Dropdown, DropdownButton, DropdownList, DropdownItem } from '../../components/';
 import { pathBuilder, debounce } from '../../helpers/';

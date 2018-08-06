@@ -3,7 +3,8 @@ docker_dev:
 	@docker run -ti --net=host -v /home/mickael/Documents/projects/go/src/github.com/mickael-kerjean/nuage:/tmp/go/src/github.com/mickael-kerjean/nuage nuage_dev sh
 
 docker_prd:
-	docker build -t machines/nuage docker/prod/
+	docker build --no-cache -t machines/nuage docker/prod/
+	docker push machines/nuage
 
 build_frontend:
 	NODE_ENV=production npm run build
