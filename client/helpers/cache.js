@@ -7,9 +7,11 @@ function Data(){
     this._init();
 }
 
+const DB_VERSION = 2;
+
 Data.prototype._init = function(){
-    const request = indexedDB.open('nuage', 2);
-    request.onupgradeneeded = (e) => this._setup(e.target.result);
+    const request = indexedDB.open('nuage', DB_VERSION);
+    request.onupgradeneeded = (e) => this._setup(e);
 
     this.db = new Promise((done, err) => {
         request.onsuccess = (e) => {
@@ -21,10 +23,16 @@ Data.prototype._init = function(){
     });
 }
 
-Data.prototype._setup = function(db){
+Data.prototype._setup = function(e){
     let store;
-    db.deleteObjectStore(this.FILE_PATH);
-    db.deleteObjectStore(this.FILE_CONTENT);
+    let db = e.target.result;
+
+    if(e.oldVersion == 1){
+        // we've change the schema on v2 adding an index, let's flush
+        // to make sure everything will be fine
+        db.deleteObjectStore(this.FILE_PATH);
+        db.deleteObjectStore(this.FILE_CONTENT);
+    }
 
     store = db.createObjectStore(this.FILE_PATH, {keyPath: "path"});
     store.createIndex("idx_path", "path", { unique: true });

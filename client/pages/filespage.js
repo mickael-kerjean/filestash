@@ -124,7 +124,7 @@ export class FilesPage extends React.Component {
         this.observers.push(observer);
         this.setState({error: null});
         if(path === "/"){
-            Files.frequents().then((s) => console.log(s) && this.setState({frequents: s}));
+            Files.frequents().then((s) => this.setState({frequents: s}));
         }
     }
 
