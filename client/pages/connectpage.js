@@ -36,6 +36,9 @@ export class ConnectPage extends React.Component {
         }else if(state === "googledrive"){
             this.setState({doing_a_third_party_login: true});
             this.authenticate({code: getParam('code'), type: 'gdrive'});
+        }else if(state === "custombackend"){
+            this.setState({doing_a_third_party_login: true});
+            this.authenticate({code: getParam('code'), type: 'custombackend'});
         }
     }
 
@@ -71,6 +74,13 @@ export class ConnectPage extends React.Component {
         }else if(source === 'google'){
             this.setState({loading: true});
             Session.url('gdrive').then((url) => {
+                window.location.href = url;
+            }).catch((err) => {
+                this.setState({loading: false});
+                notify.send(err, 'error');
+            });
+        }else if(source  === 'custombackend'){
+            Session.url('custombackend').then((url) => {
                 window.location.href = url;
             }).catch((err) => {
                 this.setState({loading: false});

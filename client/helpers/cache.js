@@ -156,7 +156,7 @@ Data.prototype.fetchAll = function(fn, type = this.FILE_PATH, key = "/"){
         const tx = db.transaction([type], "readonly");
         const store = tx.objectStore(type);
         const index = store.index("idx_path");
-        const request = index.openCursor(IDBKeyRange.lowerBound(key));
+        const request = index.openCursor(IDBKeyRange.bound(key, key+("z".repeat(5000))));
 
         return new Promise((done, error) => {
             request.onsuccess = function(event) {

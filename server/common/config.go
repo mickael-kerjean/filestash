@@ -27,6 +27,7 @@ type Config struct {
 		Editor        string `json:"editor"`
 		ForkButton    bool   `json:"fork_button"`
 		DisplayHidden bool   `json:"display_hidden"`
+		AutoConnect   bool   `json:"auto_connect"`
 	} `json:"general"`
 	Log struct {
 		Enable    bool   `json:"enable"`
@@ -41,6 +42,10 @@ type Config struct {
 			ClientID     string `json:"client_id"`
 			ClientSecret string `json:"client_secret"`
 		} `json:"gdrive"`
+		Custom struct {
+			ClientID     string `json:"client_id"`
+			ClientSecret string `json:"client_secret"`
+		} `json:"custom"`
 	} `json:"oauth"`
 	Connections []struct {
 		Type            string  `json:"type"`
@@ -67,8 +72,8 @@ type Config struct {
 		Dirname    string
 		ConfigPath string
 		FirstSetup bool
-	} `-`
-	MimeTypes map[string]string `json:"mimetypes,omitempty"`
+	} `json:"-"`
+	MimeTypes map[string]string `json:"-"`
 }
 
 func (c *Config) Initialise() {
@@ -161,12 +166,14 @@ func (c *Config) Export() (string, error) {
 		Editor        string            `json:"editor"`
 		ForkButton    bool              `json:"fork_button"`
 		DisplayHidden bool              `json:"display_hidden"`
+		AutoConnect   bool              `json:"auto_connect"`
 		Connections   interface{}       `json:"connections"`
 		MimeTypes     map[string]string `json:"mime"`
 	}{
 		Editor:        c.General.Editor,
 		ForkButton:    c.General.ForkButton,
 		DisplayHidden: c.General.DisplayHidden,
+		AutoConnect:   c.General.AutoConnect,
 		Connections:   c.Connections,
 		MimeTypes:     c.MimeTypes,
 	}

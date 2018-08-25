@@ -21,6 +21,8 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 		return backend.NewDropbox(conn, ctx)
 	case "gdrive":
 		return backend.NewGDrive(conn, ctx)
+	case "custombackend":
+		return backend.NewCustomBackend(conn, ctx)
 	default:
 		return backend.NewNothing(conn, ctx)
 	}

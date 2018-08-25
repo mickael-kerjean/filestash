@@ -10,4 +10,13 @@ build_frontend:
 	NODE_ENV=production npm run build
 
 build_backend:
-	CGO_CFLAGS_ALLOW='-fopenmp' go build -o dist/nuage server/main.go
+	PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/ CGO_CFLAGS_ALLOW='-fopenmp' go build -o dist/nuage server/main.go
+
+package:
+	rm -rf dist/
+	make build_backend
+	make build_frontend
+	cp -R config dist/data/config
+	mv dist nuage
+	tar -zcvf nuage.tar.gz nuage
+	rm -rf nuage

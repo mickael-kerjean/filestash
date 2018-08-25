@@ -7,7 +7,8 @@
         "fork_button": true,
         "display_hidden": false,
         "client_search_enable": true,
-        "client_search_per_min": 20
+        "client_search_per_min": 20,
+        "auto_connect": false
     },
     "log": {
         "enable": true,

@@ -16,7 +16,7 @@ export class Form extends React.Component {
         };
 
         const select = settings_get("login_tab");
-        if(select !== null){ this.state.select = select; }
+        if(select !== null && select < CONFIG["connections"].length){ this.state.select = select; }
         this.rerender = this.rerender.bind(this);
     }
 
@@ -94,7 +94,7 @@ export class Form extends React.Component {
                   {
                       this.state.backends.map((backend, i) => {
                           return (
-                              <Button key={"menu-"+i} className={i == this.state.select ? "active primary" : ""} onClick={this.onTypeChange.bind(this, i)}>
+                              <Button key={"menu-"+i} className={i === this.state.select ? "active primary" : ""} onClick={this.onTypeChange.bind(this, i)}>
                                 {backend.label}
                               </Button>
                           );
@@ -107,7 +107,7 @@ export class Form extends React.Component {
                 {
                     this.state.backends.map((conn, i) => {
                         return (
-                            <NgIf key={"form-"+i} cond={this.state.select == i}>
+                            <NgIf key={"form-"+i} cond={this.state.select === i}>
                               <NgIf cond={conn.type === "webdav"}>
                                 <WebDavForm values={conn} config={CONFIG["connections"][i]} onChange={this.onFormUpdate.bind(this, i)} />
                               </NgIf>
@@ -129,6 +129,9 @@ export class Form extends React.Component {
                               <NgIf cond={conn.type === "gdrive"} className="third-party">
                                 <GDriveForm values={conn} config={CONFIG["connections"][i]} onThirdPartyLogin={this.redirect.bind(this)} />
                               </NgIf>
+                              <NgIf cond={conn.type === "custombackend"} className="third-party">
+                                <CustomForm values={conn} config={CONFIG["connections"][i]} onThirdPartyLogin={this.redirect.bind(this)} />
+                              </NgIf>
                             </NgIf>
                         );
                     })
@@ -142,7 +145,7 @@ export class Form extends React.Component {
 
 const WebDavForm = formHelper(function(props){
     const onAdvanced = (value) => {
-        if(value == true){
+        if(value === true){
             props.values.path = "";
         }else{
             delete props.values.path;
@@ -179,7 +182,7 @@ const WebDavForm = formHelper(function(props){
 
 const FtpForm = formHelper(function(props){
     const onAdvanced = (value) => {
-        if(value == true){
+        if(value === true){
             props.values.path = "";
             props.values.port = "";
         }else{
@@ -227,7 +230,7 @@ const FtpForm = formHelper(function(props){
 
 const SftpForm = formHelper(function(props){
     const onAdvanced = (value) => {
-        if(value == true){
+        if(value === true){
             props.values.path = "";
             props.values.port = "";
             props.values.passphrase = "";
@@ -279,7 +282,7 @@ const SftpForm = formHelper(function(props){
 
 const GitForm = formHelper(function(props){
     const onAdvanced = (value) => {
-        if(value == true){
+        if(value === true){
             props.values.path = "";
             props.values.passphrase = "";
             props.values.commit = "";
@@ -361,7 +364,7 @@ const GitForm = formHelper(function(props){
 
 const S3Form = formHelper(function(props){
     const onAdvanced = (value) => {
-        if(value == true){
+        if(value === true){
             props.values.path = "";
             props.values.endpoint = "";
             props.values.region = "";
@@ -417,6 +420,9 @@ const DropboxForm = formHelper(function(props){
     const redirect = () => {
         return props.onThirdPartyLogin("dropbox");
     };
+    if(CONFIG.connections.length === 1){
+        redirect();
+    }
     return (
         <div>
           <div onClick={redirect}>
@@ -431,6 +437,9 @@ const GDriveForm = formHelper(function(props){
     const redirect = () => {
         return props.onThirdPartyLogin("google");
     };
+    if(CONFIG.connections.length === 1){
+        redirect();
+    }
     return (
         <div>
           <div onClick={redirect}>
@@ -440,6 +449,22 @@ const GDriveForm = formHelper(function(props){
         </div>
     );
 });
+
+const CustomForm = formHelper(function(props){
+    const redirect = () => {
+        return props.onThirdPartyLogin("custombackend");
+    };
+
+    if(CONFIG.connections.length === 1 && CONFIG.auto_connect === true){
+        redirect();
+    }
+    return (
+        <div>
+          <Button type="button" onClick={redirect} theme="emphasis">LOGIN</Button>
+        </div>
+    );
+});
+
 
 function formHelper(WrappedComponent){
     return (props) => {

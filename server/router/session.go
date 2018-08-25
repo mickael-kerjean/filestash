@@ -45,10 +45,12 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		err := obj.OAuthToken(&ctx.Body)
 		if err != nil {
 			sendErrorResult(res, NewError("Can't authenticate (OAuth error)", 401))
+			return
 		}
 		backend, err = model.NewBackend(&ctx, ctx.Body)
 		if err != nil {
 			sendErrorResult(res, NewError("Can't authenticate", 401))
+			return
 		}
 	}
 

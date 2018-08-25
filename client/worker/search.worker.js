@@ -13,8 +13,6 @@ self.onmessage = function(message){
         }, null, () => {
             self.postMessage({type: "search::completed"})
         });
-    }else if(message.data.action === "search::index"){
-        Indexing(message.data.config);
     }
 }
 

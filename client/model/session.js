@@ -16,8 +16,12 @@ class SessionManager{
             let url = '/api/session/auth/gdrive';
             return http_get(url)
                 .then(data => data.result);
+        }else if(type === 'custombackend'){
+            let url = '/api/session/auth/custombackend';
+            return http_get(url)
+                .then(data => data.result);
         }else{
-            return Promise.error({message: 'not authorization backend for: '+type, code: 'UNKNOWN_PROVIDER'})
+            return Promise.reject({message: 'no authorization backend', code: 'UNKNOWN_PROVIDER'});
         }
     }
 
