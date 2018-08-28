@@ -27,6 +27,13 @@ func ProcessFileBeforeSend(reader io.Reader, ctx *App, req *http.Request, res *h
 	(*res).Header().Set("Content-Type", mType)
 
 	if strings.HasPrefix(mType, "image/") {
+		if mType == "image/svg" {
+			(*res).Header().Set("Content-Type", "image/svg+xml")
+			return reader, nil
+		} else if mType == "image/x-icon" {
+			return reader, nil
+		}
+
 		if query.Get("thumbnail") != "true" && query.Get("size") == "" {
 			return reader, nil
 		}

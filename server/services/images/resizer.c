@@ -20,12 +20,23 @@ int resizer_process(const char *filename, void **buf, size_t *len, int size, int
   quality = quality > 100 || quality < 0 ? 80 : quality;
   exif = exif == 0 ? TRUE : FALSE;
 
-  err = vips_thumbnail(filename, &img, size,
-         "size", VIPS_SIZE_DOWN,
-         "auto_rotate", TRUE,
-         "crop", crop,
-          NULL
-  );
+  if(crop == VIPS_INTERESTING_CENTRE){
+    // Generate a thumbnails: a square picture crop in the center
+    err = vips_thumbnail(filename, &img, size,
+        "size", VIPS_SIZE_BOTH,
+        "auto_rotate", TRUE,
+        "crop", VIPS_INTERESTING_CENTRE,
+        NULL
+    );
+  }else{
+    // normal resize of an image with libvips
+    err = vips_thumbnail(filename, &img, size,
+        "size", VIPS_SIZE_DOWN,
+        "auto_rotate", TRUE,
+        "crop", VIPS_INTERESTING_NONE,
+        NULL
+    );
+  }
   if(err != 0){
     return err;
   }
