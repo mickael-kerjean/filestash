@@ -4,7 +4,7 @@ MAINTAINER mickael.kerjean@gmail.com
 RUN mkdir -p /tmp/go/src/github.com/mickael-kerjean/ && \
     #################
     # Dependencies
-    apk --no-cache --virtual .build-deps add make gcc g++ curl nodejs git go && \
+    apk --no-cache --virtual .build-deps add make gcc g++ curl nodejs git go npm && \
     mkdir /tmp/deps && \
     # libvips #######
     cd /tmp/deps && \
@@ -26,7 +26,6 @@ RUN mkdir -p /tmp/go/src/github.com/mickael-kerjean/ && \
     #################
     # Prepare Build
     cd /tmp/go/src/github.com/mickael-kerjean && \
-    apk add --no-cache --virtual .build-deps git go nodejs && \
     git clone --depth 1 https://github.com/mickael-kerjean/nuage && \
     cd nuage && \
     mkdir -p ./dist/data/ && \
@@ -39,7 +38,7 @@ RUN mkdir -p /tmp/go/src/github.com/mickael-kerjean/ && \
     #################
     # Compile Backend
     cd /tmp/go/src/github.com/mickael-kerjean/nuage/server && \
-    CGO_CFLAGS_ALLOW='-fopenmp' GOPATH=/tmp/go go get && \
+    CGO_LDFLAGS_ALLOW='-fopenmp' GOPATH=/tmp/go go get && \
     cd ../ && \
     GOPATH=/tmp/go go build -o ./dist/nuage ./server/main.go && \
     #################
