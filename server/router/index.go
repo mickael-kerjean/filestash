@@ -26,6 +26,11 @@ func Init(a *App) *http.Server {
 	files.HandleFunc("/mkdir", APIHandler(LoggedInOnly(FileMkdir), *a)).Methods("GET")
 	files.HandleFunc("/touch", APIHandler(LoggedInOnly(FileTouch), *a)).Methods("GET")
 
+	share := r.PathPrefix("/api/share").Subrouter()
+	share.HandleFunc("", APIHandler(ShareList, *a)).Methods("GET")
+	share.HandleFunc("/{id}", APIHandler(ShareInsert, *a)).Methods("POST")
+	share.HandleFunc("/{id}", APIHandler(ShareInsert, *a)).Methods("DELETE")
+
 	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a))
 
 	r.PathPrefix("/assets").Handler(StaticHandler("./data/public/", *a))

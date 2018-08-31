@@ -1,8 +1,8 @@
-@mixin ripple($color) {
+@mixin ripple($color, $bg:"#ffffff00") {
     background-position: center;
-    transition: background 0.4s;
     &:hover{
-        background: #ffffff00 radial-gradient(circle, transparent 1%, $color 1%) center/15000%;
+        transition: background 0.4s;
+        background: unquote($bg) radial-gradient(circle, transparent 1%, $color 1%) center/15000%;
     }
     &:active{
         background-color: #00000033;

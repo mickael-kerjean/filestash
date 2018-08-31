@@ -5,9 +5,10 @@ import { Link } from 'react-router-dom';
 import { DragSource, DropTarget } from 'react-dnd';
 
 import './thing.scss';
-import { Card, NgIf, Icon, EventEmitter } from '../../components/';
-import { pathBuilder, prompt, leftPad, getMimeType, debounce, memory } from '../../helpers/';
+import { Card, NgIf, Icon, EventEmitter, Button } from '../../components/';
+import { pathBuilder, prompt, alert, leftPad, getMimeType, debounce, memory } from '../../helpers/';
 import { Files } from '../../model/';
+import { ShareComponent } from './share';
 import img_placeholder from '../../assets/img/placeholder.png';
 
 const fileSource = {
@@ -181,6 +182,14 @@ export class ExistingThing extends React.Component {
     onDeleteCancel(){
         this.setState({delete_request: false});
     }
+
+    onShareRequest(filename){
+        alert.now(
+            <ShareComponent/>,
+            (ok) => {}
+        );
+    }
+
     _confirm_delete_text(){
         return this.props.file.name.length > 16? this.props.file.name.substring(0, 10).toLowerCase() : this.props.file.name;
     }
@@ -213,7 +222,7 @@ export class ExistingThing extends React.Component {
                   <Filename filename={this.props.file.name} filesize={this.props.file.size} filetype={this.props.file.type} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} onRenameCancel={this.onRenameRequest.bind(this, false)}/>
                   <Message message={this.state.message} />
                   <DateTime show={this.state.icon !== 'loading'} timestamp={this.props.file.time} />
-                  <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} is_renaming={this.state.is_renaming} can_rename={this.props.metadata.can_rename !== false} can_delete={this.props.metadata.can_delete !== false} />
+                  <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} onClickShare={this.onShareRequest.bind(this)} is_renaming={this.state.is_renaming} can_rename={this.props.metadata.can_rename !== false} can_delete={this.props.metadata.can_delete !== false} />
                 </Card>
               </Link>
             </div>
@@ -291,6 +300,11 @@ const ActionButton = (props) => {
         props.onClickDelete();
     };
 
+    const onShare = (e) => {
+        e.preventDefault();
+        props.onClickShare();
+    };
+
     return (
         <div className="component_action">
           <NgIf cond={props.can_rename !== false && props.is_renaming === false} type="inline">
@@ -298,6 +312,9 @@ const ActionButton = (props) => {
           </NgIf>
           <NgIf cond={props.can_delete !== false} type="inline">
             <Icon name="delete" onClick={onDelete} className="component_updater--icon"/>
+          </NgIf>
+          <NgIf cond={props.can_share !== false} type="inline">
+            <Icon name="share" onClick={onShare} className="component_updater--icon"/>
           </NgIf>
         </div>
     );

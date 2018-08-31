@@ -24,5 +24,6 @@ export class NgIf extends React.Component {
 }
 
 NgIf.propTypes = {
-    cond: PropTypes.bool.isRequired
+    cond: PropTypes.bool.isRequired,
+    type: PropTypes.string
 };

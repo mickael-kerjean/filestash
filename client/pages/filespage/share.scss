@@ -1,0 +1,98 @@
+@import "../../assets/css/mixin.scss";
+
+.component_share{
+    h2{
+        margin: 0 0 5px 0;
+        font-size: 1.2em;
+        font-weight: 100;
+        .component_icon{
+            float: right;
+        }
+    }
+    .share--content{
+        margin-bottom: 10px;
+
+        &.link-type{
+            display: flex;
+            flex-direction: row;
+            > div{
+                cursor: pointer;
+                text-align: center;
+                margin-right: 4px;
+                padding: 15px 0;
+                width: 100%;
+                border-radius: 3px;
+                background: var(--bg-color);
+                color: var(--emphasis);
+                &.active{
+                    background: var(--primary);
+                }
+                @include ripple(var(--emphasis-primary), var(--primary));
+            }
+        }
+        &.existing-links{
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+
+            .link-details{
+                padding: 3px 5px;
+                border: 2px solid var(--super-light);
+                border-left: none;
+                border-right: none;
+                margin-top: -2px;
+                line-height: 20px;
+                .role{
+                    margin-left: -5px;
+                    margin-right: 5px;
+                    font-size: 0.8em;
+                    color: var(--light);
+                    display: inline-block;
+                    min-width: 75px;
+                }
+                .component_icon{
+                    width: 20px;
+                    float: right;
+                    cursor: pointer;
+                }
+            }
+        }
+        &.advanced-settings{
+            max-height: 115px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+    .shared-link{
+        input{
+            width: 100%;
+            font-size: 0.9em;
+            background: var(--emphasis-primary);
+            color: var(--emphasis);
+            padding: 3px 5px;
+            border-radius: 2px;
+            box-sizing: border-box;
+            border: 2px solid var(--primary);
+        }
+    }
+}
+.component_supercheckbox{
+    > label{
+        color: var(--emphasis);
+        font-size: 0.95em;
+        font-style: italic;
+        input{
+            margin-right: 5px;
+            margin-top: 2px;
+        }
+    }
+    > div > input{
+        width: calc(100% - 10px);
+        box-sizing: border-box;
+        margin-bottom: 5px;
+        border: 1px solid var(--light);
+        border-radius: 2px;
+        font-size: 0.9em;
+        padding: 2px 5px;
+        color: var(--emphasis-secondary);
+    }
+}

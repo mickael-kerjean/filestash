@@ -8,6 +8,7 @@ import img_save from "../assets/img/save.svg";
 import img_power from "../assets/img/power.svg";
 import img_edit from "../assets/img/edit.svg";
 import img_delete from "../assets/img/delete.svg";
+import img_share from "../assets/img/share.svg";
 import img_bucket from "../assets/img/bucket.svg";
 import img_link from "../assets/img/link.svg";
 import img_loading from "../assets/img/loader.svg";
@@ -23,6 +24,8 @@ import img_alarm from '../assets/img/alarm.svg';
 import img_arrow_right from '../assets/img/arrow_right.svg';
 import img_arrow_right_white from '../assets/img/arrow_right_white.svg';
 import img_arrow_left_white from '../assets/img/arrow_left_white.svg';
+import img_arrow_top from '../assets/img/arrow_top.svg';
+import img_arrow_bottom from '../assets/img/arrow_bottom.svg';
 import img_more from '../assets/img/more.svg';
 import img_close from '../assets/img/close.svg';
 import img_close_dark from '../assets/img/close_dark.svg';
@@ -59,6 +62,8 @@ export const Icon = (props) => {
         img = img_edit;
     }else if(props.name === 'delete'){
         img = img_delete;
+    }else if(props.name === 'share'){
+        img = img_share;
     }else if(props.name === 'bucket'){
         img = img_bucket;
     }else if(props.name === 'link'){
@@ -83,6 +88,10 @@ export const Icon = (props) => {
         img = img_alarm;
     }else if(props.name === 'todo_white'){
         img = img_todo_white;
+    }else if(props.name === 'arrow_bottom'){
+        img = img_arrow_bottom;
+    }else if(props.name === 'arrow_top'){
+        img = img_arrow_top;
     }else if(props.name === 'arrow_right'){
         img = img_arrow_right;
     }else if(props.name === 'arrow_right_white'){

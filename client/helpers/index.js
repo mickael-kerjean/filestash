@@ -10,7 +10,7 @@ export { prepare } from './navigate';
 export { invalidate, http_get, http_post, http_delete } from './ajax';
 export { prompt, alert, confirm } from './popup';
 export { notify } from './notify';
-export { gid } from './random';
+export { gid, randomString } from './random';
 export { leftPad } from './common';
 export { getMimeType } from './mimetype';
 export { settings_get, settings_put } from './settings';
