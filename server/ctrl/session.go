@@ -1,4 +1,4 @@
-package router
+package ctrl
 
 import (
 	"github.com/mickael-kerjean/mux"
@@ -8,33 +8,28 @@ import (
 	"time"
 )
 
-const (
-	COOKIE_NAME = "auth"
-	COOKIE_PATH = "/api/"
-)
-
 func SessionIsValid(ctx App, res http.ResponseWriter, req *http.Request) {
 	if ctx.Backend == nil {
-		sendSuccessResult(res, false)
+		SendSuccessResult(res, false)
 		return
 	}
 	if _, err := ctx.Backend.Ls("/"); err != nil {
-		sendSuccessResult(res, false)
+		SendSuccessResult(res, false)
 		return
 	}
 	home, _ := model.GetHome(ctx.Backend)
 	if home == "" {
-		sendSuccessResult(res, true)
+		SendSuccessResult(res, true)
 		return
 	}
-	sendSuccessResult(res, true)
+	SendSuccessResult(res, true)
 }
 
 func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	ctx.Body["timestamp"] = time.Now().String()
 	backend, err := model.NewBackend(&ctx, ctx.Body)
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 
@@ -43,25 +38,25 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	}); ok {
 		err := obj.OAuthToken(&ctx.Body)
 		if err != nil {
-			sendErrorResult(res, NewError("Can't authenticate (OAuth error)", 401))
+			SendErrorResult(res, NewError("Can't authenticate (OAuth error)", 401))
 			return
 		}
 		backend, err = model.NewBackend(&ctx, ctx.Body)
 		if err != nil {
-			sendErrorResult(res, NewError("Can't authenticate", 401))
+			SendErrorResult(res, NewError("Can't authenticate", 401))
 			return
 		}
 	}
 
 	home, err := model.GetHome(backend)
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 
-	obfuscate, err := encrypt(ctx.Config.General.SecretKey, ctx.Body)
+	obfuscate, err := Encrypt(ctx.Config.General.SecretKey, ctx.Body)
 	if err != nil {
-		sendErrorResult(res, NewError(err.Error(), 500))
+		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
 	cookie := http.Cookie{
@@ -74,9 +69,9 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	http.SetCookie(res, &cookie)
 
 	if home == "" {
-		sendSuccessResult(res, nil)
+		SendSuccessResult(res, nil)
 	} else {
-		sendSuccessResult(res, home)
+		SendSuccessResult(res, home)
 	}
 }
 
@@ -94,7 +89,7 @@ func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	http.SetCookie(res, &cookie)
-	sendSuccessResult(res, nil)
+	SendSuccessResult(res, nil)
 }
 
 func SessionOAuthBackend(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -104,13 +99,13 @@ func SessionOAuthBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	b, err := model.NewBackend(&ctx, a)
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 	obj, ok := b.(interface{ OAuthURL() string })
 	if ok == false {
-		sendErrorResult(res, NewError("No backend authentication ("+b.Info()+")", 500))
+		SendErrorResult(res, NewError("No backend authentication ("+b.Info()+")", 500))
 		return
 	}
-	sendSuccessResult(res, obj.OAuthURL())
+	SendSuccessResult(res, obj.OAuthURL())
 }

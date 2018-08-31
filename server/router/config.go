@@ -8,7 +8,7 @@ import (
 func ConfigHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	c, err := ctx.Config.Export()
 	if err != nil {
-		sendErrorResult(res, err)
+		res.Write([]byte("window.CONFIG = {}"))
 		return
 	}
 	res.Write([]byte("window.CONFIG = "))

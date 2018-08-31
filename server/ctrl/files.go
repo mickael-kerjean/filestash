@@ -1,4 +1,4 @@
-package router
+package ctrl
 
 import (
 	. "github.com/mickael-kerjean/nuage/server/common"
@@ -20,13 +20,13 @@ type FileInfo struct {
 func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 
 	entries, err := ctx.Backend.Ls(path)
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 
@@ -52,13 +52,13 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	if obj, ok := ctx.Backend.(interface{ Meta(path string) *Metadata }); ok {
 		perms = obj.Meta(path)
 	}
-	sendSuccessResultsWithMetadata(res, files, perms)
+	SendSuccessResultsWithMetadata(res, files, perms)
 }
 
 func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 
@@ -67,7 +67,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		defer obj.Close()
 	}
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 
@@ -80,7 +80,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	file, err = services.ProcessFileBeforeSend(file, &ctx, req, &res)
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 	io.Copy(res, file)
@@ -89,13 +89,13 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 
 	file, _, err := req.FormFile("file")
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 	defer file.Close()
@@ -105,78 +105,78 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 		obj.Close()
 	}
 	if err != nil {
-		sendErrorResult(res, NewError(err.Error(), 403))
+		SendErrorResult(res, NewError(err.Error(), 403))
 		return
 	}
-	sendSuccessResult(res, nil)
+	SendSuccessResult(res, nil)
 }
 
 func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
 	from, err := pathBuilder(ctx, req.URL.Query().Get("from"))
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 	to, err := pathBuilder(ctx, req.URL.Query().Get("to"))
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 	if from == "" || to == "" {
-		sendErrorResult(res, NewError("missing path parameter", 400))
+		SendErrorResult(res, NewError("missing path parameter", 400))
 		return
 	}
 
 	err = ctx.Backend.Mv(from, to)
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
-	sendSuccessResult(res, nil)
+	SendSuccessResult(res, nil)
 }
 
 func FileRm(ctx App, res http.ResponseWriter, req *http.Request) {
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 	err = ctx.Backend.Rm(path)
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
-	sendSuccessResult(res, nil)
+	SendSuccessResult(res, nil)
 }
 
 func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 
 	err = ctx.Backend.Mkdir(path)
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
-	sendSuccessResult(res, nil)
+	SendSuccessResult(res, nil)
 }
 
 func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
 
 	err = ctx.Backend.Touch(path)
 	if err != nil {
-		sendErrorResult(res, err)
+		SendErrorResult(res, err)
 		return
 	}
-	sendSuccessResult(res, nil)
+	SendSuccessResult(res, nil)
 }
 
 func pathBuilder(ctx App, path string) (string, error) {

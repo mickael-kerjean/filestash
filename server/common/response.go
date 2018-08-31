@@ -1,4 +1,4 @@
-package router
+package common
 
 import (
 	"encoding/json"
@@ -27,25 +27,25 @@ type APIErrorMessage struct {
 	Message string `json:"message,omitempty"`
 }
 
-func sendSuccessResult(res http.ResponseWriter, data interface{}) {
+func SendSuccessResult(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
 	encoder.Encode(APISuccessResult{"ok", data})
 }
 
-func sendSuccessResults(res http.ResponseWriter, data interface{}) {
+func SendSuccessResults(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
 	encoder.Encode(APISuccessResults{"ok", data})
 }
 
-func sendSuccessResultsWithMetadata(res http.ResponseWriter, data interface{}, p interface{}) {
+func SendSuccessResultsWithMetadata(res http.ResponseWriter, data interface{}, p interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
 	encoder.Encode(APISuccessResultsWithMetadata{"ok", data, p})
 }
 
-func sendErrorResult(res http.ResponseWriter, err error) {
+func SendErrorResult(res http.ResponseWriter, err error) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
 	obj, ok := err.(interface{ Status() int })

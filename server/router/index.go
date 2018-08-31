@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/mickael-kerjean/mux"
 	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/nuage/server/ctrl"
 	"log"
 	"net/http"
 	"strconv"
@@ -28,8 +29,8 @@ func Init(a *App) *http.Server {
 
 	share := r.PathPrefix("/api/share").Subrouter()
 	share.HandleFunc("", APIHandler(ShareList, *a)).Methods("GET")
-	share.HandleFunc("/{id}", APIHandler(ShareInsert, *a)).Methods("POST")
-	share.HandleFunc("/{id}", APIHandler(ShareInsert, *a)).Methods("DELETE")
+	share.HandleFunc("/{id}", APIHandler(ShareUpsert, *a)).Methods("POST")
+	share.HandleFunc("/{id}", APIHandler(ShareDelete, *a)).Methods("DELETE")
 
 	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a))
 

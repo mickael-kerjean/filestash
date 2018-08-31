@@ -2,14 +2,9 @@ package router
 
 import (
 	"bytes"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/model"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -42,7 +37,7 @@ func APIHandler(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.
 func LoggedInOnly(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		if ctx.Backend == nil || ctx.Session == nil {
-			sendErrorResult(res, NewError("Forbidden", 403))
+			SendErrorResult(res, NewError("Forbidden", 403))
 			return
 		}
 		fn(ctx, res, req)
@@ -75,7 +70,7 @@ func extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	if err != nil {
 		return make(map[string]string), err
 	}
-	return decrypt(ctx.Config.General.SecretKey, cookie.Value)
+	return Decrypt(ctx.Config.General.SecretKey, cookie.Value)
 }
 
 func extractBackend(req *http.Request, ctx *App) (IBackend, error) {
@@ -118,47 +113,6 @@ func logPoint(req *http.Request, res *ResponseWriter, start time.Time, backendTy
 		Timestamp:  time.Now().UTC(),
 		Backend:    backendType,
 	}
-}
-
-func encrypt(keystr string, text map[string]string) (string, error) {
-	key := []byte(keystr)
-	plaintext, err := json.Marshal(text)
-	if err != nil {
-		return "", NewError("json marshalling: "+err.Error(), 500)
-	}
-
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return "", NewError("encryption issue (cipher): "+err.Error(), 500)
-	}
-	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
-	iv := ciphertext[:aes.BlockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		return "", NewError("encryption issue: "+err.Error(), 500)
-	}
-	stream := cipher.NewCFBEncrypter(block, iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
-	return base64.URLEncoding.EncodeToString(ciphertext), nil
-}
-
-func decrypt(keystr string, cryptoText string) (map[string]string, error) {
-	var raw map[string]string
-
-	key := []byte(keystr)
-	ciphertext, _ := base64.URLEncoding.DecodeString(cryptoText)
-	block, err := aes.NewCipher(key)
-
-	if err != nil || len(ciphertext) < aes.BlockSize {
-		return raw, NewError("Cipher is too short", 500)
-	}
-
-	iv := ciphertext[:aes.BlockSize]
-	ciphertext = ciphertext[aes.BlockSize:]
-	stream := cipher.NewCFBDecrypter(block, iv)
-	stream.XORKeyStream(ciphertext, ciphertext)
-
-	json.Unmarshal(ciphertext, &raw)
-	return raw, nil
 }
 
 type ResponseWriter struct {
