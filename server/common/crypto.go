@@ -4,6 +4,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha1"
+	"encoding/base32"
 	"encoding/base64"
 	"encoding/json"
 	"io"
@@ -48,4 +50,19 @@ func Decrypt(keystr string, cryptoText string) (map[string]string, error) {
 
 	json.Unmarshal(ciphertext, &raw)
 	return raw, nil
+}
+
+func GenerateID(params map[string]string) string {
+	p := "type =>" + params["type"]
+	p += "host =>" + params["host"]
+	p += "hostname =>" + params["hostname"]
+	p += "username =>" + params["username"]
+	p += "repo =>" + params["repo"]
+	p += "access_key_id =>" + params["access_key_id"]
+	p += "endpoint =>" + params["endpoint"]
+	p += "bearer =>" + params["bearer"]
+	p += "token =>" + params["token"]
+	hasher := sha1.New()
+	hasher.Write([]byte(p))
+	return base32.HexEncoding.EncodeToString(hasher.Sum(nil))
 }

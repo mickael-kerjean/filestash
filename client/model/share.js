@@ -4,8 +4,13 @@ class ShareModel {
     constructor(){}
 
     all(path = "/"){
-        const url = `api/share?path=${path}`;
-        return http_get(url);
+        const url = `/api/share?path=${path}`;
+        return http_get(url).then((res) => res.results);
+    }
+
+    get(id){
+        const url = `/api/share/${id}`;
+        return http_get(url).then((res) => res.result);
     }
 
     upsert(obj){

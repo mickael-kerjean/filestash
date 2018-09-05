@@ -17,3 +17,7 @@ func RandomString(n int) string {
 func NewBool(t bool) *bool {
 	return &t
 }
+
+func NewString(t string) *string {
+	return &t
+}

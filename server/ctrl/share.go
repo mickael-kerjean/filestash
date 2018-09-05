@@ -8,27 +8,35 @@ import (
 )
 
 type ShareAPI struct {
-	Id           string   `json:"id"`
-	Path         string   `json:"path"`
-	Role         string   `json:"role"`
-	Password     string   `json:"password"`
-	Users        []string `json:"users"`
-	CanManageOwn bool     `json:"can_manage_own"`
-	CanShare     bool     `json:"can_share"`
-	Expire       int      `json:"expire"`
-	Link         string   `json:"link"`
+	Id           string    `json:"id"`
+	Path         string    `json:"path"`
+	Role         string    `json:"role"`
+	Password     *string   `json:"password"`
+	Users        *[]string `json:"users"`
+	CanManageOwn *bool     `json:"can_manage_own"`
+	CanShare     *bool     `json:"can_share"`
+	Expire       *int      `json:"expire"`
+	CustomURI    *string   `json:"uri"`
 }
 
 func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
-	p := extractParams(req)
-	listOfSharedLinks := model.ShareList(p)
+	s := extractParams(req, &ctx)
+	listOfSharedLinks := model.ShareList(s)
 	SendSuccessResults(res, listOfSharedLinks)
 }
 
+func ShareGet(ctx App, res http.ResponseWriter, req *http.Request) {
+	s := extractParams(req, &ctx)
+	if err := model.ShareGet(&s); err != nil {
+		SendErrorResult(res, err)
+		return
+	}
+	SendSuccessResult(res, s)
+}
+
 func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
-	p := extractParams(req)
-	err := model.ShareUpsert(p, model.ShareParams{})
-	if err != nil {
+	s := extractParams(req, &ctx)
+	if err := model.ShareUpsert(s); err != nil {
 		SendErrorResult(res, err)
 		return
 	}
@@ -36,16 +44,18 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func ShareDelete(ctx App, res http.ResponseWriter, req *http.Request) {
-	p := extractParams(req)
-	err := model.ShareDelete(p)
-	if err != nil {
+	s := extractParams(req, &ctx)
+	if err := model.ShareDelete(s); err != nil {
 		SendErrorResult(res, err)
 		return
 	}
 	SendSuccessResult(res, nil)
 }
 
-func extractParams(req *http.Request) model.ShareKey {
-	vars := mux.Vars(req)
-	return model.ShareKey{vars["id"], "", ""}
+func extractParams(req *http.Request, ctx *App) model.Share {
+	return model.Share{
+		Id:      NewString(mux.Vars(req)["id"]),
+		Backend: NewString(GenerateID(ctx.Session)),
+		Path:    NewString(req.URL.Query().Get("path")),
+	}
 }

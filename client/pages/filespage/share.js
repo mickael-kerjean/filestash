@@ -13,15 +13,16 @@ export class ShareComponent extends React.Component {
             show_advanced: false,
             role: null,
             id: randomString(7),
-            existings: [
-                {id: "dflkjse", role: "UPLOADER", path: "./test/test"},
-                {id: "dflkjse", role: "VIEWER", path: "./test/test", password: "xxxx"},
-                {id: "dflkjse", role: "EDITOR", path: "./test/test"},
-                {id: "dflkjse", role: "VIEWER", path: "./test/test", password: "xxxx"},
-                {id: "dflkjse", role: "EDITOR", path: "./test/test"},
-                {id: "dflkjse", role: "UPLOADER", path: "./test/test"},
-            ]
+            existings: []
         };
+    }
+
+    componentDidMount(){
+        Share.all(this.props.path)
+            .then((existings) => {
+                this.refreshModal();
+                this.setState({existings: existings});
+            });
     }
 
     updateState(key, value){
@@ -30,25 +31,15 @@ export class ShareComponent extends React.Component {
         }else{
             this.setState({[key]: value});
         }
-
-        if(key === "role" && value && window.innerHeight < 500){
-            window.dispatchEvent(new Event('resize'));
+        if(key === "role" && value){
+            this.refreshModal();
         }
     }
 
-    registerLink(e){
-        e.target.setSelectionRange(0, e.target.value.length);
-        let st = Object.assign({}, this.state);
-        delete st.existings;
-        delete st.show_advanced;
-        this.setState({existing: [st].concat(this.state.existings)});
-        return Share.upsert(st)
-            .catch((err) => {
-                notify.send(err, "error");
-                this.setState({
-                    existings: this.state.existings.slice(0, this.state.existings.length)
-                });
-            });
+    refreshModal(){
+        if(window.innerHeight < 500){
+            window.dispatchEvent(new Event('resize'));
+        }
     }
 
     onLoad(link){
@@ -59,13 +50,43 @@ export class ShareComponent extends React.Component {
         this.setState(st);
     }
 
-    onDelete(link_id){
+    onDeleteLink(link_id){
+        let removed = null,
+            i = 0;
+
+        for(i=0; i < this.state.existings.length; i++){
+            if(this.state.existings[i].id === link_id){
+                removed = Object.assign({}, this.state.existings[i]);
+                break;
+            }
+        }
+        if(removed !== null){
+            this.state.existings.splice(i, 1);
+            this.setState({existings: this.state.existings});
+        }
+
         return Share.remove(link_id)
-            .then(() => {
-                console.log("HERE");
-            })
-            .catch((err) => notify.send(err, "error"));
+            .catch((err) => {
+                this.setState({existings: [removed].concat(this.state.existings)});
+                notify.send(err, "error");
+            });
     }
+
+    onRegisterLink(e){
+        e.target.setSelectionRange(0, e.target.value.length);
+        let st = Object.assign({}, this.state);
+        delete st.existings;
+        delete st.show_advanced;
+        this.setState({existings: [st].concat(this.state.existings)});
+        return Share.upsert(st)
+            .catch((err) => {
+                notify.send(err, "error");
+                this.setState({
+                    existings: this.state.existings.slice(0, this.state.existings.length)
+                });
+            });
+    }
+
 
     render(){
         return (
@@ -90,10 +111,10 @@ export class ShareComponent extends React.Component {
                   {
                       this.state.existings && this.state.existings.map((link, i) => {
                           return (
-                              <div className="link-details" key={i}>
+                              <div className="link-details" key={link.id}>
                                 <span className="role">{link.role}</span>
                                 <span>{link.path}</span>
-                                <Icon onClick={this.onDelete.bind(this, link.id)} name="delete"/>
+                                <Icon onClick={this.onDeleteLink.bind(this, link.id)} name="delete"/>
                                 <Icon onClick={this.onLoad.bind(this, link)} name="edit"/>
                               </div>
                           );
@@ -105,7 +126,7 @@ export class ShareComponent extends React.Component {
               <NgIf cond={this.state.role !== null}>
                 <h2>Restrictions</h2>
                 <div className="share--content advanced-settings no-select">
-                  <SuperCheckbox value={this.state.users} label="Only for users" placeholder="list of users who can access the link" onChange={this.updateState.bind(this, 'users')} inputType="text"/>
+                  <SuperCheckbox value={this.state.users} label="Only for users" placeholder="name0@email.com,name1@email.com" onChange={this.updateState.bind(this, 'users')} inputType="text"/>
                   <SuperCheckbox value={this.state.password} label="Password" placeholder="protect access with a password" onChange={this.updateState.bind(this, 'password')} inputType="password"/>
                 </div>
 
@@ -124,7 +145,7 @@ export class ShareComponent extends React.Component {
                 </div>
 
                 <div className="shared-link">
-                  <input onClick={this.registerLink.bind(this)} type="text" value={window.location.origin+"/s/"+(this.state.url || this.state.id)} onChange={() => {}}/>
+                  <input onClick={this.onRegisterLink.bind(this)} type="text" value={window.location.origin+"/s/"+(this.state.url || this.state.id)} onChange={() => {}}/>
                 </div>
               </NgIf>
             </div>

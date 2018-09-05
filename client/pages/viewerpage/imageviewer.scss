@@ -135,6 +135,7 @@
                         margin: 5px 0;
                         border-top: 1px dashed var(--color);
                         padding-top: 5px;
+                        clear: both;
                         .title{ float: left; margin-right: 5px; }
                         .value{ color: var(--bg-color);  }
                     }

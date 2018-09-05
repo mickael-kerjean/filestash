@@ -3,7 +3,6 @@ package backend
 import (
 	"fmt"
 	. "github.com/mickael-kerjean/nuage/server/common"
-	"github.com/mitchellh/hashstructure"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -95,10 +94,7 @@ func NewGit(params map[string]string, app *App) (*Git, error) {
 		return nil, NewError("Your password doesn't fit in a cookie :/", 500)
 	}
 
-	hash, err := hashstructure.Hash(params, nil)
-	if err != nil {
-		return nil, NewError("Internal error", 500)
-	}
+	hash := GenerateID(params)
 	p.basePath = app.Helpers.AbsolutePath(GitCachePath + "repo_" + fmt.Sprint(hash) + "/")
 
 	repo, err := g.git.open(p, p.basePath)

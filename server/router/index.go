@@ -29,6 +29,7 @@ func Init(a *App) *http.Server {
 
 	share := r.PathPrefix("/api/share").Subrouter()
 	share.HandleFunc("", APIHandler(ShareList, *a)).Methods("GET")
+	share.HandleFunc("/{id}", APIHandler(ShareGet, *a)).Methods("GET")
 	share.HandleFunc("/{id}", APIHandler(ShareUpsert, *a)).Methods("POST")
 	share.HandleFunc("/{id}", APIHandler(ShareDelete, *a)).Methods("DELETE")
 
