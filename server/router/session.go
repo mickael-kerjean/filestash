@@ -1,7 +1,6 @@
 package router
 
 import (
-	"errors"
 	"github.com/mickael-kerjean/mux"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/model"
@@ -110,7 +109,7 @@ func SessionOAuthBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	obj, ok := b.(interface{ OAuthURL() string })
 	if ok == false {
-		sendErrorResult(res, errors.New("No backend authentication"))
+		sendErrorResult(res, NewError("No backend authentication ("+b.Info()+")", 500))
 		return
 	}
 	sendSuccessResult(res, obj.OAuthURL())

@@ -420,8 +420,14 @@ const DropboxForm = formHelper(function(props){
     const redirect = () => {
         return props.onThirdPartyLogin("dropbox");
     };
-    if(CONFIG.connections.length === 1){
+
+    if(CONFIG.connections.length === 1 && CONFIG.auto_connect === true){
         redirect();
+        return (
+            <div>
+              AUTHENTICATING ...
+            </div>
+        );
     }
     return (
         <div>
@@ -437,8 +443,14 @@ const GDriveForm = formHelper(function(props){
     const redirect = () => {
         return props.onThirdPartyLogin("google");
     };
-    if(CONFIG.connections.length === 1){
+
+    if(CONFIG.connections.length === 1 && CONFIG.auto_connect === true){
         redirect();
+        return (
+            <div>
+              AUTHENTICATING ...
+            </div>
+        );
     }
     return (
         <div>
@@ -457,6 +469,11 @@ const CustomForm = formHelper(function(props){
 
     if(CONFIG.connections.length === 1 && CONFIG.auto_connect === true){
         redirect();
+        return (
+            <div>
+              AUTHENTICATING ...
+            </div>
+        );
     }
     return (
         <div>
