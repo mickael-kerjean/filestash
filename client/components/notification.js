@@ -98,6 +98,9 @@ function TaskManager(){
         addTask: function(task){
             current_task && current_task.cancel();
             tasks.push(task);
+            if(tasks.length > 20){
+                tasks.splice(0, tasks.length - 10);
+            }
             if(is_running === false){
                 is_running = true;
                 ret._run();
