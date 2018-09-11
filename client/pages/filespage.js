@@ -6,7 +6,7 @@ import './filespage.scss';
 import './error.scss';
 import { Files } from '../model/';
 import { sort, onCreate, onRename, onDelete, onUpload, onSearch } from './filespage.helper';
-import { NgIf, Loader, Uploader, EventReceiver } from '../components/';
+import { NgIf, Loader, EventReceiver } from '../components/';
 import { notify, debounce, goToFiles, goToViewer, event, settings_get, settings_put } from '../helpers/';
 import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from './filespage/';
 import InfiniteScroll from 'react-infinite-scroller';
@@ -224,7 +224,6 @@ export class FilesPage extends React.Component {
                                     files={this.state.files.slice(0, this.state.page_number * LOAD_PER_SCROLL)}
                                     metadata={this.state.metadata} onSort={this.onSort.bind(this)} onView={this.onView.bind(this)} />
                       </NgIf>
-                      <Uploader path={this.state.path} />
                     </NgIf>
                   </InfiniteScroll>
                   <NgIf cond={this.state.loading && this.state.error === null}>
