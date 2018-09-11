@@ -97,8 +97,9 @@ export class FilesPage extends React.Component {
 
     onRefresh(path = this.state.path){
         this._cleanupListeners();
-
+        console.log("- refresh filespage");
         const observer = Files.ls(path).subscribe((res) => {
+            console.log("- refresh filespage: " + res.status);
             if(res.status === 'ok'){
                 let files = res.results;
                 files = files.map((file) => {

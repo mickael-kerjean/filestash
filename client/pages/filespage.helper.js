@@ -111,6 +111,7 @@ export const onUpload = function(path, e){
             return Promise.resolve(files);
         })
         .then((files) => {
+            console.log("== FILES: " + files.length)
             const processes = files.map((file) => {
                 file.path = Path.join(path, file.path);
                 if(file.type === 'file'){
@@ -132,14 +133,23 @@ export const onUpload = function(path, e){
                 let current_process = null;
                 if(processes.length === 0) return Promise.resolve();
 
-                for(let i=0; i<processes.length; i++){
-                    if(processes[i].parent === null || PRIOR_STATUS[processes[i].parent] === true){
+                var i;
+                for(i=0; i<processes.length; i++){
+                    if(processes[i].parent === null){
+                        // init: getting started with creation of files/folders
+                        current_process = processes[i];
+                        processes.splice(i, 1);
+                        break;
+                    }else if(PRIOR_STATUS[processes[i].parent] === true){
+                        // running: make sure we've created the parent before attempting the entire filesystem
                         current_process = processes[i];
                         processes.splice(i, 1);
                         break;
                     }
                 }
-
+                
+                console.log(" p:"+processes.length+" ::"+i)
+                
                 if(current_process){
                     return current_process.fn(id)
                         .then(() => {
@@ -159,12 +169,15 @@ export const onUpload = function(path, e){
                                 requestAnimationFrame(() => {
                                     done();
                                 });
-                            }, 100);
+                            }, 1000);
                         });
                     }
                 }
             }
 
+            if(files.length > 5){
+                notify.send('Uploading '+files.length+' files', 'info');
+            }
             Promise.all(Array.apply(null, Array(MAX_POOL_SIZE)).map((process,index) => {
                 return runner();
             })).then(() => {

@@ -8,6 +8,9 @@ import (
 	//"github.com/pkg/browser"
 	//"io/ioutil"
 	"strconv"
+	// "os"
+    // "os/signal"
+    // "syscall"
 )
 
 var APP_URL string
@@ -19,6 +22,14 @@ func main() {
 	router.Init(&app)
 
 	APP_URL = "http://" + app.Config.General.Host + ":" + strconv.Itoa(app.Config.General.Port)
+
+	// c := make(chan os.Signal)
+    // signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+    // go func() {
+    //     <-c
+	// 	log.Println("KILLED HERE WITH OS")
+    //     os.Exit(1)
+    // }()
 	// systray.Run(setupSysTray(&app), func() {
 	// 	srv.Shutdown(context.TODO())
 	// })

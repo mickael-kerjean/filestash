@@ -62,11 +62,11 @@ func extractBody(req *http.Request) (map[string]string, error) {
 	}
 	byt, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		return nil, err
+		return body, err
 	}
 	if err := json.Unmarshal(byt, &body); err != nil {
-		return nil, err
-	}
+		return body, err
+	}	
 	return body, nil
 }
 
