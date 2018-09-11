@@ -36,3 +36,43 @@
         height: 100%;
     }
 }
+
+.component_stats{
+    h2{
+        margin: 0 0 5px 0;
+        font-size: 1.2em;
+        font-weight: 100;
+        .percent{color: var(--emphasis-primary);}
+        > div{
+            float: right;
+            span.grandTotal{
+                font-size: 0.8em;
+                color: var(--emphasis-secondary);
+                &:before { content: "/"; }
+            }
+            span.completed{
+                color: var(--emphasis-secondary);
+            }
+        }
+    }
+    .stats_content {
+        clear: both;
+        max-height: 150px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        font-size: 0.85em;
+        div{
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: calc(100% - 10px);
+            -webkit-overflow-scrolling: touch;
+        }
+        .error_color{
+            color: var(--error);
+        }
+        .todo_color{
+            color: var(--light);
+        }
+    }
+}

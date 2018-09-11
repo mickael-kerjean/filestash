@@ -43,13 +43,11 @@ func Init(a *App) *http.Server {
 		Handler: r,
 	}
 	go func() {
-		log.Println("ICI")
 		if err := srv.ListenAndServe(); err != nil {
 			log.Fatal("SERVER START ERROR ", err)
 			return
 		}
 		log.Println("SERVER START OK")		
 	}()
-	log.Println("HERE")
 	return srv
 }

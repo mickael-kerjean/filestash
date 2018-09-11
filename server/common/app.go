@@ -36,4 +36,13 @@ var HTTPClient = http.Client{
 
 var HTTP = http.Client{
 	Timeout: 800 * time.Millisecond,
+	Transport: &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout:   500 * time.Millisecond,
+			KeepAlive: 500 * time.Millisecond,
+		}).Dial,
+		TLSHandshakeTimeout:   500 * time.Millisecond,
+		IdleConnTimeout:       500 * time.Millisecond,
+		ResponseHeaderTimeout: 500 * time.Millisecond,
+	},
 }

@@ -1,5 +1,7 @@
+import React from 'react';
+
 import { Files } from '../model/';
-import { notify } from '../helpers/';
+import { notify, alert } from '../helpers/';
 import Path from 'path';
 import Worker from "../worker/search.worker.js";
 import { Observable } from "rxjs/Observable";
@@ -30,7 +32,7 @@ export const sort = function(files, type){
                         if(fileA.name.toLowerCase() === fileB.name.toLowerCase()){
                             return fileA.name > fileB.name ? +1 : -1;
                         }else{
-                            if(aExt !== bExt) return aExt > bExt ? +1 : -1
+                            if(aExt !== bExt) return aExt > bExt ? +1 : -1;
                             else return fileA.name.toLowerCase() > fileB.name.toLowerCase() ? +1 : -1;
                         }
                     }
@@ -101,7 +103,7 @@ export const onDelete = function(path, type){
 };
 
 export const onUpload = function(path, e){
-    const MAX_POOL_SIZE = 10;
+    const MAX_POOL_SIZE = 50;
     let PRIOR_STATUS = {};
     extract_upload_directory_the_way_that_works_but_non_official(e.dataTransfer.items || [], [])
         .then((files) => {
@@ -111,12 +113,15 @@ export const onUpload = function(path, e){
             return Promise.resolve(files);
         })
         .then((files) => {
-            console.log("== FILES: " + files.length)
+            var failed = [],
+                currents = [];
             const processes = files.map((file) => {
+                let original_path = file.path;
                 file.path = Path.join(path, file.path);
                 if(file.type === 'file'){
-                    Files.touch(file.path, file.file, 'prepare_only');
+                    if(files.length < 150) Files.touch(file.path, file.file, 'prepare_only');
                     return {
+                        path: original_path,
                         parent: file._prior || null,
                         fn: Files.touch.bind(Files, file.path, file.file, 'execute_only')
                     };
@@ -124,65 +129,142 @@ export const onUpload = function(path, e){
                     Files.mkdir(file.path, 'prepare_only');
                     return {
                         id: file._id || null,
+                        path: original_path,
                         parent: file._prior || null,
                         fn: Files.mkdir.bind(Files, file.path, 'execute_only')
                     };
                 }
             });
+            class Stats extends React.Component {
+                constructor(props){
+                    super(props);
+                    this.state = {timeout: 1};
+                }
+
+                componentDidMount(){
+                    if(typeof this.state.timeout === "number"){
+                        this.setState({
+                            timeout: window.setTimeout(() => {
+                                this.componentDidMount();
+                            }, Math.random()*1000+200)
+                        });
+                    }
+                }
+
+                componentWillUnmount(){
+                    window.clearTimeout(this.state.timeout);
+                }
+
+                emphasis(path){
+                    notify.send(path.split("/").join(" / "), "info");
+                }
+
+                render() {
+                    const percent = Math.floor(100 * (files.length - processes.length - currents.length) / files.length);
+                    return (
+                        <div className="component_stats">
+                          <h2>
+                            UPLOADING <span className="percent">({percent}%)</span>
+                            <div>
+                              <span className="completed">{files.length - processes.length - currents.length}</span>
+                              <span className="grandTotal">{files.length}</span>
+                            </div>
+                          </h2>
+                          <div className="stats_content">
+                          {
+                              currents.map((process, i) => {
+                                  return (
+                                      <div onClick={() => this.emphasis(process.path)} className="current_color" key={i}>{process.path.replace(/\//, '')}</div>
+                                  );
+                              })
+                          }
+                          {
+                              processes.slice(0, 2000).map((process, i) => {
+                                  return (
+                                      <div onClick={() => this.emphasis(process.path)} className="todo_color" key={i}>{process.path.replace(/\//, '')}</div>
+                                  );
+                              })
+                          }
+                          {
+                              failed.slice(0, 200).map((process, i) => {
+                                  return (
+                                      <div onClick={() => this.emphasis(process.path)} className="error_color" key={i}>{process.path}</div>
+                                  );
+                              })
+                          }
+                          </div>
+                        </div>
+                    );
+                }
+            }
+
             function runner(id){
                 let current_process = null;
                 if(processes.length === 0) return Promise.resolve();
 
                 var i;
                 for(i=0; i<processes.length; i++){
-                    if(processes[i].parent === null){
+                    if(
                         // init: getting started with creation of files/folders
+                        processes[i].parent === null ||
+                        // running: make sure we've created the parent folder
+                        PRIOR_STATUS[processes[i].parent] === true
+                    ){
                         current_process = processes[i];
                         processes.splice(i, 1);
-                        break;
-                    }else if(PRIOR_STATUS[processes[i].parent] === true){
-                        // running: make sure we've created the parent before attempting the entire filesystem
-                        current_process = processes[i];
-                        processes.splice(i, 1);
+                        currents.push(current_process);
                         break;
                     }
                 }
-                
-                console.log(" p:"+processes.length+" ::"+i)
-                
+
                 if(current_process){
                     return current_process.fn(id)
                         .then(() => {
                             if(current_process.id) PRIOR_STATUS[current_process.id] = true;
+                            currents = currents.filter((c) => c.path != current_process.path);
                             return runner(id);
                         })
                         .catch((err) => {
+                            failed.push(current_process);
+                            currents = currents.filter((c) => c.path != current_process.path);
                             notify.send(err, 'error');
                             return runner(id);
                         });
                 }else{
                     return waitABit()
                         .then(() => runner(id));
+
                     function waitABit(){
                         return new Promise((done) => {
                             window.setTimeout(() => {
                                 requestAnimationFrame(() => {
                                     done();
                                 });
-                            }, 1000);
+                            }, 250);
                         });
                     }
                 }
             }
 
-            if(files.length > 5){
-                notify.send('Uploading '+files.length+' files', 'info');
+            if(files.length >= 1){
+                alert.now(<Stats/>, () => {});
             }
             Promise.all(Array.apply(null, Array(MAX_POOL_SIZE)).map((process,index) => {
                 return runner();
             })).then(() => {
-                notify.send('Upload completed', 'success');
+                // remove the popup
+                if(failed.length === 0){
+                    var e = new Event("keydown");
+                    e.keyCode = 27;
+                    window.dispatchEvent(e);
+                }
+                currents = [];
+                // display message
+                window.setTimeout(() => {
+                    notify.send('Upload completed', 'success');
+                }, 300);
             }).catch((err) => {
+                currents = [];
                 notify.send(err, 'error');
             });
         });
@@ -299,6 +381,6 @@ export const onSearch = (keyword, path = "/") => {
     return new Observable((obs) => {
         worker.onmessage = (m) => {
             obs.next(m.data);
-        }
+        };
     });
 };

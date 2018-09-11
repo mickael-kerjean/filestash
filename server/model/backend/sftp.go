@@ -7,7 +7,6 @@ import (
 	"golang.org/x/crypto/ssh"
 	"io"
 	"os"
-	"log"
 	"strings"
 )
 
@@ -110,7 +109,6 @@ func (b Sftp) Home() (string, error) {
 
 func (b Sftp) Ls(path string) ([]os.FileInfo, error) {
 	files, err := b.SFTPClient.ReadDir(path)
-	log.Println("HERE:", err)
 	return files, b.err(err)
 }
 
@@ -175,7 +173,6 @@ func (b Sftp) Touch(path string) error {
 
 func (b Sftp) Save(path string, file io.Reader) error {
 	remoteFile, err := b.SFTPClient.OpenFile(path, os.O_WRONLY|os.O_CREATE)
-	//log.Println("HERE: ", err)
 	if err != nil {
 		return b.err(err)
 	}

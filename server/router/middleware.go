@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -61,7 +60,7 @@ func extractBody(req *http.Request) (map[string]string, error) {
 	}
 	if err := json.Unmarshal(byt, &body); err != nil {
 		return body, err
-	}	
+	}
 	return body, nil
 }
 
@@ -78,18 +77,24 @@ func extractBackend(req *http.Request, ctx *App) (IBackend, error) {
 }
 
 func telemetry(req *http.Request, res *ResponseWriter, start time.Time, backendType string) {
-	if os.Getenv("ENV") != "dev" {
-		point := logPoint(req, res, start, backendType)
-		body, err := json.Marshal(point)
-		if err != nil {
-			return
-		}
-		formData := bytes.NewReader(body)
-
-		r, _ := http.NewRequest("POST", "https://log.kerjean.me/nuage", formData)
-		r.Header.Set("Content-Type", "application/json")
-		HTTP.Do(r)
+	point := logPoint(req, res, start, backendType)
+	body, err := json.Marshal(point)
+	if err != nil {
+		return
 	}
+	formData := bytes.NewReader(body)
+
+	r, err := http.NewRequest("POST", "https://log.kerjean.me/nuage", formData)
+	r.Header.Set("Connection", "Close")
+	r.Close = true
+	if err != nil {
+		r.Header.Set("Content-Type", "application/json")
+	}
+	resp, err := HTTP.Do(r)
+	if err != nil {
+		return
+	}
+	resp.Body.Close()
 }
 
 func logger(req *http.Request, res *ResponseWriter, start time.Time) {

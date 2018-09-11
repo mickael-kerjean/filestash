@@ -58,7 +58,7 @@ Data.prototype.get = function(type, path){
             };
             query.onerror = error;
         });
-    }).catch(() => Promise.resolve(null))
+    }).catch(() => Promise.resolve(null));
 }
 
 Data.prototype.update = function(type, path, fn, exact = true){
@@ -82,7 +82,7 @@ Data.prototype.update = function(type, path, fn, exact = true){
                 cursor.continue();
             };
         });
-    }).catch(() => Promise.resolve(null))
+    }).catch(() => Promise.resolve(null));
 }
 
 
@@ -102,7 +102,7 @@ Data.prototype.upsert = function(type, path, fn){
             };
             query.onerror = error;
         });
-    }).catch(() => Promise.resolve(null))
+    }).catch(() => Promise.resolve(null));
 }
 
 Data.prototype.add = function(type, path, data){
@@ -116,7 +116,7 @@ Data.prototype.add = function(type, path, data){
             request.onsuccess = () => done(data);
             request.onerror = (e) => error(e);
         });
-    }).catch(() => Promise.resolve(null))
+    }).catch(() => Promise.resolve(null));
 }
 
 Data.prototype.remove = function(type, path, exact = true){
@@ -148,7 +148,7 @@ Data.prototype.remove = function(type, path, exact = true){
                 };
             });
         }
-    }).catch(() => Promise.resolve(null))
+    }).catch(() => Promise.resolve(null));
 }
 
 Data.prototype.fetchAll = function(fn, type = this.FILE_PATH, key = "/"){
@@ -161,20 +161,20 @@ Data.prototype.fetchAll = function(fn, type = this.FILE_PATH, key = "/"){
         return new Promise((done, error) => {
             request.onsuccess = function(event) {
                 const cursor = event.target.result;
-                if(!cursor) return done();
-                const ret = fn(cursor.value);
-                if(ret !== false){
-                    cursor.continue();
-                    return
+                if(!cursor){
+                    return done();
                 }
-                db.close();
+                const ret = fn(cursor.value);
+                if(ret === false){
+                    return done();
+                }
+                cursor.continue();
             };
             request.onerror = () => {
-                db.close();
                 done();
             }
         });
-    }).catch(() => Promise.resolve(null))
+    }).catch(() => Promise.resolve(null));
 }
 
 Data.prototype.destroy = function(){
@@ -194,5 +194,7 @@ Data.prototype.destroy = function(){
     });
 }
 
-
 export const cache = new Data();
+if(typeof WorkerGlobalScope === "undefined"){ // web worker context
+    window.DB = cache;
+}

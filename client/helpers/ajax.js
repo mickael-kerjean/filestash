@@ -57,6 +57,9 @@ export function http_post(url, data, type = 'json'){
                 }
             }
         }
+        xhr.onerror = function(){
+            handle_error_response(xhr, err)
+        }
     });
 }
 
