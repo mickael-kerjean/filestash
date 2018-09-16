@@ -21,6 +21,7 @@ func NewConfig() *Config {
 
 type Config struct {
 	General struct {
+		Name          string `json:"name"`
 		Port          int    `json:"port"`
 		Host          string `json:"host"`
 		SecretKey     string `json:"secret_key"`
@@ -136,6 +137,9 @@ func (c *Config) populateDefault(path string) {
 	if c.General.Port == 0 {
 		c.General.Port = 8334
 	}
+	if c.General.Name == "" {
+		c.General.Name = "Nuage"
+	}
 	if c.General.SecretKey == "" {
 		c.General.SecretKey = RandomString(16)
 		j, err := json.MarshalIndent(c, "", "    ")
@@ -167,6 +171,7 @@ func (c *Config) Export() (string, error) {
 		ForkButton    bool              `json:"fork_button"`
 		DisplayHidden bool              `json:"display_hidden"`
 		AutoConnect   bool              `json:"auto_connect"`
+		Name          string            `json:"name"`
 		Connections   interface{}       `json:"connections"`
 		MimeTypes     map[string]string `json:"mime"`
 	}{
@@ -176,6 +181,7 @@ func (c *Config) Export() (string, error) {
 		AutoConnect:   c.General.AutoConnect,
 		Connections:   c.Connections,
 		MimeTypes:     c.MimeTypes,
+		Name:          c.General.Name,
 	}
 	j, err := json.Marshal(publicConf)
 	if err != nil {
