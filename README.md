@@ -36,6 +36,12 @@
     </a>
     <i>Navigating in Nuage</i>
 </p>
+<p align="center">
+    <a href="http://nuage.kerjean.me">
+        <img src="https://raw.githubusercontent.com/mickael-kerjean/nuage/master/.assets/img/photo_management.gif" alt="user experience on medias" />
+    </a>
+    <i>Works great with your medias</i>
+</p>
 
 # Getting started - Installation
 Nuage can be used in different settings:
