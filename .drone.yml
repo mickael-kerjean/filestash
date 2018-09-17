@@ -1,0 +1,13 @@
+pipeline:
+  docker:
+    image: docker
+    secrets: [ docker_username, docker_password ]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    when:
+      branch: master
+    commands:
+      - echo $DOCKER_PASSWORD | docker login -u=$DOCKER_USERNAME --password-stdin
+      - docker pull alpine:latest
+      - docker build --no-cache -t machines/nuage:master docker/prod
+      - docker push machines/nuage:master

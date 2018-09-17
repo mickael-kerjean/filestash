@@ -60,7 +60,7 @@ type Config struct {
 		Port            *string `json:"port,omitempty"`
 		Path            *string `json:"path,omitempty"`
 		Passphrase      *string `json:"passphrase,omitempty"`
-		Conn            *string `json:"conn"`
+		Conn            *string `json:"conn,omitempty"`
 		SecretAccessKey *string `json:"secret_access_key,omitempty"`
 		AccessKeyId     *string `json:"access_key_id,omitempty"`
 		Endpoint        *string `json:"endpoint,omitempty"`
@@ -84,7 +84,7 @@ func (c *Config) Initialise() {
 	c.Runtime.ConfigPath = filepath.Join(c.Runtime.Dirname, CONFIG_PATH)
 	os.MkdirAll(c.Runtime.ConfigPath, os.ModePerm)
 	if err := c.loadConfig(filepath.Join(c.Runtime.ConfigPath, "config.json")); err != nil {
-		log.Println("> Can't load configuration file")
+		log.Println("> Can't load configuration file ", err)
 	}
 	if err := c.loadMimeType(filepath.Join(c.Runtime.ConfigPath, "mime.json")); err != nil {
 		log.Println("> Can't load mimetype config")
