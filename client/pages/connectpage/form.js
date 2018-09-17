@@ -488,9 +488,7 @@ function formHelper(WrappedComponent){
         const helpers = {
             should_appear: function(key){
                 const val = props.config[key];
-                if(val === false) return false;
-                else if(val === null) return false;
-                else if(val === undefined) return true;
+                if(val === undefined) return true;
                 return false;
             },
             input_type: function(key){

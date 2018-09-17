@@ -29,6 +29,7 @@ type Config struct {
 		ForkButton    bool   `json:"fork_button"`
 		DisplayHidden bool   `json:"display_hidden"`
 		AutoConnect   bool   `json:"auto_connect"`
+		RememberMe    *bool  `json:"remember_me"`
 	} `json:"general"`
 	Log struct {
 		Enable    bool   `json:"enable"`
@@ -56,9 +57,10 @@ type Config struct {
 		Password        *string `json:"password,omitempty"`
 		Url             *string `json:"url,omitempty"`
 		Advanced        *bool   `json:"advanced,omitempty"`
-		Port            *uint   `json:"port,omitempty"`
+		Port            *string `json:"port,omitempty"`
 		Path            *string `json:"path,omitempty"`
 		Passphrase      *string `json:"passphrase,omitempty"`
+		Conn            *string `json:"conn"`
 		SecretAccessKey *string `json:"secret_access_key,omitempty"`
 		AccessKeyId     *string `json:"access_key_id,omitempty"`
 		Endpoint        *string `json:"endpoint,omitempty"`
@@ -172,6 +174,7 @@ func (c *Config) Export() (string, error) {
 		DisplayHidden bool              `json:"display_hidden"`
 		AutoConnect   bool              `json:"auto_connect"`
 		Name          string            `json:"name"`
+		RememberMe    *bool             `json:"remember_me"`
 		Connections   interface{}       `json:"connections"`
 		MimeTypes     map[string]string `json:"mime"`
 	}{
@@ -182,6 +185,7 @@ func (c *Config) Export() (string, error) {
 		Connections:   c.Connections,
 		MimeTypes:     c.MimeTypes,
 		Name:          c.General.Name,
+		RememberMe:    c.General.RememberMe,
 	}
 	j, err := json.Marshal(publicConf)
 	if err != nil {
