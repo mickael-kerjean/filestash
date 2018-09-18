@@ -198,7 +198,7 @@ export class Editor extends React.Component {
         if(CONFIG["editor"] === "emacs" || !CONFIG["editor"]){
             return Promise.resolve();
         }
-        return import(/* webpackChunkName: "editor" */'./editor/keymap_'+config.editor);
+        return import(/* webpackChunkName: "editor" */'./editor/keymap_'+CONFIG["editor"]);
     }
 
     render() {
