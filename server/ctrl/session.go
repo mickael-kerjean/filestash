@@ -70,6 +70,8 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	if home == "" {
 		SendSuccessResult(res, nil)
+	} else if ctx.Body["path"] != "" {
+		SendSuccessResult(res, nil)
 	} else {
 		SendSuccessResult(res, home)
 	}
