@@ -212,7 +212,7 @@ export class FilesPage extends React.Component {
               <div className="page_container">
                 <div className="scroll-y">
                   <InfiniteScroll pageStart={0} loader={$moreLoading} hasMore={this.state.files.length > 70}
-                    initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={40}>
+                    initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={100}>
                     <NgIf className="container" cond={this.state.loading === false && this.state.error === null}>
                       <NgIf cond={this.state.path === '/'}>
                         <FrequentlyAccess files={this.state.frequents}/>

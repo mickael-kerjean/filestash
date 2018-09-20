@@ -60,7 +60,8 @@ let config = {
         new CopyWebpackPlugin([
             { from: 'manifest.json', to: "assets/" },
             { from: 'worker/*.js', to: "assets/" },
-            { from: 'assets/logo/*' }
+            { from: 'assets/logo/*' },
+            { from: 'assets/icons/*' }
         ], { context: path.join(__dirname, 'client') }),
         //new BundleAnalyzerPlugin()
     ]

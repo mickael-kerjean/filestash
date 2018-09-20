@@ -31,15 +31,14 @@ export class ShareComponent extends React.Component {
         }else{
             this.setState({[key]: value});
         }
-        if(key === "role" && value){
+
+        if((key === "role" && value) || (key === "show_advanced")){
             this.refreshModal();
         }
     }
 
     refreshModal(){
-        if(window.innerHeight < 500){
-            window.dispatchEvent(new Event('resize'));
-        }
+        window.dispatchEvent(new Event('resize'));
     }
 
     onLoad(link){

@@ -1,14 +1,9 @@
 import React from 'react';
 import './icon.scss';
 
-import img_folder from "../assets/img/folder.svg";
-import img_file from "../assets/img/file.svg";
 import img_loader from "../assets/img/loader.svg";
 import img_save from "../assets/img/save.svg";
 import img_power from "../assets/img/power.svg";
-import img_edit from "../assets/img/edit.svg";
-import img_delete from "../assets/img/delete.svg";
-import img_share from "../assets/img/share.svg";
 import img_bucket from "../assets/img/bucket.svg";
 import img_link from "../assets/img/link.svg";
 import img_loading from "../assets/img/loader.svg";
@@ -49,9 +44,9 @@ export const Icon = (props) => {
     if(props.name === null) return null;
     let img;
     if(props.name === 'directory'){
-        img = img_folder;
+        img = "/assets/icons/folder.svg";
     }else if(props.name === 'file'){
-        img = img_file;
+        img = "/assets/icons/file.svg";
     }else if(props.name === 'loader'){
         img = img_loader;
     }else if(props.name === 'save'){
@@ -59,11 +54,11 @@ export const Icon = (props) => {
     }else if(props.name === 'power'){
         img = img_power;
     }else if(props.name === 'edit'){
-        img = img_edit;
+        img = "/assets/icons/edit.svg";
     }else if(props.name === 'delete'){
-        img = img_delete;
+        img = "/assets/icons/delete.svg";
     }else if(props.name === 'share'){
-        img = img_share;
+        img = "/assets/icons/share.svg";
     }else if(props.name === 'bucket'){
         img = img_bucket;
     }else if(props.name === 'link'){

@@ -85,7 +85,6 @@ export class ExistingThing extends React.Component {
         super(props);
         this.state = {
             hover: null,
-            message: null,
             filename: props.file.name,
             is_renaming: false,
             preview: null
@@ -94,7 +93,6 @@ export class ExistingThing extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState){
         if(nextState.hover !== this.state.hover ||
-           nextState.message !== this.state.message ||
            nextState.is_renaming !== this.state.is_renaming ||
            nextProps.view !== this.props.view ||
            this.state.preview !== nextState.preview ||
@@ -220,7 +218,6 @@ export class ExistingThing extends React.Component {
                 <Card ref="$card"className={this.state.hover} className={className}>
                   <Image preview={this.state.preview} icon={this.props.file.icon || this.props.file.type} view={this.props.view} path={path.join(this.props.path, this.props.file.name)} />
                   <Filename filename={this.props.file.name} filesize={this.props.file.size} filetype={this.props.file.type} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} onRenameCancel={this.onRenameRequest.bind(this, false)}/>
-                  <Message message={this.state.message} />
                   <DateTime show={this.state.icon !== 'loading'} timestamp={this.props.file.time} />
                   <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} onClickShare={this.onShareRequest.bind(this)} is_renaming={this.state.is_renaming} can_rename={this.props.metadata.can_rename !== false} can_delete={this.props.metadata.can_delete !== false} />
                 </Card>
@@ -318,19 +315,25 @@ const ActionButton = (props) => {
           </NgIf>
         </div>
     );
+
+    return (
+        <div className="component_action">
+          <NgIf cond={props.can_rename !== false && props.is_renaming === false} type="inline">
+            <Icon name="edit" onClick={onRename} className="component_updater--icon" />
+          </NgIf>
+          <NgIf cond={props.can_delete !== false} type="inline">
+            <Icon name="delete" onClick={onDelete} className="component_updater--icon"/>
+          </NgIf>
+          <NgIf cond={props.can_share !== false} type="inline">
+            <Icon name="share" onClick={onShare} className="component_updater--icon"/>
+          </NgIf>
+        </div>
+    );
 }
 
 const DateTime = (props) => {
     function displayTime(timestamp){
-        if(timestamp && Intl && typeof Intl.DateTimeFormat === "function"){
-            return Intl.DateTimeFormat()
-                .format(new Date(timestamp))
-                .split("/")
-                .map((n, i) => {
-                    return leftPad(n, 2);
-                })
-                .join("/");
-        }else if(timestamp){
+        if(timestamp){
             let t = new Date(timestamp);
             return t.getFullYear() + "-" + leftPad(t.getMonth().toString(), 2) + "-" + leftPad(t.getDate().toString(), 2);
         }else{
@@ -338,10 +341,14 @@ const DateTime = (props) => {
         }
     }
 
+    if(props.show === false){
+        return null;
+    }
+
     return (
-        <NgIf cond={props.show} className="component_datetime">
+        <span className="component_datetime">
           <span>{displayTime(props.timestamp)}</span>
-        </NgIf>
+        </span>
     );
 };
 
@@ -394,6 +401,7 @@ class Image extends React.Component{
         }
 
         const ext = path.extname(this.props.path).replace(/^\./, "");
+        const img = this.props.icon === "file" ? "file" : "folder";
         return (
             <span>
               <Icon name={this.props.icon} />

@@ -112,6 +112,9 @@
             padding: 0;
             position: relative;
             border: 3px solid transparent;
+            border-width: 0;
+            box-sizing: border-box;
+
             > span > img{
                 padding: 0;
                 margin: 0;
