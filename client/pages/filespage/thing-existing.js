@@ -310,7 +310,7 @@ const ActionButton = (props) => {
           <NgIf cond={props.can_delete !== false} type="inline">
             <Icon name="delete" onClick={onDelete} className="component_updater--icon"/>
           </NgIf>
-          <NgIf cond={false && props.can_share !== false} type="inline">
+          <NgIf cond={props.can_share !== false} type="inline">
             <Icon name="share" onClick={onShare} className="component_updater--icon"/>
           </NgIf>
         </div>

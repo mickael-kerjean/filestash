@@ -52,11 +52,12 @@ func Decrypt(keystr string, cryptoText string) (map[string]string, error) {
 	return raw, nil
 }
 
-func GenerateID(params map[string]string) string {
+func GenerateID(params map[string]string) string {	
 	p := "type =>" + params["type"]
 	p += "host =>" + params["host"]
 	p += "hostname =>" + params["hostname"]
 	p += "username =>" + params["username"]
+	p += "user =>" + params["user"]
 	p += "repo =>" + params["repo"]
 	p += "access_key_id =>" + params["access_key_id"]
 	p += "endpoint =>" + params["endpoint"]

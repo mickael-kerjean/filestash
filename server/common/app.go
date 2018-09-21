@@ -12,8 +12,8 @@ type App struct {
 	Config  *Config
 	Helpers *Helpers
 	Backend IBackend
-	Body    map[string]string
-	Session map[string]string
+	Body    map[string]interface{}
+	Session map[string]interface{}
 }
 
 func GetCurrentDir() string {

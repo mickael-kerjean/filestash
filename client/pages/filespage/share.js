@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { NgIf, Icon } from '../../components/';
 import { Share } from '../../model/';
-import { randomString, notify } from '../../helpers/';
+import { randomString, notify, absoluteToRelative } from '../../helpers/';
 import './share.scss';
 
 export class ShareComponent extends React.Component {
@@ -72,22 +72,52 @@ export class ShareComponent extends React.Component {
     }
 
     onRegisterLink(e){
-        e.target.setSelectionRange(0, e.target.value.length);
-        let st = Object.assign({}, this.state);
-        delete st.existings;
-        delete st.show_advanced;
-        this.setState({existings: [st].concat(this.state.existings)});
-        return Share.upsert(st)
+        this.refs.$input.select();
+        document.execCommand("copy");
+        notify.send("The link was copied in the clipboard", "INFO")
+
+        const link = {
+            role: this.state.role,
+            path: this.props.path,
+            id: this.state.id,
+            url: this.state.url,
+            users: this.state.users || null,
+            password: this.state.password || null,
+            can_manage_own: this.state.can_manage_own == true ? "yes" : "no",
+            can_share: this.state.can_share === true ? "yes" : "no"
+        };
+
+        let links = [link];
+        for(let i=0; i<this.state.existings.length; i++){
+            let insert = true;
+            for(let j=0; j<links; j++){
+                if(this.state.existings[i].id === links[j].id) insert = false;
+            }
+        }
+        this.setState({existings: links});
+        return Share.upsert(link)
+            .then(() => this.setState({
+                role: null,
+                id: randomString(7),
+                show_advanced: false
+            }))
             .catch((err) => {
                 notify.send(err, "error");
-                this.setState({
-                    existings: this.state.existings.slice(0, this.state.existings.length)
-                });
+                const validLinks = this.state.existings.slice(1, this.state.existings.length);
+                this.setState({ existings: validLinks });
             });
     }
 
 
     render(){
+        const beautifulPath = function(from, to){
+            return to;
+            const p = absoluteToRelative(from, to);
+            if(p === "./"){
+                return "Current folder"
+            }
+            return p.length < to.length ? p : to;
+        }
         return (
             <div className="component_share">
               <h2>Create a New Link</h2>
@@ -110,9 +140,9 @@ export class ShareComponent extends React.Component {
                   {
                       this.state.existings && this.state.existings.map((link, i) => {
                           return (
-                              <div className="link-details" key={link.id}>
+                              <div className="link-details" key={i}>
                                 <span className="role">{link.role}</span>
-                                <span>{link.path}</span>
+                                <span className="path">{beautifulPath(this.props.path, link.path)}</span>
                                 <Icon onClick={this.onDeleteLink.bind(this, link.id)} name="delete"/>
                                 <Icon onClick={this.onLoad.bind(this, link)} name="edit"/>
                               </div>
@@ -144,7 +174,7 @@ export class ShareComponent extends React.Component {
                 </div>
 
                 <div className="shared-link">
-                  <input onClick={this.onRegisterLink.bind(this)} type="text" value={window.location.origin+"/s/"+(this.state.url || this.state.id)} onChange={() => {}}/>
+                  <input ref="$input" onClick={this.onRegisterLink.bind(this)} type="text" value={window.location.origin+"/s/"+(this.state.url || this.state.id)} onChange={() => {}}/>
                 </div>
               </NgIf>
             </div>

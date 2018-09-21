@@ -4,7 +4,7 @@ export { debounce, throttle } from './backpressure';
 export { encrypt, decrypt } from './crypto';
 export { event } from './events';
 export { cache } from './cache';
-export { pathBuilder, basename, dirname } from './path';
+export { pathBuilder, basename, dirname, absoluteToRelative } from './path';
 export { memory } from './memory';
 export { prepare } from './navigate';
 export { invalidate, http_get, http_post, http_delete } from './ajax';

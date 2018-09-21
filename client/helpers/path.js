@@ -18,3 +18,16 @@ export function dirname(path){
     if(dir === '/') return dir;
     return dir + "/";
 }
+
+export function absoluteToRelative(from, to){
+    // remove any trace of file that would be interpreted by the path lib as a folder
+    from = from.replace(/\/[^\/]+$/, "/");
+    let r = Path.relative(from, to);
+    if(r.substring(0,3) !== "../"){
+        r = "./"+r
+    }
+    if(/\/$/.test(to) === true && r !== "./"){
+        r += "/"
+    }
+    return r;
+}

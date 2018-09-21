@@ -50,6 +50,15 @@
                     min-width: 75px;
                     text-transform: uppercase;
                 }
+                .path{
+                    vertical-align: middle;
+                    font-size: 0.9em;
+                    max-width: 180px;
+                    display: inline-block;
+                    white-space: nowrap;
+                    overflow-x: hidden;
+                    text-overflow: ellipsis;
+                }
                 .component_icon{
                     width: 20px;
                     float: right;
