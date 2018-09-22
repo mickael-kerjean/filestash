@@ -12,6 +12,7 @@ import (
 func Init(a *App) *http.Server {
 	r := mux.NewRouter()
 
+	// API
 	session := r.PathPrefix("/api/session").Subrouter()
 	session.HandleFunc("", APIHandler(SessionIsValid, *a)).Methods("GET")
 	session.HandleFunc("", APIHandler(SessionAuthenticate, *a)).Methods("POST")
@@ -33,8 +34,8 @@ func Init(a *App) *http.Server {
 	share.HandleFunc("/{id}", APIHandler(ShareUpsert, *a)).Methods("POST")
 	share.HandleFunc("/{id}", APIHandler(ShareDelete, *a)).Methods("DELETE")
 
+	// APP
 	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a))
-
 	r.PathPrefix("/assets").Handler(StaticHandler("./data/public/", *a))
 	r.NotFoundHandler = IndexHandler("./data/public/index.html", *a)
 

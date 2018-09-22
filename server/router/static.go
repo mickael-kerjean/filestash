@@ -12,25 +12,32 @@ import (
 
 func StaticHandler(_path string, ctx App) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		header := res.Header()
+		header.Set("Content-Type", mime.TypeByExtension(filepath.Ext(req.URL.Path)))
+		header.Set("Cache-Control", "max-age=2592000")
+		SecureHeader(&header)
+
+		if strings.HasSuffix(req.URL.Path, "/") {
+			http.NotFound(res, req)
+			return
+		}
+
 		absPath := ctx.Helpers.AbsolutePath(_path)
 		fsrv := http.FileServer(http.Dir(absPath))
 		_, err := os.Open(path.Join(absPath, req.URL.Path+".gz"))
-
-		mType := mime.TypeByExtension(filepath.Ext(req.URL.Path))
-		res.Header().Set("Content-Type", mType)
-
 		if err == nil && strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
 			res.Header().Set("Content-Encoding", "gzip")
 			req.URL.Path += ".gz"
 		}
-		res.Header().Set("Cache-Control", "max-age=2592000")
 		fsrv.ServeHTTP(res, req)
 	})
 }
 
 func IndexHandler(_path string, ctx App) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		res.Header().Set("Content-Type", "text/html")
+		header := res.Header()
+		header.Set("Content-Type", "text/html")
+		SecureHeader(&header)
 
 		p := _path
 		if _, err := os.Open(path.Join(ctx.Config.Runtime.Dirname, p+".gz")); err == nil && strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
@@ -39,4 +46,10 @@ func IndexHandler(_path string, ctx App) http.Handler {
 		}
 		http.ServeFile(res, req, ctx.Helpers.AbsolutePath(p))
 	})
+}
+
+func SecureHeader(header *http.Header) {
+	header.Set("X-XSS-Protection", "1; mode=block")
+	header.Set("X-Content-Type-Options", "nosniff")
+	header.Set("X-Frame-Options", "DENY")
 }
