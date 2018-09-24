@@ -33,8 +33,13 @@ func StaticHandler(_path string, ctx App) http.Handler {
 	})
 }
 
-func IndexHandler(_path string, ctx App) http.Handler {
+func DefaultHandler(_path string, ctx App) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		if req.Method != "GET" {
+			http.Error(res, "Invalid request method.", 405)
+			return
+		}
+
 		header := res.Header()
 		header.Set("Content-Type", "text/html")
 		SecureHeader(&header)

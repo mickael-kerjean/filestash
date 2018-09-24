@@ -36,9 +36,9 @@ func Init(a *App) *http.Server {
 	r.HandleFunc("/api/proof", APIHandler(ShareGiveProof, *a)).Methods("GET")
 
 	// APP
-	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a))
-	r.PathPrefix("/assets").Handler(StaticHandler("./data/public/", *a))
-	r.NotFoundHandler = IndexHandler("./data/public/index.html", *a)
+	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a)).Methods("GET")
+	r.PathPrefix("/assets").Handler(StaticHandler("./data/public/", *a)).Methods("GET")
+	r.NotFoundHandler = DefaultHandler("./data/public/index.html", *a)
 
 	srv := &http.Server{
 		Addr:    ":" + strconv.Itoa(a.Config.General.Port),
