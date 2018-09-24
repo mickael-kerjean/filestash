@@ -40,19 +40,18 @@ func TestShareMultipleUpsert(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestSHareUpsertManageSensitiveData(t *testing.T) {
-	err := model.ShareUpsert(&shareObj);
-	assert.NoError(t, err)
+// func TestShareUpsertIsProperlyInserted(t *testing.T) {
+// 	err := model.ShareUpsert(&shareObj);
+// 	assert.NoError(t, err)
 
-	var obj model.Share
-	err = model.ShareGet(&obj)
-	assert.NoError(t, err)
-	assert.NotNil(t, obj.Password)
+// 	var obj model.Share
+// 	err = model.ShareGet(&obj)
+// 	assert.NoError(t, err)
+// 	assert.NotNil(t, obj.Password)
 
-	// TODO
-	//assert.NotNil(t, obj.Password)
-	
-}
+// 	// TODO
+// 	//assert.NotNil(t, obj.Password)	
+// }
 
 //////////////////////////////////////////////
 //// get
@@ -72,29 +71,29 @@ func TestShareGetExisting(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestShareGetExistingMakeSureDataIsOk(t *testing.T) {	
-	err := model.ShareUpsert(&shareObj);
-	assert.NoError(t, err, "Upsert issue")
+// func TestShareGetExistingMakeSureDataIsOk(t *testing.T) {	
+// 	err := model.ShareUpsert(&shareObj);
+// 	assert.NoError(t, err, "Upsert issue")
 
-	var obj model.Share
-	obj.Id = shareObj.Id
-	obj.Backend = shareObj.Backend
-	err = model.ShareGet(&obj);	
-	assert.NoError(t, err)
-	assert.Equal(t, "foo", obj.Id)
-	assert.Equal(t, "/var/www/", obj.Path)
-	assert.Equal(t, true, obj.CanManageOwn)
-	assert.Equal(t, true, obj.CanShare)
-	assert.Equal(t, true, obj.CanRead)
-	assert.Equal(t, false, obj.CanWrite)
-	assert.Equal(t, false, obj.CanUpload)
-	assert.Nil(t, obj.Backend)
+// 	var obj model.Share
+// 	obj.Id = shareObj.Id
+// 	obj.Backend = shareObj.Backend
+// 	err = model.ShareGet(&obj);	
+// 	assert.NoError(t, err)
+// 	assert.Equal(t, "foo", obj.Id)
+// 	assert.Equal(t, "/var/www/", obj.Path)
+// 	assert.Equal(t, true, obj.CanManageOwn)
+// 	assert.Equal(t, true, obj.CanShare)
+// 	assert.Equal(t, true, obj.CanRead)
+// 	assert.Equal(t, false, obj.CanWrite)
+// 	assert.Equal(t, false, obj.CanUpload)
+// 	assert.Nil(t, obj.Backend)
 
-	assert.NotNil(t, obj.Expire)
-	assert.Equal(t, shareObj.Expire, obj.Expire)
-	assert.NotNil(t, obj.Password)
-	assert.NotEqual(t, shareObj.Password, obj.Password)
-}
+// 	assert.NotNil(t, obj.Expire)
+// 	assert.Equal(t, shareObj.Expire, obj.Expire)
+// 	assert.NotNil(t, obj.Password)
+// 	assert.NotEqual(t, shareObj.Password, obj.Password)
+// }
 
 //////////////////////////////////////////////
 //// LIST

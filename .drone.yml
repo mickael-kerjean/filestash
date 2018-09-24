@@ -1,5 +1,6 @@
 pipeline:
-  docker:
+  publish_docker:
+    group: release
     image: docker
     secrets: [ docker_username, docker_password ]
     volumes:
@@ -10,4 +11,4 @@ pipeline:
       - echo $DOCKER_PASSWORD | docker login -u=$DOCKER_USERNAME --password-stdin
       - docker pull alpine:latest
       - docker build --no-cache -t machines/nuage:master docker/prod
-      - docker push machines/nuage:master
+      - docker push machines/nuage
