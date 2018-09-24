@@ -7,7 +7,7 @@ pipeline:
       - GOPATH=/tmp/go
       - PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/
       - LD_LIBRARY_PATH=/usr/local/lib
-      - GO_LDFLAGS_ALLOW='-fopenmp'
+      - CGO_LDFLAGS_ALLOW='-fopenmp'
     commands:
       # Prepare
       - mkdir -p $GOPATH/src/github.com/mickael-kerjean/nuage
