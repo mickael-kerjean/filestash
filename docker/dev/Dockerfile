@@ -8,9 +8,9 @@ RUN mkdir -p /tmp/go/src/github.com/mickael-kerjean/ && \
     mkdir /tmp/deps && \
     # libvips #######
     cd /tmp/deps && \
-    curl -L -X GET https://github.com/jcupitt/libvips/releases/download/v8.6.5/vips-8.6.5.tar.gz > libvips.tar.gz && \
+    curl -L -X GET https://github.com/libvips/libvips/releases/download/v8.7.0/vips-8.7.0.tar.gz > libvips.tar.gz && \
     tar -zxf libvips.tar.gz && \
-    cd vips-8.6.5/ && \
+    cd vips-8.7.0/ && \
     apk --no-cache add libexif-dev tiff-dev jpeg-dev libjpeg-turbo-dev libpng-dev librsvg-dev giflib-dev glib-dev fftw-dev glib-dev libc-dev expat-dev orc-dev && \
     ./configure && \
     make -j 6 && \

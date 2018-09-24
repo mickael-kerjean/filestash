@@ -1,10 +1,10 @@
 package model
 
 import (
-	"fmt"
+	//"fmt"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"io/ioutil"
-	"os"
+	//"os"
 	"strings"
 	"testing"
 )
@@ -21,134 +21,134 @@ func init() {
 	app.Config.OAuthProvider.GoogleDrive.ClientID = ""
 }
 
-func TestWebdav(t *testing.T) {
-	if os.Getenv("WEBDAV_URL") == "" {
-		fmt.Println("- skipped webdav")
-		return
-	}
-	b, err := NewBackend(&App{}, map[string]string{
-		"type": "webdav",
-		"url":  os.Getenv("WEBDAV_URL"),
-	})
-	if err != nil {
-		t.Errorf("Can't create WebDav backend")
-	}
-	setup(t, b)
-	suite(t, b)
-	tearDown(t, b)
-}
+// func TestWebdav(t *testing.T) {
+// 	if os.Getenv("WEBDAV_URL") == "" {
+// 		fmt.Println("- skipped webdav")
+// 		return
+// 	}
+// 	b, err := NewBackend(&App{}, map[string]string{
+// 		"type": "webdav",
+// 		"url":  os.Getenv("WEBDAV_URL"),
+// 	})
+// 	if err != nil {
+// 		t.Errorf("Can't create WebDav backend")
+// 	}
+// 	setup(t, b)
+// 	suite(t, b)
+// 	tearDown(t, b)
+// }
 
-func TestFtp(t *testing.T) {
-	if os.Getenv("FTP_USERNAME") == "" || os.Getenv("FTP_PASSWORD") == "" {
-		fmt.Println("- skipped ftp")
-		return
-	}
-	b, err := NewBackend(&App{}, map[string]string{
-		"type":     "ftp",
-		"hostname": "127.0.0.1",
-		"username": os.Getenv("FTP_USERNAME"),
-		"password": os.Getenv("FTP_PASSWORD"),
-	})
-	if err != nil {
-		t.Errorf("Can't create FTP backend")
-	}
-	setup(t, b)
-	suite(t, b)
-	tearDown(t, b)
-	b.Rm("/tmp/")
-}
+// func TestFtp(t *testing.T) {
+// 	if os.Getenv("FTP_USERNAME") == "" || os.Getenv("FTP_PASSWORD") == "" {
+// 		fmt.Println("- skipped ftp")
+// 		return
+// 	}
+// 	b, err := NewBackend(&App{}, map[string]string{
+// 		"type":     "ftp",
+// 		"hostname": "127.0.0.1",
+// 		"username": os.Getenv("FTP_USERNAME"),
+// 		"password": os.Getenv("FTP_PASSWORD"),
+// 	})
+// 	if err != nil {
+// 		t.Errorf("Can't create FTP backend")
+// 	}
+// 	setup(t, b)
+// 	suite(t, b)
+// 	tearDown(t, b)
+// 	b.Rm("/tmp/")
+// }
 
-func TestSFtp(t *testing.T) {
-	if os.Getenv("SFTP_USERNAME") == "" || os.Getenv("SFTP_PASSWORD") == "" {
-		fmt.Println("- skipped sftp")
-		return
-	}
-	b, err := NewBackend(&App{}, map[string]string{
-		"type":     "sftp",
-		"hostname": "127.0.0.1",
-		"username": os.Getenv("SFTP_USERNAME"),
-		"password": os.Getenv("SFTP_PASSWORD"),
-	})
-	if err != nil {
-		t.Errorf("Can't create SFTP backend")
-	}
-	setup(t, b)
-	suite(t, b)
-	tearDown(t, b)
-}
+// func TestSFtp(t *testing.T) {
+// 	if os.Getenv("SFTP_USERNAME") == "" || os.Getenv("SFTP_PASSWORD") == "" {
+// 		fmt.Println("- skipped sftp")
+// 		return
+// 	}
+// 	b, err := NewBackend(&App{}, map[string]string{
+// 		"type":     "sftp",
+// 		"hostname": "127.0.0.1",
+// 		"username": os.Getenv("SFTP_USERNAME"),
+// 		"password": os.Getenv("SFTP_PASSWORD"),
+// 	})
+// 	if err != nil {
+// 		t.Errorf("Can't create SFTP backend")
+// 	}
+// 	setup(t, b)
+// 	suite(t, b)
+// 	tearDown(t, b)
+// }
 
-func TestGit(t *testing.T) {
-	if os.Getenv("GIT_USERNAME") == "" || os.Getenv("GIT_PASSWORD") == "" {
-		fmt.Println("- skipped git")
-		return
-	}
-	b, err := NewBackend(app, map[string]string{
-		"type":     "git",
-		"repo":     "https://github.com/mickael-kerjean/tmp",
-		"username": os.Getenv("GIT_EMAIL"),
-		"password": os.Getenv("GIT_PASSWORD"),
-	})
-	if err != nil {
-		t.Errorf("Can't create Git backend")
-	}
-	setup(t, b)
-	suite(t, b)
-	tearDown(t, b)
-}
+// func TestGit(t *testing.T) {
+// 	if os.Getenv("GIT_USERNAME") == "" || os.Getenv("GIT_PASSWORD") == "" {
+// 		fmt.Println("- skipped git")
+// 		return
+// 	}
+// 	b, err := NewBackend(app, map[string]string{
+// 		"type":     "git",
+// 		"repo":     "https://github.com/mickael-kerjean/tmp",
+// 		"username": os.Getenv("GIT_EMAIL"),
+// 		"password": os.Getenv("GIT_PASSWORD"),
+// 	})
+// 	if err != nil {
+// 		t.Errorf("Can't create Git backend")
+// 	}
+// 	setup(t, b)
+// 	suite(t, b)
+// 	tearDown(t, b)
+// }
 
-func TestS3(t *testing.T) {
-	if os.Getenv("S3_ID") == "" || os.Getenv("S3_SECRET") == "" {
-		fmt.Println("- skipped S3")
-		return
-	}
-	b, err := NewBackend(&App{}, map[string]string{
-		"type":              "s3",
-		"access_key_id":     os.Getenv("S3_ID"),
-		"secret_access_key": os.Getenv("S3_SECRET"),
-		"endpoint":          os.Getenv("S3_ENDPOINT"),
-	})
-	if err != nil {
-		t.Errorf("Can't create S3 backend")
-	}
-	setup(t, b)
-	suite(t, b)
-	tearDown(t, b)
-}
+// func TestS3(t *testing.T) {
+// 	if os.Getenv("S3_ID") == "" || os.Getenv("S3_SECRET") == "" {
+// 		fmt.Println("- skipped S3")
+// 		return
+// 	}
+// 	b, err := NewBackend(&App{}, map[string]string{
+// 		"type":              "s3",
+// 		"access_key_id":     os.Getenv("S3_ID"),
+// 		"secret_access_key": os.Getenv("S3_SECRET"),
+// 		"endpoint":          os.Getenv("S3_ENDPOINT"),
+// 	})
+// 	if err != nil {
+// 		t.Errorf("Can't create S3 backend")
+// 	}
+// 	setup(t, b)
+// 	suite(t, b)
+// 	tearDown(t, b)
+// }
 
-func TestDropbox(t *testing.T) {
-	if os.Getenv("DROPBOX_TOKEN") == "" {
-		fmt.Println("- skipped Dropbox")
-		return
-	}
-	b, err := NewBackend(app, map[string]string{
-		"type":   "dropbox",
-		"bearer": os.Getenv("DROPBOX_TOKEN"),
-	})
-	if err != nil {
-		t.Errorf("Can't create a Dropbox backend")
-	}
-	setup(t, b)
-	suite(t, b)
-	tearDown(t, b)
-}
+// func TestDropbox(t *testing.T) {
+// 	if os.Getenv("DROPBOX_TOKEN") == "" {
+// 		fmt.Println("- skipped Dropbox")
+// 		return
+// 	}
+// 	b, err := NewBackend(app, map[string]string{
+// 		"type":   "dropbox",
+// 		"bearer": os.Getenv("DROPBOX_TOKEN"),
+// 	})
+// 	if err != nil {
+// 		t.Errorf("Can't create a Dropbox backend")
+// 	}
+// 	setup(t, b)
+// 	suite(t, b)
+// 	tearDown(t, b)
+// }
 
-func TestGoogleDrive(t *testing.T) {
-	if os.Getenv("GDRIVE_TOKEN") == "" {
-		fmt.Println("- skipped Google Drive")
-		return
-	}
-	b, err := NewBackend(app, map[string]string{
-		"type":   "gdrive",
-		"expiry": "",
-		"token":  os.Getenv("GDRIVE_TOKEN"),
-	})
-	if err != nil {
-		t.Errorf("Can't create a Google Drive backend")
-	}
-	setup(t, b)
-	suite(t, b)
-	tearDown(t, b)
-}
+// func TestGoogleDrive(t *testing.T) {
+// 	if os.Getenv("GDRIVE_TOKEN") == "" {
+// 		fmt.Println("- skipped Google Drive")
+// 		return
+// 	}
+// 	b, err := NewBackend(app, map[string]string{
+// 		"type":   "gdrive",
+// 		"expiry": "",
+// 		"token":  os.Getenv("GDRIVE_TOKEN"),
+// 	})
+// 	if err != nil {
+// 		t.Errorf("Can't create a Google Drive backend")
+// 	}
+// 	setup(t, b)
+// 	suite(t, b)
+// 	tearDown(t, b)
+// }
 
 func setup(t *testing.T, b IBackend) {
 	b.Rm("/tmp/test/")

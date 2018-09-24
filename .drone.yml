@@ -1,5 +1,27 @@
 pipeline:
-  docker:
+  test:
+    group: test
+    image: machines/nuage_build
+    pull: true
+    environment:
+      - GOPATH=/tmp/go
+      - PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/
+      - LD_LIBRARY_PATH=/usr/local/lib
+    commands:
+      # Prepare
+      - mkdir -p $GOPATH/src/github.com/mickael-kerjean/nuage
+      - mv * $GOPATH/src/github.com/mickael-kerjean/nuage
+      - cd $GOPATH/src/github.com/mickael-kerjean/nuage
+      # Test client
+      - npm install
+      - node node_modules/.bin/jest client
+      # Test server
+      - cd server
+      - go get
+      - go test -v ./...
+
+  publish_docker:
+    group: release
     image: docker
     secrets: [ docker_username, docker_password ]
     volumes:
@@ -10,4 +32,4 @@ pipeline:
       - echo $DOCKER_PASSWORD | docker login -u=$DOCKER_USERNAME --password-stdin
       - docker pull alpine:latest
       - docker build --no-cache -t machines/nuage:master docker/prod
-      - docker push machines/nuage:master
+      - docker push machines/nuage
