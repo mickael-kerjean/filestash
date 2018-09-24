@@ -7,10 +7,7 @@
   "scripts": {
     "dev": "webpack --watch",
     "build": "webpack",
-    "image": "docker build -t nuage -f ./docker/Dockerfile .",
-    "publish": "docker tag nuage machines/nuage && docker push machines/nuage",
-    "clean": "rm -rf server/public/js server/public/*.html || true",
-    "clear": "npm run clean && rm -rf node_modules"
+    "test": "jest ./client/"
   },
   "author": "",
   "license": "ISC",

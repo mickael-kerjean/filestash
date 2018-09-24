@@ -14,7 +14,7 @@ pipeline:
       - cd $GOPATH/src/github.com/mickael-kerjean/nuage
       # Test client
       - npm install
-      - node node_modules/.bin/jest client
+      - npm run test
       # Test server
       - cd server
       - go get
