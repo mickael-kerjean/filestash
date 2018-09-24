@@ -1,7 +1,7 @@
 "use strict";
 
 import { http_get, http_post, prepare, basename, dirname, pathBuilder } from '../helpers/';
-import Path from 'path';
+import { filetype } from '../helpers/';
 
 import { Observable } from 'rxjs/Observable';
 import { cache } from '../helpers/';
@@ -58,7 +58,7 @@ class FileSystem{
                 store.access_count += 1;
                 store.results = response.results || [];
                 store.results = store.results.map((f) => {
-                    f.path = pathBuilder(path, f.name);
+                    f.path = pathBuilder(path, f.name, f.type);
                     return f;
                 });
                 store.metadata = response.metadata;

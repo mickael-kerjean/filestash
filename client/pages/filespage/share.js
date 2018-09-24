@@ -9,11 +9,25 @@ import './share.scss';
 export class ShareComponent extends React.Component {
     constructor(props){
         super(props);
-        this.state = {
-            show_advanced: false,
+        this.state = this.resetState();
+        this.state.existings = [];
+    }
+
+    resetState(){
+        return {
             role: null,
+            path: null,
             id: randomString(7),
-            existings: []
+            url: null,
+            users: null,
+            password: null,
+            expire: null,
+            can_manage_own: null,
+            can_share: null,
+            can_read: null,
+            can_write: null,
+            can_upload: null,
+            show_advanced: false
         };
     }
 
@@ -74,33 +88,54 @@ export class ShareComponent extends React.Component {
     onRegisterLink(e){
         this.refs.$input.select();
         document.execCommand("copy");
-        notify.send("The link was copied in the clipboard", "INFO")
+        notify.send("The link was copied in the clipboard", "INFO");
 
         const link = {
             role: this.state.role,
             path: this.props.path,
-            id: this.state.id,
+            id: this.state.url || this.state.id,
             url: this.state.url,
             users: this.state.users || null,
             password: this.state.password || null,
-            can_manage_own: this.state.can_manage_own == true ? "yes" : "no",
-            can_share: this.state.can_share === true ? "yes" : "no"
+            expire: function(e){
+                if(typeof e === "string")
+                    return new Date(e).getTime();
+                return null;
+            }(this.state.expire),
+            can_manage_own: this.state.can_manage_own,
+            can_share: this.state.can_share,
+            can_read: function(r){
+                if(r === "viewer") return true;
+                else if(r === "editor") return true;
+                return false;
+            }(this.state.role),
+            can_write: function(r){
+                if(r === "editor") return true;
+                return false;
+            }(this.state.role),
+            can_upload: function(r){
+                if(r === "uploader") return true;
+                else if(r === "editor") return true;
+                return false;
+            }(this.state.role)
         };
 
         let links = [link];
         for(let i=0; i<this.state.existings.length; i++){
             let insert = true;
-            for(let j=0; j<links; j++){
-                if(this.state.existings[i].id === links[j].id) insert = false;
+            for(let j=0; j<links.length; j++){
+                if(this.state.existings[i].id === links[j].id){
+                    insert = false;
+                    break;
+                }
+            }
+            if(insert === true){
+                links.push(this.state.existings[i]);
             }
         }
         this.setState({existings: links});
         return Share.upsert(link)
-            .then(() => this.setState({
-                role: null,
-                id: randomString(7),
-                show_advanced: false
-            }))
+            .then(() => this.setState(this.resetState()))
             .catch((err) => {
                 notify.send(err, "error");
                 const validLinks = this.state.existings.slice(1, this.state.existings.length);
@@ -114,10 +149,25 @@ export class ShareComponent extends React.Component {
             return to;
             const p = absoluteToRelative(from, to);
             if(p === "./"){
-                return "Current folder"
+                return "Current folder";
             }
             return p.length < to.length ? p : to;
-        }
+        };
+        const urlify = function(str){
+            if(typeof str !== "string") return "";
+
+            str = str.replace(/\s+/g, "+");
+            str = str.replace(/[^a-zA-Z0-9\+-_]/g, "_");
+            str = str.replace(/_+/g, "_");
+            return str;
+        };
+        const datify = function(str){
+            if(!str) return str;
+            const d = new Date(str);
+            const pad = (a) => a.toString().length === 1 ? "0"+a : a;
+            return [d.getFullYear(), pad(d.getMonth()), pad(d.getDate())].join("-");
+        };
+
         return (
             <div className="component_share">
               <h2>Create a New Link</h2>
@@ -168,8 +218,8 @@ export class ShareComponent extends React.Component {
                   <NgIf cond={this.state.show_advanced === true}>
                     <SuperCheckbox value={this.state.can_manage_own} label="Can Manage Own" onChange={this.updateState.bind(this, 'can_manage_own')}/>
                     <SuperCheckbox value={this.state.can_share} label="Can Share" onChange={this.updateState.bind(this, 'can_share')}/>
-                    <SuperCheckbox value={this.state.expiration} label="Expiration" placeholder="The link won't be valid after" onChange={this.updateState.bind(this, 'expiration')} inputType="date"/>
-                    <SuperCheckbox value={this.state.url} label="Custom Link url" placeholder="beautiful_url" onChange={this.updateState.bind(this, 'url')} inputType="text"/>
+                    <SuperCheckbox value={datify(this.state.expire)} label="Expiration" placeholder="The link won't be valid after" onChange={this.updateState.bind(this, 'expire')} inputType="date"/>
+                    <SuperCheckbox value={this.state.url} label="Custom Link url" placeholder="beautiful_url" onChange={(val) => this.updateState('url', urlify(val))} inputType="text"/>
                   </NgIf>
                 </div>
 

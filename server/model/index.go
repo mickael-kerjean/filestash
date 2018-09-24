@@ -16,7 +16,7 @@ func init() {
 	cachePath := filepath.Join(GetCurrentDir(), DBCachePath)
 	os.MkdirAll(cachePath, os.ModePerm)
 	var err error
-	DB, err = sql.Open("sqlite3", cachePath+"/db.sql")
+	DB, err = sql.Open("sqlite3", cachePath+"/db.sql?_fk=true")
 	if err != nil {
 		return
 	}

@@ -49,8 +49,8 @@ func CtxInjector(fn func(App, http.ResponseWriter, *http.Request), ctx App) http
 	})
 }
 
-func extractBody(req *http.Request) (map[string]string, error) {
-	var body map[string]string
+func extractBody(req *http.Request) (map[string]interface{}, error) {
+	var body map[string]interface{}
 	if strings.HasPrefix(req.Header.Get("Content-Type"), "multipart/form-data") {
 		return body, NewError("", 200)
 	}

@@ -27,7 +27,9 @@ func SessionIsValid(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	ctx.Body["timestamp"] = time.Now().String()
-	backend, err := model.NewBackend(&ctx, ctx.Body)
+	session := model.MapStringInterfaceToMapStringString(ctx.Body)
+
+	backend, err := model.NewBackend(&ctx, session)
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -36,12 +38,12 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	if obj, ok := backend.(interface {
 		OAuthToken(*map[string]string) error
 	}); ok {
-		err := obj.OAuthToken(&ctx.Body)
+		err := obj.OAuthToken(&session)
 		if err != nil {
 			SendErrorResult(res, NewError("Can't authenticate (OAuth error)", 401))
 			return
 		}
-		backend, err = model.NewBackend(&ctx, ctx.Body)
+		backend, err = model.NewBackend(&ctx, session)
 		if err != nil {
 			SendErrorResult(res, NewError("Can't authenticate", 401))
 			return
@@ -54,7 +56,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	obfuscate, err := Encrypt(ctx.Config.General.SecretKey, ctx.Body)
+	obfuscate, err := Encrypt(ctx.Config.General.SecretKey, session)
 	if err != nil {
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
@@ -70,7 +72,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	if home == "" {
 		SendSuccessResult(res, nil)
-	} else if ctx.Body["path"] != "" {
+	} else if ctx.Body["path"] != nil {
 		SendSuccessResult(res, nil)
 	} else {
 		SendSuccessResult(res, home)

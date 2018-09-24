@@ -13,7 +13,7 @@ type App struct {
 	Helpers *Helpers
 	Backend IBackend
 	Body    map[string]interface{}
-	Session map[string]interface{}
+	Session map[string]string
 }
 
 func GetCurrentDir() string {

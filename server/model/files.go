@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/model/backend"
 )
@@ -30,10 +31,18 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 }
 
 func GetHome(b IBackend) (string, error) {
-	obj, ok := b.(interface{ Home() (string, error) })
-	if ok == false {
-		_, err := b.Ls("/")
-		return "", err
+	if obj, ok := b.(interface{ Home() (string, error) }); ok {
+		return obj.Home()
 	}
-	return obj.Home()
+
+	_, err := b.Ls("/")
+	return "", err
+}
+
+func MapStringInterfaceToMapStringString(m map[string]interface{}) map[string]string {
+    res := make(map[string]string)
+    for key, value := range m {
+		res[key] = fmt.Sprintf("%v", value)
+    }
+	return res
 }

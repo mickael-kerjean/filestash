@@ -20,19 +20,31 @@ export class SharePage extends React.Component {
     componentDidMount(){
         Share.get(this.props.match.params.id)
             .then((res) => {
+                console.log(res);
                 this.setState({
                     loading: false,
-                    redirection: res
+                    request_password: true
                 });
             })
             .catch((res) => {
-                console.log(">> COMPONENT DID MOUNT:: ", res);
                 this.setState({
                     loading: false
                 });
             });
     }
+
+    submitProof(e, type, value){
+        e.preventDefault();
+        console.log(type, value);
+    }
+
     render() {
+        const marginTop = () => {
+            return {
+                marginTop: parseInt(window.innerHeight / 3)+'px'
+            };
+        };
+
         if(this.state.loading === true){
             return ( <div> <Loader /> </div> );
         }
@@ -40,8 +52,8 @@ export class SharePage extends React.Component {
         if(this.state.request_password === true){
             return (
                 <Container maxWidth="350px">
-                  <form style={{marginTop: parseInt(window.innerHeight / 3)+'px'}}>
-                    <Input type="password" placeholder="Password" />
+                  <form onSubmit={(e) => this.submitProof(e, "password", this.refs.$input.ref.value)} style={marginTop()}>
+                    <Input ref="$input" type="password" placeholder="Password" />
                     <Button theme="emphasis">OK</Button>
                   </form>
                 </Container>
@@ -49,8 +61,17 @@ export class SharePage extends React.Component {
         }else if(this.state.request_username === true){
             return (
                 <Container maxWidth="350px">
-                  <form style={{marginTop: parseInt(window.innerHeight / 3)+'px'}}>
-                    <Input type="text" placeholder="Your email address" />
+                  <form onSubmit={(e) => this.submitProof(e, "email", this.refs.$input.ref.value)} style={marginTop()}>
+                    <Input ref="$input" type="text" placeholder="Your email address" />
+                    <Button theme="emphasis">OK</Button>
+                  </form>
+                </Container>
+            );
+        }else if(this.state.request_verification === true){
+            return (
+                <Container maxWidth="350px">
+                  <form onSubmit={(e) => this.submitProof(e, "code", this.refs.$input.ref.value)} style={marginTop()}>
+                    <Input ref="$input" type="text" placeholder="Code" />
                     <Button theme="emphasis">OK</Button>
                   </form>
                 </Container>

@@ -183,7 +183,7 @@ export class ExistingThing extends React.Component {
 
     onShareRequest(filename){
         alert.now(
-            <ShareComponent path={this.props.path}/>,
+            <ShareComponent path={this.props.file.path}/>,
             (ok) => {}
         );
     }
@@ -310,21 +310,7 @@ const ActionButton = (props) => {
           <NgIf cond={props.can_delete !== false} type="inline">
             <Icon name="delete" onClick={onDelete} className="component_updater--icon"/>
           </NgIf>
-          <NgIf cond={props.can_share !== false} type="inline">
-            <Icon name="share" onClick={onShare} className="component_updater--icon"/>
-          </NgIf>
-        </div>
-    );
-
-    return (
-        <div className="component_action">
-          <NgIf cond={props.can_rename !== false && props.is_renaming === false} type="inline">
-            <Icon name="edit" onClick={onRename} className="component_updater--icon" />
-          </NgIf>
-          <NgIf cond={props.can_delete !== false} type="inline">
-            <Icon name="delete" onClick={onDelete} className="component_updater--icon"/>
-          </NgIf>
-          <NgIf cond={props.can_share !== false} type="inline">
+          <NgIf cond={false && props.can_share !== false} type="inline">
             <Icon name="share" onClick={onShare} className="component_updater--icon"/>
           </NgIf>
         </div>

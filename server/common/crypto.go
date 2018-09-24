@@ -65,5 +65,5 @@ func GenerateID(params map[string]string) string {
 	p += "token =>" + params["token"]
 	hasher := sha1.New()
 	hasher.Write([]byte(p))
-	return base32.HexEncoding.EncodeToString(hasher.Sum(nil))
+	return "sha1::" + base32.HexEncoding.EncodeToString(hasher.Sum(nil))
 }

@@ -68,8 +68,13 @@ func (g GDrive) OAuthURL() string {
 	return g.Config.AuthCodeURL("googledrive", oauth2.AccessTypeOnline)
 }
 
-func (g GDrive) OAuthToken(ctx *map[string]string) error {
-	token, err := g.Config.Exchange(oauth2.NoContext, (*ctx)["code"])
+func (g GDrive) OAuthToken(ctx *map[string]interface{}) error {
+	code := ""
+	if str, ok := (*ctx)["code"].(string); ok {
+		code = str
+	}
+
+	token, err := g.Config.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		return err
 	}

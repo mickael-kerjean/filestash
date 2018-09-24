@@ -5,7 +5,18 @@ class ShareModel {
 
     all(path = "/"){
         const url = `/api/share?path=${path}`;
-        return http_get(url).then((res) => res.results);
+        return http_get(url).then((res) => res.results.map((el) => {
+            if(el.can_read === true && el.can_write === false && el.can_upload === false){
+                el.role = "viewer";
+            }else if(el.can_read === false && el.can_write === false && el.can_upload === true){
+                el.role = "uploader";
+            }else if(el.can_read === true && el.can_write === true && el.can_upload === true){
+                el.role = "editor";
+            }else{
+                el.role = "n/a";
+            }
+            return el;
+        }));
     }
 
     get(id){
@@ -15,12 +26,18 @@ class ShareModel {
 
     upsert(obj){
         const url = `/api/share/${obj.id}`
-        return http_post(url, obj);
+        const data = Object.assign({}, obj);
+        delete data.role;
+        return http_post(url, data);
     }
 
     remove(id){
         const url = `/api/share/${id}`;
         return http_delete(url);
+    }
+
+    proof(id, data){
+        // TODO
     }
 }
 

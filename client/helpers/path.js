@@ -19,6 +19,10 @@ export function dirname(path){
     return dir + "/";
 }
 
+export function filetype(path) {
+    return path.slice(-1) === "/" ? "directory" : "file";
+}
+
 export function absoluteToRelative(from, to){
     // remove any trace of file that would be interpreted by the path lib as a folder
     from = from.replace(/\/[^\/]+$/, "/");
