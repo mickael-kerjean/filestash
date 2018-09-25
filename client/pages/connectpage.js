@@ -45,8 +45,10 @@ export class ConnectPage extends React.Component {
     authenticate(params){
         this.setState({loading: true});
         Session.authenticate(params)
-            .then((path) => {
+            .then(Session.currentUser)
+            .then((user) => {
                 let url = '/files/';
+                let path = user.home
                 if(path){
                     path = path.replace(/^\/?(.*?)\/?$/, "$1");
                     if(path !== ""){

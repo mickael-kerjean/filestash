@@ -13,10 +13,14 @@ export class HomePage extends React.Component {
     }
 
     componentDidMount(){
-        Session.isLoggedIn()
+        Session.currentUser()
             .then((res) => {
-                if(res === true){
-                    this.setState({redirection: "/files"});
+                if(res && res.is_authenticated === true){
+                    let url = "/files"
+                    if(res.home){
+                        url += res.home
+                    }
+                    this.setState({redirection: url});
                 }else{
                     this.setState({redirection: "/login"});
                 }

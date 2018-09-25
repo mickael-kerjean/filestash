@@ -1,7 +1,7 @@
 import { http_get, http_post, http_delete } from '../helpers/';
 
 class SessionManager{
-    isLoggedIn(){
+    currentUser(){
         let url = '/api/session'
         return http_get(url)
             .then(data => data.result);

@@ -56,6 +56,13 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
+	http.SetCookie(res, &http.Cookie{
+		Name:   "download",
+		Value:  "",
+		MaxAge: -1,
+		Path:   "/",
+	})
+
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
@@ -70,13 +77,6 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
-
-	http.SetCookie(res, &http.Cookie{
-		Name:   "download",
-		Value:  "",
-		MaxAge: -1,
-		Path:   "/",
-	})
 
 	file, err = services.ProcessFileBeforeSend(file, &ctx, req, &res)
 	if err != nil {

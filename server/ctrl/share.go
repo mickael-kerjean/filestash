@@ -5,7 +5,6 @@ import (
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/model"
 	"net/http"
-	"log"
 )
 
 func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -29,7 +28,6 @@ func ShareGet(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 	s := extractParams(req, &ctx)
-	log.Println("EXPIRE::", s.Expire, ctx.Body["expire"])
 	s.Path = NewStringFromInterface(ctx.Body["path"])
 
 	if err := model.ShareUpsert(&s); err != nil {

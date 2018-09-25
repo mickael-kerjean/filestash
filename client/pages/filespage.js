@@ -6,7 +6,7 @@ import './filespage.scss';
 import './error.scss';
 import { Files } from '../model/';
 import { sort, onCreate, onRename, onDelete, onUpload, onSearch } from './filespage.helper';
-import { NgIf, Loader, EventReceiver } from '../components/';
+import { NgIf, Loader, EventReceiver, LoggedInOnly, ErrorPage } from '../components/';
 import { notify, debounce, goToFiles, goToViewer, event, settings_get, settings_put } from '../helpers/';
 import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from './filespage/';
 import InfiniteScroll from 'react-infinite-scroller';
@@ -14,6 +14,8 @@ import InfiniteScroll from 'react-infinite-scroller';
 const PAGE_NUMBER_INIT = 3;
 const LOAD_PER_SCROLL = 24;
 
+@ErrorPage
+@LoggedInOnly
 @EventReceiver
 @DragDropContext(('ontouchstart' in window)? HTML5Backend : HTML5Backend)
 export class FilesPage extends React.Component {
@@ -30,8 +32,7 @@ export class FilesPage extends React.Component {
             metadata: null,
             frequents: [],
             page_number: PAGE_NUMBER_INIT,
-            loading: true,
-            error: null
+            loading: true
         };
 
         this.goToFiles = goToFiles.bind(null, this.props.history);
@@ -50,7 +51,6 @@ export class FilesPage extends React.Component {
         this.props.subscribe('file.delete', onDelete.bind(this));
         this.props.subscribe('file.refresh', this.onRefresh.bind(this));
         window.addEventListener('keydown', this.toggleHiddenFilesVisibilityonCtrlK);
-        this.hideError();
     }
 
     componentWillUnmount() {
@@ -74,10 +74,6 @@ export class FilesPage extends React.Component {
             this.setState({path: new_path, loading: true});
             this.onRefresh(new_path);
         }
-    }
-
-    hideError(){
-        this.setState({error: null});
     }
 
     toggleHiddenFilesVisibilityonCtrlK(e){
@@ -118,10 +114,9 @@ export class FilesPage extends React.Component {
                 notify.send(res, 'error');
             }
         }, (error) => {
-            this.setState({error: error});
+            this.props.error(error);
         });
         this.observers.push(observer);
-        this.setState({error: null});
         if(path === "/"){
             Files.frequents().then((s) => this.setState({frequents: s}));
         }
@@ -213,7 +208,7 @@ export class FilesPage extends React.Component {
                 <div className="scroll-y">
                   <InfiniteScroll pageStart={0} loader={$moreLoading} hasMore={this.state.files.length > 70}
                     initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={100}>
-                    <NgIf className="container" cond={this.state.loading === false && this.state.error === null}>
+                    <NgIf className="container" cond={!this.state.loading}>
                       <NgIf cond={this.state.path === '/'}>
                         <FrequentlyAccess files={this.state.frequents}/>
                       </NgIf>
@@ -225,13 +220,8 @@ export class FilesPage extends React.Component {
                       </NgIf>
                     </NgIf>
                   </InfiniteScroll>
-                  <NgIf cond={this.state.loading && this.state.error === null}>
+                  <NgIf cond={!!this.state.loading}>
                     <Loader/>
-                  </NgIf>
-                  <NgIf cond={this.state.error !== null} className="error-page">
-                    <h1>Oops!</h1>
-                    <h2>It seems this directory doesn't exist</h2>
-                    <p>{JSON.stringify(this.state.error)}</p>
                   </NgIf>
                 </div>
               </div>

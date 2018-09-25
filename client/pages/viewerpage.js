@@ -4,7 +4,7 @@ import Path from 'path';
 import './viewerpage.scss';
 import './error.scss';
 import { Files } from '../model/';
-import { BreadCrumb, Bundle, NgIf, Loader, Container, EventReceiver, EventEmitter } from '../components/';
+import { BreadCrumb, Bundle, NgIf, Loader, Container, EventReceiver, EventEmitter, LoggedInOnly , ErrorPage } from '../components/';
 import { debounce, opener, notify } from '../helpers/';
 import { AudioPlayer, FileDownloader, ImageViewer, PDFViewer } from './viewerpage/';
 
@@ -19,6 +19,8 @@ const IDE = (props) => (
     </Bundle>
 );
 
+@ErrorPage
+@LoggedInOnly
 @EventReceiver
 export class ViewerPage extends React.Component {
     constructor(props){
@@ -31,8 +33,7 @@ export class ViewerPage extends React.Component {
             content: null,
             needSaving: false,
             isSaving: false,
-            loading: true,
-            error: null
+            loading: true
         };
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
     }
@@ -41,10 +42,10 @@ export class ViewerPage extends React.Component {
         this.setState({
             path: props.match.url.replace('/view', '') + (location.hash || ""),
             filename: Path.basename(props.match.url.replace('/view', '')) || 'untitled.dat'
-        }, () => { this.componentWillMount(); });
+        }, () => { this.componentDidMount(); });
     }
 
-    componentWillMount(){
+    componentDidMount(){
         const metadata = () => {
             return new Promise((done, err) => {
                 let app_opener = opener(this.state.path);
@@ -54,7 +55,7 @@ export class ViewerPage extends React.Component {
                         opener: app_opener
                     }, () => done(app_opener));
                 }).catch(error => {
-                    notify.send(err, 'error');
+                    this.props.error(error);
                     err(error);
                 });
             });
@@ -67,15 +68,14 @@ export class ViewerPage extends React.Component {
                     if(err && err.code === 'BINARY_FILE'){
                         this.setState({opener: 'download', loading: false});
                     }else{
-                        this.setState({error: err});
+                        this.props.error(err);
                     }
                 });
-            }else{
-                this.setState({loading: false});
+                return;
             }
+            this.setState({loading: false});
         };
-        return metadata()
-            .then(data_fetch);
+        return metadata().then(data_fetch);
     }
 
     componentWillUnmount() {
@@ -106,7 +106,7 @@ export class ViewerPage extends React.Component {
                 if(err && err.code === 'CANCELLED'){ return; }
                 this.setState({isSaving: false});
                 notify.send(err, 'error');
-                return Promise.reject();
+                return Promise.reject(err);
             });
     }
 
@@ -125,7 +125,7 @@ export class ViewerPage extends React.Component {
             <div className="component_page_viewerpage">
               <BreadCrumb needSaving={this.state.needSaving} className="breadcrumb" path={this.state.path} />
               <div className="page_container">
-                <NgIf cond={this.state.loading === false && this.state.error === null}>
+                <NgIf cond={this.state.loading === false}>
                   <NgIf cond={this.state.opener === 'editor'}>
                     <IDE needSavingUpdate={this.needSaving.bind(this)}
                          needSaving={this.state.needSaving}
@@ -151,13 +151,8 @@ export class ViewerPage extends React.Component {
                     <FileDownloader data={this.state.url} filename={this.state.filename} />
                   </NgIf>
                 </NgIf>
-                <NgIf cond={this.state.loading === true && this.state.error === null}>
+                <NgIf cond={this.state.loading === true}>
                   <Loader/>
-                </NgIf>
-                <NgIf cond={this.state.error !== null} className="error-page">
-                  <h1>Oops!</h1>
-                  <h2>There is nothing in here</h2>
-                  <p>{JSON.stringify(this.state.error)}</p>
                 </NgIf>
               </div>
             </div>
