@@ -408,7 +408,7 @@ class LazyLoadImage extends React.Component {
             error: false
         };
         this.$scroll = document.querySelector(props.scroller);
-        this.onScroll = debounce(this.onScroll.bind(this), 100);
+        this.onScroll = debounce(this.onScroll.bind(this), 250);
     }
 
     componentDidMount(){

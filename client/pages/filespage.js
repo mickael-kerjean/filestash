@@ -11,8 +11,15 @@ import { notify, debounce, goToFiles, goToViewer, event, settings_get, settings_
 import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from './filespage/';
 import InfiniteScroll from 'react-infinite-scroller';
 
-const PAGE_NUMBER_INIT = 3;
-const LOAD_PER_SCROLL = 24;
+const PAGE_NUMBER_INIT = 2;
+const LOAD_PER_SCROLL = 48;
+
+// usefull when user press the back button while keeping the current context
+let LAST_PAGE_PARAMS = {
+    path: null,
+    scroll: 0,
+    page_number: PAGE_NUMBER_INIT
+};
 
 @ErrorPage
 @LoggedInOnly
@@ -61,6 +68,10 @@ export class FilesPage extends React.Component {
         this.props.unsubscribe('file.refresh');
         window.removeEventListener('keydown', this.toggleHiddenFilesVisibilityonCtrlK);
         this._cleanupListeners();
+
+        LAST_PAGE_PARAMS.path = this.state.path;
+        LAST_PAGE_PARAMS.scroll = this.refs.$scroll.scrollTop;
+        LAST_PAGE_PARAMS.page_number = this.state.page_number;
     }
 
     componentWillReceiveProps(nextProps){
@@ -108,7 +119,16 @@ export class FilesPage extends React.Component {
                     metadata: res.metadata,
                     files: sort(files, this.state.sort),
                     loading: false,
-                    page_number: PAGE_NUMBER_INIT
+                    page_number: function(){
+                        if(this.state.path === LAST_PAGE_PARAMS.path){
+                            return LAST_PAGE_PARAMS.page_number;
+                        }
+                        return PAGE_NUMBER_INIT;
+                    }.bind(this)()
+                }, () => {
+                    if(this.state.path === LAST_PAGE_PARAMS.path){
+                        this.refs.$scroll.scrollTop = LAST_PAGE_PARAMS.scroll;
+                    }
                 });
             }else{
                 notify.send(res, 'error');
@@ -205,7 +225,7 @@ export class FilesPage extends React.Component {
             <div className="component_page_filespage">
               <BreadCrumb className="breadcrumb" path={this.state.path} />
               <div className="page_container">
-                <div className="scroll-y">
+                <div ref="$scroll" className="scroll-y">
                   <InfiniteScroll pageStart={0} loader={$moreLoading} hasMore={this.state.files.length > 70}
                     initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={100}>
                     <NgIf className="container" cond={!this.state.loading}>
