@@ -17,6 +17,10 @@
             .component_pager .wrapper > span{
                 background: #525659;
             }
+            img[srcset]{
+                background: var(--color);
+            }
+
         }
         display: flex;
         flex-grow: 1;
@@ -147,8 +151,9 @@
             max-height: 100%;
             max-width: 100%;
             min-height: 100px;
-            background: #f1f1f1;
+            background: var(--dark);
             box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+            border-radius: 2px;
             &.idle{transition: 0.2s ease transform;}
         }
     }
