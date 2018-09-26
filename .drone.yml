@@ -10,5 +10,5 @@ pipeline:
     commands:
       - echo $DOCKER_PASSWORD | docker login -u=$DOCKER_USERNAME --password-stdin
       - docker pull alpine:latest
-      - docker build --no-cache -t machines/nuage:master docker/prod
+      - docker build --no-cache -t machines/nuage docker/prod
       - docker push machines/nuage
