@@ -7,6 +7,23 @@ import (
 )
 
 func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
+	isAllowed := false
+	for i := range ctx.Config.Connections {
+		if ctx.Config.Connections[i].Type == conn["type"] {
+			if ctx.Config.Connections[i].Hostname == nil {
+				isAllowed = true
+				break;
+			}else if *ctx.Config.Connections[i].Hostname == conn["hostname"] {
+				isAllowed = true
+				break;
+			}
+		}
+	}
+
+	if isAllowed == false {
+		return backend.NewNothing(conn, ctx)
+	}
+	
 	switch conn["type"] {
 	case "webdav":
 		return backend.NewWebDav(conn, ctx)
