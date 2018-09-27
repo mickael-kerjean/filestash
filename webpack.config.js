@@ -19,8 +19,7 @@ let config = {
         chunkFilename: "assets/js/chunk_[name]_[id]_[chunkhash].js"
     },
     module: {
-        rules: [
-            {
+        rules: [{
                 test: path.join(__dirname, 'client'),
                 use: ['babel-loader'],
                 exclude: /node_modules/
@@ -28,6 +27,10 @@ let config = {
             {
                 test: /\.html$/,
                 loader: 'html-loader'
+            },
+            {
+                test: /\.woff2$/,
+                loader: 'woff-loader'
             },
             {
                 test: /\.scss$/,
@@ -55,20 +58,21 @@ let config = {
         new webpack.optimize.OccurrenceOrderPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, 'client', 'index.html'),
-            inject:true
+            inject: true
         }),
         new CopyWebpackPlugin([
             { from: 'manifest.json', to: "assets/" },
             { from: 'worker/*.js', to: "assets/" },
             { from: 'assets/logo/*' },
-            { from: 'assets/icons/*' }
+            { from: 'assets/icons/*' },
+            { from: 'assets/fonts/*' }
         ], { context: path.join(__dirname, 'client') }),
         //new BundleAnalyzerPlugin()
     ]
 };
 
 
-if(process.env.NODE_ENV === 'production'){
+if (process.env.NODE_ENV === 'production') {
     config.plugins.push(new UglifyJSPlugin({
         sourceMap: false
     }));
@@ -79,7 +83,7 @@ if(process.env.NODE_ENV === 'production'){
         threshold: 0,
         minRatio: 0.8
     }));
-}else{
+} else {
     config.devtool = '#inline-source-map';
 }
 
