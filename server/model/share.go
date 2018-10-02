@@ -81,11 +81,9 @@ func ShareList(p *Share) ([]Share, error) {
 	sharedFiles := []Share{}
 	for rows.Next() {
 		var a Share
-		a.Id = "test"
 		var params []byte
 		rows.Scan(&a.Id, &a.Path, &params)
 		json.Unmarshal(params, &a)
-		// TODO password
 		sharedFiles = append(sharedFiles, a)
 	}
 	rows.Close()
@@ -121,11 +119,16 @@ func shareGet(p *Share) error {
 }
 
 func ShareUpsert(p *Share) error {
-	var copy Share
-	if p.Password != nil && *p.Password == PASSWORD_DUMMY {
-		copy = *p
-		ShareGet(&copy)
-		p.Password = copy.Password
+	if p.Password != nil {
+		if *p.Password == PASSWORD_DUMMY {
+			var copy Share
+			copy.Id = p.Id
+			shareGet(&copy);
+			p.Password = copy.Password
+		} else {
+			hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(*p.Password), bcrypt.DefaultCost)
+			p.Password = NewString(string(hashedPassword))
+		}
 	}
 
 	stmt, err := DB.Prepare("INSERT INTO Location(backend, path) VALUES($1, $2)")
@@ -158,16 +161,7 @@ func ShareUpsert(p *Share) error {
 		CanWrite     bool     `json:"can_write"`
 		CanUpload    bool     `json:"can_upload"`
     }{
-		Password: func(password *string) *string{
-			if password == nil {
-				return nil
-			}
-			if *password == PASSWORD_DUMMY {
-				return copy.Password
-			}
-			hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(*password), bcrypt.DefaultCost)
-			return NewString(string(hashedPassword))
-		}(p.Password),
+		Password: p.Password,
 		Users: p.Users,
 		Expire: p.Expire,
 		Url: p.Url,

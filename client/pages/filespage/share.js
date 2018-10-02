@@ -135,6 +135,12 @@ export class ShareComponent extends React.Component {
         }
         this.setState({existings: links});
         return Share.upsert(link)
+            .then(() => {
+                if(this.state.url !== null && this.state.url !== this.state.id){
+                    this.onDeleteLink(this.state.id)
+                }
+                return Promise.resolve()
+            })
             .then(() => this.setState(this.resetState()))
             .catch((err) => {
                 notify.send(err, "error");
