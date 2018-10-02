@@ -19,6 +19,7 @@ import img_alarm from '../assets/img/alarm.svg';
 import img_arrow_right from '../assets/img/arrow_right.svg';
 import img_arrow_right_white from '../assets/img/arrow_right_white.svg';
 import img_arrow_left_white from '../assets/img/arrow_left_white.svg';
+import img_arrow_left from '../assets/img/arrow_left.svg';
 import img_arrow_top from '../assets/img/arrow_top.svg';
 import img_arrow_bottom from '../assets/img/arrow_bottom.svg';
 import img_more from '../assets/img/more.svg';
@@ -93,6 +94,8 @@ export const Icon = (props) => {
         img = img_arrow_right_white;
     }else if(props.name === 'arrow_left_white'){
         img = img_arrow_left_white;
+    }else if(props.name === 'arrow_left'){
+        img = img_arrow_left;
     }else if(props.name === 'more'){
         img = img_more;
     }else if(props.name === 'close'){

@@ -1,7 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 import { Session } from '../model/';
-import { Container, Loader } from '../components/';
+import { Container, Loader, Icon } from '../components/';
 import { memory } from '../helpers/';
 
 import '../pages/error.scss';
@@ -63,13 +64,18 @@ export function ErrorPage(WrappedComponent){
             if(this.state.error !== null){
                 const message = this.state.error.message || "There is nothing in here";
                 return (
-                    <Container>
-                      <div className="error-page">
-                        <h1>Oops!</h1>
-                        <h2>{message}</h2>
-                        <p>{JSON.stringify(this.state.error)}</p>
-                      </div>
-                    </Container>
+                    <div>
+                      <Link to="/" className="backnav">
+                        <Icon name="arrow_left" />home
+                      </Link>
+                      <Container>
+                        <div className="error-page">
+                          <h1>Oops!</h1>
+                          <h2>{message}</h2>
+                          <p>{JSON.stringify(this.state.error)}</p>
+                        </div>
+                      </Container>
+                    </div>
                 );
             }
             return (
