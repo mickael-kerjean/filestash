@@ -72,7 +72,6 @@ export function ErrorPage(WrappedComponent){
                         <div className="error-page">
                           <h1>Oops!</h1>
                           <h2>{message}</h2>
-                          <p>{JSON.stringify(this.state.error)}</p>
                         </div>
                       </Container>
                     </div>

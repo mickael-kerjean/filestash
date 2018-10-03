@@ -27,7 +27,7 @@
                 }
                 @include ripple(var(--bg-color));
             }
-            > span{padding: 3px 5px;}
+            > span{padding: 3px 5px; font-weight: 100;}
 
             > div {cursor: pointer; margin-right: 15px;}
             .view{

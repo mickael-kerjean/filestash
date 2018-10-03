@@ -6,7 +6,7 @@ import { DropTarget } from 'react-dnd';
 import Path from 'path';
 
 import "./filesystem.scss";
-import { Container, NgIf } from '../../components/';
+import { Container, NgIf, Icon } from '../../components/';
 import { NewThing } from './thing-new';
 import { ExistingThing } from './thing-existing';
 import { FileZone } from './filezone';
@@ -42,7 +42,10 @@ export class FileSystem extends React.Component {
                   </ReactCSSTransitionGroup>
                 </NgIf>
                 <NgIf className="error" cond={this.props.files.length === 0}>
-                  There is nothing here
+                  <p className="empty_image">
+                    <Icon name="file"/>
+                  </p>
+                  <p>This folder is empty</p>
                 </NgIf>
               </Container>
             </div>
