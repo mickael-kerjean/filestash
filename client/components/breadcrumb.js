@@ -45,6 +45,8 @@ export class BreadCrumb extends React.Component {
     }
 
     render(Element) {
+        if(location.search === "?nav=false") return null;
+
         const Path = Element? Element : PathElement;
         return (
             <div className="component_breadcrumb">

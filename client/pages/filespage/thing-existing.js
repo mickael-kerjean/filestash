@@ -214,7 +214,7 @@ export class ExistingThing extends React.Component {
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div className={"component_thing view-"+this.props.view}>
-              <Link to={this.props.file.link || "#"}>
+              <Link to={this.props.file.link + location.search || "#"}>
                 <Card ref="$card"className={this.state.hover} className={className}>
                   <Image preview={this.state.preview} icon={this.props.file.icon || this.props.file.type} view={this.props.view} path={path.join(this.props.path, this.props.file.name)} />
                   <Filename filename={this.props.file.name} filesize={this.props.file.size} filetype={this.props.file.type} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} onRenameCancel={this.onRenameRequest.bind(this, false)}/>
