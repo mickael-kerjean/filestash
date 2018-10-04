@@ -1,7 +1,7 @@
 "use strict";
 
 import { http_get, http_post, prepare, basename, dirname, pathBuilder } from '../helpers/';
-import { filetype } from '../helpers/';
+import { filetype, currentShare, appendShareToUrl } from '../helpers/';
 
 import { Observable } from 'rxjs/Observable';
 import { cache } from '../helpers/';
@@ -46,16 +46,17 @@ class FileSystem{
     }
 
     _ls_from_http(path){
-        const url = '/api/files/ls?path='+prepare(path);
+        let url = appendShareToUrl('/api/files/ls?path='+prepare(path));
+
         return http_get(url).then((response) => {
-            return cache.upsert(cache.FILE_PATH, path, (_files) => {
+            return cache.upsert(cache.FILE_PATH, [currentShare(), path], (_files) => {
                 let store = Object.assign({
+                    share: currentShare(),
                     path: path,
                     results: null,
                     access_count: 0,
                     metadata: null
                 }, _files);
-                store.access_count += 1;
                 store.results = response.results || [];
                 store.results = store.results.map((f) => {
                     f.path = pathBuilder(path, f.name, f.type);
@@ -64,6 +65,8 @@ class FileSystem{
                 store.metadata = response.metadata;
 
                 if(_files && _files.results){
+                    store.access_count = _files.access_count;
+
                     // find out which entry we want to keep from the cache
                     let _files_virtual_to_keep = _files.results.filter((file) => {
                         return file.icon === 'loading';
@@ -101,44 +104,47 @@ class FileSystem{
     }
 
     _ls_from_cache(path, _record_access = false){
-        if(_record_access === false){
-            return cache.get(cache.FILE_PATH, path).then((response) => {
-                if(!response || !response.results) return null;
-                if(this.current_path === path){
-                    this.obs && this.obs.next({
-                        status: 'ok',
-                        results: response.results,
-                        metadata: response.metadata
+        return cache.get(cache.FILE_PATH, [currentShare(), path]).then((response) => {
+            if(!response || !response.results) return null;
+            if(this.current_path === path){
+                this.obs && this.obs.next({
+                    status: 'ok',
+                    results: response.results,
+                    metadata: response.metadata
+                });
+            }
+            return response;
+        }).then((e) => {
+            requestAnimationFrame(() => {
+                if(_record_access === true){
+                    cache.upsert(cache.FILE_PATH, [currentShare(), path], (response) => {
+                        if(!response || !response.results) return null;
+                        if(this.current_path === path){
+                            this.obs && this.obs.next({
+                                status: 'ok',
+                                results: response.results,
+                                metadata: response.metadata
+                            });
+                        }
+                        response.last_access = new Date();
+                        response.access_count += 1;
+                        return response;
                     });
                 }
-                return response;
             });
-        }else{
-            return cache.upsert(cache.FILE_PATH, path, (response) => {
-                if(!response || !response.results) return null;
-                if(this.current_path === path){
-                    this.obs && this.obs.next({
-                        status: 'ok',
-                        results: response.results,
-                        metadata: response.metadata
-                    });
-                }
-                response.last_access = new Date();
-                response.access_count += 1;
-                return response;
-            });
-        }
+            return Promise.resolve(e);
+        });
     }
 
     rm(path){
-        const url = '/api/files/rm?path='+prepare(path);
+        const url = appendShareToUrl('/api/files/rm?path='+prepare(path));
         return this._replace(path, 'loading')
             .then((res) => this.current_path === dirname(path) ? this._ls_from_cache(dirname(path)) : Promise.resolve(res))
             .then(() => http_get(url))
             .then((res) => {
-                return cache.remove(cache.FILE_CONTENT, path)
-                    .then(cache.remove(cache.FILE_CONTENT, path, false))
-                    .then(cache.remove(cache.FILE_PATH, dirname(path), false))
+                return cache.remove(cache.FILE_CONTENT, [currentShare(), path])
+                    .then(cache.remove(cache.FILE_CONTENT, [currentShare(), path], false))
+                    .then(cache.remove(cache.FILE_PATH, [currentShare(), dirname(path)], false))
                     .then(this._remove(path, 'loading'))
                     .then((res) => this.current_path === dirname(path) ? this._ls_from_cache(dirname(path)) : Promise.resolve(res))
             })
@@ -150,14 +156,15 @@ class FileSystem{
     }
 
     cat(path){
-        const url = '/api/files/cat?path='+prepare(path);
+        const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
         return http_get(url, 'raw')
             .then((res) => {
                 if(this.is_binary(res) === true){
                     return Promise.reject({code: 'BINARY_FILE'});
                 }
-                return cache.upsert(cache.FILE_CONTENT, path, (response) => {
+                return cache.upsert(cache.FILE_CONTENT, [currentShare(), path], (response) => {
                     let file = response? response : {
+                        share: currentShare(),
                         path: path,
                         last_update: null,
                         last_access: null,
@@ -173,7 +180,7 @@ class FileSystem{
             .catch((err) => {
                 if(err.code === 'BINARY_FILE') return Promise.reject(err);
 
-                return cache.update(cache.FILE_CONTENT, path, (response) => {
+                return cache.update(cache.FILE_CONTENT, [currentShare(), path], (response) => {
                     response.last_access = new Date();
                     response.access_count += 1;
                     return response;
@@ -184,12 +191,12 @@ class FileSystem{
             });
     }
     url(path){
-        const url = '/api/files/cat?path='+prepare(path);
+        const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
         return Promise.resolve(url);
     }
 
     save(path, file){
-        const url = '/api/files/cat?path='+prepare(path);
+        const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
         let formData = new window.FormData();
         formData.append('file', file, "test");
         return this._replace(path, 'loading')
@@ -207,7 +214,7 @@ class FileSystem{
     }
 
     mkdir(path, step){
-        const url = '/api/files/mkdir?path='+prepare(path),
+        const url = appendShareToUrl('/api/files/mkdir?path='+prepare(path)),
               origin_path = pathBuilder(this.current_path, basename(path), 'directoy'),
               destination_path = path;
 
@@ -240,8 +247,9 @@ class FileSystem{
                 .then(() => {
                     return this._replace(destination_path, null, 'loading')
                         .then(() => origin_path !== destination_path ? this._remove(origin_path, 'loading') : Promise.resolve())
-                        .then(() => cache.add(cache.FILE_PATH, destination_path, {
+                        .then(() => cache.add(cache.FILE_PATH, [currentShare(), destination_path], {
                             path: destination_path,
+                            share: currentShare(),
                             results: [],
                             access_count: 0,
                             last_access: null,
@@ -310,12 +318,12 @@ class FileSystem{
 
             function query(){
                 if(file){
-                    const url = '/api/files/cat?path='+prepare(path);
+                    const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
                     let formData = new window.FormData();
                     formData.append('file', file);
                     return http_post(url, formData, 'multipart');
                 }else{
-                    const url = '/api/files/touch?path='+prepare(path);
+                    const url = appendShareToUrl('/api/files/touch?path='+prepare(path));
                     return http_get(url);
                 }
             }
@@ -331,7 +339,7 @@ class FileSystem{
     }
 
     mv(from, to){
-        const url = '/api/files/mv?from='+prepare(from)+"&to="+prepare(to),
+        const url = appendShareToUrl('/api/files/mv?from='+prepare(from)+"&to="+prepare(to)),
               origin_path = from,
               destination_path = to;
 
@@ -344,11 +352,11 @@ class FileSystem{
                     .then(() => this._replace(destination_path, null, 'loading'))
                     .then(() => this._refresh(origin_path, destination_path))
                     .then(() => {
-                        cache.update(cache.FILE_PATH, origin_path, (data) => {
+                        cache.update(cache.FILE_PATH, [currentShare(), origin_path], (data) => {
                             data.path = data.path.replace(origin_path, destination_path);
                             return data;
                         }, false);
-                        cache.update(cache.FILE_CONTENT, origin_path, (data) => {
+                        cache.update(cache.FILE_CONTENT, [currentShare(), origin_path], (data) => {
                             data.path = data.path.replace(origin_path, destination_path);
                             return data;
                         }, false);
@@ -369,7 +377,7 @@ class FileSystem{
             if(value.access_count >= 1 && value.path !== "/"){
                 data.push(value);
             }
-        }).then(() => {
+        }, cache.FILE_PATH, [currentShare(), "/"]).then(() => {
             return Promise.resolve(
                 data
                     .sort((a,b) => a.access_count > b.access_count? -1 : 1)
@@ -389,8 +397,9 @@ class FileSystem{
         });
 
         function update_cache(result){
-            return cache.upsert(cache.FILE_CONTENT, path, (response) => {
+            return cache.upsert(cache.FILE_CONTENT, [currentShare(), path], (response) => {
                 if(!response) response = {
+                    share: currentShare(),
                     path: path,
                     last_access: null,
                     last_update: null,
@@ -413,7 +422,7 @@ class FileSystem{
     }
 
     _replace(path, icon, icon_previous){
-        return cache.update(cache.FILE_PATH, dirname(path), function(res){
+        return cache.update(cache.FILE_PATH, [currentShare(), dirname(path)], function(res){
             res.results = res.results.map((file) => {
                 if(file.name === basename(path) && file.icon == icon_previous){
                     if(!icon){ delete file.icon; }
@@ -425,7 +434,7 @@ class FileSystem{
         });
     }
     _add(path, icon){
-        return cache.upsert(cache.FILE_PATH, dirname(path), function(res){
+        return cache.upsert(cache.FILE_PATH, [currentShare(), dirname(path)], function(res){
             if(!res || !res.results){
                 res = {
                     path: dirname(path),
@@ -445,7 +454,7 @@ class FileSystem{
         });
     }
     _remove(path, previous_icon){
-        return cache.update(cache.FILE_PATH, dirname(path), function(res){
+        return cache.update(cache.FILE_PATH, [currentShare(), dirname(path)], function(res){
             if(!res) return null;
             res.results = res.results.filter((file) => {
                 return file.name === basename(path) && file.icon == previous_icon ? false : true;
@@ -460,6 +469,5 @@ class FileSystem{
         return /\ufffd/.test(str);
     }
 }
-
 
 export const Files = new FileSystem();

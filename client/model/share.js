@@ -1,4 +1,4 @@
-import { http_get, http_post, http_delete } from '../helpers/';
+import { http_get, http_post, http_delete, appendShareToUrl } from '../helpers/';
 
 class ShareModel {
     constructor(){}
@@ -25,19 +25,20 @@ class ShareModel {
     }
 
     upsert(obj){
-        const url = `/api/share/${obj.id}`
+        const url = appendShareToUrl(`/api/share/${obj.id}`)
         const data = Object.assign({}, obj);
         delete data.role;
         return http_post(url, data);
     }
 
     remove(id){
-        const url = `/api/share/${id}`;
+        const url = appendShareToUrl(`/api/share/${id}`);
         return http_delete(url);
     }
 
     proof(id, data){
-        // TODO
+        const url = `/api/share/${id}/proof`;
+        return http_post(url, data).then((res) => res.result);
     }
 }
 

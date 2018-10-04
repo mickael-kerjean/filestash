@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { Session } from '../model/';
 import { Container, Loader, Icon } from '../components/';
-import { memory } from '../helpers/';
+import { memory, currentShare } from '../helpers/';
 
 import '../pages/error.scss';
 
@@ -19,7 +19,7 @@ export function LoggedInOnly(WrappedComponent){
         }
 
         componentDidMount(){
-            if(this.state.is_logged_in === false){
+            if(this.state.is_logged_in === false && currentShare() === null){
                 Session.currentUser().then((res) => {
                     if(res.is_authenticated === false){
                         this.props.error({message: "Authentication Required"});
@@ -38,7 +38,7 @@ export function LoggedInOnly(WrappedComponent){
         }
 
         render(){
-            if(this.state.is_logged_in === true){
+            if(this.state.is_logged_in === true || currentShare() !== null){
                 return <WrappedComponent {...this.props} />;
             }
             return null;
@@ -65,7 +65,7 @@ export function ErrorPage(WrappedComponent){
                 const message = this.state.error.message || "There is nothing in here";
                 return (
                     <div>
-                      <Link to="/" className="backnav">
+                      <Link to={`/${window.location.search}`} className="backnav">
                         <Icon name="arrow_left" />home
                       </Link>
                       <Container>

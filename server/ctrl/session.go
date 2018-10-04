@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	"encoding/json"
 	"github.com/mickael-kerjean/mux"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/model"
@@ -17,7 +18,7 @@ func SessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 	r := Session {
 		IsAuth: false,
 	}
-	
+
 	if ctx.Backend == nil {
 		SendSuccessResult(res, r)
 		return
@@ -63,13 +64,19 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	obfuscate, err := Encrypt(ctx.Config.General.SecretKey, session)
+	s, err := json.Marshal(session);
+	if err != nil {
+		SendErrorResult(res, NewError(err.Error(), 500))
+		return
+	}
+	obfuscate, err := EncryptString(ctx.Config.General.SecretKey, string(s))
+
 	if err != nil {
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
 	cookie := http.Cookie{
-		Name:     COOKIE_NAME,
+		Name:     COOKIE_NAME_AUTH,
 		Value:    obfuscate,
 		MaxAge:   60 * 60 * 24 * 30,
 		Path:     COOKIE_PATH,
@@ -88,7 +95,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
 	cookie := http.Cookie{
-		Name:   COOKIE_NAME,
+		Name:   COOKIE_NAME_AUTH,
 		Value:  "",
 		Path:   COOKIE_PATH,
 		MaxAge: -1,

@@ -2,40 +2,60 @@ import React from 'react';
 import { Redirect } from 'react-router';
 
 import { Share } from '../model/';
-import { notify } from '../helpers/';
-import { Loader, Input, Button, Container } from '../components/';
+import { notify, basename, filetype } from '../helpers/';
+import { Loader, Input, Button, Container, ErrorPage, Icon, NgIf } from '../components/';
 import './error.scss';
+import './sharepage.scss';
 
+@ErrorPage
 export class SharePage extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            redirection: null,
-            loading: true,
-            request_password: false,
-            request_username: false
+            path: null,
+            key: null,
+            error: null,
+            loading: false
         };
     }
 
     componentDidMount(){
-        Share.get(this.props.match.params.id)
-            .then((res) => {
-                console.log(res);
-                this.setState({
-                    loading: false,
-                    request_password: true
-                });
-            })
-            .catch((res) => {
-                this.setState({
-                    loading: false
-                });
-            });
+        this._proofQuery(this.props.match.params.id).then(() => {
+            if(this.refs.$input) {
+                this.refs.$input.ref.focus();
+            }
+        });
     }
 
     submitProof(e, type, value){
         e.preventDefault();
-        console.log(type, value);
+        this.setState({loading: true});
+        this._proofQuery(this.props.match.params.id, {type: type, value:value});
+    }
+
+    _proofQuery(id, data = {}){
+        this.setState({loading: true});
+        return Share.proof(id, data).then((res) => {
+            if(this.refs.$input) {
+                this.refs.$input.ref.value = "";
+            }
+
+            let st = {
+                key: res.key,
+                path: res.path || null,
+                share: res.id,
+                loading: false
+            };
+            if(res.message){
+                notify.send(res.message, "info");
+            }else if(res.error){
+                st.error = res.error;
+                window.setTimeout(() => this.setState({error: null}), 500);
+            }
+            return new Promise((done) => {
+                this.setState(st, () => done());
+            });
+        }).catch((err) => this.props.error(err));
     }
 
     render() {
@@ -45,52 +65,60 @@ export class SharePage extends React.Component {
             };
         };
 
-        if(this.state.loading === true){
-            return ( <div> <Loader /> </div> );
-        }
+        let className = this.state.error ? "error rand-"+Math.random().toString() : "";
 
-        if(this.state.request_password === true){
-            return (
-                <Container maxWidth="350px">
-                  <form onSubmit={(e) => this.submitProof(e, "password", this.refs.$input.ref.value)} style={marginTop()}>
-                    <Input ref="$input" type="password" placeholder="Password" />
-                    <Button theme="emphasis">OK</Button>
-                  </form>
-                </Container>
-            );
-        }else if(this.state.request_username === true){
-            return (
-                <Container maxWidth="350px">
-                  <form onSubmit={(e) => this.submitProof(e, "email", this.refs.$input.ref.value)} style={marginTop()}>
-                    <Input ref="$input" type="text" placeholder="Your email address" />
-                    <Button theme="emphasis">OK</Button>
-                  </form>
-                </Container>
-            );
-        }else if(this.state.request_verification === true){
-            return (
-                <Container maxWidth="350px">
-                  <form onSubmit={(e) => this.submitProof(e, "code", this.refs.$input.ref.value)} style={marginTop()}>
-                    <Input ref="$input" type="text" placeholder="Code" />
-                    <Button theme="emphasis">OK</Button>
-                  </form>
-                </Container>
-            );
-        }
-
-        if(this.state.redirection !== null){
-            if(this.state.redirection.slice(-1) === "/"){
-                return ( <Redirect to={"/files" + this.state.redirection} /> );
+        if(this.state.path !== null){
+            if(filetype(this.state.path) === "directory"){
+                return ( <Redirect to={`/files/?share=${this.state.share}`} /> );
             }else{
-                return ( <Redirect to={"/view" + this.state.redirection} /> );
+                return ( <Redirect to={`/view/${basename(this.state.path)}?share=${this.state.share}`} /> );
             }
-        }else{
+        } else if (this.state.key === null){
             return (
-                <div className="error-page">
-                  <h1>Oops!</h1>
-                  <h2>There's nothing in here</h2>
+                <div style={marginTop()}>
+                  <Loader />
                 </div>
             );
+        } else if(this.state.key === "code"){
+            return (
+                <Container maxWidth="300px" className="sharepage_component">
+                  <form className={className} onSubmit={(e) => this.submitProof(e, "code", this.refs.$input.ref.value)} style={marginTop()}>
+                    <Input ref="$input" type="text" placeholder="Code" />
+                    <Button theme="transparent">
+                      <Icon name={this.state.loading ? "loading" : "arrow_right"}/>
+                    </Button>
+                  </form>
+                </Container>
+            );
+        } else if(this.state.key === "password"){
+            return (
+                <Container maxWidth="300px" className="sharepage_component">
+                  <form className={className} onSubmit={(e) => this.submitProof(e, "password", this.refs.$input.ref.value)} style={marginTop()}>
+                    <Input ref="$input" type="password" placeholder="Password" />
+                    <Button theme="transparent">
+                      <Icon name={this.state.loading ? "loading" : "arrow_right"}/>
+                    </Button>
+                  </form>
+                </Container>
+            );
+        }else if(this.state.key === "email"){
+            return (
+                <Container maxWidth="300px" className="sharepage_component">
+                  <form className={className} onSubmit={(e) => this.submitProof(e, "email", this.refs.$input.ref.value)} style={marginTop()}>
+                    <Input ref="$input" type="text" placeholder="Your email address" />
+                    <Button theme="transparent">
+                      <Icon name={this.state.loading ? "loading" : "arrow_right"}/>
+                    </Button>
+                  </form>
+                </Container>
+            );
         }
+
+        return (
+            <div className="error-page">
+              <h1>Oops!</h1>
+              <h2>There's nothing in here</h2>
+            </div>
+        );
     }
 }

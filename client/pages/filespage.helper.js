@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Files } from '../model/';
-import { notify, alert } from '../helpers/';
+import { notify, alert, currentShare } from '../helpers/';
 import Path from 'path';
 import Worker from "../worker/search.worker.js";
 import { Observable } from "rxjs/Observable";
@@ -371,11 +371,12 @@ export const onUpload = function(path, e){
 
 
 
-const worker = new Worker();9
+const worker = new Worker();
 export const onSearch = (keyword, path = "/") => {
     worker.postMessage({
         action: "search::find",
         path: path,
+        share: currentShare(),
         keyword: keyword
     });
     return new Observable((obs) => {

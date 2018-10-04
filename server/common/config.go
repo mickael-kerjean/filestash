@@ -36,6 +36,13 @@ type Config struct {
 		Level     string `json:"level"`
 		Telemetry bool   `json:"telemetry"`
 	} `json:"log"`
+	Email struct {
+		Server    string `json:"server"`
+		Port      int    `json:"port"`
+		Username  string `json:"username"`
+		Password  string `json:"password"`
+		From      string `json:"from"`
+	} `json:"email"`
 	OAuthProvider struct {
 		Dropbox struct {
 			ClientID string `json:"client_id"`

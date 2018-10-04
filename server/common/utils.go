@@ -1,19 +1,5 @@
 package common
 
-import (
-	"math/rand"
-)
-
-var Letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-
-func RandomString(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = Letters[rand.Intn(len(Letters))]
-	}
-	return string(b)
-}
-
 func NewBool(t bool) *bool {
 	return &t
 }
@@ -35,13 +21,13 @@ func NewBoolFromInterface(val interface{}) bool {
 	default: return false
 	}
 }
-func NewIntpFromInterface(val interface{}) *int {
+func NewInt64pFromInterface(val interface{}) *int64 {
 	switch val.(type) {
-	case int:
-		v := val.(int)
+	case int64:
+		v := val.(int64)
 		return &v
 	case float64:
-		v := int(val.(float64))
+		v := int64(val.(float64))
 		return &v
 	default: return nil
 	}

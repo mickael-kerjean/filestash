@@ -25,6 +25,13 @@
             }
         }
     }
+
+    .sidebar{
+        width: 250px;
+        transition: width 0.3s ease;
+        background: var(--light);
+        &.close{width: 0;}
+    }
 }
 
 .scroll-y{

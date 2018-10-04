@@ -214,12 +214,12 @@ export class ExistingThing extends React.Component {
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div className={"component_thing view-"+this.props.view}>
-              <Link to={this.props.file.link + location.search || "#"}>
+              <Link to={this.props.file.link + location.search}>
                 <Card ref="$card"className={this.state.hover} className={className}>
                   <Image preview={this.state.preview} icon={this.props.file.icon || this.props.file.type} view={this.props.view} path={path.join(this.props.path, this.props.file.name)} />
                   <Filename filename={this.props.file.name} filesize={this.props.file.size} filetype={this.props.file.type} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} onRenameCancel={this.onRenameRequest.bind(this, false)}/>
                   <DateTime show={this.state.icon !== 'loading'} timestamp={this.props.file.time} />
-                  <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} onClickShare={this.onShareRequest.bind(this)} is_renaming={this.state.is_renaming} can_rename={this.props.metadata.can_rename !== false} can_delete={this.props.metadata.can_delete !== false} />
+                  <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} onClickShare={this.onShareRequest.bind(this)} is_renaming={this.state.is_renaming} can_rename={this.props.metadata.can_rename !== false} can_delete={this.props.metadata.can_delete !== false} can_share={this.props.metadata.can_share !== false} />
                 </Card>
               </Link>
             </div>
@@ -310,7 +310,7 @@ const ActionButton = (props) => {
           <NgIf cond={props.can_delete !== false} type="inline">
             <Icon name="delete" onClick={onDelete} className="component_updater--icon"/>
           </NgIf>
-          <NgIf cond={false && props.can_share !== false} type="inline">
+          <NgIf cond={props.can_share !== false} type="inline">
             <Icon name="share" onClick={onShare} className="component_updater--icon"/>
           </NgIf>
         </div>

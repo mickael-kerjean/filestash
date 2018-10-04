@@ -8,7 +8,7 @@ self.onmessage = function(message){
         if(current_search != null){
             current_search.unsubscribe();
         }
-        current_search = Search(message.data.path, message.data.keyword).subscribe((a) => {
+        current_search = Search([message.data.share, message.data.path], message.data.keyword).subscribe((a) => {
             self.postMessage({type: "search::found", files: a});
         }, null, () => {
             self.postMessage({type: "search::completed"})
@@ -16,7 +16,7 @@ self.onmessage = function(message){
     }
 }
 
-function Search(path, keyword){
+function Search(key, keyword){
     let results = [];
     return new Observable((obs) => {
         obs.next(results);
@@ -32,7 +32,7 @@ function Search(path, keyword){
                 results = results.concat(found);
                 obs.next(results);
             }
-        }, cache.FILE_PATH, path).then(() => {
+        }, cache.FILE_PATH, [key[0], key[1]]).then(() => {
             obs.complete(results);
         });
     });

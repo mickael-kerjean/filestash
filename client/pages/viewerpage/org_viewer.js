@@ -309,7 +309,7 @@ class OrgViewer extends React.Component {
                             </div>
                           );
                       })
-                }
+                  }
                 </StickyContainer>
               </NgIf>
             </Modal>

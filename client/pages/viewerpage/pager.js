@@ -4,7 +4,7 @@ import { Link, withRouter } from 'react-router-dom';
 import { Files } from '../../model/';
 import { sort } from '../../pages/filespage.helper.js';
 import { Icon, NgIf, EventReceiver, EventEmitter } from '../../components/';
-import { dirname, basename, settings_get, getMimeType, debounce, gid } from '../../helpers/';
+import { dirname, basename, settings_get, getMimeType, debounce, gid, appendShareToUrl } from '../../helpers/';
 import './pager.scss';
 
 
@@ -25,7 +25,6 @@ export class Pager extends React.Component {
     componentDidMount(){
         this.setNavigation(this.props);
         window.addEventListener("keyup", this.navigate);
-
         this.props.subscribe('media::next', () => {
             this.navigatePage(this.calculateNextPageNumber(this.state.n));
         });
@@ -35,7 +34,7 @@ export class Pager extends React.Component {
     }
 
     componentWillReceiveProps(props){
-        if(props.path === this.props.path){
+        if(props.path !== this.props.path){
             this.setNavigation(props);
         }
     }
@@ -57,7 +56,8 @@ export class Pager extends React.Component {
 
     navigatePage(n){
         if(this.state.files[n]){
-            this.props.history.push(this.state.files[n].link+"?once="+gid());
+            const url = appendShareToUrl(this.state.files[n].link)
+            this.props.history.push(url);
             if(this.refs.$page) this.refs.$page.blur();
             let preload_index = (n >= this.state.n || (this.state.n === this.state.files.length - 1 && n === 0)) ? this.calculateNextPageNumber(n) : this.calculatePrevPageNumber(n);
             if(!this.state.files[preload_index].path){
@@ -79,6 +79,10 @@ export class Pager extends React.Component {
 
     setNavigation(props){
         Files._ls_from_cache(dirname(props.path))
+            .then((f) => {
+                if(f === null) return Promise.reject({code: "NO_DATA"});
+                return Promise.resolve(f)
+            })
             .then((f) => f.results.filter((file) => (isImage(file.name) || isVideo(file.name)) && file.type === "file"))
             .then((f) => sort(f, settings_get('filespage_sort') || 'type'))
             .then((f) => findPosition(f, basename(props.path)))
@@ -87,7 +91,8 @@ export class Pager extends React.Component {
                     files: res[0],
                     n: res[1]
                 });
-            });
+            })
+            .catch(() => {});
 
         const findPosition = (files, filename) => {
             let i;

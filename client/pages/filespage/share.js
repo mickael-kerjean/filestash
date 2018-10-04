@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { NgIf, Icon } from '../../components/';
 import { Share } from '../../model/';
-import { randomString, notify, absoluteToRelative } from '../../helpers/';
+import { randomString, notify, absoluteToRelative, copyToClipboard, filetype } from '../../helpers/';
 import './share.scss';
 
 export class ShareComponent extends React.Component {
@@ -32,14 +32,20 @@ export class ShareComponent extends React.Component {
     }
 
     componentDidMount(){
-        Share.all(this.props.path)
-            .then((existings) => {
-                this.refreshModal();
-                this.setState({existings: existings});
+        Share.all(this.props.path).then((existings) => {
+            this.refreshModal();
+            this.setState({
+                existings: existings.sort((a, b) => {
+                    return a.path.split("/").length > b.path.split("/").length;
+                })
             });
+        });
     }
 
     updateState(key, value){
+        if(key === "role"){
+            this.setState(this.resetState());
+        }
         if(this.state[key] === value){
             this.setState({[key]: null});
         }else{
@@ -85,10 +91,13 @@ export class ShareComponent extends React.Component {
             });
     }
 
-    onRegisterLink(e){
-        this.refs.$input.select();
-        document.execCommand("copy");
+    copyLinkInClipboard(link){
+        copyToClipboard(link);
         notify.send("The link was copied in the clipboard", "INFO");
+    }
+
+    onRegisterLink(e){
+        this.copyLinkInClipboard(this.refs.$input.value);
 
         const link = {
             role: this.state.role,
@@ -137,9 +146,9 @@ export class ShareComponent extends React.Component {
         return Share.upsert(link)
             .then(() => {
                 if(this.state.url !== null && this.state.url !== this.state.id){
-                    this.onDeleteLink(this.state.id)
+                    this.onDeleteLink(this.state.id);
                 }
-                return Promise.resolve()
+                return Promise.resolve();
             })
             .then(() => this.setState(this.resetState()))
             .catch((err) => {
@@ -152,11 +161,13 @@ export class ShareComponent extends React.Component {
 
     render(){
         const beautifulPath = function(from, to){
-            return to;
-            const p = absoluteToRelative(from, to);
-            if(p === "./"){
-                return "Current folder";
+            if(filetype(from) === "directory"){
+                from = from.split("/");
+                from = from.slice(0, from.length - 1);
+                from = from.join("/");
             }
+
+            let p = absoluteToRelative(from, to);
             return p.length < to.length ? p : to;
         };
         const urlify = function(str){
@@ -197,8 +208,10 @@ export class ShareComponent extends React.Component {
                       this.state.existings && this.state.existings.map((link, i) => {
                           return (
                               <div className="link-details" key={i}>
-                                <span className="role">{link.role}</span>
-                                <span className="path">{beautifulPath(this.props.path, link.path)}</span>
+                                <span onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)} className="copy role">
+                                  {link.role}
+                                </span>
+                                <span onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)} className="copy path">{beautifulPath(this.props.path, link.path)}</span>
                                 <Icon onClick={this.onDeleteLink.bind(this, link.id)} name="delete"/>
                                 <Icon onClick={this.onLoad.bind(this, link)} name="edit"/>
                               </div>
@@ -221,16 +234,18 @@ export class ShareComponent extends React.Component {
                   <NgIf type="inline" cond={!this.state.show_advanced}><Icon name="arrow_bottom"/></NgIf>
                 </h2>
                 <div className="share--content advanced-settings no-select">
-                  <NgIf cond={this.state.show_advanced === true}>
+                  <NgIf cond={false}>
                     <SuperCheckbox value={this.state.can_manage_own} label="Can Manage Own" onChange={this.updateState.bind(this, 'can_manage_own')}/>
                     <SuperCheckbox value={this.state.can_share} label="Can Share" onChange={this.updateState.bind(this, 'can_share')}/>
+                  </NgIf>
+                  <NgIf cond={this.state.show_advanced === true}>
                     <SuperCheckbox value={datify(this.state.expire)} label="Expiration" placeholder="The link won't be valid after" onChange={this.updateState.bind(this, 'expire')} inputType="date"/>
                     <SuperCheckbox value={this.state.url} label="Custom Link url" placeholder="beautiful_url" onChange={(val) => this.updateState('url', urlify(val))} inputType="text"/>
                   </NgIf>
                 </div>
 
                 <div className="shared-link">
-                  <input ref="$input" onClick={this.onRegisterLink.bind(this)} type="text" value={window.location.origin+"/s/"+(this.state.url || this.state.id)} onChange={() => {}}/>
+                  <input ref="$input" className="copy" onClick={this.onRegisterLink.bind(this)} type="text" value={window.location.origin+"/s/"+(this.state.url || this.state.id)} onChange={() => {}}/>
                 </div>
               </NgIf>
             </div>
@@ -240,15 +255,18 @@ export class ShareComponent extends React.Component {
 
 const SuperCheckbox = (props) => {
     const onCheckboxTick = (e) => {
+        if(props.inputType === undefined){
+            return props.onChange(e.target.checked ? true : false);
+        }
         return props.onChange(e.target.checked ? "" : null);
     };
     const onValueChange = (e) => {
         props.onChange(e.target.value);
     };
-
     const _is_expended = function(val){
-        return val === null || val === undefined ? false : true;
+        return val === null || val === undefined || val === false ? false : true;
     }(props.value);
+
     return (
         <div className="component_supercheckbox">
           <label>

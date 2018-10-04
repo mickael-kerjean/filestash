@@ -9,6 +9,9 @@
             float: right;
         }
     }
+    .copy {
+        cursor: copy;
+    }
     .share--content{
         margin-bottom: 10px;
 
@@ -53,7 +56,7 @@
                 .path{
                     vertical-align: middle;
                     font-size: 0.9em;
-                    max-width: 180px;
+                    max-width: 170px;
                     display: inline-block;
                     white-space: nowrap;
                     overflow-x: hidden;

@@ -1,58 +1,144 @@
 package common
 
 import (
+	"bytes"
+	"compress/zlib"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base32"
 	"encoding/base64"
-	"encoding/json"
 	"io"
+	"io/ioutil"
+	mathrand "math/rand"
+	"math/big"
 )
 
-func Encrypt(keystr string, text map[string]string) (string, error) {
-	key := []byte(keystr)
-	plaintext, err := json.Marshal(text)
-	if err != nil {
-		return "", NewError("json marshalling: "+err.Error(), 500)
-	}
+var Letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
-	block, err := aes.NewCipher(key)
+func EncryptString(secret string, json string) (string, error) {
+	d, err := compress([]byte(json))
 	if err != nil {
-		return "", NewError("encryption issue (cipher): "+err.Error(), 500)
+		return "", err
 	}
-	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
-	iv := ciphertext[:aes.BlockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		return "", NewError("encryption issue: "+err.Error(), 500)
+	d, err = encrypt([]byte(secret), d)
+	if err != nil {
+		return "", err
 	}
-	stream := cipher.NewCFBEncrypter(block, iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
-	return base64.URLEncoding.EncodeToString(ciphertext), nil
+	return base64.URLEncoding.EncodeToString(d), nil
 }
 
-func Decrypt(keystr string, cryptoText string) (map[string]string, error) {
-	var raw map[string]string
-
-	key := []byte(keystr)
-	ciphertext, _ := base64.URLEncoding.DecodeString(cryptoText)
-	block, err := aes.NewCipher(key)
-
-	if err != nil || len(ciphertext) < aes.BlockSize {
-		return raw, NewError("Cipher is too short", 500)
+func DecryptString(secret string, data string) (string, error){
+	d, err := base64.URLEncoding.DecodeString(data)
+	if err != nil {
+		return "", err
 	}
-
-	iv := ciphertext[:aes.BlockSize]
-	ciphertext = ciphertext[aes.BlockSize:]
-	stream := cipher.NewCFBDecrypter(block, iv)
-	stream.XORKeyStream(ciphertext, ciphertext)
-
-	json.Unmarshal(ciphertext, &raw)
-	return raw, nil
+	d, err = decrypt([]byte(secret), d)
+	if err != nil {
+		return "", err
+	}
+	d, err = decompress(d)
+	if err != nil {
+		return "", err
+	}
+	return string(d), nil
 }
 
-func GenerateID(params map[string]string) string {	
+func Hash(str string) string {
+	hasher := sha1.New()
+	hasher.Write([]byte(str))
+	return "sha1::" + base32.HexEncoding.EncodeToString(hasher.Sum(nil))
+}
+
+func RandomString(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		max := *big.NewInt(int64(len(Letters)))
+		r, err := rand.Int(rand.Reader, &max)
+		if err != nil {
+			b[i] = Letters[0]
+		} else {
+			b[i] = Letters[r.Int64()]
+		}
+	}
+	return string(b)
+}
+
+func QuickString(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = Letters[mathrand.Intn(len(Letters))]
+	}
+	return string(b)
+}
+
+func encrypt(key []byte, plaintext []byte) ([]byte, error) {
+    c, err := aes.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
+
+    gcm, err := cipher.NewGCM(c)
+    if err != nil {
+        return nil, err
+    }
+
+    nonce := make([]byte, gcm.NonceSize())
+    if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+        return nil, err
+    }
+
+    return gcm.Seal(nonce, nonce, plaintext, nil), nil
+}
+
+func decrypt(key []byte, ciphertext []byte) ([]byte, error) {
+    c, err := aes.NewCipher(key)
+    if err != nil {
+        return nil, err
+    }
+
+    gcm, err := cipher.NewGCM(c)
+    if err != nil {
+        return nil, err
+    }
+
+    nonceSize := gcm.NonceSize()
+    if len(ciphertext) < nonceSize {
+        return nil, NewError("ciphertext too short", 500)
+    }
+
+    nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
+    return gcm.Open(nil, nonce, ciphertext, nil)
+}
+
+func compress(something []byte) ([]byte, error) {
+	var b bytes.Buffer
+	w := zlib.NewWriter(&b)
+	w.Write(something)
+	w.Close()
+	return b.Bytes(), nil
+}
+
+func decompress(something []byte) ([]byte, error) {
+	b := bytes.NewBuffer(something)
+	r, err := zlib.NewReader(b)
+	if err != nil {
+		return []byte(""), nil
+	}
+	r.Close()
+	return ioutil.ReadAll(r)
+}
+
+func sign(something []byte) ([]byte, error) {
+	return something, nil
+}
+
+func verify(something []byte) ([]byte, error) {
+	return something, nil
+}
+
+func GenerateID(params map[string]string) string {
 	p := "type =>" + params["type"]
 	p += "host =>" + params["host"]
 	p += "hostname =>" + params["hostname"]
@@ -63,7 +149,5 @@ func GenerateID(params map[string]string) string {
 	p += "endpoint =>" + params["endpoint"]
 	p += "bearer =>" + params["bearer"]
 	p += "token =>" + params["token"]
-	hasher := sha1.New()
-	hasher.Write([]byte(p))
-	return "sha1::" + base32.HexEncoding.EncodeToString(hasher.Sum(nil))
+	return Hash(p)
 }

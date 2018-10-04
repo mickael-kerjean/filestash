@@ -15,6 +15,11 @@
         "level": "INFO",
         "telemetry": true
     },
+    "smtp": {
+        "addr": "smtp.gmail.com",
+        "username": "mickael.kerjean@gmail.com",
+        "password": "test"
+    },
     "oauth": {
         "gdrive": {
             "client_id": "",

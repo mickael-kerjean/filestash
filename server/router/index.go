@@ -33,8 +33,8 @@ func Init(a *App) *http.Server {
 	share.HandleFunc("/{id}", APIHandler(ShareGet, *a)).Methods("GET")
 	share.HandleFunc("/{id}", APIHandler(ShareUpsert, *a)).Methods("POST")
 	share.HandleFunc("/{id}", APIHandler(ShareDelete, *a)).Methods("DELETE")
-	r.HandleFunc("/api/proof", APIHandler(ShareGiveProof, *a)).Methods("GET")
-
+	share.HandleFunc("/{id}/proof", APIHandler(ShareVerifyProof, *a)).Methods("POST")
+	
 	// APP
 	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a)).Methods("GET")
 	r.PathPrefix("/assets").Handler(StaticHandler("./data/public/", *a)).Methods("GET")

@@ -5,18 +5,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEncryptSomething(t *testing.T) {
+func TestEncryptString(t *testing.T) {
 	key := "test|test|test|test|test"
-	
-	d := make(map[string]string)
-	d["foo"] = "bar"
-	
-	str, err := Encrypt(key, d)
+	text := "I'm some text"
+	a, err := EncryptString(key, text)
 	assert.NoError(t, err)
+	assert.NotNil(t, a)
+	assert.NotEqual(t, a, text)
 
-	data, err := Decrypt(key, str)
+	b, err := DecryptString(key, a)
 	assert.NoError(t, err)
-	assert.Equal(t, "bar", data["foo"])
+	assert.Equal(t, b, text)
+
 }
 
 func TestIDGeneration(t *testing.T) {
@@ -31,4 +31,12 @@ func TestIDGeneration(t *testing.T) {
 
 	assert.NotEqual(t, id1, id2)
 	assert.Equal(t, id2, id3)
+}
+
+func TestStringGeneration(t *testing.T) {
+	str := QuickString(10)
+	str1 := QuickString(10)
+	str2 := QuickString(10)
+	assert.Equal(t, len(str), 10)
+	t.Log(str, str1, str2)
 }

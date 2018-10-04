@@ -41,7 +41,7 @@ func ProcessFileBeforeSend(reader io.Reader, ctx *App, req *http.Request, res *h
 		/////////////////////////
 		// Specify transformation
 		transform := &images.Transform{
-			Temporary: ctx.Helpers.AbsolutePath(ImageCachePath + "image_" + RandomString(10)),
+			Temporary: ctx.Helpers.AbsolutePath(ImageCachePath + "image_" + QuickString(10)),
 			Size:      300,
 			Crop:      true,
 			Quality:   50,

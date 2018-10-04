@@ -45,7 +45,7 @@ export class BreadCrumb extends React.Component {
     }
 
     render(Element) {
-        if(location.search === "?nav=false") return null;
+        if(new window.URL(location.href).searchParams.get("nav") === "false") return null;
 
         const Path = Element? Element : PathElement;
         return (
@@ -136,7 +136,7 @@ export class PathElementWrapper extends React.Component {
         return (
             <li className={className}>
               <NgIf cond={this.props.isLast === false}>
-                <Link to={"/files" + this.props.path.full || "/"} className="label">
+                <Link to={"/files" + (this.props.path.full || "/") + location.search} className="label">
                   <NgIf cond={this.props.path.minify !== true}>
                     {this.limitSize(this.props.path.label)}
                   </NgIf>

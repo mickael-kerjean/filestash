@@ -35,3 +35,19 @@ export function absoluteToRelative(from, to){
     }
     return r;
 }
+
+export function currentShare(){
+    return new window.URL(location.href).searchParams.get("share") || ""
+}
+
+export function appendShareToUrl(link) {
+    let url = new window.URL(location.href);
+    let share = url.searchParams.get("share");
+
+    if(share){
+        url = new window.URL(location.origin + link)
+        url.searchParams.set("share", share)
+        return url.pathname + url.search
+    }
+    return link;
+}

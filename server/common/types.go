@@ -56,5 +56,7 @@ type Metadata struct {
 	CanRename          *bool      `json:"can_rename,omitempty"`
 	CanMove            *bool      `json:"can_move,omitempty"`
 	CanUpload          *bool      `json:"can_upload,omitempty"`
+	CanDelete          *bool      `json:"can_delete,omitempty"`
+	CanShare           *bool      `json:"can_share,omitempty"`
 	Expire             *time.Time `json:"-"`
 }

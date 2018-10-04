@@ -3,6 +3,7 @@ package ctrl
 import (
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/services"
+	"github.com/mickael-kerjean/nuage/server/model"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -18,6 +19,16 @@ type FileInfo struct {
 }
 
 func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
+	var files []FileInfo
+	if model.CanRead(&ctx) == false {
+		if model.CanUpload(&ctx) == false {
+			SendErrorResult(res, NewError("Permission denied", 403))
+			return
+		}
+		SendSuccessResults(res, files)
+		return
+	}
+
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
@@ -30,7 +41,6 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	files := []FileInfo{}
 	for _, entry := range entries {
 		f := FileInfo{
 			Name: entry.Name(),
@@ -48,10 +58,28 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		files = append(files, f)
 	}
 
-	var perms *Metadata
+	var perms *Metadata = &Metadata{}
 	if obj, ok := ctx.Backend.(interface{ Meta(path string) *Metadata }); ok {
 		perms = obj.Meta(path)
 	}
+
+	if model.CanEdit(&ctx) == false {
+		perms.CanCreateFile = NewBool(false)
+		perms.CanCreateDirectory = NewBool(false)
+		perms.CanRename = NewBool(false)
+		perms.CanMove = NewBool(false)
+		perms.CanDelete = NewBool(false)
+	}
+	if model.CanUpload(&ctx) == false {
+		perms.CanCreateDirectory = NewBool(false)
+		perms.CanRename = NewBool(false)
+		perms.CanMove = NewBool(false)
+		perms.CanDelete = NewBool(false)
+	}
+	if model.CanShare(&ctx) == false {
+		perms.CanShare = NewBool(false)
+	}
+
 	SendSuccessResultsWithMetadata(res, files, perms)
 }
 
@@ -62,6 +90,10 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		MaxAge: -1,
 		Path:   "/",
 	})
+	if model.CanRead(&ctx) == false {
+		SendErrorResult(res, NewError("Permission denied", 403))
+		return
+	}
 
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
@@ -87,6 +119,11 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
+	if model.CanEdit(&ctx) == false {
+		SendErrorResult(res, NewError("Permission denied", 403))
+		return
+	}
+
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
@@ -112,6 +149,11 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
+	if model.CanEdit(&ctx) == false {
+		SendErrorResult(res, NewError("Permission denied", 403))
+		return
+	}
+
 	from, err := pathBuilder(ctx, req.URL.Query().Get("from"))
 	if err != nil {
 		SendErrorResult(res, err)
@@ -136,6 +178,11 @@ func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func FileRm(ctx App, res http.ResponseWriter, req *http.Request) {
+	if model.CanEdit(&ctx) == false {
+		SendErrorResult(res, NewError("Permission denied", 403))
+		return
+	}
+
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
@@ -150,6 +197,11 @@ func FileRm(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
+	if model.CanUpload(&ctx) == false {
+		SendErrorResult(res, NewError("Permission denied", 403))
+		return
+	}
+
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
@@ -165,6 +217,11 @@ func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
+	if model.CanUpload(&ctx) == false {
+		SendErrorResult(res, NewError("Permission denied", 403))
+		return
+	}
+
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)

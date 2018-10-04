@@ -17,6 +17,7 @@ func APIHandler(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.
 		start := time.Now()
 		ctx.Body, _ = extractBody(req)
 		ctx.Session, _ = extractSession(req, &ctx)
+
 		ctx.Backend, _ = extractBackend(req, &ctx)
 		res.Header().Add("Content-Type", "application/json")
 
@@ -65,11 +66,36 @@ func extractBody(req *http.Request) (map[string]interface{}, error) {
 }
 
 func extractSession(req *http.Request, ctx *App) (map[string]string, error) {
-	cookie, err := req.Cookie(COOKIE_NAME)
-	if err != nil {
-		return make(map[string]string), err
+	var str string
+	var res map[string]string
+
+	if req.URL.Query().Get("share") != "" {
+		s := model.NewShare(req.URL.Query().Get("share"))
+		if err := model.ShareGet(&s); err != nil {
+			return make(map[string]string), err
+		}
+		if _, err := s.IsValid(); err != nil {
+			return make(map[string]string), err
+		}
+
+		var verifiedProof []model.Proof = model.ShareProofGetAlreadyVerified(req, ctx)
+		var requiredProof []model.Proof = model.ShareProofGetRequired(s)
+		var remainingProof []model.Proof = model.ShareProofCalculateRemainings(requiredProof, verifiedProof)
+		if len(remainingProof) != 0 {
+			return make(map[string]string), NewError("Unauthorized Shared space", 400)
+		}
+		str = s.Auth
+	} else {
+		cookie, err := req.Cookie(COOKIE_NAME_AUTH)
+		if err != nil {
+			return make(map[string]string), err
+		}
+		str = cookie.Value
 	}
-	return Decrypt(ctx.Config.General.SecretKey, cookie.Value)
+
+	str, err := DecryptString(ctx.Config.General.SecretKey, str)
+	err = json.Unmarshal([]byte(str), &res)
+	return res, err
 }
 
 func extractBackend(req *http.Request, ctx *App) (IBackend, error) {

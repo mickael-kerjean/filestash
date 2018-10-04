@@ -17,11 +17,12 @@ export class FrequentlyAccess extends React.Component {
         return (
             <ReactCSSTransitionGroup transitionName="frequent-access" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={300}>
               <Container>
+                <span>Quick Access</span>
                 <div className="component_frequently-access">
                   {
                       this.props.files.map(function(path, index){
                           return (
-                              <Link key={path} to={"/files"+path}>
+                              <Link key={path} to={"/files"+path+window.location.search}>
                                 <Icon name={'directory'} />
                                 <div>{Path.basename(path)}</div>
                               </Link>
