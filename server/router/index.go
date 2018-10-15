@@ -14,7 +14,7 @@ func Init(a *App) *http.Server {
 
 	// API
 	session := r.PathPrefix("/api/session").Subrouter()
-	session.HandleFunc("", APIHandler(SessionIsValid, *a)).Methods("GET")
+	session.HandleFunc("", APIHandler(SessionGet, *a)).Methods("GET")
 	session.HandleFunc("", APIHandler(SessionAuthenticate, *a)).Methods("POST")
 	session.HandleFunc("", APIHandler(SessionLogout, *a)).Methods("DELETE")
 	session.Handle("/auth/{service}", APIHandler(SessionOAuthBackend, *a)).Methods("GET")

@@ -19,6 +19,9 @@ func NewBool(t bool) *bool {
 }
 
 func NewString(t string) *string {
+	if t == "" {
+		return nil
+	}
 	return &t
 }
 

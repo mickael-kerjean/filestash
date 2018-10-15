@@ -3,11 +3,10 @@ function Memory(){
 
     return {
         get: function(key){
-            if(!data[key]) return null;
+            if(data[key] === undefined) return null;
             return data[key];
         },
         set: function(key, value){
-            if(!data[key]) data[key] = {};
             data[key] = value;
         },
         all: function(){

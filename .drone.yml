@@ -1,22 +1,4 @@
 pipeline:
-  test:
-    group: test
-    image: machines/nuage_build
-    pull: true
-    environment:
-      - GOPATH=/tmp/go
-      - PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/
-      - LD_LIBRARY_PATH=/usr/local/lib
-      - CGO_LDFLAGS_ALLOW='-fopenmp'
-    commands:
-      # Prepare
-      - mkdir -p $GOPATH/src/github.com/mickael-kerjean/nuage
-      - mv * $GOPATH/src/github.com/mickael-kerjean/nuage
-      - cd $GOPATH/src/github.com/mickael-kerjean/nuage
-      - cd server
-      - go get
-      - go test -v ./...
-
   publish_docker:
     group: release
     image: docker
@@ -28,5 +10,5 @@ pipeline:
     commands:
       - echo $DOCKER_PASSWORD | docker login -u=$DOCKER_USERNAME --password-stdin
       - docker pull alpine:latest
-      - docker build --no-cache -t machines/nuage:master docker/prod
+      - docker build --no-cache -t machines/nuage docker/prod
       - docker push machines/nuage

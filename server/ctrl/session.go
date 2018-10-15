@@ -8,21 +8,28 @@ import (
 	"time"
 )
 
-func SessionIsValid(ctx App, res http.ResponseWriter, req *http.Request) {
+type Session struct {
+	Home *string `json:"home,omitempty"`
+	IsAuth bool  `json:"is_authenticated"`
+}
+
+func SessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
+	r := Session {
+		IsAuth: false,
+	}
+	
 	if ctx.Backend == nil {
-		SendSuccessResult(res, false)
+		SendSuccessResult(res, r)
 		return
 	}
-	if _, err := ctx.Backend.Ls("/"); err != nil {
-		SendSuccessResult(res, false)
+	home, err := model.GetHome(ctx.Backend)
+	if err != nil {
+		SendSuccessResult(res, r)
 		return
 	}
-	home, _ := model.GetHome(ctx.Backend)
-	if home == "" {
-		SendSuccessResult(res, true)
-		return
-	}
-	SendSuccessResult(res, true)
+	r.IsAuth = true
+	r.Home = NewString(home)
+	SendSuccessResult(res, r)
 }
 
 func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {

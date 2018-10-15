@@ -108,7 +108,6 @@ function handle_error_response(xhr, err){
     }else if(xhr.status === 500){
         err({message: message || "Oups something went wrong with our servers", code: "INTERNAL_SERVER_ERROR"});
     }else if(xhr.status === 401){
-        if(location.pathname !== '/login'){ location.pathname = "/login"; }
         err({message: message || "Authentication error", code: "Unauthorized"});
     }else if(xhr.status === 403){
         err({message: message || "You can\'t do that", code: "Forbidden"});
