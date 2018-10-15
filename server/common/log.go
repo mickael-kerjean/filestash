@@ -1,10 +1,14 @@
 package common
 
 import (
-	"fmt"
-	"io"
-	"io/ioutil"
 	"time"
+	"log"
+)
+
+const (
+	LOG_INFO = "INFO"
+	LOG_WARNING = "WARNING"
+	LOG_ERROR = "ERROR"
 )
 
 type LogEntry struct {
@@ -23,7 +27,34 @@ type LogEntry struct {
 	Backend    string    `json:"backend"`
 }
 
-func Debug_reader(r io.Reader) {
-	a, _ := ioutil.ReadAll(r)
-	fmt.Println("> DEBUG:", string(a))
+func Log(ctx *App, str string, level string){
+	if ctx.Config.Log.Enable == false {
+		return
+	}
+
+	shouldDisplay := func(r string, l string) bool {
+		levels := []string{"DEBUG", "INFO", "WARNING", "ERROR"}
+
+		configLevel := -1
+		currentLevel := 0
+
+		for i:=0; i <= len(levels); i++ {
+			if levels[i] == l {
+				currentLevel = i
+			}
+			if levels[i] == r {
+				configLevel = i
+				break
+			}
+		}
+
+		if currentLevel <= configLevel {
+			return true
+		}
+		return false
+	}(ctx.Config.Log.Level, level)
+
+	if shouldDisplay {
+		log.Printf("%s %s\n", level, str)
+	}
 }

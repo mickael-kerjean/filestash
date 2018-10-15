@@ -34,11 +34,14 @@ func Init(a *App) *http.Server {
 	share.HandleFunc("/{id}", APIHandler(ShareUpsert, *a)).Methods("POST")
 	share.HandleFunc("/{id}", APIHandler(ShareDelete, *a)).Methods("DELETE")
 	share.HandleFunc("/{id}/proof", APIHandler(ShareVerifyProof, *a)).Methods("POST")
+
+	// WEBDAV
+	r.PathPrefix("/s/{id}").Handler(APIHandler(WebdavHandler, *a))
 	
 	// APP
 	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a)).Methods("GET")
 	r.PathPrefix("/assets").Handler(StaticHandler("./data/public/", *a)).Methods("GET")
-	r.NotFoundHandler = DefaultHandler("./data/public/index.html", *a)
+	r.PathPrefix("/").Handler(DefaultHandler("./data/public/index.html", *a)).Methods("GET")
 
 	srv := &http.Server{
 		Addr:    ":" + strconv.Itoa(a.Config.General.Port),
