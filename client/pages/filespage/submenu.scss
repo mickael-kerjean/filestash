@@ -17,8 +17,7 @@
             /* Create Buttons */
             > span, form label {
                 display: inline-block;
-                margin-right: 5px;
-                margin-top: -2px;
+                margin-top: -5px;
                 border-radius: 2px;
                 cursor: pointer;
 
@@ -27,7 +26,10 @@
                 }
                 @include ripple(var(--bg-color));
             }
-            > span{padding: 3px 5px; font-weight: 100;}
+            > span{
+                padding: 5px 10px;
+                font-weight: 100;
+            }
 
             > div {cursor: pointer; margin-right: 15px;}
             .view{
