@@ -1,10 +1,11 @@
-package router
+package middleware
 
 import (
 	"bytes"
 	"encoding/json"
-	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/model"
+	"github.com/mickael-kerjean/mux"
+	. "github.com/mickael-kerjean/nuage/server/common"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,10 +16,10 @@ import (
 func APIHandler(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		start := time.Now()
-		ctx.Body, _ = extractBody(req)
-		ctx.Session, _ = extractSession(req, &ctx)
+		ctx.Body, _ = ExtractBody(req)
+		ctx.Session, _ = ExtractSession(req, &ctx)
 
-		ctx.Backend, _ = extractBackend(req, &ctx)
+		ctx.Backend, _ = ExtractBackend(req, &ctx)
 		res.Header().Add("Content-Type", "application/json")
 
 		resw := ResponseWriter{ResponseWriter: res}
@@ -50,7 +51,7 @@ func CtxInjector(fn func(App, http.ResponseWriter, *http.Request), ctx App) http
 	})
 }
 
-func extractBody(req *http.Request) (map[string]interface{}, error) {
+func ExtractBody(req *http.Request) (map[string]interface{}, error) {
 	var body map[string]interface{}
 	if strings.HasPrefix(req.Header.Get("Content-Type"), "multipart/form-data") {
 		return body, NewError("", 200)
@@ -65,12 +66,17 @@ func extractBody(req *http.Request) (map[string]interface{}, error) {
 	return body, nil
 }
 
-func extractSession(req *http.Request, ctx *App) (map[string]string, error) {
+func ExtractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	var str string
 	var res map[string]string
-
-	if req.URL.Query().Get("share") != "" {
-		s := model.NewShare(req.URL.Query().Get("share"))
+	
+	if req.URL.Query().Get("share") != "" || mux.Vars(req)["share"] != "" {
+		share_id := req.URL.Query().Get("share")
+		if share_id == "" {
+			share_id = mux.Vars(req)["share"]
+		}
+		
+		s := model.NewShare(share_id)
 		if err := model.ShareGet(&s); err != nil {
 			return make(map[string]string), err
 		}
@@ -88,17 +94,17 @@ func extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	} else {
 		cookie, err := req.Cookie(COOKIE_NAME_AUTH)
 		if err != nil {
-			return make(map[string]string), err
+			return res, nil
 		}
 		str = cookie.Value
 	}
 
-	str, err := DecryptString(ctx.Config.General.SecretKey, str)
-	err = json.Unmarshal([]byte(str), &res)
+	str, _ = DecryptString(ctx.Config.General.SecretKey, str)
+	err := json.Unmarshal([]byte(str), &res)
 	return res, err
 }
 
-func extractBackend(req *http.Request, ctx *App) (IBackend, error) {
+func ExtractBackend(req *http.Request, ctx *App) (IBackend, error) {
 	return model.NewBackend(ctx, ctx.Session)
 }
 

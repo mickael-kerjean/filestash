@@ -1,4 +1,4 @@
-package router
+package ctrl
 
 import (
 	. "github.com/mickael-kerjean/nuage/server/common"

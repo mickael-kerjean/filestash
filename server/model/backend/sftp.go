@@ -180,6 +180,11 @@ func (b Sftp) Save(path string, file io.Reader) error {
 	return b.err(err)
 }
 
+func (b Sftp) Stat(path string) (os.FileInfo, error) {
+	f, err := b.SFTPClient.Stat(path)
+	return f, b.err(err)
+}
+
 func (b Sftp) Close() error {
 	err0 := b.SFTPClient.Close()
 	err1 := b.SSHClient.Close()

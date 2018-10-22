@@ -192,7 +192,7 @@ func ShareDelete(ctx App, res http.ResponseWriter, req *http.Request) {
 func extractParams(req *http.Request, ctx *App) model.Share {
 	return model.Share{
 		Auth: "",
-		Id:           NewStringFromInterface(mux.Vars(req)["id"]),
+		Id:           NewStringFromInterface(mux.Vars(req)["share"]),
 		Backend:      NewStringFromInterface(GenerateID(ctx.Session)),
 		Path:         NewStringFromInterface(req.URL.Query().Get("path")),
 		Password:     NewStringpFromInterface(ctx.Body["password"]),

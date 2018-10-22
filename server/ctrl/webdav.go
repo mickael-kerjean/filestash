@@ -4,32 +4,61 @@ import (
 	"net/http"
 	"log"
 	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/nuage/server/middleware"
 	"github.com/mickael-kerjean/nuage/server/model"
-	"golang.org/x/net/webdav"
+	"github.com/mickael-kerjean/net/webdav"
 	"github.com/mickael-kerjean/mux"
-	"strings"
+	"time"
 )
 
+var start time.Time = time.Now()
+
 func WebdavHandler(ctx App, res http.ResponseWriter, req *http.Request) {
-	accept := req.Header.Get("Accept")
-	if strings.HasPrefix(accept, "text/html") {
-		DefaultHandler("./data/public/index.html", ctx).ServeHTTP(res, req)
+	share_id := mux.Vars(req)["share"]
+	prefix := "/s/" + share_id
+	req.Header.Del("Content-Type")
+
+	if req.Method == "GET" {
+		if req.URL.Path == prefix {
+			DefaultHandler(FILE_INDEX, ctx).ServeHTTP(res, req)
+			return
+		}
+	}
+
+	var err error
+	if ctx.Session, err = ExtractSession(req, &ctx); err != nil {
+		http.NotFound(res, req)
 		return
 	}
-	if ctx.Backend == nil {
+	if ctx.Backend, err = ExtractBackend(req, &ctx); err != nil || ctx.Backend == nil {
+		http.NotFound(res, req)
+		return
+	}
+	if share_id == "" {
 		http.NotFound(res, req)
 		return
 	}
 
-	s := model.Share{ Id: mux.Vars(req)["id"] }
-	log.Println("> webdav: "+ s.Id)	
+	// webdav is WIP
+	return http.NotFound(res, req)
 
 	h := &webdav.Handler{
-		Prefix: "/s/",// + s.Id,
-		FileSystem: model.NewWebdavFs(ctx.Backend),
+		Prefix: "/s/" + share_id,
+		FileSystem: model.NewWebdavFs(ctx.Backend, ctx.Session["path"]),
 		LockSystem: webdav.NewMemLS(),
 		Logger: func(r *http.Request, err error) {
-			Log(&ctx, "Webdav", "INFO")
+			e := func(err error) string{
+				if err != nil {
+					return err.Error()
+				}
+				return "OK"
+			}(err)
+			log.Printf("INFO %s WEBDAV %s %s %s", share_id, req.Method, req.URL.Path, e)
+			elapsed := time.Now().Sub(start)
+			if elapsed > 1000*time.Millisecond {
+				log.Println("\n\n\n")
+			}
+			start = time.Now()
 		},
 	}
 	h.ServeHTTP(res, req)
