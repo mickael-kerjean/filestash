@@ -3,48 +3,37 @@ package model
 import (
 	"fmt"
 	. "github.com/mickael-kerjean/nuage/server/common"
-	"github.com/mickael-kerjean/nuage/server/model/backend"
+	_ "github.com/mickael-kerjean/nuage/server/model/backend"
 )
 
 func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
-	isAllowed := false
-	for i := range ctx.Config.Connections {
-		if ctx.Config.Connections[i].Type == conn["type"] {
-			if ctx.Config.Connections[i].Hostname == nil {
-				isAllowed = true
-				break;
-			}else if *ctx.Config.Connections[i].Hostname == conn["hostname"] {
-				isAllowed = true
-				break;
+	isAllowed := func() bool {
+		ret := false
+		var conns [] struct {
+			Type     string `json:"type"`
+			Hostname string `json:"hostname"`
+			Path     string `json:"path"`
+		}
+		ctx.Config.Get("connections").Scan(&conns)
+		for i := range conns {
+			if conns[i].Type == conn["type"] {
+				if conns[i].Hostname != "" && conns[i].Hostname != conn["hostname"] {
+					continue
+				} else if conns[i].Path != "" && conns[i].Path != conn["path"] {
+					continue
+				} else {
+					ret = true
+					break
+				}
 			}
 		}
-	}
+		return ret
+	}()
 
 	if isAllowed == false {
-		return backend.NewNothing(conn, ctx)
+		return Backend.Get(BACKEND_NIL).Init(conn, ctx)
 	}
-	
-	switch conn["type"] {
-	case "webdav":
-		return backend.NewWebDav(conn, ctx)
-	case "ftp":
-		return backend.NewFtp(conn, ctx)
-	case "sftp":
-		return backend.NewSftp(conn, ctx)
-	case "git":
-		return backend.NewGit(conn, ctx)
-	case "s3":
-		return backend.NewS3(conn, ctx)
-	case "dropbox":
-		return backend.NewDropbox(conn, ctx)
-	case "gdrive":
-		return backend.NewGDrive(conn, ctx)
-	case "custombackend":
-		return backend.NewCustomBackend(conn, ctx)
-	default:
-		return backend.NewNothing(conn, ctx)
-	}
-	return nil, NewError("Invalid backend type", 501)
+	return Backend.Get(conn["type"]).Init(conn, ctx)
 }
 
 func GetHome(b IBackend) (string, error) {
@@ -55,6 +44,7 @@ func GetHome(b IBackend) (string, error) {
 	_, err := b.Ls("/")
 	return "", err
 }
+
 
 func MapStringInterfaceToMapStringString(m map[string]interface{}) map[string]string {
     res := make(map[string]string)

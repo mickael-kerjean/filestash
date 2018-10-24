@@ -1,4 +1,4 @@
-package images
+package lib
 
 // #cgo pkg-config: vips
 // #include <resizer.h>

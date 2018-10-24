@@ -18,16 +18,16 @@ type Sftp struct {
 }
 
 func init() {
-	SftpCache = NewAppCache()
+	Backend.Register("sftp", Sftp{})
 
+	SftpCache = NewAppCache()
 	SftpCache.OnEvict(func(key string, value interface{}) {
 		c := value.(*Sftp)
 		c.Close()
 	})
 }
 
-func NewSftp(params map[string]string, app *App) (*Sftp, error) {
-	var s Sftp = Sftp{}
+func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	p := struct {
 		hostname   string
 		port       string

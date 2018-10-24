@@ -138,6 +138,7 @@ func verify(something []byte) ([]byte, error) {
 	return something, nil
 }
 
+// Create a unique ID that can be use to identify different session
 func GenerateID(params map[string]string) string {
 	p := "type =>" + params["type"]
 	p += "host =>" + params["host"]

@@ -1,5 +1,10 @@
 package common
 
+import (
+	"bytes"
+	"encoding/json"
+)
+
 func NewBool(t bool) *bool {
 	return &t
 }
@@ -21,6 +26,7 @@ func NewBoolFromInterface(val interface{}) bool {
 	default: return false
 	}
 }
+
 func NewInt64pFromInterface(val interface{}) *int64 {
 	switch val.(type) {
 	case int64:
@@ -32,6 +38,7 @@ func NewInt64pFromInterface(val interface{}) *int64 {
 	default: return nil
 	}
 }
+
 func NewStringpFromInterface(val interface{}) *string {
 	switch val.(type) {
 	case string:
@@ -48,4 +55,14 @@ func NewStringFromInterface(val interface{}) string {
 		return v
 	default: return ""
 	}
+}
+
+func PrettyPrint(json_dirty []byte) []byte {
+	var json_pretty bytes.Buffer
+	error := json.Indent(&json_pretty, json_dirty, "", "    ")
+	if error != nil {
+		return json_dirty
+	}
+	json_pretty.Write([]byte("\n"))
+	return json_pretty.Bytes()
 }

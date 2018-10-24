@@ -22,22 +22,29 @@ type GDrive struct {
 	Config *oauth2.Config
 }
 
-func NewGDrive(params map[string]string, app *App) (IBackend, error) {
+func init() {
+	Backend.Register("gdrive", GDrive{})
+}
+
+
+func (g GDrive) Init(params map[string]string, app *App) (IBackend, error) {
 	backend := GDrive{}
-	if app.Config.OAuthProvider.GoogleDrive.ClientID == "" {
-		return backend, NewError("Missing Client ID: Contact your admin", 502)
-	} else if app.Config.OAuthProvider.GoogleDrive.ClientSecret == "" {
-		return backend, NewError("Missing Client Secret: Contact your admin", 502)
-	} else if app.Config.General.Host == "" {
-		return backend, NewError("Missing Hostname: Contact your admin", 502)
-	}
+
 	config := &oauth2.Config{
 		Endpoint:     google.Endpoint,
-		ClientID:     app.Config.OAuthProvider.GoogleDrive.ClientID,
-		ClientSecret: app.Config.OAuthProvider.GoogleDrive.ClientSecret,
-		RedirectURL:  app.Config.General.Host + "/login",
+		ClientID:     app.Config.Get("oauth.gdrive.client_id").Default(os.Getenv("GDRIVE_CLIENT_ID")).String(),
+		ClientSecret: app.Config.Get("oauth.gdrive.client_secret").Default(os.Getenv("GDRIVE_CLIENT_SECRET")).String(),
+		RedirectURL:  app.Config.Get("general.host").String() + "/login",
 		Scopes:       []string{"https://www.googleapis.com/auth/drive"},
 	}
+	if config.ClientID == "" {
+		return backend, NewError("Missing Client ID: Contact your admin", 502)
+	} else if config.ClientSecret == "" {
+		return backend, NewError("Missing Client Secret: Contact your admin", 502)
+	} else if config.RedirectURL == "/login" {
+		return backend, NewError("Missing Hostname: Contact your admin", 502)
+	}
+
 	token := &oauth2.Token{
 		AccessToken:  params["token"],
 		RefreshToken: params["refresh"],

@@ -35,8 +35,9 @@ func TestIDGeneration(t *testing.T) {
 
 func TestStringGeneration(t *testing.T) {
 	str := QuickString(10)
-	str1 := QuickString(10)
-	str2 := QuickString(10)
+	str1 := QuickString(16)
+	str2 := QuickString(24)
 	assert.Equal(t, len(str), 10)
-	t.Log(str, str1, str2)
+	assert.Equal(t, len(str1), 16)
+	assert.Equal(t, len(str2), 24)
 }

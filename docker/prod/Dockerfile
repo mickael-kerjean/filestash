@@ -42,6 +42,10 @@ RUN mkdir -p /tmp/go/src/github.com/mickael-kerjean/ && \
     cd ../ && \
     GOPATH=/tmp/go go build -o ./dist/nuage ./server/main.go && \
     #################
+    # Compile Plugins
+    cd /tmp/go/src/github.com/mickael-kerjean/nuage/server/plugin &&
+    cd image && ./build.sh && cd ../ &&
+    #################
     # Finalise the build
     apk --no-cache add ca-certificates && \
     mv dist /app && \

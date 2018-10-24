@@ -22,10 +22,12 @@ type S3Backend struct {
 }
 
 func init() {
+	Backend.Register("s3", S3Backend{})
 	S3Cache = NewAppCache(2, 1)
 }
 
-func NewS3(params map[string]string, app *App) (IBackend, error) {
+
+func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 	if params["region"] == "" {
 		params["region"] = "us-east-2"
 	}

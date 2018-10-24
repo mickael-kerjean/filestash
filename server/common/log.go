@@ -2,13 +2,7 @@ package common
 
 import (
 	"time"
-	"log"
-)
-
-const (
-	LOG_INFO = "INFO"
-	LOG_WARNING = "WARNING"
-	LOG_ERROR = "ERROR"
+	slog "log"
 )
 
 type LogEntry struct {
@@ -27,34 +21,76 @@ type LogEntry struct {
 	Backend    string    `json:"backend"`
 }
 
-func Log(ctx *App, str string, level string){
-	if ctx.Config.Log.Enable == false {
-		return
-	}
+type log struct{
+	enable bool
 
-	shouldDisplay := func(r string, l string) bool {
-		levels := []string{"DEBUG", "INFO", "WARNING", "ERROR"}
+	debug  bool
+	info   bool
+	warn   bool
+	error  bool
+}
 
-		configLevel := -1
-		currentLevel := 0
-
-		for i:=0; i <= len(levels); i++ {
-			if levels[i] == l {
-				currentLevel = i
-			}
-			if levels[i] == r {
-				configLevel = i
-				break
-			}
-		}
-
-		if currentLevel <= configLevel {
-			return true
-		}
-		return false
-	}(ctx.Config.Log.Level, level)
-
-	if shouldDisplay {
-		log.Printf("%s %s\n", level, str)
+func (l *log) Info(str string) {
+	if l.info && l.enable {
+		slog.Printf("INFO %s\n", str)
 	}
 }
+
+func (l *log) Warning(str string) {
+	if l.warn && l.enable {
+		slog.Printf("WARNING %s\n", str)
+	}
+}
+
+func (l *log) Error(str string) {
+	if l.error && l.enable {
+		slog.Printf("ERROR %s\n", str)
+	}
+}
+
+func (l *log) Debug(str string) {
+	if l.debug && l.enable {
+		slog.Printf("DEBUG %s\n", str)
+	}
+}
+
+func (l *log) SetVisibility(str string) {
+	switch str {
+	case "WARN":
+		l.debug = false
+		l.info = false
+		l.warn = true
+		l.error = true
+	case "ERROR":
+		l.debug = false
+		l.info = false
+		l.warn = false
+		l.error = true
+	case "DEBUG":
+		l.debug = true
+		l.info = true
+		l.warn = true
+		l.error = true
+	case "INFO":
+		l.debug = false
+		l.info = true
+		l.warn = true
+		l.error = true
+	default:
+		l.debug = false
+		l.info = true
+		l.warn = true
+		l.error = true
+	}
+}
+
+func(l *log) Enable(val bool) {
+	l.enable = val
+}
+
+var Log = func () log {
+	l := log{}
+	l.SetVisibility("DEBUG")
+	l.Enable(true)
+	return l
+}()

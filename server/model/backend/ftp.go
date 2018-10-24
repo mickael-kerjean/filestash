@@ -14,6 +14,8 @@ import (
 var FtpCache AppCache
 
 func init() {
+	Backend.Register("ftp", Ftp{})
+
 	FtpCache = NewAppCache(2, 1)
 	FtpCache.OnEvict(func(key string, value interface{}) {
 		c := value.(*Ftp)
@@ -25,7 +27,7 @@ type Ftp struct {
 	client *goftp.Client
 }
 
-func NewFtp(params map[string]string, app *App) (IBackend, error) {
+func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	c := FtpCache.Get(params)
 	if c != nil {
 		d := c.(*Ftp)

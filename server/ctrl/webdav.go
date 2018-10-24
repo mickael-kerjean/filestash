@@ -2,13 +2,13 @@ package ctrl
 
 import (
 	"net/http"
-	"log"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	. "github.com/mickael-kerjean/nuage/server/middleware"
 	"github.com/mickael-kerjean/nuage/server/model"
 	"github.com/mickael-kerjean/net/webdav"
 	"github.com/mickael-kerjean/mux"
 	"time"
+	"fmt"
 )
 
 var start time.Time = time.Now()
@@ -40,7 +40,8 @@ func WebdavHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// webdav is WIP
-	return http.NotFound(res, req)
+	http.NotFound(res, req)
+	return
 
 	h := &webdav.Handler{
 		Prefix: "/s/" + share_id,
@@ -53,12 +54,7 @@ func WebdavHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 				}
 				return "OK"
 			}(err)
-			log.Printf("INFO %s WEBDAV %s %s %s", share_id, req.Method, req.URL.Path, e)
-			elapsed := time.Now().Sub(start)
-			if elapsed > 1000*time.Millisecond {
-				log.Println("\n\n\n")
-			}
-			start = time.Now()
+			Log.Info(fmt.Sprintf("INFO %s WEBDAV %s %s %s", share_id, req.Method, req.URL.Path, e))
 		},
 	}
 	h.ServeHTTP(res, req)

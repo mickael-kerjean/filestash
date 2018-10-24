@@ -26,6 +26,8 @@ type Git struct {
 }
 
 func init() {
+	Backend.Register("git", Git{})
+
 	GitCache = NewAppCache()
 	cachePath := filepath.Join(GetCurrentDir(), GitCachePath)
 	os.RemoveAll(cachePath)
@@ -50,7 +52,7 @@ type GitParams struct {
 	basePath       string
 }
 
-func NewGit(params map[string]string, app *App) (*Git, error) {
+func (git Git) Init(params map[string]string, app *App) (IBackend, error) {
 	if obj := GitCache.Get(params); obj != nil {
 		return obj.(*Git), nil
 	}
@@ -95,7 +97,7 @@ func NewGit(params map[string]string, app *App) (*Git, error) {
 	}
 
 	hash := GenerateID(params)
-	p.basePath = app.Helpers.AbsolutePath(GitCachePath + "repo_" + fmt.Sprint(hash) + "/")
+	p.basePath = GetAbsolutePath(GitCachePath + "repo_" + fmt.Sprint(hash) + "/")
 
 	repo, err := g.git.open(p, p.basePath)
 	g.git.repo = repo

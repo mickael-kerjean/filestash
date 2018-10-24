@@ -24,7 +24,11 @@ type WebDavParams struct {
 	path     string
 }
 
-func NewWebDav(params map[string]string, app *App) (IBackend, error) {
+func init() {
+	Backend.Register("webdav", WebDav{})
+}
+
+func (w WebDav) Init(params map[string]string, app *App) (IBackend, error) {
 	params["url"] = regexp.MustCompile(`\/$`).ReplaceAllString(params["url"], "")
 	backend := WebDav{
 		params: &WebDavParams{

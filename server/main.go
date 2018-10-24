@@ -1,11 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/mickael-kerjean/mux"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	. "github.com/mickael-kerjean/nuage/server/ctrl"
 	. "github.com/mickael-kerjean/nuage/server/middleware"
-	"log"
+	_ "github.com/mickael-kerjean/nuage/server/plugin"
 	"net/http"
 	"strconv"
 )
@@ -13,7 +14,6 @@ import (
 func main() {
 	app := App{}
 	app.Config = NewConfig()
-	app.Helpers = NewHelpers(app.Config)
 	Init(&app)
 	select {}
 }
@@ -53,15 +53,15 @@ func Init(a *App) *http.Server {
 	r.PathPrefix("/").Handler(DefaultHandler(FILE_INDEX, *a)).Methods("GET")
 
 	srv := &http.Server{
-		Addr:    ":" + strconv.Itoa(a.Config.General.Port),
+		Addr:    ":" + strconv.Itoa(a.Config.Get("general.port").Int()),
 		Handler: r,
 	}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
-			log.Fatal("SERVER START ERROR ", err)
+			Log.Error(fmt.Sprintf("server start: %v", err))
 			return
 		}
-		log.Println("SERVER START OK")
+		Log.Info("Server start")
 	}()
 	return srv
 }

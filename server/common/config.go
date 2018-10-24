@@ -1,212 +1,192 @@
 package common
 
 import (
+	"bytes"
 	"encoding/json"
-	"github.com/fsnotify/fsnotify"
-	"log"
-	"os"
+	"io"
+	"io/ioutil"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"path/filepath"
+	"sync"
+	"os"
 )
 
-const (
-	CONFIG_PATH = "data/config/"
-	APP_VERSION = "v0.3"
-)
+var configPath string = filepath.Join(GetCurrentDir(), CONFIG_PATH + "config.json")
+
+func init() {
+	c := NewConfig()
+	// Let's initialise all our json config stuff
+	// For some reasons the file will be written bottom up so we start from the end moving up to the top
+
+	// Connections
+	if c.Get("connections.0.type").Interface() == nil {
+		c.Get("connections.-1").Set(map[string]interface{}{"type": "webdav", "label": "Webdav"})
+		c.Get("connections.-1").Set(map[string]interface{}{"type": "ftp", "label": "FTP"})
+		c.Get("connections.-1").Set(map[string]interface{}{"type": "sftp", "label": "SFTP"})
+		c.Get("connections.-1").Set(map[string]interface{}{"type": "git", "label": "GIT"})
+		c.Get("connections.-1").Set(map[string]interface{}{"type": "s3", "label": "S3"})
+		c.Get("connections.-1").Set(map[string]interface{}{"type": "dropbox", "label": "Dropbox"})
+		c.Get("connections.-1").Set(map[string]interface{}{"type": "gdrive", "label": "Drive"})
+	}
+
+	// OAuth credentials
+	c.Get("oauth").Default("")
+
+	// Log
+	c.Get("log.telemetry").Default(true)
+	c.Get("log.level").Default("INFO")
+	c.Get("log.enable").Default(true)
+
+	// Email
+	c.Get("email.from").Default("username@gmail.com")
+	c.Get("email.password").Default("password")
+	c.Get("email.username").Default("username@gmail.com")
+	c.Get("email.port").Default(587)
+	c.Get("email.server").Default("smtp.google.com")
+
+	// General
+	c.Get("general.remember_me").Default(true)
+	c.Get("general.auto_connect").Default(false)
+	c.Get("general.display_hidden").Default(true)
+	c.Get("general.fork_button").Default(true)
+	c.Get("general.editor").Default("emacs")
+	if c.Get("general.secret_key").String() == "" {
+		c.Get("general.secret_key").Default(RandomString(16))
+	}
+	if env := os.Getenv("APPLICATION_URL"); env != "" {
+		c.Get("general.host").Set(env)
+	} else {
+		c.Get("general.host").Default("http://127.0.0.1:8334")
+	}
+	c.Get("general.port").Default(8334)
+	c.Get("general.name").Default("Nuage")
+}
 
 func NewConfig() *Config {
-	c := Config{}
-	c.Initialise()
-	return &c
+	a := Config{}
+	return a.load()
 }
-
 type Config struct {
-	General struct {
-		Name          string `json:"name"`
-		Port          int    `json:"port"`
-		Host          string `json:"host"`
-		SecretKey     string `json:"secret_key"`
-		Editor        string `json:"editor"`
-		ForkButton    bool   `json:"fork_button"`
-		DisplayHidden bool   `json:"display_hidden"`
-		AutoConnect   bool   `json:"auto_connect"`
-		RememberMe    *bool  `json:"remember_me"`
-	} `json:"general"`
-	Log struct {
-		Enable    bool   `json:"enable"`
-		Level     string `json:"level"`
-		Telemetry bool   `json:"telemetry"`
-	} `json:"log"`
-	Email struct {
-		Server    string `json:"server"`
-		Port      int    `json:"port"`
-		Username  string `json:"username"`
-		Password  string `json:"password"`
-		From      string `json:"from"`
-	} `json:"email"`
-	OAuthProvider struct {
-		Dropbox struct {
-			ClientID string `json:"client_id"`
-		} `json:"dropbox"`
-		GoogleDrive struct {
-			ClientID     string `json:"client_id"`
-			ClientSecret string `json:"client_secret"`
-		} `json:"gdrive"`
-		Custom struct {
-			ClientID     string `json:"client_id"`
-			ClientSecret string `json:"client_secret"`
-		} `json:"custom"`
-	} `json:"oauth"`
-	Connections []struct {
-		Type            string  `json:"type"`
-		Label           string  `json:"label"`
-		Hostname        *string `json:"hostname,omitempty"`
-		Username        *string `json:"username,omitempty"`
-		Password        *string `json:"password,omitempty"`
-		Url             *string `json:"url,omitempty"`
-		Advanced        *bool   `json:"advanced,omitempty"`
-		Port            *string `json:"port,omitempty"`
-		Path            *string `json:"path,omitempty"`
-		Passphrase      *string `json:"passphrase,omitempty"`
-		Conn            *string `json:"conn,omitempty"`
-		SecretAccessKey *string `json:"secret_access_key,omitempty"`
-		AccessKeyId     *string `json:"access_key_id,omitempty"`
-		Endpoint        *string `json:"endpoint,omitempty"`
-		Commit          *string `json:"commit,omitempty"`
-		Branch          *string `json:"branch,omitempty"`
-		AuthorEmail     *string `json:"author_email,omitempty"`
-		AuthorName      *string `json:"author_name,omitempty"`
-		CommitterEmail  *string `json:"committer_email,omitempty"`
-		CommitterName   *string `json:"committter_name,omitempty"`
-	} `json:"connections"`
-	Runtime struct {
-		Dirname    string
-		ConfigPath string
-		FirstSetup bool
-	} `json:"-"`
-	MimeTypes map[string]string `json:"-"`
+	mu sync.Mutex
+	path *string
+	json string
+	reader gjson.Result
 }
 
-func (c *Config) Initialise() {
-	c.Runtime.Dirname = GetCurrentDir()
-	c.Runtime.ConfigPath = filepath.Join(c.Runtime.Dirname, CONFIG_PATH)
-	os.MkdirAll(c.Runtime.ConfigPath, os.ModePerm)
-	if err := c.loadConfig(filepath.Join(c.Runtime.ConfigPath, "config.json")); err != nil {
-		log.Println("> Can't load configuration file: ", err)
+func (this *Config) load() *Config {
+	if f, err := os.OpenFile(configPath, os.O_RDONLY, os.ModePerm); err == nil {
+		j, _ := ioutil.ReadAll(f)
+		this.json = string(j)
+		f.Close()
+	} else {
+		this.json = `{}`
 	}
-	if err := c.loadMimeType(filepath.Join(c.Runtime.ConfigPath, "mime.json")); err != nil {
-		log.Println("> Can't load mimetype config")
+	if gjson.Valid(this.json) == true {
+		this.reader = gjson.Parse(this.json)
 	}
-	go c.ChangeListener()
+	return this
 }
 
-func (c *Config) loadConfig(path string) error {
-	file, err := os.Open(path)
-	defer file.Close()
-	if err != nil {
-		c = &Config{}
-		log.Println("can't load config file: ", err)
-		return err
-	}
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&c)
-	if err != nil {
-		return err
-	}
-	c.populateDefault(path)
-	return nil
+func (this *Config) Get(path string) *Config {
+	this.path = &path
+	return this
 }
 
-func (c *Config) ChangeListener() {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
+func (this *Config) Default(value interface{}) *Config {
+	if this.path == nil {
+		return this
 	}
-	defer watcher.Close()
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case event := <-watcher.Events:
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					config_path := filepath.Join(c.Runtime.ConfigPath, "config.json")
-					if err = c.loadConfig(config_path); err != nil {
-						log.Println("can't load config file")
-					} else {
-						c.populateDefault(config_path)
-					}
-				}
-			}
-		}
-	}()
-	_ = watcher.Add(c.Runtime.ConfigPath)
-	<-done
+
+	if val := this.reader.Get(*this.path).Value(); val == nil {
+		this.mu.Lock()
+		this.json, _ = sjson.Set(this.json, *this.path, value)
+		this.reader = gjson.Parse(this.json)
+		this.save()
+		this.mu.Unlock()
+	}
+	return this
 }
 
-func (c *Config) populateDefault(path string) {
-	if c.General.Port == 0 {
-		c.General.Port = 8334
+func (this *Config) Set(value interface{}) *Config {
+	if this.path == nil {
+		return this
 	}
-	if c.General.Name == "" {
-		c.General.Name = "Nuage"
+
+	this.mu.Lock()
+	this.json, _ = sjson.Set(this.json, *this.path, value)
+	this.reader = gjson.Parse(this.json)
+	this.save()
+	this.mu.Unlock()
+	return this
+}
+
+func (this Config) String() string {
+	return this.reader.Get(*this.path).String()
+}
+
+func (this Config) Int() int {
+	val := this.reader.Get(*this.path).Value()
+	switch val.(type) {
+	  case float64: return int(val.(float64))
+	  case int64: return int(val.(int64))
+	  case int: return val.(int)
 	}
-	if c.General.SecretKey == "" {
-		c.General.SecretKey = RandomString(16)
-		j, err := json.MarshalIndent(c, "", "    ")
-		if err == nil {
-			f, err := os.OpenFile(path, os.O_WRONLY, os.ModePerm)
-			if err == nil {
-				f.Write(j)
-				f.Close()
-			}
-		}
+	return 0
+}
+
+func (this Config) Bool() bool {
+	val := this.reader.Get(*this.path).Value()
+	switch val.(type) {
+	  case bool: return val.(bool)
 	}
-	if c.OAuthProvider.Dropbox.ClientID == "" {
-		c.OAuthProvider.Dropbox.ClientID = os.Getenv("DROPBOX_CLIENT_ID")
+	return false
+}
+
+func (this Config) Interface() interface{} {
+	return this.reader.Get(*this.path).Value()
+}
+
+func (this Config) save() {
+	if gjson.Valid(this.json) == false {
+		return
 	}
-	if c.OAuthProvider.GoogleDrive.ClientID == "" {
-		c.OAuthProvider.GoogleDrive.ClientID = os.Getenv("GDRIVE_CLIENT_ID")
-	}
-	if c.OAuthProvider.GoogleDrive.ClientSecret == "" {
-		c.OAuthProvider.GoogleDrive.ClientSecret = os.Getenv("GDRIVE_CLIENT_SECRET")
-	}
-	if c.General.Host == "" {
-		c.General.Host = os.Getenv("APPLICATION_URL")
+	if f, err := os.OpenFile(configPath, os.O_WRONLY|os.O_CREATE, os.ModePerm); err == nil {
+		buf := bytes.NewBuffer(PrettyPrint([]byte(this.json)))
+		io.Copy(f, buf)
+		f.Close()
 	}
 }
 
-func (c *Config) Export() (string, error) {
+func (this Config) Scan(p interface{}) error {
+	content := this.reader.Get(*this.path).String()
+
+	return json.Unmarshal([]byte(content), &p)
+}
+
+func (this Config) Export() (string, error) {
 	publicConf := struct {
 		Editor        string            `json:"editor"`
 		ForkButton    bool              `json:"fork_button"`
 		DisplayHidden bool              `json:"display_hidden"`
 		AutoConnect   bool              `json:"auto_connect"`
 		Name          string            `json:"name"`
-		RememberMe    *bool             `json:"remember_me"`
+		RememberMe    bool              `json:"remember_me"`
 		Connections   interface{}       `json:"connections"`
 		MimeTypes     map[string]string `json:"mime"`
 	}{
-		Editor:        c.General.Editor,
-		ForkButton:    c.General.ForkButton,
-		DisplayHidden: c.General.DisplayHidden,
-		AutoConnect:   c.General.AutoConnect,
-		Connections:   c.Connections,
-		MimeTypes:     c.MimeTypes,
-		Name:          c.General.Name,
-		RememberMe:    c.General.RememberMe,
+		Editor:        this.Get("general.editor").String(),
+		ForkButton:    this.Get("general.fork_button").Bool(),
+		DisplayHidden: this.Get("general.display_hidden").Bool(),
+		AutoConnect:   this.Get("general.auto_connect").Bool(),
+		Name:          this.Get("general.name").String(),
+		RememberMe:    this.Get("general.remember_me").Bool(),
+		Connections:   this.Get("connections").Interface(),
+		MimeTypes:     AllMimeTypes(),
 	}
 	j, err := json.Marshal(publicConf)
 	if err != nil {
 		return "", err
 	}
 	return string(j), nil
-}
-
-func (c *Config) loadMimeType(path string) error {
-	file, err := os.Open(path)
-	defer file.Close()
-	if err != nil {
-		return err
-	}
-	decoder := json.NewDecoder(file)
-	return decoder.Decode(&c.MimeTypes)
 }

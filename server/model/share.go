@@ -261,12 +261,22 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 		p.Message = NewString("We've sent you a message with a verification code")
 
 		// Send email
-		addr := fmt.Sprintf("%s:%d", ctx.Config.Email.Server, ctx.Config.Email.Port)
+		addr := fmt.Sprintf(
+			"%s:%d",
+			ctx.Config.Get("email.server").String(),
+			ctx.Config.Get("email.port").Int(),
+		)
 		mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 		subject := "Subject: Your verification code\n"
 		msg := []byte(subject + mime + "\n" + b.String())
-		auth := smtp.PlainAuth("", ctx.Config.Email.Username, ctx.Config.Email.Password, ctx.Config.Email.Server)
-		if err := smtp.SendMail(addr, auth, ctx.Config.Email.From, []string{"mickael@kerjean.me"}, msg); err != nil {
+		auth := smtp.PlainAuth(
+			"",
+			ctx.Config.Get("email.username").String(),
+			ctx.Config.Get("email.password").String(),
+			ctx.Config.Get("email.server").String(),
+		)
+
+		if err := smtp.SendMail(addr, auth, ctx.Config.Get("email.from").String(), []string{proof.Value}, msg); err != nil {
 			log.Println("ERROR: ", err)
 			log.Println("Verification code: " + code)
 			return p, NewError("Couldn't send email", 500)
@@ -317,7 +327,7 @@ func ShareProofGetAlreadyVerified(req *http.Request, ctx *App) []Proof {
 	if len(cookieValue) > 500 {
 		return p
 	}
-	j, err := DecryptString(ctx.Config.General.SecretKey, cookieValue)
+	j, err := DecryptString(ctx.Config.Get("general.secret_key").String(), cookieValue)
 	if err != nil {
 		return p
 	}

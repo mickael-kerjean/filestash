@@ -49,7 +49,7 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 			return ""
 		}
 		var data map[string]string
-		str, err := DecryptString(ctx.Config.General.SecretKey, c.Value)
+		str, err := DecryptString(ctx.Config.Get("general.secret_key").String(), c.Value)
 		if err != nil {
 			return ""
 		}
@@ -78,7 +78,7 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			return ""
 		}
-		obfuscate, err := EncryptString(ctx.Config.General.SecretKey, string(s))
+		obfuscate, err := EncryptString(ctx.Config.Get("general.secret_key").String(), string(s))
 		if err != nil {
 			return ""
 		}
@@ -156,7 +156,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 		Name: COOKIE_NAME_PROOF,
 		Value: func(p []model.Proof) string {
 			j, _ := json.Marshal(p)
-			str, _ := EncryptString(ctx.Config.General.SecretKey, string(j))
+			str, _ := EncryptString(ctx.Config.Get("general.secret_key").String(), string(j))
 			return str
 		}(verifiedProof),
 		Path: COOKIE_PATH,

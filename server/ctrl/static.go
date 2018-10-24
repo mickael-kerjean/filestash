@@ -22,7 +22,7 @@ func StaticHandler(_path string, ctx App) http.Handler {
 			return
 		}
 
-		absPath := ctx.Helpers.AbsolutePath(_path)
+		absPath := GetAbsolutePath(_path)
 		fsrv := http.FileServer(http.Dir(absPath))
 		_, err := os.Open(path.Join(absPath, req.URL.Path+".gz"))
 		if err == nil && strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
@@ -45,11 +45,11 @@ func DefaultHandler(_path string, ctx App) http.Handler {
 		SecureHeader(&header)
 
 		p := _path
-		if _, err := os.Open(path.Join(ctx.Config.Runtime.Dirname, p+".gz")); err == nil && strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
+		if _, err := os.Open(path.Join(GetCurrentDir(), p+".gz")); err == nil && strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
 			res.Header().Set("Content-Encoding", "gzip")
 			p += ".gz"
 		}
-		http.ServeFile(res, req, ctx.Helpers.AbsolutePath(p))
+		http.ServeFile(res, req, GetAbsolutePath(p))
 	})
 }
 

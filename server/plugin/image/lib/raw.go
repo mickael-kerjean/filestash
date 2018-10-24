@@ -1,4 +1,4 @@
-package images
+package lib
 
 // #cgo pkg-config: libraw
 // #include <raw.h>

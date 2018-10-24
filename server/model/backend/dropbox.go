@@ -19,10 +19,18 @@ type Dropbox struct {
 	Bearer   string
 }
 
-func NewDropbox(params map[string]string, app *App) (IBackend, error) {
-	backend := Dropbox{}
-	backend.ClientId = app.Config.OAuthProvider.Dropbox.ClientID
-	backend.Hostname = app.Config.General.Host
+func init() {
+	Backend.Register("dropbox", Dropbox{})
+}
+
+func (d Dropbox) Init(params map[string]string, app *App) (IBackend, error) {
+	backend := &Dropbox{}
+	if env := os.Getenv("DROPBOX_CLIENT_ID"); env != "" {
+		backend.ClientId = env
+	} else {
+		backend.ClientId = app.Config.Get("oauth.dropbox.client_id").Default("").String()
+	}
+	backend.Hostname = app.Config.Get("general.host").String()
 	backend.Bearer = params["bearer"]
 
 	if backend.ClientId == "" {

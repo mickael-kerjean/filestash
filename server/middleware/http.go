@@ -26,12 +26,14 @@ func APIHandler(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.
 		fn(ctx, &resw, req)
 		req.Body.Close()
 
-		if ctx.Config.Log.Telemetry {
-			go telemetry(req, &resw, start, ctx.Backend.Info())
-		}
-		if ctx.Config.Log.Enable {
-			go logger(req, &resw, start)
-		}
+		go func() {
+			if ctx.Config.Get("log.telemetry").Bool() {
+				go telemetry(req, &resw, start, ctx.Backend.Info())
+			}
+			if ctx.Config.Get("log.enable").Bool() {
+				go logger(req, &resw, start)
+			}
+		}()
 	}
 }
 
@@ -99,7 +101,7 @@ func ExtractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		str = cookie.Value
 	}
 
-	str, _ = DecryptString(ctx.Config.General.SecretKey, str)
+	str, _ = DecryptString(ctx.Config.Get("general.secret_key").String(), str)
 	err := json.Unmarshal([]byte(str), &res)
 	return res, err
 }
