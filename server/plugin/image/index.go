@@ -35,7 +35,7 @@ func hook(reader io.Reader, ctx *App, res *http.ResponseWriter, req *http.Reques
 	if ctx.Config.Get("plugins.transcoder.image.enable").Bool() == false {
 		return reader, nil
 	}
-	Log.Debug("Image plugin")
+	Log.Debug("Plugin::Image")
 
 	query := req.URL.Query()
 	mType := GetMimeType(query.Get("path"))

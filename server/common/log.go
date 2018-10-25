@@ -1,8 +1,8 @@
 package common
 
 import (
-	"time"
 	slog "log"
+	"time"
 )
 
 type LogEntry struct {
@@ -30,33 +30,33 @@ type log struct{
 	error  bool
 }
 
-func (l *log) Info(str string) {
-	if l.info && l.enable {
-		slog.Printf("INFO %s\n", str)
+func (l *log) Info(format string, v ...interface{}) {
+	if l.info && l.enable {		
+		slog.Printf("INFO  " + format + "\n", v...)
 	}
 }
 
-func (l *log) Warning(str string) {
+func (l *log) Warning(format string, v ...interface{}) {
 	if l.warn && l.enable {
-		slog.Printf("WARNING %s\n", str)
+		slog.Printf("WARN  " + format + "\n", v...)
 	}
 }
 
-func (l *log) Error(str string) {
+func (l *log) Error(format string, v ...interface{}) {
 	if l.error && l.enable {
-		slog.Printf("ERROR %s\n", str)
+		slog.Printf("ERROR " + format + "\n", v...)
 	}
 }
 
-func (l *log) Debug(str string) {
+func (l *log) Debug(format string, v ...interface{}) {
 	if l.debug && l.enable {
-		slog.Printf("DEBUG %s\n", str)
+		slog.Printf("DEBUG " + format + "\n", v...)
 	}
 }
 
 func (l *log) SetVisibility(str string) {
 	switch str {
-	case "WARN":
+	case "WARNING":
 		l.debug = false
 		l.info = false
 		l.warn = true
@@ -90,7 +90,6 @@ func(l *log) Enable(val bool) {
 
 var Log = func () log {
 	l := log{}
-	l.SetVisibility("DEBUG")
 	l.Enable(true)
 	return l
 }()

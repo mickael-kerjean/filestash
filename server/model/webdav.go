@@ -34,7 +34,6 @@ func NewWebdavFs(b IBackend, path string) WebdavFs {
 }
 
 func (fs WebdavFs) Mkdir(ctx context.Context, name string, perm os.FileMode) error {
-	//log.Println("> fs: mkdir: ", name)
 	if name = fs.resolve(name); name == "" {
 		return os.ErrInvalid
 	}
@@ -42,12 +41,10 @@ func (fs WebdavFs) Mkdir(ctx context.Context, name string, perm os.FileMode) err
 }
 
 func (fs WebdavFs) OpenFile(ctx context.Context, name string, flag int, perm os.FileMode) (webdav.File, error) {
-	//log.Println("> fs: open file: ", name)
 	return NewWebdavNode(name, fs), nil
 }
 
 func (fs WebdavFs) RemoveAll(ctx context.Context, name string) error {
-	//log.Println("> fs: remove all: ", name)
 	if name = fs.resolve(name); name == "" {
 		return os.ErrInvalid
 	}
@@ -55,7 +52,6 @@ func (fs WebdavFs) RemoveAll(ctx context.Context, name string) error {
 }
 
 func (fs WebdavFs) Rename(ctx context.Context, oldName, newName string) error {
-	//log.Println("> fs: rename: ", oldName, newName)
 	if oldName = fs.resolve(oldName); oldName == "" {
 		return os.ErrInvalid
 	}
@@ -66,7 +62,6 @@ func (fs WebdavFs) Rename(ctx context.Context, oldName, newName string) error {
 }
 
 func (fs WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error) {
-	//log.Println("> fs: stat: ", name, fs.path)
 	if name = fs.resolve(name); name == "" {
 		return nil, os.ErrInvalid
 	}
@@ -104,7 +99,6 @@ func NewWebdavNode(name string, fs WebdavFs) *WebdavNode {
 }
 
 func (w *WebdavNode) Readdir(count int) ([]os.FileInfo, error) {
-	//log.Println("- node: readdir")
 	var path string
 	if path = w.fs.resolve(w.path); path == "" {
 		return nil, os.ErrInvalid
@@ -113,7 +107,6 @@ func (w *WebdavNode) Readdir(count int) ([]os.FileInfo, error) {
 }
 
 func (w *WebdavNode) Stat() (os.FileInfo, error) {
-	//log.Println("- node: stat")
 	if w.filewrite != nil {
 		var path string
 		var err error
@@ -135,7 +128,6 @@ func (w *WebdavNode) Stat() (os.FileInfo, error) {
 }
 
 func (w *WebdavNode) Close() error {
-	//log.Println("- node: close")
 	if w.fileread != nil {
 		if err := w.cleanup(w.fileread); err != nil {
 			return err
@@ -152,7 +144,6 @@ func (w *WebdavNode) Close() error {
 }
 
 func (w *WebdavNode) Read(p []byte) (int, error) {
-	//log.Println("- node: read")
 	if w.fileread != nil {
 		return w.fileread.Read(p)
 	}
@@ -160,7 +151,6 @@ func (w *WebdavNode) Read(p []byte) (int, error) {
 }
 
 func (w *WebdavNode) Seek(offset int64, whence int) (int64, error) {
-	//log.Println("- node: seek")
 	var path string
 	var err error
 	if path = w.fs.resolve(w.path); path == "" {
@@ -181,7 +171,6 @@ func (w *WebdavNode) Seek(offset int64, whence int) (int64, error) {
 }
 
 func (w *WebdavNode) Write(p []byte) (int, error) {
-	//log.Println("- node: write")
 	var err error
 
 	if w.filewrite == nil {

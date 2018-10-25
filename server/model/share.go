@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 	"net/http"
 	"net/smtp"
 	"html/template"
@@ -277,8 +276,8 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 		)
 
 		if err := smtp.SendMail(addr, auth, ctx.Config.Get("email.from").String(), []string{proof.Value}, msg); err != nil {
-			log.Println("ERROR: ", err)
-			log.Println("Verification code: " + code)
+			Log.Error("Sendmail error: %v", err)
+			Log.Error("Verification code '%s'", code)
 			return p, NewError("Couldn't send email", 500)
 		}
 	}

@@ -8,7 +8,6 @@ import (
 	"github.com/mickael-kerjean/net/webdav"
 	"github.com/mickael-kerjean/mux"
 	"time"
-	"fmt"
 )
 
 var start time.Time = time.Now()
@@ -54,7 +53,7 @@ func WebdavHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 				}
 				return "OK"
 			}(err)
-			Log.Info(fmt.Sprintf("INFO %s WEBDAV %s %s %s", share_id, req.Method, req.URL.Path, e))
+			Log.Info("INFO %s WEBDAV %s %s %s", share_id, req.Method, req.URL.Path, e)
 		},
 	}
 	h.ServeHTTP(res, req)

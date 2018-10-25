@@ -7,7 +7,6 @@ import (
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"sort"
 	"strings"
-	"fmt"
 	"net/http"
 	"io"
 )
@@ -34,13 +33,13 @@ func init() {
 		}
 		p, err := plg.Open(pPath + "/" + name)
 		if err != nil {
-			Log.Warning(fmt.Sprintf("Can't load plugin: %s => %v", name, err))
+			Log.Warning("Can't load plugin: %s => %v", name, err)
 			continue
 		}
 		
 		f, err := p.Lookup("Register")
 		if err != nil {
-			Log.Warning(fmt.Sprintf("Can't register plugin: %s => %v", name, err))
+			Log.Warning("Can't register plugin: %s => %v", name, err)
 			continue
 		}
 		if obj, ok := f.(func(config *Config) []Plugin); ok {

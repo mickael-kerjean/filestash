@@ -19,6 +19,7 @@ func Register(config *Config) []Plugin {
 }
 
 func hook(file io.Reader, ctx *App, res *http.ResponseWriter, req *http.Request) (io.Reader, error){
-	Log.Info("example plugin with config: '" + ctx.Config.Get("plugins.example.foo").String() + "'")
+	Log.Debug("Plugin::Example")
+	Log.Debug("Conf: plugins.example.foo = '%s'", ctx.Config.Get("plugins.example.foo").String())
 	return file, nil
 }

@@ -9,7 +9,6 @@ import (
 	"bytes"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"io"
-	"log"
 	"runtime"
 	"unsafe"
 )
@@ -26,7 +25,7 @@ type Transform struct {
 
 func init() {
 	if C.resizer_init(C.int(runtime.NumCPU()), 50, 1024) != 0 {
-		log.Println("WARNING Can't load libvips")
+		Log.Warning("Can't load libvips")
 		return
 	}
 	LIBVIPS_INSTALLED = true

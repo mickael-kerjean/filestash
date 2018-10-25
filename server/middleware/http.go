@@ -7,7 +7,6 @@ import (
 	"github.com/mickael-kerjean/mux"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -133,7 +132,7 @@ func telemetry(req *http.Request, res *ResponseWriter, start time.Time, backendT
 
 func logger(req *http.Request, res *ResponseWriter, start time.Time) {
 	point := logPoint(req, res, start, "")
-	log.Printf("%s %d %d %s %s\n", "INFO", point.Duration, point.Status, point.Method, point.RequestURI)
+	Log.Info("HTTP %s %3d %03dms %s", point.Method, point.Status, point.Duration, point.RequestURI)
 }
 
 func logPoint(req *http.Request, res *ResponseWriter, start time.Time, backendType string) *LogEntry {

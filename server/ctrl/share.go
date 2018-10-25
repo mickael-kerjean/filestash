@@ -144,13 +144,6 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	// 4) Find remaining proofs: requiredProof - verifiedProof
 	remainingProof = model.ShareProofCalculateRemainings(requiredProof, verifiedProof)
 
-	// log.Println("============")
-	// log.Println("REQUIRED:  ", requiredProof)
-	// log.Println("SUBMITTED: ", submittedProof)
-	// log.Println("VERIFIED:  ", verifiedProof)
-	// log.Println("REMAINING: ", remainingProof)
-	// log.Println("============")
-
 	// 5) persist proofs in client cookie
 	cookie := http.Cookie{
 		Name: COOKIE_NAME_PROOF,

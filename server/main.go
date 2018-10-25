@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/mickael-kerjean/mux"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	. "github.com/mickael-kerjean/nuage/server/ctrl"
@@ -14,11 +13,11 @@ import (
 func main() {
 	app := App{}
 	app.Config = NewConfig()
+	Log.SetVisibility(app.Config.Get("log.level").String())
 	Init(&app)
-	select {}
 }
 
-func Init(a *App) *http.Server {
+func Init(a *App) {
 	r := mux.NewRouter()
 
 	// API
@@ -56,12 +55,9 @@ func Init(a *App) *http.Server {
 		Addr:    ":" + strconv.Itoa(a.Config.Get("general.port").Int()),
 		Handler: r,
 	}
-	go func() {
-		if err := srv.ListenAndServe(); err != nil {
-			Log.Error(fmt.Sprintf("server start: %v", err))
-			return
-		}
-		Log.Info("Server start")
-	}()
-	return srv
+	Log.Info("STARTING SERVER")
+	if err := srv.ListenAndServe(); err != nil {
+		Log.Error("Server start: %v", err)
+		return
+	}
 }
