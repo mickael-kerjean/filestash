@@ -102,12 +102,13 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	file, err := ctx.Backend.Cat(path)
-	if obj, ok := file.(interface{ Close() error }); ok {
-		defer obj.Close()
-	}
 	if err != nil {
 		SendErrorResult(res, err)
 		return
+	}
+
+	if obj, ok := file.(interface{ Close() error }); ok {
+		defer obj.Close()
 	}
 
 	mType := GetMimeType(req.URL.Query().Get("path"))

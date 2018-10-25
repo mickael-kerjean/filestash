@@ -2,6 +2,7 @@ package backend
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"fmt"
 )
 
 var S3Cache AppCache
@@ -28,6 +30,10 @@ func init() {
 
 
 func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
+	if params["encryption_key"] != "" && len(params["encryption_key"]) != 32 {
+		return nil, NewError(fmt.Sprintf("Encryption key needs to be 32 characters (current: %d)", len(params["encryption_key"])), 400)
+	}
+
 	if params["region"] == "" {
 		params["region"] = "us-east-2"
 	}
@@ -124,7 +130,21 @@ func (s S3Backend) Cat(path string) (io.Reader, error) {
 	}
 	obj, err := client.GetObject(input)
 	if err != nil {
-		return nil, err
+		awsErr, ok := err.(awserr.Error);
+		if ok == false {
+			return nil, err
+		}
+		if awsErr.Code() == "InvalidRequest" && strings.Contains(awsErr.Message(), "encryption") {
+			input.SSECustomerAlgorithm = nil
+			input.SSECustomerKey = nil
+			obj, err = client.GetObject(input)
+			return obj.Body, err
+		} else if awsErr.Code() == "InvalidArgument" && strings.Contains(awsErr.Message(), "secret key was invalid") {
+			return nil, NewError("This file is encrypted file, you need the correct key!", 400)
+		} else if awsErr.Code() == "AccessDenied" {
+			return nil, NewError("Access denied", 403)
+		}
+		return nil ,err
 	}
 
 	return obj.Body, nil

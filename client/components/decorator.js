@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { browserHistory } from 'react-router'
 
 import { Session } from '../model/';
 import { Container, Loader, Icon } from '../components/';
@@ -43,7 +44,7 @@ export function LoggedInOnly(WrappedComponent){
             }
             return null;
         }
-    }
+    };
 }
 
 
@@ -60,13 +61,18 @@ export function ErrorPage(WrappedComponent){
             this.setState({error: obj});
         }
 
+        navigate(e) {
+            e.preventDefault();
+            this.props.history.goBack();
+        }
+
         render(){
             if(this.state.error !== null){
                 const message = this.state.error.message || "There is nothing in here";
                 return (
                     <div>
-                      <Link to={`/${window.location.search}`} className="backnav">
-                        <Icon name="arrow_left" />home
+                      <Link onClick={this.navigate.bind(this)} to={`/${window.location.search}`} className="backnav">
+                        <Icon name="arrow_left" />back
                       </Link>
                       <Container>
                         <div className="error-page">
@@ -81,5 +87,5 @@ export function ErrorPage(WrappedComponent){
                 <WrappedComponent error={this.update.bind(this)} {...this.props} />
             );
         }
-    }
+    };
 }
