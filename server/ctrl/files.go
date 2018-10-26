@@ -3,7 +3,6 @@ package ctrl
 import (
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/model"
-	"github.com/mickael-kerjean/nuage/server/plugin"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -114,10 +113,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	mType := GetMimeType(req.URL.Query().Get("path"))
 	res.Header().Set("Content-Type", mType)
 
-	for _, obj := range plugin.ProcessFileContentBeforeSend() {
-		if obj == nil {
-			continue
-		}
+	for _, obj := range Hooks.Get.ProcessFileContentBeforeSend() {
 		if file, err = obj(file, &ctx, &res, req); err != nil {
 			SendErrorResult(res, err)
 			return

@@ -1,11 +1,25 @@
 package common
 
-type Plugin struct {
-	Type     string
-	Call     interface{}
-	Priority int
+import (
+	"io"
+	"net/http"
+)
+
+type Register struct{}
+type Get struct{}
+
+var Hooks = struct {
+	Get Get
+	Register Register
+}{
+	Get: Get{},
+	Register: Register{},
 }
 
-const (
-	PROCESS_FILE_CONTENT_BEFORE_SEND = "PROCESS_FILE_CONTENT_BEFORE_SEND"
-)
+var process_file_content_before_send []func(io.Reader, *App, *http.ResponseWriter, *http.Request) (io.Reader, error)
+func (this Register) ProcessFileContentBeforeSend(fn func(io.Reader, *App, *http.ResponseWriter, *http.Request) (io.Reader, error)) {
+	process_file_content_before_send = append(process_file_content_before_send, fn)
+}
+func (this Get) ProcessFileContentBeforeSend() []func(io.Reader, *App, *http.ResponseWriter, *http.Request) (io.Reader, error) {
+	return process_file_content_before_send
+}

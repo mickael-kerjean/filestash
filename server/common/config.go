@@ -148,7 +148,12 @@ func (this Config) Interface() interface{} {
 }
 
 func (this Config) save() {
+	if this.path == nil {
+		Log.Error("Config error")
+		return
+	}
 	if gjson.Valid(this.json) == false {
+		Log.Error("Config error")
 		return
 	}
 	if f, err := os.OpenFile(configPath, os.O_WRONLY|os.O_CREATE, os.ModePerm); err == nil {

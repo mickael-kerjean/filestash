@@ -1,24 +1,17 @@
 package plugin
 
 import (
+	. "github.com/mickael-kerjean/nuage/server/common"
 	"os"
 	"path/filepath"
 	plg "plugin"
-	. "github.com/mickael-kerjean/nuage/server/common"
-	"sort"
 	"strings"
-	"net/http"
-	"io"
 )
-
-const PluginPath = "data/plugin/"
-
-var plugins = make(map[string][]Plugin)
 
 func init() {
 	ex, _ := os.Executable()
-	pPath := filepath.Join(filepath.Dir(ex), PluginPath)
-	
+	pPath := filepath.Join(filepath.Dir(ex), PLUGIN_PATH)
+
 	file, err := os.Open(pPath)
 	if err != nil {
 		return
@@ -28,7 +21,7 @@ func init() {
 	c := NewConfig()
 	for i:=0; i < len(files); i++ {
 		name := files[i].Name()
-		if strings.HasPrefix(name, ".") == true {
+		if strings.HasPrefix(name, ".") {
 			continue
 		}
 		p, err := plg.Open(pPath + "/" + name)
@@ -36,32 +29,13 @@ func init() {
 			Log.Warning("Can't load plugin: %s => %v", name, err)
 			continue
 		}
-		
-		f, err := p.Lookup("Register")
+		fn, err := p.Lookup("Init")
 		if err != nil {
 			Log.Warning("Can't register plugin: %s => %v", name, err)
 			continue
 		}
-		if obj, ok := f.(func(config *Config) []Plugin); ok {
-			for _, plg := range obj(c) {
-				plugins[plg.Type] = append(plugins[plg.Type], plg)
-				sort.SliceStable(plugins[plg.Type], func(i, j int) bool {
-					return plugins[plg.Type][i].Priority > plugins[plg.Type][j].Priority
-				})
-			}
+		if obj, ok := fn.(func(config *Config)); ok {
+			obj(c)
 		}
 	}
 }
-
-
-func ProcessFileContentBeforeSend() []func(io.Reader, *App, *http.ResponseWriter, *http.Request) (io.Reader, error) {
-	fs := plugins[PROCESS_FILE_CONTENT_BEFORE_SEND]
-	ret := make([]func(io.Reader, *App, *http.ResponseWriter, *http.Request) (io.Reader, error), len(fs))
-	for _, p := range fs {
-		if f, ok := p.Call.(func(io.Reader, *App, *http.ResponseWriter, *http.Request) (io.Reader, error)); ok {
-			ret = append(ret, f)	
-		}
-	}
-	return ret
-}
-
