@@ -1,7 +1,10 @@
 FROM alpine:latest
 MAINTAINER mickael.kerjean@gmail.com
 
-RUN mkdir -p /tmp/go/src/github.com/mickael-kerjean/ && \
+ENV GOPATH /tmp/go
+ENV CGO_LDFLAGS_ALLOW='-fopenmp'
+
+RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     #################
     # Dependencies
     apk --no-cache --virtual .build-deps add make gcc g++ curl nodejs git go npm && \
@@ -25,7 +28,7 @@ RUN mkdir -p /tmp/go/src/github.com/mickael-kerjean/ && \
     make install && \
     #################
     # Prepare Build
-    cd /tmp/go/src/github.com/mickael-kerjean && \
+    cd $GOPATH/src/github.com/mickael-kerjean && \
     git clone --depth 1 https://github.com/mickael-kerjean/nuage && \
     cd nuage && \
     mkdir -p ./dist/data/ && \
@@ -37,19 +40,19 @@ RUN mkdir -p /tmp/go/src/github.com/mickael-kerjean/ && \
     NODE_ENV=production npm run build && \
     #################
     # Compile Backend
-    cd /tmp/go/src/github.com/mickael-kerjean/nuage/server && \
-    CGO_LDFLAGS_ALLOW='-fopenmp' GOPATH=/tmp/go go get && \
-    cd ../ && \
-    GOPATH=/tmp/go go build -o ./dist/nuage ./server/main.go && \
+    cd $GOPATH/src/github.com/mickael-kerjean/nuage/server && go get && cd ../ && \
+    go build -o ./dist/nuage ./server/main.go && \
     #################
     # Compile Plugins
-    cd /tmp/go/src/github.com/mickael-kerjean/nuage/server/plugin &&
-    cd image && ./build.sh && cd ../ &&
+    mkdir -p ./dist/data/plugin && \
+    go build -buildmode=plugin -o ./dist/data/plugin/image.so server/plugin/image_light/index.go && \
     #################
     # Finalise the build
+    cd $GOPATH/src/github.com/mickael-kerjean/nuage/ && \
     apk --no-cache add ca-certificates && \
     mv dist /app && \
     cd /app && \
+    rm -rf $GOPATH && \
     rm -rf /tmp/* && \
     apk del .build-deps
 

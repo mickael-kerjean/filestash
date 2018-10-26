@@ -2,7 +2,7 @@ package main
 
 import (
 	. "github.com/mickael-kerjean/nuage/server/common"
-	"github.com/mickael-kerjean/nuage/server/plugin/image/lib"
+	"github.com/mickael-kerjean/nuage/server/plugin/image_light/lib"
 	"io"
 	"net/http"
 	"os"
