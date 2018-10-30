@@ -5,7 +5,7 @@ int resizer_init(const int ncpu, const int cache_max, const int cache_mem){
   if(VIPS_INIT("nuage")){
     return 1;
   }
-  vips_concurrency_set(ncpu);
+  vips_concurrency_set(100);
   vips_cache_set_max(cache_max);
   vips_cache_set_max_mem(cache_mem);
   return 0;
