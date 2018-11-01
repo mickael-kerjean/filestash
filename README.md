@@ -15,6 +15,7 @@
 - Manage your files from a browser
 - Org mode friendly ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Release-0.1:-Org-Mode-everywhere))
 - Photo management ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Release-0.2:-Photo-Management))
+- Flexible Share mechanism
 - User friendly
 - Mobile friendly
 - Customisable ([documentation](https://github.com/mickael-kerjean/nuage/wiki/Customisation))

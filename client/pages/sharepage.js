@@ -70,7 +70,7 @@ export class SharePage extends React.Component {
             if(filetype(this.state.path) === "directory"){
                 return ( <Redirect to={`/files/?share=${this.state.share}`} /> );
             }else{
-                return ( <Redirect to={`/view/${basename(this.state.path)}?share=${this.state.share}`} /> );
+                return ( <Redirect to={`/view/${basename(this.state.path)}?nav=false&share=${this.state.share}`} /> );
             }
         } else if (this.state.key === null){
             return (
