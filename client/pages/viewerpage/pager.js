@@ -132,11 +132,11 @@ export class Pager extends React.Component {
         let inputWidth = this.state.n === undefined ? 12 : ((this.state.n + 1).toString().length) * 12;
         const nextLink = () => {
             const l = this.state.files[this.calculateNextPageNumber(this.state.n)];
-            return (l && l.link) || '#';
+            return (((l && l.link) || "") + window.location.search) || '#';
         };
         const prevLink = () => {
             const l = this.state.files[this.calculatePrevPageNumber(this.state.n)];
-            return (l && l.link) || '#';
+            return (((l && l.link) || "") + window.location.search) || '#';
         };
         const current_page_number = this.state.n === undefined ? "" : this.state.n + 1;
         return (

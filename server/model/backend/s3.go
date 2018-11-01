@@ -57,16 +57,16 @@ func (s S3Backend) Info() string {
 	return "s3"
 }
 
-func (s S3Backend) Meta(path string) *Metadata {
+func (s S3Backend) Meta(path string) Metadata {
 	if path == "/" {
-		return &Metadata{
+		return Metadata{
 			CanCreateFile: NewBool(false),
 			CanRename:     NewBool(false),
 			CanMove:       NewBool(false),
 			CanUpload:     NewBool(false),
 		}
 	}
-	return nil
+	return Metadata{}
 }
 
 func (s S3Backend) Ls(path string) ([]os.FileInfo, error) {

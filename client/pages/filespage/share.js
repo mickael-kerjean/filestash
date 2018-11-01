@@ -190,9 +190,11 @@ export class ShareComponent extends React.Component {
               <h2>Create a New Link</h2>
 
               <div className="share--content link-type no-select">
-                <div onClick={this.updateState.bind(this, 'role', 'uploader')} className={this.state.role === "uploader" ? "active" : ""}>
-                  Uploader
-                </div>
+                <NgIf cond={this.props.type !== "file"}>
+                  <div onClick={this.updateState.bind(this, 'role', 'uploader')} className={this.state.role === "uploader" ? "active" : ""}>
+                    Uploader
+                  </div>
+                </NgIf>
                 <div onClick={this.updateState.bind(this, 'role', 'viewer')} className={this.state.role === "viewer" ? "active" : ""}>
                   Viewer
                 </div>
@@ -236,10 +238,12 @@ export class ShareComponent extends React.Component {
                 <div className="share--content advanced-settings no-select">
                   <NgIf cond={false}>
                     <SuperCheckbox value={this.state.can_manage_own} label="Can Manage Own" onChange={this.updateState.bind(this, 'can_manage_own')}/>
-                    <SuperCheckbox value={this.state.can_share} label="Can Share" onChange={this.updateState.bind(this, 'can_share')}/>
                   </NgIf>
                   <NgIf cond={this.state.show_advanced === true}>
                     <SuperCheckbox value={datify(this.state.expire)} label="Expiration" placeholder="The link won't be valid after" onChange={this.updateState.bind(this, 'expire')} inputType="date"/>
+                    <NgIf cond={this.state.role === "editor" && this.props.type !== "file"}>
+                      <SuperCheckbox value={this.state.can_share} label="Can Reshare" onChange={this.updateState.bind(this, 'can_share')}/>
+                    </NgIf>
                     <SuperCheckbox value={this.state.url} label="Custom Link url" placeholder="beautiful_url" onChange={(val) => this.updateState('url', urlify(val))} inputType="text"/>
                   </NgIf>
                 </div>

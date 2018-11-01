@@ -39,7 +39,6 @@ export class SharePage extends React.Component {
             if(this.refs.$input) {
                 this.refs.$input.ref.value = "";
             }
-
             let st = {
                 key: res.key,
                 path: res.path || null,

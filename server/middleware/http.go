@@ -112,7 +112,16 @@ func ExtractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		str = ctx.Share.Auth
 		str, _ = DecryptString(SECRET_KEY, str)
 		err := json.Unmarshal([]byte(str), &res)
-		res["path"] = ctx.Share.Path
+
+		if ctx.Share.Path[len(ctx.Share.Path)-1:] == "/" {
+			res["path"] = ctx.Share.Path
+		} else {
+			path := req.URL.Query().Get("path")
+			if strings.HasSuffix(ctx.Share.Path, path) == false {
+				return res, ErrPermissionDenied
+			}
+			res["path"] = strings.TrimSuffix(ctx.Share.Path, path) + "/"
+		}
 		return res, err
 	} else {
 		cookie, err := req.Cookie(COOKIE_NAME_AUTH)

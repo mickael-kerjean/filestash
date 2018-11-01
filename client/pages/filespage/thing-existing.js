@@ -183,7 +183,7 @@ export class ExistingThing extends React.Component {
 
     onShareRequest(filename){
         alert.now(
-            <ShareComponent path={this.props.file.path}/>,
+            <ShareComponent path={this.props.file.path} type={this.props.file.type} />,
             (ok) => {}
         );
     }

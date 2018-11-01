@@ -57,7 +57,11 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		files = append(files, f)
 	}
 
-	var perms *Metadata = &Metadata{}
+	var perms Metadata = Metadata{}	
+	if obj, ok := ctx.Backend.(interface{ Meta(path string) Metadata }); ok {
+		perms = obj.Meta(path)
+	}
+
 	if model.CanEdit(&ctx) == false {
 		perms.CanCreateFile = NewBool(false)
 		perms.CanCreateDirectory = NewBool(false)
@@ -73,10 +77,6 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	if model.CanShare(&ctx) == false {
 		perms.CanShare = NewBool(false)
-	}
-
-	if obj, ok := ctx.Backend.(interface{ Meta(path string) *Metadata }); ok {
-		perms = obj.Meta(path)
 	}
 
 	SendSuccessResultsWithMetadata(res, files, perms)

@@ -34,8 +34,7 @@ func ShareGet(ctx App, res http.ResponseWriter, req *http.Request) {
 		Path string `json:"path"`
 	}{
 		Id: s.Id,
-		//Path: s.Path,
-		Path: "/",
+		Path: s.Path,
 	})
 }
 
@@ -202,11 +201,12 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	Log.Info("SHAREGET('%+v')", s)
 	SendSuccessResult(res, struct {
 		Id string   `json:"id"`
 		Path string `json:"path"`
 	}{
 		Id: s.Id,
-		Path: "/",
+		Path: s.Path,
 	})
 }
