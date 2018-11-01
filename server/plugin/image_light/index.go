@@ -95,6 +95,7 @@ func Init(conf *Config) {
 		if mType != "image/jpeg" && mType != "image/png" && mType != "image/gif" && mType != "image/tiff" {
 			return reader, nil
 		}
+
 		return lib.CreateThumbnail(transform)
 	})
 }

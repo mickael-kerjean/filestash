@@ -11,8 +11,10 @@ import (
 )
 
 func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
-	s := extractParams(req, &ctx)
-	listOfSharedLinks, err := model.ShareList(&s)
+	listOfSharedLinks, err := model.ShareList(
+		GenerateID(&ctx),
+		req.URL.Query().Get("path"),
+	)
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -21,8 +23,9 @@ func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func ShareGet(ctx App, res http.ResponseWriter, req *http.Request) {
-	s := extractParams(req, &ctx)
-	if err := model.ShareGet(&s); err != nil {
+	share_id := mux.Vars(req)["share"]
+	s, err := model.ShareGet(share_id);
+	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
@@ -31,61 +34,95 @@ func ShareGet(ctx App, res http.ResponseWriter, req *http.Request) {
 		Path string `json:"path"`
 	}{
 		Id: s.Id,
-		Path: s.Path,
+		//Path: s.Path,
+		Path: "/",
 	})
 }
 
 func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
-	if model.CanShare(&ctx) == false {
-		SendErrorResult(res, NewError("No permission", 403))
-		return
+	share_target := mux.Vars(req)["share"]
+
+	// Make sure the current user is allowed to do that
+	backend_id := ""
+	path_from := "/"
+	auth_cookie := ""
+
+	if ctx.Share.Id != "" {
+		if ctx.Share.CanShare != true {
+			SendErrorResult(res, ErrPermissionDenied)
+			return
+		}
+		backend_id = ctx.Share.Backend
+		auth_cookie = ctx.Share.Auth
+		path_from = ctx.Share.Path
+	} else {
+		backend_id = GenerateID(&ctx)
+		auth_cookie = func() string {
+			a, err := req.Cookie("auth")
+			if err != nil {
+				return "N/A"
+			}
+			return a.Value
+		}()
 	}
 
-	s := extractParams(req, &ctx)
-	s.Path = NewStringFromInterface(ctx.Body["path"])
-	s.Auth = func(req *http.Request) string {
-		c, _ := req.Cookie(COOKIE_NAME_AUTH)
-		if c == nil {
-			return ""
+	if ctx.Share.Id != "" {
+		if backend_id != ctx.Share.Backend {
+			SendErrorResult(res, ErrPermissionDenied)
+			return
 		}
-		var data map[string]string
-		str, err := DecryptString(ctx.Config.Get("general.secret_key").String(), c.Value)
-		if err != nil {
-			return ""
-		}
-		if err = json.Unmarshal([]byte(str), &data); err != nil {
-			return ""
-		}
+	}
 
-		boolToString := func(b bool) string {
-			if b == true {
-				return "yes"
-			}
-			return "no"
-		}
-		data["path"] = func(p1 string, p2 string) string{
-			if p1 == "" {
-				return p2
-			}
-			return p1 + strings.TrimPrefix(p2, "/")
-		}(ctx.Session["path"], s.Path)
-		data["can_share"] = boolToString(s.CanShare)
-		data["can_read"] = boolToString(s.CanRead)
-		data["can_write"] = boolToString(s.CanWrite)
-		data["can_upload"] = boolToString(s.CanUpload)
-
-		s, err := json.Marshal(data);
-		if err != nil {
-			return ""
-		}
-		obfuscate, err := EncryptString(ctx.Config.Get("general.secret_key").String(), string(s))
-		if err != nil {
-			return ""
-		}
-		return obfuscate
-	}(req)
-
+	// Perform upsert
+	s := Share{
+		Id:           share_target,
+		Auth:         auth_cookie,
+		Backend:      backend_id,
+		Path:         path_from + strings.TrimPrefix(NewStringFromInterface(ctx.Body["path"]), "/"),
+		Password:     NewStringpFromInterface(ctx.Body["password"]),
+		Users:        NewStringpFromInterface(ctx.Body["users"]),
+		Expire:       NewInt64pFromInterface(ctx.Body["expire"]),
+		Url:          NewStringpFromInterface(ctx.Body["url"]),
+		CanManageOwn: NewBoolFromInterface(ctx.Body["can_manage_own"]),
+		CanShare:     NewBoolFromInterface(ctx.Body["can_share"]),
+		CanRead:      NewBoolFromInterface(ctx.Body["can_read"]),
+		CanWrite:     NewBoolFromInterface(ctx.Body["can_write"]),
+		CanUpload:    NewBoolFromInterface(ctx.Body["can_upload"]),
+	}
 	if err := model.ShareUpsert(&s); err != nil {
+		SendErrorResult(res, err)
+		return
+	}
+	SendSuccessResult(res, nil)
+}
+
+func ShareDelete(ctx App, res http.ResponseWriter, req *http.Request) {
+	share_target := mux.Vars(req)["share"]
+	share_current := req.URL.Query().Get("share");
+
+	// Make sure the current user is allowed to do that
+	backend_id := GenerateID(&ctx)
+	if share_current != "" {
+		share, err := model.ShareGet(share_current);
+		if err != nil {
+			SendErrorResult(res, ErrNotFound)
+			return
+		} else if share.CanShare != true {
+			SendErrorResult(res, ErrPermissionDenied)
+			return
+		}
+		backend_id = share.Backend
+	}
+	share, err := model.ShareGet(share_target);
+	if err == nil {
+		if backend_id != share.Backend {
+			SendErrorResult(res, ErrPermissionDenied)
+			return
+		}
+	}
+
+	// Remove the share
+	if err := model.ShareDelete(share_target); err != nil {
 		SendErrorResult(res, err)
 		return
 	}
@@ -97,11 +134,13 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	var verifiedProof []model.Proof
 	var requiredProof []model.Proof
 	var remainingProof []model.Proof
-	var s model.Share
+	var s Share
+	var err error
 
 	// 1) initialise the current context
-	s = extractParams(req, &ctx)
-	if err := model.ShareGet(&s); err != nil {
+	share_id := mux.Vars(req)["share"]
+	s, err = model.ShareGet(share_id);
+	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
@@ -114,16 +153,16 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	// 2) validate the current context
 	if len(verifiedProof) > 20 || len(requiredProof) > 20 {
-		SendErrorResult(res, NewError("Input error", 405))
+		SendErrorResult(res, ErrNotValid)
 		return
 	}
-	if _, err := s.IsValid(); err != nil {
+	if err := s.IsValid(); err != nil {
 		SendErrorResult(res, err)
 		return
 	}
 
 	// 3) process the proof sent by the user
-	submittedProof, err := model.ShareProofVerifier(&ctx, s, submittedProof);
+	submittedProof, err = model.ShareProofVerifier(&ctx, s, submittedProof);
 	if err != nil {
 		submittedProof.Error = NewString(err.Error())
 		SendSuccessResult(res, submittedProof)
@@ -149,7 +188,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 		Name: COOKIE_NAME_PROOF,
 		Value: func(p []model.Proof) string {
 			j, _ := json.Marshal(p)
-			str, _ := EncryptString(ctx.Config.Get("general.secret_key").String(), string(j))
+			str, _ := EncryptString(SECRET_KEY, string(j))
 			return str
 		}(verifiedProof),
 		Path: COOKIE_PATH,
@@ -170,32 +209,4 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 		Id: s.Id,
 		Path: "/",
 	})
-}
-
-func ShareDelete(ctx App, res http.ResponseWriter, req *http.Request) {
-	s := extractParams(req, &ctx)
-
-	if err := model.ShareDelete(&s); err != nil {
-		SendErrorResult(res, err)
-		return
-	}
-	SendSuccessResult(res, nil)
-}
-
-func extractParams(req *http.Request, ctx *App) model.Share {
-	return model.Share{
-		Auth: "",
-		Id:           NewStringFromInterface(mux.Vars(req)["share"]),
-		Backend:      NewStringFromInterface(GenerateID(ctx.Session)),
-		Path:         NewStringFromInterface(req.URL.Query().Get("path")),
-		Password:     NewStringpFromInterface(ctx.Body["password"]),
-		Users:        NewStringpFromInterface(ctx.Body["users"]),
-		Expire:       NewInt64pFromInterface(ctx.Body["expire"]),
-		Url:          NewStringpFromInterface(ctx.Body["url"]),
-		CanManageOwn: NewBoolFromInterface(ctx.Body["can_manage_own"]),
-		CanShare:     NewBoolFromInterface(ctx.Body["can_share"]),
-		CanRead:      NewBoolFromInterface(ctx.Body["can_read"]),
-		CanWrite:     NewBoolFromInterface(ctx.Body["can_write"]),
-		CanUpload:    NewBoolFromInterface(ctx.Body["can_upload"]),
-	}
 }

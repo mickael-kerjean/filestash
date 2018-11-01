@@ -12,6 +12,7 @@ import (
 	"os"
 )
 
+var SECRET_KEY string
 var configPath string = filepath.Join(GetCurrentDir(), CONFIG_PATH + "config.json")
 
 func init() {
@@ -33,6 +34,9 @@ func init() {
 	// OAuth credentials
 	c.Get("oauth").Default("")
 
+	// Share
+	c.Get("share.enable").Default(true)
+
 	// Log
 	c.Get("log.telemetry").Default(true)
 	c.Get("log.level").Default("INFO")
@@ -43,7 +47,7 @@ func init() {
 	c.Get("email.password").Default("password")
 	c.Get("email.username").Default("username@gmail.com")
 	c.Get("email.port").Default(587)
-	c.Get("email.server").Default("smtp.google.com")
+	c.Get("email.server").Default("smtp.gmail.com")
 
 	// General
 	c.Get("general.remember_me").Default(true)
@@ -54,6 +58,7 @@ func init() {
 	if c.Get("general.secret_key").String() == "" {
 		c.Get("general.secret_key").Default(RandomString(16))
 	}
+	SECRET_KEY = c.Get("general.secret_key").String()
 	if env := os.Getenv("APPLICATION_URL"); env != "" {
 		c.Get("general.host").Set(env)
 	} else {

@@ -15,8 +15,6 @@ import (
 	"time"
 )
 
-const PASSWORD_DUMMY = "{{PASSWORD}}"
-
 type Proof struct {
 	Id      string  `json:"id"`
 	Key     string  `json:"key"`
@@ -25,89 +23,12 @@ type Proof struct {
 	Error   *string `json:"error,omitempty"`
 }
 
-type Share struct {
-	Id           string   `json:"id"`
-	Backend      string   `json:"-"`
-	Auth         string   `json:"auth,omitempty"`
-	Path         string   `json:"path"`
-	Password     *string  `json:"password,omitempty"`
-	Users        *string  `json:"users,omitempty"`
-	Expire       *int64   `json:"expire,omitempty"`
-	Url          *string  `json:"url,omitempty"`
-	CanShare     bool     `json:"can_share"`
-	CanManageOwn bool     `json:"can_manage_own"`
-	CanRead      bool     `json:"can_read"`
-	CanWrite     bool     `json:"can_write"`
-	CanUpload    bool     `json:"can_upload"`
-}
-
-func NewShare(id string) Share {
-	return Share{
-		Id: id,
-	}
-}
-
-func (s Share) IsValid() (bool, error) {
-	if s.Expire != nil {
-		now := time.Now().UnixNano() / 1000000
-		if now > *s.Expire {
-			return false, NewError("Link has expired", 410)
-		}
-	}
-	return true, nil
-}
-
-func (s *Share) MarshalJSON() ([]byte, error) {
-	p := Share{
-		s.Id,
-		s.Backend,
-		"",
-		s.Path,
-		func(pass *string) *string{
-			if pass != nil {
-				return NewString(PASSWORD_DUMMY)
-			}
-			return nil
-		}(s.Password),
-		s.Users,
-		s.Expire,
-		s.Url,
-		s.CanShare,
-		s.CanManageOwn,
-		s.CanRead,
-		s.CanWrite,
-		s.CanUpload,
-	}
-	return json.Marshal(p)
-}
-func(s *Share) UnmarshallJSON(b []byte) error {
-	var tmp map[string]interface{}
-	if err := json.Unmarshal(b, &tmp); err != nil {
-		return err
-	}
-
-	for key, value := range tmp {
-		switch key {
-		case "password": s.Password = NewStringpFromInterface(value)
-		case "users": s.Users = NewStringpFromInterface(value)
-		case "expire": s.Expire = NewInt64pFromInterface(value)
-		case "url": s.Url = NewStringpFromInterface(value)
-		case "can_share": s.CanShare = NewBoolFromInterface(value)
-		case "can_manage_own": s.CanManageOwn = NewBoolFromInterface(value)
-		case "can_read": s.CanRead = NewBoolFromInterface(value)
-		case "can_write": s.CanWrite = NewBoolFromInterface(value)
-		case "can_upload": s.CanUpload = NewBoolFromInterface(value)
-		}
-	}
-	return nil
-}
-
-func ShareList(p *Share) ([]Share, error) {
+func ShareList(backend string, path string) ([]Share, error) {
 	stmt, err := DB.Prepare("SELECT id, related_path, params FROM Share WHERE related_backend = ? AND related_path LIKE ? || '%' ")
 	if err != nil {
 		return nil, err
 	}
-	rows, err := stmt.Query(p.Backend, p.Path)
+	rows, err := stmt.Query(backend, path)
 	if err != nil {
 		return nil, err
 	}
@@ -116,38 +37,38 @@ func ShareList(p *Share) ([]Share, error) {
 		var a Share
 		var params []byte
 		rows.Scan(&a.Id, &a.Path, &params)
-		json.Unmarshal(params, &a)		
+		json.Unmarshal(params, &a)
 		sharedFiles = append(sharedFiles, a)
 	}
 	rows.Close()
 	return sharedFiles, nil
 }
 
-func ShareGet(p *Share) error {
-	stmt, err := DB.Prepare("SELECT id, related_path, params, auth FROM share WHERE id = ?")
+func ShareGet(id string) (Share, error) {
+	var p Share
+	stmt, err := DB.Prepare("SELECT id, related_backend, related_path, auth, params FROM share WHERE id = ?")
 	if err != nil {
-		return err
+		return p, err
 	}
 	defer stmt.Close()
-	row := stmt.QueryRow(p.Id)
+	row := stmt.QueryRow(id)
 	var str []byte
-	if err = row.Scan(&p.Id, &p.Path, &str, &p.Auth); err != nil {
+	if err = row.Scan(&p.Id, &p.Backend, &p.Path, &p.Auth, &str); err != nil {
 		if err == sql.ErrNoRows {
-			return NewError("Not Found", 404)
+			return p, ErrNotFound
 		}
-		return err
+		return p, err
 	}
 	json.Unmarshal(str, &p)
-	return nil
+	return p, nil
 }
 
 func ShareUpsert(p *Share) error {
 	if p.Password != nil {
 		if *p.Password == PASSWORD_DUMMY {
-			var copy Share
-			copy.Id = p.Id
-			ShareGet(&copy);
-			p.Password = copy.Password
+			if s, err := ShareGet(p.Id); err != nil {
+				p.Password = s.Password
+			}
 		} else {
 			hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(*p.Password), bcrypt.DefaultCost)
 			p.Password = NewString(string(hashedPassword))
@@ -198,12 +119,12 @@ func ShareUpsert(p *Share) error {
 	return err
 }
 
-func ShareDelete(p *Share) error {
-	stmt, err := DB.Prepare("DELETE FROM Share WHERE id = ? AND related_backend = ?")
+func ShareDelete(id string) error {
+	stmt, err := DB.Prepare("DELETE FROM Share WHERE id = ?")
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(p.Id, p.Backend)
+	_, err = stmt.Exec(id)
 	return err
 }
 
@@ -228,8 +149,15 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 		}
 		var user *string
 		for _, possibleUser := range strings.Split(*s.Users, ",") {
-			if proof.Value == strings.Trim(possibleUser, " ") {
-				user = &proof.Value
+			possibleUser := strings.Trim(possibleUser, " ")
+			if proof.Value == possibleUser {
+				user = &possibleUser
+				break
+			} else if possibleUser[0:1] == "*" {
+				if strings.HasSuffix(proof.Value, strings.TrimPrefix(possibleUser, "*")) {
+					user = &possibleUser
+					break
+				}
 			}
 		}
 		if user == nil {
@@ -243,7 +171,7 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 			return p, err
 		}
 		code := RandomString(4)
-		if _, err := stmt.Exec("email::" + proof.Value, code); err != nil {
+		if _, err := stmt.Exec("email::" + *user, code); err != nil {
 			return p, err
 		}
 
@@ -326,7 +254,7 @@ func ShareProofGetAlreadyVerified(req *http.Request, ctx *App) []Proof {
 	if len(cookieValue) > 500 {
 		return p
 	}
-	j, err := DecryptString(ctx.Config.Get("general.secret_key").String(), cookieValue)
+	j, err := DecryptString(SECRET_KEY, cookieValue)
 	if err != nil {
 		return p
 	}

@@ -18,7 +18,7 @@ type FileInfo struct {
 }
 
 func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
-	var files []FileInfo
+	var files []FileInfo = make([]FileInfo, 0)
 	if model.CanRead(&ctx) == false {
 		if model.CanUpload(&ctx) == false {
 			SendErrorResult(res, NewError("Permission denied", 403))
@@ -58,10 +58,6 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	var perms *Metadata = &Metadata{}
-	if obj, ok := ctx.Backend.(interface{ Meta(path string) *Metadata }); ok {
-		perms = obj.Meta(path)
-	}
-
 	if model.CanEdit(&ctx) == false {
 		perms.CanCreateFile = NewBool(false)
 		perms.CanCreateDirectory = NewBool(false)
@@ -77,6 +73,10 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	if model.CanShare(&ctx) == false {
 		perms.CanShare = NewBool(false)
+	}
+
+	if obj, ok := ctx.Backend.(interface{ Meta(path string) *Metadata }); ok {
+		perms = obj.Meta(path)
 	}
 
 	SendSuccessResultsWithMetadata(res, files, perms)

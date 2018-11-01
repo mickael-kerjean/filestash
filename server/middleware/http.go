@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/mickael-kerjean/nuage/server/model"
-	"github.com/mickael-kerjean/mux"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"io/ioutil"
 	"net/http"
@@ -14,15 +13,22 @@ import (
 
 func APIHandler(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
+		var err1, err2, err3, err4 error
 		start := time.Now()
-		ctx.Body, _ = ExtractBody(req)
-		ctx.Session, _ = ExtractSession(req, &ctx)
 
-		ctx.Backend, _ = ExtractBackend(req, &ctx)
+		ctx.Body, err1 = ExtractBody(req)
+		ctx.Share, err2 = ExtractShare(req, &ctx)
+		ctx.Session, err3 = ExtractSession(req, &ctx)
+		ctx.Backend, err4 = ExtractBackend(req, &ctx)
 		res.Header().Add("Content-Type", "application/json")
 
 		resw := ResponseWriter{ResponseWriter: res}
-		fn(ctx, &resw, req)
+
+		if err1 == nil && err2 == nil && err3 == nil && err4 == nil {
+			fn(ctx, &resw, req)
+		} else {
+			SendErrorResult(res, ErrNotValid)
+		}
 		req.Body.Close()
 
 		go func() {
@@ -54,8 +60,13 @@ func CtxInjector(fn func(App, http.ResponseWriter, *http.Request), ctx App) http
 
 func ExtractBody(req *http.Request) (map[string]interface{}, error) {
 	var body map[string]interface{}
+
+	if req.Method != "POST" {
+		return body, nil
+	}
+
 	if strings.HasPrefix(req.Header.Get("Content-Type"), "multipart/form-data") {
-		return body, NewError("", 200)
+		return body, nil
 	}
 	byt, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -67,42 +78,52 @@ func ExtractBody(req *http.Request) (map[string]interface{}, error) {
 	return body, nil
 }
 
+func ExtractShare(req *http.Request, ctx *App) (Share, error) {
+	share_id := req.URL.Query().Get("share");
+	if share_id == "" {
+		return Share{}, nil
+	}
+
+	if ctx.Config.Get("share.enable").Bool() == false {
+		return Share{}, NewError("Feature isn't enable, contact your administrator", 405)
+	}
+
+	s, err := model.ShareGet(share_id)
+	if err != nil {
+		return Share{}, nil
+	}
+	if err = s.IsValid(); err != nil {
+		return Share{}, err
+	}
+	return s, nil
+}
+
 func ExtractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	var str string
-	var res map[string]string
-	
-	if req.URL.Query().Get("share") != "" || mux.Vars(req)["share"] != "" {
-		share_id := req.URL.Query().Get("share")
-		if share_id == "" {
-			share_id = mux.Vars(req)["share"]
-		}
-		
-		s := model.NewShare(share_id)
-		if err := model.ShareGet(&s); err != nil {
-			return make(map[string]string), err
-		}
-		if _, err := s.IsValid(); err != nil {
-			return make(map[string]string), err
-		}
+	var res map[string]string = make(map[string]string)
 
+	if ctx.Share.Id != "" {
 		var verifiedProof []model.Proof = model.ShareProofGetAlreadyVerified(req, ctx)
-		var requiredProof []model.Proof = model.ShareProofGetRequired(s)
+		var requiredProof []model.Proof = model.ShareProofGetRequired(ctx.Share)
 		var remainingProof []model.Proof = model.ShareProofCalculateRemainings(requiredProof, verifiedProof)
 		if len(remainingProof) != 0 {
-			return make(map[string]string), NewError("Unauthorized Shared space", 400)
+			return res, NewError("Unauthorized Shared space", 400)
 		}
-		str = s.Auth
+		str = ctx.Share.Auth
+		str, _ = DecryptString(SECRET_KEY, str)
+		err := json.Unmarshal([]byte(str), &res)
+		res["path"] = ctx.Share.Path
+		return res, err
 	} else {
 		cookie, err := req.Cookie(COOKIE_NAME_AUTH)
 		if err != nil {
 			return res, nil
 		}
 		str = cookie.Value
+		str, _ = DecryptString(SECRET_KEY, str)
+		err = json.Unmarshal([]byte(str), &res)
+		return res, err
 	}
-
-	str, _ = DecryptString(ctx.Config.Get("general.secret_key").String(), str)
-	err := json.Unmarshal([]byte(str), &res)
-	return res, err
 }
 
 func ExtractBackend(req *http.Request, ctx *App) (IBackend, error) {

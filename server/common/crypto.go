@@ -139,8 +139,10 @@ func verify(something []byte) ([]byte, error) {
 }
 
 // Create a unique ID that can be use to identify different session
-func GenerateID(params map[string]string) string {
+func GenerateID(ctx *App) string {
+	params := ctx.Session
 	p := "type =>" + params["type"]
+	p += "salt => " + ctx.Config.Get("general.secret_key").String()
 	p += "host =>" + params["host"]
 	p += "hostname =>" + params["hostname"]
 	p += "username =>" + params["username"]

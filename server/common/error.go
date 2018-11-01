@@ -8,6 +8,14 @@ func NewError(message string, status int) error {
 	return AppError{message, status}
 }
 
+var (
+	ErrNotFound error         = NewError("Not Found", 404)
+	ErrNotAllowed error       = NewError("Not Allowed", 403)
+	ErrPermissionDenied error = NewError("Permission Denied", 403)
+	ErrNotValid error         = NewError("Not Valid", 405)
+	ErrNotReachable error     = NewError("Cannot Reach Destination", 502)
+)
+
 type AppError struct {
 	message string
 	status  int
