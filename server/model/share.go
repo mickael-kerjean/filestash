@@ -3,13 +3,13 @@ package model
 import (
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"bytes"
+	"crypto/tls"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/gomail.v2"
 	"net/http"
-	"net/smtp"
 	"html/template"
 	"strings"
 	"time"
@@ -188,26 +188,31 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 		p.Message = NewString("We've sent you a message with a verification code")
 
 		// Send email
-		addr := fmt.Sprintf(
-			"%s:%d",
-			ctx.Config.Get("email.server").String(),
-			ctx.Config.Get("email.port").Int(),
-		)
-		mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-		subject := "Subject: Your verification code\n"
-		msg := []byte(subject + mime + "\n" + b.String())
-		auth := smtp.PlainAuth(
-			"",
-			ctx.Config.Get("email.username").String(),
-			ctx.Config.Get("email.password").String(),
-			ctx.Config.Get("email.server").String(),
-		)
+		var email struct {
+			Hostname string `json:"server"`
+			Port     int    `json:"port"`
+			Username string `json:"username"`
+			Password string `json:"password"`
+			From     string `json:"from"`
+		}
+		if err := ctx.Config.Get("email").Scan(&email); err != nil {
+			Log.Error("ERROR(%+v)", err)
+			return p, nil
+		}
 
-		if err := smtp.SendMail(addr, auth, ctx.Config.Get("email.from").String(), []string{proof.Value}, msg); err != nil {
+		m := gomail.NewMessage()
+		m.SetHeader("From", email.From)
+		m.SetHeader("To", proof.Value)
+		m.SetHeader("Subject", "Your verification code")
+		m.SetBody("text/html", b.String())
+		d := gomail.NewDialer(email.Hostname, email.Port, email.Username, email.Password)
+		d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+		if err := d.DialAndSend(m); err != nil {
 			Log.Error("Sendmail error: %v", err)
 			Log.Error("Verification code '%s'", code)
 			return p, NewError("Couldn't send email", 500)
 		}
+		return p, nil
 	}
 
 	if proof.Key == "code" {
@@ -313,7 +318,7 @@ func TmplEmailVerification() string {
   <head>
     <meta name="viewport" content="width=device-width" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Nuage code</title>
+    <title>Verification code</title>
     <style>
       /* -------------------------------------
           GLOBAL RESETS
