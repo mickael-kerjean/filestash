@@ -115,6 +115,7 @@ export const onUpload = function(path, e){
         .then((files) => {
             var failed = [],
                 currents = [];
+
             const processes = files.map((file) => {
                 let original_path = file.path;
                 file.path = Path.join(path, file.path);
@@ -246,7 +247,7 @@ export const onUpload = function(path, e){
                 }
             }
 
-            if(files.length >= 1){
+            if(files.length >= 5){
                 alert.now(<Stats/>, () => {});
             }
             Promise.all(Array.apply(null, Array(MAX_POOL_SIZE)).map((process,index) => {
@@ -305,12 +306,23 @@ export const onUpload = function(path, e){
                 if(parent_id) file._prior = parent_id;
                 _files.push(file);
 
-                return new Promise((done, err) => {
-                    item.createReader().readEntries(function(entries){
-                        Promise.all(entries.map((entry) => {
-                            return traverseDirectory(entry, _files, file._id);
-                        })).then(() => done(_files));
+                let reader = item.createReader();
+                const filereader = function(r){
+                    return new Promise((done) => {
+                        r.readEntries(function(entries){
+                            Promise.all(entries.map((entry) => {
+                                return traverseDirectory(entry, _files, file._id);
+                            })).then((e) => {
+                                if(entries.length > 0){
+                                    return filereader(r).then(done);
+                                }
+                                return done(e);
+                            })
+                        });
                     });
+                }
+                return filereader(reader).then(() => {
+                    return Promise.resolve(_files)
                 });
             }else{
                 return Promise.resolve();
