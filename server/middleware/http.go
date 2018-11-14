@@ -13,22 +13,29 @@ import (
 
 func APIHandler(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		var err1, err2, err3, err4 error
+		var err error
 		start := time.Now()
 
-		ctx.Body, err1 = ExtractBody(req)
-		ctx.Share, err2 = ExtractShare(req, &ctx)
-		ctx.Session, err3 = ExtractSession(req, &ctx)
-		ctx.Backend, err4 = ExtractBackend(req, &ctx)
 		res.Header().Add("Content-Type", "application/json")
-
-		resw := ResponseWriter{ResponseWriter: res}
-
-		if err1 == nil && err2 == nil && err3 == nil && err4 == nil {
-			fn(ctx, &resw, req)
-		} else {
+		if ctx.Body, err = ExtractBody(req); err != nil {
 			SendErrorResult(res, ErrNotValid)
+			return
 		}
+		share_id := req.URL.Query().Get("share");
+		if ctx.Share, err = ExtractShare(req, &ctx, share_id); err != nil {
+			SendErrorResult(res, ErrNotValid)
+			return
+		}
+		if ctx.Session, err = ExtractSession(req, &ctx); err != nil {
+			SendErrorResult(res, ErrNotValid)
+			return
+		}
+		if ctx.Backend, err = ExtractBackend(req, &ctx); err != nil {
+			SendErrorResult(res, ErrNotValid)
+			return
+		}
+		resw := ResponseWriter{ResponseWriter: res}
+		fn(ctx, &resw, req)
 		req.Body.Close()
 
 		go func() {
@@ -78,8 +85,7 @@ func ExtractBody(req *http.Request) (map[string]interface{}, error) {
 	return body, nil
 }
 
-func ExtractShare(req *http.Request, ctx *App) (Share, error) {
-	share_id := req.URL.Query().Get("share");
+func ExtractShare(req *http.Request, ctx *App, share_id string) (Share, error) {
 	if share_id == "" {
 		return Share{}, nil
 	}

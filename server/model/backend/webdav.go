@@ -72,7 +72,7 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 
 	URLDav := regexp.MustCompile(`^http[s]?://[^/]*`).ReplaceAllString(w.params.url+encodeURL(path), "")
 	for _, tag := range r.Responses {
-		if tag.Href == URLDav {
+		if tag.Href == URLDav || tag.Href + "/" == URLDav {
 			continue
 		}
 		for i, prop := range tag.Props {
