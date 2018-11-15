@@ -172,11 +172,12 @@ func (b Sftp) Touch(path string) error {
 }
 
 func (b Sftp) Save(path string, file io.Reader) error {
-	remoteFile, err := b.SFTPClient.OpenFile(path, os.O_WRONLY|os.O_CREATE)
+	remoteFile, err := b.SFTPClient.Create(path)
 	if err != nil {
 		return b.err(err)
 	}
-	_, err = remoteFile.ReadFrom(file)
+	_, err = io.Copy(remoteFile, file)
+	remoteFile.Close()
 	return b.err(err)
 }
 
