@@ -2,7 +2,10 @@ package common
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/json"
+	"encoding/base32"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"github.com/tidwall/gjson"
@@ -58,7 +61,7 @@ func init() {
 	c.Get("general.fork_button").Default(true)
 	c.Get("general.editor").Default("emacs")
 	if c.Get("general.secret_key").String() == "" {
-		c.Get("general.secret_key").Default(RandomString(16))
+		c.Get("general.secret_key").Set(RandomString(16))
 	}
 	SECRET_KEY = c.Get("general.secret_key").String()
 	if env := os.Getenv("APPLICATION_URL"); env != "" {
@@ -187,6 +190,7 @@ func (this Config) Export() (string, error) {
 		Connections   interface{}       `json:"connections"`
 		EnableSearch  bool              `json:"enable_search"`
 		EnableShare   bool              `json:"enable_share"`
+		Version       string            `json:"version"`
 		MimeTypes     map[string]string `json:"mime"`
 	}{
 		Editor:        this.Get("general.editor").String(),
@@ -198,6 +202,18 @@ func (this Config) Export() (string, error) {
 		Connections:   this.Get("connections").Interface(),
 		EnableSearch:  this.Get("features.search.enable").Bool(),
 		EnableShare:   this.Get("features.share.enable").Bool(),
+		Version:       func() string {
+			f, err := os.OpenFile(GetCurrentDir() + "/nuage", os.O_RDONLY, os.ModePerm)
+			if err != nil {
+				return APP_VERSION
+			}
+			defer f.Close()
+			h := md5.New()
+			if _, err := io.Copy(h, f); err != nil {
+				return APP_VERSION
+			}
+			return fmt.Sprintf("%s rev:%s", APP_VERSION, base32.HexEncoding.EncodeToString(h.Sum(nil))[:6])
+		}(),
 		MimeTypes:     AllMimeTypes(),
 	}
 	j, err := json.Marshal(publicConf)
