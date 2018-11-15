@@ -34,8 +34,10 @@ func init() {
 	// OAuth credentials
 	c.Get("oauth").Default("")
 
-	// Share
-	c.Get("share.enable").Default(true)
+	// Features
+	c.Get("feature.share.enable").Default(true)
+	c.Get("feature.search.enable").Default(true)
+	
 
 	// Log
 	c.Get("log.telemetry").Default(true)
@@ -183,6 +185,8 @@ func (this Config) Export() (string, error) {
 		Name          string            `json:"name"`
 		RememberMe    bool              `json:"remember_me"`
 		Connections   interface{}       `json:"connections"`
+		EnableSearch  bool              `json:"enable_search"`
+		EnableShare   bool              `json:"enable_share"`
 		MimeTypes     map[string]string `json:"mime"`
 	}{
 		Editor:        this.Get("general.editor").String(),
@@ -192,6 +196,8 @@ func (this Config) Export() (string, error) {
 		Name:          this.Get("general.name").String(),
 		RememberMe:    this.Get("general.remember_me").Bool(),
 		Connections:   this.Get("connections").Interface(),
+		EnableSearch:  this.Get("feature.search.enable").Bool(),
+		EnableShare:   this.Get("geature.share.enable").Bool(),
 		MimeTypes:     AllMimeTypes(),
 	}
 	j, err := json.Marshal(publicConf)

@@ -24,7 +24,7 @@ func Init(a *App) {
 	session := r.PathPrefix("/api/session").Subrouter()
 	session.HandleFunc("", APIHandler(SessionGet, *a)).Methods("GET")
 	session.HandleFunc("", APIHandler(SessionAuthenticate, *a)).Methods("POST")
-	session.HandleFunc("", APIHandler(SessionLogout, *a)).Methods("DELETE")
+	session.HandleFunc("", CtxInjector(SessionLogout, *a)).Methods("DELETE")
 	session.Handle("/auth/{service}", APIHandler(SessionOAuthBackend, *a)).Methods("GET")
 
 	files := r.PathPrefix("/api/files").Subrouter()
@@ -46,7 +46,7 @@ func Init(a *App) {
 	r.PathPrefix("/s/{share}").Handler(CtxInjector(WebdavHandler, *a))
 	
 	// APP
-	r.HandleFunc("/api/config", APIHandler(ConfigHandler, *a)).Methods("GET")
+	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a)).Methods("GET")
 	r.PathPrefix("/assets").Handler(StaticHandler(FILE_ASSETS, *a)).Methods("GET")
 	r.PathPrefix("/").Handler(DefaultHandler(FILE_INDEX, *a)).Methods("GET")
 

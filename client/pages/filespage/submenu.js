@@ -130,19 +130,21 @@ export class Submenu extends React.Component {
                     </DropdownList>
                   </Dropdown>
                   <div className="view list-grid" onClick={this.onViewChange.bind(this)}><Icon name={this.props.view === "grid" ? "list" : "grid"}/></div>
-                  <form onSubmit={(e) => this.onSearchKeypress(this.state.search_keyword, false, e)} className="view" style={{display: this.state.search_enabled === true ? "block" : "none"}}>
-                    <label className="view search" onClick={this.onSearchToggle.bind(this, null)}>
-                      <NgIf cond={this.state.search_input_visible !== true}>
-                        <Icon name="search_dark"/>
+                  <NgIf cond={window.CONFIG.enable_search === true} className="view" style={{display: this.state.search_enabled === true ? "block" : "none"}}>
+                    <form onSubmit={(e) => this.onSearchKeypress(this.state.search_keyword, false, e)}>
+                      <label className="view search" onClick={this.onSearchToggle.bind(this, null)}>
+                        <NgIf cond={this.state.search_input_visible !== true}>
+                          <Icon name="search_dark"/>
+                        </NgIf>
+                        <NgIf cond={this.state.search_input_visible === true}>
+                          <Icon name="close_dark"/>
+                        </NgIf>
+                      </label>
+                      <NgIf cond={this.state.search_input_visible !== null} type="inline">
+                        <input ref="$input" onBlur={this.closeIfEmpty.bind(this, false)} style={{"width": this.state.search_input_visible ? "180px" : "0px"}} value={this.state.search_keyword} onChange={(e) => this.onSearchKeypress(e.target.value, true)} type="text" id="search" placeholder="search" name="search" autoComplete="off" />
                       </NgIf>
-                      <NgIf cond={this.state.search_input_visible === true}>
-                        <Icon name="close_dark"/>
-                      </NgIf>
-                    </label>
-                    <NgIf cond={this.state.search_input_visible !== null} type="inline">
-                      <input ref="$input" onBlur={this.closeIfEmpty.bind(this, false)} style={{"width": this.state.search_input_visible ? "180px" : "0px"}} value={this.state.search_keyword} onChange={(e) => this.onSearchKeypress(e.target.value, true)} type="text" id="search" placeholder="search" name="search" autoComplete="off" />
-                    </NgIf>
-                  </form>
+                    </form>
+                  </NgIf>
                 </div>
               </Container>
             </div>

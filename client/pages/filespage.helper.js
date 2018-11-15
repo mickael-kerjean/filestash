@@ -103,7 +103,7 @@ export const onDelete = function(path, type){
 };
 
 export const onUpload = function(path, e){
-    const MAX_POOL_SIZE = 50;
+    const MAX_POOL_SIZE = 15;
     let PRIOR_STATUS = {};
     extract_upload_directory_the_way_that_works_but_non_official(e.dataTransfer.items || [], [])
         .then((files) => {
