@@ -1,33 +1,13 @@
 {
     "general": {
-        "port": 8334,
-        "host": "https://nuage.kerjean.me",
-        "secret_key": "",
-        "editor": "emacs",
-        "fork_button": true,
-        "display_hidden": false,
-        "client_search_enable": true,
-        "client_search_per_min": 20,
-        "auto_connect": false
+    },
+    "features": {
     },
     "log": {
-        "enable": true,
-        "level": "INFO",
-        "telemetry": true
     },
-    "smtp": {
-        "addr": "smtp.gmail.com",
-        "username": "mickael.kerjean@gmail.com",
-        "password": "test"
+    "email": {
     },
     "oauth": {
-        "gdrive": {
-            "client_id": "",
-            "client_secret": ""
-        },
-        "dropbox": {
-            "client_id": ""
-        }
     },
     "connections": [
         {

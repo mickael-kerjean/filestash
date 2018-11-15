@@ -35,8 +35,8 @@ func init() {
 	c.Get("oauth").Default("")
 
 	// Features
-	c.Get("feature.share.enable").Default(true)
-	c.Get("feature.search.enable").Default(true)
+	c.Get("features.share.enable").Default(true)
+	c.Get("features.search.enable").Default(true)
 	
 
 	// Log
@@ -196,8 +196,8 @@ func (this Config) Export() (string, error) {
 		Name:          this.Get("general.name").String(),
 		RememberMe:    this.Get("general.remember_me").Bool(),
 		Connections:   this.Get("connections").Interface(),
-		EnableSearch:  this.Get("feature.search.enable").Bool(),
-		EnableShare:   this.Get("geature.share.enable").Bool(),
+		EnableSearch:  this.Get("features.search.enable").Bool(),
+		EnableShare:   this.Get("features.share.enable").Bool(),
 		MimeTypes:     AllMimeTypes(),
 	}
 	j, err := json.Marshal(publicConf)
