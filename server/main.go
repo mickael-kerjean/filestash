@@ -48,6 +48,7 @@ func Init(a *App) {
 	// APP
 	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a)).Methods("GET")
 	r.PathPrefix("/assets").Handler(StaticHandler(FILE_ASSETS, *a)).Methods("GET")
+	r.PathPrefix("/about").Handler(AboutHandler(*a))
 	r.PathPrefix("/").Handler(DefaultHandler(FILE_INDEX, *a)).Methods("GET")
 
 	srv := &http.Server{
