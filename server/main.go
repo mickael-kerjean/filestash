@@ -7,6 +7,8 @@ import (
 	. "github.com/mickael-kerjean/nuage/server/middleware"
 	_ "github.com/mickael-kerjean/nuage/server/plugin"
 	"net/http"
+    "net/http/pprof"
+	"os"
 	"strconv"
 )
 
@@ -19,6 +21,20 @@ func main() {
 
 func Init(a *App) {
 	r := mux.NewRouter()
+
+	// Profiling - handy to indentify nasty leaks and/or bugs!
+	if os.Getenv("DEBUG") == "true" {
+		r.HandleFunc("/debug/pprof/", pprof.Index)
+		r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		r.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		r.HandleFunc("/debug/pprof/trace", pprof.Trace)
+		r.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
+		r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+		r.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
+		r.Handle("/debug/pprof/block", pprof.Handler("block"))
+		r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+	}
 
 	// API
 	session := r.PathPrefix("/api/session").Subrouter()
@@ -44,7 +60,7 @@ func Init(a *App) {
 
 	// WEBDAV
 	r.PathPrefix("/s/{share}").Handler(CtxInjector(WebdavHandler, *a))
-	
+
 	// APP
 	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a)).Methods("GET")
 	r.PathPrefix("/assets").Handler(StaticHandler(FILE_ASSETS, *a)).Methods("GET")

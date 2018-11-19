@@ -173,21 +173,21 @@ export const onUpload = function(path, e){
                           </h2>
                           <div className="stats_content">
                           {
-                              currents.map((process, i) => {
+                              currents.slice(0, 1000).map((process, i) => {
                                   return (
                                       <div onClick={() => this.emphasis(process.path)} className="current_color" key={i}>{process.path.replace(/\//, '')}</div>
                                   );
                               })
                           }
                           {
-                              processes.slice(0, 2000).map((process, i) => {
+                              processes.slice(0, 1000).map((process, i) => {
                                   return (
                                       <div onClick={() => this.emphasis(process.path)} className="todo_color" key={i}>{process.path.replace(/\//, '')}</div>
                                   );
                               })
                           }
                           {
-                              failed.slice(0, 200).map((process, i) => {
+                              failed.slice(0, 500).map((process, i) => {
                                   return (
                                       <div onClick={() => this.emphasis(process.path)} className="error_color" key={i}>{process.path}</div>
                                   );
