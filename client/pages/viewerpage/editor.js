@@ -183,6 +183,7 @@ export class Editor extends React.Component {
         else if(ext === 'latex' || ext === 'tex'){ mode = 'stex'; }
         else if(ext === 'diff' || ext === 'patch'){ mode = 'diff'; }
         else if(ext === 'sparql'){ mode = 'sparql'; }
+        else if(ext === 'properties'){ mode = 'properties'; }
         else if(ext === 'c' || ext === 'cpp' || ext === 'java' || ext === 'h'){
             mode = 'clike';
         }else{

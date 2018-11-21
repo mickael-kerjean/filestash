@@ -178,9 +178,11 @@ pre.CodeMirror-line{clear: right;}
 .cm-s-default .cm-strong{color: var(--secondary)}
 .cm-s-default .cm-org-url, .cm-s-default .cm-org-image{color: var(--secondary)!important; border-bottom: 1px dashed var(--light); cursor: pointer;}
 .cm-s-default .cm-variable-3 {color: #085;}
-.cm-s-default .cm-comment {color: var(--secondary);}
+.cm-s-default .cm-comment {color: var(--light);}
 .cm-s-default .cm-string, .cm-s-default .cm-string-2{ color: #c41a16; }
 .cm-s-default .cm-def { color: rgb(68, 85, 136); }
+.cm-s-default .cm-quote { color: var(--dark); }
+
 
 .CodeMirror-gutters{
     box-shadow: 0px 0px 2px rgba(0,0,0,0.1);
