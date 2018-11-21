@@ -23,7 +23,7 @@ func SessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendSuccessResult(res, r)
 		return
 	}
-	home, err := model.GetHome(ctx.Backend)
+	home, err := model.GetHome(ctx.Backend, ctx.Session["path"])
 	if err != nil {
 		SendSuccessResult(res, r)
 		return
@@ -58,7 +58,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	home, err := model.GetHome(backend)
+	home, err := model.GetHome(backend, ctx.Session["path"])
 	if err != nil {
 		SendErrorResult(res, err)
 		return

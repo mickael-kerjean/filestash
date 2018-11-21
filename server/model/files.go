@@ -4,6 +4,7 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	_ "github.com/mickael-kerjean/nuage/server/model/backend"
+	"strings"
 )
 
 func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
@@ -36,13 +37,19 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 	return Backend.Get(conn["type"]).Init(conn, ctx)
 }
 
-func GetHome(b IBackend) (string, error) {
+func GetHome(b IBackend, base string) (string, error) {
 	if obj, ok := b.(interface{ Home() (string, error) }); ok {
-		return obj.Home()
+		absolute, err := obj.Home()
+		if err != nil {
+			return "", err
+		}
+		if strings.HasPrefix(absolute, base) == false {
+			return "", nil
+		}
+		return absolute[len(base):], nil
 	}
-
 	_, err := b.Ls("/")
-	return "", err
+	return base, err
 }
 
 
