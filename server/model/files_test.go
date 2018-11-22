@@ -1,10 +1,8 @@
 package model
 
 import (
-	//"fmt"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"io/ioutil"
-	//"os"
 	"strings"
 	"testing"
 )
@@ -14,11 +12,6 @@ var app *App
 func init() {
 	app = &App{}
 	app.Config = &Config{}
-	app.Config.Initialise()
-	app.Config.General.Host = "http://test"
-	app.Config.OAuthProvider.Dropbox.ClientID = ""
-	app.Config.OAuthProvider.GoogleDrive.ClientID = ""
-	app.Config.OAuthProvider.GoogleDrive.ClientID = ""
 }
 
 // func TestWebdav(t *testing.T) {
@@ -97,22 +90,18 @@ func init() {
 // }
 
 // func TestS3(t *testing.T) {
-// 	if os.Getenv("S3_ID") == "" || os.Getenv("S3_SECRET") == "" {
-// 		fmt.Println("- skipped S3")
-// 		return
-// 	}
 // 	b, err := NewBackend(&App{}, map[string]string{
 // 		"type":              "s3",
-// 		"access_key_id":     os.Getenv("S3_ID"),
-// 		"secret_access_key": os.Getenv("S3_SECRET"),
-// 		"endpoint":          os.Getenv("S3_ENDPOINT"),
+// 		"access_key_id":     "Q3AM3UQ867SPQQA43P2F",
+// 		"secret_access_key": "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG",
+// 		"endpoint":          "https://play.minio.io:9000/",
 // 	})
 // 	if err != nil {
 // 		t.Errorf("Can't create S3 backend")
 // 	}
 // 	setup(t, b)
-// 	suite(t, b)
-// 	tearDown(t, b)
+// 	// suite(t, b)
+// 	//tearDown(t, b)
 // }
 
 // func TestDropbox(t *testing.T) {

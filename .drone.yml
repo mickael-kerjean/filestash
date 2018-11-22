@@ -1,6 +1,41 @@
 pipeline:
-  publish_docker:
-    group: release
+  test:
+    image: golang
+    environment:
+      - GOPATH=/drone/
+      - CGO_LDFLAGS_ALLOW='-fopenmp'
+    commands:
+      - cd server
+      - rm -rf plugin
+      - go get -t ./...
+      - go build
+      - go test -v ./...
+
+  build:
+    image: docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    when:
+      branch: master
+    commands:
+      - docker pull alpine:latest
+      - docker build --no-cache -t machines/nuage docker/prod
+
+  integration:
+    image: docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    when:
+      branch: master
+    commands:
+      - docker rm -f integration_filestash_app || true
+      - docker rm -f integration_filestash_test || true
+      - docker run --detach --name integration_filestash_app machines/nuage
+      - sleep 10
+      - pwd
+      - ls -lah
+
+  release:
     image: docker
     secrets: [ docker_username, docker_password ]
     volumes:
@@ -9,6 +44,16 @@ pipeline:
       branch: master
     commands:
       - echo $DOCKER_PASSWORD | docker login -u=$DOCKER_USERNAME --password-stdin
-      - docker pull alpine:latest
-      - docker build --no-cache -t machines/nuage docker/prod
       - docker push machines/nuage
+
+  deploy:
+    image: appleboy/drone-ssh
+    host: hal.kerjean.me
+    secrets: [ ssh_username, ssh_password ]
+    port: 22
+    script:
+      - cd /app/filestash
+      - docker-compose pull
+      - docker-compose up -d
+    when:
+      branch: master

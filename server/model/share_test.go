@@ -15,7 +15,10 @@ var shareObj = Share{
 	CanRead: true,
 	CanManageOwn: true,
 	CanShare: true,
-	Expire: NewInt64(1537759505787),
+	Expire: func() *int64{
+		a := int64(1537759505787)
+		return &a
+	}(),
 }
 
 
@@ -34,7 +37,7 @@ func TestShareMultipleUpsert(t *testing.T) {
 	err = ShareUpsert(&shareObj);
 	assert.NoError(t, err)
 
-	err = ShareGet(&shareObj)
+	_, err = ShareGet(shareObj.Id)
 	assert.NoError(t, err)
 }
 
@@ -44,7 +47,7 @@ func TestShareUpsertIsProperlyInserted(t *testing.T) {
 
 	var obj Share
 	obj.Id = "foo"
-	err = ShareGet(&obj)
+	obj, err = ShareGet(obj.Id)
 	assert.NoError(t, err)
 	assert.NotNil(t, obj.Password)
 }
@@ -55,7 +58,7 @@ func TestShareUpsertIsProperlyInserted(t *testing.T) {
 func TestShareGetNonExisting(t *testing.T) {
 	var s Share = shareObj
 	s.Id = "nothing"
-	err := ShareGet(&s);
+	_, err := ShareGet(s.Id);
 	assert.Error(t, err, "Shouldn't be able to get something that doesn't exist yet")
 }
 
@@ -63,7 +66,7 @@ func TestShareGetExisting(t *testing.T) {
 	err := ShareUpsert(&shareObj);
 	assert.NoError(t, err, "Upsert issue")
 
-	err = ShareGet(&shareObj);
+	_, err = ShareGet(shareObj.Id);
 	assert.NoError(t, err)
 }
 
@@ -74,7 +77,7 @@ func TestShareGetExistingMakeSureDataIsOk(t *testing.T) {
 	var obj Share
 	obj.Id = "foo"
 	obj.Backend = shareObj.Backend
-	err = ShareGet(&obj);
+	obj, err = ShareGet(obj.Id);
 	assert.NoError(t, err)
 	assert.Equal(t, "foo", obj.Id)
 	assert.Equal(t, "/var/www/", obj.Path)
@@ -96,7 +99,7 @@ func TestShareListAll(t *testing.T) {
 	assert.NoError(t, err, "Upsert issue")
 
 	// Actual test
-	list, err := ShareList(&shareObj)
+	list, err := ShareList(shareObj.Backend, shareObj.Path)
 	assert.NoError(t, err)
 	assert.Len(t, list, 1)
 	assert.NotNil(t, list[0].Password)
@@ -110,14 +113,14 @@ func TestShareDeleteShares(t *testing.T) {
 	// Initialise test
 	err := ShareUpsert(&shareObj);
 	assert.NoError(t, err, "Upsert issue")
-	err = ShareGet(&shareObj)
+	shareObj, err = ShareGet(shareObj.Id)
 	assert.NoError(t, err)
 
 	// Actual Test
-	err = ShareDelete(&shareObj);
+	err = ShareDelete(shareObj.Id);
 	assert.NoError(t, err)
 
-	err = ShareGet(&shareObj)
+	_, err = ShareGet(shareObj.Id)
 	assert.Error(t, err)
 }
 
@@ -135,22 +138,22 @@ func TestShareVerifyEquivalence(t *testing.T) {
 		Key: p1.Key,
 		Id: "hash",
 	}
-	res := ShareProofAreEquivalent(p1, p2)
+	res := shareProofAreEquivalent(p1, p2)
 	assert.Equal(t, false, res)
 
 	p2.Id = Hash(p1.Key + "::" + p1.Value)
-	res = ShareProofAreEquivalent(p1, p2)
+	res = shareProofAreEquivalent(p1, p2)
 	assert.Equal(t, true, res)
 
 	p2.Key = "email"
-	res = ShareProofAreEquivalent(p1, p2)
+	res = shareProofAreEquivalent(p1, p2)
 	assert.Equal(t, false, res)
 
 	p1.Key = "email"
 	p1.Value = "test@gmail.com,polo@gmail.com,jean@gmail.com"
 	p2.Key = "email"
 	p2.Id = Hash(p1.Key + "::" + "polo@gmail.com")
-	res = ShareProofAreEquivalent(p1, p2)
+	res = shareProofAreEquivalent(p1, p2)
 	assert.Equal(t, true, res)
 	
 }

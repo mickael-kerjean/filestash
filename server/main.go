@@ -9,6 +9,7 @@ import (
 	"net/http"
     "net/http/pprof"
 	"os"
+	"runtime/debug"
 	"strconv"
 )
 
@@ -33,7 +34,10 @@ func Init(a *App) {
 		r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
 		r.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
 		r.Handle("/debug/pprof/block", pprof.Handler("block"))
-		r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+		r.HandleFunc("/debug/free", func(w http.ResponseWriter, r *http.Request) {
+			debug.FreeOSMemory()
+			w.Write([]byte("DONE"))
+		})
 	}
 
 	// API

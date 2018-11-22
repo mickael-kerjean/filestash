@@ -20,14 +20,18 @@ func TestEncryptString(t *testing.T) {
 }
 
 func TestIDGeneration(t *testing.T) {
-	d := make(map[string]string)
-	d["foo"] = "bar"
+	session := make(map[string]string)
+	session["foo"] = "bar"
+	app := &App{
+		Session: session,
+		Config: NewConfig(),
+	}
 
-	id1 := GenerateID(d)
-	d["user"] = "polo"
-	id2 := GenerateID(d)
-	d["doesn_t_matter"] = "N/A"
-	id3 := GenerateID(d)
+	id1 := GenerateID(app)
+	session["user"] = "polo"
+	id2 := GenerateID(app)
+	session["doesn_t_matter"] = "N/A"
+	id3 := GenerateID(app)
 
 	assert.NotEqual(t, id1, id2)
 	assert.Equal(t, id2, id3)
