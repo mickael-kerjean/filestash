@@ -52,6 +52,7 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 			return
 		}
 		backend_id = ctx.Share.Backend
+
 		auth_cookie = ctx.Share.Auth
 		path_from = ctx.Share.Path
 	} else {
@@ -63,6 +64,9 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 			}
 			return a.Value
 		}()
+		if ctx.Session["path"] != "" {
+			path_from = ctx.Session["path"]
+		}
 	}
 
 	if ctx.Share.Id != "" {
@@ -201,7 +205,6 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	Log.Info("SHAREGET('%+v')", s)
 	SendSuccessResult(res, struct {
 		Id string   `json:"id"`
 		Path string `json:"path"`

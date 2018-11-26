@@ -27,7 +27,6 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendSuccessResults(res, files)
 		return
 	}
-
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
@@ -57,7 +56,7 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		files = append(files, f)
 	}
 
-	var perms Metadata = Metadata{}	
+	var perms Metadata = Metadata{}
 	if obj, ok := ctx.Backend.(interface{ Meta(path string) Metadata }); ok {
 		perms = obj.Meta(path)
 	}

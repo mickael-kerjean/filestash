@@ -23,15 +23,15 @@ func APIHandler(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.
 		}
 		share_id := req.URL.Query().Get("share");
 		if ctx.Share, err = ExtractShare(req, &ctx, share_id); err != nil {
-			SendErrorResult(res, ErrNotValid)
+			SendErrorResult(res, err)
 			return
 		}
 		if ctx.Session, err = ExtractSession(req, &ctx); err != nil {
-			SendErrorResult(res, ErrNotValid)
+			SendErrorResult(res, err)
 			return
 		}
 		if ctx.Backend, err = ExtractBackend(req, &ctx); err != nil {
-			SendErrorResult(res, ErrNotValid)
+			SendErrorResult(res, err)
 			return
 		}
 		resw := ResponseWriter{ResponseWriter: res}
@@ -90,7 +90,7 @@ func ExtractShare(req *http.Request, ctx *App, share_id string) (Share, error) {
 		return Share{}, nil
 	}
 
-	if ctx.Config.Get("share.enable").Bool() == false {
+	if ctx.Config.Get("features.share.enable").Bool() == false {
 		return Share{}, NewError("Feature isn't enable, contact your administrator", 405)
 	}
 
