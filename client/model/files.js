@@ -445,6 +445,7 @@ class FileSystem{
                 };
             }
             let file = {
+                path: dirname(path),
                 name: basename(path),
                 type: /\/$/.test(path) ? 'directory' : 'file'
             };
