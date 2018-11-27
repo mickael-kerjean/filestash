@@ -1,59 +1,65 @@
-pipeline:
-  test:
-    image: golang
-    environment:
-      - GOPATH=/drone/
-      - CGO_LDFLAGS_ALLOW='-fopenmp'
-    commands:
-      - cd server
-      - rm -rf plugin
-      - go get -t ./...
-      - go build
-      - go test -v ./...
+kind: pipeline
+name: default
 
-  build:
-    image: docker
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    when:
-      branch: master
-    commands:
-      - docker pull alpine:latest
-      - docker build --no-cache -t machines/nuage docker/prod
+steps:
 
-  integration:
-    image: docker
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    when:
-      branch: master
-    commands:
-      - docker rm -f integration_filestash_app || true
-      - docker rm -f integration_filestash_test || true
-      - docker run --detach --name integration_filestash_app machines/nuage
-      - sleep 10
-      - pwd
-      - ls -lah
+- name: test
+  image: golang
+  environment:
+    GOPATH: /drone/
+    CGO_LDFLAGS_ALLOW: '-fopenmp'
+  commands:
+  - cd server
+  - rm -rf plugin
+  - go get -t ./...
+  - go build
+  - go test -v ./...
 
-  release:
-    image: docker
-    secrets: [ docker_username, docker_password ]
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    when:
-      branch: master
-    commands:
-      - echo $DOCKER_PASSWORD | docker login -u=$DOCKER_USERNAME --password-stdin
-      - docker push machines/nuage
+- name: publish
+  image: plugins/docker
+  settings:
+    dockerfile: ./docker/prod/Dockerfile
+    repo: machines/filestash
+    username:
+      from_secret: DOCKER_USERNAME
+    password:
+      from_secret: DOCKER_PASSWORD
+    tags: unstable
 
-  deploy:
-    image: appleboy/drone-ssh
+- name: test_service0
+  image: machines/filestash:unstable
+  detach: true
+- name: test_main
+  image: machines/filestash_test
+  commands:
+  - cd /app
+  - CI=true APP_URL=http://test_service0:8334 npm test
+
+- name: release
+  image: plugins/docker
+  when:
+    branch: master
+  settings:
+    dockerfile: ./docker/prod/Dockerfile
+    repo: machines/filestash
+    username:
+      from_secret: DOCKER_USERNAME
+    password:
+      from_secret: DOCKER_PASSWORD
+    tags: latest
+
+- name: deploy
+  image: appleboy/drone-ssh
+  when:
+    branch: master
+  settings:
     host: hal.kerjean.me
-    secrets: [ ssh_username, ssh_password ]
+    user:
+      from_secret: SSH_USERNAME
+    password:
+      from_secret: SSH_PASSWORD
     port: 22
     script:
-      - cd /app/filestash
-      - docker-compose pull
-      - docker-compose up -d
-    when:
-      branch: master
+    - cd /app/filestash
+    - docker-compose pull
+    - docker-compose up -d
