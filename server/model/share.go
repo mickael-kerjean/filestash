@@ -137,7 +137,7 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 		}
 		time.Sleep(1000 * time.Millisecond)
 		if err := bcrypt.CompareHashAndPassword([]byte(*s.Password), []byte(proof.Value)); err != nil {
-			return p, NewError("Invalid Password", 403)
+			return p, ErrInvalidPassword
 		}
 		p.Value = *s.Password
 	}
@@ -188,16 +188,18 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 		p.Message = NewString("We've sent you a message with a verification code")
 
 		// Send email
-		var email struct {
+		email := struct {
 			Hostname string `json:"server"`
 			Port     int    `json:"port"`
 			Username string `json:"username"`
 			Password string `json:"password"`
 			From     string `json:"from"`
-		}
-		if err := ctx.Config.Get("email").Scan(&email); err != nil {
-			Log.Error("ERROR(%+v)", err)
-			return p, nil
+		}{
+			Hostname: Config.Get("email.server").String(),
+			Port: Config.Get("email.port").Int(),
+			Username: Config.Get("email.username").String(),
+			Password: Config.Get("email.password").String(),
+			From: Config.Get("email.from").String(),
 		}
 
 		m := gomail.NewMessage()

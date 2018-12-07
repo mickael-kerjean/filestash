@@ -39,14 +39,16 @@ func StaticHandler(_path string, ctx App) http.Handler {
 
 func DefaultHandler(_path string, ctx App) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		if req.Method != "GET" {
-			http.Error(res, "Invalid request method.", 405)
-			return
-		}
-
 		header := res.Header()
 		header.Set("Content-Type", "text/html")
+		header.Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		SecureHeader(&header)
+
+		// Redirect to the admin section on first boot to setup the stuff
+		if req.URL.String() != URL_SETUP && Config.Get("auth.admin").String() == "" {
+			http.Redirect(res, req, URL_SETUP, 307)
+			return
+		}
 
 		p := _path
 		if _, err := os.Open(path.Join(GetCurrentDir(), p+".gz")); err == nil && strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {

@@ -23,6 +23,8 @@ button{
         background: var(--emphasis);
         color: white
     }
-    &.transparent{
+    &.dark{
+        background: var(--dark);
+        color: white;
     }
 }

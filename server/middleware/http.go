@@ -16,7 +16,8 @@ func APIHandler(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.
 		var err error
 		start := time.Now()
 
-		res.Header().Add("Content-Type", "application/json")
+		header := res.Header()
+		header.Add("Content-Type", "application/json")
 		if ctx.Body, err = ExtractBody(req); err != nil {
 			SendErrorResult(res, ErrNotValid)
 			return
@@ -39,30 +40,14 @@ func APIHandler(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.
 		req.Body.Close()
 
 		go func() {
-			if ctx.Config.Get("log.telemetry").Bool() {
+			if Config.Get("log.telemetry").Bool() {
 				go telemetry(req, &resw, start, ctx.Backend.Info())
 			}
-			if ctx.Config.Get("log.enable").Bool() {
+			if Config.Get("log.enable").Bool() {
 				go logger(req, &resw, start)
 			}
 		}()
 	}
-}
-
-func LoggedInOnly(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx App, res http.ResponseWriter, req *http.Request) {
-		if ctx.Backend == nil || ctx.Session == nil {
-			SendErrorResult(res, NewError("Forbidden", 403))
-			return
-		}
-		fn(ctx, res, req)
-	}
-}
-
-func CtxInjector(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.HandlerFunc {
-	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		fn(ctx, res, req)
-	})
 }
 
 func ExtractBody(req *http.Request) (map[string]interface{}, error) {
@@ -90,7 +75,8 @@ func ExtractShare(req *http.Request, ctx *App, share_id string) (Share, error) {
 		return Share{}, nil
 	}
 
-	if ctx.Config.Get("features.share.enable").Bool() == false {
+	if Config.Get("features.share.enable").Bool() == false {
+		Log.Debug("Share feature isn't enable, contact your administrator")
 		return Share{}, NewError("Feature isn't enable, contact your administrator", 405)
 	}
 

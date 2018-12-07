@@ -5,6 +5,17 @@ import (
 	"net/http"
 )
 
+const (
+	PluginTypeBackend    = "backend"
+	PluginTypeMiddleware = "middleware"
+)
+
+type Plugin struct {
+	Type   string
+	Enable bool
+}
+
+
 type Register struct{}
 type Get struct{}
 

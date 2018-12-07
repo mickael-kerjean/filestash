@@ -47,10 +47,12 @@
 
 .component_page_connection_form.form-appear{
     opacity: 0;
+    transform: translateX(5px);
 }
 .component_page_connection_form.form-appear.form-appear-active{
     opacity: 1;
-    transition: opacity 0.5s ease-out;
+    transform: translateX(0);
+    transition: transform 0.25s ease-out, opacity 0.5s ease-out;
 }
 
 

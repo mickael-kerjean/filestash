@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { browserHistory } from 'react-router'
+import { browserHistory, Redirect } from 'react-router';
 
-import { Session } from '../model/';
+import { Session, Admin } from '../model/';
 import { Container, Loader, Icon } from '../components/';
 import { memory, currentShare } from '../helpers/';
 
@@ -47,7 +47,6 @@ export function LoggedInOnly(WrappedComponent){
     };
 }
 
-
 export function ErrorPage(WrappedComponent){
     return class extends React.Component {
         constructor(props){
@@ -89,3 +88,11 @@ export function ErrorPage(WrappedComponent){
         }
     };
 }
+
+export const LoadingPage = (props) => {
+    return (
+        <div style={{marginTop: parseInt(window.innerHeight / 3)+'px'}}>
+          <Loader />
+        </div>
+    );
+};

@@ -82,7 +82,6 @@ export class NewThing extends React.Component {
 
     onSearchChange(search){
         this.setState({search_keyword: search});
-        console.log(search);
     }
 
     render(){

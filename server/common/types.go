@@ -17,6 +17,7 @@ type IBackend interface {
 	Save(path string, file io.Reader) error
 	Touch(path string) error
 	Info() string
+	LoginForm() Form
 }
 
 type File struct {

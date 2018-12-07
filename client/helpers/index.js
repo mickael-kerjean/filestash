@@ -1,7 +1,7 @@
 export { URL_HOME, goToHome, URL_FILES, goToFiles, URL_VIEWER, goToViewer, URL_LOGIN, goToLogin, URL_LOGOUT, goToLogout } from './navigate';
 export { opener } from './mimetype';
 export { debounce, throttle } from './backpressure';
-export { encrypt, decrypt } from './crypto';
+export { encrypt, decrypt, bcrypt_password } from './crypto';
 export { event } from './events';
 export { cache } from './cache';
 export { pathBuilder, basename, dirname, absoluteToRelative, filetype, currentShare, appendShareToUrl } from './path';
@@ -14,3 +14,5 @@ export { gid, randomString } from './random';
 export { leftPad, copyToClipboard } from './common';
 export { getMimeType } from './mimetype';
 export { settings_get, settings_put } from './settings';
+export { FormObjToJSON } from './form';
+export { format } from './text';

@@ -1,8 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Route, IndexRoute, Switch } from 'react-router-dom';
 import { NotFoundPage, ConnectPage, HomePage, SharePage, LogoutPage, FilesPage, ViewerPage } from './pages/';
-import { Bundle, URL_HOME, URL_FILES, URL_VIEWER, URL_LOGIN, URL_LOGOUT } from  './helpers/';
-import { ModalPrompt, ModalAlert, ModalConfirm, Notification, Audio, Video } from './components/';
+import { URL_HOME, URL_FILES, URL_VIEWER, URL_LOGIN, URL_LOGOUT } from  './helpers/';
+import { Bundle, ModalPrompt, ModalAlert, ModalConfirm, Notification, Audio, Video } from './components/';
+
+const AdminPage = (props) => (
+    <Bundle loader={import(/* webpackChunkName: "admin" */"./pages/adminpage")} symbol="AdminPage">
+      {(Comp) => <Comp {...props}/>}
+    </Bundle>
+);
 
 export default class AppRouter extends React.Component {
     render() {
@@ -16,6 +22,7 @@ export default class AppRouter extends React.Component {
                   <Route path="/files/:path*" component={FilesPage} />
                   <Route path="/view/:path*" component={ViewerPage} />
                   <Route path="/logout" component={LogoutPage} />
+                  <Route path="/admin" component={AdminPage} />
                   <Route component={NotFoundPage} />
                 </Switch>
               </BrowserRouter>

@@ -11,7 +11,9 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "bcryptjs": "^2.4.3"
+  },
   "devDependencies": {
     "babel-cli": "^6.11.4",
     "babel-core": "^6.13.2",

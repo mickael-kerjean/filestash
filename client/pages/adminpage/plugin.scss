@@ -1,0 +1,21 @@
+.component_pluginbox{
+    background: white;
+    padding: 10px;
+    box-shadow: 2px 2px 2px var(--bg-color);
+    margin-bottom: 10px;
+    .title{
+        color: var(--dark);
+        font-size: 1.2em;
+        margin-bottom: 5px;
+    }
+}
+
+.component_plugin{
+    input[type="file"]{
+        background: white;
+        padding: 20px;
+        border: 2px solid var(--bg-color);
+        width: 100%;
+        box-sizing: border-box;
+    }
+}

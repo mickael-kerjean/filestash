@@ -1,0 +1,17 @@
+.component_setup{
+    transform: none!important; // transition and fixed posiiton doesn't cohabit well so we have to resort
+                               // to remove animation on this page to preserve the layout
+    text-align: justify;
+
+    button.completed{
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        width: 150px;
+        padding: 15px;
+        box-sizing: border-box;
+        border-top-left-radius: 10px;
+        font-size: 1.1em;
+        color: var(--emphasis);
+    }
+}

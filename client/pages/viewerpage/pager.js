@@ -60,9 +60,6 @@ export class Pager extends React.Component {
             this.props.history.push(url);
             if(this.refs.$page) this.refs.$page.blur();
             let preload_index = (n >= this.state.n || (this.state.n === this.state.files.length - 1 && n === 0)) ? this.calculateNextPageNumber(n) : this.calculatePrevPageNumber(n);
-            if(!this.state.files[preload_index].path){
-                console.log("> ISSUE: ", this.state.files[preload_index]);
-            }
             Files.url(this.state.files[preload_index].path)
                 .then((url) => this.props.emit("media::preload", url))
                 .catch(() => {});

@@ -1,0 +1,28 @@
+.formbuilder{
+    input[type="checkbox"]{
+        top: 5px;
+    }
+    .description{
+        margin-top: -5px;
+        margin-bottom: 10px;
+        opacity: 0.25;
+        font-size: 0.95em;
+    }
+
+    input::placeholder{
+        opacity: 0.5;
+    }
+
+    label.input_type_hidden{
+        display: none;
+    }
+
+    fieldset{
+        legend{
+            text-transform: uppercase;
+            font-weight: 200;
+            font-size: 1em;
+            padding: 0 15px;
+        }
+    }
+}

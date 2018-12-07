@@ -142,7 +142,7 @@ func verify(something []byte) ([]byte, error) {
 func GenerateID(ctx *App) string {
 	params := ctx.Session
 	p := "type =>" + params["type"]
-	p += "salt => " + ctx.Config.Get("general.secret_key").String()
+	p += "salt => " + SECRET_KEY
 	p += "host =>" + params["host"]
 	p += "hostname =>" + params["hostname"]
 	p += "username =>" + params["username"]

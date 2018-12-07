@@ -48,3 +48,27 @@ func NewAppCache(arg ...time.Duration) AppCache {
 	c.Cache = cache.New(retention*time.Minute, cleanup*time.Minute)
 	return c
 }
+
+
+// ============================================================================
+
+
+type KeyValueStore struct {
+	cache map[string]interface{}
+}
+
+func NewKeyValueStore() KeyValueStore {
+	return KeyValueStore{ cache: make(map[string]interface{}) }
+}
+
+func (this KeyValueStore) Get(key string) interface{} {
+	return this.cache[key]
+}
+
+func (this *KeyValueStore) Set(key string, value interface{}) {
+	this.cache[key] = value
+}
+
+func (this *KeyValueStore) Clear() {
+	this.cache = make(map[string]interface{})
+}

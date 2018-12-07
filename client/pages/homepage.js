@@ -25,9 +25,7 @@ export class HomePage extends React.Component {
                     this.setState({redirection: "/login"});
                 }
             })
-            .catch((err) => {
-                this.setState({redirection: "/login"});
-            });
+            .catch((err) => this.setState({redirection: "/login"}));
     }
     render() {
         if(this.state.redirection !== null){

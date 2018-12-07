@@ -28,9 +28,9 @@ func (d Dropbox) Init(params map[string]string, app *App) (IBackend, error) {
 	if env := os.Getenv("DROPBOX_CLIENT_ID"); env != "" {
 		backend.ClientId = env
 	} else {
-		backend.ClientId = app.Config.Get("oauth.dropbox.client_id").Default("").String()
+		backend.ClientId = Config.Get("auth.dropbox.client_id").Default("").String()
 	}
-	backend.Hostname = app.Config.Get("general.host").String()
+	backend.Hostname = Config.Get("general.host").String()
 	backend.Bearer = params["bearer"]
 
 	if backend.ClientId == "" {
@@ -43,6 +43,23 @@ func (d Dropbox) Init(params map[string]string, app *App) (IBackend, error) {
 
 func (d Dropbox) Info() string {
 	return "dropbox"
+}
+
+func (d Dropbox) LoginForm() Form {
+	return Form{
+		Elmnts: []FormElement{
+			FormElement{
+				Name:        "type",
+				Type:        "hidden",
+				Value:       "dropbox",
+			},
+			FormElement{
+				Name:        "image",
+				Type:        "image",
+				Value:       "/assets/img/dropbox.png",
+			},
+		},
+	}
 }
 
 func (d Dropbox) OAuthURL() string {

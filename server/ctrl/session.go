@@ -69,7 +69,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
-	obfuscate, err := EncryptString(ctx.Config.Get("general.secret_key").String(), string(s))
+	obfuscate, err := EncryptString(SECRET_KEY, string(s))
 	if err != nil {
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
@@ -93,19 +93,23 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
-	cookie := http.Cookie{
-		Name:   COOKIE_NAME_AUTH,
-		Value:  "",
-		Path:   COOKIE_PATH,
-		MaxAge: -1,
-	}
 	if ctx.Backend != nil {
 		if obj, ok := ctx.Backend.(interface{ Close() error }); ok {
 			go obj.Close()
 		}
 	}
-
-	http.SetCookie(res, &cookie)
+	http.SetCookie(res, &http.Cookie{
+		Name:   COOKIE_NAME_AUTH,
+		Value:  "",
+		Path:   COOKIE_PATH,
+		MaxAge: -1,
+	})
+	http.SetCookie(res, &http.Cookie{
+		Name:   COOKIE_NAME_ADMIN,
+		Value:  "",
+		Path:   COOKIE_PATH_ADMIN,
+		MaxAge: -1,
+	})
 	SendSuccessResult(res, nil)
 }
 

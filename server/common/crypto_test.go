@@ -24,7 +24,6 @@ func TestIDGeneration(t *testing.T) {
 	session["foo"] = "bar"
 	app := &App{
 		Session: session,
-		Config: NewConfig(),
 	}
 
 	id1 := GenerateID(app)

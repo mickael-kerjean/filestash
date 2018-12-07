@@ -1,6 +1,6 @@
 export { EventEmitter, EventReceiver } from './events';
 export { BreadCrumb, PathElement } from './breadcrumb';
-export { Input } from './input';
+export { Input, Select, Enabler } from './input';
 export { Textarea } from './textarea';
 export { Button } from './button';
 export { Container } from './container';
@@ -19,7 +19,5 @@ export { Audio } from './audio';
 export { Video } from './video';
 export { Dropdown, DropdownButton, DropdownList, DropdownItem } from './dropdown';
 export { MapShot } from './mapshot';
-export { LoggedInOnly, ErrorPage } from './decorator';
-//export { Connect } from './connect';
-// Those are commented because they will delivered as a separate chunk
-// export { Editor } from './editor';
+export { LoggedInOnly, ErrorPage, LoadingPage } from './decorator';
+export { FormBuilder } from './formbuilder';

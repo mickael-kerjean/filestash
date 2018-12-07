@@ -8,7 +8,7 @@ export function http_get(url, type = 'json'){
                     if(type === 'json'){
                         try{
                             let data = JSON.parse(xhr.responseText);
-                            if(data.status === 'ok'){
+                            if("status" in data === false || data.status === 'ok'){
                                 done(data);
                             }else{
                                 err(data);

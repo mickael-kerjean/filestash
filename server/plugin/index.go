@@ -18,7 +18,6 @@ func init() {
 	}
 	files, err := file.Readdir(0)
 
-	c := NewConfig()
 	for i:=0; i < len(files); i++ {
 		name := files[i].Name()
 		if strings.HasPrefix(name, ".") {
@@ -34,8 +33,8 @@ func init() {
 			Log.Warning("Can't register plugin: %s => %v", name, err)
 			continue
 		}
-		if obj, ok := fn.(func(config *Config)); ok {
-			obj(c)
+		if obj, ok := fn.(func(config *Configuration)); ok {
+			obj(&Config)
 		}
 	}
 }

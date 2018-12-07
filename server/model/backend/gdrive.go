@@ -32,9 +32,9 @@ func (g GDrive) Init(params map[string]string, app *App) (IBackend, error) {
 
 	config := &oauth2.Config{
 		Endpoint:     google.Endpoint,
-		ClientID:     app.Config.Get("oauth.gdrive.client_id").Default(os.Getenv("GDRIVE_CLIENT_ID")).String(),
-		ClientSecret: app.Config.Get("oauth.gdrive.client_secret").Default(os.Getenv("GDRIVE_CLIENT_SECRET")).String(),
-		RedirectURL:  app.Config.Get("general.host").String() + "/login",
+		ClientID:     Config.Get("auth.gdrive.client_id").Default(os.Getenv("GDRIVE_CLIENT_ID")).String(),
+		ClientSecret: Config.Get("auth.gdrive.client_secret").Default(os.Getenv("GDRIVE_CLIENT_SECRET")).String(),
+		RedirectURL:  Config.Get("general.host").String() + "/login",
 		Scopes:       []string{"https://www.googleapis.com/auth/drive"},
 	}
 	if config.ClientID == "" {
@@ -69,6 +69,23 @@ func (g GDrive) Init(params map[string]string, app *App) (IBackend, error) {
 
 func (g GDrive) Info() string {
 	return "googledrive"
+}
+
+func (g GDrive) LoginForm() Form {
+	return Form{
+		Elmnts: []FormElement{
+			FormElement{
+				Name:        "type",
+				Type:        "hidden",
+				Value:       "gdrive",
+			},
+			FormElement{
+				Name:        "image",
+				Type:        "image",
+				Value:       "/assets/img/google-drive.png",
+			},
+		},
+	}
 }
 
 func (g GDrive) OAuthURL() string {

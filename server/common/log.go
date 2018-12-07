@@ -2,8 +2,24 @@ package common
 
 import (
 	slog "log"
+	"fmt"
 	"time"
+	"os"
+	"path/filepath"
 )
+
+var logfile *os.File
+
+func init(){
+	var err error
+	logPath := filepath.Join(GetCurrentDir(), LOG_PATH)
+	os.MkdirAll(logPath, os.ModePerm)
+	logfile, err = os.OpenFile(filepath.Join(logPath, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		slog.Printf("ERROR log file: %+v", err)
+	}
+	logfile.WriteString("")
+}
 
 type LogEntry struct {
 	Host       string    `json:"host"`
@@ -31,27 +47,52 @@ type log struct{
 }
 
 func (l *log) Info(format string, v ...interface{}) {
-	if l.info && l.enable {		
-		slog.Printf("INFO  " + format + "\n", v...)
+	if l.info && l.enable {
+		message := fmt.Sprintf("%s INFO ", l.now())
+		message = fmt.Sprintf(message + format + "\n", v...)
+		logfile.WriteString(message)
 	}
 }
 
 func (l *log) Warning(format string, v ...interface{}) {
 	if l.warn && l.enable {
-		slog.Printf("WARN  " + format + "\n", v...)
+		message := fmt.Sprintf("%s WARN ", l.now())
+		message = fmt.Sprintf(message + format + "\n", v...)
+		logfile.WriteString(message)
 	}
 }
 
 func (l *log) Error(format string, v ...interface{}) {
 	if l.error && l.enable {
-		slog.Printf("ERROR " + format + "\n", v...)
+		message := fmt.Sprintf("%s ERROR ", l.now())
+		message = fmt.Sprintf(message + format + "\n", v...)
+		logfile.WriteString(message)
 	}
 }
 
 func (l *log) Debug(format string, v ...interface{}) {
 	if l.debug && l.enable {
-		slog.Printf("DEBUG " + format + "\n", v...)
+		message := fmt.Sprintf("%s DEBUG ", l.now())
+		message = fmt.Sprintf(message + format + "\n", v...)
+		logfile.WriteString(message)
 	}
+}
+
+func (l *log) Stdout(format string, v ...interface{}) {
+	slog.Printf(format + "\n", v...)
+	if l.enable {
+		message := fmt.Sprintf("%s MESSAGE: ", l.now())
+		message = fmt.Sprintf(message + format + "\n", v...)
+		logfile.WriteString(message)
+	}
+}
+
+func (l *log) now() string {
+	return time.Now().Format("2006/01/02 15:04:05")
+}
+
+func (l *log) Close() {
+	logfile.Close()
 }
 
 func (l *log) SetVisibility(str string) {

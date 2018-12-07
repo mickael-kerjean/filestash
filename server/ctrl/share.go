@@ -178,7 +178,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if submittedProof.Key != "<nil>" {
+	if submittedProof.Key != "" {
 		submittedProof.Id = Hash(submittedProof.Key + "::" + submittedProof.Value)
 		verifiedProof = append(verifiedProof, submittedProof)
 	}

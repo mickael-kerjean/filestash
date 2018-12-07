@@ -45,6 +45,45 @@ func (w WebDav) Info() string {
 	return "webdav"
 }
 
+func (w WebDav) LoginForm() Form {
+	return Form{
+		Elmnts: []FormElement{
+			FormElement{
+				Name:        "type",
+				Type:        "hidden",
+				Value:       "webdav",
+			},
+			FormElement{
+				Name:        "url",
+				Type:        "text",
+				Placeholder: "Address*",
+			},
+			FormElement{
+				Name:        "username",
+				Type:        "text",
+				Placeholder: "Username",
+			},
+			FormElement{
+				Name:        "password",
+				Type:        "password",
+				Placeholder: "Password",
+			},
+			FormElement{
+				Name:        "advanced",
+				Type:        "enable",
+				Placeholder: "Advanced",
+				Target:      []string{"webdav_path"},
+			},
+			FormElement{
+				Id:          "webdav_path",
+				Name:        "path",
+				Type:        "text",
+				Placeholder: "Path",
+			},
+		},
+	}
+}
+
 func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 	files := make([]os.FileInfo, 0)
 	query := `<d:propfind xmlns:d='DAV:'>

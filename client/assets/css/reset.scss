@@ -83,6 +83,7 @@ a {
 }
 
 select {
+    -webkit-appearance: none;
     -moz-appearance: none;
 }
 
@@ -100,8 +101,7 @@ button::-moz-focus-inner {
     border: 0;
 }
 
-input,
-textarea {
+input, textarea, select {
     transition: border 0.2s;
     outline: none;
 }
@@ -109,9 +109,9 @@ textarea {
 input[type="checkbox"] {
     position: relative;
     top: 1px;
-    margin: 0;
-    padding: 0;
     vertical-align: top;
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 .no-select {

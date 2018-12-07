@@ -36,6 +36,10 @@ func (d *Driver) Get(name string) IBackend {
 	return b
 }
 
+func (d *Driver) Drivers() map[string]IBackend {
+	return d.ds
+}
+
 type Nothing struct {}
 
 func (b Nothing) Init(params map[string]string, app *App) (IBackend, error) {
@@ -64,4 +68,8 @@ func (b Nothing) Touch(path string) error {
 }
 func (b Nothing) Save(path string, file io.Reader) error {
 	return NewError("", 401)
+}
+
+func (b Nothing) LoginForm() Form {
+	return Form{}
 }

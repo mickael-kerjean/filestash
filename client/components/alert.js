@@ -14,13 +14,16 @@ export class ModalAlert extends Popup {
         alert.subscribe((Component, okCallback) => {
             this.setState({
                 appear: true,
-                value: Component
+                value: Component,
+                fn: okCallback
             });
         });
     }
 
     onSubmit(e){
-        this.setState({appear: false});
+        this.setState({appear: false}, () => {
+            requestAnimationFrame(() => this.state.fn())
+        });
     }
 
     modalContentBody(){

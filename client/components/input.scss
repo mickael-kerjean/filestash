@@ -21,3 +21,13 @@
         border-color: var(--emphasis-primary);
     }
 }
+
+.component_select{
+    background: inherit;
+    border-radius: 0;
+    border: none;
+    border-bottom: 2px solid rgba(70, 99, 114, 0.1);
+    color: inherit;
+    width: 100%;
+    font-size: 1em;
+}

@@ -95,6 +95,58 @@ func (b Sftp) Info() string {
 	return "sftp"
 }
 
+func (b Sftp) LoginForm() Form {
+	return Form{
+		Elmnts: []FormElement{
+			FormElement{
+				Name:        "type",
+				Type:        "hidden",
+				Value:       "sftp",
+			},
+			FormElement{
+				Name:        "hostname",
+				Type:        "text",
+				Placeholder: "Hostname*",
+			},
+			FormElement{
+				Name:        "username",
+				Type:        "text",
+				Placeholder: "Username",
+			},
+			FormElement{
+				Name:        "password",
+				Type:        "password",
+				Placeholder: "Password",
+			},
+			FormElement{
+				Name:        "advanced",
+				Type:        "enable",
+				Placeholder: "Advanced",
+				Target:      []string{"sftp_path", "sftp_port", "sftp_passphrase"},
+			},
+			FormElement{
+				Id:          "sftp_path",
+				Name:        "path",
+				Type:        "text",
+				Placeholder: "Path",
+			},
+			FormElement{
+				Id:          "sftp_port",
+				Name:        "port",
+				Type:        "number",
+				Placeholder: "Port",
+
+			},
+			FormElement{
+				Id:          "sftp_passphrase",
+				Name:        "passphrase",
+				Type:        "text",
+				Placeholder: "Passphrase",
+			},
+		},
+	}
+}
+
 func (b Sftp) Home() (string, error) {
 	cwd, err := b.SFTPClient.Getwd()
 	if err != nil {
@@ -113,7 +165,7 @@ func (b Sftp) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (b Sftp) Cat(path string) (io.Reader, error) {
-	remoteFile, err := b.SFTPClient.Open(path)
+	remoteFile, err := b.SFTPClient.OpenFile(path, os.O_RDONLY)
 	if err != nil {
 		return nil, b.err(err)
 	}

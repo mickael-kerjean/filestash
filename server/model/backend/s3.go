@@ -57,6 +57,58 @@ func (s S3Backend) Info() string {
 	return "s3"
 }
 
+func (s S3Backend) LoginForm() Form {
+	return Form{
+		Elmnts: []FormElement{
+			FormElement{
+				Name:        "type",
+				Type:        "hidden",
+				Value:       "s3",
+			},
+			FormElement{
+				Name:        "access_key_id",
+				Type:        "text",
+				Placeholder: "Access Key ID*",
+			},
+			FormElement{
+				Name:        "secret_access_key",
+				Type:        "text",
+				Placeholder: "Secret Access Key*",
+			},
+			FormElement{
+				Name:        "advanced",
+				Type:        "enable",
+				Placeholder: "Advanced",
+				Target:      []string{"s3_path", "s3_encryption_key", "s3_region", "s3_endpoint"},
+			},
+			FormElement{
+				Id:          "s3_path",
+				Name:        "path",
+				Type:        "text",
+				Placeholder: "Path",
+			},
+			FormElement{
+				Id:          "s3_encryption_key",
+				Name:        "encryption_key",
+				Type:        "text",
+				Placeholder: "Encryption Key",
+			},
+			FormElement{
+				Id:          "s3_region",
+				Name:        "region",
+				Type:        "text",
+				Placeholder: "Region",
+			},
+			FormElement{
+				Id:          "s3_endpoint",
+				Name:        "endpoint",
+				Type:        "text",
+				Placeholder: "Endpoint",
+			},
+		},
+	}
+}
+
 func (s S3Backend) Meta(path string) Metadata {
 	if path == "/" {
 		return Metadata{

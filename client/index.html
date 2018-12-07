@@ -26,7 +26,6 @@
         <link rel="icon" type="image/png" sizes="96x96" href="/assets/logo/favicon-96x96.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/assets/logo/favicon-16x16.png">
         <link rel="icon" href="/assets/logo/favicon.ico" type="image/x-icon" />
-        <script src="/api/config"></script>
 
         <meta name="msapplication-TileColor" content="#f2f2f2">
         <meta name="msapplication-TileImage" content="/assets/logo/ms-icon-144x144.png">
@@ -35,6 +34,19 @@
         <meta name="description" content="browse your files in the cloud">
     </head>
     <body>
-        <div id="main" style="height: 100%"></div>
+      <div id="main" style="height: 100%">
+        <style>
+          html{
+            background: #f2f3f5;
+            color: #375160;
+          }
+        </style>
+        <script>
+          if(location.pathname == "/" || location.pathname == "/login"){
+            $style = document.querySelector("style");
+            $style.innerText = $style.innerText.replace("#f2f3f5", "#9AD1ED")
+          }
+        </script>
+      </div>
     </body>
 </html>

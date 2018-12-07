@@ -1,183 +1,322 @@
 package common
 
 import (
-	"bytes"
 	"encoding/json"
-	"io"
-	"io/ioutil"
+	"fmt"
 	"github.com/tidwall/gjson"
-	"github.com/tidwall/sjson"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sync"
-	"os"
+	"strings"
 )
 
-var SECRET_KEY string
-var configPath string = filepath.Join(GetCurrentDir(), CONFIG_PATH + "config.json")
+var (
+	Config Configuration
+	configPath string = filepath.Join(GetCurrentDir(), CONFIG_PATH + "config.json")
+	SECRET_KEY string
+)
+
+type Configuration struct {
+	mu             sync.Mutex
+	currentElement *FormElement
+	cache          KeyValueStore
+	form           []Form
+	conn           []map[string]interface{}
+}
+
+type Form struct {
+	Title  string
+	Form   []Form
+	Elmnts []FormElement
+}
+
+type FormElement struct {
+	Id          string      `json:"id,omitempty"`
+	Name        string      `json:"label"`
+	Type        string      `json:"type"`
+	Description string      `json:"description,omitempty"`
+	Placeholder string      `json:"placeholder,omitempty"`
+	Opts        []string    `json:"options,omitempty"`
+	Target      []string    `json:"target,omitempty"`
+	Enabled     bool        `json:"enabled"`
+	Default     interface{} `json:"default"`
+	Value       interface{} `json:"value"`
+}
 
 func init() {
-	c := NewConfig()
-	// Let's initialise all our json config stuff
-	// For some reasons the file will be written bottom up so we start from the end moving up to the top
+	Config = NewConfiguration()
+	Config.Load()
+	Config.Init()
+}
 
-	// Connections
-	if c.Get("connections.0.type").Interface() == nil {
-		c.Get("connections.-1").Set(map[string]interface{}{"type": "webdav", "label": "Webdav"})
-		c.Get("connections.-1").Set(map[string]interface{}{"type": "ftp", "label": "FTP"})
-		c.Get("connections.-1").Set(map[string]interface{}{"type": "sftp", "label": "SFTP"})
-		c.Get("connections.-1").Set(map[string]interface{}{"type": "git", "label": "GIT"})
-		c.Get("connections.-1").Set(map[string]interface{}{"type": "s3", "label": "S3"})
-		c.Get("connections.-1").Set(map[string]interface{}{"type": "dropbox", "label": "Dropbox"})
-		c.Get("connections.-1").Set(map[string]interface{}{"type": "gdrive", "label": "Drive"})
+func NewConfiguration() Configuration {
+	return Configuration{
+		mu:    sync.Mutex{},
+		cache: NewKeyValueStore(),
+		form: []Form{
+			Form{
+				Title: "general",
+				Elmnts: []FormElement{
+					FormElement{Name: "name", Type: "text", Default: "Nuage", Description: "Name has shown in the UI", Placeholder: "Default: \"Filestash\""},
+					FormElement{Name: "port", Type: "number", Default: 8334, Description: "Port on which the application is available.", Placeholder: "Default: 8334"},
+					FormElement{Name: "host", Type: "text", Default: "https://demo.filestash.app", Description: "The URL that users will use", Placeholder: "Eg: \"https://demo.filestash.app\""},
+					FormElement{Name: "secret_key", Type: "password", Description: "The key that's used to encrypt and decrypt content. Update this settings will invalidate existing user sessions and shared links, use with caution!"},
+					FormElement{Name: "editor", Type: "select", Default: "emacs", Opts: []string{"base", "emacs", "vim"}, Description: "Keybinding to be use in the editor. Default: \"emacs\""},
+					FormElement{Name: "fork_button", Type: "boolean", Default: true, Description: "Display the fork button in the login screen"},
+					FormElement{Name: "display_hidden", Type: "boolean", Default: false, Description: "Should files starting with a dot be visible by default?"},
+					FormElement{Name: "auto_connect", Type: "boolean", Default: false, Description: "User don't have to click on the login button if an admin is prefilling a unique backend"},
+					FormElement{Name: "remember_me", Type: "boolean", Default: true, Description: "Visiblity of the remember me button on the login screen"},
+				},
+			},
+			Form{
+				Title: "features",
+				Form: []Form{
+					Form{
+						Title: "search",
+						Elmnts: []FormElement{
+							FormElement{Name: "enable", Type: "boolean", Default: true, Description: "Enable/Disable the search feature"},
+						},
+					},
+					Form{
+						Title: "share",
+						Elmnts: []FormElement{
+							FormElement{Name: "enable", Type: "boolean", Default: true, Description: "Enable/Disable the share feature"},
+						},
+					},
+				},
+			},
+			Form{
+				Title: "log",
+				Elmnts: []FormElement{
+					FormElement{Name: "enable", Type: "enable", Target: []string{"log_level"}, Default: true},
+					FormElement{Name: "level", Type: "select", Default: "INFO", Opts: []string{"DEBUG", "INFO", "WARNING", "ERROR"}, Id: "log_level",  Description: "Default: \"INFO\". This setting determines the level of detail at which log events are written to the log file"},
+					FormElement{Name: "telemetry", Type: "boolean", Default: false, Description: "We won't share anything with any third party. This will only to be used to improve Filestash"},
+				},
+			},
+			Form{
+				Title: "email",
+				Elmnts: []FormElement{
+					FormElement{Name: "server", Type: "text", Default: "smtp.gmail.com", Description: "Address of the SMTP email server.", Placeholder: "Default: smtp.gmail.com"},
+					FormElement{Name: "port", Type: "number", Default: 587, Description: "Port of the SMTP email server. Eg: 587", Placeholder: "Default: 587"},
+					FormElement{Name: "username", Type: "text", Description: "The username for authenticating to the SMTP server.", Placeholder: "Eg: username@gmail.com"},
+					FormElement{Name: "password", Type: "password", Description: "The password associated with the SMTP username.", Placeholder: "Eg: Your google password"},
+					FormElement{Name: "from", Type: "text", Description: "Email address visible on sent messages.", Placeholder: "Eg: username@gmail.com"},
+				},
+			},
+			Form{
+				Title: "auth",
+				Elmnts: []FormElement{
+					FormElement{Name: "admin", Type: "bcrypt", Default: "", Description: "Password of the admin section."},
+				},
+				Form: []Form{
+					Form{
+						Title: "custom",
+						Elmnts: []FormElement{
+							FormElement{Name: "client_secret", Type: "password"},
+							FormElement{Name: "client_id", Type: "text"},
+							FormElement{Name: "sso_domain", Type: "text"},
+						},
+					},
+				},
+			},
+		},
+		conn: make([]map[string]interface{}, 0),
+	}
+}
+
+func (this Form) MarshalJSON() ([]byte, error) {
+	return []byte(this.toJSON(func(el FormElement) string {
+		a, e := json.Marshal(el)
+		if e != nil {
+			return ""
+		}
+		return string(a)
+	})), nil
+}
+
+func (this Form) toJSON(fn func(el FormElement) string) string {
+	formatKey := func(str string) string {
+		str = strings.ToLower(str)
+		return strings.Replace(str, " ", "_", -1)
+	}
+	ret := ""
+	if this.Title != "" {
+		ret = fmt.Sprintf("%s\"%s\":", ret, formatKey(this.Title))
+	}
+	for i := 0; i < len(this.Elmnts); i++ {
+		if i == 0 {
+			ret = fmt.Sprintf("%s{", ret)
+		}
+		ret = fmt.Sprintf("%s\"%s\":%s", ret, formatKey(this.Elmnts[i].Name), fn(this.Elmnts[i]))
+		if i == len(this.Elmnts) - 1 && len(this.Form) == 0 {
+			ret = fmt.Sprintf("%s}", ret)
+		}
+		if i != len(this.Elmnts) - 1 || len(this.Form) != 0 {
+			ret = fmt.Sprintf("%s,", ret)
+		}
 	}
 
-	// OAuth credentials
-	c.Get("oauth").Default("")
-
-	// Features
-	c.Get("features.share.enable").Default(true)
-	c.Get("features.search.enable").Default(true)
-	
-
-	// Log
-	c.Get("log.telemetry").Default(true)
-	c.Get("log.level").Default("INFO")
-	c.Get("log.enable").Default(true)
-
-	// Email
-	c.Get("email.from").Default("username@gmail.com")
-	c.Get("email.password").Default("password")
-	c.Get("email.username").Default("username@gmail.com")
-	c.Get("email.port").Default(587)
-	c.Get("email.server").Default("smtp.gmail.com")
-
-	// General
-	c.Get("general.remember_me").Default(true)
-	c.Get("general.auto_connect").Default(false)
-	c.Get("general.display_hidden").Default(true)
-	c.Get("general.fork_button").Default(true)
-	c.Get("general.editor").Default("emacs")
-	if c.Get("general.secret_key").String() == "" {
-		c.Get("general.secret_key").Set(RandomString(16))
+	for i := 0; i < len(this.Form); i++ {
+		if i == 0 && len(this.Elmnts) == 0 {
+			ret = fmt.Sprintf("%s{", ret)
+		}
+		ret = ret + this.Form[i].toJSON(fn)
+		if i == len(this.Form) - 1 {
+			ret = fmt.Sprintf("%s}", ret)
+		}
+		if i != len(this.Form) - 1 {
+			ret = fmt.Sprintf("%s,", ret)
+		}
 	}
-	SECRET_KEY = c.Get("general.secret_key").String()
+
+	if len(this.Form) == 0 && len(this.Elmnts) == 0 {
+		ret = fmt.Sprintf("%s{}", ret)
+	}
+
+	return ret
+}
+
+type FormIterator struct {
+	Path string
+	*FormElement
+}
+func (this *Form) Iterator() []FormIterator {
+	slice := make([]FormIterator, 0)
+
+	for i, _ := range this.Elmnts {
+		slice = append(slice, FormIterator{
+			strings.ToLower(this.Title),
+			&this.Elmnts[i],
+		})
+	}
+	for _, node := range this.Form {
+		r := node.Iterator()
+		if this.Title != "" {
+			for i := range r {
+				r[i].Path = strings.ToLower(this.Title) + "." + r[i].Path
+			}
+		}
+		slice = append(r, slice...)
+	}
+	return slice
+}
+
+func (this *Configuration) Load() {
+	file, err := os.OpenFile(configPath, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		Log.Warning("Can't read from config file")
+		return
+	}
+	defer file.Close()
+
+	cFile, err := ioutil.ReadAll(file)
+	if err != nil {
+		Log.Warning("Can't parse config file")
+		return
+	}
+
+	this.conn = func(cFile []byte) []map[string]interface{} {
+		var d struct {
+			Connections []map[string]interface{} `json:"connections"`
+		}
+		json.Unmarshal(cFile, &d)
+		return d.Connections
+	}(cFile)
+
+	this.form = func(cFile []byte) []Form {
+		f := Form{Form: this.form}
+		for _, el := range f.Iterator() {
+			value := gjson.Get(string(cFile), el.Path + "." + el.Name).Value()
+			if value != nil {
+				el.Value = value
+			}
+		}
+		return this.form
+	}(cFile)
+
+	Log.SetVisibility(this.Get("log.level").String())
+	return
+}
+
+func (this *Configuration) Init() {
+	if this.Get("general.secret_key").String() == "" {
+		key := RandomString(16)
+		this.Get("general.secret_key").Set(key)
+	}
 	if env := os.Getenv("APPLICATION_URL"); env != "" {
-		c.Get("general.host").Set(env)
-	} else {
-		c.Get("general.host").Default("http://127.0.0.1:8334")
+		this.Get("general.host").Set(env).String()
 	}
-	c.Get("general.port").Default(8334)
-	c.Get("general.name").Default("Nuage")
-}
 
-func NewConfig() *Config {
-	a := Config{}
-	return a.load()
-}
-type Config struct {
-	mu sync.Mutex
-	path *string
-	json string
-	reader gjson.Result
-}
-
-func (this *Config) load() *Config {
-	if f, err := os.OpenFile(configPath, os.O_RDONLY, os.ModePerm); err == nil {
-		j, _ := ioutil.ReadAll(f)
-		this.json = string(j)
-		f.Close()
-	} else {
-		this.json = `{}`
+	if len(this.conn) == 0 {
+		this.conn = []map[string]interface{}{
+			map[string]interface{}{
+				"type": "webdav",
+				"label": "WebDav",
+			},
+			map[string]interface{}{
+				"type": "ftp",
+				"label": "FTP",
+			},
+			map[string]interface{}{
+				"type": "sftp",
+				"label": "SFTP",
+			},
+			map[string]interface{}{
+				"type": "git",
+				"label": "GIT",
+			},
+			map[string]interface{}{
+				"type": "s3",
+				"label": "S3",
+			},
+			map[string]interface{}{
+				"type": "dropbox",
+				"label": "Dropbox",
+			},
+			map[string]interface{}{
+				"type": "gdrive",
+				"label": "Drive",
+			},
+		}
+		this.Save()
 	}
-	if gjson.Valid(this.json) == true {
-		this.reader = gjson.Parse(this.json)
-	}
-	return this
+	SECRET_KEY = this.Get("general.secret_key").String()
 }
 
-func (this *Config) Get(path string) *Config {
-	this.path = &path
-	return this
-}
+func (this Configuration) Save() Configuration {
+	// convert config data to an appropriate json struct
+	v := Form{Form: this.form}.toJSON(func (el FormElement) string {
+		a, e := json.Marshal(el.Value)
+		if e != nil {
+			return "null"
+		}
+		return string(a)
+	})
 
-func (this *Config) Default(value interface{}) *Config {
-	if this.path == nil {
+	// convert back to a map[string]interface{} so that we can stuff in backends config
+	var tmp map[string]interface{}
+	json.Unmarshal([]byte(v), &tmp)
+	tmp["connections"] = this.conn
+
+	// let's build a json of the whole struct
+	j, err := json.Marshal(tmp)
+	if err != nil {
 		return this
 	}
 
-	if val := this.reader.Get(*this.path).Value(); val == nil {
-		this.mu.Lock()
-		this.json, _ = sjson.Set(this.json, *this.path, value)
-		this.reader = gjson.Parse(this.json)
-		this.save()
-		this.mu.Unlock()
-	}
-	return this
-}
-
-func (this *Config) Set(value interface{}) *Config {
-	if this.path == nil {
+	// deploy the config in our config.json
+	file, err := os.Create(configPath)
+	if err != nil {
 		return this
 	}
-
-	this.mu.Lock()
-	this.json, _ = sjson.Set(this.json, *this.path, value)
-	this.reader = gjson.Parse(this.json)
-	this.save()
-	this.mu.Unlock()
+	defer file.Close()
+	file.Write(PrettyPrint(j))
 	return this
 }
 
-func (this Config) String() string {
-	return this.reader.Get(*this.path).String()
-}
-
-func (this Config) Int() int {
-	val := this.reader.Get(*this.path).Value()
-	switch val.(type) {
-	  case float64: return int(val.(float64))
-	  case int64: return int(val.(int64))
-	  case int: return val.(int)
-	}
-	return 0
-}
-
-func (this Config) Bool() bool {
-	val := this.reader.Get(*this.path).Value()
-	switch val.(type) {
-	  case bool: return val.(bool)
-	}
-	return false
-}
-
-func (this Config) Interface() interface{} {
-	return this.reader.Get(*this.path).Value()
-}
-
-func (this Config) save() {
-	if this.path == nil {
-		Log.Error("Config error")
-		return
-	}
-	if gjson.Valid(this.json) == false {
-		Log.Error("Config error")
-		return
-	}
-	if f, err := os.OpenFile(configPath, os.O_WRONLY|os.O_CREATE, os.ModePerm); err == nil {
-		buf := bytes.NewBuffer(PrettyPrint([]byte(this.json)))
-		io.Copy(f, buf)
-		f.Close()
-	}
-}
-
-func (this Config) Scan(p interface{}) error {
-	content := this.reader.Get(*this.path).String()
-
-	return json.Unmarshal([]byte(content), &p)
-}
-
-func (this Config) Export() (string, error) {
-	publicConf := struct {
+func (this Configuration) Export() interface{} {
+	return struct {
 		Editor        string            `json:"editor"`
 		ForkButton    bool              `json:"fork_button"`
 		DisplayHidden bool              `json:"display_hidden"`
@@ -195,14 +334,127 @@ func (this Config) Export() (string, error) {
 		AutoConnect:   this.Get("general.auto_connect").Bool(),
 		Name:          this.Get("general.name").String(),
 		RememberMe:    this.Get("general.remember_me").Bool(),
-		Connections:   this.Get("connections").Interface(),
+		Connections:   this.conn,
 		EnableSearch:  this.Get("features.search.enable").Bool(),
 		EnableShare:   this.Get("features.share.enable").Bool(),
 		MimeTypes:     AllMimeTypes(),
 	}
-	j, err := json.Marshal(publicConf)
-	if err != nil {
-		return "", err
+}
+
+func (this *Configuration) Get(key string) *Configuration {
+	var traverse func (forms *[]Form, path []string) *FormElement
+	traverse = func (forms *[]Form, path []string) *FormElement {
+		if len(path) == 0 {
+			return nil
+		}
+		for i := range *forms {
+			currentForm := (*forms)[i]
+			if currentForm.Title == path[0] {
+				if len(path) == 2 {
+					// we are on a leaf
+					// 1) attempt to get a `formElement`
+					for j, el := range currentForm.Elmnts {
+						if el.Name == path[1] {
+							return &(*forms)[i].Elmnts[j]
+						}
+					}
+					// 2) `formElement` does not exist, let's create it
+					(*forms)[i].Elmnts = append(currentForm.Elmnts, FormElement{ Name: path[1], Type: "text" })
+					return &(*forms)[i].Elmnts[len(currentForm.Elmnts)]
+				} else {
+					// we are NOT on a leaf, let's continue our tree transversal
+					return traverse(&(*forms)[i].Form, path[1:])
+				}
+			}
+		}
+		// append a new `form` if the current key doesn't exist
+		*forms = append(*forms, Form{ Title: path[0] })
+		return traverse(forms, path)
 	}
-	return string(j), nil
+
+	// increase speed (x4 with our bench) by using a cache
+	tmp := this.cache.Get(key)
+	if tmp == nil {
+		this.currentElement = traverse(&this.form, strings.Split(key, "."))
+		this.cache.Set(key, this.currentElement)
+	} else {
+		this.currentElement = tmp.(*FormElement)
+	}
+	return this
+}
+
+func (this *Configuration) Default(value interface{}) *Configuration {
+	if this.currentElement == nil {
+		return this
+	}
+
+	this.mu.Lock()
+	if this.currentElement.Default == nil {
+		this.currentElement.Default = value
+		this.Save()
+	} else {
+		if this.currentElement.Default != value {
+			Log.Debug("Attempt to set multiple default config value => %+v", this.currentElement)
+		}
+	}
+	this.mu.Unlock()
+	return this
+}
+
+func (this *Configuration) Set(value interface{}) *Configuration {
+	if this.currentElement == nil {
+		return this
+	}
+
+	this.mu.Lock()
+	if this.currentElement.Value != value {
+		this.currentElement.Value = value
+		this.Save()
+	}
+	this.mu.Unlock()
+	return this
+}
+
+func (this Configuration) String() string {
+	val := this.Interface()
+	switch val.(type) {
+	    case string: return val.(string)
+	    case []byte: return string(val.([]byte))
+	}
+	return ""
+}
+
+func (this Configuration) Int() int {
+	val := this.Interface()
+	switch val.(type) {
+	    case float64: return int(val.(float64))
+	    case int64: return int(val.(int64))
+	    case int: return val.(int)
+	}
+	return 0
+}
+
+func (this Configuration) Bool() bool {
+	val := this.Interface()
+	switch val.(type) {
+	    case bool: return val.(bool)
+	}
+	return false
+}
+
+func (this Configuration) Interface() interface{} {
+	if this.currentElement == nil {
+		return nil
+	}
+	val := this.currentElement.Value
+	if val == nil {
+		val = this.currentElement.Default
+	}
+	return val
+}
+
+func (this Configuration) MarshalJSON() ([]byte, error) {
+	return Form{
+		Form: this.form,
+	}.MarshalJSON()
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { NgIf, Icon } from '../../components/';
+import { NgIf, Icon, Button } from '../../components/';
 import { Share } from '../../model/';
 import { randomString, notify, absoluteToRelative, copyToClipboard, filetype } from '../../helpers/';
 import './share.scss';

@@ -15,8 +15,6 @@ import (
 
 func main() {
 	app := App{}
-	app.Config = NewConfig()
-	Log.SetVisibility(app.Config.Get("log.level").String())
 	Init(&app)
 }
 
@@ -48,36 +46,47 @@ func Init(a *App) {
 	session.Handle("/auth/{service}", APIHandler(SessionOAuthBackend, *a)).Methods("GET")
 
 	files := r.PathPrefix("/api/files").Subrouter()
-	files.HandleFunc("/ls", APIHandler(LoggedInOnly(FileLs), *a)).Methods("GET")
-	files.HandleFunc("/cat", APIHandler(LoggedInOnly(FileCat), *a)).Methods("GET")
-	files.HandleFunc("/cat", APIHandler(LoggedInOnly(FileSave), *a)).Methods("POST")
-	files.HandleFunc("/mv", APIHandler(LoggedInOnly(FileMv), *a)).Methods("GET")
-	files.HandleFunc("/rm", APIHandler(LoggedInOnly(FileRm), *a)).Methods("GET")
+	files.HandleFunc("/ls",    APIHandler(LoggedInOnly(FileLs),    *a)).Methods("GET")
+	files.HandleFunc("/cat",   APIHandler(LoggedInOnly(FileCat),   *a)).Methods("GET")
+	files.HandleFunc("/cat",   APIHandler(LoggedInOnly(FileSave),  *a)).Methods("POST")
+	files.HandleFunc("/mv",    APIHandler(LoggedInOnly(FileMv),    *a)).Methods("GET")
+	files.HandleFunc("/rm",    APIHandler(LoggedInOnly(FileRm),    *a)).Methods("GET")
 	files.HandleFunc("/mkdir", APIHandler(LoggedInOnly(FileMkdir), *a)).Methods("GET")
 	files.HandleFunc("/touch", APIHandler(LoggedInOnly(FileTouch), *a)).Methods("GET")
 
 	share := r.PathPrefix("/api/share").Subrouter()
-	share.HandleFunc("", APIHandler(ShareList, *a)).Methods("GET")
-	share.HandleFunc("/{share}", APIHandler(ShareUpsert, *a)).Methods("POST")
-	share.HandleFunc("/{share}", APIHandler(ShareDelete, *a)).Methods("DELETE")
+	share.HandleFunc("",               APIHandler(ShareList,        *a)).Methods("GET")
+	share.HandleFunc("/{share}",       APIHandler(ShareUpsert,      *a)).Methods("POST")
+	share.HandleFunc("/{share}",       APIHandler(ShareDelete,      *a)).Methods("DELETE")
 	share.HandleFunc("/{share}/proof", APIHandler(ShareVerifyProof, *a)).Methods("POST")
 
 	// WEBDAV
 	r.PathPrefix("/s/{share}").Handler(CtxInjector(WebdavHandler, *a))
 
+	// ADMIN
+	admin := r.PathPrefix("/admin/api").Subrouter()
+	admin.HandleFunc("/session", CtxInjector(AdminSessionGet,                       *a)).Methods("GET")
+	admin.HandleFunc("/session", CtxInjector(AdminSessionAuthenticate,              *a)).Methods("POST")
+	admin.HandleFunc("/backend", CtxInjector(AdminBackend,                          *a)).Methods("GET")
+	admin.HandleFunc("/plugin",  CtxInjector(AdminOnly(FetchPluginsHandler),        *a)).Methods("GET")
+	admin.HandleFunc("/log",     CtxInjector(AdminOnly(FetchLogHandler),            *a)).Methods("GET")
+	admin.HandleFunc("/config",  CtxInjector(AdminOnly(PrivateConfigHandler),       *a)).Methods("GET")
+	admin.HandleFunc("/config",  CtxInjector(AdminOnly(PrivateConfigUpdateHandler), *a)).Methods("POST")
+
 	// APP
-	r.HandleFunc("/api/config", CtxInjector(ConfigHandler, *a)).Methods("GET")
+	r.HandleFunc("/api/config", CtxInjector(PublicConfigHandler, *a)).Methods("GET")
 	r.PathPrefix("/assets").Handler(StaticHandler(FILE_ASSETS, *a)).Methods("GET")
-	r.PathPrefix("/about").Handler(AboutHandler(*a))
+	r.PathPrefix("/about").Handler(AboutHandler(*a)).Methods("GET")
 	r.PathPrefix("/").Handler(DefaultHandler(FILE_INDEX, *a)).Methods("GET")
 
 	srv := &http.Server{
-		Addr:    ":" + strconv.Itoa(a.Config.Get("general.port").Int()),
+		Addr:    ":" + strconv.Itoa(Config.Get("general.port").Int()),
 		Handler: r,
 	}
-	Log.Info("STARTING SERVER")
+
+	Log.Stdout("STARTING SERVER")
 	if err := srv.ListenAndServe(); err != nil {
-		Log.Error("Server start: %v", err)
+		Log.Stdout("Server start: %v", err)
 		return
 	}
 }

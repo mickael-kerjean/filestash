@@ -48,7 +48,7 @@ export class ConnectPage extends React.Component {
             .then(Session.currentUser)
             .then((user) => {
                 let url = '/files/';
-                let path = user.home
+                let path = user.home;
                 if(path){
                     path = path.replace(/^\/?(.*?)\/?$/, "$1");
                     if(path !== ""){
@@ -108,7 +108,7 @@ export class ConnectPage extends React.Component {
     render() {
         return (
             <div className="component_page_connect">
-              <NgIf cond={CONFIG["fork_button"]}>
+              <NgIf cond={window.CONFIG["fork_button"]}>
                 <ForkMe repo="https://github.com/mickael-kerjean/nuage" />
               </NgIf>
               <Container maxWidth="565px">
