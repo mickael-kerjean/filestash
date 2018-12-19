@@ -52,7 +52,7 @@ class BackendModel {
     constructor(){}
 
     all(){
-        return http_get("/admin/api/backend").then((r) => r.result);
+        return http_get("/api/backend").then((r) => r.result);
     }
 }
 

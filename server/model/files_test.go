@@ -11,7 +11,6 @@ var app *App
 
 func init() {
 	app = &App{}
-	app.Config = &Config{}
 }
 
 // func TestWebdav(t *testing.T) {

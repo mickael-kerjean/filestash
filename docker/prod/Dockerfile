@@ -7,8 +7,10 @@ ENV CGO_LDFLAGS_ALLOW='-fopenmp'
 RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     #################
     # Dependencies
-    apk --no-cache --virtual .build-deps add make gcc g++ curl nodejs git go npm && \
+    apk --no-cache --virtual .build-deps add make gcc g++ curl nodejs git npm && \
+    apk  --no-cache --virtual .go add go --repository http://dl-3.alpinelinux.org/alpine/edge/community && \
     mkdir /tmp/deps && \
+    cd /tmp/deps && \
     # libvips #######
     cd /tmp/deps && \
     curl -L -X GET https://github.com/libvips/libvips/releases/download/v8.7.0/vips-8.7.0.tar.gz > libvips.tar.gz && \
@@ -45,7 +47,7 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     #################
     # Compile Plugins
     mkdir -p ./dist/data/plugin && \
-    go build -buildmode=plugin -o ./dist/data/plugin/image.so server/plugin/image_light/index.go && \
+    go build -buildmode=plugin -o ./dist/data/plugin/image.so server/plugin/plg_image_light/index.go && \
     #################
     # Finalise the build
     cd $GOPATH/src/github.com/mickael-kerjean/nuage/ && \
@@ -54,7 +56,8 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     cd /app && \
     rm -rf $GOPATH && \
     rm -rf /tmp/* && \
-    apk del .build-deps
+    apk del .build-deps && \
+    apk del .go
 
 EXPOSE 8334
 VOLUME ["/app/data/config/"]

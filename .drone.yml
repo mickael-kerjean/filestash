@@ -10,7 +10,7 @@ steps:
     CGO_LDFLAGS_ALLOW: '-fopenmp'
   commands:
   - cd server
-  - rm -rf plugin
+  - rm -rf plugin/plg_*
   - go get -t ./...
   - go build
   - go test -v ./...

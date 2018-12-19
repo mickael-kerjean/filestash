@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func Init(config *Config) {
+func Init(config *Configuration) {
 	plugin_enable := config.Get("transcoder.image.enable").Default(true).Bool()
 	plugin_thumbsize := uint(config.Get("transcoder.image.thumbnail_size").Default(300).Int())
 

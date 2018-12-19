@@ -1,7 +1,7 @@
 import React from "react";
-import { Container, Card, NgIf, Input, Button, Textarea, Loader, Notification, Prompt } from "../../components/";
-import { invalidate, encrypt, decrypt, gid, settings_get, settings_put } from "../../helpers/";
-import { Session } from "../../model/";
+import { Container, Card, NgIf, Input, Button, Textarea, FormBuilder } from "../../components/";
+import { gid, settings_get, settings_put, createFormBackend } from "../../helpers/";
+import { Session, Backend } from "../../model/";
 import "./form.scss";
 import img_drive from "../../assets/img/google-drive.png";
 import img_dropbox from "../../assets/img/dropbox.png";
@@ -10,19 +10,26 @@ export class Form extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            select: CONFIG["connections"].length > 2 ? 2 : 0,
-            backends: JSON.parse(JSON.stringify(CONFIG["connections"])),
+            select: window.CONFIG["connections"].length > 2 ? 2 : 0,
+            backends: JSON.parse(JSON.stringify(window.CONFIG["connections"])).map((backend) => {
+                return backend;
+            }),
             dummy: null
         };
 
         const select = settings_get("login_tab");
-        if(select !== null && select < CONFIG["connections"].length){ this.state.select = select; }
+        if(select !== null && select < window.CONFIG["connections"].length){ this.state.select = select; }
         this.rerender = this.rerender.bind(this);
     }
 
     componentDidMount(){
         window.addEventListener("resize", this.rerender);
         this.publishState(this.props);
+        Backend.all().then((b) => {
+            this.setState({
+                backend_available: b
+            });
+        });
     }
 
     componentWillUnmount(){

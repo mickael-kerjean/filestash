@@ -2,7 +2,7 @@ package main
 
 import (
 	. "github.com/mickael-kerjean/nuage/server/common"
-	"github.com/mickael-kerjean/nuage/server/plugin/image_light/lib"
+	"github.com/mickael-kerjean/nuage/server/plugin/plg_image_light/lib"
 	"io"
 	"net/http"
 	"os"
@@ -15,7 +15,7 @@ const (
 	ImageCachePath = "data/cache/image/"
 )
 
-func Init(conf *Config) {
+func Init(conf *Configuration) {
 	plugin_enable := conf.Get("transcoder.image.enable").Default(true).Bool()
 
 	cachePath := filepath.Join(GetCurrentDir(), ImageCachePath)

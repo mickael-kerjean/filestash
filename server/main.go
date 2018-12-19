@@ -67,14 +67,14 @@ func Init(a *App) {
 	admin := r.PathPrefix("/admin/api").Subrouter()
 	admin.HandleFunc("/session", CtxInjector(AdminSessionGet,                       *a)).Methods("GET")
 	admin.HandleFunc("/session", CtxInjector(AdminSessionAuthenticate,              *a)).Methods("POST")
-	admin.HandleFunc("/backend", CtxInjector(AdminBackend,                          *a)).Methods("GET")
 	admin.HandleFunc("/plugin",  CtxInjector(AdminOnly(FetchPluginsHandler),        *a)).Methods("GET")
 	admin.HandleFunc("/log",     CtxInjector(AdminOnly(FetchLogHandler),            *a)).Methods("GET")
 	admin.HandleFunc("/config",  CtxInjector(AdminOnly(PrivateConfigHandler),       *a)).Methods("GET")
 	admin.HandleFunc("/config",  CtxInjector(AdminOnly(PrivateConfigUpdateHandler), *a)).Methods("POST")
 
 	// APP
-	r.HandleFunc("/api/config", CtxInjector(PublicConfigHandler, *a)).Methods("GET")	
+	r.HandleFunc("/api/config", CtxInjector(PublicConfigHandler, *a)).Methods("GET")
+	r.HandleFunc("/api/backend", CtxInjector(AdminBackend, *a)).Methods("GET")
 	r.HandleFunc("/favicon.ico", func(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "/assets/logo/favicon.ico", http.StatusPermanentRedirect)
 	})

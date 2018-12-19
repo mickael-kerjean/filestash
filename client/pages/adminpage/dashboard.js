@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormBuilder, Icon, Input } from "../../components/";
 import { Backend, Config } from "../../model/";
-import { FormObjToJSON, notify, format } from "../../helpers/";
+import { FormObjToJSON, notify, format, createFormBackend } from "../../helpers/";
 
 import "./dashboard.scss";
 
@@ -157,41 +157,4 @@ export class DashboardPage extends React.Component {
             </div>
         );
     }
-}
-
-
-
-function createFormBackend(backend_available, backend_data){
-    let template = JSON.parse(JSON.stringify(backend_available[backend_data.type]));
-
-    for(let key in backend_data){
-        if(key in template){
-            template[key].value = backend_data[key];
-            template[key].enabled = true;
-        } else {
-            // create a form object if data isn't available in the template
-            let obj = {};
-            obj[key] = {
-                label: key,
-                type: "text",
-                value: null,
-                default: backend_data[key]
-            };
-            template = Object.assign(obj, template);
-        }
-
-        if(key === "label"){
-            template[key].placeholder = "Name as shown on the login screen.";
-            template[key].value = backend_data[key];
-            template[key].enabled = true;
-        } else if(key === "type"){
-            template[key].enabled = true;
-        } else if(key === "advanced"){
-            template[key].enabled = true;
-        }
-    }
-
-    let obj = {};
-    obj[backend_data.type] = template;
-    return obj;
 }
