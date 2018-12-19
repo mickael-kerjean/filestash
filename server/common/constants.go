@@ -14,3 +14,5 @@ const (
 	FILE_ASSETS = "./data/public/"
 	URL_SETUP = "/admin/setup"
 )
+
+var BUILD_NUMBER string

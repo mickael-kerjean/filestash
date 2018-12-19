@@ -41,7 +41,7 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     #################
     # Compile Backend
     cd $GOPATH/src/github.com/mickael-kerjean/nuage/server && go get && cd ../ && \
-    go build -o ./dist/nuage ./server/main.go && \
+    go build -ldflags "-X github.com/mickael-kerjean/nuage/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o ./dist/nuage ./server/main.go && \
     #################
     # Compile Plugins
     mkdir -p ./dist/data/plugin && \

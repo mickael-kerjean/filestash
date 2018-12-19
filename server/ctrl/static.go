@@ -104,7 +104,7 @@ func AboutHandler(ctx App) http.Handler {
 			App     []string
 			Plugins [][]string
 		}{
-			App:     []string{"Nuage " + APP_VERSION, hash(filepath.Join(GetCurrentDir(), "/nuage"))},
+			App:     []string{"Nuage " + APP_VERSION, BUILD_NUMBER + "_" + hash(filepath.Join(GetCurrentDir(), "/nuage"))},
 			Plugins: func () [][]string {
 				pPath := filepath.Join(GetCurrentDir(), PLUGIN_PATH)
 				file, err := os.Open(pPath)

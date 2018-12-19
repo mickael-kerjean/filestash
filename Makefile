@@ -9,8 +9,8 @@ docker_prd:
 build_frontend:
 	NODE_ENV=production npm run build
 
-build_backend:
-	PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/ CGO_CFLAGS_ALLOW='-fopenmp' go build -o dist/nuage server/main.go
+build_backend:	
+	PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/ CGO_CFLAGS_ALLOW='-fopenmp' go build -ldflags "-X github.com/mickael-kerjean/nuage/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o dist/nuage server/main.go
 
 package:
 	rm -rf dist/
