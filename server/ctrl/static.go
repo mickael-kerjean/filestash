@@ -46,7 +46,7 @@ func DefaultHandler(_path string, ctx App) http.Handler {
 
 		// Redirect to the admin section on first boot to setup the stuff
 		if req.URL.String() != URL_SETUP && Config.Get("auth.admin").String() == "" {
-			http.Redirect(res, req, URL_SETUP, 307)
+			http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
 			return
 		}
 

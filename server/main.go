@@ -74,7 +74,10 @@ func Init(a *App) {
 	admin.HandleFunc("/config",  CtxInjector(AdminOnly(PrivateConfigUpdateHandler), *a)).Methods("POST")
 
 	// APP
-	r.HandleFunc("/api/config", CtxInjector(PublicConfigHandler, *a)).Methods("GET")
+	r.HandleFunc("/api/config", CtxInjector(PublicConfigHandler, *a)).Methods("GET")	
+	r.HandleFunc("/favicon.ico", func(res http.ResponseWriter, req *http.Request) {
+		http.Redirect(res, req, "/assets/logo/favicon.ico", http.StatusPermanentRedirect)
+	})
 	r.PathPrefix("/assets").Handler(StaticHandler(FILE_ASSETS, *a)).Methods("GET")
 	r.PathPrefix("/about").Handler(AboutHandler(*a)).Methods("GET")
 	r.PathPrefix("/").Handler(DefaultHandler(FILE_INDEX, *a)).Methods("GET")
