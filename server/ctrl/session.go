@@ -80,6 +80,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		MaxAge:   60 * 60 * 24 * 30,
 		Path:     COOKIE_PATH,
 		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
 	}
 	http.SetCookie(res, &cookie)
 
@@ -101,14 +102,14 @@ func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
 	http.SetCookie(res, &http.Cookie{
 		Name:   COOKIE_NAME_AUTH,
 		Value:  "",
-		Path:   COOKIE_PATH,
 		MaxAge: -1,
+		Path:   COOKIE_PATH,
 	})
 	http.SetCookie(res, &http.Cookie{
 		Name:   COOKIE_NAME_ADMIN,
 		Value:  "",
-		Path:   COOKIE_PATH_ADMIN,
 		MaxAge: -1,
+		Path:   COOKIE_PATH_ADMIN,
 	})
 	SendSuccessResult(res, nil)
 }

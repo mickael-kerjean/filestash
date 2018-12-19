@@ -67,6 +67,7 @@ func AdminSessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Reques
 		Value:  obfuscate,
 		Path:   COOKIE_PATH_ADMIN,
 		MaxAge: 60*60, // valid for 1 hour
+		SameSite: http.SameSiteStrictMode,
 	})
 	SendSuccessResult(res, true)
 }
