@@ -1,20 +1,20 @@
 {
-    "name": "Nuage",
-    "short_name": "Nuage",
+    "name": "Filestash",
+    "short_name": "Filestash",
     "icons": [
         {
-            "src": "logo/icon-192x192.png",
+            "src": "/assets/logo/android-chrome-192x192.png",
             "type": "image/png",
             "sizes": "192x192"
         },
         {
-            "src": "logo/icon-512x512.png",
+            "src": "/assets/logo/android-chrome-512x512.png",
             "type": "image/png",
             "sizes": "512x512"
         }
     ],
-    "theme_color": "#9AD1ED",
-    "background_color": "#f3f3f3",
+    "theme_color": "#f2f3f5",
+    "background_color": "#f2f3f5",
     "orientation": "any",
     "display": "standalone",
     "start_url": "/"

@@ -60,4 +60,4 @@ Nuage can be used in different settings:
 
 # Credits
 - [Contributors](https://github.com/mickael-kerjean/nuage/graphs/contributors) and folks developing awesome libraries (libvips, libraw, ...)
-- Logo by [ssnjrthegr8](https://github.com/ssnjrthegr8) and Iconography from [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)
+- Logo derived from the work of [ssnjrthegr8](https://github.com/ssnjrthegr8), Iconography from [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)

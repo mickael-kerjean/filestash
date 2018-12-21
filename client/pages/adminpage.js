@@ -83,7 +83,7 @@ const SideMenu = (props) => {
         <div className="component_menu_sidebar no-select">
           <NavLink to="/" className="header">
             <Icon name="arrow_left" />
-            <img src="/assets/logo/icon-192x192.png" />
+            <img src="/assets/logo/android-chrome-512x512.png" />
           </NavLink>
           <h2>Admin console</h2>
           <ul>
