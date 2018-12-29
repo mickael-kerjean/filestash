@@ -65,6 +65,7 @@
         pre{
             font-family: 'Source Code Pro', monospace;
             background: var(--dark);
+            font-size: 0.9em;
             padding: 10px;
             margin-bottom: 0;
             border-radius: 2px;
@@ -78,7 +79,8 @@
         }
         fieldset{
             background: white;
-            border-color: var(--super-light);
+            border-color: var(--bg-color);
+            border-style: solid;
             border-radius: 3px;
             margin: 15px 0;
         }

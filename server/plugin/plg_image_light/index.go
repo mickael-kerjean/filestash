@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/plugin/plg_image_light/lib"
 	"io"
@@ -15,15 +16,111 @@ const (
 	ImageCachePath = "data/cache/image/"
 )
 
+var Config *Configuration
+
 func Init(conf *Configuration) {
-	plugin_enable := conf.Get("transcoder.image.enable").Default(true).Bool()
+	Config = conf
+
+	plugin_enable := func() bool {
+		return conf.Get("features.image.enable_image").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Name = "enable_image"
+			f.Type = "enable"
+			f.Target = []string{"image_thumbsize", "image_thumbquality", "image_imagequality", "image_thumbcache", "image_imagecache"}
+			f.Default = true
+			return f
+		}).Bool()
+	}
+	plugin_enable()
+
+	thumb_size := func() int {
+		return conf.Get("features.image.thumbnail_size").Schema(func(f *FormElement) *FormElement {			
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Type = "number"
+			f.Id = "image_thumbsize"
+			f.Name = "thumbnail_size"
+			f.Description = "Thumbnail size in pixel"
+			f.Placeholder = "Default: 300"
+			f.Default = 300
+			return f
+		}).Int()
+	}
+	thumb_size()
+
+	thumb_quality := func() int {
+		return conf.Get("features.image.thumbnail_quality").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "image_thumbquality"
+			f.Type = "number"
+			f.Name = "thumbnail_quality"
+			f.Description = "image quality on thumbnails. A lower number means smaller size at the cost of potential visual artifacts"
+			f.Placeholder = "Default: 50"
+			f.Default = 50
+			return f
+		}).Int()
+	}
+	thumb_quality()
+
+	thumb_caching := func() int {
+		return conf.Get("features.image.thumbnail_caching").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "image_thumbcache"
+			f.Type = "number"
+			f.Name = "thumbnail_caching"
+			f.Description = "How much time in seconds we want to store a thumbnail in the browser"
+			f.Placeholder = "Default: 259200 => 3 days"
+			f.Default = 259200
+			return f
+		}).Int()
+	}
+	thumb_caching()
+
+	image_quality := func() int {
+		return conf.Get("features.image.image_quality").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "image_imagequality"
+			f.Type = "number"
+			f.Name = "image_quality"
+			f.Description = "image quality on fullsize images. A lower number means smaller size at the cost of potential visual artifacts"
+			f.Placeholder = "Default: 90"
+			f.Default = 90
+			return f
+		}).Int()
+	}
+	image_quality()
+
+	image_caching := func() int {
+		return conf.Get("features.image.image_caching").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "image_imagecache"
+			f.Type = "number"
+			f.Name = "image_caching"
+			f.Description = "How much time in seconds we want to store images on the browser"
+			f.Placeholder = "Default: 3600 => 1 hour"
+			f.Default = 3600
+			return f
+		}).Int()
+	}
+	image_caching()
 
 	cachePath := filepath.Join(GetCurrentDir(), ImageCachePath)
 	os.RemoveAll(cachePath)
 	os.MkdirAll(cachePath, os.ModePerm)
 
 	Hooks.Register.ProcessFileContentBeforeSend(func (reader io.Reader, ctx *App, res *http.ResponseWriter, req *http.Request) (io.Reader, error){
-		if plugin_enable == false {
+		if plugin_enable() == false {
 			return reader, nil
 		}
 
@@ -44,22 +141,22 @@ func Init(conf *Configuration) {
 		// Specify transformation
 		transform := &lib.Transform{
 			Temporary: GetAbsolutePath(ImageCachePath + "image_" + QuickString(10)),
-			Size:      300,
+			Size:      thumb_size(),
 			Crop:      true,
-			Quality:   50,
+			Quality:   thumb_quality(),
 			Exif:      false,
 		}
 		if query.Get("thumbnail") == "true" {
-			(*res).Header().Set("Cache-Control", "max-age=259200")
+			(*res).Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", thumb_caching()))
 		} else if query.Get("size") != "" {
-			(*res).Header().Set("Cache-Control", "max-age=600")
+			(*res).Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", image_caching()))
 			size, err := strconv.ParseInt(query.Get("size"), 10, 64)
 			if err != nil {
 				return reader, nil
 			}
 			transform.Size = int(size)
 			transform.Crop = false
-			transform.Quality = 90
+			transform.Quality = image_quality()
 			transform.Exif = true
 		}
 

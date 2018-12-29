@@ -126,7 +126,7 @@ const FormElement = (props) => {
                 props.onChange(hash);
             });
         };
-        $input = ( <Input onChange={(e) => onBcryptChange(e.target.value)} {...id} name={props.name} type="password" value={struct.value || ""} placeholder={struct.placeholder} /> );
+        $input = ( <Input onChange={(e) => onBcryptChange(e.target.value)} {...id} name={props.name} type="password" defaultValue={struct.value || ""} placeholder={struct.placeholder} /> );
         break;
     case "hidden":
         $input = ( <Input name={props.name} type="hidden" defaultValue={struct.value} /> );

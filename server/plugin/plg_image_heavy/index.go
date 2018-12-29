@@ -10,8 +10,8 @@ import (
 )
 
 func Init(config *Configuration) {
-	plugin_enable := config.Get("transcoder.image.enable").Default(true).Bool()
-	plugin_thumbsize := uint(config.Get("transcoder.image.thumbnail_size").Default(300).Int())
+	plugin_enable := config.Get("feature.image.enable").Default(true).Bool()
+	plugin_thumbsize := uint(config.Get("feature.image.thumbnail_size").Default(300).Int())
 
 	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.Reader, ctx *App, res *http.ResponseWriter, req *http.Request) (io.Reader, error){
 		if plugin_enable == false {

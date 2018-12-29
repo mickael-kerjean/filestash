@@ -95,7 +95,7 @@ export class DashboardPage extends React.Component {
               <h2>Dashboard</h2>
               <div className="box-element">
                 {
-                    Object.keys(this.state.backend_available).map((backend_available, index) => {
+                    Object.keys(this.state.backend_available).sort((a, b) => a > b).map((backend_available, index) => {
                         return (
                             <div key={index} className="backend">
                               <div>

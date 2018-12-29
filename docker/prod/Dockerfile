@@ -2,7 +2,7 @@ FROM alpine:latest
 MAINTAINER mickael.kerjean@gmail.com
 
 ENV GOPATH /tmp/go
-ENV CGO_LDFLAGS_ALLOW='-fopenmp'
+ENV CGO_LDFLAGS_ALLOW '-fopenmp'
 
 RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     #################

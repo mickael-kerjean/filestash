@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -47,7 +48,8 @@ type FormElement struct {
 func init() {
 	Config = NewConfiguration()
 	Config.Load()
-	Config.Init()
+	Config.Save()
+	Config.Initialise()
 }
 
 func NewConfiguration() Configuration {
@@ -216,6 +218,7 @@ func (this *Configuration) Load() {
 		return
 	}
 
+	// Extract enabled backends
 	this.conn = func(cFile []byte) []map[string]interface{} {
 		var d struct {
 			Connections []map[string]interface{} `json:"connections"`
@@ -224,22 +227,57 @@ func (this *Configuration) Load() {
 		return d.Connections
 	}(cFile)
 
-	this.form = func(cFile []byte) []Form {
-		f := Form{Form: this.form}
-		for _, el := range f.Iterator() {
-			value := gjson.Get(string(cFile), el.Path + "." + el.Name).Value()
-			if value != nil {
-				el.Value = value
-			}
+	// Hydrate Config with data coming from the config file
+	d := JsonIterator(string(cFile))
+	for i := range d {
+		this = this.Get(d[i].Path)
+		if this.Interface() != d[i].Value {
+			this.currentElement.Value = d[i].Value
 		}
-		return this.form
-	}(cFile)
+	}
+	this.cache.Clear()
 
 	Log.SetVisibility(this.Get("log.level").String())
 	return
 }
 
-func (this *Configuration) Init() {
+type JSONIterator struct {
+	Path  string
+	Value interface{}
+}
+
+func JsonIterator(json string) []JSONIterator {
+	j := make([]JSONIterator, 0)
+
+	var recurJSON func(res gjson.Result, pkey string)
+	recurJSON = func(res gjson.Result, pkey string) {
+		if pkey != "" {
+			pkey = pkey + "."
+		}
+		res.ForEach(func(key, value gjson.Result) bool {
+			k := pkey + key.String()
+			if value.IsObject() {
+				recurJSON(value, k)
+				return true
+			} else if value.IsArray() {
+				return true
+			}
+			if value.Value != nil {
+				j = append(j, JSONIterator{k, value.Value()})
+			}
+			return true
+		})
+	}
+
+	recurJSON(gjson.Parse(json), "")
+	return j
+}
+
+func (this *Configuration) Debug() *FormElement {
+	return this.currentElement
+}
+
+func (this *Configuration) Initialise() {
 	if this.Get("general.secret_key").String() == "" {
 		key := RandomString(16)
 		this.Get("general.secret_key").Set(key)
@@ -286,32 +324,23 @@ func (this *Configuration) Init() {
 
 func (this Configuration) Save() Configuration {
 	// convert config data to an appropriate json struct
-	v := Form{Form: this.form}.toJSON(func (el FormElement) string {
+	form := append(this.form, Form{ Title: "connections" })
+	v := Form{Form: form}.toJSON(func (el FormElement) string {
 		a, e := json.Marshal(el.Value)
 		if e != nil {
 			return "null"
 		}
 		return string(a)
-	})
-
-	// convert back to a map[string]interface{} so that we can stuff in backends config
-	var tmp map[string]interface{}
-	json.Unmarshal([]byte(v), &tmp)
-	tmp["connections"] = this.conn
-
-	// let's build a json of the whole struct
-	j, err := json.Marshal(tmp)
-	if err != nil {
-		return this
-	}
-
+	})	
+	v, _ = sjson.Set(v, "connections", this.conn)
+	
 	// deploy the config in our config.json
 	file, err := os.Create(configPath)
 	if err != nil {
 		return this
 	}
 	defer file.Close()
-	file.Write(PrettyPrint(j))
+	file.Write(PrettyPrint([]byte(v)))
 	return this
 }
 
@@ -383,6 +412,12 @@ func (this *Configuration) Get(key string) *Configuration {
 	return this
 }
 
+func (this *Configuration) Schema(fn func(*FormElement) *FormElement) *Configuration {
+	fn(this.currentElement)
+	this.cache.Clear()
+	return this
+}
+
 func (this *Configuration) Default(value interface{}) *Configuration {
 	if this.currentElement == nil {
 		return this
@@ -407,6 +442,7 @@ func (this *Configuration) Set(value interface{}) *Configuration {
 	}
 
 	this.mu.Lock()
+	this.cache.Clear()
 	if this.currentElement.Value != value {
 		this.currentElement.Value = value
 		this.Save()

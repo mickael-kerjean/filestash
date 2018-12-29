@@ -19,6 +19,11 @@
         }
     }
     form{
+        .formbuilder{
+            fieldset{ padding: 0; border: none; }
+            legend{ display: none; }
+        }
+
         padding-top: 5px;
         label{
             color: rgba(0,0,0,0.4);

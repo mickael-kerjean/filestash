@@ -17,12 +17,12 @@ func init() {
 		return
 	}
 	files, err := file.Readdir(0)
-
 	for i:=0; i < len(files); i++ {
 		name := files[i].Name()
 		if strings.HasPrefix(name, ".") {
 			continue
 		}
+		Log.Debug("Load plugin: '%s'", name)
 		p, err := plg.Open(pPath + "/" + name)
 		if err != nil {
 			Log.Warning("Can't load plugin: %s => %v", name, err)
