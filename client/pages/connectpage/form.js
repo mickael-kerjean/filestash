@@ -78,26 +78,79 @@ export class Form extends React.Component {
     }
 
     rerender(){
-        this.setState({_dummy: !this.state._dummy});
+        this.setState({_refresh: !this.state._refresh});
     }
 
-    _marginTop(){
-        let size = 300;
-        const $screen = document.querySelector(".login-form");
-        if($screen) size = $screen.offsetHeight;
+    render2() {
+        const _marginTop = () => {
+            let size = 300;
+            const $screen = document.querySelector(".login-form");
+            if($screen) size = $screen.offsetHeight;
 
-        size = Math.round((document.body.offsetHeight - size) / 2);
-        if(size < 0) return 0;
-        if(size > 150) return 150;
-        return size;
+            size = Math.round((document.body.offsetHeight - size) / 2);
+            if(size < 0) return 0;
+            if(size > 150) return 150;
+            return size;
+        };
+        return (
+            <Card style={{marginTop: _marginTop()+"px"}} className="no-select component_page_connection_form">
+              <NgIf cond={ window.CONFIG["connections"].length > 1 }>
+                <div className={"buttons "+((window.innerWidth < 600) ? "scroll-x" : "")}>
+                  {
+                      this.state.backends.map((backend, i) => {
+                          return (
+                              <Button key={"menu-"+i} className={i === this.state.select ? "active primary" : ""} onClick={this.onTypeChange.bind(this, i)}>
+                                {backend.label}
+                              </Button>
+                          );
+                      })
+                  }
+                 </div>
+              </NgIf>
+              <div>
+                <form onSubmit={this.onSubmit.bind(this)} autoComplete="off" autoCapitalize="off" spellCheck="false" autoCorrect="off">
+                  {
+                      this.state.backends.map((conn, i) => {
+                          console.log(this.state.backend_available);
+                          return (
+                              <NgIf key={"form-"+i} cond={this.state.select === i}>
+                                <FormBuilder form={{"": createFormBackend(this.state.backend_available, conn)}} onChange={() => {this.setState({refresh: !this.state.refresh})}}
+                                  render={ ($input, props, struct, onChange) => {
+                                      return (
+                                          <div style={{width: '100%'}}>
+                                            { $input }
+                                          </div>
+                                      );
+                                  }}/>
+                              </NgIf>
+                          );
+                      })
+                  }
+                  <Button theme="emphasis">CONNECT</Button>
+                </form>
+              </div>
+            </Card>
+        );
     }
+    // <FormBuilder onChange={() => {}} form={{"": conn}}/>
+
 
     render() {
+        const _marginTop = () => {
+            let size = 300;
+            const $screen = document.querySelector(".login-form");
+            if($screen) size = $screen.offsetHeight;
+
+            size = Math.round((document.body.offsetHeight - size) / 2);
+            if(size < 0) return 0;
+            if(size > 150) return 150;
+            return size;
+        };
         let className = (window.innerWidth < 600) ? "scroll-x" : "";
         return (
-            <Card style={{marginTop: this._marginTop()+"px"}} className="no-select component_page_connection_form">
+            <Card style={{marginTop: _marginTop()+"px"}} className="no-select component_page_connection_form">
               <NgIf cond={ CONFIG["connections"].length > 1 }>
-                <div className={"buttons "+className}>
+                <div className={"buttons "+((window.innerWidth < 600) ? "scroll-x" : "")}>
                   {
                       this.state.backends.map((backend, i) => {
                           return (
