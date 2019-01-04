@@ -23,7 +23,7 @@ type Configuration struct {
 	currentElement *FormElement
 	cache          KeyValueStore
 	form           []Form
-	conn           []map[string]interface{}
+	Conn           []map[string]interface{}
 }
 
 type Form struct {
@@ -40,7 +40,7 @@ type FormElement struct {
 	Placeholder string      `json:"placeholder,omitempty"`
 	Opts        []string    `json:"options,omitempty"`
 	Target      []string    `json:"target,omitempty"`
-	Enabled     bool        `json:"enabled"`
+	ReadOnly    bool        `json:"readonly"`
 	Default     interface{} `json:"default"`
 	Value       interface{} `json:"value"`
 }
@@ -123,7 +123,7 @@ func NewConfiguration() Configuration {
 				},
 			},
 		},
-		conn: make([]map[string]interface{}, 0),
+		Conn: make([]map[string]interface{}, 0),
 	}
 }
 
@@ -219,7 +219,7 @@ func (this *Configuration) Load() {
 	}
 
 	// Extract enabled backends
-	this.conn = func(cFile []byte) []map[string]interface{} {
+	this.Conn = func(cFile []byte) []map[string]interface{} {
 		var d struct {
 			Connections []map[string]interface{} `json:"connections"`
 		}
@@ -286,8 +286,8 @@ func (this *Configuration) Initialise() {
 		this.Get("general.host").Set(env).String()
 	}
 
-	if len(this.conn) == 0 {
-		this.conn = []map[string]interface{}{
+	if len(this.Conn) == 0 {
+		this.Conn = []map[string]interface{}{
 			map[string]interface{}{
 				"type": "webdav",
 				"label": "WebDav",
@@ -332,7 +332,7 @@ func (this Configuration) Save() Configuration {
 		}
 		return string(a)
 	})	
-	v, _ = sjson.Set(v, "connections", this.conn)
+	v, _ = sjson.Set(v, "connections", this.Conn)
 	
 	// deploy the config in our config.json
 	file, err := os.Create(configPath)
@@ -363,7 +363,7 @@ func (this Configuration) Export() interface{} {
 		AutoConnect:   this.Get("general.auto_connect").Bool(),
 		Name:          this.Get("general.name").String(),
 		RememberMe:    this.Get("general.remember_me").Bool(),
-		Connections:   this.conn,
+		Connections:   this.Conn,
 		EnableSearch:  this.Get("features.search.enable").Bool(),
 		EnableShare:   this.Get("features.share.enable").Bool(),
 		MimeTypes:     AllMimeTypes(),

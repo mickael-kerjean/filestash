@@ -67,10 +67,6 @@ func (g GDrive) Init(params map[string]string, app *App) (IBackend, error) {
 	return backend, nil
 }
 
-func (g GDrive) Info() string {
-	return "googledrive"
-}
-
 func (g GDrive) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
@@ -80,16 +76,23 @@ func (g GDrive) LoginForm() Form {
 				Value:       "gdrive",
 			},
 			FormElement{
+				ReadOnly:    true,
+				Name:        "oauth2",
+				Type:        "text",
+				Value:       "/api/session/auth/gdrive",
+			},
+			FormElement{
+				ReadOnly:    true,
 				Name:        "image",
 				Type:        "image",
-				Value:       "/assets/img/google-drive.png",
+				Value:       "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTM5IDEyMC40IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICA8cGF0aCBkPSJtMjQuMiAxMjAuNC0yNC4yLTQxLjkgNDUuMy03OC41IDI0LjIgNDEuOXoiIGZpbGw9IiMwZGE5NjAiLz4KICA8cGF0aCBkPSJtNTguOSA2MC4yIDEwLjYtMTguMy0yNC4yLTQxLjl6IiBmaWxsPSIjMGRhOTYwIi8+CiAgPHBhdGggZD0ibTI0LjIgMTIwLjQgMjQuMi00MS45aDkwLjZsLTI0LjIgNDEuOXoiIGZpbGw9IiMyZDZmZGQiLz4KICA8cGF0aCBkPSJtNjkuNSA3OC41aC0yMS4xbDEwLjUtMTguMy0zNC43IDYwLjJ6IiBmaWxsPSIjMmQ2ZmRkIi8+ICAKICA8cGF0aCBkPSJtMTM5IDc4LjVoLTQ4LjRsLTQ1LjMtNzguNWg0OC40eiIgZmlsbD0iI2ZmZDI0ZCIvPgogIDxwYXRoIGQ9Im05MC42IDc4LjVoNDguNGwtNTguOS0xOC4zeiIgZmlsbD0iI2ZmZDI0ZCIvPgo8L3N2Zz4K",
 			},
 		},
 	}
 }
 
 func (g GDrive) OAuthURL() string {
-	return g.Config.AuthCodeURL("googledrive", oauth2.AccessTypeOnline)
+	return g.Config.AuthCodeURL("gdrive", oauth2.AccessTypeOnline)
 }
 
 func (g GDrive) OAuthToken(ctx *map[string]interface{}) error {

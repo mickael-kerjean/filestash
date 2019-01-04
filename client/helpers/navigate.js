@@ -40,3 +40,20 @@ function encode_path(path){
 export function prepare(path){
     return encodeURIComponent(decodeURIComponent(path)); // to send our url correctly without using directly '/'
 }
+
+export function urlParams() {
+    let p = "";
+    if(window.location.hash){
+        p += window.location.hash.replace(/^\#/, "");
+    }
+    if(window.location.search){
+        if(p !== "") p += "&";
+        p += window.location.search.replace(/^\?/, "");
+    }
+    return p.split("&").reduce((mem, chunk) => {
+        const d = chunk.split("=");
+        if(d.length !== 2) return mem;
+        mem[decodeURIComponent(d[0])] = decodeURIComponent(d[1]);
+        return mem;
+    }, {})
+}

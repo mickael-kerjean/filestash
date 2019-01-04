@@ -1,5 +1,7 @@
 import React from 'react';
-import { Input, Select, Enabler } from './';
+import PropTypes from 'prop-types';
+
+import { Input, Textarea, Select, Enabler } from './';
 import { FormObjToJSON, bcrypt_password, format } from '../helpers/';
 
 import "./formbuilder.scss";
@@ -21,6 +23,15 @@ export class FormBuilder extends React.Component {
 
         if(Array.isArray(struct)) return null;
         else if(isALeaf(struct) === false){
+            const [normal, advanced] = function(s){
+                let _normal = [];
+                let _advanced = [];
+                for (let key in s){
+                    const tmp = {key: key, data: s[key]};
+                    'id' in s[key] ? _advanced.push(tmp) : _normal.push(tmp);
+                }
+                return [_normal, _advanced];
+            }(struct);
             if(level <= 1){
                 return (
                     <div className="formbuilder">
@@ -28,14 +39,25 @@ export class FormBuilder extends React.Component {
                           key ? <h2 className="no-select">{ format(key) }</h2> : ""
                       }
                       {
-                          Object.keys(struct).map((key, index) => {
+                          normal.map((s, index) => {
                               return (
-                                  <div key={key+"-"+index}>
-                                    { this.section(struct[key], key, level + 1) }
+                                  <div key={s.key+"-"+index}>
+                                    { this.section(s.data, s.key, level + 1) }
                                   </div>
                               );
                           })
                       }
+                      <div className="advanced_form">
+                        {
+                            advanced.map((s, index) => {
+                                return (
+                                    <div key={s.key+"-"+index}>
+                                      { this.section(s.data, s.key, level + 1) }
+                                    </div>
+                                );
+                            })
+                        }
+                      </div>
                     </div>
                 );
             }
@@ -78,6 +100,7 @@ export class FormBuilder extends React.Component {
                 FormObjToJSON(this.props.form)
             );
         };
+
         return ( <FormElement render={this.props.render} onChange={onChange.bind(this)} {...id} params={struct} target={target} name={ format(struct.label) } /> );
     }
 
@@ -90,7 +113,7 @@ export class FormBuilder extends React.Component {
 const FormElement = (props) => {
     const id = props.id !== undefined ? {id: props.id} : {};
     let struct = props.params;
-    let $input = ( <Input onChange={(e) => props.onChange(e.target.value)} {...id} name={props.name} type="text" defaultValue={struct.value} placeholder={struct.placeholder} /> );
+    let $input = ( <Input onChange={(e) => props.onChange(e.target.value)} {...id} name={struct.label} type="text" defaultValue={struct.value} placeholder={struct.placeholder} /> );
     switch(props.params["type"]){
     case "text":
         const onTextChange = (value) => {
@@ -99,14 +122,14 @@ const FormElement = (props) => {
             }
             props.onChange(value);
         };
-        $input = ( <Input onChange={(e) => onTextChange(e.target.value)} {...id} name={props.name} type="text" value={struct.value || ""} placeholder={struct.placeholder}/> );
+        $input = ( <Input onChange={(e) => onTextChange(e.target.value)} {...id} name={struct.label} type="text" value={struct.value || ""} placeholder={struct.placeholder} readOnly={struct.readonly}/> );
         break;
     case "number":
         const onNumberChange = (value) => {
             value = value === "" ? null : parseInt(value);
             props.onChange(value);
         };
-        $input = ( <Input onChange={(e) => onNumberChange(e.target.value)} {...id} name={props.name} type="number" value={struct.value || ""} placeholder={struct.placeholder} /> );
+        $input = ( <Input onChange={(e) => onNumberChange(e.target.value)} {...id} name={struct.label} type="number" value={struct.value || ""} placeholder={struct.placeholder} /> );
         break;
     case "password":
         const onPasswordChange = (value) => {
@@ -115,56 +138,53 @@ const FormElement = (props) => {
             }
             props.onChange(value);
         };
-        $input = ( <Input onChange={(e) => onPasswordChange(e.target.value)} {...id} name={props.name} type="password" value={struct.value || ""} placeholder={struct.placeholder} /> );
+        $input = ( <Input onChange={(e) => onPasswordChange(e.target.value)} {...id} name={struct.label} type="password" value={struct.value || ""} placeholder={struct.placeholder} /> );
+        break;
+    case "long_password":
+        const onLongPasswordChange = (value) => {
+            if(value === ""){
+                value = null;
+            }
+            props.onChange(value);
+        };
+        $input = (
+            <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => onLongPasswordChange(e.target.value)} type="text" rows="1" name={struct.label} placeholder={struct.placeholder}  autoComplete="new-password" />
+        );
         break;
     case "bcrypt":
         const onBcryptChange = (value) => {
             if(value === ""){
                 return props.onChange(null);
             }
-            bcrypt_password(value).then((hash) => {
+            return bcrypt_password(value).then((hash) => {
                 props.onChange(hash);
             });
         };
-        $input = ( <Input onChange={(e) => onBcryptChange(e.target.value)} {...id} name={props.name} type="password" defaultValue={struct.value || ""} placeholder={struct.placeholder} /> );
+        $input = ( <Input onChange={(e) => onBcryptChange(e.target.value)} {...id} name={struct.label} type="password" defaultValue={struct.value || ""} placeholder={struct.placeholder} /> );
         break;
     case "hidden":
-        $input = ( <Input name={props.name} type="hidden" defaultValue={struct.value} /> );
+        $input = ( <Input name={struct.label} type="hidden" defaultValue={struct.value} /> );
         break;
     case "boolean":
-        $input = ( <Input onChange={(e) => props.onChange(e.target.checked)} {...id} name={props.name} type="checkbox" checked={struct.value === null ? !!struct.default : struct.value} /> );
+        $input = ( <Input onChange={(e) => props.onChange(e.target.checked)} {...id} name={struct.label} type="checkbox" checked={struct.value === null ? !!struct.default : struct.value} /> );
         break;
     case "select":
-        $input = ( <Select onChange={(e) => props.onChange(e.target.value)} {...id} name={props.name} choices={struct.options} value={struct.value === null ? struct.default : struct.value} placeholder={struct.placeholder} />);
+        $input = ( <Select onChange={(e) => props.onChange(e.target.value)} {...id} name={struct.label} choices={struct.options} value={struct.value === null ? struct.default : struct.value} placeholder={struct.placeholder} />);
         break;
     case "enable":
-        $input = ( <Enabler onChange={(e) => props.onChange(e.target.checked)} {...id} name={props.name} target={props.target} defaultValue={struct.value === null ? struct.default : struct.value} /> );
+        $input = ( <Enabler onChange={(e) => props.onChange(e.target.checked)} {...id} name={struct.label} target={props.target} defaultValue={struct.value === null ? struct.default : struct.value} /> );
         break;
     case "image":
-        $input = ( <img {...id} src={props.value} /> );
+        $input = ( <img {...id} src={struct.value} /> );
+        break;
+    case "oauth2":
+        $input = null;
         break;
     }
 
-    if(props.render){
-        return props.render($input, props, struct, props.onChange.bind(null, null));
-    }
+    return props.render($input, props, struct, props.onChange.bind(null, null));
+};
 
-    return (
-        <label className={"no-select input_type_" + props.params["type"]}>
-          <div>
-            <span>
-              { format(struct.label) }:
-            </span>
-            <div style={{width: '100%'}}>
-              { $input }
-            </div>
-          </div>
-          <div>
-            <span className="nothing"></span>
-            <div style={{width: '100%'}}>
-              { struct.description ? (<div className="description">{struct.description}</div>) : null }
-            </div>
-          </div>
-        </label>
-    );
+FormElement.PropTypes = {
+    render: PropTypes.func.isRequired
 };

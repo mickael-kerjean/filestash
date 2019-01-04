@@ -2,6 +2,7 @@ package ctrl
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/mickael-kerjean/mux"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/model"
@@ -44,13 +45,14 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	if obj, ok := backend.(interface {
-		OAuthToken(*map[string]string) error
+		OAuthToken(*map[string]interface{}) error
 	}); ok {
-		err := obj.OAuthToken(&session)
+		err := obj.OAuthToken(&ctx.Body)
 		if err != nil {
 			SendErrorResult(res, NewError("Can't authenticate (OAuth error)", 401))
 			return
 		}
+		session = model.MapStringInterfaceToMapStringString(ctx.Body)
 		backend, err = model.NewBackend(&ctx, session)
 		if err != nil {
 			SendErrorResult(res, NewError("Can't authenticate", 401))
@@ -126,7 +128,7 @@ func SessionOAuthBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	obj, ok := b.(interface{ OAuthURL() string })
 	if ok == false {
-		SendErrorResult(res, NewError("No backend authentication ("+b.Info()+")", 500))
+		SendErrorResult(res, NewError(fmt.Sprintf("This backend doesn't support oauth: '%s'", a["type"]), 500))
 		return
 	}
 	SendSuccessResult(res, obj.OAuthURL())

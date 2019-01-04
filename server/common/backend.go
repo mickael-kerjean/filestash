@@ -41,12 +41,8 @@ func (d *Driver) Drivers() map[string]IBackend {
 }
 
 type Nothing struct {}
-
 func (b Nothing) Init(params map[string]string, app *App) (IBackend, error) {
 	return &Nothing{}, nil
-}
-func (b Nothing) Info() string {
-	return "N/A"
 }
 func (b Nothing) Ls(path string) ([]os.FileInfo, error) {
 	return nil, NewError("", 401)
@@ -69,7 +65,6 @@ func (b Nothing) Touch(path string) error {
 func (b Nothing) Save(path string, file io.Reader) error {
 	return NewError("", 401)
 }
-
 func (b Nothing) LoginForm() Form {
 	return Form{}
 }

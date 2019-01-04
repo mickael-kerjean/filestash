@@ -9,8 +9,8 @@
         font-size: 0.95em;
     }
 
-    input::placeholder{
-        opacity: 0.5;
+    input::placeholder, textarea::placeholder{
+        opacity: 0.6;
     }
 
     label.input_type_hidden{
@@ -24,5 +24,10 @@
             font-size: 1em;
             padding: 0 15px;
         }
+    }
+
+    img{
+        max-height: 111px;
+        border: 9px solid rgba(0,0,0,0);
     }
 }

@@ -13,7 +13,7 @@ export class LogoutPage extends React.Component {
         Session.logout()
             .then((res) => {
                 cache.destroy();
-                this.props.history.push('/');
+                this.props.history.push('/login');
             })
             .catch((res) => {
                 console.warn(res)

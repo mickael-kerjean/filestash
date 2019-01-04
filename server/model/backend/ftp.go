@@ -70,10 +70,6 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	return backend, nil
 }
 
-func (f Ftp) Info() string {
-	return "ftp"
-}
-
 func (f Ftp) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{

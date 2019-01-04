@@ -41,10 +41,6 @@ func (w WebDav) Init(params map[string]string, app *App) (IBackend, error) {
 	return backend, nil
 }
 
-func (w WebDav) Info() string {
-	return "webdav"
-}
-
 func (w WebDav) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{

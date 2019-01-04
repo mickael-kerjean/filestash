@@ -53,10 +53,6 @@ func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 	return backend, nil
 }
 
-func (s S3Backend) Info() string {
-	return "s3"
-}
-
 func (s S3Backend) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{

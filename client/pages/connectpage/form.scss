@@ -19,22 +19,18 @@
         }
     }
     form{
-        .formbuilder{
-            fieldset{ padding: 0; border: none; }
-            legend{ display: none; }
-        }
-
         padding-top: 5px;
         label{
-            color: rgba(0,0,0,0.4);
             font-style: italic;
             font-size: 0.9em;
             display: block;
+            text-transform: capitalize;
         }
         .advanced_form{
             max-height: 156px;
             overflow-y: auto;
-            margin-top: 5px
+            margin-top: 5px;
+            padding-right: 10px;
         }
         button.emphasis{
             margin-top: 10px;
@@ -46,6 +42,11 @@
                 height: 115px;
                 margin: 0;
             }
+        }
+        input[type="checkbox"]{
+            top: 0;
+            width: inherit;
+            margin-right: 5px;
         }
     }
 }

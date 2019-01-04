@@ -10,9 +10,13 @@ export class Textarea extends React.Component {
 
     render() {
         let className = "component_textarea";
+        if(/Firefox/.test(navigator.userAgent)){
+            className += " firefox";
+        }
         if((this.refs.el !== undefined && this.refs.el.value.length > 0) || (this.props.value !== undefined && this.props.value.length > 0)){
             className += " hasText";
         }
+
 
         const disabledEnter = (e) => {
             if(e.key === "Enter" && e.shiftKey === false){

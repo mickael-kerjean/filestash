@@ -13,13 +13,18 @@
     box-sizing: border-box;
     color: inherit;
     line-height: 18px;
-
-
     border-bottom: 2px solid rgba(70, 99, 114, 0.1);
     transition: border-color 0.2s ease-out;
     &:focus{
         border-color: var(--emphasis-primary);
     }
+}
+
+input.component_input[readonly], textarea.component_textarea[readonly]{
+    border-bottom-style: dashed;
+    cursor: not-allowed;
+    font-style: italic;
+    opacity: 0.8;
 }
 
 .component_select{

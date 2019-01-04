@@ -31,7 +31,7 @@ func (d Dropbox) Init(params map[string]string, app *App) (IBackend, error) {
 		backend.ClientId = Config.Get("auth.dropbox.client_id").Default("").String()
 	}
 	backend.Hostname = Config.Get("general.host").String()
-	backend.Bearer = params["bearer"]
+	backend.Bearer = params["access_token"]
 
 	if backend.ClientId == "" {
 		return backend, NewError("Missing ClientID: Contact your admin", 502)
@@ -39,10 +39,6 @@ func (d Dropbox) Init(params map[string]string, app *App) (IBackend, error) {
 		return backend, NewError("Missing Hostname: Contact your admin", 502)
 	}
 	return backend, nil
-}
-
-func (d Dropbox) Info() string {
-	return "dropbox"
 }
 
 func (d Dropbox) LoginForm() Form {
@@ -54,9 +50,16 @@ func (d Dropbox) LoginForm() Form {
 				Value:       "dropbox",
 			},
 			FormElement{
+				ReadOnly:    true,
+				Name:        "oauth2",
+				Type:        "text",
+				Value:       "/api/session/auth/dropbox",
+			},
+			FormElement{
+				ReadOnly:    true,
 				Name:        "image",
 				Type:        "image",
-				Value:       "/assets/img/dropbox.png",
+				Value:       "data:image/svg+xml;utf8;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNDIuNCAzOS41IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICA8cG9seWdvbiBmaWxsPSIjMDA3RUU1IiBwb2ludHM9IjEyLjUsMCAwLDguMSA4LjcsMTUuMSAyMS4yLDcuMyIvPgo8cG9seWdvbiBmaWxsPSIjMDA3RUU1IiBwb2ludHM9IjAsMjEuOSAxMi41LDMwLjEgMjEuMiwyMi44IDguNywxNS4xIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDdFRTUiIHBvaW50cz0iMjEuMiwyMi44IDMwLDMwLjEgNDIuNCwyMiAzMy44LDE1LjEiLz4KPHBvbHlnb24gZmlsbD0iIzAwN0VFNSIgcG9pbnRzPSI0Mi40LDguMSAzMCwwIDIxLjIsNy4zIDMzLjgsMTUuMSIvPgo8cG9seWdvbiBmaWxsPSIjMDA3RUU1IiBwb2ludHM9IjIxLjMsMjQuNCAxMi41LDMxLjcgOC44LDI5LjIgOC44LDMyIDIxLjMsMzkuNSAzMy44LDMyIDMzLjgsMjkuMiAzMCwzMS43Ii8+Cjwvc3ZnPgo=",
 			},
 		},
 	}

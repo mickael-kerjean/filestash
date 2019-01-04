@@ -4,7 +4,7 @@ export { Input, Select, Enabler } from './input';
 export { Textarea } from './textarea';
 export { Button } from './button';
 export { Container } from './container';
-export { NgIf } from './ngif';
+export { NgIf, NgShow } from './ngif';
 export { Card } from './card';
 export { Loader } from './loader';
 export { Fab } from './fab';

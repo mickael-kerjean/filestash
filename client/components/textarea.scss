@@ -1,6 +1,6 @@
 @font-face {
-    font-family: password;
-    src: url('textarea.woff');
+	font-family: 'text-security-disc';
+	src: url('textarea.woff') format('woff2');
 }
 
 .component_textarea{
@@ -20,14 +20,22 @@
     vertical-align: top;
     min-width: 100%;
     max-width: 100%;
-    max-height: 31px; /* Firefox was doing some weird things */
+    min-height: 30px;
+    max-height: 30px;
 
     line-height: 18px;
     &[name="password"]{
-        &.hasText{
-            font-family: 'password';
-        }
+        resize: none;
         -webkit-text-security:disc!important;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: moz-none;
+        -ms-user-select: none;
+        user-select: none;
+        &.firefox.hasText{
+            font-family: 'text-security-disc';
+        }
     }
 
     border-bottom: 2px solid rgba(70, 99, 114, 0.1);

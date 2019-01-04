@@ -9,32 +9,39 @@ import (
 
 func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 	isAllowed := func() bool {
-		return true
-		// ret := false
-		// var conns [] struct {
-		// 	Type     string `json:"type"`
-		// 	Hostname string `json:"hostname"`
-		// 	Path     string `json:"path"`
-		// }
-		// Config.Get("connections").Interface()
-		// Config.Get("connections").Scan(&conns)
-		// for i := range conns {
-		// 	if conns[i].Type == conn["type"] {
-		// 		if conns[i].Hostname != "" && conns[i].Hostname != conn["hostname"] {
-		// 			continue
-		// 		} else if conns[i].Path != "" && conns[i].Path != conn["path"] {
-		// 			continue
-		// 		} else {
-		// 			ret = true
-		// 			break
-		// 		}
-		// 	}
-		// }
-		// return ret
-	}()
+		// by default, a hacker could use filestash to establish connections outside of what's
+		// define in the config file. We need to prevent this
+		possibilities := make([]map[string]interface{}, 0)
+		for i:=0; i< len(Config.Conn); i++ {
+			d := Config.Conn[i]
+			if d["type"] != conn["type"] {
+				continue
+			}
+			if val, ok := d["hostname"]; ok == true {
+				if val != conn["hostname"] {
+					continue
+				}
+			}
+			if val, ok := d["path"]; ok == true {
+				if val != conn["path"] {
+					continue
+				}
+			}
+			if val, ok := d["url"]; ok == true {
+				if val != conn["url"] {
+					continue
+				}
+			}
+			possibilities = append(possibilities, Config.Conn[i])
+		}
+		if len(possibilities) > 0 {
+			return true
+		}
+		return false
+	}
 
-	if isAllowed == false {
-		return Backend.Get(BACKEND_NIL).Init(conn, ctx)
+	if isAllowed() == false {
+		return Backend.Get(BACKEND_NIL), ErrNotAllowed
 	}
 	return Backend.Get(conn["type"]).Init(conn, ctx)
 }

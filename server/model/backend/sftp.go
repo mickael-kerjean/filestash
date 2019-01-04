@@ -41,7 +41,6 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 		params["password"],
 		params["passphrase"],
 	}
-
 	if p.port == "" {
 		p.port = "22"
 	}
@@ -91,10 +90,6 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	return &s, nil
 }
 
-func (b Sftp) Info() string {
-	return "sftp"
-}
-
 func (b Sftp) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
@@ -115,7 +110,7 @@ func (b Sftp) LoginForm() Form {
 			},
 			FormElement{
 				Name:        "password",
-				Type:        "password",
+				Type:        "long_password",
 				Placeholder: "Password",
 			},
 			FormElement{

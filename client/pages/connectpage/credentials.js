@@ -5,13 +5,14 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { ModalPrompt } from '../../components/';
 import { encrypt, decrypt, memory, prompt } from '../../helpers/';
 
+const CREDENTIALS_CACHE = "credentials",
+      CREDENTIALS_KEY = "credentials_key";
+
 export class Credentials extends React.Component {
     constructor(props){
         super(props);
-        const key = memory.get('credentials_key') || ''; // we use a clojure for the "key" because we
-                                                         // want to persist it in memory, not just in the
-                                                         // state which is kill whenever react decide
-
+        const key = memory.get(CREDENTIALS_KEY) || ''; // we use a clojure for the "key" because we require control
+                                                       // without the influence of the react component lifecycle
         this.state = {
             key: key || '',
             message: '',
@@ -20,7 +21,7 @@ export class Credentials extends React.Component {
 
         if(this.props.remember_me === true){
             if(key === ""){
-                let raw = window.localStorage.hasOwnProperty('credentials');
+                let raw = window.localStorage.hasOwnProperty(CREDENTIALS_CACHE);
                 if(raw){
                     this.promptForExistingPassword();
                 }else{
@@ -33,16 +34,19 @@ export class Credentials extends React.Component {
     }
 
     componentWillReceiveProps(new_props){
-        if(new_props.remember_me === false){
+        if(window.CONFIG["remember_me"] === false){
             window.localStorage.clear();
-        }else if(new_props.remember_me === true){
+            return;
+        } else if(new_props.remember_me === false){
+            window.localStorage.clear();
+        } else if(new_props.remember_me === true){
             this.saveCreds(new_props.credentials);
         }
 
         if(new_props.remember_me === true && this.props.remember_me === false){
             this.promptForNewPassword();
         }else if(new_props.remember_me === false && this.props.remember_me === true){
-            memory.set('credentials_key', '');
+            memory.set(CREDENTIALS_KEY, '');
             this.setState({key: ''});
         }
     }
@@ -53,11 +57,11 @@ export class Credentials extends React.Component {
             (key) => {
                 if(!key.trim()) return Promise.reject("Password can\'t be empty");
                 this.setState({key: key});
-                memory.set('credentials_key', key);
+                memory.set(CREDENTIALS_KEY, key);
                 return this.hidrate_credentials(key);
             },
             () => {
-                memory.set('credentials_key', '');
+                memory.set(CREDENTIALS_KEY, '');
                 this.setState({key: ''});
             },
             'password'
@@ -68,7 +72,7 @@ export class Credentials extends React.Component {
             "Pick a Master Password",
             (key) => {
                 if(!key.trim()) return Promise.reject("Password can\'t be empty");
-                memory.set('credentials_key', key);
+                memory.set(CREDENTIALS_KEY, key);
                 this.setState({key: key}, () => {
                     this.saveCreds(this.props.credentials);
                 });
@@ -80,7 +84,7 @@ export class Credentials extends React.Component {
     }
 
     hidrate_credentials(key){
-        let raw = window.localStorage.getItem('credentials');
+        let raw = window.localStorage.getItem(CREDENTIALS_CACHE);
         if(raw){
             try{
                 let credentials = decrypt(raw, key);
@@ -96,9 +100,9 @@ export class Credentials extends React.Component {
     }
 
     saveCreds(creds){
-        const key = memory.get('credentials_key');
+        const key = memory.get(CREDENTIALS_KEY);
         if(key){
-            window.localStorage.setItem('credentials', encrypt(creds, key));
+            window.localStorage.setItem(CREDENTIALS_CACHE, encrypt(creds, key));
         }
     }
 

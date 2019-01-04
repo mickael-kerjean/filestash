@@ -3,9 +3,9 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import './connectpage.scss';
 import { Session } from '../model/';
-import { Container, NgIf, Loader, Notification } from '../components/';
+import { Container, NgIf, NgShow, Loader, Notification } from '../components/';
 import { ForkMe, RememberMe, Credentials, Form } from './connectpage/';
-import { cache, notify } from '../helpers/';
+import { cache, notify, urlParams } from '../helpers/';
 
 import { Alert } from '../components/';
 
@@ -15,35 +15,27 @@ export class ConnectPage extends React.Component {
         this.state = {
             credentials: {},
             remember_me: window.localStorage.hasOwnProperty('credentials') ? true : false,
-            loading: false,
+            loading: true,
             doing_a_third_party_login: false
         };
     }
 
     componentWillMount(){
-        function getParam(name) {
-            const regex = new RegExp("[?&#]" + name.replace(/[\[\]]/g, "\\$&") + "(=([^&#]*)|&|#|$)");
-            const results = regex.exec(window.location.href);
-            if (!results) return null;
-            if (!results[2]) return '';
-            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        const urlData = urlParams();
+        if(Object.keys(urlData).length === 0){
+            return;
         }
 
-        const state = getParam('state');
-        if(state === "dropbox"){
-            this.setState({doing_a_third_party_login: true});
-            this.authenticate({bearer: getParam('access_token'), type: 'dropbox'});
-        }else if(state === "googledrive"){
-            this.setState({doing_a_third_party_login: true});
-            this.authenticate({code: getParam('code'), type: 'gdrive'});
-        }else if(state === "custombackend"){
-            this.setState({doing_a_third_party_login: true});
-            this.authenticate({code: getParam('code'), type: 'custombackend'});
+        if(!urlData.type){
+            urlData.type = urlData.state;
         }
+        this.setState({
+            doing_a_third_party_login: true,
+            loading: true
+        }, () => this.authenticate(urlData));
     }
 
     authenticate(params){
-        this.setState({loading: true});
         Session.authenticate(params)
             .then(Session.currentUser)
             .then((user) => {
@@ -64,37 +56,18 @@ export class ConnectPage extends React.Component {
             });
     }
 
-    initiateAuthToThirdParty(source){
-        if(source === 'dropbox'){
-            this.setState({loading: true});
-            Session.url('dropbox').then((url) => {
-                window.location.href = url;
-            }).catch((err) => {
-                this.setState({loading: false});
-                notify.send(err, 'error');
-            });
-        }else if(source === 'google'){
-            this.setState({loading: true});
-            Session.url('gdrive').then((url) => {
-                window.location.href = url;
-            }).catch((err) => {
-                this.setState({loading: false});
-                notify.send(err, 'error');
-            });
-        }else if(source  === 'custombackend'){
-            Session.url('custombackend').then((url) => {
-                window.location.href = url;
-            }).catch((err) => {
-                this.setState({loading: false});
-                notify.send(err, 'error');
-            });
-        }
-    }
-
     onFormSubmit(data, credentials){
-        this.setState({credentials: credentials}, () => {
-            this.authenticate(data);
-        });
+        if('oauth2' in data){
+            this.setState({loading: true});
+            Session.oauth2(data.oauth2).then((url) => {
+                window.location.href = url;
+            });
+            return;
+        }
+        this.setState({
+            credentials: credentials,
+            loading: true
+        }, () => this.authenticate(data));
     }
 
     setRemember(state){
@@ -103,6 +76,12 @@ export class ConnectPage extends React.Component {
 
     setCredentials(creds){
         this.setState({credentials: creds});
+    }
+
+    setLoading(value){
+        if(this.state.doing_a_third_party_login !== true){
+            this.setState({loading: value});
+        }
     }
 
     render() {
@@ -115,16 +94,16 @@ export class ConnectPage extends React.Component {
                 <NgIf cond={this.state.loading === true}>
                   <Loader/>
                 </NgIf>
-                <NgIf cond={this.state.loading === false}>
+                <NgShow cond={this.state.loading === false}>
                   <ReactCSSTransitionGroup transitionName="form" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={500}>
                     <Form credentials={this.state.credentials}
-                          onThirdPartyLogin={this.initiateAuthToThirdParty.bind(this)}
+                          onLoadingChange={this.setLoading.bind(this)}
                           onSubmit={this.onFormSubmit.bind(this)} />
                   </ReactCSSTransitionGroup>
                   <ReactCSSTransitionGroup transitionName="remember" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={5000}>
                     <RememberMe state={this.state.remember_me} onChange={this.setRemember.bind(this)}/>
                   </ReactCSSTransitionGroup>
-                </NgIf>
+                </NgShow>
                 <NgIf cond={this.state.doing_a_third_party_login === false}>
                   <Credentials remember_me={this.state.remember_me}
                                onRememberMeChange={this.setRemember.bind(this)}

@@ -14,12 +14,14 @@ import (
 	"strings"
 )
 
+var ETAG_INDEX string
+
 func StaticHandler(_path string, ctx App) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Set("Content-Type", mime.TypeByExtension(filepath.Ext(req.URL.Path)))
 		header.Set("Cache-Control", "max-age=2592000")
-		SecureHeader(&header)
+		header.Set("X-Content-Type-Options", "nosniff")
 
 		if strings.HasSuffix(req.URL.Path, "/") {
 			http.NotFound(res, req)
@@ -39,10 +41,23 @@ func StaticHandler(_path string, ctx App) http.Handler {
 
 func DefaultHandler(_path string, ctx App) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		_path := GetAbsolutePath(_path)
+
 		header := res.Header()
 		header.Set("Content-Type", "text/html")
-		header.Set("Cache-Control", "no-cache, no-store, must-revalidate")
-		SecureHeader(&header)
+		header.Set("Cache-Control", "no-cache")
+		header.Set("X-XSS-Protection", "1; mode=block")
+		header.Set("X-Content-Type-Options", "nosniff")
+		header.Set("X-Frame-Options", "DENY")
+		if ETAG_INDEX == "" {
+			ETAG_INDEX = hashFile(_path)
+		}
+		if req.Header.Get("If-None-Match") == ETAG_INDEX {
+			res.WriteHeader(http.StatusNotModified)
+			return
+		}
+		header.Set("Etag", ETAG_INDEX)
+
 
 		// Redirect to the admin section on first boot to setup the stuff
 		if req.URL.String() != URL_SETUP && Config.Get("auth.admin").String() == "" {
@@ -50,12 +65,11 @@ func DefaultHandler(_path string, ctx App) http.Handler {
 			return
 		}
 
-		p := _path
-		if _, err := os.Open(path.Join(GetCurrentDir(), p+".gz")); err == nil && strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
+		if _, err := os.Open(_path+".gz"); err == nil && strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
 			res.Header().Set("Content-Encoding", "gzip")
-			p += ".gz"
+			_path += ".gz"
 		}
-		http.ServeFile(res, req, GetAbsolutePath(p))
+		http.ServeFile(res, req, _path)
 	})
 }
 
@@ -63,20 +77,10 @@ func AboutHandler(ctx App) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Set("Content-Type", "text/html")
-		SecureHeader(&header)
-
-		hash := func(path string) string {
-			f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
-			if err != nil {
-				return "__"
-			}
-			defer f.Close()
-			h := md5.New()
-			if _, err := io.Copy(h, f); err != nil {
-				return "__"
-			}
-			return base32.HexEncoding.EncodeToString(h.Sum(nil))[:6]
-		}
+		header.Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		header.Set("X-XSS-Protection", "1; mode=block")
+		header.Set("X-Content-Type-Options", "nosniff")
+		header.Set("X-Frame-Options", "DENY")
 
 		page := `<!DOCTYPE html>
 <html>
@@ -104,7 +108,7 @@ func AboutHandler(ctx App) http.Handler {
 			App     []string
 			Plugins [][]string
 		}{
-			App:     []string{"Nuage " + APP_VERSION, BUILD_NUMBER + "_" + hash(filepath.Join(GetCurrentDir(), "/nuage"))},
+			App:     []string{"Nuage " + APP_VERSION, BUILD_NUMBER + "_" + hashFile(filepath.Join(GetCurrentDir(), "/nuage"))},
 			Plugins: func () [][]string {
 				pPath := filepath.Join(GetCurrentDir(), PLUGIN_PATH)
 				file, err := os.Open(pPath)
@@ -122,12 +126,12 @@ func AboutHandler(ctx App) http.Handler {
 				plugins := make([][]string, 0)
 				plugins = append(plugins, []string {
 					"config.json",
-					hash(filepath.Join(GetCurrentDir(), "/data/config/config.json")),
+					hashFile(filepath.Join(GetCurrentDir(), "/data/config/config.json")),
 				})
 				for i:=0; i < len(files); i++ {
 					plugins = append(plugins, []string{
 						files[i].Name(),
-						hash(pPath + "/" + files[i].Name()),
+						hashFile(pPath + "/" + files[i].Name()),
 					})
 				}
 				return plugins
@@ -136,8 +140,16 @@ func AboutHandler(ctx App) http.Handler {
 	})
 }
 
-func SecureHeader(header *http.Header) {
-	header.Set("X-XSS-Protection", "1; mode=block")
-	header.Set("X-Content-Type-Options", "nosniff")
-	header.Set("X-Frame-Options", "DENY")
+
+func hashFile (path string) string {
+	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return "__"
+	}
+	defer f.Close()
+	h := md5.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "__"
+	}
+	return base32.HexEncoding.EncodeToString(h.Sum(nil))[:6]
 }

@@ -23,7 +23,7 @@ export class DashboardPage extends React.Component {
             let [backend, config] = data;
             this.setState({
                 backend_available: backend,
-                backend_enabled: window.CONFIG.connections.map((conn) => {
+                backend_enabled: window.CONFIG["connections"].map((conn) => {
                     return createFormBackend(backend, conn);
                 }),
                 config: config
@@ -125,6 +125,8 @@ export class DashboardPage extends React.Component {
                                                           checked={enable(struct)} onChange={(e) => onChange(update.bind(this, e.target.checked))}/>
                                                );
                                                if(struct.label === "label"){
+                                                   $checkbox = null;
+                                               } else if(struct.readonly === true) {
                                                    $checkbox = null;
                                                }
                                                return (

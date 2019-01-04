@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormBuilder, Loader, Button, Icon } from '../../components/';
 import { Config, Log } from '../../model/';
-import { FormObjToJSON, notify } from '../../helpers/';
+import { FormObjToJSON, notify, format } from '../../helpers/';
 
 import "./logger.scss";
 
@@ -48,12 +48,34 @@ export class LogPage extends React.Component {
             let tmp = "access_";
             tmp += new Date().toISOString().substring(0,10).replace(/-/g, "");
             tmp += ".log";
-        }
+        };
         return (
             <div className="component_logpage">
               <h2>Logging { this.state.loading === true ? <Icon style={{height: '40px'}} name="loading"/> : null}</h2>
               <div style={{minHeight: '150px'}}>
-                <FormBuilder form={this.state.form} onChange={this.onChange.bind(this)} />
+                <FormBuilder form={this.state.form} onChange={this.onChange.bind(this)}
+                             render={ ($input, props, struct, onChange) => {
+                                 return (
+                                     <label className={"no-select input_type_" + props.params["type"]}>
+                                       <div>
+                                         <span>
+                                           { format(struct.label) }:
+                                         </span>
+                                         <div style={{width: '100%'}}>
+                                           { $input }
+                                         </div>
+                                       </div>
+                                       <div>
+                                         <span className="nothing"></span>
+                                         <div style={{width: '100%'}}>
+                                           {
+                                               struct.description ? (<div className="description">{struct.description}</div>) : null
+                                           }
+                                         </div>
+                                       </div>
+                                     </label>
+                                 );
+                                 }} />
               </div>
 
               <pre style={{height: '350px'}} ref="$log">

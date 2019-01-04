@@ -41,7 +41,7 @@ func APIHandler(fn func(App, http.ResponseWriter, *http.Request), ctx App) http.
 
 		go func() {
 			if Config.Get("log.telemetry").Bool() {
-				go telemetry(req, &resw, start, ctx.Backend.Info())
+				go telemetry(req, &resw, start, ctx.Session["type"])
 			}
 			if Config.Get("log.enable").Bool() {
 				go logger(req, &resw, start)
@@ -121,7 +121,11 @@ func ExtractSession(req *http.Request, ctx *App) (map[string]string, error) {
 			return res, nil
 		}
 		str = cookie.Value
-		str, _ = DecryptString(SECRET_KEY, str)
+		str, err = DecryptString(SECRET_KEY, str)
+		if err != nil {
+			// This typically happen when changing the secret key
+			return res, nil
+		}
 		err = json.Unmarshal([]byte(str), &res)
 		return res, err
 	}

@@ -108,10 +108,6 @@ func (git Git) Init(params map[string]string, app *App) (IBackend, error) {
 	return g, nil
 }
 
-func (g Git) Info() string {
-	return "git"
-}
-
 func (g Git) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
@@ -132,7 +128,7 @@ func (g Git) LoginForm() Form {
 			},
 			FormElement{
 				Name:        "password",
-				Type:        "password",
+				Type:        "long_password",
 				Placeholder: "Password",
 			},
 			FormElement{

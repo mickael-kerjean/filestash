@@ -7,22 +7,9 @@ class SessionManager{
             .then(data => data.result);
     }
 
-    url(type){
-        if(type === 'dropbox'){
-            let url = '/api/session/auth/dropbox';
-            return http_get(url)
-                .then(data => data.result);
-        }else if(type === 'gdrive'){
-            let url = '/api/session/auth/gdrive';
-            return http_get(url)
-                .then(data => data.result);
-        }else if(type === 'custombackend'){
-            let url = '/api/session/auth/custombackend';
-            return http_get(url)
-                .then(data => data.result);
-        }else{
-            return Promise.reject({message: 'no authorization backend', code: 'UNKNOWN_PROVIDER'});
-        }
+    oauth2(url){
+        return http_get(url)
+            .then(data => data.result);
     }
 
     authenticate(params){

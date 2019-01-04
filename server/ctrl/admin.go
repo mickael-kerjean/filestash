@@ -78,9 +78,7 @@ func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	drivers := Backend.Drivers()
 	for key := range drivers {
-		if obj, ok := drivers[key].(interface{ LoginForm() Form }); ok {
-			backends[key] = obj.LoginForm()
-		}
+		backends[key] = drivers[key].LoginForm()
 	}
 	SendSuccessResult(res, backends)
 }

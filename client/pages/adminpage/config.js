@@ -1,6 +1,7 @@
 import React from 'react';
 import { FormBuilder } from '../../components/';
 import { Config } from '../../model/';
+import { format }  from '../../helpers';
 
 export class ConfigPage extends React.Component {
     constructor(props){
@@ -32,7 +33,7 @@ export class ConfigPage extends React.Component {
     }
 
     onChange(form){
-        form.connections = window.CONFIG.connections
+        form.connections = window.CONFIG.connections;
         Config.save(form);
         this.setState({refresh: Math.random()});
     }
@@ -40,7 +41,26 @@ export class ConfigPage extends React.Component {
     render(){
         return (
             <form className="sticky">
-              <FormBuilder form={this.state.form} onChange={this.onChange.bind(this)} />
+                <FormBuilder form={this.state.form} onChange={this.onChange.bind(this)} render={ ($input, props, struct, onChange) => {
+                    return (
+                        <label className={"no-select input_type_" + props.params["type"]}>
+                          <div>
+                            <span>
+                              { format(struct.label) }:
+                            </span>
+                            <div style={{width: '100%'}}>
+                              { $input }
+                            </div>
+                          </div>
+                          <div>
+                            <span className="nothing"></span>
+                            <div style={{width: '100%'}}>
+                              { struct.description ? (<div className="description">{struct.description}</div>) : null }
+                            </div>
+                          </div>
+                        </label>
+                    );
+                }}/>
             </form>
         );
     }
