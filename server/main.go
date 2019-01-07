@@ -41,11 +41,11 @@ func Init(a *App) {
 
 	// API for Session
 	session := r.PathPrefix("/api/session").Subrouter()
-	middlewares = []Middleware{ ApiHeaders, SessionStart }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart }
 	session.HandleFunc("",                NewMiddlewareChain(SessionGet,          middlewares, *a)).Methods("GET")
-	middlewares = []Middleware{ ApiHeaders, BodyParser }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, BodyParser }
 	session.HandleFunc("",                NewMiddlewareChain(SessionAuthenticate, middlewares, *a)).Methods("POST")
-	middlewares = []Middleware{ ApiHeaders }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders }
 	session.HandleFunc("",                NewMiddlewareChain(SessionLogout,       middlewares, *a)).Methods("DELETE")
 	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, *a)).Methods("GET")
 
@@ -59,10 +59,13 @@ func Init(a *App) {
 	admin.HandleFunc("/log",     NewMiddlewareChain(FetchLogHandler,            middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigHandler,       middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, *a)).Methods("POST")
+	middlewares = []Middleware{ IndexHeaders }
+	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a))).Methods("GET")
+
 
 	// API for File management
 	files := r.PathPrefix("/api/files").Subrouter()
-	middlewares = []Middleware{ ApiHeaders, SessionStart, LoggedInOnly }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly }
 	files.HandleFunc("/ls",    NewMiddlewareChain(FileLs,    middlewares, *a)).Methods("GET")
 	files.HandleFunc("/cat",   NewMiddlewareChain(FileCat,   middlewares, *a)).Methods("GET")
 	files.HandleFunc("/cat",   NewMiddlewareChain(FileSave,  middlewares, *a)).Methods("POST")
@@ -73,15 +76,15 @@ func Init(a *App) {
 
 	// API for Shared link
 	share := r.PathPrefix("/api/share").Subrouter()
-	middlewares = []Middleware{ ApiHeaders, SessionStart, LoggedInOnly }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly }
 	share.HandleFunc("",               NewMiddlewareChain(ShareList,        middlewares, *a)).Methods("GET")
 	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareDelete,      middlewares, *a)).Methods("DELETE")
-	middlewares = []Middleware{ ApiHeaders, SessionStart, BodyParser, LoggedInOnly }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, BodyParser, LoggedInOnly }
 	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareUpsert,      middlewares, *a)).Methods("POST")
 	share.HandleFunc("/{share}/proof", NewMiddlewareChain(ShareVerifyProof, middlewares, *a)).Methods("POST")
 
 	// Webdav server / Shared Link
-	middlewares = []Middleware{ IndexHeaders }
+	middlewares = []Middleware{ IndexHeaders, SecureHeaders }
 	r.HandleFunc("/s/{share}",         NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a)).Methods("GET")
 	middlewares = []Middleware{ SessionStart }
 	r.PathPrefix("/s/{share}").Handler(NewMiddlewareChain(WebdavHandler,            middlewares, *a))
@@ -95,7 +98,7 @@ func Init(a *App) {
 	r.HandleFunc("/favicon.ico", func(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "/assets/logo/favicon.ico", http.StatusMovedPermanently)
 	})
-	middlewares = []Middleware{ IndexHeaders }
+	middlewares = []Middleware{ IndexHeaders, SecureHeaders }
 	r.HandleFunc("/about",                     NewMiddlewareChain(AboutHandler,                      middlewares, *a)).Methods("GET")
 	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX),          middlewares, *a))).Methods("GET")
 

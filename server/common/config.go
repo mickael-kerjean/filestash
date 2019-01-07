@@ -62,8 +62,9 @@ func NewConfiguration() Configuration {
 				Elmnts: []FormElement{
 					FormElement{Name: "name", Type: "text", Default: "Nuage", Description: "Name has shown in the UI", Placeholder: "Default: \"Filestash\""},
 					FormElement{Name: "port", Type: "number", Default: 8334, Description: "Port on which the application is available.", Placeholder: "Default: 8334"},
-					FormElement{Name: "host", Type: "text", Default: "https://demo.filestash.app", Description: "The URL that users will use", Placeholder: "Eg: \"https://demo.filestash.app\""},
+					FormElement{Name: "host", Type: "text", Description: "The URL that users will use", Placeholder: "Eg: \"https://demo.filestash.app\""},
 					FormElement{Name: "secret_key", Type: "password", Description: "The key that's used to encrypt and decrypt content. Update this settings will invalidate existing user sessions and shared links, use with caution!"},
+					FormElement{Name: "force_ssl", Type: "boolean", Description: "Enable the web security mechanism called 'Strict Transport Security'"},
 					FormElement{Name: "editor", Type: "select", Default: "emacs", Opts: []string{"base", "emacs", "vim"}, Description: "Keybinding to be use in the editor. Default: \"emacs\""},
 					FormElement{Name: "fork_button", Type: "boolean", Default: true, Description: "Display the fork button in the login screen"},
 					FormElement{Name: "display_hidden", Type: "boolean", Default: false, Description: "Should files starting with a dot be visible by default?"},
@@ -331,9 +332,9 @@ func (this Configuration) Save() Configuration {
 			return "null"
 		}
 		return string(a)
-	})	
+	})
 	v, _ = sjson.Set(v, "connections", this.Conn)
-	
+
 	// deploy the config in our config.json
 	file, err := os.Create(configPath)
 	if err != nil {
