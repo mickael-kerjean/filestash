@@ -30,10 +30,14 @@ func AdminSessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 	token := AdminToken{}
 	json.Unmarshal([]byte(str), &token)
 
-	if token.IsAdmin() == false || token.IsValid() == false {
+	if token.IsValid() == false {
+		SendSuccessResult(res, false)
+		return
+	} else if token.IsAdmin() == false {
 		SendSuccessResult(res, false)
 		return
 	}
+
 	SendSuccessResult(res, true)
 }
 
@@ -75,10 +79,18 @@ func AdminSessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Reques
 
 func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	backends := make(map[string]Form)
-
 	drivers := Backend.Drivers()
 	for key := range drivers {
 		backends[key] = drivers[key].LoginForm()
+	}
+
+	if c, err := json.Marshal(backends); err == nil {
+		hash := Hash(string(c))
+		if req.Header.Get("If-None-Match") == hash {
+			res.WriteHeader(http.StatusNotModified)
+			return
+		}
+		res.Header().Set("Etag", hash)
 	}
 	SendSuccessResult(res, backends)
 }

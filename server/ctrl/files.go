@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	"encoding/json"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/model"
 	"io"
@@ -77,6 +78,22 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	if model.CanShare(&ctx) == false {
 		perms.CanShare = NewBool(false)
 	}
+
+	etag := func() string {
+		tmp := struct {
+			Tmp0 interface{}
+			Tmp1 interface{}
+		}{ files, perms }
+		if j, err := json.Marshal(tmp); err == nil {
+			return Hash(string(j))
+		}
+		return ""
+	}()
+	if etag != "" && req.Header.Get("If-None-Match") == etag {
+		res.WriteHeader(http.StatusNotModified)
+		return
+	}
+	res.Header().Set("Etag", etag)
 
 	SendSuccessResultsWithMetadata(res, files, perms)
 }

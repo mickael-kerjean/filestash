@@ -3,7 +3,7 @@ package ctrl
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mickael-kerjean/mux"
+	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	"github.com/mickael-kerjean/nuage/server/model"
 	"net/http"

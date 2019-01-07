@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mickael-kerjean/mux"
+	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/nuage/server/common"
 	. "github.com/mickael-kerjean/nuage/server/ctrl"
 	. "github.com/mickael-kerjean/nuage/server/middleware"
@@ -19,9 +19,10 @@ func main() {
 }
 
 func Init(a *App) {
+	var middlewares []Middleware
 	r := mux.NewRouter()
 
-	// Profiling - handy to indentify nasty leaks and/or bugs!
+	// Profiling - handy to identify nasty leaks and/or bugs!
 	if os.Getenv("DEBUG") == "true" {
 		r.HandleFunc("/debug/pprof/", pprof.Index)
 		r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
@@ -38,49 +39,65 @@ func Init(a *App) {
 		})
 	}
 
-	// API
+	// API for Session
 	session := r.PathPrefix("/api/session").Subrouter()
-	session.HandleFunc("", APIHandler(SessionGet, *a)).Methods("GET")
-	session.HandleFunc("", APIHandler(SessionAuthenticate, *a)).Methods("POST")
-	session.HandleFunc("", CtxInjector(SessionLogout, *a)).Methods("DELETE")
-	session.Handle("/auth/{service}", APIHandler(SessionOAuthBackend, *a)).Methods("GET")
+	middlewares = []Middleware{ ApiHeaders, SessionStart }
+	session.HandleFunc("",                NewMiddlewareChain(SessionGet,          middlewares, *a)).Methods("GET")
+	middlewares = []Middleware{ ApiHeaders, BodyParser }
+	session.HandleFunc("",                NewMiddlewareChain(SessionAuthenticate, middlewares, *a)).Methods("POST")
+	middlewares = []Middleware{ ApiHeaders }
+	session.HandleFunc("",                NewMiddlewareChain(SessionLogout,       middlewares, *a)).Methods("DELETE")
+	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, *a)).Methods("GET")
 
-	files := r.PathPrefix("/api/files").Subrouter()
-	files.HandleFunc("/ls",    APIHandler(LoggedInOnly(FileLs),    *a)).Methods("GET")
-	files.HandleFunc("/cat",   APIHandler(LoggedInOnly(FileCat),   *a)).Methods("GET")
-	files.HandleFunc("/cat",   APIHandler(LoggedInOnly(FileSave),  *a)).Methods("POST")
-	files.HandleFunc("/mv",    APIHandler(LoggedInOnly(FileMv),    *a)).Methods("GET")
-	files.HandleFunc("/rm",    APIHandler(LoggedInOnly(FileRm),    *a)).Methods("GET")
-	files.HandleFunc("/mkdir", APIHandler(LoggedInOnly(FileMkdir), *a)).Methods("GET")
-	files.HandleFunc("/touch", APIHandler(LoggedInOnly(FileTouch), *a)).Methods("GET")
-
-	share := r.PathPrefix("/api/share").Subrouter()
-	share.HandleFunc("",               APIHandler(ShareList,        *a)).Methods("GET")
-	share.HandleFunc("/{share}",       APIHandler(ShareUpsert,      *a)).Methods("POST")
-	share.HandleFunc("/{share}",       APIHandler(ShareDelete,      *a)).Methods("DELETE")
-	share.HandleFunc("/{share}/proof", APIHandler(ShareVerifyProof, *a)).Methods("POST")
-
-	// WEBDAV
-	r.PathPrefix("/s/{share}").Handler(CtxInjector(WebdavHandler, *a))
-
-	// ADMIN
+	// API for admin
+	middlewares = []Middleware{ ApiHeaders }
 	admin := r.PathPrefix("/admin/api").Subrouter()
-	admin.HandleFunc("/session", CtxInjector(AdminSessionGet,                       *a)).Methods("GET")
-	admin.HandleFunc("/session", CtxInjector(AdminSessionAuthenticate,              *a)).Methods("POST")
-	admin.HandleFunc("/plugin",  CtxInjector(AdminOnly(FetchPluginsHandler),        *a)).Methods("GET")
-	admin.HandleFunc("/log",     CtxInjector(AdminOnly(FetchLogHandler),            *a)).Methods("GET")
-	admin.HandleFunc("/config",  CtxInjector(AdminOnly(PrivateConfigHandler),       *a)).Methods("GET")
-	admin.HandleFunc("/config",  CtxInjector(AdminOnly(PrivateConfigUpdateHandler), *a)).Methods("POST")
+	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionGet,            middlewares, *a)).Methods("GET")
+	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionAuthenticate,   middlewares, *a)).Methods("POST")
+	middlewares = []Middleware{ ApiHeaders, AdminOnly }
+	admin.HandleFunc("/plugin",  NewMiddlewareChain(FetchPluginsHandler,        middlewares, *a)).Methods("GET")
+	admin.HandleFunc("/log",     NewMiddlewareChain(FetchLogHandler,            middlewares, *a)).Methods("GET")
+	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigHandler,       middlewares, *a)).Methods("GET")
+	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, *a)).Methods("POST")
 
-	// APP
-	r.HandleFunc("/api/config", CtxInjector(PublicConfigHandler, *a)).Methods("GET")
-	r.HandleFunc("/api/backend", CtxInjector(AdminBackend, *a)).Methods("GET")
+	// API for File management
+	files := r.PathPrefix("/api/files").Subrouter()
+	middlewares = []Middleware{ ApiHeaders, SessionStart, LoggedInOnly }
+	files.HandleFunc("/ls",    NewMiddlewareChain(FileLs,    middlewares, *a)).Methods("GET")
+	files.HandleFunc("/cat",   NewMiddlewareChain(FileCat,   middlewares, *a)).Methods("GET")
+	files.HandleFunc("/cat",   NewMiddlewareChain(FileSave,  middlewares, *a)).Methods("POST")
+	files.HandleFunc("/mv",    NewMiddlewareChain(FileMv,    middlewares, *a)).Methods("GET")
+	files.HandleFunc("/rm",    NewMiddlewareChain(FileRm,    middlewares, *a)).Methods("GET")
+	files.HandleFunc("/mkdir", NewMiddlewareChain(FileMkdir, middlewares, *a)).Methods("GET")
+	files.HandleFunc("/touch", NewMiddlewareChain(FileTouch, middlewares, *a)).Methods("GET")
+
+	// API for Shared link
+	share := r.PathPrefix("/api/share").Subrouter()
+	middlewares = []Middleware{ ApiHeaders, SessionStart, LoggedInOnly }
+	share.HandleFunc("",               NewMiddlewareChain(ShareList,        middlewares, *a)).Methods("GET")
+	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareDelete,      middlewares, *a)).Methods("DELETE")
+	middlewares = []Middleware{ ApiHeaders, SessionStart, BodyParser, LoggedInOnly }
+	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareUpsert,      middlewares, *a)).Methods("POST")
+	share.HandleFunc("/{share}/proof", NewMiddlewareChain(ShareVerifyProof, middlewares, *a)).Methods("POST")
+
+	// Webdav server / Shared Link
+	middlewares = []Middleware{ IndexHeaders }
+	r.HandleFunc("/s/{share}",         NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a)).Methods("GET")
+	middlewares = []Middleware{ SessionStart }
+	r.PathPrefix("/s/{share}").Handler(NewMiddlewareChain(WebdavHandler,            middlewares, *a))
+
+	// Application Resources
+	middlewares = []Middleware{ ApiHeaders }
+	r.HandleFunc("/api/config",  NewMiddlewareChain(PublicConfigHandler,                             middlewares, *a)).Methods("GET")
+	r.HandleFunc("/api/backend", NewMiddlewareChain(AdminBackend,                                    middlewares, *a)).Methods("GET")
+	middlewares = []Middleware{ StaticHeaders }
+	r.PathPrefix("/assets").Handler(http.HandlerFunc(NewMiddlewareChain(StaticHandler(FILE_ASSETS),  middlewares, *a))).Methods("GET")
 	r.HandleFunc("/favicon.ico", func(res http.ResponseWriter, req *http.Request) {
-		http.Redirect(res, req, "/assets/logo/favicon.ico", http.StatusPermanentRedirect)
+		http.Redirect(res, req, "/assets/logo/favicon.ico", http.StatusMovedPermanently)
 	})
-	r.PathPrefix("/assets").Handler(StaticHandler(FILE_ASSETS, *a)).Methods("GET")
-	r.PathPrefix("/about").Handler(AboutHandler(*a)).Methods("GET")
-	r.PathPrefix("/").Handler(DefaultHandler(FILE_INDEX, *a)).Methods("GET")
+	middlewares = []Middleware{ IndexHeaders }
+	r.HandleFunc("/about",                     NewMiddlewareChain(AboutHandler,                      middlewares, *a)).Methods("GET")
+	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX),          middlewares, *a))).Methods("GET")
 
 	srv := &http.Server{
 		Addr:    ":" + strconv.Itoa(Config.Get("general.port").Int()),

@@ -89,5 +89,15 @@ func PrivateConfigUpdateHandler(ctx App, res http.ResponseWriter, req *http.Requ
 }
 
 func PublicConfigHandler(ctx App, res http.ResponseWriter, req *http.Request) {
-	SendSuccessResult(res, Config.Export())
+	cfg := Config.Export()
+
+	if c, err := Config.MarshalJSON(); err == nil {
+		hash := Hash(string(c))
+		if req.Header.Get("If-None-Match") == hash {
+			res.WriteHeader(http.StatusNotModified)
+			return
+		}
+		res.Header().Set("Etag", hash)
+	}
+	SendSuccessResult(res, cfg)
 }

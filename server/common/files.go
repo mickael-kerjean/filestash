@@ -3,6 +3,7 @@ package common
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func GetCurrentDir() string {
@@ -19,4 +20,13 @@ func IsDirectory(path string) bool {
 		return false
 	}
 	return true
+}
+
+func JoinPath(base, file string) (string, error) {
+	filePath := filepath.Join(base, file)
+
+	if strings.HasPrefix(filePath, base) == false {
+		return "", ErrNotValid
+	}
+	return filePath, nil
 }

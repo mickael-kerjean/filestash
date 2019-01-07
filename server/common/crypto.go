@@ -141,16 +141,36 @@ func verify(something []byte) ([]byte, error) {
 // Create a unique ID that can be use to identify different session
 func GenerateID(ctx *App) string {
 	params := ctx.Session
-	p := "type =>" + params["type"]
-	p += "salt => " + SECRET_KEY
-	p += "host =>" + params["host"]
-	p += "hostname =>" + params["hostname"]
-	p += "username =>" + params["username"]
-	p += "user =>" + params["user"]
-	p += "repo =>" + params["repo"]
-	p += "access_key_id =>" + params["access_key_id"]
-	p += "endpoint =>" + params["endpoint"]
-	p += "bearer =>" + params["bearer"]
-	p += "token =>" + params["token"]
+	p := "salt => " + SECRET_KEY
+	if params["type"] != "" {
+		p += "type =>" + params["type"]
+	}
+	if params["host"] != "" {
+		p += "host =>" + params["host"]
+	}
+	if params["hostname"] != "" {
+		p += "hostname =>" + params["hostname"]
+	}
+	if params["username"] != "" {
+		p += "username =>" + params["username"]
+	}
+	if params["user"] != "" {
+		p += "user =>" + params["user"]
+	}
+	if params["repo"] != "" {
+		p += "repo =>" + params["repo"]
+	}
+	if params["access_key_id"] != "" {
+		p += "access_key_id =>" + params["access_key_id"]
+	}
+	if params["endpoint"] != "" {
+		p += "endpoint =>" + params["endpoint"]
+	}
+	if params["bearer"] != "" {
+		p += "bearer =>" + params["bearer"]
+	}
+	if params["token"] != "" {
+		p += "token =>" + params["token"]
+	}
 	return Hash(p)
 }

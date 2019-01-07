@@ -20,14 +20,14 @@ var HTTPClient = http.Client{
 }
 
 var HTTP = http.Client{
-	Timeout: 800 * time.Millisecond,
+	Timeout: 10000 * time.Millisecond,
 	Transport: &http.Transport{
 		Dial: (&net.Dialer{
-			Timeout:   500 * time.Millisecond,
-			KeepAlive: 500 * time.Millisecond,
+			Timeout:   5000 * time.Millisecond,
+			KeepAlive: 5000 * time.Millisecond,
 		}).Dial,
-		TLSHandshakeTimeout:   500 * time.Millisecond,
-		IdleConnTimeout:       500 * time.Millisecond,
-		ResponseHeaderTimeout: 500 * time.Millisecond,
+		TLSHandshakeTimeout:   5000 * time.Millisecond,
+		IdleConnTimeout:       5000 * time.Millisecond,
+		ResponseHeaderTimeout: 5000 * time.Millisecond,
 	},
 }
