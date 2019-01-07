@@ -2,7 +2,7 @@ package backend
 
 import (
 	"fmt"
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -81,16 +81,16 @@ func (git Git) Init(params map[string]string, app *App) (IBackend, error) {
 		p.commit = "{action} ({filename}): {path}"
 	}
 	if p.authorName == "" {
-		p.authorName = "Nuage"
+		p.authorName = "Filestash"
 	}
 	if p.authorEmail == "" {
-		p.authorEmail = "https://nuage.kerjean.me"
+		p.authorEmail = "https://filestash.app"
 	}
 	if p.committerName == "" {
-		p.committerName = "Nuage"
+		p.committerName = "Filestash"
 	}
 	if p.committerEmail == "" {
-		p.committerEmail = "https://nuage.kerjean.me"
+		p.committerEmail = "https://filestash.app"
 	}
 	if len(params["password"]) > 2700 {
 		return nil, NewError("Your password doesn't fit in a cookie :/", 500)

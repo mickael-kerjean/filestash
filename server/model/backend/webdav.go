@@ -2,7 +2,7 @@ package backend
 
 import (
 	"encoding/xml"
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"net/http"
 	"net/url"

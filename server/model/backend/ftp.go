@@ -1,7 +1,7 @@
 package backend
 
 import (
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/secsy/goftp"
 	"io"
 	"os"

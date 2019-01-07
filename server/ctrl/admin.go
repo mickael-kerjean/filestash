@@ -2,7 +2,7 @@ package ctrl
 
 import (
 	"encoding/json"
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"net/http"

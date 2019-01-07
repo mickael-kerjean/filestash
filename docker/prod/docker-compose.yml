@@ -1,8 +1,8 @@
 version: '2'
 services:
   app:
-    container_name: nuage
-    image: machines/nuage
+    container_name: filestash
+    image: machines/filestash
     restart: always
     environment:
     - APPLICATION_URL=<app_url>

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"time"
 	"sync"
 )

@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/nfnt/resize"
     "image/jpeg"
 	"io"

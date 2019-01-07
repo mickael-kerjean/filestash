@@ -6,7 +6,7 @@ package lib
 import "C"
 
 import (
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"math/rand"
 	"time"
 	"unsafe"

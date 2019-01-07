@@ -2,7 +2,7 @@ package model
 
 import (
 	"testing"
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/stretchr/testify/assert"
 )
 

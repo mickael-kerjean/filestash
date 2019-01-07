@@ -2,7 +2,7 @@
 #include <vips/vips.h>
 
 int resizer_init(const int ncpu, const int cache_max, const int cache_mem){
-  if(VIPS_INIT("nuage")){
+  if(VIPS_INIT("filestash")){
     return 1;
   }
   vips_concurrency_set(100);

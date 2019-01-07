@@ -2,8 +2,8 @@ package ctrl
 
 import (
 	"encoding/json"
-	. "github.com/mickael-kerjean/nuage/server/common"
-	"github.com/mickael-kerjean/nuage/server/model"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/model"
 	"io"
 	"net/http"
 	"path/filepath"

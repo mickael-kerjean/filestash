@@ -1,7 +1,7 @@
 package ctrl
 
 import (
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"io/ioutil"
 	"net/http"

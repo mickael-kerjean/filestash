@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"net/http"
 	"path/filepath"
 )

@@ -1,7 +1,7 @@
 package model
 
 import (
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"bytes"
 	"crypto/tls"
 	"database/sql"
@@ -592,7 +592,7 @@ func TmplEmailVerification() string {
               <table border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="content-block powered-by">
-                    Powered by <a href="http://github.com/mickael-kerjean/nuage">Nuage</a>.
+                    Powered by <a href="http://github.com/mickael-kerjean/filestash">Nuage</a>.
                   </td>
                 </tr>
               </table>

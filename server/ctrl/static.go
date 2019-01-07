@@ -3,7 +3,7 @@ package ctrl
 import (
 	"crypto/md5"
 	"encoding/base32"
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"text/template"
 	"net/http"
@@ -71,7 +71,7 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 		App     []string
 		Plugins [][]string
 	}{
-		App:     []string{"Nuage " + APP_VERSION + "." + BUILD_NUMBER, hashFile(filepath.Join(GetCurrentDir(), "/nuage"), 6)},
+		App:     []string{"Filestash " + APP_VERSION + "." + BUILD_NUMBER, hashFile(filepath.Join(GetCurrentDir(), "/filestash"), 6)},
 		Plugins: func () [][]string {
 			pPath := filepath.Join(GetCurrentDir(), PLUGIN_PATH)
 			file, err := os.Open(pPath)

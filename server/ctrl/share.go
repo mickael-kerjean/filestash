@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/nuage/server/common"
-	"github.com/mickael-kerjean/nuage/server/model"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
 	"strings"
 )

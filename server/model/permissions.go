@@ -1,7 +1,7 @@
 package model
 
 import (
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func CanRead(ctx *App) bool {

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	. "github.com/mickael-kerjean/nuage/server/common"
-	"github.com/mickael-kerjean/nuage/server/plugin/plg_image_light/lib"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/plugin/plg_image_light/lib"
 	"io"
 	"net/http"
 	"os"

@@ -88,7 +88,7 @@ export class ConnectPage extends React.Component {
         return (
             <div className="component_page_connect">
               <NgIf cond={window.CONFIG["fork_button"]}>
-                <ForkMe repo="https://github.com/mickael-kerjean/nuage" />
+                <ForkMe repo="https://github.com/mickael-kerjean/filestash" />
               </NgIf>
               <Container maxWidth="565px">
                 <NgIf cond={this.state.loading === true}>

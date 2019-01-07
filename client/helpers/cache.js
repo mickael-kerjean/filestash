@@ -10,7 +10,7 @@ function Data(){
 const DB_VERSION = 3;
 
 Data.prototype._init = function(){
-    const request = indexedDB.open('nuage', DB_VERSION);
+    const request = indexedDB.open('filestash', DB_VERSION);
     request.onupgradeneeded = (e) => this._setup(e);
 
     this.db = new Promise((done, err) => {

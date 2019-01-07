@@ -2,7 +2,7 @@ package backend
 
 import (
 	"fmt"
-	. "github.com/mickael-kerjean/nuage/server/common"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"io"

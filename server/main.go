@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/nuage/server/common"
-	. "github.com/mickael-kerjean/nuage/server/ctrl"
-	. "github.com/mickael-kerjean/nuage/server/middleware"
-	_ "github.com/mickael-kerjean/nuage/server/plugin"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/ctrl"
+	. "github.com/mickael-kerjean/filestash/server/middleware"
+	_ "github.com/mickael-kerjean/filestash/server/plugin"
 	"net/http"
     "net/http/pprof"
 	"os"

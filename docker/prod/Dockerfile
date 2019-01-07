@@ -31,8 +31,8 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     #################
     # Prepare Build
     cd $GOPATH/src/github.com/mickael-kerjean && \
-    git clone --depth 1 https://github.com/mickael-kerjean/nuage && \
-    cd nuage && \
+    git clone --depth 1 https://github.com/mickael-kerjean/filestash && \
+    cd filestash && \
     mkdir -p ./dist/data/ && \
     mv config ./dist/data/ && \
     #################
@@ -42,15 +42,15 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     NODE_ENV=production npm run build && \
     #################
     # Compile Backend
-    cd $GOPATH/src/github.com/mickael-kerjean/nuage/server && go get && cd ../ && \
-    go build -ldflags "-X github.com/mickael-kerjean/nuage/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o ./dist/nuage ./server/main.go && \
+    cd $GOPATH/src/github.com/mickael-kerjean/filestash/server && go get && cd ../ && \
+    go build -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o ./dist/filestash ./server/main.go && \
     #################
     # Compile Plugins
     mkdir -p ./dist/data/plugin && \
     go build -buildmode=plugin -o ./dist/data/plugin/image.so server/plugin/plg_image_light/index.go && \
     #################
     # Finalise the build
-    cd $GOPATH/src/github.com/mickael-kerjean/nuage/ && \
+    cd $GOPATH/src/github.com/mickael-kerjean/filestash/ && \
     apk --no-cache add ca-certificates && \
     mv dist /app && \
     cd /app && \
@@ -62,4 +62,4 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
 EXPOSE 8334
 VOLUME ["/app/data/config/"]
 WORKDIR "/app"
-CMD ["/app/nuage"]
+CMD ["/app/filestash"]

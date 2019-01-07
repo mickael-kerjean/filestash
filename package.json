@@ -1,8 +1,8 @@
 {
-  "name": "nuage",
+  "name": "filestash",
   "version": "0.0.0",
   "description": "An app to manage your files in the cloud",
-  "repository": "https://github.com/mickael-kerjean/nuage",
+  "repository": "https://github.com/mickael-kerjean/filestash",
   "main": "server/index.js",
   "scripts": {
     "dev": "webpack --watch",
