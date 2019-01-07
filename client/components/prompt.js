@@ -46,7 +46,7 @@ export class ModalPrompt extends Popup {
         return (
             <div>
               <Button type="button" onClick={this.onCancel.bind(this)}>CANCEL</Button>
-              <Button type="submit" theme="secondary" onClick={this.onSubmit.bind(this)}>OK</Button>
+              <Button type="submit" theme="emphasis" onClick={this.onSubmit.bind(this)}>OK</Button>
             </div>
         );
     }

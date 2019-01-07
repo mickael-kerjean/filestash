@@ -1,25 +1,28 @@
 .component_frequently-access{
-    display: flex;
-    a{
-        width: 33.33%;
-        background: var(--light-color);
-        box-shadow: rgba(158, 163, 172, 0.3) 0px 19px 60px, rgba(158, 163, 172, 0.22) 0px 15px 20px;
-        overflow: hidden;
-        margin-right: 5px;
-        padding: 5px;
-        cursor: pointer;
-        img{
-            float: left;
-            height: 25px;
-            margin-right: 2px;
-        }
-        line-height: 25px;
-        display: block;
-        div{
-            width: calc(100% - 30px);
-            white-space: nowrap;
+    min-height: 80px;
+    .frequent_wrapper{
+        display: flex;
+        a{
+            width: 33.33%;
+            background: var(--super-light);
+            box-shadow: rgba(158, 163, 172, 0.3) 0px 19px 60px, rgba(158, 163, 172, 0.22) 0px 15px 20px;
             overflow: hidden;
-            text-overflow: ellipsis;
+            margin-right: 5px;
+            padding: 5px;
+            cursor: pointer;
+            img{
+                float: left;
+                height: 25px;
+                margin-right: 2px;
+            }
+            line-height: 25px;
+            display: block;
+            div{
+                width: calc(100% - 30px);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     }
     @media (max-width: 800px){ a:nth-child(6){display: none;} }
@@ -30,12 +33,12 @@
 
 
 
-.frequent-access-appear{
-    opacity: 0;
-    transform: translateX(5px);
-}
-.frequent-access-appear.frequent-access-appear-active{
-    opacity: 1;
-    transform: translateX(0px);
-    transition: all 0.3s ease-out;
-}
+ .frequent-access-appear{
+     opacity: 0;
+     transform: translateX(5px);
+ }
+ .frequent-access-appear.frequent-access-appear-active{
+     opacity: 1;
+     transform: translateX(0px);
+     transition: all 0.3s ease-out;
+ }

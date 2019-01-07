@@ -230,7 +230,7 @@ export class FilesPage extends React.Component {
                     initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={100}>
                     <NgIf className="container" cond={!this.state.loading}>
                       <NgIf cond={this.state.path === '/'}>
-                        <FrequentlyAccess files={this.state.frequents}/>
+                        <FrequentlyAccess files={this.state.frequents} default={this.state.files}/>
                       </NgIf>
                       <Submenu path={this.state.path} sort={this.state.sort} view={this.state.view} onSearch={this.onSearch.bind(this)} onViewUpdate={(value) => this.onView(value)} onSortUpdate={(value) => {this.onSort(value);}} accessRight={this.state.metadata || {}}></Submenu>
                       <NgIf cond={true}>

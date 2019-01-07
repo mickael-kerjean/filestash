@@ -51,7 +51,12 @@
                     border: 2px solid rgba(0,0,0,0);
                 }
                 &.list-grid, & .search{margin-top: -5px!important;}
-                &.component_dropdown { margin-top: -10px; }
+                &.component_dropdown {
+                    &.active .dropdown_button{
+                        box-shadow: none;
+                    }
+                    margin-top: -10px;
+                }
             }
             &.search_focus form input{transition: 0.2s width ease-in;}
             form{

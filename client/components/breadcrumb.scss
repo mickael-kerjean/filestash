@@ -4,9 +4,10 @@
     .breadcrumb{
         background: white;
         margin: 0 0 0px 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        border-bottom: 1px solid #e8e8e8;
         z-index: 1000;
-        padding: 2px 0;
+        padding: 3px 0;
 
         ul{
             list-style-type: none;

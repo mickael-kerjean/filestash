@@ -45,7 +45,7 @@ export class ModalConfirm extends Popup{
         return (
             <div>
               <Button type="button" onClick={this.no.bind(this)}>NO</Button>
-              <Button type="submit" theme="secondary" onClick={this.yes.bind(this)}>YES</Button>
+              <Button type="submit" theme="emphasis" onClick={this.yes.bind(this)}>YES</Button>
             </div>
         );
     }

@@ -36,7 +36,7 @@ export class ModalAlert extends Popup {
 
     modalContentFooter(){
         return (
-            <Button type="submit" theme="secondary" onClick={this.onSubmit.bind(this)}>OK</Button>
+            <Button type="submit" theme="emphasis" onClick={this.onSubmit.bind(this)}>OK</Button>
         );
     }
 }

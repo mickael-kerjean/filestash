@@ -23,11 +23,11 @@
         }
         &.error{
             background: var(--error);
-            color: var(--secondary);
+            color: var(--emphasis);
         }
         &.success{
             background: var(--success);
-            color: var(--secondary);
+            color: var(--emphasis);
         }
 
         .message{
