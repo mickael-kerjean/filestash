@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Card, NgIf, Icon, EventEmitter, EventReceiver, Dropdown, DropdownButton, DropdownList, DropdownItem } from '../../components/';
+import { Card, NgIf, Icon, EventEmitter, EventReceiver } from '../../components/';
 import { pathBuilder, debounce } from '../../helpers/';
 import "./thing.scss";
 

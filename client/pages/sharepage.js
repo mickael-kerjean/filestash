@@ -2,7 +2,7 @@ import React from 'react';
 import { Redirect } from 'react-router';
 
 import { Share } from '../model/';
-import { notify, basename, filetype } from '../helpers/';
+import { notify, basename, filetype, findParams } from '../helpers/';
 import { Loader, Input, Button, Container, ErrorPage, Icon, NgIf } from '../components/';
 import './error.scss';
 import './sharepage.scss';
@@ -67,7 +67,20 @@ export class SharePage extends React.Component {
         let className = this.state.error ? "error rand-"+Math.random().toString() : "";
 
         if(this.state.path !== null){
-            if(filetype(this.state.path) === "directory"){
+            if(!!findParams("next")){
+                const url = findParams("next");
+                if(url[0] === "/"){
+                    requestAnimationFrame(() => {
+                        window.location.pathname = url;
+                    });
+                    return (
+                        <div style={marginTop()}>
+                          <Loader />
+                        </div>
+                    );
+                }
+                notify.send("You can't do that :)", "error");
+            }else if(filetype(this.state.path) === "directory"){
                 return ( <Redirect to={`/files/?share=${this.state.share}`} /> );
             }else{
                 return ( <Redirect to={`/view/${basename(this.state.path)}?nav=false&share=${this.state.share}`} /> );

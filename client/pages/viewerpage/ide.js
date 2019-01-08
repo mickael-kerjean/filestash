@@ -4,8 +4,8 @@ import { withRouter } from 'react-router';
 import { Prompt } from "react-router-dom";
 import { Subject } from 'rxjs/Subject';
 
-import { NgIf, Fab, Icon } from '../../components/';
-import { confirm } from '../../helpers/';
+import { NgIf, Fab, Icon,  Dropdown, DropdownButton, DropdownList, DropdownItem } from '../../components/';
+import { confirm, currentShare } from '../../helpers/';
 import { Editor } from './editor';
 import { MenuBar } from './menubar';
 import { OrgTodosViewer, OrgEventsViewer } from './org_viewer';
@@ -48,6 +48,7 @@ export class IDE extends React.Component {
     }
     componentWillUnmount(){
         this.unblock();
+        window.clearInterval(this.state.id);
     }
 
     save(){
@@ -70,7 +71,6 @@ export class IDE extends React.Component {
         });
     }
 
-
     /* Org Viewer specific stuff */
     toggleAgenda(force = null){
         this.setState({appear_agenda: force === null ? !this.state.appear_agenda : !!force});
@@ -85,10 +85,25 @@ export class IDE extends React.Component {
         this.state.event.next(["goTo", lineNumber]);
     }
 
+    download(){
+        document.cookie = "download=yes; path=/; max-age=120;";
+        this.setState({random: Math.random()});
+        this.state.id = window.setInterval(() => {
+            if(/download=yes/.test(document.cookie) === false){
+                window.clearInterval(this.state.id);
+                this.setState({random: Math.random()});
+            }
+        }, 100);
+    }
+
     render(){
+        const changeExt = function(filename, ext){
+            return filename.replace(/\.org$/, "."+ext);
+        };
+
         return (
             <div className="component_ide">
-              <MenuBar title={this.props.filename} download={this.props.url}>
+              <MenuBar title={this.props.filename} download={this.state.mode === 'orgmode' ? null : this.props.url}>
                 <NgIf type="inline" cond={this.state.mode === 'orgmode'}>
                   <span onClick={this.onModeChange.bind(this)}>
                     <NgIf cond={this.state.folding === "SHOW_ALL"} type="inline">
@@ -101,6 +116,22 @@ export class IDE extends React.Component {
                       <Icon name="arrow_down_double"/>
                     </NgIf>
                   </span>
+                  <Dropdown className="view sort" onChange={() => this.download()} enable={/download=yes/.test(document.cookie) ? false : true}>
+                    <DropdownButton>
+                      <Icon name={/download=yes/.test(document.cookie) ? "loading_white" : "download_white"}/>
+                    </DropdownButton>
+                    <DropdownList>
+                      <DropdownItem name="na"><a download={this.props.filename} href={this.props.url}>Save current file</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "me")+"/text/html"+this.props.path}>Export as HTML</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "me")+"/application/pdf"+this.props.path}>Export as PDF</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "me")+"/text/plain"+this.props.path}>Export as Text</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "tex")}  href={"/api/export/"+(currentShare() || "me")+"/text/x-latex"+this.props.path}>Export as Latex</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "ics")}  href={"/api/export/"+(currentShare() || "me")+"/text/calendar"+this.props.path}>Export as Calendar</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "pdf")}  href={"/api/export/"+(currentShare() || "me")+"/application/pdf"+this.props.path+"?mode=beamer"}>Export as Beamer</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "odt")}  href={"/api/export/"+(currentShare() || "me")+"/application/vnd.oasis.opendocument.text"+this.props.path}>Export as Open office</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "me")+"/text/markdown"+this.props.path}>Export as Markdown</a></DropdownItem>
+                    </DropdownList>
+                  </Dropdown>
 
                   <span onClick={this.toggleAgenda.bind(this)}>
                     <Icon name="calendar_white"/>

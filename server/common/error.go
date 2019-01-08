@@ -15,6 +15,9 @@ var (
 	ErrNotValid error         = NewError("Not Valid", 405)
 	ErrNotReachable error     = NewError("Cannot Reach Destination", 502)
 	ErrInvalidPassword        = NewError("Invalid Password", 403)
+	ErrNotImplemented         = NewError("Not Implemented", 501)
+	ErrFilesystemError        = NewError("Can't use filesystem", 503)
+	ErrMissingDependency      = NewError("Missing dependency", 424)
 )
 
 type AppError struct {

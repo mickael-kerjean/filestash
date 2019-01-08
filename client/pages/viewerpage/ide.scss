@@ -9,6 +9,28 @@
         // https://stackoverflow.com/questions/44948158/flexbox-overflow-issue-in-firefox
         min-height: 0;
     }
+
+    .component_menubar{
+        .component_dropdown{
+            float: right;
+            .dropdown_button{
+                border: none;
+                padding: 0; margin: 0;
+            }
+            &.active .dropdown_button{
+                box-shadow: none;
+            }
+            .dropdown_container ul li > div{
+                padding: 0;
+                a {
+                    padding: 7px 5px 7px 10px;
+                    display: inline-block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+            }
+        }
+    }
 }
 
 

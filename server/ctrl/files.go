@@ -106,7 +106,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		Path:   "/",
 	})
 	if model.CanRead(&ctx) == false {
-		SendErrorResult(res, NewError("Permission denied", 403))
+		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}
 

@@ -151,7 +151,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 		Key: fmt.Sprint(ctx.Body["type"]),
 		Value: fmt.Sprint(ctx.Body["value"]),
 	}
-	verifiedProof = model.ShareProofGetAlreadyVerified(req, &ctx)
+	verifiedProof = model.ShareProofGetAlreadyVerified(req)
 	requiredProof = model.ShareProofGetRequired(s)
 
 	// 2) validate the current context

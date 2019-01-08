@@ -165,7 +165,7 @@ func Init(conf *Configuration) {
 		// => lower RAM usage while processing
 		file, err := os.OpenFile(transform.Temporary, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 		if err != nil {
-			return reader, NewError("Can't use filesystem", 500)
+			return reader, ErrFilesystemError
 		}
 		io.Copy(file, reader)
 		file.Close()

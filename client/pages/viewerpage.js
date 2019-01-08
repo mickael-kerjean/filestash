@@ -133,6 +133,7 @@ export class ViewerPage extends React.Component {
                          onSave={this.save.bind(this)}
                          content={this.state.content || ""}
                          url={this.state.url}
+                         path={this.state.path}
                          filename={this.state.filename}/>
                   </NgIf>
                   <NgIf cond={this.state.opener === 'image'}>

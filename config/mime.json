@@ -90,6 +90,7 @@
 	"ogg": "audio/ogg",
 	"ogv": "application/ogg",
 	"orf": "image/x-olympus-orf",
+	"org": "text/org",
 	"pdb": "application/x-pilot",
 	"pdf": "application/pdf",
 	"pef": "image/x-pentax-pef",

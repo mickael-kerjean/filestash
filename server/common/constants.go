@@ -5,6 +5,7 @@ const (
 	CONFIG_PATH = "data/config/"
 	PLUGIN_PATH = "data/plugin/"
 	LOG_PATH    = "data/log/"
+	TMP_PATH    = "data/tmp/"
 	COOKIE_NAME_AUTH = "auth"
 	COOKIE_NAME_PROOF = "proof"
 	COOKIE_NAME_ADMIN = "admin"

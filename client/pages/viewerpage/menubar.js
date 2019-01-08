@@ -16,7 +16,7 @@ export const MenuBar = (props) => {
                 <span className="specific">
                   {props.children}
                 </span>
-                <DownloadButton link={props.download} name={props.title} />
+                { props.download === null ? null : <DownloadButton link={props.download} name={props.title} /> }
               </div>
             </ReactCSSTransitionGroup>
           </Container>

@@ -249,7 +249,7 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 	return p, nil
 }
 
-func ShareProofGetAlreadyVerified(req *http.Request, ctx *App) []Proof {
+func ShareProofGetAlreadyVerified(req *http.Request) []Proof {
 	var p []Proof
 	var cookieValue string
 

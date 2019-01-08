@@ -45,6 +45,9 @@ export class Dropdown extends React.Component {
     }
 
     toggleDropdown(e){
+        if(this.props.enable === false){
+            return
+        }
         document.body.removeEventListener("click", this.closeDropdown);
         this.setState({button: !this.state.button}, () => {
             if(this.state.button === true){

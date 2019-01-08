@@ -66,21 +66,27 @@ func Init(a *App) {
 	// API for File management
 	files := r.PathPrefix("/api/files").Subrouter()
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly }
-	files.HandleFunc("/ls",    NewMiddlewareChain(FileLs,    middlewares, *a)).Methods("GET")
-	files.HandleFunc("/cat",   NewMiddlewareChain(FileCat,   middlewares, *a)).Methods("GET")
-	files.HandleFunc("/cat",   NewMiddlewareChain(FileSave,  middlewares, *a)).Methods("POST")
-	files.HandleFunc("/mv",    NewMiddlewareChain(FileMv,    middlewares, *a)).Methods("GET")
-	files.HandleFunc("/rm",    NewMiddlewareChain(FileRm,    middlewares, *a)).Methods("GET")
-	files.HandleFunc("/mkdir", NewMiddlewareChain(FileMkdir, middlewares, *a)).Methods("GET")
-	files.HandleFunc("/touch", NewMiddlewareChain(FileTouch, middlewares, *a)).Methods("GET")
+	files.HandleFunc("/ls",     NewMiddlewareChain(FileLs,     middlewares, *a)).Methods("GET")
+	files.HandleFunc("/cat",    NewMiddlewareChain(FileCat,    middlewares, *a)).Methods("GET")
+	files.HandleFunc("/cat",    NewMiddlewareChain(FileSave,   middlewares, *a)).Methods("POST")
+	files.HandleFunc("/mv",     NewMiddlewareChain(FileMv,     middlewares, *a)).Methods("GET")
+	files.HandleFunc("/rm",     NewMiddlewareChain(FileRm,     middlewares, *a)).Methods("GET")
+	files.HandleFunc("/mkdir",  NewMiddlewareChain(FileMkdir,  middlewares, *a)).Methods("GET")
+	files.HandleFunc("/touch",  NewMiddlewareChain(FileTouch,  middlewares, *a)).Methods("GET")
+
+	// API for exporter
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, RedirectSharedLoginIfNeeded, SessionStart, LoggedInOnly }
+	r.PathPrefix("/api/export/{share}/{mtype0}/{mtype1}").Handler(NewMiddlewareChain(FileExport,  middlewares, *a))
+
 
 	// API for Shared link
 	share := r.PathPrefix("/api/share").Subrouter()
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly }
 	share.HandleFunc("",               NewMiddlewareChain(ShareList,        middlewares, *a)).Methods("GET")
 	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareDelete,      middlewares, *a)).Methods("DELETE")
-	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, BodyParser, LoggedInOnly }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly, BodyParser }
 	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareUpsert,      middlewares, *a)).Methods("POST")
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, BodyParser }
 	share.HandleFunc("/{share}/proof", NewMiddlewareChain(ShareVerifyProof, middlewares, *a)).Methods("POST")
 
 	// Webdav server / Shared Link
