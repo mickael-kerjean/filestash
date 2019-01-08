@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"net/http"
 	"path/filepath"
@@ -29,6 +30,8 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 		header := res.Header()
 		header.Set("Content-Type", "text/html")
 		header.Set("Cache-Control", "no-cache")
+		header.Set("Referrer-Policy", "same-origin")
+		header.Set("X-Powered-By", fmt.Sprintf("Filestash/%s <https://filestash.app>", APP_VERSION + "." + BUILD_NUMBER))
 		fn(ctx, res, req)
 	}
 }

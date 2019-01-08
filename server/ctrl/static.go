@@ -54,13 +54,13 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
     <style>
       html { background: #f4f4f4; color: #455164; font-size: 16px; font-family: -apple-system,system-ui,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif; }
       body { text-align: center; padding-top: 50px; text-align: center; }
-      h1 { font-weight: 200; }
+      h1 { font-weight: 200; line-height: 28px; font-size: 32px; }
       p { opacity: 0.7; }
       span { font-size: 0.7em; opacity: 0.7; }
     </style>
   </head>
   <body>
-     <h1> {{index .App 0}} <span>({{index .App 1}})</span> </h1>
+     <h1> {{index .App 0}} <br><span>({{index .App 1}})</span> </h1>
      <p>{{range .Plugins}}
        {{ index . 0 }} <span>({{ index . 1 }})</span> <br>{{end}}
      </p>
@@ -73,30 +73,22 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	}{
 		App:     []string{"Filestash " + APP_VERSION + "." + BUILD_NUMBER, hashFile(filepath.Join(GetCurrentDir(), "/filestash"), 6)},
 		Plugins: func () [][]string {
-			pPath := filepath.Join(GetCurrentDir(), PLUGIN_PATH)
-			file, err := os.Open(pPath)
-			if err != nil {
-				return [][]string{
-					[]string{"N/A", ""},
-				}
-			}
-			files, err := file.Readdir(0)
-			if err != nil {
-				return [][]string{
-					[]string{"N/A", ""},
-				}
-			}
 			plugins := make([][]string, 0)
+			pPath := filepath.Join(GetCurrentDir(), PLUGIN_PATH)
+			if file, err := os.Open(pPath); err == nil {
+				if files, err := file.Readdir(0); err == nil {
+					for i:=0; i < len(files); i++ {
+						plugins = append(plugins, []string{
+							files[i].Name(),
+							hashFile(pPath + "/" + files[i].Name(), 6),
+						})
+					}
+				}
+			}
 			plugins = append(plugins, []string {
 				"config.json",
 				hashFile(filepath.Join(GetCurrentDir(), "/data/config/config.json"), 6),
 			})
-			for i:=0; i < len(files); i++ {
-				plugins = append(plugins, []string{
-					files[i].Name(),
-					hashFile(pPath + "/" + files[i].Name(), 6),
-				})
-			}
 			return plugins
 		}(),
 	})
