@@ -25,10 +25,8 @@
     <body>
       <div id="main" style="height: 100%">
         <style>
-          html{
-            background: #f2f3f5;
-            color: #375160;
-          }
+          html{ background: #f2f3f5; color: #375160; }
+          noscript div{ text-align:center;font-family:monospace;margin-top:5%;font-size:15px; }
         </style>
         <script>
           if(location.pathname == "/" || location.pathname == "/login"){
@@ -36,6 +34,12 @@
             $style.innerText = $style.innerText.replace("#f2f3f5", "#9AD1ED")
           }
         </script>
+        <noscript>
+          <div>
+            <h2>Error: Javascript is off</h2>
+            <p>Filestash is a full fledge application that needs Javascript to run</p>
+          </div>
+        </noscript>
       </div>
     </body>
 </html>
