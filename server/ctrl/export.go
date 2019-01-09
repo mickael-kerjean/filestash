@@ -21,6 +21,12 @@ func init() {
 	os.MkdirAll(EXPORT_PATH, os.ModePerm)
 }
 func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
+	http.SetCookie(res, &http.Cookie{
+		Name:   "download",
+		Value:  "",
+		MaxAge: -1,
+		Path:   "/",
+	})
 	query := req.URL.Query()
 	p := mux.Vars(req)
 	mimeType := fmt.Sprintf("%s/%s", p["mtype0"], p["mtype1"])
@@ -32,12 +38,6 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}
-	http.SetCookie(res, &http.Cookie{
-		Name:   "download",
-		Value:  "",
-		MaxAge: -1,
-		Path:   "/",
-	})
 
 	var tmpPath   string = EXPORT_PATH + "/export_" + QuickString(10)
 	var cmd       *exec.Cmd

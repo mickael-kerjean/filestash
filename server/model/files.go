@@ -47,20 +47,24 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 }
 
 func GetHome(b IBackend, base string) (string, error) {
+	if _, err := b.Ls(base); err != nil {
+		return base, err
+	}
+	
 	if obj, ok := b.(interface{ Home() (string, error) }); ok {
 		absolute, err := obj.Home()
 		if err != nil {
 			return "", err
 		}
-		if strings.HasPrefix(absolute, base) == false {
-			return "", nil
+		absolute = EnforceDirectory(absolute)
+		base = EnforceDirectory(base)
+		if strings.HasPrefix(absolute, base) {
+			return "/" + absolute[len(base):], nil
 		}
-		return absolute[len(base):], nil
+		return "/", nil
 	}
-	_, err := b.Ls("/")
-	return base, err
+	return base, nil
 }
-
 
 func MapStringInterfaceToMapStringString(m map[string]interface{}) map[string]string {
     res := make(map[string]string)

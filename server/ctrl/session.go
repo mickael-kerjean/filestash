@@ -37,6 +37,7 @@ func SessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	ctx.Body["timestamp"] = time.Now().String()
 	session := model.MapStringInterfaceToMapStringString(ctx.Body)
+	session["path"] = EnforceDirectory(session["path"])
 
 	backend, err := model.NewBackend(&ctx, session)
 	if err != nil {
@@ -60,9 +61,9 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	home, err := model.GetHome(backend, ctx.Session["path"])
+	home, err := model.GetHome(backend, session["path"])
 	if err != nil {
-		SendErrorResult(res, err)
+		SendErrorResult(res, ErrInvalidPassword)
 		return
 	}
 
@@ -87,8 +88,6 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	http.SetCookie(res, &cookie)
 
 	if home == "" {
-		SendSuccessResult(res, nil)
-	} else if ctx.Body["path"] != nil {
 		SendSuccessResult(res, nil)
 	} else {
 		SendSuccessResult(res, home)

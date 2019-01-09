@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	"encoding/json"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"io/ioutil"
@@ -91,7 +92,7 @@ func PrivateConfigUpdateHandler(ctx App, res http.ResponseWriter, req *http.Requ
 func PublicConfigHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	cfg := Config.Export()
 
-	if c, err := Config.MarshalJSON(); err == nil {
+	if c, err := json.Marshal(cfg); err == nil {
 		hash := Hash(string(c))
 		if req.Header.Get("If-None-Match") == hash {
 			res.WriteHeader(http.StatusNotModified)

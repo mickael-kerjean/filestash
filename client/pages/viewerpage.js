@@ -67,7 +67,6 @@ export class ViewerPage extends React.Component {
                     Files.options(this.state.path)
                 ]).then((d) => {
                     const [content, options] = d;
-                    console.log(options);
                     options.allowed
                     this.setState({
                         content: content,
@@ -75,7 +74,6 @@ export class ViewerPage extends React.Component {
                         acl: options["allow"]
                     });
                 }).catch((err) => {
-                    console.log(err);
                     if(err && err.code === 'BINARY_FILE'){
                         this.setState({opener: 'download', loading: false});
                     }else{

@@ -16,17 +16,31 @@ func GetAbsolutePath(p string) string {
 }
 
 func IsDirectory(path string) bool {
-	if string(path[len(path)-1]) != "/" {
+	if path == "" {
+		return false
+	}
+	if path[len(path) - 1:] != "/" {
 		return false
 	}
 	return true
 }
 
-func JoinPath(base, file string) (string, error) {
+/*
+ * Join 2 path together, result has a file
+ */
+func JoinPath(base, file string) string {
 	filePath := filepath.Join(base, file)
-
 	if strings.HasPrefix(filePath, base) == false {
-		return "", ErrNotValid
+		return base
 	}
-	return filePath, nil
+	return filePath
+}
+
+func EnforceDirectory(path string) string {
+	if path == "" {
+		return "/"
+	} else if path[len(path) - 1:] == "/" {
+		return path
+	}
+	return path + "/"
 }

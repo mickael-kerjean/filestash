@@ -263,9 +263,7 @@ func JsonIterator(json string) []JSONIterator {
 			} else if value.IsArray() {
 				return true
 			}
-			if value.Value != nil {
-				j = append(j, JSONIterator{k, value.Value()})
-			}
+			j = append(j, JSONIterator{k, value.Value()})
 			return true
 		})
 	}

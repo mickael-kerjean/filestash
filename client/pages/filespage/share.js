@@ -161,12 +161,12 @@ export class ShareComponent extends React.Component {
 
     render(){
         const beautifulPath = function(from, to){
+            to = from.replace(/\/$/, "") + to;
             if(filetype(from) === "directory"){
-                from = from.split("/");
-                from = from.slice(0, from.length - 1);
-                from = from.join("/");
+                from = from.split("/")
+                from = from.slice(0, from.length - 1)
+                from = from.join("/")
             }
-
             let p = absoluteToRelative(from, to);
             return p.length < to.length ? p : to;
         };

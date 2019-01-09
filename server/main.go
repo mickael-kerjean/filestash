@@ -62,7 +62,6 @@ func Init(a *App) {
 	middlewares = []Middleware{ IndexHeaders }
 	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a))).Methods("GET")
 
-
 	// API for File management
 	files := r.PathPrefix("/api/files").Subrouter()
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly }

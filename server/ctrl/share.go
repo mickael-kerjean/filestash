@@ -11,20 +11,34 @@ import (
 )
 
 func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
+	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
+	if err != nil {
+		SendErrorResult(res, err)
+		return
+	}
 	listOfSharedLinks, err := model.ShareList(
 		GenerateID(&ctx),
-		req.URL.Query().Get("path"),
+		path,
 	)
 	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
+
+	for i:=0; i<len(listOfSharedLinks); i++ {
+		listOfSharedLinks[i].Path = "/" + strings.TrimPrefix(listOfSharedLinks[i].Path, path)
+	}
 	SendSuccessResults(res, listOfSharedLinks)
 }
 
 func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
+	share_id := mux.Vars(req)["share"]
+	if share_id == "private" {
+		SendErrorResult(res, ErrNotValid)
+		return
+	}
 	s := Share{
-		Id:           mux.Vars(req)["share"],
+		Id:   share_id,
 		Auth: func() string {
 			if ctx.Share.Id == "" {
 				a, err := req.Cookie(COOKIE_NAME_AUTH)

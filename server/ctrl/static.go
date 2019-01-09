@@ -12,22 +12,16 @@ import (
 	"strings"
 )
 
-var ETAGS map[string]string = make(map[string]string)
+var ETAGS SafeMapStringString = NewSafeMapStringString()
 
 func StaticHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		var srcPath string
-		var err      error
-
-		if srcPath, err = JoinPath(GetAbsolutePath(_path), req.URL.Path); err != nil {
+		base := GetAbsolutePath(_path)
+		if srcPath = JoinPath(base, req.URL.Path); srcPath == base {
 			http.NotFound(res, req)
 			return
 		}
-		if strings.HasPrefix(_path, "/") == true {
-			http.NotFound(res, req)
-			return
-		}
-
 		ServeFile(res, req, srcPath)
 	}
 }
@@ -38,7 +32,6 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 			http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
 			return
 		}
-
 		srcPath := GetAbsolutePath(_path)
 		ServeFile(res, req, srcPath)
 	}
@@ -109,24 +102,31 @@ func hashFile (path string, n int) string {
 
 func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 	zFilePath := filePath + ".gz"
+	tags := ETAGS.Gets(filePath, zFilePath)
+	etagNormal := tags[0]
+	etagGzip := tags[1]
+	
 	if req.Header.Get("If-None-Match") != "" {
-		if req.Header.Get("If-None-Match") == ETAGS[filePath] {
+		browserTag := req.Header.Get("If-None-Match")
+		if browserTag == etagNormal {
 			res.WriteHeader(http.StatusNotModified)
 			return
-		} else if req.Header.Get("If-None-Match") == ETAGS[zFilePath] {
+		} else if browserTag == etagGzip {
 			res.WriteHeader(http.StatusNotModified)
 			return
 		}
 	}
 	head := res.Header()
-
 	if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
 		if file, err := os.OpenFile(zFilePath, os.O_RDONLY, os.ModePerm); err == nil {
 			head.Set("Content-Encoding", "gzip")
-			if ETAGS[zFilePath] == "" {
-				ETAGS[zFilePath] = hashFile(zFilePath, 10)
+			if etagGzip == "" {
+				tag := hashFile(zFilePath, 10)
+				ETAGS.Set(zFilePath, tag)
+				head.Set("Etag", tag)
+			} else {
+				head.Set("Etag", etagGzip)
 			}
-			head.Set("Etag", ETAGS[zFilePath])
 			io.Copy(res, file)
 			return
 		}
@@ -137,9 +137,12 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 		http.NotFound(res, req)
 		return
 	}
-	if ETAGS[filePath] == "" {
-		ETAGS[filePath] = hashFile(filePath, 10)
+	if etagNormal == "" {
+		tag := hashFile(filePath, 10)
+		ETAGS.Set(filePath, tag)
+		head.Set("Etag", tag)
+	} else {
+		head.Set("Etag", etagNormal)
 	}
-	head.Set("Etag", ETAGS[filePath])
 	io.Copy(res, file)
 }

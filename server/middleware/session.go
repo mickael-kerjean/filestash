@@ -7,6 +7,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/model"
 	"github.com/gorilla/mux"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -73,6 +74,10 @@ func RedirectSharedLoginIfNeeded(fn func(App, http.ResponseWriter, *http.Request
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		share_id := _extractShareId(req)
 		if share_id == "" {
+			if mux.Vars(req)["share"] == "private" {
+				fn(ctx, res, req)
+				return
+			}
 			SendErrorResult(res, ErrNotValid)
 			return
 		}
@@ -108,6 +113,7 @@ func CanManageShare(fn func(App, http.ResponseWriter, *http.Request)) func(ctx A
 		// In a scenario where the shared link has already been atributed, we need to make sure
 		// the user that's currently logged in can manage the link. 2 scenarios here:
 		// 1) scenario 1: the user is the very same one that generated the shared link in the first place
+		ctx.Share = Share{}
 		if ctx.Session, err = _extractSession(req, &ctx); err != nil {
 			SendErrorResult(res, err)
 			return
@@ -144,7 +150,7 @@ func _extractShareId(req *http.Request) string {
 		return share
 	}
 	m := mux.Vars(req)["share"]
-	if m == "me" {
+	if m == "private" {
 		return ""
 	}
 	return m
@@ -156,7 +162,6 @@ func _extractShare(req *http.Request) (Share, error) {
 	if share_id == "" {
 		return Share{}, nil
 	}
-
 	if Config.Get("features.share.enable").Bool() == false {
 		Log.Debug("Share feature isn't enable, contact your administrator")
 		return Share{}, NewError("Feature isn't enable, contact your administrator", 405)
@@ -182,37 +187,43 @@ func _extractShare(req *http.Request) (Share, error) {
 func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	var str string
 	var err error
-	var res map[string]string = make(map[string]string)
+	var session map[string]string = make(map[string]string)
 
 	if ctx.Share.Id != "" {
 		str, err = DecryptString(SECRET_KEY, ctx.Share.Auth)
 		if err != nil {
 			// This typically happen when changing the secret key
-			return res, nil
+			return session, nil
 		}
-		err = json.Unmarshal([]byte(str), &res)
-		if ctx.Share.Path[len(ctx.Share.Path)-1:] == "/" {
-			res["path"] = ctx.Share.Path
+		err = json.Unmarshal([]byte(str), &session)
+		if IsDirectory(ctx.Share.Path) {
+			session["path"] = ctx.Share.Path
 		} else {
-			path := req.URL.Query().Get("path")
-			if strings.HasSuffix(ctx.Share.Path, path) == false {
-				return res, ErrPermissionDenied
+			// when the shared link is pointing to a file, we mustn't have access to the surroundings
+			// => we need to take extra care of which path to use as a chroot
+			var path string = req.URL.Query().Get("path")
+			if strings.HasPrefix(req.URL.Path, "/api/export/") == true {
+				var re = regexp.MustCompile(`^/api/export/[^\/]+/[^\/]+/[^\/]+(\/.+)$`)
+				path = re.ReplaceAllString(req.URL.Path, `$1`)
 			}
-			res["path"] = strings.TrimSuffix(ctx.Share.Path, path) + "/"
+			if strings.HasSuffix(ctx.Share.Path, path) == false {
+				return make(map[string]string), ErrPermissionDenied
+			}
+			session["path"] = strings.TrimSuffix(ctx.Share.Path, path) + "/"
 		}
-		return res, err
+		return session, err
 	} else {
 		cookie, err := req.Cookie(COOKIE_NAME_AUTH)
 		if err != nil {
-			return res, nil
+			return session, nil
 		}
 		str = cookie.Value
 		str, err = DecryptString(SECRET_KEY, str)
 		if err != nil {
 			// This typically happen when changing the secret key
-			return res, nil
+			return session, nil
 		}
-		err = json.Unmarshal([]byte(str), &res)
-		return res, err
+		err = json.Unmarshal([]byte(str), &session)
+		return session, err
 	}
 }
