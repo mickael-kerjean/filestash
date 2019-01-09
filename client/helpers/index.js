@@ -7,7 +7,7 @@ export { cache } from './cache';
 export { pathBuilder, basename, dirname, absoluteToRelative, filetype, currentShare, findParams, appendShareToUrl } from './path';
 export { memory } from './memory';
 export { prepare } from './navigate';
-export { invalidate, http_get, http_post, http_delete } from './ajax';
+export { invalidate, http_get, http_post, http_delete, http_options } from './ajax';
 export { prompt, alert, confirm } from './popup';
 export { notify } from './notify';
 export { gid, randomString } from './random';

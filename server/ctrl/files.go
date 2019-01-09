@@ -138,6 +138,21 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	io.Copy(res, file)
 }
 
+func FileAccess(ctx App, res http.ResponseWriter, req *http.Request) {
+	allowed := []string{}
+	if model.CanRead(&ctx){
+		allowed = append(allowed, "GET")
+	}
+	if model.CanEdit(&ctx){
+		allowed = append(allowed, "PUT")
+	}
+	if model.CanUpload(&ctx){
+		allowed = append(allowed, "POST")
+	}
+	res.Header().Set("Allow", strings.Join(allowed, ", "))
+	SendSuccessResult(res, nil)
+}
+
 func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 	if model.CanEdit(&ctx) == false {
 		SendErrorResult(res, NewError("Permission denied", 403))

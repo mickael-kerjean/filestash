@@ -145,6 +145,7 @@ export class IDE extends React.Component {
               <ReactCSSTransitionGroup transitionName="editor" transitionAppear={true} transitionEnter={false} transitionLeave={false} transitionAppearTimeout={300} className="editor_container">
                 <Editor onSave={this.save.bind(this)} filename={this.props.filename}
                         content={this.state.contentToSave}
+                        readonly={/PUT/.test(this.props.acl)}
                         event={this.state.event.asObservable()}
                         onModeChange={this.onUpdate.bind(this, 'mode', false)}
                         onFoldChange={this.onUpdate.bind(this, 'folding', false)}

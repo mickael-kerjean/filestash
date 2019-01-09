@@ -1,6 +1,6 @@
 "use strict";
 
-import { http_get, http_post, prepare, basename, dirname, pathBuilder } from '../helpers/';
+import { http_get, http_post, http_options, prepare, basename, dirname, pathBuilder } from '../helpers/';
 import { filetype, currentShare, appendShareToUrl } from '../helpers/';
 
 import { Observable } from 'rxjs/Observable';
@@ -190,6 +190,12 @@ class FileSystem{
                 });
             });
     }
+
+    options(path){
+        const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
+        return http_options(url);
+    }
+
     url(path){
         const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
         return Promise.resolve(url);

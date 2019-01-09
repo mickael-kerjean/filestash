@@ -90,6 +90,29 @@ export function http_delete(url){
     });
 }
 
+export function http_options(url){
+    return new Promise((done, err) => {
+        var xhr = new XMLHttpRequest();
+        xhr.open("OPTIONS", url, true);
+        xhr.withCredentials = true;
+        xhr.onload = function(){
+            if(xhr.readyState === XMLHttpRequest.DONE){
+                if(xhr.status !== 200){
+                    handle_error_response(xhr, err);
+                    return
+                }
+                done(xhr.getAllResponseHeaders()
+                     .split("\n")
+                     .reduce((acc, r) => {
+                         const a = r.split(": ");
+                         acc[a[0]] = a[1];
+                         return acc;
+                     }, {}));
+            }
+        }
+        xhr.send(null);
+    })
+}
 
 
 function handle_error_response(xhr, err){

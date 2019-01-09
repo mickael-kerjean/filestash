@@ -62,16 +62,26 @@ export class ViewerPage extends React.Component {
         };
         const data_fetch = (app) => {
             if(app === 'editor'){
-                Files.cat(this.state.path).then((content) => {
-                    this.setState({content: content, loading: false});
-                }).catch(err => {
+                return Promise.all([
+                    Files.cat(this.state.path),
+                    Files.options(this.state.path)
+                ]).then((d) => {
+                    const [content, options] = d;
+                    console.log(options);
+                    options.allowed
+                    this.setState({
+                        content: content,
+                        loading: false,
+                        acl: options["allow"]
+                    });
+                }).catch((err) => {
+                    console.log(err);
                     if(err && err.code === 'BINARY_FILE'){
                         this.setState({opener: 'download', loading: false});
                     }else{
                         this.props.error(err);
                     }
                 });
-                return;
             }
             this.setState({loading: false});
         };
@@ -134,6 +144,7 @@ export class ViewerPage extends React.Component {
                          content={this.state.content || ""}
                          url={this.state.url}
                          path={this.state.path}
+                         acl={this.state.acl}
                          filename={this.state.filename}/>
                   </NgIf>
                   <NgIf cond={this.state.opener === 'image'}>

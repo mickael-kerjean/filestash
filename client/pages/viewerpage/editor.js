@@ -98,6 +98,7 @@ export class Editor extends React.Component {
                 mode: mode,
                 keyMap: CONFIG["editor"],
                 lineWrapping: true,
+                readOnly: !this.props.readonly,
                 foldOptions: {
                     widget: "..."
                 }
