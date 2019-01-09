@@ -47,54 +47,17 @@ func AdminOnly(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, r
 }
 
 func SessionStart (fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
-	extractSession := func(req *http.Request, ctx *App) (map[string]string, error) {
-		var str string
-		var err error
-		var res map[string]string = make(map[string]string)
-
-		if ctx.Share.Id != "" {
-			str, err = DecryptString(SECRET_KEY, ctx.Share.Auth)
-			if err != nil {
-				// This typically happen when changing the secret key
-				return res, nil
-			}
-			err = json.Unmarshal([]byte(str), &res)
-			if ctx.Share.Path[len(ctx.Share.Path)-1:] == "/" {
-				res["path"] = ctx.Share.Path
-			} else {
-				path := req.URL.Query().Get("path")
-				if strings.HasSuffix(ctx.Share.Path, path) == false {
-					return res, ErrPermissionDenied
-				}
-				res["path"] = strings.TrimSuffix(ctx.Share.Path, path) + "/"
-			}
-			return res, err
-		} else {
-			cookie, err := req.Cookie(COOKIE_NAME_AUTH)
-			if err != nil {
-				return res, nil
-			}
-			str = cookie.Value
-			str, err = DecryptString(SECRET_KEY, str)
-			if err != nil {
-				// This typically happen when changing the secret key
-				return res, nil
-			}
-			err = json.Unmarshal([]byte(str), &res)
-			return res, err
-		}
-	}
 	extractBackend := func(req *http.Request, ctx *App) (IBackend, error) {
 		return model.NewBackend(ctx, ctx.Session)
 	}
 
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		var err error
-		if ctx.Share, err = _findShare(req, _extractShareId(req)); err != nil {
+		if ctx.Share, err = _extractShare(req); err != nil {
 			SendErrorResult(res, err)
 			return
 		}
-		if ctx.Session, err = extractSession(req, &ctx); err != nil {
+		if ctx.Session, err = _extractSession(req, &ctx); err != nil {
 			SendErrorResult(res, err)
 			return
 		}
@@ -114,12 +77,64 @@ func RedirectSharedLoginIfNeeded(fn func(App, http.ResponseWriter, *http.Request
 			return
 		}
 
-		share, err := _findShare(req, share_id);
+		share, err := _extractShare(req);
 		if err != nil || share_id != share.Id {
 			http.Redirect(res, req, fmt.Sprintf("/s/%s?next=%s", share_id, req.URL.Path), http.StatusTemporaryRedirect)
 			return
 		}
 		fn(ctx, res, req)
+	}
+}
+
+func CanManageShare(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+		share_id := mux.Vars(req)["share"]
+		if share_id == "" {
+			SendErrorResult(res, ErrNotValid)
+			return
+		}
+
+		// anyone can manage a share_id that's not been attributed yet
+		s, err := model.ShareGet(share_id)
+		if err != nil {
+			if err == ErrNotFound {
+				SessionStart(fn)(ctx, res, req)
+				return
+			}
+			SendErrorResult(res, err)
+			return
+		}
+
+		// In a scenario where the shared link has already been atributed, we need to make sure
+		// the user that's currently logged in can manage the link. 2 scenarios here:
+		// 1) scenario 1: the user is the very same one that generated the shared link in the first place
+		if ctx.Session, err = _extractSession(req, &ctx); err != nil {
+			SendErrorResult(res, err)
+			return
+		}
+		if s.Backend == GenerateID(&ctx) {
+			fn(ctx, res, req)
+			return
+		}
+		// 2) scenario 2: the user is different than the one that has generated the shared link
+		// in this scenario, the link owner might have granted for user the right to reshare links
+		if ctx.Share, err = _extractShare(req); err != nil {
+			SendErrorResult(res, err)
+			return
+		}
+		if ctx.Session, err = _extractSession(req, &ctx); err != nil {
+			SendErrorResult(res, err)
+			return
+		}
+
+		if s.Backend == GenerateID(&ctx) {
+			if s.CanShare == true {
+				fn(ctx, res, req)
+				return
+			}
+		}
+		SendErrorResult(res, ErrPermissionDenied)
+		return
 	}
 }
 
@@ -135,8 +150,9 @@ func _extractShareId(req *http.Request) string {
 	return m
 }
 
-func _findShare(req *http.Request, share_id string) (Share, error) {
+func _extractShare(req *http.Request) (Share, error) {
 	var err error
+	share_id := _extractShareId(req)
 	if share_id == "" {
 		return Share{}, nil
 	}
@@ -161,4 +177,42 @@ func _findShare(req *http.Request, share_id string) (Share, error) {
 		return Share{}, NewError("Unauthorized Shared space", 400)
 	}
 	return s, nil
+}
+
+func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
+	var str string
+	var err error
+	var res map[string]string = make(map[string]string)
+
+	if ctx.Share.Id != "" {
+		str, err = DecryptString(SECRET_KEY, ctx.Share.Auth)
+		if err != nil {
+			// This typically happen when changing the secret key
+			return res, nil
+		}
+		err = json.Unmarshal([]byte(str), &res)
+		if ctx.Share.Path[len(ctx.Share.Path)-1:] == "/" {
+			res["path"] = ctx.Share.Path
+		} else {
+			path := req.URL.Query().Get("path")
+			if strings.HasSuffix(ctx.Share.Path, path) == false {
+				return res, ErrPermissionDenied
+			}
+			res["path"] = strings.TrimSuffix(ctx.Share.Path, path) + "/"
+		}
+		return res, err
+	} else {
+		cookie, err := req.Cookie(COOKIE_NAME_AUTH)
+		if err != nil {
+			return res, nil
+		}
+		str = cookie.Value
+		str, err = DecryptString(SECRET_KEY, str)
+		if err != nil {
+			// This typically happen when changing the secret key
+			return res, nil
+		}
+		err = json.Unmarshal([]byte(str), &res)
+		return res, err
+	}
 }

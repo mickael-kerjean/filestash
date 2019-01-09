@@ -22,66 +22,37 @@ func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResults(res, listOfSharedLinks)
 }
 
-func ShareGet(ctx App, res http.ResponseWriter, req *http.Request) {
-	share_id := mux.Vars(req)["share"]
-	s, err := model.ShareGet(share_id);
-	if err != nil {
-		SendErrorResult(res, err)
-		return
-	}
-	SendSuccessResult(res, struct{
-		Id string `json:"id"`
-		Path string `json:"path"`
-	}{
-		Id: s.Id,
-		Path: s.Path,
-	})
-}
-
 func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
-	share_target := mux.Vars(req)["share"]
-
-	// Make sure the current user is allowed to do that
-	backend_id := ""
-	path_from := "/"
-	auth_cookie := ""
-
-	if ctx.Share.Id != "" {
-		if ctx.Share.CanShare != true {
-			SendErrorResult(res, ErrPermissionDenied)
-			return
-		}
-		backend_id = ctx.Share.Backend
-
-		auth_cookie = ctx.Share.Auth
-		path_from = ctx.Share.Path
-	} else {
-		backend_id = GenerateID(&ctx)
-		auth_cookie = func() string {
-			a, err := req.Cookie("auth")
-			if err != nil {
-				return "N/A"
-			}
-			return a.Value
-		}()
-		if ctx.Session["path"] != "" {
-			path_from = ctx.Session["path"]
-		}
-	}
-
-	if ctx.Share.Id != "" {
-		if backend_id != ctx.Share.Backend {
-			SendErrorResult(res, ErrPermissionDenied)
-			return
-		}
-	}
-
-	// Perform upsert
 	s := Share{
-		Id:           share_target,
-		Auth:         auth_cookie,
-		Backend:      backend_id,
-		Path:         path_from + strings.TrimPrefix(NewStringFromInterface(ctx.Body["path"]), "/"),
+		Id:           mux.Vars(req)["share"],
+		Auth: func() string {
+			if ctx.Share.Id == "" {
+				a, err := req.Cookie(COOKIE_NAME_AUTH)
+				if err != nil {
+					return ""
+				}
+				return a.Value
+			}
+			return ctx.Share.Auth
+		}(),
+		Backend: func () string {
+			if ctx.Share.Id == "" {
+				return GenerateID(&ctx)
+			}
+			return ctx.Share.Backend
+		}(),
+	    Path: func () string {
+			leftPath := "/"
+			rightPath := strings.TrimPrefix(NewStringFromInterface(ctx.Body["path"]), "/")
+			if ctx.Share.Id != "" {
+				leftPath = ctx.Share.Path
+			} else {
+				if ctx.Session["path"] != "" {
+					leftPath = ctx.Session["path"]
+				}
+			}
+			return leftPath + rightPath
+		}(),
 		Password:     NewStringpFromInterface(ctx.Body["password"]),
 		Users:        NewStringpFromInterface(ctx.Body["users"]),
 		Expire:       NewInt64pFromInterface(ctx.Body["expire"]),
@@ -101,30 +72,6 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func ShareDelete(ctx App, res http.ResponseWriter, req *http.Request) {
 	share_target := mux.Vars(req)["share"]
-	share_current := req.URL.Query().Get("share");
-
-	// Make sure the current user is allowed to do that
-	backend_id := GenerateID(&ctx)
-	if share_current != "" {
-		share, err := model.ShareGet(share_current);
-		if err != nil {
-			SendErrorResult(res, ErrNotFound)
-			return
-		} else if share.CanShare != true {
-			SendErrorResult(res, ErrPermissionDenied)
-			return
-		}
-		backend_id = share.Backend
-	}
-	share, err := model.ShareGet(share_target);
-	if err == nil {
-		if backend_id != share.Backend {
-			SendErrorResult(res, ErrPermissionDenied)
-			return
-		}
-	}
-
-	// Remove the share
 	if err := model.ShareDelete(share_target); err != nil {
 		SendErrorResult(res, err)
 		return
@@ -156,6 +103,12 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	// 2) validate the current context
 	if len(verifiedProof) > 20 || len(requiredProof) > 20 {
+		http.SetCookie(res, &http.Cookie{
+			Name:   COOKIE_NAME_PROOF,
+			Value:  "",
+			MaxAge: -1,
+			Path:   COOKIE_PATH,
+		})
 		SendErrorResult(res, ErrNotValid)
 		return
 	}

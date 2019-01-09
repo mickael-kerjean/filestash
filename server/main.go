@@ -83,11 +83,12 @@ func Init(a *App) {
 	share := r.PathPrefix("/api/share").Subrouter()
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly }
 	share.HandleFunc("",               NewMiddlewareChain(ShareList,        middlewares, *a)).Methods("GET")
-	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareDelete,      middlewares, *a)).Methods("DELETE")
-	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly, BodyParser }
-	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareUpsert,      middlewares, *a)).Methods("POST")
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, BodyParser }
 	share.HandleFunc("/{share}/proof", NewMiddlewareChain(ShareVerifyProof, middlewares, *a)).Methods("POST")
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, CanManageShare }
+	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareDelete,      middlewares, *a)).Methods("DELETE")
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, BodyParser, CanManageShare }
+	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareUpsert,      middlewares, *a)).Methods("POST")
 
 	// Webdav server / Shared Link
 	middlewares = []Middleware{ IndexHeaders, SecureHeaders }

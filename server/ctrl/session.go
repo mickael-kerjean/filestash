@@ -113,6 +113,12 @@ func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
 		MaxAge: -1,
 		Path:   COOKIE_PATH_ADMIN,
 	})
+	http.SetCookie(res, &http.Cookie{
+		Name:   COOKIE_NAME_PROOF,
+		Value:  "",
+		MaxAge: -1,
+		Path:   COOKIE_PATH,
+	})
 	SendSuccessResult(res, nil)
 }
 

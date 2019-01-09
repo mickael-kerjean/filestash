@@ -4,7 +4,7 @@ import {
     org_metadown, org_insert_todo_heading, org_shiftleft, org_shiftright, fold, unfold,
     isFold, org_set_fold, org_shiftmetaleft, org_shiftmetaright
 } from './emacs-org';
-import { pathBuilder, dirname } from '../../../helpers/';
+import { pathBuilder, dirname, currentShare } from '../../../helpers/';
 let CodeMirror = window.CodeMirror;
 
 CodeMirror.__mode = 'orgmode';
@@ -272,8 +272,9 @@ function toggleHandler(cm, e){
             window.open(link);
         }else{
             const root_path = dirname(window.location.pathname.replace(/^\/view/, ''));
-            const link_path = link;
-            window.open("/view"+pathBuilder(root_path, link_path));
+            const share = currentShare();
+            const url = share ? "/view"+pathBuilder(root_path, link)+"?share="+share : "/view"+pathBuilder(root_path, link)
+            window.open(url);
         }
     }
 }
