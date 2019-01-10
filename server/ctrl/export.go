@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	"bytes"
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
@@ -62,19 +63,21 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 		if mimeType == "text/html" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
-				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
 				"--eval", "(setq org-html-extension \"org\")",
+				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
 				tmpPath + "/index.org", "-f", "org-html-export-to-html",
 			)
 			outPath = "index.org.org"
 		} else if mimeType == "application/pdf" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
+				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
 				tmpPath + "/index.org", "-f", "org-latex-export-to-pdf",
 			)
 			if query.Get("mode") == "beamer" {
 				cmd = exec.Command(
 					emacsPath, "--no-init-file", "--batch",
+					"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
 					tmpPath + "/index.org", "-f", "org-beamer-export-to-pdf",
 				)
 			}
@@ -82,30 +85,35 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 		} else if mimeType == "text/calendar" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
+				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
 				tmpPath + "/index.org", "-f", "org-icalendar-export-to-ics",
 			)
 			outPath = "index.ics"
 		} else if mimeType == "text/plain" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
+				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
 				tmpPath + "/index.org", "-f", "org-ascii-export-to-ascii",
 			)
 			outPath = "index.txt"
 		} else if mimeType == "text/x-latex" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
+				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
 				tmpPath + "/index.org", "-f", "org-latex-export-to-latex",
 			)
 			outPath = "index.tex"
 		} else if mimeType == "text/markdown" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
+				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
 				tmpPath + "/index.org", "-f", "org-md-export-to-markdown",
 			)
 			outPath = "index.md"
 		} else if mimeType == "application/vnd.oasis.opendocument.text" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
+				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
 				tmpPath + "/index.org", "-f", "org-odt-export-to-odt",
 			)
 			outPath = "index.odt"
@@ -129,8 +137,12 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 		io.Copy(f, file)
 		// TODO: insert related resources: eg: images
 
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
 		if err = cmd.Run(); err != nil {
-			SendErrorResult(res, NewError("emacs has quit with error: '%s'" + err.Error(), 400))
+			Log.Error(fmt.Sprintf("stdout:%s | stderr:%s", string(stdout.Bytes()), string(stderr.Bytes())))
+			SendErrorResult(res, NewError(fmt.Sprintf("emacs has quitted: '%s'", err.Error()), 400))
 			return
 		}
 
