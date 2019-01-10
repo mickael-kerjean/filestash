@@ -1,39 +1,76 @@
 kind: pipeline
 name: default
 
+workspace:
+  base: /go
+  path: src/github.com/mickael-kerjean.me/filestash
+
 steps:
 
-- name: test
-  image: golang
+- name: build_go
+  image: golang:1.11-alpine
   environment:
-    GOPATH: /drone/
     CGO_LDFLAGS_ALLOW: '-fopenmp'
   commands:
-  - cd server
-  - rm -rf plugin/plg_*
-  - go get -t ./...
-  - go build
-  - go test -v ./...
+  - apk --no-cache add git gcc libc-dev > /dev/null 2>&1
+  - mkdir ../plugin/
+  - mv server/plugin/plg_* ../plugin
+  - go get -t ./server/...
+  - go build -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o dist/filestash server/main.go
 
-- name: publish
-  image: plugins/docker
-  settings:
-    dockerfile: ./docker/prod/Dockerfile
-    repo: machines/filestash
-    username:
-      from_secret: DOCKER_USERNAME
-    password:
-      from_secret: DOCKER_PASSWORD
-    tags: unstable
-
-- name: test_service0
-  image: machines/filestash:unstable
-  detach: true
-- name: test_main
-  image: machines/filestash_test
+- name: build_js
+  image: node:8-alpine
   commands:
-  - cd /app
-  - CI=true APP_URL=http://test_service0:8334 npm test
+  - npm install > /dev/null 2>&1
+  - NODE_ENV=production npm run build
+
+- name: build_finalise
+  image: alpine
+  commands:
+  - mkdir -p ./dist/data/
+  - cp -R config dist/data/config
+
+- name: test_prepare
+  image: alpine
+  environment:
+    PASSWORD:
+      from_secret: GIT_PASSWORD
+  commands:
+  - apk --no-cache add git > /dev/null 2>&1
+  - cd ../ && git clone "https://readonly:$PASSWORD@git.kerjean.me/filestash/test.git"
+  - chmod -R 777 ./test/
+  - chmod -R 777 ./filestash/dist/data
+
+- name: test_go
+  image: golang:1.11-alpine
+  commands:
+  - apk --no-cache add git gcc libc-dev > /dev/null 2>&1
+  - go get -t ../test/unit_go/...
+  - go test -v ../test/unit_go/...
+
+- name: test_js
+  image: node:8-alpine
+  commands:
+  - cd ../test/unit_js
+  - npm install > /dev/null 2>&1
+  - npm test
+
+- name: test_e2e
+  image: machines/puppeteer
+  volumes:
+  - name: cache
+    path: /tmp/
+  environment:
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+    ADMIN_PASSWORD: PLKr3FcPUdUNVhNImO6QOSKQ.tkLRniUYWMnV84rlb8Fhvib8C2W
+    APP_URL: http://127.0.0.1:8334
+    CI: true
+  commands:
+  - ./dist/filestash &
+  - cd ../test/e2e
+  - npm install > /dev/null 2>&1
+  - npm test
+  - kill -9 %1
 
 - name: release
   image: plugins/docker
@@ -63,3 +100,18 @@ steps:
     - cd /app/filestash
     - docker-compose pull
     - docker-compose up -d
+
+- name: report
+  image: plugins/irc
+  settings:
+    prefix: build
+    nick: blipblip
+    channel: filestash
+    host: chat.freenode.net
+    port: 6667
+    template: >
+      {{#success build.status}}
+        Build success: https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
+      {{else}}
+        Build failure: er}} https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
+      {{/success}}

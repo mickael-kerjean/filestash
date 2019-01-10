@@ -39,7 +39,8 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 func SecureHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		if host := Config.Get("general.host").String(); host != "" {
-			if req.Host != host {
+			if req.Host != host && req.Host != fmt.Sprintf("%s:443", host) {
+				Log.Error("Invalid access from host: %s", req.Host)
 				SendErrorResult(res, ErrNotAllowed)
 				return
 			}

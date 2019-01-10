@@ -49,6 +49,20 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     mkdir -p ./dist/data/plugin && \
     go build -buildmode=plugin -o ./dist/data/plugin/image.so server/plugin/plg_image_light/index.go && \
     #################
+    # External dependencies: emacs and pdflatex
+    apk --no-cache add curl emacs texlive && \
+    curl https://raw.githubusercontent.com/mickael-kerjean/filestash_latex/master/wrapfig.sty > /usr/share/texmf-dist/tex/latex/base/wrapfig.sty && \
+    curl https://raw.githubusercontent.com/mickael-kerjean/filestash_latex/master/capt-of.sty > /usr/share/texmf-dist/tex/latex/base/capt-of.sty && \
+    curl https://raw.githubusercontent.com/mickael-kerjean/filestash_latex/master/sectsty.sty > /usr/share/texmf-dist/tex/latex/base/sectsty.sty && \
+    texhash && \
+    apk --no-cache del curl && \
+    # put emacs on a diet program
+    find /usr/share/emacs -name '*.pbm' | xargs rm && \
+    find /usr/share/emacs -name '*.png' | xargs rm && \
+    find /usr/share/emacs -name '*.xpm' | xargs rm && \
+    # put latex on a diet program
+    rm -rf /usr/share/texmf-dist/doc && \
+    #################
     # Finalise the build
     cd $GOPATH/src/github.com/mickael-kerjean/filestash/ && \
     apk --no-cache add ca-certificates && \

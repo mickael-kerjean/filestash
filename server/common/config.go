@@ -277,12 +277,16 @@ func (this *Configuration) Debug() *FormElement {
 }
 
 func (this *Configuration) Initialise() {
-	if this.Get("general.secret_key").String() == "" {
-		key := RandomString(16)
-		this.Get("general.secret_key").Set(key)
+	Log.Stdout("CONFIG INIT ADMIN PASSWORD '%s'", os.Getenv("ADMIN_PASSWORD"))
+	if env := os.Getenv("ADMIN_PASSWORD"); env != "" {
+		this.Get("auth.admin").Set(env)
 	}
 	if env := os.Getenv("APPLICATION_URL"); env != "" {
 		this.Get("general.host").Set(env).String()
+	}
+	if this.Get("general.secret_key").String() == "" {
+		key := RandomString(16)
+		this.Get("general.secret_key").Set(key)
 	}
 
 	if len(this.Conn) == 0 {

@@ -48,6 +48,9 @@
             width: inherit;
             margin-right: 5px;
         }
+        input.component_input[name="oauth2"]{
+            display: none;
+        }
     }
 }
 

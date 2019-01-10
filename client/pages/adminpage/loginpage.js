@@ -42,7 +42,7 @@ export class LoginPage extends React.Component {
         return (
             <Container maxWidth="300px" className="sharepage_component">
               <form className={this.state.error ? "error" : ""} onSubmit={this.authenticate.bind(this)} style={marginTop()}>
-                <Input ref="$input" type="text" placeholder="Password" />
+                <Input ref="$input" type="password" placeholder="Password" />
                 <Button theme="transparent">
                   <Icon name={this.state.loading ? "loading" : "arrow_right"}/>
                 </Button>

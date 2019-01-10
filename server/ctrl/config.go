@@ -16,7 +16,6 @@ var (
 	cachepath = filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json")
 )
 
-
 func FetchPluginsHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	f, err := os.OpenFile(filepath.Join(GetCurrentDir(), PLUGIN_PATH), os.O_RDONLY, os.ModePerm)
 	if err != nil {

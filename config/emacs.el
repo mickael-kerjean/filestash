@@ -1,6 +1,7 @@
 ;; this is the config that's loaded by emacs when using the org mode export
 
-;; org mode keywords
+;; org mode stuff
+(setq org-export-use-babel nil)
 (setq org-todo-keywords (quote ((sequence "TODO(t)" "DOING(d)" "WAITING(w)" "|" "CANCEL(C)" "DEFERRED(F)" "DONE(D)"))))
 
 ;; html export
@@ -8,5 +9,41 @@
 (setq org-html-validation-link nil)
 (setq org-html-creator-string "Using <a href=\"http://filestash.app\">Filestash</a>")
 
-(setq org-export-use-babel nil)
-(setq org-confirm-babel-evaluate nil)
+;; latex export
+(setq org-latex-listings 'verbatim)
+(setq org-latex-default-packages-alist
+      '(("AUTO" "inputenc"  t)
+        ("T1"   "fontenc"   t)
+        (""     "fixltx2e"  nil)
+        (""     "graphicx"  t)
+        (""     "longtable" nil)
+        (""     "float"     nil)
+        (""     "wrapfig"   nil)
+        (""     "rotating"  nil)
+        ("normalem" "ulem"  t)
+        (""     "amsmath"   t)
+        (""     "textcomp"  t)
+        (""     "marvosym"  t)
+        (""     "wasysym"   t)
+        (""     "amssymb"   t)
+        (""     "xcolor"    t)
+        (""     "listings"  t)
+        ("colorlinks=true, allcolors=red!20!green!50!blue!80!black, pdfborder={0 0 0}" "hyperref"  nil)
+        "\\tolerance=1000"
+        "\\lstset{columns=flexible, breaklines=true}"
+        "\\definecolor{doctitle}{RGB}{51,51,51}"
+        "\\usepackage{lmodern}"
+        "\\usepackage{helvet}"
+        "\\usepackage{xcolor}"
+        "\\renewcommand{\\familydefault}{\\sfdefault}"
+        "\\usepackage{sectsty}"
+        "\\sectionfont{\\color{doctitle}}"
+        "\\subsectionfont{\\color{doctitle}}"
+        "\\subsubsectionfont{\\color{doctitle}}"
+        "\\usepackage{parskip}"
+        ))
+
+;; markdown export
+(add-to-list 'load-path (file-name-directory load-file-name))
+(require 'ox-gfm)
+(defalias 'org-md-export-to-markdown 'org-gfm-export-to-markdown)
