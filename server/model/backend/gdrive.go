@@ -34,7 +34,7 @@ func (g GDrive) Init(params map[string]string, app *App) (IBackend, error) {
 		Endpoint:     google.Endpoint,
 		ClientID:     Config.Get("auth.gdrive.client_id").Default(os.Getenv("GDRIVE_CLIENT_ID")).String(),
 		ClientSecret: Config.Get("auth.gdrive.client_secret").Default(os.Getenv("GDRIVE_CLIENT_SECRET")).String(),
-		RedirectURL:  Config.Get("general.host").String() + "/login",
+		RedirectURL:  "https://" + Config.Get("general.host").String() + "/login",
 		Scopes:       []string{"https://www.googleapis.com/auth/drive"},
 	}
 	if config.ClientID == "" {
