@@ -277,7 +277,6 @@ func (this *Configuration) Debug() *FormElement {
 }
 
 func (this *Configuration) Initialise() {
-	Log.Stdout("CONFIG INIT ADMIN PASSWORD '%s'", os.Getenv("ADMIN_PASSWORD"))
 	if env := os.Getenv("ADMIN_PASSWORD"); env != "" {
 		this.Get("auth.admin").Set(env)
 	}

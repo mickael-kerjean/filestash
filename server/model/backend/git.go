@@ -328,13 +328,17 @@ func (g *GitLib) open(params *GitParams, path string) (*git.Repository, error) {
 		if err != nil {
 			return nil, err
 		}
-		return git.PlainClone(path, false, &git.CloneOptions{
+		g, err := git.PlainClone(path, false, &git.CloneOptions{
 			URL:           g.params.repo,
 			Depth:         1,
 			ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", g.params.branch)),
 			SingleBranch:  true,
 			Auth:          auth,
 		})
+		if err == transport.ErrEmptyRemoteRepository {
+			return g, nil
+		}
+		return g, err
 	}
 	return git.PlainOpen(g.params.basePath)
 }
