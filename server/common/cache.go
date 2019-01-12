@@ -16,7 +16,7 @@ func (a *AppCache) Get(key interface{}) interface{} {
 	if err != nil {
 		return nil
 	}
-	value, found := a.Cache.Get(fmt.Sprint(hash))
+	value, found := a.Cache.Get(fmt.Sprintf("%d", hash))
 	if found == false {
 		return nil
 	}

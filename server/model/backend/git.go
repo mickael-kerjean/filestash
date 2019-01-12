@@ -96,8 +96,8 @@ func (git Git) Init(params map[string]string, app *App) (IBackend, error) {
 		return nil, NewError("Your password doesn't fit in a cookie :/", 500)
 	}
 
-	hash := GenerateID(app)
-	p.basePath = GetAbsolutePath(GitCachePath + "repo_" + fmt.Sprint(hash) + "/")
+	hash := GenerateID(app)	
+	p.basePath = GetAbsolutePath(GitCachePath + "repo_" + hash + "/")
 
 	repo, err := g.git.open(p, p.basePath)
 	g.git.repo = repo

@@ -172,5 +172,8 @@ func GenerateID(ctx *App) string {
 	if params["token"] != "" {
 		p += "token =>" + params["token"]
 	}
+	if p == "salt => " + SECRET_KEY {
+		return ""
+	}
 	return Hash(p)
 }
