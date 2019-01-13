@@ -2,6 +2,7 @@
 
 ;; org mode stuff
 (setq org-export-use-babel nil)
+(setq user-full-name "Filestash")
 (setq org-todo-keywords (quote ((sequence "TODO(t)" "DOING(d)" "WAITING(w)" "|" "CANCEL(C)" "DEFERRED(F)" "DONE(D)"))))
 
 ;; html export
@@ -10,7 +11,7 @@
 (setq org-html-creator-string "Using <a href=\"http://filestash.app\">Filestash</a>")
 
 ;; latex export
-(setq org-latex-listings 'verbatim)
+;; (setq org-latex-listings 'verbatim)
 (setq org-latex-default-packages-alist
       '(("AUTO" "inputenc"  t)
         ("T1"   "fontenc"   t)

@@ -71,9 +71,14 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     rm -rf $GOPATH && \
     rm -rf /tmp/* && \
     apk del .build-deps && \
-    apk del .go
+    apk del .go && \
+    #################
+    # Create machine user
+    addgroup -S filestash && adduser -S -g filestash filestash && \
+    chown -R filestash:filestash /app/
 
 EXPOSE 8334
 VOLUME ["/app/data/config/"]
 WORKDIR "/app"
+USER filestash
 CMD ["/app/filestash"]

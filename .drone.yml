@@ -5,10 +5,22 @@ workspace:
   base: /go
   path: src/github.com/mickael-kerjean.me/filestash
 
+clone:
+  depth: 1
+
+
 steps:
+
+- name: build_prepare
+  image: alpine
+  group: build
+  commands:
+  - mkdir -p ./dist/data/
+  - cp -R config dist/data/config
 
 - name: build_go
   image: golang:1.11-alpine
+  group: build
   environment:
     CGO_LDFLAGS_ALLOW: '-fopenmp'
   commands:
@@ -20,15 +32,10 @@ steps:
 
 - name: build_js
   image: node:8-alpine
+  group: build
   commands:
   - npm install > /dev/null 2>&1
   - NODE_ENV=production npm run build
-
-- name: build_finalise
-  image: alpine
-  commands:
-  - mkdir -p ./dist/data/
-  - cp -R config dist/data/config
 
 - name: test_prepare
   image: alpine
@@ -43,6 +50,7 @@ steps:
 
 - name: test_go
   image: golang:1.11-alpine
+  group: test
   commands:
   - apk --no-cache add git gcc libc-dev > /dev/null 2>&1
   - go get -t ../test/unit_go/...
@@ -50,6 +58,7 @@ steps:
 
 - name: test_js
   image: node:8-alpine
+  group: test
   commands:
   - cd ../test/unit_js
   - npm install > /dev/null 2>&1
@@ -57,6 +66,7 @@ steps:
 
 - name: test_e2e
   image: machines/puppeteer
+  group: test
   volumes:
   - name: cache
     path: /tmp/
@@ -90,6 +100,7 @@ steps:
   when:
     branch: master
   settings:
+    command_timeout: 1000
     host: hal.kerjean.me
     user:
       from_secret: SSH_USERNAME
@@ -97,8 +108,8 @@ steps:
       from_secret: SSH_PASSWORD
     port: 22
     script:
-    - cd /app/filestash
-    - docker-compose pull
+    - cd /app/filestash/
+    - docker pull machines/filestash:latest
     - docker-compose up -d
 
 - name: report
