@@ -105,9 +105,10 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 		return nil, NewError("Server not found", 404)
 	}
 
-	URLDav := regexp.MustCompile(`^http[s]?://[^/]*`).ReplaceAllString(w.params.url+encodeURL(path), "")
+	LongURLDav := w.params.url+encodeURL(path)
+	ShortURLDav := regexp.MustCompile(`^http[s]?://[^/]*`).ReplaceAllString(LongURLDav, "")
 	for _, tag := range r.Responses {
-		if tag.Href == URLDav || tag.Href + "/" == URLDav {
+		if tag.Href == ShortURLDav || tag.Href  == LongURLDav {
 			continue
 		}
 		for i, prop := range tag.Props {

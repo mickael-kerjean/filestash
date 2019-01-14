@@ -79,8 +79,10 @@ steps:
   - ./dist/filestash &
   - cd ../test/e2e
   - npm install > /dev/null 2>&1
+  - node servers/webdav.js &
   - npm test
   - kill -9 %1
+  - kill -9 %2
 
 - name: release
   image: plugins/docker

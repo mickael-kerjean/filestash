@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/secsy/goftp"
 	"io"
@@ -28,8 +29,7 @@ type Ftp struct {
 }
 
 func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
-	c := FtpCache.Get(params)
-	if c != nil {
+	if c := FtpCache.Get(params); c != nil {
 		d := c.(*Ftp)
 		return d, nil
 	}
@@ -48,8 +48,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 
 	conn := 5
 	if params["conn"] != "" {
-		i, err := strconv.Atoi(params["conn"])
-		if err == nil && i > 0 {
+		if i, err := strconv.Atoi(params["conn"]); err == nil && i > 0 {
 			conn = i
 		}
 	}
@@ -60,7 +59,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		ConnectionsPerHost: conn,
 		Timeout:            10 * time.Second,
 	}
-	client, err := goftp.DialConfig(config, params["hostname"]+":"+params["port"])
+	client, err := goftp.DialConfig(config, fmt.Sprintf("%s:%s", params["hostname"], params["port"]))
 	if err != nil {
 		return nil, err
 	}
@@ -125,19 +124,7 @@ func (f Ftp) Home() (string, error) {
 	return f.client.Getwd()
 }
 
-func (f Ftp) Ls(path string) ([]os.FileInfo, error) {
-	// by default FTP don't seem to mind a readdir on a non existing
-	// directory so we first need to make sure the directory exists
-	conn, err := f.client.OpenRawConn()
-	if err != nil {
-		return nil, err
-	}
-	i, s, err := conn.SendCommand("CWD %s", path)
-	if err != nil {
-		return nil, NewError(err.Error(), 404)
-	} else if i >= 300 {
-		return nil, NewError(s, 404)
-	}
+func (f Ftp) Ls(path string) ([]os.FileInfo, error) {	
 	return f.client.ReadDir(path)
 }
 

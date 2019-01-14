@@ -48,10 +48,6 @@ func AdminOnly(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, r
 }
 
 func SessionStart (fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
-	extractBackend := func(req *http.Request, ctx *App) (IBackend, error) {
-		return model.NewBackend(ctx, ctx.Session)
-	}
-
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		var err error
 		if ctx.Share, err = _extractShare(req); err != nil {
@@ -62,10 +58,19 @@ func SessionStart (fn func(App, http.ResponseWriter, *http.Request)) func(ctx Ap
 			SendErrorResult(res, err)
 			return
 		}
-		if ctx.Backend, err = extractBackend(req, &ctx); err != nil {
+		if ctx.Backend, err = _extractBackend(req, &ctx); err != nil {
 			SendErrorResult(res, err)
 			return
 		}
+		fn(ctx, res, req)
+	}
+}
+
+func SessionTry (fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+		ctx.Share, _ = _extractShare(req)
+		ctx.Session, _ = _extractSession(req, &ctx)
+		ctx.Backend, _ = _extractBackend(req, &ctx)
 		fn(ctx, res, req)
 	}
 }
@@ -226,4 +231,8 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		err = json.Unmarshal([]byte(str), &session)
 		return session, err
 	}
+}
+
+func _extractBackend(req *http.Request, ctx *App) (IBackend, error) {
+	return model.NewBackend(ctx, ctx.Session)
 }

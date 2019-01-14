@@ -25,6 +25,7 @@ export class SetupPage extends React.Component {
             this.setState({enable_telemetry: config.log.telemetry.value}, () => {
                 if(this.state.enable_telemetry === true) return;
                 this.unlisten = this.props.history.listen((location, action) => {
+                    this.unlisten();
                     alert.now((
                         <div>
                           <p style={{textAlign: 'justify'}}>
@@ -37,7 +38,7 @@ export class SetupPage extends React.Component {
                             </label>
                           </form>
                         </div>
-                    ), () => this.unlisten());
+                    ));
                 });
             });
 

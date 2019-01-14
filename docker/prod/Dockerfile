@@ -75,7 +75,8 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     #################
     # Create machine user
     addgroup -S filestash && adduser -S -g filestash filestash && \
-    chown -R filestash:filestash /app/
+    chown -R filestash:filestash /app/ && \
+    chown filestash:filestash /app/data/config/config.json
 
 EXPOSE 8334
 VOLUME ["/app/data/config/"]
