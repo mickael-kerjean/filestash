@@ -50,7 +50,7 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     go build -buildmode=plugin -o ./dist/data/plugin/image.so server/plugin/plg_image_light/index.go && \
     #################
     # External dependencies: emacs and pdflatex
-    apk --no-cache add curl emacs texlive && \
+    apk --no-cache add curl emacs texlive zip && \
     curl https://raw.githubusercontent.com/mickael-kerjean/filestash_latex/master/wrapfig.sty > /usr/share/texmf-dist/tex/latex/base/wrapfig.sty && \
     curl https://raw.githubusercontent.com/mickael-kerjean/filestash_latex/master/capt-of.sty > /usr/share/texmf-dist/tex/latex/base/capt-of.sty && \
     curl https://raw.githubusercontent.com/mickael-kerjean/filestash_latex/master/sectsty.sty > /usr/share/texmf-dist/tex/latex/base/sectsty.sty && \

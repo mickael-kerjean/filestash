@@ -44,7 +44,8 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 	var cmd       *exec.Cmd
 	var emacsPath string
 	var outPath   string
-	if GetMimeType(path) == "text/org" {
+	reqMimeType := GetMimeType(path)
+	if reqMimeType == "text/org" {
 		if emacsPath, err = exec.LookPath("emacs"); err != nil {
 			SendErrorResult(res, ErrMissingDependency)
 			return
@@ -117,7 +118,9 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 				tmpPath + "/index.org", "-f", "org-odt-export-to-odt",
 			)
 			outPath = "index.odt"
-		}else {
+		} else if mimeType == "text/org" {
+			outPath = "index.org"
+		} else {
 			SendErrorResult(res, ErrNotImplemented)
 			return
 		}
@@ -135,15 +138,16 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 			return
 		}
 		io.Copy(f, file)
-		// TODO: insert related resources: eg: images
 
-		var stdout, stderr bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-		if err = cmd.Run(); err != nil {
-			Log.Error(fmt.Sprintf("stdout:%s | stderr:%s", string(stdout.Bytes()), string(stderr.Bytes())))
-			SendErrorResult(res, NewError(fmt.Sprintf("emacs has quitted: '%s'", err.Error()), 400))
-			return
+		if cmd != nil {
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout = &stdout
+			cmd.Stderr = &stderr
+			if err = cmd.Run(); err != nil {
+				Log.Error(fmt.Sprintf("stdout:%s | stderr:%s", string(stdout.Bytes()), string(stderr.Bytes())))
+				SendErrorResult(res, NewError(fmt.Sprintf("emacs has quitted: '%s'", err.Error()), 400))
+				return
+			}
 		}
 
 		f, err = os.OpenFile(tmpPath + "/"+outPath, os.O_RDONLY, os.ModePerm)
@@ -153,6 +157,15 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 		}
 		res.Header().Set("Content-Type", mimeType)
 		io.Copy(res, f)
+		return
+	} else if strings.HasPrefix(reqMimeType, "image/") {
+		file, err := ctx.Backend.Cat(path)
+		if err != nil {
+			SendErrorResult(res, err)
+			return
+		}
+		res.Header().Set("Content-Type", reqMimeType)
+		io.Copy(res, file)
 		return
 	}
 
