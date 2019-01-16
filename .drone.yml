@@ -13,14 +13,14 @@ steps:
 
 - name: build_prepare
   image: alpine
-  group: build
+  depends_on: [ clone ]
   commands:
   - mkdir -p ./dist/data/
   - cp -R config dist/data/config
 
 - name: build_go
   image: golang:1.11-alpine
-  group: build
+  depends_on: [ clone ]
   environment:
     CGO_LDFLAGS_ALLOW: '-fopenmp'
   commands:
@@ -32,13 +32,14 @@ steps:
 
 - name: build_js
   image: node:8-alpine
-  group: build
+  depends_on: [ clone ]
   commands:
   - npm install > /dev/null 2>&1
   - NODE_ENV=production npm run build
 
 - name: test_prepare
   image: alpine
+  depends_on: [ clone ]
   environment:
     PASSWORD:
       from_secret: GIT_PASSWORD
@@ -50,7 +51,7 @@ steps:
 
 - name: test_go
   image: golang:1.11-alpine
-  group: test
+  depends_on: [ test_prepare ]
   commands:
   - apk --no-cache add git gcc libc-dev > /dev/null 2>&1
   - go get -t ../test/unit_go/...
@@ -58,7 +59,7 @@ steps:
 
 - name: test_js
   image: node:8-alpine
-  group: test
+  depends_on: [ test_prepare ]
   commands:
   - cd ../test/unit_js
   - npm install > /dev/null 2>&1
@@ -66,7 +67,7 @@ steps:
 
 - name: test_e2e
   image: machines/puppeteer
-  group: test
+  depends_on: [ build_prepare, build_js, build_go ]
   volumes:
   - name: cache
     path: /tmp/
@@ -86,6 +87,7 @@ steps:
 
 - name: release
   image: plugins/docker
+  depends_on: [ build_prepare, build_go, build_js, test_prepare, test_go, test_js ]
   when:
     branch: master
   settings:
@@ -99,6 +101,7 @@ steps:
 
 - name: deploy
   image: appleboy/drone-ssh
+  depends_on: [ release ]
   when:
     branch: master
   settings:
@@ -116,6 +119,7 @@ steps:
 
 - name: report
   image: plugins/irc
+  depends_on: [ deploy ]
   settings:
     prefix: build
     nick: blipblip
