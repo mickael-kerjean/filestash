@@ -4,9 +4,8 @@ services:
     container_name: filestash
     image: machines/filestash
     restart: always
-    pull: true
     environment:
-    - APPLICATION_URL=<app_url>
+    - APPLICATION_URL=
     - GDRIVE_CLIENT_ID=<gdrive_client>
     - GDRIVE_CLIENT_SECRET=<gdrive_secret>
     - DROPBOX_CLIENT_ID=<dropbox_key>
