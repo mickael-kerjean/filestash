@@ -85,7 +85,7 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 			Tmp1 interface{}
 		}{ files, perms }
 		if j, err := json.Marshal(tmp); err == nil {
-			return Hash(string(j))
+			return Hash(string(j), 20)
 		}
 		return ""
 	}()

@@ -30,7 +30,7 @@ func AdminOnly(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, r
 				return
 			}
 
-			str, err := DecryptString(SECRET_KEY, c.Value);
+			str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, c.Value);
 			if err != nil {
 				SendErrorResult(res, ErrPermissionDenied)
 				return
@@ -195,7 +195,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	var session map[string]string = make(map[string]string)
 
 	if ctx.Share.Id != "" {
-		str, err = DecryptString(SECRET_KEY, ctx.Share.Auth)
+		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Share.Auth)
 		if err != nil {
 			// This typically happen when changing the secret key
 			return session, nil
@@ -223,7 +223,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 			return session, nil
 		}
 		str = cookie.Value
-		str, err = DecryptString(SECRET_KEY, str)
+		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, str)
 		if err != nil {
 			// This typically happen when changing the secret key
 			return session, nil

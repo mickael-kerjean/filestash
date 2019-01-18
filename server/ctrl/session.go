@@ -72,7 +72,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
-	obfuscate, err := EncryptString(SECRET_KEY, string(s))
+	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_USER, string(s))
 	if err != nil {
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return

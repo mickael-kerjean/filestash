@@ -92,7 +92,7 @@ func PublicConfigHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	cfg := Config.Export()
 
 	if c, err := json.Marshal(cfg); err == nil {
-		hash := Hash(string(c))
+		hash := Hash(string(c), 20)
 		if req.Header.Get("If-None-Match") == hash {
 			res.WriteHeader(http.StatusNotModified)
 			return

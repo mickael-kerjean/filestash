@@ -44,7 +44,7 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 				a, err := req.Cookie(COOKIE_NAME_AUTH)
 				if err != nil {
 					return ""
-				}
+				}				
 				return a.Value
 			}
 			return ctx.Share.Auth
@@ -146,7 +146,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	if submittedProof.Key != "" {
-		submittedProof.Id = Hash(submittedProof.Key + "::" + submittedProof.Value)
+		submittedProof.Id = Hash(submittedProof.Key + "::" + submittedProof.Value, 20)
 		verifiedProof = append(verifiedProof, submittedProof)
 	}
 
@@ -158,7 +158,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 		Name: COOKIE_NAME_PROOF,
 		Value: func(p []model.Proof) string {
 			j, _ := json.Marshal(p)
-			str, _ := EncryptString(SECRET_KEY, string(j))
+			str, _ := EncryptString(SECRET_KEY_DERIVATE_FOR_PROOF, string(j))
 			return str
 		}(verifiedProof),
 		Path: COOKIE_PATH,

@@ -6,8 +6,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/sha1"
-	"encoding/base32"
+	"crypto/sha256"
 	"encoding/base64"
 	"io"
 	"io/ioutil"
@@ -45,10 +44,19 @@ func DecryptString(secret string, data string) (string, error){
 	return string(d), nil
 }
 
-func Hash(str string) string {
-	hasher := sha1.New()
+func Hash(str string, n int) string {
+	hasher := sha256.New()
 	hasher.Write([]byte(str))
-	return "sha1::" + base32.HexEncoding.EncodeToString(hasher.Sum(nil))
+	d := hasher.Sum(nil)
+	size := len(Letters)
+	h := ""
+	for i:=0; i<len(d); i++ {
+		if n > 0 && i >= n {
+			break
+		}
+		h += string(Letters[int(d[i]) % size])
+	}
+	return h
 }
 
 func RandomString(n int) string {
@@ -140,8 +148,8 @@ func verify(something []byte) ([]byte, error) {
 
 // Create a unique ID that can be use to identify different session
 func GenerateID(ctx *App) string {
+	p := ""
 	params := ctx.Session
-	p := "salt => " + SECRET_KEY
 	if params["type"] != "" {
 		p += "type =>" + params["type"]
 	}
@@ -172,8 +180,10 @@ func GenerateID(ctx *App) string {
 	if params["token"] != "" {
 		p += "token =>" + params["token"]
 	}
-	if p == "salt => " + SECRET_KEY {
-		return ""
+
+	if p == "" {
+		return Hash("N/A", 20)
 	}
-	return Hash(p)
+	p += "salt => " + SECRET_KEY
+	return Hash(p, 20)
 }

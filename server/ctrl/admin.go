@@ -22,7 +22,7 @@ func AdminSessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 		return c.Value
 	}()
 
-	str, err := DecryptString(SECRET_KEY, obfuscate);
+	str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, obfuscate);
 	if err != nil {
 		SendSuccessResult(res, false)
 		return
@@ -61,7 +61,7 @@ func AdminSessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Reques
 
 	// Step 3: Send response to the client
 	body, _ := json.Marshal(NewAdminToken())
-	obfuscate, err := EncryptString(SECRET_KEY, string(body))
+	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, string(body))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -85,7 +85,7 @@ func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	if c, err := json.Marshal(backends); err == nil {
-		hash := Hash(string(c))
+		hash := Hash(string(c), 20)
 		if req.Header.Get("If-None-Match") == hash {
 			res.WriteHeader(http.StatusNotModified)
 			return

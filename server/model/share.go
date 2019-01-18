@@ -261,7 +261,7 @@ func ShareProofGetAlreadyVerified(req *http.Request) []Proof {
 	if len(cookieValue) > 500 {
 		return p
 	}
-	j, err := DecryptString(SECRET_KEY, cookieValue)
+	j, err := DecryptString(SECRET_KEY_DERIVATE_FOR_PROOF, cookieValue)
 	if err != nil {
 		return p
 	}
@@ -306,7 +306,7 @@ func shareProofAreEquivalent(ref Proof,  p Proof) bool {
 	}
 	for _, chunk := range strings.Split(ref.Value, ",") {
 		chunk = strings.Trim(chunk, " ")
-		if p.Id == Hash(ref.Key + "::" + chunk) {
+		if p.Id == Hash(ref.Key + "::" + chunk, 20) {
 			return true
 		}
 	}

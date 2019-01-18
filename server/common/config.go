@@ -15,7 +15,6 @@ import (
 var (
 	Config Configuration
 	configPath string = filepath.Join(GetCurrentDir(), CONFIG_PATH + "config.json")
-	SECRET_KEY string
 )
 
 type Configuration struct {
@@ -321,7 +320,7 @@ func (this *Configuration) Initialise() {
 		}
 		this.Save()
 	}
-	SECRET_KEY = this.Get("general.secret_key").String()
+	InitSecretDerivate(this.Get("general.secret_key").String())
 }
 
 func (this Configuration) Save() Configuration {
