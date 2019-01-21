@@ -93,7 +93,7 @@ func Init(a *App) {
 	// Webdav server / Shared Link
 	middlewares = []Middleware{ IndexHeaders, SecureHeaders }
 	r.HandleFunc("/s/{share}",         NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a)).Methods("GET")
-	middlewares = []Middleware{ SessionStart }
+	middlewares = []Middleware{ WebdavBlacklist, SessionStart }
 	r.PathPrefix("/s/{share}").Handler(NewMiddlewareChain(WebdavHandler,            middlewares, *a))
 
 	// Application Resources

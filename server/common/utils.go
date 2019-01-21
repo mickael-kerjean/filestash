@@ -87,10 +87,10 @@ func(this SafeMapStringString) Set(key string, value string) {
 
 func(this SafeMapStringString) Gets(keys ...string) []string{
 	this.RLock()
-	defer this.RUnlock()
 	res := make([]string, len(keys))
     for i, key := range keys {
 		res[i] = this.internal[key]
     }
+	this.RUnlock()
 	return res
 }

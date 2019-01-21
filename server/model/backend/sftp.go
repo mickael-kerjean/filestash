@@ -246,6 +246,9 @@ func (b Sftp) Close() error {
 func (b Sftp) err(e error) error {
 	f, ok := e.(*sftp.StatusError)
 	if ok == false {
+		if e == os.ErrNotExist {
+			return ErrNotFound
+		}
 		return e
 	}
 	switch f.Code {
@@ -258,7 +261,7 @@ func (b Sftp) err(e error) error {
 	case 3:
 		return NewError("Permission denied", 403)
 	case 4:
-		return NewError("Failure", 400)
+		return NewError("Failure", 409)
 	case 5:
 		return NewError("Not Compatible", 400)
 	case 6:

@@ -1,7 +1,7 @@
 package common
 
 const (
-	APP_VERSION = "v0.3"
+	APP_VERSION = "v0.4rc"
 	CONFIG_PATH = "data/config/"
 	PLUGIN_PATH = "data/plugin/"
 	LOG_PATH    = "data/log/"

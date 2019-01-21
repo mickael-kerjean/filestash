@@ -85,11 +85,11 @@
 
 /* Font stuff */
 .CodeMirror {
-    font-size: 15px;
+    font-size: 16px;
     font-family: 'Source Code Pro', monospace;
 }
-.cm-s-default .cm-header { font-size: 17px; }
-.cm-s-default .cm-header.cm-level1{ font-size: 18px;}
+.cm-s-default .cm-header { font-size: 18px; }
+.cm-s-default .cm-header.cm-level1{ font-size: 19px;}
 
 @media only screen and (max-width: 600px) {
     .CodeMirror { font-size: 14px; }

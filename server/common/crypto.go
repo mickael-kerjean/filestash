@@ -48,15 +48,30 @@ func Hash(str string, n int) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(str))
 	d := hasher.Sum(nil)
-	size := len(Letters)
 	h := ""
 	for i:=0; i<len(d); i++ {
-		if n > 0 && i >= n {
+		if n > 0 && len(h) >= n {
 			break
 		}
-		h += string(Letters[int(d[i]) % size])
+		h += ReversedBaseChange(Letters, int(d[i]))
+	}
+
+	if len(h) > n {
+		return h[0:len(h) - 1]
 	}
 	return h
+}
+
+func ReversedBaseChange(alphabet []rune, i int) string {
+	str := ""
+	for {
+		str += string(alphabet[i % len(alphabet)])
+		i = i / len(alphabet)
+		if i == 0 {
+			break
+		}
+	}
+	return str
 }
 
 func RandomString(n int) string {

@@ -89,7 +89,9 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 				<d:getlastmodified/>
 			</d:prop>
 		</d:propfind>`
-	res, err := w.request("PROPFIND", w.params.url+encodeURL(path), strings.NewReader(query), nil)
+	res, err := w.request("PROPFIND", w.params.url+encodeURL(path), strings.NewReader(query), func(req *http.Request) {
+		req.Header.Add("Depth", "1")
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -111,6 +113,7 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 		if tag.Href == ShortURLDav || tag.Href  == LongURLDav {
 			continue
 		}
+
 		for i, prop := range tag.Props {
 			if i > 0 {
 				break

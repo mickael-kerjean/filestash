@@ -1,13 +1,15 @@
 package model
 
 import (
-	"os"
 	"context"
+	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/net/webdav"
+	"io"
+	"os"
 	"path/filepath"
 	"strings"
-	"io"
+	"time"
 )
 
 const DAVCachePath = "data/cache/webdav/"
@@ -19,195 +21,245 @@ func init() {
 	os.MkdirAll(cachePath, os.ModePerm)
 }
 
+/*
+ * Implement a webdav.FileSystem: https://godoc.org/golang.org/x/net/webdav#FileSystem
+ */
 type WebdavFs struct {
 	backend IBackend
-	path string
+	path    string
+	id      string
+	chroot  string
 }
 
-func NewWebdavFs(b IBackend, path string) WebdavFs {
+func NewWebdavFs(b IBackend, primaryKey string, chroot string) WebdavFs {
 	return WebdavFs{
 		backend: b,
-		path: path,
+		id:      primaryKey,
+		chroot:  chroot,
 	}
 }
 
-func (fs WebdavFs) Mkdir(ctx context.Context, name string, perm os.FileMode) error {
-	Log.Info("MKDIR ('%s')", name)
-	if name = fs.resolve(name); name == "" {
-		return os.ErrInvalid
+func (this WebdavFs) Mkdir(ctx context.Context, name string, perm os.FileMode) error {
+	if name = this.fullpath(name); name == "" {
+		return os.ErrNotExist
 	}
-	return fs.backend.Mkdir(name)
+	return this.backend.Mkdir(name)
 }
 
-func (fs WebdavFs) OpenFile(ctx context.Context, name string, flag int, perm os.FileMode) (webdav.File, error) {
-	Log.Info("OPEN_FILE ('%s')", name)
-	return NewWebdavNode(name, fs), nil
+func (this WebdavFs) OpenFile(ctx context.Context, name string, flag int, perm os.FileMode) (webdav.File, error) {
+	if name = this.fullpath(name); name == "" {
+		return nil, os.ErrNotExist
+	}
+	return &WebdavFile{
+		path: name,
+		backend: this.backend,
+		cache: fmt.Sprintf("%stmp_%s", cachePath, Hash(this.id + name, 20)),
+	}, nil
 }
 
-func (fs WebdavFs) RemoveAll(ctx context.Context, name string) error {
-	Log.Info("RM ('%s')", name)
-	if name = fs.resolve(name); name == "" {
-		return os.ErrInvalid
+func (this WebdavFs) RemoveAll(ctx context.Context, name string) error {
+	if name = this.fullpath(name); name == "" {
+		return os.ErrNotExist
 	}
-	return fs.backend.Rm(name)
+	return this.backend.Rm(name)
 }
 
-func (fs WebdavFs) Rename(ctx context.Context, oldName, newName string) error {
-	Log.Info("MV ('%s' => '%s')", oldName, newName)
-	if oldName = fs.resolve(oldName); oldName == "" {
-		return os.ErrInvalid
+func (this WebdavFs) Rename(ctx context.Context, oldName, newName string) error {
+	if oldName = this.fullpath(oldName); oldName == "" {
+		return os.ErrNotExist
+	} else if newName = this.fullpath(newName); newName == "" {
+		return os.ErrNotExist
 	}
-	if newName = fs.resolve(newName); newName == "" {
-		return os.ErrInvalid
-	}
-	return fs.backend.Mv(oldName, newName)
+	return this.backend.Mv(oldName, newName)
 }
 
-func (fs WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error) {
-	Log.Info("STAT ('%s')", name)
-	if name = fs.resolve(name); name == "" {
-		return nil, os.ErrInvalid
+func (this WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error) {
+	if name = this.fullpath(name); name == "" {
+		return nil, os.ErrNotExist
 	}
-
-	if obj, ok := fs.backend.(interface{ Stat(path string) (os.FileInfo, error) }); ok {
-		return obj.Stat(name)
-	}
-	return nil, os.ErrInvalid
+	return WebdavFile{
+		path: name,
+		backend: this.backend,
+		cache: fmt.Sprintf("%stmp_%s", cachePath, Hash(this.id + name, 20)),
+	}.Stat()
 }
 
-func (fs WebdavFs) resolve(path string) string {
-	p := filepath.Join(fs.path, path)
+func (this WebdavFs) fullpath(path string) string {
+	p := filepath.Join(this.chroot, path)
 	if strings.HasSuffix(path, "/") == true && strings.HasSuffix(p, "/") == false {
 		p += "/"
 	}
-	if strings.HasPrefix(p, fs.path) == true {
-		return p
+	if strings.HasPrefix(p, this.chroot) == false {
+		return ""
 	}
-	return ""
+	return p
 }
 
 
-type WebdavNode struct {
-	fs        WebdavFs
-	path      string
-	fileread  *os.File
-	filewrite *os.File
+/*
+ * Implement a webdav.File and os.Stat : https://godoc.org/golang.org/x/net/webdav#File
+ */
+type WebdavFile struct {
+	path    string
+	backend IBackend
+	cache   string
+	fread   *os.File
+	fwrite  *os.File
 }
 
-func NewWebdavNode(name string, fs WebdavFs) *WebdavNode {
-	return &WebdavNode{
-		fs: fs,
-		path: name,
+func (this *WebdavFile) Read(p []byte) (n int, err error) {
+	if strings.HasPrefix(filepath.Base(this.path), ".") {
+		return 0, os.ErrNotExist
 	}
-}
-
-func (w *WebdavNode) Readdir(count int) ([]os.FileInfo, error) {
-	Log.Info("  => READ_DIR ('%s')", w.path)
-	var path string
-	if path = w.fs.resolve(w.path); path == "" {
-		return nil, os.ErrInvalid
-	}
-	return w.fs.backend.Ls(path)
-}
-
-func (w *WebdavNode) Stat() (os.FileInfo, error) {
-	Log.Info("  => STAT ('%s')", w.path)
-	// if w.filewrite != nil {
-	// 	var path stringc
-	// 	var err error
-
-	// 	if path = w.fs.resolve(w.path); path == "" {
-	// 		return nil, os.ErrInvalid
-	// 	}
-	// 	name := w.filewrite.Name()
-	// 	w.filewrite.Close()
-	// 	if w.filewrite, err = os.OpenFile(name, os.O_RDONLY, os.ModePerm); err != nil {
-	// 		return nil, os.ErrInvalid
-	// 	}
-
-	// 	if err = w.fs.backend.Save(path, w.filewrite); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-	return w.fs.Stat(context.Background(), w.path)
-}
-
-func (w *WebdavNode) Close() error {
-	Log.Info("  => CLOSE ('%s')", w.path)
-	if w.fileread != nil {
-		if err := w.cleanup(w.fileread); err != nil {
-			return err
+	if this.fread == nil {
+		if this.fread = this.pull_remote_file(); this.fread == nil {
+			return -1, os.ErrInvalid
 		}
-		w.fileread = nil
 	}
-	if w.filewrite != nil {
-		defer w.cleanup(w.filewrite)
-		name := w.filewrite.Name()
-		w.filewrite.Close()
-		reader, err := os.OpenFile(name, os.O_RDONLY, os.ModePerm);
+	return this.fread.Read(p)
+}
+
+func (this *WebdavFile) Close() error {
+	if this.fread != nil {
+		name := this.fread.Name()
+		if this.fread.Close() == nil {
+			this.fread = nil
+		}
+		if this.fwrite != nil {
+			// while writing something, we flush any cache to avoid being out of sync
+			os.Remove(name)
+			return nil
+		}
+	}
+	if this.fwrite != nil {
+		// save the cache that's been written to disk in the remote storage
+		name := this.fwrite.Name()
+		if this.fwrite.Close() == nil {
+			this.fwrite = nil
+		}
+		if f, err := os.OpenFile(name+"_writer", os.O_RDONLY, os.ModePerm); err == nil {
+			this.backend.Save(this.path, f)
+			f.Close()
+		}
+		os.Remove(name)
+	}
+	return nil
+}
+
+func (this *WebdavFile) Seek(offset int64, whence int) (int64, error) {
+	if this.fread == nil {
+		this.fread = this.pull_remote_file();
+		if this.fread == nil {
+			return offset, ErrNotFound
+		}
+	}
+	a, err := this.fread.Seek(offset, whence)
+	if err != nil {
+		return a, ErrNotFound
+	}
+	return a, nil
+}
+
+func (this WebdavFile) Readdir(count int) ([]os.FileInfo, error) {
+	if strings.HasPrefix(filepath.Base(this.path), ".") {
+		return nil, os.ErrNotExist
+	}
+	return this.backend.Ls(this.path)
+}
+
+func (this WebdavFile) Stat() (os.FileInfo, error) {
+	return &this, nil
+}
+
+func (this *WebdavFile) Write(p []byte) (int, error) {
+	if strings.HasPrefix(filepath.Base(this.path), ".") {
+		return 0, os.ErrNotExist
+	}
+	if this.fwrite == nil {
+		f, err := os.OpenFile(this.cache+"_writer", os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.ModePerm);
 		if err != nil {
-			return os.ErrInvalid
+			return 0, os.ErrInvalid
 		}
-		path := w.fs.resolve(w.path)
-		if path == "" {
-			return os.ErrInvalid
+		this.fwrite = f
+	}
+	return this.fwrite.Write(p)
+}
+
+func (this WebdavFile) pull_remote_file() *os.File {
+	filename := this.cache+"_reader"
+	defer removeIn2Minutes(filename)
+	if f, err := os.OpenFile(filename, os.O_RDONLY, os.ModePerm); err == nil {
+		return f
+	}
+	if f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.ModePerm); err == nil {
+		if reader, err := this.backend.Cat(this.path); err == nil {
+			io.Copy(f, reader)
+			f.Close()
+			if obj, ok := reader.(interface{ Close() error }); ok {
+				obj.Close()
+			}
+			if f, err = os.OpenFile(filename, os.O_RDONLY, os.ModePerm); err == nil {
+				return f
+			}
+			return nil
 		}
-		if err := w.fs.backend.Save(path, reader); err != nil {
-			return err
-		}
-		reader.Close()
+		f.Close()
 	}
 	return nil
 }
 
-func (w *WebdavNode) Read(p []byte) (int, error) {
-	Log.Info("  => READ ('%s')", w.path)
-	if w.fileread != nil {
-		return w.fileread.Read(p)
-	}
-	return -1, os.ErrInvalid
+func (this WebdavFile) Name() string {
+	return filepath.Base(this.path)
 }
 
-func (w *WebdavNode) Seek(offset int64, whence int) (int64, error) {
-	Log.Info("  => SEEK ('%s')", w.path)
-	var path string
-	var err error
-	if path = w.fs.resolve(w.path); path == "" {
-		return 0, os.ErrInvalid
-	}
-
-	if w.fileread == nil {
-		var reader io.Reader
-		if w.fileread, err = os.OpenFile(cachePath + "tmp_" + QuickString(10), os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.ModePerm); err != nil {
-			return 0, os.ErrInvalid
+func (this *WebdavFile) Size() int64 {
+	if this.fread == nil {
+		if this.fread = this.pull_remote_file(); this.fread == nil {
+			return 0
 		}
-		if reader, err = w.fs.backend.Cat(path); err != nil {
-			return 0, os.ErrInvalid
-		}
-		io.Copy(w.fileread, reader)
-
-		name := w.fileread.Name()
-		w.fileread.Close()
-		w.fileread, err = os.OpenFile(name, os.O_RDONLY, os.ModePerm)
 	}
-	return w.fileread.Seek(offset, whence)
+	if info, err := this.fread.Stat(); err == nil {
+		return info.Size()
+	}
+	return 0
 }
 
-func (w *WebdavNode) Write(p []byte) (int, error) {
-	Log.Info("  => WRITE ('%s')", w.path)
-	var err error
-
-	if w.filewrite == nil {
-		if w.filewrite, err = os.OpenFile(cachePath + "tmp_" + QuickString(10), os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.ModePerm); err != nil {
-			return 0, os.ErrInvalid
-		}
-	}
-	return w.filewrite.Write(p)
+func (this WebdavFile) Mode() os.FileMode {
+	return 0
 }
 
-func (w *WebdavNode) cleanup(file *os.File) error {
-	name := file.Name()
-	file.Close();
-	os.Remove(name);
+func (this WebdavFile) ModTime() time.Time {
+	return time.Now()
+}
+func (this WebdavFile) IsDir() bool {
+	if strings.HasSuffix(this.path, "/") {
+		return true
+	}
+	return false
+}
+
+func (this WebdavFile) Sys() interface{} {
 	return nil
+}
+
+func (this WebdavFile) ETag(ctx context.Context) (string, error) {
+	// Building an etag can be an expensive call if the data isn't available locally.
+	// => 2 etags strategies:
+	// - use a legit etag value when the data is already in our cache
+	// - use a dummy value that's changing all the time when we don't have much info
+
+	etag := Hash(fmt.Sprintf("%d%s", this.ModTime().UnixNano(), this.path), 20)
+	if this.fread != nil {
+		if s, err := this.fread.Stat(); err == nil {
+			etag = Hash(fmt.Sprintf(`"%x%x"`, this.path, s.Size()), 20)
+		}
+	}
+	return etag, nil
+}
+
+func removeIn2Minutes(name string) {
+	go func(){
+		time.Sleep(120 * time.Second)
+		os.Remove(name)
+	}()
 }
