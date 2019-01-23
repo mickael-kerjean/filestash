@@ -268,13 +268,21 @@ function toggleHandler(cm, e){
         const link = RegExp.$1;
         if(!link) return;
 
+        let open = "_blank";
+        let isMobile = screen.availWidth < screen.availHeight;
+        if(!document.querySelector('.component_fab img.component_icon[alt="save"]')){
+            open = "_self";
+        } else if(isMobile){
+            open = "_self"
+        }
+
         if(/^https?\:\/\//.test(link)){
-            window.open(link);
+            window.open(link, open);
         }else{
             const root_path = dirname(window.location.pathname.replace(/^\/view/, ''));
             const share = currentShare();
             const url = share ? "/view"+pathBuilder(root_path, link)+"?share="+share : "/view"+pathBuilder(root_path, link)
-            window.open(url);
+            window.open(url, open);
         }
     }
 }
