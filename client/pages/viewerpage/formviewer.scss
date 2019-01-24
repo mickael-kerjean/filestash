@@ -1,0 +1,32 @@
+.component_formviewer{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+
+    > .formviewer_container {
+        padding-top: 20px;
+        padding-bottom: 50px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        width: 100%;
+
+        .formbuilder{
+            label.no-select > div {
+                display: flex;
+                line-height: 30px;
+
+                > span {
+                    display: inline-block;
+                    width: 150px;
+                    max-width: 150px;
+                    text-align: right;
+                    padding-right: 15px;
+                    color: var(--emphasis);
+                }
+            }
+        }
+    }
+}

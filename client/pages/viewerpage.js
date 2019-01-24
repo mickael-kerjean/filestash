@@ -6,7 +6,7 @@ import './error.scss';
 import { Files } from '../model/';
 import { BreadCrumb, Bundle, NgIf, Loader, Container, EventReceiver, EventEmitter, LoggedInOnly , ErrorPage } from '../components/';
 import { debounce, opener, notify } from '../helpers/';
-import { AudioPlayer, FileDownloader, ImageViewer, PDFViewer } from './viewerpage/';
+import { AudioPlayer, FileDownloader, ImageViewer, PDFViewer, FormViewer } from './viewerpage/';
 
 const VideoPlayer = (props) => (
     <Bundle loader={import(/* webpackChunkName: "video" */"../pages/viewerpage/videoplayer")} symbol="VideoPlayer">
@@ -61,13 +61,12 @@ export class ViewerPage extends React.Component {
             });
         };
         const data_fetch = (app) => {
-            if(app === 'editor'){
+            if(app === "editor" || app === "form"){
                 return Promise.all([
                     Files.cat(this.state.path),
                     Files.options(this.state.path)
                 ]).then((d) => {
                     const [content, options] = d;
-                    options.allowed
                     this.setState({
                         content: content,
                         loading: false,
@@ -153,6 +152,10 @@ export class ViewerPage extends React.Component {
                   </NgIf>
                   <NgIf cond={this.state.opener === 'video'}>
                     <VideoPlayer data={this.state.url} filename={this.state.filename} path={this.state.path} />
+                  </NgIf>
+                  <NgIf cond={this.state.opener === 'form'}>
+                    <FormViewer filename={this.state.filename}
+                             content={this.state.content || ""} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'audio'}>
                     <AudioPlayer data={this.state.url} filename={this.state.filename} />

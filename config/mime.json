@@ -39,6 +39,7 @@
 	"exe": "application/octet-stream",
 	"flac": "audio/flac",
 	"flv": "video/x-flv",
+    "form": "application/x-form",
 	"gif": "image/gif",
 	"gz": "application/x-gzip",
 	"hqx": "application/mac-binhex40",
