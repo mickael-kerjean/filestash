@@ -143,6 +143,7 @@ steps:
       from_secret: GITHUB_TOKEN
     CI: true
   commands:
+  - sleep 10
   - cd ../test/e2e
   - npm install > /dev/null 2>&1
   - npm run state
