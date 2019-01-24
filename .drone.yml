@@ -132,3 +132,17 @@ steps:
       {{else}}
         Build failure: er}} https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
       {{/success}}
+
+- name: deployement_state
+  image: machines/puppeteer
+  depends_on: [ deploy ]
+  environment:
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+    APP_URL: https://demo.filestash.app
+    GITHUB_TOKEN:
+      from_secret: GITHUB_TOKEN
+    CI: true
+  commands:
+  - cd ../test/e2e
+  - npm install > /dev/null 2>&1
+  - npm run state
