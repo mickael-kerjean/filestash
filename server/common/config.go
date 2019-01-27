@@ -42,6 +42,9 @@ type FormElement struct {
 	ReadOnly    bool        `json:"readonly"`
 	Default     interface{} `json:"default"`
 	Value       interface{} `json:"value"`
+	MultiValue  bool        `json:"multi,omitempty"`
+	Datalist    []string    `json:"datalist,omitempty"`
+	Order       int         `json:"-"`
 }
 
 func init() {

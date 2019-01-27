@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Input, Textarea, Select, Enabler } from './';
-import { FormObjToJSON, bcrypt_password, format } from '../helpers/';
+import { FormObjToJSON, bcrypt_password, format, autocomplete } from '../helpers/';
 
 import "./formbuilder.scss";
 
@@ -122,7 +122,34 @@ const FormElement = (props) => {
             }
             props.onChange(value);
         };
-        $input = ( <Input onChange={(e) => onTextChange(e.target.value)} {...id} name={struct.label} type="text" value={struct.value || ""} placeholder={struct.placeholder} readOnly={struct.readonly}/> );
+
+        const list_id = struct.datalist ? "list_"+Math.random() : null;
+        $input = ( <Input list={list_id} onChange={(e) => onTextChange(e.target.value)} {...id} name={struct.label} type="text" value={struct.value || ""} placeholder={struct.placeholder} readOnly={struct.readonly}/> );
+        if(list_id != null){
+            const filtered = function(multi, datalist, currentValue){
+                if(multi !== true || currentValue == null) return datalist;
+
+                return autocomplete(
+                    currentValue
+                        .split(",")
+                        .map((t) => t.trim())
+                        .filter((t) => t),
+                    datalist
+                );
+            };
+            $input = (
+                <span>
+                  { $input }
+                  <datalist id={list_id}>
+                    {
+                        filtered(struct.multi, struct.datalist, struct.value).map((item,i) => {
+                            return ( <option key={i} value={item} /> );
+                        })
+                    }
+                  </datalist>
+                </span>
+            );
+        }
         break;
     case "number":
         const onNumberChange = (value) => {

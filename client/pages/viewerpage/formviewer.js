@@ -7,10 +7,7 @@ export class FormViewer extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            form: {
-                "test": {label: "test", type: "text", "value": null, default: "polo", placeholder: "test"},
-                "something": {label: "test", type: "text", "value": null, default: "polo", placeholder: "test"}
-            }
+            form: {}
         };
     }
 
@@ -23,13 +20,12 @@ export class FormViewer extends React.Component {
     }
 
     render(){
-        console.log(this.state.form);
         return (
             <div className="component_formviewer">
               <MenuBar title={this.props.filename} download={this.props.data} />
               <div className="formviewer_container">
                 <Container>
-                  <form className="sticky">
+                  <form className="sticky box">
                     <FormBuilder form={this.state.form} onChange={this.onChange.bind(this)} render={ ($input, props, struct, onChange) => {
                           return (
                               <label className={"no-select"}>
@@ -41,6 +37,12 @@ export class FormViewer extends React.Component {
                                     { $input }
                                   </div>
                                 </div>
+                                <div>
+                                  <span className="nothing"></span>
+                                  <div style={{width: '100%'}}>
+                                    { struct.description ? (<div className="description">{struct.description}</div>) : null }
+                              </div>
+                                  </div>
                               </label>
                           );
                     }}/>

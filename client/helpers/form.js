@@ -52,3 +52,48 @@ export function createFormBackend(backend_available, backend_data){
     obj[backend_data.type] = template;
     return obj;
 }
+
+/*
+ * return a new list of autocompletion candidates considering the current input
+ */
+export function autocomplete(values, list) {
+    if(values.length === 0) return list;
+    let candidates_input = [],
+        candidates_output = [];
+
+    for(let i=0; i<list.length; i++){
+        const last_value = values[values.length - 1];
+
+        if(list[i].indexOf(last_value) === 0){
+            let tmp = JSON.parse(JSON.stringify(values))
+            tmp[values.length - 1] = list[i];
+            if(list[i] === last_value){
+                candidates_input = [tmp];
+            } else {
+                candidates_input.push(tmp)
+            }
+            continue
+        }
+
+        if(values.indexOf(list[i]) === -1){
+            candidates_output.push(list[i]);
+        }
+    }
+
+    if(candidates_input.length === 0){
+        candidates_input = [values]
+    }
+    candidates_output = [""].concat(candidates_output);
+
+    if(candidates_input.length > 1) {
+        return candidates_input.map((candidate) => {
+            return candidate.join(", ");
+        });
+    }
+    return candidates_output.map((candidate, idx) => {
+        return candidates_input[0]
+            .concat(candidate)
+            .join(", ")
+            .replace(/\,\s?$/, "");
+    });
+}

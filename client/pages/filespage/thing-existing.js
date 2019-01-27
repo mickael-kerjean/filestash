@@ -341,6 +341,7 @@ const DateTime = (props) => {
 
 const FileSize = (props) => {
     function displaySize(bytes){
+        if(bytes === -1) return "";
         if(Number.isNaN(bytes) || bytes === undefined){
             return "";
         }else if(bytes < 1024){

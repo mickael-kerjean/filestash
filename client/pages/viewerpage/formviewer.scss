@@ -13,18 +13,43 @@
         flex: 1;
         width: 100%;
 
-        .formbuilder{
-            label.no-select > div {
-                display: flex;
-                line-height: 30px;
+        .box{
+            padding: 25px 20px;
+            border-radius: 2px;
 
-                > span {
-                    display: inline-block;
-                    width: 150px;
-                    max-width: 150px;
-                    text-align: right;
-                    padding-right: 15px;
-                    color: var(--emphasis);
+
+            .formbuilder{
+                > div {
+                    margin-bottom: 10px;
+                    @media screen and (max-width: 470px) { margin-bottom: 20px; }
+
+
+                    label.no-select > div {
+                        display: flex;
+                        line-height: 30px;
+                        @media screen and (max-width: 470px) {
+                            display: block;
+                            line-height: inherit;
+                            span.nothing{ position: absolute; }
+                        }
+
+                        > span {
+                            display: inline-block;
+                            width: 160px;
+                            max-width: 160px;
+                            text-align: right;
+                            padding-right: 15px;
+                            color: var(--emphasis);
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                            white-space: nowrap;
+
+                            @media screen and (max-width: 470px) {
+                                text-align: left;
+                                font-weight: bold;
+                            }
+                        }
+                    }
                 }
             }
         }
