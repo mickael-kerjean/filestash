@@ -45,6 +45,7 @@ type FormElement struct {
 	MultiValue  bool        `json:"multi,omitempty"`
 	Datalist    []string    `json:"datalist,omitempty"`
 	Order       int         `json:"-"`
+	Required    bool        `json:"required"`
 }
 
 func init() {
@@ -142,7 +143,6 @@ func (this Form) MarshalJSON() ([]byte, error) {
 
 func (this Form) toJSON(fn func(el FormElement) string) string {
 	formatKey := func(str string) string {
-		str = strings.ToLower(str)
 		return strings.Replace(str, " ", "_", -1)
 	}
 	ret := ""

@@ -1,6 +1,8 @@
 import React from 'react';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
 import { MenuBar } from './menubar';
-import { Container, FormBuilder } from '../../components/';
+import { Container, FormBuilder, NgIf, Icon, Fab } from '../../components/';
 import './formviewer.scss';
 
 export class FormViewer extends React.Component {
@@ -17,6 +19,19 @@ export class FormViewer extends React.Component {
 
     onChange(){
         this.setState({refresh: Math.random()});
+        if(JSON.stringify(this.state.form) === this.props.content){
+            this.props.needSavingUpdate(false);
+        } else {
+            this.props.needSavingUpdate(true);
+        }
+    }
+
+    save(){
+        if(this.props.needSaving === false) return;
+        let blob = new window.Blob([JSON.stringify(this.state.form)], {type : 'text/plain'});
+        return this.props
+            .onSave(blob)
+            .then(() => this.props.needSavingUpdate(false));
     }
 
     render(){
@@ -31,7 +46,7 @@ export class FormViewer extends React.Component {
                               <label className={"no-select"}>
                                 <div>
                                   <span>
-                                    { struct.label }:
+                                    { struct.label }<span className="mandatory">{struct.required ? "*" : ""}</span>
                                   </span>
                                   <div style={{width: '100%'}}>
                                     { $input }
@@ -46,9 +61,19 @@ export class FormViewer extends React.Component {
                               </label>
                           );
                     }}/>
-                </form>
+                  </form>
                 </Container>
-                </div>
+                <ReactCSSTransitionGroup transitionName="fab" transitionLeave={true} transitionEnter={true} transitionAppear={true} transitionAppearTimeout={400} transitionEnterTimeout={400} transitionLeaveTimeout={200}>
+                  <NgIf key={this.props.needSaving} cond={this.props.needSaving}>
+                    <NgIf cond={!this.props.isSaving}>
+                      <Fab onClick={this.save.bind(this)}><Icon name="save" style={{height: '100%', width: '100%'}}/></Fab>
+                    </NgIf>
+                    <NgIf cond={this.props.isSaving}>
+                      <Fab><Icon name="loading" style={{height: '100%', width: '100%'}}/></Fab>
+                    </NgIf>
+                  </NgIf>
+                </ReactCSSTransitionGroup>
+              </div>
             </div>
         );
     }

@@ -154,8 +154,12 @@ export class ViewerPage extends React.Component {
                     <VideoPlayer data={this.state.url} filename={this.state.filename} path={this.state.path} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'form'}>
-                    <FormViewer filename={this.state.filename}
-                             content={this.state.content || ""} />
+                    <FormViewer needSavingUpdate={this.needSaving.bind(this)}
+                                needSaving={this.state.needSaving}
+                                isSaving={this.state.isSaving}
+                                onSave={this.save.bind(this)}
+                                content={this.state.content || ""}
+                                filename={this.state.filename} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'audio'}>
                     <AudioPlayer data={this.state.url} filename={this.state.filename} />
