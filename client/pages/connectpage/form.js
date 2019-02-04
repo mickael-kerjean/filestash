@@ -33,12 +33,8 @@ export class Form extends React.Component {
                 backends_enabled: window.CONFIG["connections"].map((conn) => {
                     return createFormBackend(backend, conn);
                 })
-            }, () => {
-                return this.publishState(this.props);
-            });
-        }).catch((err) => {
-            this.props.error(err);
-        });
+            }, () => this.publishState(this.props));
+        }).catch((err) => this.props.onError(err));
     }
 
     componentWillUnmount(){
@@ -107,9 +103,10 @@ export class Form extends React.Component {
                   {
                          this.state.backends_enabled.map((backend, i) => {
                              const key = Object.keys(backend)[0];
+                             if(!backend[key]) return null;
                              return (
                                  <Button key={"menu-"+i} className={i === this.state.select ? "active primary" : ""} onClick={this.onTypeChange.bind(this, i)}>
-                                   { backend[key].label.value }
+                                     { backend[key].label.value }
                                  </Button>
                              );
                          })

@@ -3,12 +3,13 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import './connectpage.scss';
 import { Session } from '../model/';
-import { Container, NgIf, NgShow, Loader, Notification } from '../components/';
+import { Container, NgIf, NgShow, Loader, Notification, ErrorPage } from '../components/';
 import { ForkMe, RememberMe, Credentials, Form } from './connectpage/';
 import { cache, notify, urlParams } from '../helpers/';
 
 import { Alert } from '../components/';
 
+@ErrorPage
 export class ConnectPage extends React.Component {
     constructor(props){
         super(props);
@@ -84,6 +85,10 @@ export class ConnectPage extends React.Component {
         }
     }
 
+    onError(err){
+        this.props.error(err);
+    }
+
     render() {
         return (
             <div className="component_page_connect">
@@ -98,6 +103,7 @@ export class ConnectPage extends React.Component {
                   <ReactCSSTransitionGroup transitionName="form" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={500}>
                     <Form credentials={this.state.credentials}
                           onLoadingChange={this.setLoading.bind(this)}
+                          onError={this.onError.bind(this)}
                           onSubmit={this.onFormSubmit.bind(this)} />
                   </ReactCSSTransitionGroup>
                   <ReactCSSTransitionGroup transitionName="remember" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={5000}>
