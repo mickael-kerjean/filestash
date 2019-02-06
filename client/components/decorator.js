@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { browserHistory, Redirect } from 'react-router';
 
 import { Session, Admin } from '../model/';
-import { Container, Loader, Icon } from '../components/';
+import { Container, Loader, Icon, NgIf } from '../components/';
 import { memory, currentShare } from '../helpers/';
 
 import '../pages/error.scss';
@@ -52,8 +52,17 @@ export function ErrorPage(WrappedComponent){
         constructor(props){
             super(props);
             this.state = {
-                error: null
+                error: null,
+                has_back_button: false
             };
+            this.unlisten = this.props.history.listen((location, action) => {
+                this.setState({has_back_button: false});
+                this.unlisten();
+            });
+        }
+
+        componentWillUnmount(){
+            if(this.unlisten) this.unlisten();
         }
 
         update(obj){
@@ -61,8 +70,10 @@ export function ErrorPage(WrappedComponent){
         }
 
         navigate(e) {
-            e.preventDefault();
-            this.props.history.goBack();
+            if(this.state.has_back_button){
+                e.preventDefault();
+                this.props.history.goBack();
+            }
         }
 
         render(){
@@ -71,7 +82,7 @@ export function ErrorPage(WrappedComponent){
                 return (
                     <div>
                       <Link onClick={this.navigate.bind(this)} to={`/${window.location.search}`} className="backnav">
-                        <Icon name="arrow_left" />back
+                        <Icon name="arrow_left" />{ this.state.has_back_button ? "back" : "home" }
                       </Link>
                       <Container>
                         <div className="error-page">
