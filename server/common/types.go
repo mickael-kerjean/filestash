@@ -39,7 +39,10 @@ func (f File) Mode() os.FileMode {
 	return 0
 }
 func (f File) ModTime() time.Time {
-	return time.Now()
+	if f.FTime == 0 {
+		return time.Now()
+	}
+	return time.Unix(f.FTime, 0)
 }
 func (f File) IsDir() bool {
 	if f.FType != "directory" {
@@ -60,6 +63,8 @@ type Metadata struct {
 	CanUpload          *bool      `json:"can_upload,omitempty"`
 	CanDelete          *bool      `json:"can_delete,omitempty"`
 	CanShare           *bool      `json:"can_share,omitempty"`
+	HideExtension      *bool      `json:"hide_extension,omitempty"`
+	RefreshOnCreate    *bool      `json:"refresh_on_create"`
 	Expire             *time.Time `json:"-"`
 }
 

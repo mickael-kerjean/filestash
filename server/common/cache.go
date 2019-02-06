@@ -31,6 +31,11 @@ func (a *AppCache) Set(key map[string]string, value interface{}) {
 	a.Cache.Set(fmt.Sprint(hash), value, cache.DefaultExpiration)
 }
 
+func (a *AppCache) Del(key map[string]string) {
+	hash, _ := hashstructure.Hash(key, nil)
+	a.Cache.Delete(fmt.Sprint(hash))
+}
+
 func (a *AppCache) OnEvict(fn func(string, interface{})) {
 	a.Cache.OnEvicted(fn)
 }

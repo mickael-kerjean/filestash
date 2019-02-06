@@ -217,7 +217,13 @@ export class ExistingThing extends React.Component {
               <Link to={this.props.file.link + window.location.search}>
                 <Card ref="$card"className={this.state.hover} className={className}>
                   <Image preview={this.state.preview} icon={this.props.file.icon || this.props.file.type} view={this.props.view} path={path.join(this.props.path, this.props.file.name)} />
-                  <Filename filename={this.props.file.name} filesize={this.props.file.size} filetype={this.props.file.type} onRename={this.onRename.bind(this)} is_renaming={this.state.is_renaming} onRenameCancel={this.onRenameRequest.bind(this, false)}/>
+                  <Filename filename={this.props.file.name}
+                            filesize={this.props.file.size}
+                            filetype={this.props.file.type}
+                            hide_extension={this.props.metadata.hide_extension}
+                            onRename={this.onRename.bind(this)}
+                            is_renaming={this.state.is_renaming}
+                            onRenameCancel={this.onRenameRequest.bind(this, false)}/>
                   <DateTime show={this.state.icon !== 'loading'} timestamp={this.props.file.time} />
                   <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} onClickShare={this.onShareRequest.bind(this)} is_renaming={this.state.is_renaming}
                                 can_rename={this.props.metadata.can_rename !== false} can_delete={this.props.metadata.can_delete !== false} can_share={this.props.metadata.can_share !== false && window.CONFIG.enable_share === true} />
@@ -270,11 +276,20 @@ class Filename extends React.Component {
     }
 
     render(){
+        const [fileWithoutExtension, fileExtension] = function(filename){
+            const fname = filename.split(".");
+            const ext = fname.pop();
+            if(window.CONFIG.mime[ext] === undefined){
+                return [filename, ""];
+            }
+            return [fname.join("."), "." + ext];
+        }(this.state.filename);
         return (
             <span className="component_filename">
               <span className="file-details">
                 <NgIf cond={this.props.is_renaming === false} type='inline'>
-                  {this.state.filename} <FileSize type={this.props.filetype} size={this.props.filesize} />
+                  { fileWithoutExtension }{ this.props.hide_extension ? null : <span className="extension">{fileExtension}</span> }
+                  <FileSize type={this.props.filetype} size={this.props.filesize} />
                 </NgIf>
                 <NgIf cond={this.props.is_renaming === true} type='inline'>
                   <form onClick={this.preventSelect} onSubmit={this.onRename.bind(this)}>

@@ -52,8 +52,15 @@ export class FilesPage extends React.Component {
         this.onRefresh(this.state.path, 'directory');
 
         // subscriptions
+        this.props.subscribe('file.create', function(){
+            return onCreate.apply(this, arguments).then(() => {
+                if(this.state.metadata && this.state.metadata.refresh_on_create === true){
+                    this.onRefresh(this.state.path, 'directory')
+                }
+                return Promise.resolve()
+            });
+        }.bind(this));
         this.props.subscribe('file.upload', onUpload.bind(this));
-        this.props.subscribe('file.create', onCreate.bind(this));
         this.props.subscribe('file.rename', onRename.bind(this));
         this.props.subscribe('file.delete', onDelete.bind(this));
         this.props.subscribe('file.refresh', this.onRefresh.bind(this));

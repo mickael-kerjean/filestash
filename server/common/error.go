@@ -13,6 +13,7 @@ var (
 	ErrNotAllowed error       = NewError("Not Allowed", 403)
 	ErrPermissionDenied error = NewError("Permission Denied", 403)
 	ErrNotValid error         = NewError("Not Valid", 405)
+	ErrConflict error         = NewError("Already exist", 409)
 	ErrNotReachable error     = NewError("Cannot Reach Destination", 502)
 	ErrInvalidPassword        = NewError("Invalid Password", 403)
 	ErrNotImplemented         = NewError("Not Implemented", 501)

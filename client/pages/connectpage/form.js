@@ -30,9 +30,13 @@ export class Form extends React.Component {
             this.props.onLoadingChange(false);
             this.setState({
                 backends_available: backend,
-                backends_enabled: window.CONFIG["connections"].map((conn) => {
-                    return createFormBackend(backend, conn);
-                })
+                backends_enabled: window.CONFIG["connections"].reduce((acc, conn) => {
+                    const f = createFormBackend(backend, conn);
+                    if(Object.keys(f).length > 0){
+                        acc.push(f);
+                    }
+                    return acc;
+                }, [])
             }, () => this.publishState(this.props));
         }).catch((err) => this.props.onError(err));
     }

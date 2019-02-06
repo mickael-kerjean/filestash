@@ -433,11 +433,9 @@ func (this LDAP) Save(path string, file io.Reader) error {
 
 func (this LDAP) Meta(path string) Metadata {
 	return Metadata{
-		CanCreateFile:      NewBool(true),
-		CanCreateDirectory: NewBool(true),
-		CanRename:          NewBool(true),
-		CanMove:            NewBool(true),
 		CanUpload:          NewBool(false),
+		HideExtension:      NewBool(true),
+		RefreshOnCreate:    NewBool(true),
 	}
 }
 
