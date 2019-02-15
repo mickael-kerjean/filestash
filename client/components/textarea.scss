@@ -20,8 +20,11 @@
     vertical-align: top;
     min-width: 100%;
     max-width: 100%;
+
     min-height: 30px;
-    max-height: 30px;
+    &[rows="1"]{
+        max-height: 30px;
+    }
 
     line-height: 18px;
     &[name="password"]{

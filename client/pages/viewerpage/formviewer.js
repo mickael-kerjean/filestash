@@ -3,6 +3,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import { MenuBar } from './menubar';
 import { Container, FormBuilder, NgIf, Icon, Fab } from '../../components/';
+import { appendShareToUrl } from '../../helpers/';
 import './formviewer.scss';
 
 export class FormViewer extends React.Component {
@@ -34,6 +35,29 @@ export class FormViewer extends React.Component {
             .then(() => this.props.needSavingUpdate(false));
     }
 
+    simpleMarkdown(text){
+        const regLink = /\[([^\]]*)\]\(([^\)]+)\)/g
+        return text
+            .replace(regLink, function(str){
+                const label = str.replace(regLink, '$1')
+                const link = str.replace(regLink, '$2')
+                return "["+label+"]("+appendShareToUrl(link)+")";
+            })
+            .replace(regLink, '<a href="$2">$1</a>')
+            .replace(/\n/g, "<br>")
+    }
+
+    beautify(label){
+        return label
+            .split('_')
+            .map((t) => {
+                if(t.length === 0) return t
+                else if(/[gu]?u?id/.test(t.toLowerCase())) return t.toUpperCase();
+                return t[0].toUpperCase() + t.substring(1)
+            })
+            .join(" ");
+    }
+
     render(){
         return (
             <div className="component_formviewer">
@@ -46,7 +70,7 @@ export class FormViewer extends React.Component {
                               <label className={"no-select"}>
                                 <div>
                                   <span>
-                                    { struct.label }<span className="mandatory">{struct.required ? "*" : ""}</span>
+                                    { this.beautify(struct.label) }<span className="mandatory">{struct.required ? "*" : ""}</span>
                                   </span>
                                   <div style={{width: '100%'}}>
                                     { $input }
@@ -55,9 +79,9 @@ export class FormViewer extends React.Component {
                                 <div>
                                   <span className="nothing"></span>
                                   <div style={{width: '100%'}}>
-                                    { struct.description ? (<div className="description">{struct.description}</div>) : null }
-                              </div>
+                                    { struct.description ? (<div className="description" dangerouslySetInnerHTML={{__html: this.simpleMarkdown(struct.description)}} />) : null }
                                   </div>
+                                </div>
                               </label>
                           );
                     }}/>

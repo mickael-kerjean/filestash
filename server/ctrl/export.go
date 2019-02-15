@@ -28,6 +28,7 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 		MaxAge: -1,
 		Path:   "/",
 	})
+	header := res.Header()
 	query := req.URL.Query()
 	p := mux.Vars(req)
 	mimeType := fmt.Sprintf("%s/%s", p["mtype0"], p["mtype1"])
@@ -155,7 +156,9 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 			SendErrorResult(res, ErrFilesystemError)
 			return
 		}
-		res.Header().Set("Content-Type", mimeType)
+		header.Set("Content-Type", mimeType)
+		header.Set("X-XSS-Protection", "1; mode=block")
+		header.Set("Content-Security-Policy", "script-src 'sha256-5jK6iCm+c3Jw2McW1WHurwRQfMEsGaYzAGRBrL1iIBs='")
 		io.Copy(res, f)
 		return
 	} else if strings.HasPrefix(reqMimeType, "image/") {
@@ -164,7 +167,8 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 			SendErrorResult(res, err)
 			return
 		}
-		res.Header().Set("Content-Type", reqMimeType)
+		header.Set("Content-Type", reqMimeType)
+		header.Set("Content-Security-Policy", "script-src 'none'")
 		io.Copy(res, file)
 		return
 	}

@@ -216,7 +216,11 @@ export class ExistingThing extends React.Component {
             <div className={"component_thing view-"+this.props.view}>
               <Link to={this.props.file.link + window.location.search}>
                 <Card ref="$card"className={this.state.hover} className={className}>
-                  <Image preview={this.state.preview} icon={this.props.file.icon || this.props.file.type} view={this.props.view} path={path.join(this.props.path, this.props.file.name)} />
+                  <Image preview={this.state.preview}
+                         icon={this.props.file.icon || this.props.file.type}
+                         view={this.props.view}
+                         path={path.join(this.props.path, this.props.file.name)}
+                         hide_extension={this.props.metadata.hide_extension} />
                   <Filename filename={this.props.file.name}
                             filesize={this.props.file.size}
                             filetype={this.props.file.type}
@@ -408,7 +412,7 @@ class Image extends React.Component{
         return (
             <span>
               <Icon name={this.props.icon} />
-              <NgIf cond={!!ext && this.props.view === "grid" && this.props.icon === "file"} className="info_extension">
+              <NgIf cond={!!ext && this.props.view === "grid" && this.props.icon === "file" && this.props.hide_extension !== true} className="info_extension">
                 <span>{ext}</span>
               </NgIf>
             </span>

@@ -178,6 +178,9 @@ const FormElement = (props) => {
             <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => onLongPasswordChange(e.target.value)} type="text" rows="1" name={struct.label} placeholder={struct.placeholder}  autoComplete="new-password" />
         );
         break;
+    case "long_text":
+        $input = ( <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => props.onChange(e.target.value)} type="text" rows="3" name={struct.label} placeholder={struct.placeholder}  autoComplete="new-password" /> );
+        break;
     case "bcrypt":
         const onBcryptChange = (value) => {
             if(value === ""){
@@ -200,6 +203,12 @@ const FormElement = (props) => {
         break;
     case "enable":
         $input = ( <Enabler onChange={(e) => props.onChange(e.target.checked)} {...id} name={struct.label} target={props.target} defaultValue={struct.value === null ? struct.default : struct.value} /> );
+        break;
+    case "date":
+        $input = ( <Input onChange={(e) => props.onChange(e.target.value)} {...id} name={struct.label} type="date" defaultValue={struct.value || ""} placeholder={struct.placeholder} /> );
+        break;
+    case "datetime":
+        $input = ( <Input onChange={(e) => props.onChange(e.target.value)} {...id} name={struct.label} type="datetime-local" defaultValue={struct.value || ""} placeholder={struct.placeholder} /> );
         break;
     case "image":
         $input = ( <img {...id} src={struct.value} /> );

@@ -4,6 +4,10 @@
     flex: 1;
     width: 100%;
 
+    .component_input{
+        height: 30px; // 16px + 5*2 + 2
+    }
+
     > .formviewer_container {
         padding-top: 20px;
         padding-bottom: 50px;
@@ -16,7 +20,6 @@
         .box{
             padding: 25px 20px;
             border-radius: 2px;
-
 
             .formbuilder{
                 > div {
@@ -52,6 +55,10 @@
                                 opacity: 0.8;
                             }
                         }
+                        div.description a{
+                            border-bottom: 1px dashed var(--color);
+                        }
+
                     }
                 }
             }

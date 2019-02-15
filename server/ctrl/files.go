@@ -127,7 +127,9 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	mType := GetMimeType(req.URL.Query().Get("path"))
-	res.Header().Set("Content-Type", mType)
+	header := res.Header()
+	header.Set("Content-Type", mType)
+	header.Set("Content-Security-Policy", "script-src 'none'")
 
 	for _, obj := range Hooks.Get.ProcessFileContentBeforeSend() {
 		if file, err = obj(file, &ctx, &res, req); err != nil {

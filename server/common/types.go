@@ -68,7 +68,6 @@ type Metadata struct {
 	Expire             *time.Time `json:"-"`
 }
 
-
 const PASSWORD_DUMMY = "{{PASSWORD}}"
 
 type Share struct {
