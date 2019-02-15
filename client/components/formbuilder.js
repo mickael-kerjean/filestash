@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Input, Textarea, Select, Enabler } from './';
-import { FormObjToJSON, bcrypt_password, format, autocomplete } from '../helpers/';
+import { FormObjToJSON, bcrypt_password, format, autocomplete, notify } from '../helpers/';
 
 import "./formbuilder.scss";
 
@@ -212,6 +212,33 @@ const FormElement = (props) => {
         break;
     case "image":
         $input = ( <img {...id} src={struct.value} /> );
+        break;
+    case "file":
+        const getBase64 = function(file){
+            return new Promise((resolve, reject) => {
+                const reader = new window.FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        };
+        const onFileUpload = (e) => {
+            if(e.target.files.length !== 1) return;
+            if(e.target.files[0].size < 200000000){
+                getBase64(e.target.files[0]).then((a) => {
+                    props.onChange(a);
+                }).catch(() => {});
+                return;
+            }
+            notify.send("File is too large", "WARNING");
+        };
+        $input = (
+            <div className="fileupload-image">
+              <input onChange={(e) => onFileUpload(e)} type="file" {...id} name={struct.label} />
+                { struct.value.substring(0,10) === "data:image" ? <img src={struct.value} /> : null }
+                { struct.value.substring(0,20) === "data:application/pdf" ? <object data={struct.value} type="application/pdf" /> : null }
+            </div>
+        );
         break;
     case "oauth2":
         $input = null;

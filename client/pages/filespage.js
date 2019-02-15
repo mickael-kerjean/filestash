@@ -251,9 +251,9 @@ export class FilesPage extends React.Component {
                     <Loader/>
                   </NgIf>
                 </div>
-                <div className="sidebar close">
-                  THIS IS A MENUBAR
-                </div>
+              </div>
+              <div className="upload-footer">
+                <div className="bar"></div>
               </div>
             </div>
         );
