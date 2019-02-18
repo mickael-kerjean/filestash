@@ -1,7 +1,6 @@
 package ctrl
 
 import (
-	"encoding/json"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"io/ioutil"
@@ -14,10 +13,11 @@ import (
 var (
 	logpath = filepath.Join(GetCurrentDir(), LOG_PATH, "access.log")
 	cachepath = filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json")
+	pluginpath = filepath.Join(GetCurrentDir(), PLUGIN_PATH)
 )
 
 func FetchPluginsHandler(ctx App, res http.ResponseWriter, req *http.Request) {
-	f, err := os.OpenFile(filepath.Join(GetCurrentDir(), PLUGIN_PATH), os.O_RDONLY, os.ModePerm)
+	f, err := os.OpenFile(pluginpath, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -90,14 +90,5 @@ func PrivateConfigUpdateHandler(ctx App, res http.ResponseWriter, req *http.Requ
 
 func PublicConfigHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	cfg := Config.Export()
-
-	if c, err := json.Marshal(cfg); err == nil {
-		hash := Hash(string(c), 20)
-		if req.Header.Get("If-None-Match") == hash {
-			res.WriteHeader(http.StatusNotModified)
-			return
-		}
-		res.Header().Set("Etag", hash)
-	}
-	SendSuccessResult(res, cfg)
+	SendSuccessResultWithEtag(res, req, cfg)
 }

@@ -1,9 +1,8 @@
 package ctrl
 
 import (
-	"crypto/md5"
-	"encoding/base32"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"fmt"
 	"io"
 	"text/template"
 	"net/http"
@@ -12,12 +11,12 @@ import (
 	"strings"
 )
 
-var ETAGS SafeMapStringString = NewSafeMapStringString()
+var ETAGS     SafeMapStringString = NewSafeMapStringString()
 
 func StaticHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+		var base string = GetAbsolutePath(_path)
 		var srcPath string
-		base := GetAbsolutePath(_path)
 		if srcPath = JoinPath(base, req.URL.Path); srcPath == base {
 			http.NotFound(res, req)
 			return
@@ -93,11 +92,12 @@ func hashFile (path string, n int) string {
 		return ""
 	}
 	defer f.Close()
-	h := md5.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return ""
+
+	stat, err := f.Stat()
+	if err != nil {
+		return "UNKNOWN"
 	}
-	return base32.HexEncoding.EncodeToString(h.Sum(nil))[:n]
+	return QuickHash(fmt.Sprintf("%s %d %d %s", path, stat.Size(), stat.Mode(), stat.ModTime()), n)
 }
 
 func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
@@ -105,7 +105,7 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 	tags := ETAGS.Gets(filePath, zFilePath)
 	etagNormal := tags[0]
 	etagGzip := tags[1]
-	
+
 	if req.Header.Get("If-None-Match") != "" {
 		browserTag := req.Header.Get("If-None-Match")
 		if browserTag == etagNormal {
@@ -128,6 +128,7 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 				head.Set("Etag", etagGzip)
 			}
 			io.Copy(res, file)
+			file.Close()
 			return
 		}
 	}
@@ -145,4 +146,5 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 		head.Set("Etag", etagNormal)
 	}
 	io.Copy(res, file)
+	file.Close()
 }

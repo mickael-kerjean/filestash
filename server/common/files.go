@@ -6,7 +6,12 @@ import (
 	"strings"
 )
 
+var MOCK_CURRENT_DIR string
+
 func GetCurrentDir() string {
+	if MOCK_CURRENT_DIR != "" {
+		return MOCK_CURRENT_DIR
+	}
 	ex, _ := os.Executable()
 	return filepath.Dir(ex)
 }

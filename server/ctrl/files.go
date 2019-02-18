@@ -1,7 +1,7 @@
 package ctrl
 
 import (
-	"encoding/json"
+	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
 	"io"
@@ -19,13 +19,12 @@ type FileInfo struct {
 }
 
 func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
-	var files []FileInfo = make([]FileInfo, 0)
 	if model.CanRead(&ctx) == false {
 		if model.CanUpload(&ctx) == false {
 			SendErrorResult(res, NewError("Permission denied", 403))
 			return
 		}
-		SendSuccessResults(res, files)
+		SendSuccessResults(res, make([]FileInfo, 0))
 		return
 	}
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
@@ -40,21 +39,23 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	for _, entry := range entries {
-		f := FileInfo{
-			Name: entry.Name(),
-			Size: entry.Size(),
+	files := make([]FileInfo, len(entries))
+	etag := fmt.Sprintf("%d", len(entries)) + path
+	for i:=0; i<len(entries); i++ {
+		etag += files[i].Name
+		files[i] = FileInfo{
+			Name: entries[i].Name(),
+			Size: entries[i].Size(),
 			Time: func(t time.Time) int64 {
 				return t.UnixNano() / int64(time.Millisecond)
-			}(entry.ModTime()),
+			}(entries[i].ModTime()),
 			Type: func(isDir bool) string {
 				if isDir == true {
 					return "directory"
 				}
 				return "file"
-			}(entry.IsDir()),
+			}(entries[i].IsDir()),
 		}
-		files = append(files, f)
 	}
 
 	var perms Metadata = Metadata{}
@@ -79,22 +80,12 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		perms.CanShare = NewBool(false)
 	}
 
-	etag := func() string {
-		tmp := struct {
-			Tmp0 interface{}
-			Tmp1 interface{}
-		}{ files, perms }
-		if j, err := json.Marshal(tmp); err == nil {
-			return Hash(string(j), 20)
-		}
-		return ""
-	}()
+	etag = QuickHash(etag, 20)
+	res.Header().Set("Etag", etag)
 	if etag != "" && req.Header.Get("If-None-Match") == etag {
 		res.WriteHeader(http.StatusNotModified)
 		return
 	}
-	res.Header().Set("Etag", etag)
-
 	SendSuccessResultsWithMetadata(res, files, perms)
 }
 

@@ -33,6 +33,17 @@ func SendSuccessResult(res http.ResponseWriter, data interface{}) {
 	encoder.Encode(APISuccessResult{"ok", data})
 }
 
+func SendSuccessResultWithEtag(res http.ResponseWriter, req *http.Request, data interface{}) {
+	json, _ := json.Marshal(APISuccessResult{"ok", data})
+	hash := QuickHash(string(json), 20)
+	if req.Header.Get("If-None-Match") == hash {
+		res.WriteHeader(http.StatusNotModified)
+		return
+	}
+	res.Header().Set("Etag", hash)
+	res.Write(json)
+}
+
 func SendSuccessResults(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)

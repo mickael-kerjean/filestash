@@ -76,21 +76,12 @@ func AdminSessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Reques
 	SendSuccessResult(res, true)
 }
 
-
-func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {
-	backends := make(map[string]Form)
+func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {	
 	drivers := Backend.Drivers()
+	backends := make(map[string]Form, len(drivers))
 	for key := range drivers {
 		backends[key] = drivers[key].LoginForm()
 	}
-
-	if c, err := json.Marshal(backends); err == nil {
-		hash := Hash(string(c), 20)
-		if req.Header.Get("If-None-Match") == hash {
-			res.WriteHeader(http.StatusNotModified)
-			return
-		}
-		res.Header().Set("Etag", hash)
-	}
-	SendSuccessResult(res, backends)
+	SendSuccessResultWithEtag(res, req, backends)
+	return
 }

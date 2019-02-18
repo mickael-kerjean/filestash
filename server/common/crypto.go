@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"hash/fnv"
 	"io"
 	"io/ioutil"
 	mathrand "math/rand"
@@ -48,6 +49,24 @@ func Hash(str string, n int) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(str))
 	d := hasher.Sum(nil)
+	h := ""
+	for i:=0; i<len(d); i++ {
+		if n > 0 && len(h) >= n {
+			break
+		}
+		h += ReversedBaseChange(Letters, int(d[i]))
+	}
+
+	if len(h) > n {
+		return h[0:len(h) - 1]
+	}
+	return h
+}
+
+func QuickHash(str string, n int) string {
+	hash := fnv.New32()
+	hash.Write([]byte(str))
+	d := string(hash.Sum(nil))
 	h := ""
 	for i:=0; i<len(d); i++ {
 		if n > 0 && len(h) >= n {

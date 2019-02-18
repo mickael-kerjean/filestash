@@ -20,7 +20,9 @@ func NewMiddlewareChain(fn func(App, http.ResponseWriter, *http.Request), m []Mi
 			f = m[i](f)
 		}
 		f(app, &resw, req)
-		req.Body.Close()
+		if req.Body != nil {
+			req.Body.Close()
+		}
 		go Logger(app, &resw, req)
 	}
 }
