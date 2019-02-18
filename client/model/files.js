@@ -176,18 +176,6 @@ class FileSystem{
                     file.last_access = new Date();
                     return file;
                 }).then((response) => Promise.resolve(response.result));
-            })
-            .catch((err) => {
-                if(err.code === 'BINARY_FILE') return Promise.reject(err);
-
-                return cache.update(cache.FILE_CONTENT, [currentShare(), path], (response) => {
-                    response.last_access = new Date();
-                    response.access_count += 1;
-                    return response;
-                }).then((response) => {
-                    if(!response || !response.result) return Promise.reject(err);
-                    return Promise.resolve(response.result);
-                });
             });
     }
 

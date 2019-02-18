@@ -51,6 +51,8 @@ func SendErrorResult(res http.ResponseWriter, err error) {
 	obj, ok := err.(interface{ Status() int })
 	if ok == true {
 		res.WriteHeader(obj.Status())
+	} else {
+		res.WriteHeader(http.StatusInternalServerError)
 	}
 	m := func(r string) string {
 		if r == "" {

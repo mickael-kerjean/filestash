@@ -156,7 +156,7 @@ const FormElement = (props) => {
             value = value === "" ? null : parseInt(value);
             props.onChange(value);
         };
-        $input = ( <Input onChange={(e) => onNumberChange(e.target.value)} {...id} name={struct.label} type="number" value={struct.value || ""} placeholder={struct.placeholder} /> );
+        $input = ( <Input onChange={(e) => onNumberChange(e.target.value)} {...id} name={struct.label} type="number" value={struct.value === null ? "" : struct.value} placeholder={struct.placeholder} /> );
         break;
     case "password":
         const onPasswordChange = (value) => {
