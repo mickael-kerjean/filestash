@@ -1,13 +1,14 @@
 package ctrl
 
 import (
-	"fmt"
+	"hash/fnv"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
 	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
+	"strconv"
 	"time"
 )
 
@@ -40,15 +41,20 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	files := make([]FileInfo, len(entries))
-	etag := fmt.Sprintf("%d", len(entries)) + path
+	etagger := fnv.New32()
+	etagger.Write([]byte(path + strconv.Itoa(len(entries))))
 	for i:=0; i<len(entries); i++ {
-		etag += files[i].Name
+		name := entries[i].Name()
+		modTime := entries[i].ModTime().UnixNano() / int64(time.Millisecond)
+
+		if i < 200 { // etag is generated from a few values to avoid large memory usage
+			etagger.Write([]byte(name + strconv.Itoa(int(modTime))))
+		}
+
 		files[i] = FileInfo{
-			Name: entries[i].Name(),
+			Name: name,
 			Size: entries[i].Size(),
-			Time: func(t time.Time) int64 {
-				return t.UnixNano() / int64(time.Millisecond)
-			}(entries[i].ModTime()),
+			Time: modTime,
 			Type: func(isDir bool) string {
 				if isDir == true {
 					return "directory"
@@ -80,9 +86,9 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		perms.CanShare = NewBool(false)
 	}
 
-	etag = QuickHash(etag, 20)
-	res.Header().Set("Etag", etag)
-	if etag != "" && req.Header.Get("If-None-Match") == etag {
+	etagValue := string(etagger.Sum(nil))//QuickHash(etag.String(), 20)
+	res.Header().Set("Etag", etagValue)
+	if etagValue != "" && req.Header.Get("If-None-Match") == etagValue {
 		res.WriteHeader(http.StatusNotModified)
 		return
 	}
@@ -268,9 +274,9 @@ func pathBuilder(ctx App, path string) (string, error) {
 	if path == "" {
 		return "", NewError("No path available", 400)
 	}
-	basePath := ctx.Session["path"]
-	basePath = filepath.Join(basePath, path)
-	if string(path[len(path)-1]) == "/" && basePath != "/" {
+	sessionPath := ctx.Session["path"]
+	basePath := filepath.Join(sessionPath, path)
+	if path[len(path)-1:] == "/" && basePath != "/" {
 		basePath += "/"
 	}
 	if strings.HasPrefix(basePath, ctx.Session["path"]) == false {
