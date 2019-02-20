@@ -87,7 +87,7 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		perms.CanShare = NewBool(false)
 	}
 
-	etagValue := base64.StdEncoding.EncodeToString(etagger.Sum(nil))//QuickHash(etag.String(), 20)
+	etagValue := base64.StdEncoding.EncodeToString(etagger.Sum(nil))
 	res.Header().Set("Etag", etagValue)
 	if etagValue != "" && req.Header.Get("If-None-Match") == etagValue {
 		res.WriteHeader(http.StatusNotModified)
