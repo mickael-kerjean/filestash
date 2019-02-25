@@ -26,7 +26,9 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 				if val == nil {
 					val = "/"
 				}
-				if val != conn["path"] {
+				if configPath, ok := val.(string); ok == false {
+					continue
+				} else if strings.HasPrefix(conn["path"], configPath) == false {
 					continue
 				}
 			}
