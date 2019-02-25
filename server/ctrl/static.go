@@ -11,8 +11,6 @@ import (
 	"strings"
 )
 
-var ETAGS     SafeMapStringString = NewSafeMapStringString()
-
 func StaticHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		var base string = GetAbsolutePath(_path)
@@ -95,16 +93,15 @@ func hashFile (path string, n int) string {
 
 	stat, err := f.Stat()
 	if err != nil {
-		return "UNKNOWN"
+		return ""
 	}
 	return QuickHash(fmt.Sprintf("%s %d %d %s", path, stat.Size(), stat.Mode(), stat.ModTime()), n)
 }
 
 func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 	zFilePath := filePath + ".gz"
-	tags := ETAGS.Gets(filePath, zFilePath)
-	etagNormal := tags[0]
-	etagGzip := tags[1]
+	etagNormal := hashFile(filePath, 10)
+	etagGzip := hashFile(zFilePath, 10)
 
 	if req.Header.Get("If-None-Match") != "" {
 		browserTag := req.Header.Get("If-None-Match")
@@ -120,13 +117,7 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 	if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
 		if file, err := os.OpenFile(zFilePath, os.O_RDONLY, os.ModePerm); err == nil {
 			head.Set("Content-Encoding", "gzip")
-			if etagGzip == "" {
-				tag := hashFile(zFilePath, 10)
-				ETAGS.Set(zFilePath, tag)
-				head.Set("Etag", tag)
-			} else {
-				head.Set("Etag", etagGzip)
-			}
+			head.Set("Etag", etagGzip)
 			io.Copy(res, file)
 			file.Close()
 			return
@@ -138,13 +129,7 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 		http.NotFound(res, req)
 		return
 	}
-	if etagNormal == "" {
-		tag := hashFile(filePath, 10)
-		ETAGS.Set(filePath, tag)
-		head.Set("Etag", tag)
-	} else {
-		head.Set("Etag", etagNormal)
-	}
+	head.Set("Etag", etagNormal)
 	io.Copy(res, file)
 	file.Close()
 }

@@ -23,6 +23,9 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 				}
 			}
 			if val, ok := d["path"]; ok == true {
+				if val == nil {
+					val = "/"
+				}
 				if val != conn["path"] {
 					continue
 				}

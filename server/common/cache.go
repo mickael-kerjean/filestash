@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/hashstructure"
 	"github.com/patrickmn/go-cache"
+	"sync"
 	"time"
 )
 
@@ -60,6 +61,7 @@ func NewAppCache(arg ...time.Duration) AppCache {
 
 type KeyValueStore struct {
 	cache map[string]interface{}
+	sync.RWMutex
 }
 
 func NewKeyValueStore() KeyValueStore {
@@ -67,13 +69,19 @@ func NewKeyValueStore() KeyValueStore {
 }
 
 func (this KeyValueStore) Get(key string) interface{} {
+	this.RLock()
+	defer this.RUnlock()
 	return this.cache[key]
 }
 
 func (this *KeyValueStore) Set(key string, value interface{}) {
+	this.Lock()
+	defer this.Unlock()
 	this.cache[key] = value
 }
 
 func (this *KeyValueStore) Clear() {
+	this.Lock()
+	defer this.Unlock()
 	this.cache = make(map[string]interface{})
 }

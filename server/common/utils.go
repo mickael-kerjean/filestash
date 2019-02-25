@@ -3,7 +3,6 @@ package common
 import (
 	"bytes"
 	"encoding/json"
-	"sync"
 )
 
 func NewBool(t bool) *bool {
@@ -66,31 +65,4 @@ func PrettyPrint(json_dirty []byte) []byte {
 	}
 	json_pretty.Write([]byte("\n"))
 	return json_pretty.Bytes()
-}
-
-type SafeMapStringString struct {
-	sync.RWMutex
-	internal map[string]string
-}
-
-func NewSafeMapStringString() SafeMapStringString {
-	return SafeMapStringString{
-		internal: make(map[string]string),
-	}
-}
-
-func(this SafeMapStringString) Set(key string, value string) {
-	this.Lock()
-	this.internal[key] = value
-	this.Unlock()
-}
-
-func(this SafeMapStringString) Gets(keys ...string) []string{
-	this.RLock()
-	res := make([]string, len(keys))
-    for i, key := range keys {
-		res[i] = this.internal[key]
-    }
-	this.RUnlock()
-	return res
 }
