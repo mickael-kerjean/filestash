@@ -2,11 +2,13 @@ package ctrl
 
 import (
 	"encoding/base64"
+	"fmt"
 	"hash/fnv"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
 	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"strconv"
@@ -18,6 +20,20 @@ type FileInfo struct {
 	Type string `json:"type"`
 	Size int64  `json:"size"`
 	Time int64  `json:"time"`
+}
+
+const FileCachePath = "data/cache/tmp/"
+
+var FileCache AppCache
+
+func init() {
+	FileCache = NewAppCache()
+	cachePath := filepath.Join(GetCurrentDir(), FileCachePath)
+	os.RemoveAll(cachePath)
+	os.MkdirAll(cachePath, os.ModePerm)
+	FileCache.OnEvict(func(key string, value interface{}) {
+		os.RemoveAll(filepath.Join(cachePath, key))
+	})
 }
 
 func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -97,6 +113,7 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
+	header := res.Header()
 	http.SetCookie(res, &http.Cookie{
 		Name:   "download",
 		Value:  "",
@@ -107,35 +124,140 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}
-
 	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
 
-	file, err := ctx.Backend.Cat(path)
-	if err != nil {
-		SendErrorResult(res, err)
-		return
+	var file io.Reader
+	var contentLength int64 = -1
+	var needToCreateCache bool = false
+
+	// use our cache if necessary (range request) when possible
+	if req.Header.Get("range") != "" {
+		ctx.Session["_path"] = path
+		if p := FileCache.Get(ctx.Session); p != nil {
+			f, err := os.OpenFile(p.(string), os.O_RDONLY, os.ModePerm);
+			if err == nil {
+				file = f
+				if fi, err := f.Stat(); err == nil {
+					contentLength = fi.Size()
+				}
+			}
+		}
 	}
 
-	if obj, ok := file.(interface{ Close() error }); ok {
-		defer obj.Close()
+	// perform the actual `cat` if needed
+	if file == nil {
+		if file, err = ctx.Backend.Cat(path); err != nil {
+			SendErrorResult(res, err)
+			return
+		}
+		if req.Header.Get("range") != "" {
+			needToCreateCache = true
+		}
 	}
 
-	mType := GetMimeType(req.URL.Query().Get("path"))
-	header := res.Header()
-	header.Set("Content-Type", mType)
-	header.Set("Content-Security-Policy", "script-src 'none'")
-
+	// plugin hooks
 	for _, obj := range Hooks.Get.ProcessFileContentBeforeSend() {
 		if file, err = obj(file, &ctx, &res, req); err != nil {
 			SendErrorResult(res, err)
 			return
 		}
 	}
-	io.Copy(res, file)
+
+	// The extra complexity is to support: https://en.wikipedia.org/wiki/Progressive_download
+	// => range request requires a seeker to work, some backend support it, some don't. 2 strategies:
+	// 1. backend support Seek: use what the current backend gives us
+	// 2. backend doesn't support Seek: build up a cache so that subsequent call don't trigger multiple downloads
+	if req.Header.Get("range") != "" && needToCreateCache == true {
+		if obj, ok := file.(io.Seeker); ok == true {
+			if size, err := obj.Seek(0, io.SeekEnd); err == nil {
+				if _, err = obj.Seek(0, io.SeekStart); err == nil {
+					contentLength = size
+				}
+			}
+		} else {
+			tmpPath := filepath.Join(GetCurrentDir(), FileCachePath, "file_" + QuickString(20) + ".dat")
+			f, err := os.OpenFile(tmpPath, os.O_RDWR|os.O_CREATE, os.ModePerm);
+			if err != nil {
+				SendErrorResult(res, err)
+				return
+			}
+			if _, err = io.Copy(f, file); err != nil {
+				f.Close()
+				if obj, ok := file.(io.Closer); ok { obj.Close() }
+				SendErrorResult(res, err)
+				return
+			}
+			f.Close()
+			if obj, ok := file.(io.Closer); ok { obj.Close() }
+			if f, err = os.OpenFile(tmpPath, os.O_RDONLY, os.ModePerm); err != nil {
+				SendErrorResult(res, err)
+				return
+			}
+			FileCache.Set(ctx.Session, tmpPath)
+			if fi, err := f.Stat(); err == nil {
+				contentLength = fi.Size()
+			}
+			file = f
+		}
+	}
+
+	// Range request: find how much data we need to send
+	var ranges [][]int64
+	if req.Header.Get("range") != "" {
+		ranges = make([][]int64, 0)
+		for _, r := range strings.Split(strings.TrimPrefix(req.Header.Get("range"), "bytes="), ",") {
+			r = strings.TrimSpace(r)
+			if r == "" {
+				continue
+			}
+			var start int64 = -1
+			var end int64 = -1
+			sides := strings.Split(r, "-")
+			if len(sides) == 2 {
+				if start, err = strconv.ParseInt(sides[0], 10, 64); err != nil || start < 0 {
+					start = 0
+				}
+				if end, err = strconv.ParseInt(sides[1], 10, 64); err != nil || end < start {
+					end = contentLength - 1
+				}
+			}
+
+			if start != -1 && end != -1 && end - start >= 0 {
+				ranges = append(ranges, []int64{start, end})
+			}
+		}
+	}
+
+	// publish headers
+	if contentLength != -1 {
+		header.Set("Content-Length", fmt.Sprintf("%d", contentLength))
+	}
+	header.Set("Content-Type", GetMimeType(req.URL.Query().Get("path")))
+	header.Set("Content-Security-Policy", "script-src 'none'")
+	header.Set("Accept-Ranges", "bytes")
+
+	// Send data to the client
+	if req.Method != "HEAD" {
+		if f, ok := file.(io.ReadSeeker); ok && len(ranges) > 0 {
+			if _, err = f.Seek(ranges[0][0], io.SeekStart); err == nil {
+				header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", ranges[0][0], ranges[0][1], contentLength))
+				header.Set("Content-Length", fmt.Sprintf("%d", ranges[0][1] - ranges[0][0] + 1))
+				res.WriteHeader(http.StatusPartialContent)
+				io.CopyN(res, f, ranges[0][1] - ranges[0][0] + 1)
+			} else {
+				res.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+			}
+		} else {
+			io.Copy(res, file)
+		}
+	}
+	if obj, ok := file.(io.Closer); ok {
+		obj.Close()
+	}
 }
 
 func FileAccess(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -149,7 +271,8 @@ func FileAccess(ctx App, res http.ResponseWriter, req *http.Request) {
 	if model.CanUpload(&ctx){
 		allowed = append(allowed, "POST")
 	}
-	res.Header().Set("Allow", strings.Join(allowed, ", "))
+	header := res.Header()
+	header.Set("Allow", strings.Join(allowed, ", "))
 	SendSuccessResult(res, nil)
 }
 
