@@ -143,7 +143,7 @@ steps:
       from_secret: GITHUB_TOKEN
     CI: true
   commands:
-  - sleep 10
+  - curl -sD - -o /dev/null https://demo.filestash.app/about
   - cd ../test/e2e
   - npm install > /dev/null 2>&1
   - npm run state
