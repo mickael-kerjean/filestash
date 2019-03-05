@@ -28,6 +28,9 @@ let LAST_PAGE_PARAMS = {
 export class FilesPage extends React.Component {
     constructor(props){
         super(props);
+        if(props.match.url.slice(-1) != "/"){
+            this.props.history.push(props.match.url + "/");
+        }
         this.state = {
             path: props.match.url.replace('/files', '') || '/',
             sort: settings_get('filespage_sort') || 'type',
@@ -42,8 +45,6 @@ export class FilesPage extends React.Component {
             loading: true
         };
 
-        this.goToFiles = goToFiles.bind(null, this.props.history);
-        this.goToViewer = goToViewer.bind(null, this.props.history);
         this.observers = [];
         this.toggleHiddenFilesVisibilityonCtrlK = this.toggleHiddenFilesVisibilityonCtrlK.bind(this);
     }
