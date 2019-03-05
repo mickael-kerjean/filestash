@@ -64,7 +64,7 @@ func Hash(str string, n int) string {
 }
 
 func QuickHash(str string, n int) string {
-	hash := fnv.New32()
+	hash := fnv.New64()
 	hash.Write([]byte(str))
 	d := string(hash.Sum(nil))
 	h := ""

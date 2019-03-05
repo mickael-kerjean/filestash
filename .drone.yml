@@ -19,12 +19,11 @@ steps:
   - cp -R config dist/data/config
 
 - name: build_go
-  image: golang:1.11-alpine
+  image: golang:1.11-stretch
   depends_on: [ clone ]
   environment:
     CGO_LDFLAGS_ALLOW: '-fopenmp'
   commands:
-  - apk --no-cache add git gcc libc-dev > /dev/null 2>&1
   - mkdir ../plugin/
   - mv server/plugin/plg_* ../plugin
   - go get -t ./server/...
@@ -68,11 +67,7 @@ steps:
 - name: test_e2e
   image: machines/puppeteer
   depends_on: [ build_prepare, build_js, build_go ]
-  volumes:
-  - name: cache
-    path: /tmp/
   environment:
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
     ADMIN_PASSWORD: PLKr3FcPUdUNVhNImO6QOSKQ.tkLRniUYWMnV84rlb8Fhvib8C2W
     APP_URL: http://127.0.0.1:8334
     CI: true
@@ -82,8 +77,6 @@ steps:
   - npm install > /dev/null 2>&1
   - node servers/webdav.js &
   - npm test
-  - kill -9 %1
-  - kill -9 %2
 
 - name: release
   image: plugins/docker
@@ -133,17 +126,16 @@ steps:
         Build failure: er}} https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
       {{/success}}
 
-- name: deployement_state
-  image: machines/puppeteer
-  depends_on: [ deploy ]
-  environment:
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-    APP_URL: https://demo.filestash.app
-    GITHUB_TOKEN:
-      from_secret: GITHUB_TOKEN
-    CI: true
-  commands:
-  - curl -sD - -o /dev/null https://demo.filestash.app/about
-  - cd ../test/e2e
-  - npm install > /dev/null 2>&1
-  - npm run state
+# - name: deployement_state
+#   image: machines/puppeteer
+#   depends_on: [ deploy ]
+#   environment:
+#     APP_URL: https://demo.filestash.app
+#     GITHUB_TOKEN:
+#       from_secret: GITHUB_TOKEN
+#     CI: true
+#   commands:
+#   - curl -sD - -o /dev/null https://demo.filestash.app/about
+#   - cd ../test/e2e
+#   - npm install > /dev/null 2>&1
+#   - npm run state

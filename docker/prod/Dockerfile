@@ -47,7 +47,10 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     #################
     # Compile Plugins
     mkdir -p ./dist/data/plugin && \
+    go get -v ./server/plugin/... > /dev/null 2>&1 || true && \
     go build -buildmode=plugin -o ./dist/data/plugin/image.so server/plugin/plg_image_light/index.go && \
+    go build -buildmode=plugin -o ./dist/data/plugin/backend_dav.so server/plugin/plg_backend_dav/index.go && \
+    go build -buildmode=plugin -o ./dist/data/plugin/backend_ldap.so server/plugin/plg_backend_ldap/index.go && \
     #################
     # External dependencies: emacs and pdflatex
     apk --no-cache add curl emacs texlive zip && \
@@ -75,8 +78,7 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     #################
     # Create machine user
     addgroup -S filestash && adduser -S -g filestash filestash && \
-    chown -R filestash:filestash /app/ && \
-    chown filestash:filestash /app/data/config/config.json
+    chown -R filestash:filestash /app/
 
 EXPOSE 8334
 VOLUME ["/app/data/config/"]
