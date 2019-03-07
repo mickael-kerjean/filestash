@@ -117,7 +117,7 @@ export class FilesPage extends React.Component {
                 let files = new Array(res.results.length);
                 for(let i=0,l=res.results.length; i<l; i++){
                     let path = this.state.path+res.results[i].name;
-                    if(this.state.show_hidden === false && path[0] === "."){
+                    if(this.state.show_hidden === false && res.results[i].name[0] === "."){
                         continue;
                     }
                     files[i] = res.results[i];
