@@ -23,7 +23,7 @@ export class Textarea extends React.Component {
                 e.preventDefault();
                 const $form = getForm(this.refs.el);
                 if($form){
-                    $form.dispatchEvent(new Event('submit'));
+                    $form.dispatchEvent(new Event('submit', { cancelable: true }));
                 }
             }
 
