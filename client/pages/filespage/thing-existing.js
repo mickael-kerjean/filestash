@@ -214,7 +214,7 @@ export class ExistingThing extends React.Component {
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div className={"component_thing view-"+this.props.view}>
-              <Link to={this.props.file.link + window.location.search}>
+              <ToggleableLink to={this.props.file.link + window.location.search} disabled={this.props.file.icon === "loading"}>
                 <Card ref="$card"className={this.state.hover} className={className}>
                   <Image preview={this.state.preview}
                          icon={this.props.file.icon || this.props.file.type}
@@ -232,7 +232,7 @@ export class ExistingThing extends React.Component {
                   <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} onClickShare={this.onShareRequest.bind(this)} is_renaming={this.state.is_renaming}
                                 can_rename={this.props.metadata.can_rename !== false} can_delete={this.props.metadata.can_delete !== false} can_share={this.props.metadata.can_share !== false && window.CONFIG.enable_share === true} />
                 </Card>
-              </Link>
+              </ToggleableLink>
             </div>
         )));
     }
@@ -244,6 +244,11 @@ ExistingThing.PropTypes = {
     nativeFileIsOver: PropTypes.bool.isRequired,
     canDropFile: PropTypes.bool.isRequired,
     canDropNativeFile: PropTypes.bool.isRequired
+};
+
+export default function ToggleableLink(props)  {
+    const { disabled, ...rest } = props;
+    return disabled ? props.children : <Link {...rest}>{props.children}</Link>;
 }
 
 class Filename extends React.Component {
