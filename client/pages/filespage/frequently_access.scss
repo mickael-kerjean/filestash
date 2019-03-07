@@ -1,11 +1,19 @@
 .component_frequently-access{
-    min-height: 80px;
+    .caption{
+        letter-spacing: 0.06em;
+        display: inline-block;
+        text-transform: uppercase;
+        font-size: 12px;
+        padding-bottom: 5px;
+        color: var(--light);
+    }
     .frequent_wrapper{
         display: flex;
         a{
             width: 33.33%;
             background: var(--super-light);
             box-shadow: rgba(158, 163, 172, 0.3) 0px 19px 60px, rgba(158, 163, 172, 0.22) 0px 15px 20px;
+            transition: box-shadow 0.05s linear 0s;
             overflow: hidden;
             margin-right: 5px;
             padding: 5px;
@@ -24,13 +32,32 @@
                 text-overflow: ellipsis;
             }
         }
+        @media (max-width: 800px){ a:nth-child(6){display: none;} }
+        @media (max-width: 750px){ a:nth-child(5){display: none;} }
+        @media (max-width: 650px){ a:nth-child(4){display: none;} }
+        @media (max-width: 450px){ a:nth-child(3){display: none;} }
     }
-    @media (max-width: 800px){ a:nth-child(6){display: none;} }
-    @media (max-width: 750px){ a:nth-child(5){display: none;} }
-    @media (max-width: 650px){ a:nth-child(4){display: none;} }
-    @media (max-width: 450px){ a:nth-child(3){display: none;} }
+    .nothing_placeholder{
+        padding: 20px;
+        text-align: center;
+        background: var(--super-light);
+        border: 1px dashed rgba(0,0,0,0.1);
+        border-radius: 2px;
+        color: var(--light);
+        font-weight: 100;
+        svg{
+            display: block;
+            width: 50px;
+            margin: 0 auto;
+            padding-bottom: 10px;
+        }
+    }
 }
 
+.touch-no .component_frequently-access .frequent_wrapper a:hover{
+    transition: box-shadow 0.2s linear 0s;
+    box-shadow: rgba(158, 163, 172, 0.3) 0px 19px 70px, rgba(158, 163, 172, 0.22) 0px 15px 40px;
+}
 
 
  .frequent-access-appear{

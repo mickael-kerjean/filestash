@@ -1,6 +1,9 @@
 .component_thing{
     clear: both;
+
     &:hover .box, .highlight.box{
+        transition: 0.2s ease-out box-shadow;
+        box-shadow: rgba(158, 163, 172, 0.3) 3px 3px 10px;
         background: var(--super-light);
         border-color: var(--super-light);
     }
