@@ -279,6 +279,9 @@ class Filename extends React.Component {
     render(){
         const [fileWithoutExtension, fileExtension] = function(filename){
             const fname = filename.split(".");
+            if(fname.length < 2){
+                return [filename, ""];
+            }
             const ext = fname.pop();
             if(window.CONFIG.mime[ext] === undefined){
                 return [filename, ""];
