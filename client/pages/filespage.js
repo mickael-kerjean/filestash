@@ -24,7 +24,7 @@ let LAST_PAGE_PARAMS = {
 @ErrorPage
 @LoggedInOnly
 @EventReceiver
-@DragDropContext(('ontouchstart' in window)? HTML5Backend : HTML5Backend)
+@DragDropContext(HTML5Backend)
 export class FilesPage extends React.Component {
     constructor(props){
         super(props);
@@ -238,13 +238,13 @@ export class FilesPage extends React.Component {
                     initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={100}>
                     <NgIf className="container" cond={!this.state.loading}>
                       <NgIf cond={this.state.path === '/'}>
-                        <FrequentlyAccess files={this.state.frequents} default={this.state.files}/>
+                        <FrequentlyAccess files={this.state.frequents} />
                       </NgIf>
                       <Submenu path={this.state.path} sort={this.state.sort} view={this.state.view} onSearch={this.onSearch.bind(this)} onViewUpdate={(value) => this.onView(value)} onSortUpdate={(value) => {this.onSort(value);}} accessRight={this.state.metadata || {}}></Submenu>
                       <NgIf cond={true}>
                         <FileSystem path={this.state.path} sort={this.state.sort} view={this.state.view}
                                     files={this.state.files.slice(0, this.state.page_number * LOAD_PER_SCROLL)}
-                                    metadata={this.state.metadata} onSort={this.onSort.bind(this)} onView={this.onView.bind(this)} />
+                                    metadata={this.state.metadata || {}} onSort={this.onSort.bind(this)} onView={this.onView.bind(this)} />
                       </NgIf>
                     </NgIf>
                   </InfiniteScroll>

@@ -248,6 +248,6 @@ const FormElement = (props) => {
     return props.render($input, props, struct, props.onChange.bind(null, null));
 };
 
-FormElement.PropTypes = {
+FormElement.propTypes = {
     render: PropTypes.func.isRequired
 };

@@ -28,6 +28,6 @@ export class FileZone extends React.Component{
     }
 }
 
-FileZone.PropTypes = {
+FileZone.propTypes = {
     path: PropTypes.string.isRequired
 }

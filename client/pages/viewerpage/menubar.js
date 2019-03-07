@@ -66,7 +66,7 @@ class DownloadButton extends React.Component {
         );
     }
 }
-DownloadButton.PropTypes = {
+DownloadButton.propTypes = {
     link: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired
 };

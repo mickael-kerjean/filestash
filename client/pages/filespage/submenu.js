@@ -152,9 +152,8 @@ export class Submenu extends React.Component {
     };
 }
 
-Submenu.PropTypes = {
-    accessRight: PropTypes.obj,
-    onCreate: PropTypes.func.isRequired,
+Submenu.propTypes = {
+    accessRight: PropTypes.object,
     onSortUpdate: PropTypes.func.isRequired,
     sort: PropTypes.string.isRequired
 };

@@ -283,7 +283,7 @@ const SuperCheckbox = (props) => {
         </div>
     );
 };
-SuperCheckbox.PropTypes = {
+SuperCheckbox.propTypes = {
     label: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     inputType: PropTypes.string,

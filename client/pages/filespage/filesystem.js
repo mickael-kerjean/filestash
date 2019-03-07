@@ -22,7 +22,7 @@ export class FileSystem extends React.Component {
 
     render() {
         const metadata = this.props.metadata || {};
-
+        // TODO: https://reactjs.org/docs/higher-order-components.html#dont-use-hocs-inside-the-render-method
         return this.props.connectDropFile(
             <div className="component_filesystem">
               <Container>
@@ -53,7 +53,7 @@ export class FileSystem extends React.Component {
     }
 }
 
-FileSystem.PropTypes = {
+FileSystem.propTypes = {
     path: PropTypes.string.isRequired,
     files: PropTypes.array.isRequired,
     metadata: PropTypes.object.isRequired

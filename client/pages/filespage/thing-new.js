@@ -112,9 +112,8 @@ export class NewThing extends React.Component {
     };
 }
 
-NewThing.PropTypes = {
-    accessRight: PropTypes.obj,
-    onCreate: PropTypes.func.isRequired,
+NewThing.propTypes = {
+    accessRight: PropTypes.object.isRequired,
     onSortUpdate: PropTypes.func.isRequired,
     sort: PropTypes.string.isRequired
 };

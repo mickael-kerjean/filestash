@@ -5,7 +5,7 @@ import { DropTarget } from 'react-dnd';
 import { EventEmitter, BreadCrumb, PathElement } from '../../components/';
 import { pathBuilder } from '../../helpers/';
 
-export class BreadCrumbTargettable extends BreadCrumb{
+export class BreadCrumbTargettable extends BreadCrumb {
     constructor(props){
         super(props);
     }
@@ -14,10 +14,6 @@ export class BreadCrumbTargettable extends BreadCrumb{
         return super.render(Element);
     }
 }
-BreadCrumbTargettable.PropTypes = {
-    path: PropTypes.string.isRequred
-}
-
 
 const fileTarget = {
     canDrop(props){
@@ -62,7 +58,4 @@ class Element extends PathElement {
             super.render(highlight)
         ));
     }
-}
-Element.PropTypes = {
-    path: PropTypes.string.isRequred
 }
