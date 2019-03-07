@@ -15,18 +15,12 @@ import { FileZone } from './filezone';
     connectDropFile: connect.dropTarget(),
     fileIsOver: monitor.isOver()
 }))
-export class FileSystem extends React.Component {
-    constructor(props){
-        super(props);
-    }
-
+export class FileSystem extends React.PureComponent {
     render() {
-        const metadata = this.props.metadata || {};
-        // TODO: https://reactjs.org/docs/higher-order-components.html#dont-use-hocs-inside-the-render-method
         return this.props.connectDropFile(
             <div className="component_filesystem">
               <Container>
-                <NewThing path={this.props.path} sort={this.props.sort} view={this.props.view} onViewUpdate={(value) => this.props.onView(value)} onSortUpdate={(value) => {this.props.onSort(value);}} accessRight={metadata}></NewThing>
+                <NewThing path={this.props.path} sort={this.props.sort} view={this.props.view} onViewUpdate={(value) => this.props.onView(value)} onSortUpdate={(value) => {this.props.onSort(value);}} accessRight={this.props.metadata || {}}></NewThing>
                 <NgIf cond={this.props.fileIsOver}>
                   <FileZone path={this.props.path} />
                 </NgIf>
@@ -35,7 +29,7 @@ export class FileSystem extends React.Component {
                   {
                       this.props.files.map((file, index) => {
                           if(file.type === 'directory' || file.type === 'file' || file.type === 'link' || file.type === 'bucket'){
-                              return ( <ExistingThing view={this.props.view} key={file.name+file.path+(file.icon || '')} file={file} path={this.props.path} metadata={metadata} /> );
+                              return ( <ExistingThing view={this.props.view} key={file.name+file.path+(file.icon || '')} file={file} path={this.props.path} metadata={this.props.metadata || {}} /> );
                           }
                       })
                   }
@@ -56,5 +50,9 @@ export class FileSystem extends React.Component {
 FileSystem.propTypes = {
     path: PropTypes.string.isRequired,
     files: PropTypes.array.isRequired,
-    metadata: PropTypes.object.isRequired
-}
+    metadata: PropTypes.object.isRequired,
+    sort: PropTypes.string.isRequired,
+    view: PropTypes.string.isRequired,
+    onView: PropTypes.func.isRequired,
+    onSort: PropTypes.func.isRequired
+};

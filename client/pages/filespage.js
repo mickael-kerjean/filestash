@@ -114,14 +114,14 @@ export class FilesPage extends React.Component {
         this._cleanupListeners();
         const observer = Files.ls(path).subscribe((res) => {
             if(res.status === 'ok'){
-                let files = res.results;
-                files = files.map((file) => {
-                    let path = this.state.path+file.name;
-                    file.link = file.type === "file" ? "/view"+path : "/files"+path+"/";
-                    return file;
-                });
-                if(this.state.show_hidden === false){
-                    files = files.filter((file) => file.name[0] === "." ? false : true);
+                let files = new Array(res.results.length);
+                for(let i=0,l=res.results.length; i<l; i++){
+                    let path = this.state.path+res.results[i].name;
+                    if(this.state.show_hidden === false && path[0] === "."){
+                        continue;
+                    }
+                    files[i] = res.results[i];
+                    files[i].link = res.results[i].type === "file" ? "/view"+path : "/files"+path+"/";
                 }
                 this.setState({
                     metadata: res.metadata,
