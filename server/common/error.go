@@ -19,6 +19,7 @@ var (
 	ErrNotImplemented         = NewError("Not Implemented", 501)
 	ErrFilesystemError        = NewError("Can't use filesystem", 503)
 	ErrMissingDependency      = NewError("Missing dependency", 424)
+	ErrNotAuthorized          = NewError("Not authorized", 401)
 )
 
 type AppError struct {

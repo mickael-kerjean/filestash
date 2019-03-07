@@ -23,7 +23,10 @@ export class ConnectPage extends React.Component {
 
     componentWillMount(){
         const urlData = urlParams();
-        if(Object.keys(urlData).length === 0){
+        const get_params = Object.keys(urlData);
+        if(get_params.length === 0){
+            return;
+        }else if(get_params.length === 1 && !!urlData["next"]){
             return;
         }
 
@@ -40,6 +43,9 @@ export class ConnectPage extends React.Component {
         Session.authenticate(params)
             .then(Session.currentUser)
             .then((user) => {
+                if(location.search.indexOf("?next=") === 0){
+                    location = urlParams()["next"];
+                }
                 let url = '/files/';
                 let path = user.home;
                 if(path){

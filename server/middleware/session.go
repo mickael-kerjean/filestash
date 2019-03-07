@@ -59,6 +59,10 @@ func SessionStart (fn func(App, http.ResponseWriter, *http.Request)) func(ctx Ap
 			return
 		}
 		if ctx.Backend, err = _extractBackend(req, &ctx); err != nil {
+			if len(ctx.Session) == 0 {
+				SendErrorResult(res, ErrNotAuthorized)
+				return
+			}
 			SendErrorResult(res, err)
 			return
 		}
