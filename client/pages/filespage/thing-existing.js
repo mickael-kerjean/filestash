@@ -237,15 +237,6 @@ export class ExistingThing extends React.Component {
         )));
     }
 }
-// TODO: https://reactjs.org/docs/higher-order-components.html#dont-use-hocs-inside-the-render-method
-// ExistingThing.propTypes = {
-//     connectDragSource: PropTypes.func.isRequired,
-//     isDragging: PropTypes.bool.isRequired,
-//     fileIsOver: PropTypes.bool.isRequired,
-//     nativeFileIsOver: PropTypes.bool.isRequired,
-//     canDropFile: PropTypes.bool.isRequired,
-//     canDropNativeFile: PropTypes.bool.isRequired
-// };
 
 export default function ToggleableLink(props)  {
     const { disabled, ...rest } = props;
