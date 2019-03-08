@@ -1,7 +1,9 @@
 export function http_get(url, type = 'json'){
     return new Promise((done, err) => {
         var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
         xhr.withCredentials = true;
+        xhr.setRequestHeader('X-Requested-With', 'XmlHttpRequest');
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if(xhr.status === 200){
@@ -24,7 +26,6 @@ export function http_get(url, type = 'json'){
                 }
             }
         }
-        xhr.open('GET', url, true);
         xhr.send(null);
     });
 }
@@ -34,6 +35,7 @@ export function http_post(url, data, type = 'json'){
         var xhr = new XMLHttpRequest();
         xhr.open("POST", url, true);
         xhr.withCredentials = true;
+        xhr.setRequestHeader('X-Requested-With', 'XmlHttpRequest');
         if(type === 'json'){
             data = JSON.stringify(data);
             xhr.setRequestHeader('Content-Type', 'application/json');
@@ -68,6 +70,7 @@ export function http_delete(url){
         var xhr = new XMLHttpRequest();
         xhr.open("DELETE", url, true);
         xhr.withCredentials = true;
+        xhr.setRequestHeader('X-Requested-With', 'XmlHttpRequest');
         xhr.onload = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if(xhr.status === 200){
@@ -95,6 +98,7 @@ export function http_options(url){
         var xhr = new XMLHttpRequest();
         xhr.open("OPTIONS", url, true);
         xhr.withCredentials = true;
+        xhr.setRequestHeader('X-Requested-With', 'XmlHttpRequest');
         xhr.onload = function(){
             if(xhr.readyState === XMLHttpRequest.DONE){
                 if(xhr.status !== 200){

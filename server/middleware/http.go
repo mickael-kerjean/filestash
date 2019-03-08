@@ -16,6 +16,17 @@ func ApiHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, 
 	}
 }
 
+func SecureAjax(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+		if req.Header.Get("X-Requested-With") != "XmlHttpRequest" {
+			Log.Warning("Intrusion detection: %s - %s", req.RemoteAddr, req.URL.String())
+			SendErrorResult(res, ErrNotAllowed)
+			return
+		}
+		fn(ctx, res, req)
+	}
+}
+
 func StaticHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
@@ -49,7 +60,6 @@ func SecureHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx Ap
 		if Config.Get("general.force_ssl").Bool() {
 			header.Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
 		}
-
 		header.Set("X-Content-Type-Options", "nosniff")
 		header.Set("X-XSS-Protection", "1; mode=block")
 		header.Set("X-Frame-Options", "DENY")

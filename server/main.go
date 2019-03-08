@@ -41,35 +41,36 @@ func Init(a *App) {
 
 	// API for Session
 	session := r.PathPrefix("/api/session").Subrouter()
-	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax, SessionStart }
 	session.HandleFunc("",                NewMiddlewareChain(SessionGet,          middlewares, *a)).Methods("GET")
-	middlewares = []Middleware{ ApiHeaders, SecureHeaders, BodyParser }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax, BodyParser }
 	session.HandleFunc("",                NewMiddlewareChain(SessionAuthenticate, middlewares, *a)).Methods("POST")
-	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionTry }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax, SessionTry }
 	session.HandleFunc("",                NewMiddlewareChain(SessionLogout,       middlewares, *a)).Methods("DELETE")
-	middlewares = []Middleware{ ApiHeaders, SecureHeaders }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax }
 	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, *a)).Methods("GET")
 
 	// API for admin
-	middlewares = []Middleware{ ApiHeaders }
+	middlewares = []Middleware{ ApiHeaders, SecureAjax }
 	admin := r.PathPrefix("/admin/api").Subrouter()
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionGet,            middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionAuthenticate,   middlewares, *a)).Methods("POST")
-	middlewares = []Middleware{ ApiHeaders, AdminOnly }
+	middlewares = []Middleware{ ApiHeaders, AdminOnly, SecureAjax }
 	admin.HandleFunc("/plugin",  NewMiddlewareChain(FetchPluginsHandler,        middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/log",     NewMiddlewareChain(FetchLogHandler,            middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigHandler,       middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, *a)).Methods("POST")
-	middlewares = []Middleware{ IndexHeaders }
+	middlewares = []Middleware{ IndexHeaders, SecureAjax }
 	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a))).Methods("GET")
 
 	// API for File management
 	files := r.PathPrefix("/api/files").Subrouter()
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly }
-	files.HandleFunc("/ls",     NewMiddlewareChain(FileLs,     middlewares, *a)).Methods("GET")
 	files.HandleFunc("/cat",    NewMiddlewareChain(FileCat,    middlewares, *a)).Methods("GET", "HEAD")
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax, SessionStart, LoggedInOnly }
 	files.HandleFunc("/cat",    NewMiddlewareChain(FileAccess, middlewares, *a)).Methods("OPTIONS")
 	files.HandleFunc("/cat",    NewMiddlewareChain(FileSave,   middlewares, *a)).Methods("POST")
+	files.HandleFunc("/ls",     NewMiddlewareChain(FileLs,     middlewares, *a)).Methods("GET")
 	files.HandleFunc("/mv",     NewMiddlewareChain(FileMv,     middlewares, *a)).Methods("GET")
 	files.HandleFunc("/rm",     NewMiddlewareChain(FileRm,     middlewares, *a)).Methods("GET")
 	files.HandleFunc("/mkdir",  NewMiddlewareChain(FileMkdir,  middlewares, *a)).Methods("GET")
@@ -81,13 +82,13 @@ func Init(a *App) {
 
 	// API for Shared link
 	share := r.PathPrefix("/api/share").Subrouter()
-	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax, SessionStart, LoggedInOnly }
 	share.HandleFunc("",               NewMiddlewareChain(ShareList,        middlewares, *a)).Methods("GET")
-	middlewares = []Middleware{ ApiHeaders, SecureHeaders, BodyParser }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax, BodyParser }
 	share.HandleFunc("/{share}/proof", NewMiddlewareChain(ShareVerifyProof, middlewares, *a)).Methods("POST")
-	middlewares = []Middleware{ ApiHeaders, SecureHeaders, CanManageShare }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax, CanManageShare }
 	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareDelete,      middlewares, *a)).Methods("DELETE")
-	middlewares = []Middleware{ ApiHeaders, SecureHeaders, BodyParser, CanManageShare }
+	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax, BodyParser, CanManageShare }
 	share.HandleFunc("/{share}",       NewMiddlewareChain(ShareUpsert,      middlewares, *a)).Methods("POST")
 
 	// Webdav server / Shared Link
