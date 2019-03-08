@@ -15,8 +15,8 @@
         h2{
             font-family: 'Source Code Pro', monospace;
             text-shadow: 0 0 2px var(--bg-color);
-            font-size: 2.8em;
-            padding: 60px 0 0 0;
+            font-size: 2em;
+            padding: 50px 0 0 0;
             margin-bottom: 30px;
             margin-top: 0;
             @media screen and (max-width: 1000px) { padding: 25px 0 0 0; }
@@ -29,7 +29,7 @@
                 font-size: 0;
                 border-bottom: 3px solid var(--color);
                 width: 90px;
-                margin-top: 10px;
+                margin-top: 5px;
                 opacity: 0.9;
                 line-height: 0;
             }

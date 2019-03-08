@@ -1,0 +1,24 @@
+.component_support{
+    .flex{
+        display: flex;
+        > div{
+            padding: 10px 20px;
+            width: 33.33%;
+            svg{
+                width: 30px;
+                display: block;
+                margin: 0 auto;
+                text-align: center;
+            }
+            strong{
+                text-align: center;
+                display: block;
+                margin-top: 10px;
+                font-weight: 100;
+            }
+            p{
+                text-align: justify;
+            }
+        }
+    }
+}
