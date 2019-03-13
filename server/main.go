@@ -60,7 +60,7 @@ func Init(a *App) {
 	admin.HandleFunc("/log",     NewMiddlewareChain(FetchLogHandler,            middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigHandler,       middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, *a)).Methods("POST")
-	middlewares = []Middleware{ IndexHeaders, SecureAjax }
+	middlewares = []Middleware{ IndexHeaders }
 	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a))).Methods("GET")
 
 	// API for File management
