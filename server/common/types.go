@@ -64,7 +64,7 @@ type Metadata struct {
 	CanDelete          *bool      `json:"can_delete,omitempty"`
 	CanShare           *bool      `json:"can_share,omitempty"`
 	HideExtension      *bool      `json:"hide_extension,omitempty"`
-	RefreshOnCreate    *bool      `json:"refresh_on_create"`
+	RefreshOnCreate    *bool      `json:"refresh_on_create,omitempty"`
 	Expire             *time.Time `json:"-"`
 }
 

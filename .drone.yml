@@ -68,7 +68,7 @@ steps:
   image: machines/puppeteer
   depends_on: [ build_prepare, build_js, build_go ]
   environment:
-    ADMIN_PASSWORD: PLKr3FcPUdUNVhNImO6QOSKQ.tkLRniUYWMnV84rlb8Fhvib8C2W
+    ADMIN_PASSWORD: $$2a$$10$$9OFbPZV4lYpYjU5eUi91o.kgeMyCuW11j878YBRri3gBwccq2lSFy
     APP_URL: http://127.0.0.1:8334
     CI: true
   commands:
@@ -98,7 +98,7 @@ steps:
   when:
     branch: master
   settings:
-    command_timeout: 1000
+    command_timeout: 5m
     host: hal.kerjean.me
     user:
       from_secret: SSH_USERNAME

@@ -21,7 +21,7 @@ export class FileSystem extends React.PureComponent {
             <div className="component_filesystem">
               <Container>
                 <NewThing path={this.props.path} sort={this.props.sort} view={this.props.view} onViewUpdate={(value) => this.props.onView(value)} onSortUpdate={(value) => {this.props.onSort(value);}} accessRight={this.props.metadata || {}}></NewThing>
-                <NgIf cond={this.props.fileIsOver}>
+                <NgIf cond={this.props.fileIsOver && this.props.metadata.can_upload !== false}>
                   <FileZone path={this.props.path} />
                 </NgIf>
                 <NgIf className="list" cond={this.props.files.length > 0}>
