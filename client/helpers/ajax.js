@@ -132,6 +132,8 @@ function handle_error_response(xhr, err){
 
     if(navigator.onLine === false){
         err({message: 'Connection Lost', code: "NO_INTERNET"});
+    }else if(xhr.status === 0 && xhr.responseText === "") {
+        err({message: "Service unavailable, if the problem persist, contact your administrator", code: "INTERNAL_SERVER_ERROR"});
     }else if(xhr.status === 500){
         err({message: message || "Oups something went wrong with our servers", code: "INTERNAL_SERVER_ERROR"});
     }else if(xhr.status === 401){
