@@ -1,9 +1,10 @@
 import React from 'react';
 
 import { Session } from '../model/';
-import { Loader } from '../components/';
+import { Loader, ErrorPage } from '../components/';
 import { cache } from '../helpers/';
 
+@ErrorPage
 export class LogoutPage extends React.Component {
     constructor(props){
         super(props);
@@ -15,9 +16,7 @@ export class LogoutPage extends React.Component {
                 cache.destroy();
                 this.props.history.push('/login');
             })
-            .catch((res) => {
-                console.warn(res)
-            });
+            .catch((err) => this.props.error(err));
     }
     render() {
         return (

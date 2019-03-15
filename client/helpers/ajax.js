@@ -27,6 +27,9 @@ export function http_get(url, type = 'json'){
             }
         }
         xhr.send(null);
+        xhr.onerror = function(){
+            handle_error_response(xhr, err)
+        }
     });
 }
 
@@ -88,6 +91,9 @@ export function http_delete(url){
                     handle_error_response(xhr, err);
                 }
             }
+        }
+        xhr.onerror = function(){
+            handle_error_response(xhr, err)
         }
         xhr.send(null);
     });
