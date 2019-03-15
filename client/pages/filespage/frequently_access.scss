@@ -1,4 +1,12 @@
 .component_frequently-access{
+    min-height: 110px;
+    margin-top: 5px;
+    .component_container{
+        padding: 0;
+    }
+    .component_icon{
+        height: 25px;
+    }
     .caption{
         letter-spacing: 0.06em;
         display: inline-block;
@@ -38,7 +46,7 @@
         @media (max-width: 450px){ a:nth-child(3){display: none;} }
     }
     .nothing_placeholder{
-        padding: 20px;
+        padding: 15px;
         text-align: center;
         background: var(--super-light);
         border: 1px dashed rgba(0,0,0,0.1);
@@ -47,9 +55,9 @@
         font-weight: 100;
         svg{
             display: block;
-            width: 50px;
+            width: 45px;
             margin: 0 auto;
-            padding-bottom: 10px;
+            padding-bottom: 5px;
         }
     }
 }
@@ -62,10 +70,35 @@
 
  .frequent-access-appear{
      opacity: 0;
-     transform: translateX(5px);
+     transition: opacity 0.3s ease-out;
+     .frequent_wrapper a{
+         transition: all 0.3s ease-out;
+         opacity: 0;
+         transform: translateX(5px);
+     }
  }
  .frequent-access-appear.frequent-access-appear-active{
      opacity: 1;
-     transform: translateX(0px);
-     transition: all 0.3s ease-out;
+     .frequent_wrapper a{
+         transform: translateX(0px);
+         opacity: 1;
+     }
+ }
+ .frequent-access-enter{
+     opacity: 0;
+     transition: opacity 0.5s ease-out;
+     .frequent_wrapper a{
+         transition: all 0.3s ease-out;
+         transition-delay: 0.2s;
+         opacity: 0;
+         transform: translateY(-5px);
+     }
+ }
+ .frequent-access-enter.frequent-access-enter-active{
+     opacity: 1;
+     transition: opacity 0.5s ease-out;
+     .frequent_wrapper a{
+         transform: translateY(0px);
+         opacity: 1;
+     }
  }

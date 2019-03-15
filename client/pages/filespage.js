@@ -40,7 +40,7 @@ export class FilesPage extends React.Component {
             files: [],
             search_loading: false,
             metadata: null,
-            frequents: [],
+            frequents: null,
             page_number: PAGE_NUMBER_INIT,
             loading: true
         };
