@@ -3,8 +3,6 @@ import { Container, Card, NgIf, Input, Button, Textarea, FormBuilder } from "../
 import { gid, settings_get, settings_put, createFormBackend, FormObjToJSON } from "../../helpers/";
 import { Session, Backend } from "../../model/";
 import "./form.scss";
-import img_drive from "../../assets/img/google-drive.png";
-import img_dropbox from "../../assets/img/dropbox.png";
 
 export class Form extends React.Component {
     constructor(props){

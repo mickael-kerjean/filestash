@@ -6,7 +6,7 @@ import './error.scss';
 import { Files } from '../model/';
 import { BreadCrumb, Bundle, NgIf, Loader, Container, EventReceiver, EventEmitter, LoggedInOnly , ErrorPage } from '../components/';
 import { debounce, opener, notify } from '../helpers/';
-import { AudioPlayer, FileDownloader, ImageViewer, PDFViewer, FormViewer } from './viewerpage/';
+import { FileDownloader, ImageViewer, PDFViewer, FormViewer } from './viewerpage/';
 
 const VideoPlayer = (props) => (
     <Bundle loader={import(/* webpackChunkName: "video" */"../pages/viewerpage/videoplayer")} symbol="VideoPlayer">
@@ -15,6 +15,11 @@ const VideoPlayer = (props) => (
 );
 const IDE = (props) => (
     <Bundle loader={import(/* webpackChunkName: "ide" */"../pages/viewerpage/ide")} symbol="IDE">
+      {(Comp) => <Comp {...props}/>}
+    </Bundle>
+);
+const AudioPlayer = (props) => (
+    <Bundle loader={import(/* webpackChunkName: "audioplayer" */"../pages/viewerpage/audioplayer")} symbol="AudioPlayer">
       {(Comp) => <Comp {...props}/>}
     </Bundle>
 );
