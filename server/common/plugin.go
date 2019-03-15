@@ -3,6 +3,7 @@ package common
 import (
 	"io"
 	"net/http"
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -33,4 +34,12 @@ func (this Register) ProcessFileContentBeforeSend(fn func(io.Reader, *App, *http
 }
 func (this Get) ProcessFileContentBeforeSend() []func(io.Reader, *App, *http.ResponseWriter, *http.Request) (io.Reader, error) {
 	return process_file_content_before_send
+}
+
+var http_endpoint []func(*mux.Router) error
+func (this Register) HttpEndpoint(fn func(*mux.Router) error) {
+	http_endpoint = append(http_endpoint, fn)
+}
+func (this Get) HttpEndpoint() []func(*mux.Router) error {
+	return http_endpoint
 }

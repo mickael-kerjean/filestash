@@ -9,3 +9,4 @@ build_plugins:
 	go build -buildmode=plugin -o ./dist/data/plugin/backend_dav.so server/plugin/plg_backend_dav/index.go
 	go build -buildmode=plugin -o ./dist/data/plugin/backend_ldap.so server/plugin/plg_backend_ldap/index.go
 	go build -buildmode=plugin -o dist/data/plugin/backend_backblaze.so server/plugin/plg_backend_backblaze/index.go
+	go build -buildmode=plugin -o dist/data/plugin/security_scanner.so server/plugin/plg_security_scanner/index.go

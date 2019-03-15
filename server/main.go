@@ -108,6 +108,12 @@ func Init(a *App) {
 	})
 	middlewares = []Middleware{ IndexHeaders, SecureHeaders }
 	r.HandleFunc("/about",                     NewMiddlewareChain(AboutHandler,                      middlewares, *a)).Methods("GET")
+	for _, obj := range Hooks.Get.HttpEndpoint() {
+		obj(r)
+	}
+	r.HandleFunc("/robots.txt", func(res http.ResponseWriter, req *http.Request) {
+		res.Write([]byte(""))
+	})
 	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX),          middlewares, *a))).Methods("GET")
 
 	srv := &http.Server{
