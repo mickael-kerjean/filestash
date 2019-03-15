@@ -32,7 +32,7 @@ export class FilesPage extends React.Component {
             this.props.history.push(props.match.url + "/");
         }
         this.state = {
-            path: props.match.url.replace('/files', '') || '/',
+            path: props.match.url.replace('/files', '').replace(/%23/g, "#") || '/',
             sort: settings_get('filespage_sort') || 'type',
             sort_reverse: true,
             show_hidden: settings_get('filespage_show_hidden') || CONFIG["display_hidden"],
@@ -88,7 +88,7 @@ export class FilesPage extends React.Component {
             if(/\/$/.test(path) === false){ path = path + "/"; }
             if(/^\//.test(path) === false){ path = "/"+ path; }
             return path;
-        }(nextProps.match.params.path);
+        }(nextProps.match.params.path.replace(/%23/g, "#"));
         if(new_path !== this.state.path){
             this.setState({path: new_path, loading: true});
             this.onRefresh(new_path);
@@ -117,6 +117,7 @@ export class FilesPage extends React.Component {
                 let files = new Array(res.results.length);
                 for(let i=0,l=res.results.length; i<l; i++){
                     let path = this.state.path+res.results[i].name;
+                    path = path.replace(/#/g, "%23");
                     if(this.state.show_hidden === false && res.results[i].name[0] === "."){
                         continue;
                     }

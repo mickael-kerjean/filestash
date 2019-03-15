@@ -136,7 +136,7 @@ export class PathElementWrapper extends React.Component {
         return (
             <li className={className}>
               <NgIf cond={this.props.isLast === false}>
-                <Link to={"/files" + (this.props.path.full || "/") + location.search} className="label">
+                <Link to={"/files" + ((this.props.path.full || "").replace(/#/g, "%23") || "/") + location.search} className="label">
                   <NgIf cond={this.props.path.minify !== true}>
                     {this.limitSize(this.props.path.label)}
                   </NgIf>

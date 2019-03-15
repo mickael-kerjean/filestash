@@ -31,7 +31,7 @@ export class ViewerPage extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            path: props.match.url.replace('/view', '') + (location.hash || ""),
+            path: props.match.url.replace('/view', '').replace(/%23/g, "#") + (location.hash || ""),
             url: null,
             filename: Path.basename(props.match.url.replace('/view', '')) || 'untitled.dat',
             opener: null,
@@ -45,7 +45,7 @@ export class ViewerPage extends React.Component {
 
     componentWillReceiveProps(props){
         this.setState({
-            path: props.match.url.replace('/view', '') + (location.hash || ""),
+            path: props.match.url.replace('/view', '').replace(/%23/g, "#") + (location.hash || ""),
             filename: Path.basename(props.match.url.replace('/view', '')) || 'untitled.dat'
         }, () => { this.componentDidMount(); });
     }
