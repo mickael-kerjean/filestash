@@ -88,7 +88,7 @@ export class FilesPage extends React.Component {
             if(/\/$/.test(path) === false){ path = path + "/"; }
             if(/^\//.test(path) === false){ path = "/"+ path; }
             return path;
-        }(nextProps.match.params.path.replace(/%23/g, "#"));
+        }((nextProps.match.params.path || "").replace(/%23/g, "#"));
         if(new_path !== this.state.path){
             this.setState({path: new_path, loading: true});
             this.onRefresh(new_path);
