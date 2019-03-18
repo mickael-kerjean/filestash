@@ -6,16 +6,14 @@ import { Config } from "./model/";
 
 import './assets/css/reset.scss';
 
-const $loader = document.querySelector(".index-loader");
-const $loader_guy = $loader.querySelector(".guy");
-const $loader_particules = $loader.querySelector(".longfazers");
-
 window.addEventListener("DOMContentLoaded", () => {
     const className = 'ontouchstart' in window ? 'touch-yes' : 'touch-no';
     document.body.classList.add(className);
 
+    const $loader = document.querySelector("#nyan_loader");
+
     function render(){
-        ReactDOM.render(<Router/>, document.getElementById('main'));
+        ReactDOM.render(<Router/>, document.getElementById("main"));
         return Promise.resolve();
     };
     function waitFor(n){
@@ -27,41 +25,9 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     function removeLoaderWithAnimation(){
         if(!$loader) return Promise.resolve();
-        if(!$loader.animate){
-            $loader.remove();
-            return Promise.resolve();
-        }
-        const moveTheGuy = () => {
-            return new Promise((done) => {
-                $loader_guy.animate([
-                    { left: "40%", opacity: 1 },
-                    { left: "110%", opacity: 0.5 }
-                ], {
-                    easing: "ease-out",
-                    duration: 1000,
-                    iterations: 1,
-                }).onfinish = () => {
-                    done();
-                };
-            });
-        };
-        const FadeParticules = () => {
-            return new Promise((done) => {
-                $loader_particules.animate([
-                    { opacity: 1 },
-                    { opacity: 0 }
-                ], {
-                    duration: 500,
-                    iterations: 1,
-                }).onfinish = () => {
-                    $loader_particules.remove();
-                    done();
-                };
-            });
-        };
-
-        return Promise.all([moveTheGuy(), FadeParticules()]).then(() => {
-            $loader.remove();
+        $loader.classList.add("done");
+        return new Promise((done) => {
+            window.setTimeout(() => requestAnimationFrame(done), 500);
         });
     }
     function removeLoader(){

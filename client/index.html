@@ -1,306 +1,357 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Filestash</title>
-        <meta name="author" content="Mickael Kerjean <mickael@kerjean.me>">
-        <meta name="owner" content="http://github.com/mickael-kerjean/filestash">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-        <link rel="manifest" href="/assets/manifest.json">
-        <meta content="yes" name="apple-mobile-web-app-capable">
-        <meta content="Filestash" name="apple-mobile-web-app-title">
-        <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
+  <head>
+    <meta charset="utf-8">
+    <title>Filestash</title>
+    <meta name="author" content="Mickael Kerjean <mickael@kerjean.me>">
+    <meta name="owner" content="http://github.com/mickael-kerjean/filestash">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="manifest" href="/assets/manifest.json">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="Filestash" name="apple-mobile-web-app-title">
+    <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
 
-        <link rel="apple-touch-icon" sizes="180x180" href="/assets/logo/apple-touch-icon.png">
-        <link rel="icon" type="image/png" href="/assets/logo/favicon-32x32.png" sizes="32x32">
-        <link rel="icon" type="image/png" href="/assets/logo/favicon-16x16.png" sizes="16x16">
-        <link rel="icon" type="image/x-icon" href="/assets/logo/favicon.ico" />
-        <link rel="mask-icon" href="/assets/logo/safari-pinned-tab.svg" color="#5bbad5">
-        <meta name="msapplication-TileColor" content="#2b5797">
-        <meta name="theme-color" content="#f2f3f5">
+    <meta name="msapplication-TileColor" content="#2b5797">
+    <meta name="theme-color" content="#f2f3f5">
 
-        <meta name="description" content="browse your files in the cloud">
-    </head>
-    <body>
-      <div id="main" style="height: 100%">
-        <style>
-          html{ background: #f2f3f5; color: #375160; }
-          noscript div{ text-align:center;font-family:monospace;margin-top:5%;font-size:15px; }
-        </style>
-        <script>
-          if(location.pathname == "/" || location.pathname == "/login"){
-            $style = document.querySelector("style");
-            $style.innerText = $style.innerText.replace("#f2f3f5", "#9AD1ED")
-          }
-          window.initTime = new Date();
-          window.setTimeout(function(){
-            var $loader = document.querySelector(".index-loader");
-            if($loader) $loader.removeAttribute("style");
-          }, 2000);
-        </script>
-        <div class="index-loader" style="display:none">
-          <div class="guy">
-            <span>
-              <span></span>
-              <span></span>
-              <span></span>
-              <span></span>
-            </span>
-            <div class="base">
-              <span></span>
-              <div class="face"></div>
+    <meta name="description" content="browse your files in the cloud">
+  </head>
+  <body>
+    <div id="main" style="height: 100%">
+      <style>
+
+       html{ background: #f2f3f5; color: #375160; }
+       .background-color{ background: #f2f3f5; }
+       noscript div{ text-align:center;font-family:monospace;margin-top:5%;font-size:15px; }
+      </style>
+      <script>
+       if(location.pathname == "/" || location.pathname == "/login"){
+           $style = document.querySelector("style");
+           $style.innerText = $style.innerText.replace(/f2f3f5/g, "9AD1ED")
+       }
+       window.initTime = new Date();
+      </script>
+      <style>
+       #nyan_loader{ max-width: 100%; overflow: hidden; }
+       #nyan_loader #cat{
+           position: absolute;
+           top: 50%;
+           left: 0%;
+           margin-left: -250px;
+           margin-top: -125px;
+           width: 100%;
+           height: 150px;
+       }
+       #nyan_loader.loading #cat{ left: 20%; left: calc(50% + 125px); transition: left 4s ease-out; }
+       #nyan_loader.loading.done #cat { left: 100%; left: calc(100% + 250px); transition: left 0.5s linear; }
+
+       #nyan_loader #cat svg{
+           height: 160px;
+           width: 250px;
+           position: absolute;
+       }
+       #nyan_loader #cat #hide-behind{
+           position: absolute;
+           top: 0;
+           left: 55px;
+           bottom: 0;
+           right: -250px;
+       }
+
+       /* RAINBOW */
+       #nyan_loader #rainbows{
+           position: absolute;
+           top: 50%;
+           left: 0;
+           overflow: hidden;
+           height: 145px;
+           margin-top: -110px;
+           width: 100%;
+       }
+       #nyan_loader #rainbows .wrapper{
+           width: 10000px;
+       }
+       #nyan_loader #rainbows .wrapper .rainbow {
+           z-index: -1;
+           font-size: 16em;
+           float: left;
+           position: relative;
+       }
+       #nyan_loader #rainbows .wrapper .rainbow .wave {
+           height: 20px;
+           width: 55px;
+       }
+       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-1 { background: #ff0000; }
+       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-2 { background: #ff9900; }
+       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-3 { background: #ffff00; }
+       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-4 { background: #33ff00; }
+       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-5 { background: #0099ff; }
+       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-6 { background: #6633ff; }
+
+       #nyan_loader #rainbows .wrapper .rainbow.frame-1{ top: 0px; animation: rainbow .6s linear infinite; animation-delay: 0s;}
+       #nyan_loader #rainbows .wrapper .rainbow.frame-2{ top: 0px; animation: rainbow .6s linear infinite; animation-delay: 0.1s;}
+       #nyan_loader #rainbows .wrapper .rainbow.frame-3{ top: 0px; animation: rainbow .6s  linear infinite; animation-delay: 0.2s;}
+       #nyan_loader #rainbows .wrapper .rainbow.frame-4{ top: 0px; animation: rainbow .6s linear infinite; animation-delay: 0.3s;}
+       #nyan_loader #rainbows .wrapper .rainbow.frame-5{ top: 0px; animation: rainbow .6s linear infinite; animation-delay: 0.4s;}
+       #nyan_loader #rainbows .wrapper .rainbow.frame-6{ top: 0px; animation: rainbow .6s linear infinite; animation-delay: 0.5s;}
+       @keyframes rainbow {
+           0%{ top: 0px; }
+           50%{ top: 15px; }
+           100%{ top: 0px; }
+       }
+
+       /* NYAN CAT ANIMATION */
+       @keyframes nyan_all {
+           0%{ transform: translateY(0px); }
+           33%{ transform: translateY(0px); }
+           34%{ transform: translateY(1px); }
+           100%{ transform: translateY(1px); }
+       } #nyan_loader svg g#nyan_all{ animation: nyan_all 0.40s linear infinite; }
+       @keyframes nyan_head {
+           0%{ transform: translateX(0px) translateY(0px); }
+           16%{ transform: translateX(0px) translateY(0px); }
+           17%{ transform: translateX(1px) translateY(0px); }
+           66%{ transform: translateX(1px) translateY(0px); }
+           67%{ transform: translateX(0px) translateY(0px); }
+           83%{ transform: translateX(0px) translateY(0px); }
+           84%{ transform: translateX(0px) translateY(-1px); }
+           100%{ transform: translateX(0px) translateY(-1px); }
+       } #nyan_loader svg g#nyan_head{ animation: nyan_head 0.4s linear infinite; }
+       @keyframes nyan_walk {
+           0%{ transform: translateX(0px); }
+           16%{ transform: translateX(0px); }
+           17%{ transform: translateX(1px); }
+           33%{ transform: translateX(1px); }
+           34%{ transform: translateX(2px); }
+           50%{ transform: translateX(2px); }
+           51%{ transform: translateX(1px); }
+           100%{ transform: translateX(0px); }
+       } #nyan_loader svg g#nyan_feet{ animation: nyan_walk 0.5s linear infinite; }
+       @keyframes nyan_tail {
+           0%{ transform: rotate(0); }
+           16%{ transform: rotate(0); }
+           17%{ transform: rotate(-5deg); }
+           33%{ transform: rotate(-5deg); }
+           34%{ transform: rotate(-10deg); }
+           49%{ transform: rotate(-10deg); }
+           50%{ transform: rotate(-20deg); }
+           66%{ transform: rotate(-20deg); }
+           67%{ transform: rotate(-10deg); }
+           83%{ transform: rotate(-10deg); }
+           84%{ transform: rotate(-5deg); }
+           99%{ transform: rotate(-5deg); }
+           100%{ transform: rotate(0deg); }
+       } #nyan_loader svg g#nyan_tail{ animation: nyan_tail 0.5s linear infinite; transform-origin: 4px 8px; }
+      </style>
+      <div id="nyan_loader">
+        <div id="cat">
+          <div id="hide-behind" class="background-color"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="32" height="21" preserveAspectRatio="xMinYMin meet" viewBox="0 0 33 21">
+            <g id="nyan_all">
+              <g id="nyan_feet">
+                <g>
+                  <path d="m 4,20 0,-3 1,0 0,-1 4,0 0,3 -1,0 0,1 z" style="fill:#000000;"></path>
+                  <path d="m 5,19 0,-2 3,0 0,1 -1,0 0,1 z" style="fill:#999999;"></path>
+                  <path d="m 10,20 0,-2 4,0 0,1 -1,0 0,1 z" style="fill:#000000;"></path>
+                  <path d="m 11,18 2,0 0,1 -2,0 z" style="fill:#999999;"></path>
+                </g>
+                <g transform="matrix(-1,0,0,1,32,0)">
+                  <path d="m 10,20 0,-2 4,0 0,1 -1,0 0,1 z" style="fill:#000000;"></path>
+                  <path d="m 11,18 2,0 0,1 -2,0 z" style="fill:#999999;"></path>
+                  <path d="m 4,20 0,-3 1,0 0,-1 4,0 0,3 -1,0 0,1 z" style="fill:#000000;"></path>
+                  <path d="m 5,19 0,-2 3,0 0,1 -1,0 0,1 z" style="fill:#999999;"></path>
+                </g>
+              </g>
+              <g id="nyan_tail">
+                <path d="M 0,10 0,7 4,7 4,8 5,8 5,9 6,9 6,14 5,14 5,13 3,13 3,12 2,12 2,11 1,11 1,10 z" style="fill:#000000;" />
+                <path d="m 1,9 0,-1 2,0 0,1 1,0 0,1 1,0 0,1 1,0 0,1 -2,0 0,-1 -1,0 0,-1 -1,0 0,-1 z" style="fill:#999999;" />
+              </g>
+              <g id="nyan_body">
+                <path d="m 7,1 19,0 0,16 -19,0 z" style="fill:#ffcc99;" />
+                <path d="m 8,14 0,-10 1,0 0,-1 1,0 0,-1 13,0 0,1 1,0 0,1 1,0 0,10 -1,0 0,1 -1,0 0,1 -13,0 0,-1 -1,0 0,-1 z" style="fill:#ff99ff;" />
+                <path d="m 22,5 1,0 0,1 -1,0 z m -4,-2 1,0 0,1 -1,0 z m -3,0 1,0 0,1 -1,0 z m -1,4 1,0 0,1 -1,0 z m 1,3 1,0 0,1 -1,0 z m -2,3 1,0 0,1 -1,0 z m -2,-4 1,0 0,1 -1,0 z m -2,2 1,0 0,1 -1,0 z m 1,3 1,0 0,1 -1,0 z m 0,-10 1,0 0,1 -1,0 z" style="fill:#ff3399;" />
+                <path d="m 8,17 17,0 0,1 -17,0 z m 0,-17 17,0 0,1 -17,0 z m 18,16 0,-14 1,0 0,14 z m -20,0 0,-14 1,0 0,14 z m 1,0 1,0 0,1 -1,0 z m 0,-15 1,0 0,1 -1,0 z m 18,0 1,0 0,1 -1,0 z m 0,15 1,0 0,1 -1,0 z" style="fill:#000000;" />
+              </g>
+              <g id="nyan_head">
+                <path d="m 17,15 0,-5 1,0 0,-4 2,0 0,1 1,0 0,1 1,0 0,1 4,0 0,-1 1,0 0,-1 1,0 0,-1 2,0 0,4 1,0 0,5 -1,0 0,1 -1,0 0,1 -10,0 0,-1 -1,0 0,-1 z" style="fill:#999999;fill-opacity:1;stroke:none" />
+                <path d="m 29,16 1,0 0,1 -1,0 z m 1,-1 1,0 0,1 -1,0 z m 1,-5 1,0 0,5 -1,0 z m -1,-4 1,0 0,4 -1,0 z m -2,-1 2,0 0,1 -2,0 z m -6,3 4,0 0,1 -4,0 z m -4,-3 2,0 0,1 -2,0 z m -1,1 1,0 0,4 -1,0 z m -1,4 1,0 0,5 -1,0 z m 11,-4 1,0 0,1 -1,0 z m -1,1 1,0 0,1 -1,0 z m -5,0 1,0 0,1 -1,0 z m -1,-1 1,0 0,1 -1,0 z m -1,11 10,0 0,1 -10,0 z m -1,-1 1,0 0,1 -1,0 z m -1,-1 1,0 0,1 -1,0 z" style="fill:#000000;fill-opacity:1;stroke:none" />
+                <path d="m 18,13 2,0 0,2 -2,0 z" style="fill:#ff9999;fill-opacity:1;stroke:none" />
+                <path d="m 29,13 2,0 0,2 -2,0 z" style="fill:#ff9999;fill-opacity:1;stroke:none" />
+                <path d="m 21,16 0,-2 1,0 0,1 2,0 0,-1 1,0 0,1 2,0 0,-1 1,0 0,2 z" style="fill:#000000;fill-opacity:1;stroke:none" />
+                <path d="m 25,12 1,0 0,1 -1,0 z" style="fill:#000000;fill-opacity:1;stroke:none" />
+                <g>
+                  <path d="m 27,13 0,-1 1,0 0,-1 1,0 0,2 z" style="fill:#000000;fill-opacity:1;stroke:none" />
+                  <path d="m 27,11 1,0 0,1 -1,0 z" style="fill:#ffffff;fill-opacity:1;stroke:none" />
+                  <path d="m 20,13 0,-1 1,0 0,-1 1,0 0,2 z" style="fill:#000000;fill-opacity:1;stroke:none" />
+                  <path d="m 20,11 1,0 0,1 -1,0 z" style="fill:#ffffff;fill-opacity:1;stroke:none" />
+                </g>
+              </g>
+            </g>
+          </svg>
+        </div>
+        <div id="rainbows">
+          <div class="wrapper">
+            <div class="rainbow frame-1">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-2">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-3">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-4">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-5">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-6">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-1">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-2">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-3">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-4">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-5">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-6">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-1">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-2">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-3">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-4">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-5">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-6">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-1">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-2">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-3">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-4">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-5">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-6">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-1">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-2">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-3">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-4">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-5">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-6">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-1">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-2">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-3">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-4">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-5">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            </div>
+            <div class="rainbow frame-6">
+              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
+              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
             </div>
           </div>
-          <div class="longfazers">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
         </div>
-        <style>
-.guy {
-  position: absolute;
-  top: 50%;
-  margin-left: -50px;
-  left: 40%;
-  animation: speeder 1s linear infinite;
-}
-.guy > span {
-  height: 5px;
-  width: 35px;
-  background: #626466;
-  position: absolute;
-  top: -19px;
-  left: 60px;
-  border-radius: 2px 10px 1px 0;
-}
-
-.base span {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-top: 6px solid transparent;
-  border-right: 100px solid #626466;
-  border-bottom: 6px solid transparent;
-}
-.base span:before {
-  content: "";
-  height: 22px;
-  width: 22px;
-  border-radius: 50%;
-  background: #626466;
-  position: absolute;
-  right: -110px;
-  top: -16px;
-}
-.base span:after {
-  content: "";
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-top: 0 solid transparent;
-  border-right: 55px solid #626466;
-  border-bottom: 16px solid transparent;
-  top: -16px;
-  right: -98px;
-}
-
-.face {
-  position: absolute;
-  height: 12px;
-  width: 20px;
-  background: #626466;
-  border-radius: 20px 20px 0 0;
-  transform: rotate(-40deg);
-  right: -125px;
-  top: -15px;
-}
-.face:after {
-  content: "";
-  height: 12px;
-  width: 12px;
-  background: #626466;
-  right: 4px;
-  top: 7px;
-  position: absolute;
-  transform: rotate(40deg);
-  transform-origin: 50% 50%;
-  border-radius: 0 0 0 2px;
-}
-
-.guy > span > span:nth-child(1),
-.guy > span > span:nth-child(2),
-.guy > span > span:nth-child(3),
-.guy > span > span:nth-child(4) {
-  width: 30px;
-  height: 1px;
-  background: #626466;
-  position: absolute;
-  animation: fazer1 .2s linear infinite;
-}
-
-.guy > span > span:nth-child(2) {
-  top: 3px;
-  animation: fazer2 .4s linear infinite;
-}
-
-.guy > span > span:nth-child(3) {
-  top: 1px;
-  animation: fazer3 .4s linear infinite;
-  animation-delay: -1s;
-}
-
-.guy > span > span:nth-child(4) {
-  top: 4px;
-  animation: fazer4 1s linear infinite;
-  animation-delay: -1s;
-}
-
-@keyframes fazer1 {
-  0% {
-    left: 0;
-  }
-  100% {
-    left: -80px;
-    opacity: 0;
-  }
-}
-@keyframes fazer2 {
-  0% {
-    left: 0;
-  }
-  100% {
-    left: -100px;
-    opacity: 0;
-  }
-}
-@keyframes fazer3 {
-  0% {
-    left: 0;
-  }
-  100% {
-    left: -50px;
-    opacity: 0;
-  }
-}
-@keyframes fazer4 {
-  0% {
-    left: 0;
-  }
-  100% {
-    left: -150px;
-    opacity: 0;
-  }
-}
-@keyframes speeder {
-  0% {
-    transform: translate(1px, 1px) rotate(0deg);
-  }
-  10% {
-    transform: translate(-1px, -1px) rotate(-1deg);
-  }
-  20% {
-    transform: translate(-2px, 0px) rotate(1deg);
-  }
-  30% {
-    transform: translate(1px, 2px) rotate(0deg);
-  }
-  40% {
-    transform: translate(1px, -1px) rotate(1deg);
-  }
-  50% {
-    transform: translate(-1px, 3px) rotate(-1deg);
-  }
-  60% {
-    transform: translate(-1px, 1px) rotate(0deg);
-  }
-  70% {
-    transform: translate(3px, 1px) rotate(-1deg);
-  }
-  80% {
-    transform: translate(-2px, -1px) rotate(1deg);
-  }
-  90% {
-    transform: translate(2px, 1px) rotate(0deg);
-  }
-}
-.longfazers {
-  overflow: hidden;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-.longfazers span {
-  position: absolute;
-  height: 2px;
-  width: 20%;
-  background: #626466;
-}
-.longfazers span:nth-child(1) {
-  top: 20%;
-  animation: lf .6s linear infinite;
-  animation-delay: -5s;
-}
-.longfazers span:nth-child(2) {
-  top: 40%;
-  animation: lf2 .8s linear infinite;
-  animation-delay: -1s;
-}
-.longfazers span:nth-child(3) {
-  top: 60%;
-  animation: lf3 .6s linear infinite;
-}
-.longfazers span:nth-child(4) {
-  top: 80%;
-  animation: lf4 .5s linear infinite;
-  animation-delay: -3s;
-}
-
-@keyframes lf {
-  0% {
-    left: 200%;
-  }
-  100% {
-    left: -200%;
-    opacity: 0;
-  }
-}
-@keyframes lf2 {
-  0% {
-    left: 200%;
-  }
-  100% {
-    left: -200%;
-    opacity: 0;
-  }
-}
-@keyframes lf3 {
-  0% {
-    left: 200%;
-  }
-  100% {
-    left: -100%;
-    opacity: 0;
-  }
-}
-@keyframes lf4 {
-  0% {
-    left: 200%;
-  }
-  100% {
-    left: -100%;
-    opacity: 0;
-  }
-}
-        </style>
-        <noscript>
-          <div>
-            <h2>Error: Javascript is off</h2>
-            <p>Filestash is a full fledge application that needs Javascript to run</p>
-          </div>
-        </noscript>
       </div>
-    </body>
+      <script>
+       window.setTimeout(function(){
+           var $loader = document.querySelector("#nyan_loader");
+           if($loader) $loader.classList.add("loading");
+       }, 2000);
+      </script>
+    </div>
+    <noscript>
+      <div>
+        <h2>Error: Javascript is off</h2>
+        <p>Filestash is a full fledge application that needs Javascript to run</p>
+      </div>
+    </noscript>
+    </div>
+  </body>
 </html>
