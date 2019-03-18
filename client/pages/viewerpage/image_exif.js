@@ -88,7 +88,7 @@ class Exif extends React.Component {
                     metadata['PixelXDimension'],
                     metadata['PixelYDimension']
                 ] || null,
-                all: metadata
+                all: Object.keys(metadata).length === 0 ? null : metadata
             });
         });
 
