@@ -87,6 +87,7 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 				<d:displayname/>
 				<d:resourcetype/>
 				<d:getlastmodified/>
+				<d:getcontentlength/>
 			</d:prop>
 		</d:propfind>`
 	res, err := w.request("PROPFIND", w.params.url+encodeURL(path), strings.NewReader(query), func(req *http.Request) {
@@ -118,7 +119,6 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 			if i > 0 {
 				break
 			}
-			t, _ := time.Parse(time.RFC1123Z, prop.Modified)
 			files = append(files, File{
 				FName: func(p string) string {
 					name := filepath.Base(p)
@@ -131,7 +131,13 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 					}
 					return "file"
 				}(prop.Type.Local),
-				FTime: t.UnixNano() / 1000,
+				FTime: func() int64 {
+					t, err := time.Parse(time.RFC1123, prop.Modified)
+					if err != nil {
+						return 0
+					}
+					return t.Unix()
+				}(),
 				FSize: int64(prop.Size),
 			})
 		}

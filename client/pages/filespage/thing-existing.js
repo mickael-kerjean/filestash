@@ -341,7 +341,7 @@ const DateTime = (props) => {
     function displayTime(timestamp){
         if(timestamp){
             let t = new Date(timestamp);
-            return t.getFullYear() + "-" + leftPad(t.getMonth().toString(), 2) + "-" + leftPad(t.getDate().toString(), 2);
+            return t.getFullYear() + "-" + leftPad((t.getMonth() + 1).toString(), 2) + "-" + leftPad(t.getDate().toString(), 2);
         }else{
             return '';
         }
@@ -378,7 +378,7 @@ const FileSize = (props) => {
 
     return (
         <NgIf type="inline" className="component_filesize" cond={props.type === 'file'}>
-          <span>{displaySize(props.size)}</span>
+          <span> {displaySize(props.size)}</span>
         </NgIf>
     );
 };
