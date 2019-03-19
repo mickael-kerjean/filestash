@@ -29,6 +29,31 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 			http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
 			return
 		}
+		if ua := req.Header.Get("User-Agent"); strings.Contains(ua, "MSIE ") {
+			res.WriteHeader(http.StatusBadRequest)
+			res.Write([]byte(`<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <style>
+      html { background: #f4f4f4; color: #455164; font-size: 16px; font-family: -apple-system,system-ui,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif; }
+      body { text-align: center; padding-top: 50px; text-align: center; }
+      h1 { font-weight: 200; line-height: 28px; font-size: 32px; }
+      p { opacity: 0.7; }
+    </style>
+  </head>
+  <body>
+    <h1>Internet explorer is not yet supported</h1>
+    <p>
+      To provide the best possible experience for everyone else, we don't support IE at this time. <br>
+      Use either Chromium, Firefox or Chrome
+    </p>
+  </body>
+</html>`))
+			return
+		}
 		srcPath := GetAbsolutePath(_path)
 		ServeFile(res, req, srcPath)
 	}
