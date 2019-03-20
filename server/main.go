@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/ctrl"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"runtime/debug"
 	"strconv"
+	"time"
 )
 
 func main() {
@@ -116,14 +118,32 @@ func Init(a *App) {
 	})
 	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX),          middlewares, *a))).Methods("GET")
 
+	port := Config.Get("general.port").Int()
 	srv := &http.Server{
-		Addr:    ":" + strconv.Itoa(Config.Get("general.port").Int()),
+		Addr:    ":" + strconv.Itoa(port),
 		Handler: r,
 	}
-
-	Log.Stdout("STARTING SERVER")
+	Log.Stdout("Filestash %s: starting", APP_VERSION)
+	go ensureAppHasBooted(fmt.Sprintf("http://localhost:%d/about", port), fmt.Sprintf("listening on :%d", port))
 	if err := srv.ListenAndServe(); err != nil {
-		Log.Stdout("Server start: %v", err)
+		Log.Stdout("error: %v", err)
 		return
+	}
+}
+
+
+func ensureAppHasBooted(address string, message string) {
+	for {
+		time.Sleep(100 * time.Millisecond)
+		res, err := http.Get(address)
+		if err != nil {
+			continue
+		}
+		res.Body.Close()
+		if res.StatusCode != http.StatusOK {
+			continue
+		}
+		Log.Stdout(message)
+		break
 	}
 }
