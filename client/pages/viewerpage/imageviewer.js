@@ -20,7 +20,8 @@ export class ImageViewer extends React.Component{
             preload: null,
             _: null,
             show_exif: false,
-            is_loaded: false
+            is_loaded: false,
+            draggable: true,
         };
         this.shortcut= (e) => {
             if(e.keyCode === 27){ this.setState({show_exif: false}); }
@@ -89,7 +90,7 @@ export class ImageViewer extends React.Component{
               </MenuBar>
               <div ref="$container" className={"component_image_container "+(document.webkitIsFullScreen || document.mozFullScreen ? "fullscreen" : "")}>
                 <div className="images_wrapper">
-                  <ImageFancy onLoad={() => this.setState({is_loaded: true})} url={this.props.data} />
+                  <ImageFancy draggable={this.state.draggable} onLoad={() => this.setState({is_loaded: true})} url={this.props.data} />
                 </div>
                 <div className={"images_aside scroll-y"+(this.state.show_exif ? " open": "")}>
                   <div className="header">
@@ -105,6 +106,7 @@ export class ImageViewer extends React.Component{
                 <Pager
                   type={["image"]}
                   path={this.props.path}
+                  pageChange={(files) => this.setState({draggable: files.length > 1 ? true : false})}
                   next={(e) => this.setState({preload: e})} />
               </div>
 
@@ -248,7 +250,7 @@ class ImageFancy extends React.Component {
                   onTouchEnd={this.imageDragEnd.bind(this)}
                   onDrag={this.imageDrag.bind(this)}
                   onTouchMove={this.imageDrag.bind(this)}
-                  draggable="true" />
+                  draggable={this.props.draggable} />
               </div>
             </ReactCSSTransitionGroup>
         );

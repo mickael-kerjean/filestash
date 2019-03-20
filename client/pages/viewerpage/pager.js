@@ -18,13 +18,13 @@ export class Pager extends React.Component {
             files: [],
             n: 0
         };
-        this.navigate = this.navigate.bind(this);
-        this.onSubmitDebounced = debounce(this.onSubmit.bind(this), 1000);
+        this.onKeyPress = this.onKeyPress.bind(this);
+        this.onSubmitDebounced = debounce(this.onFormSubmit.bind(this), 1000);
     }
 
     componentDidMount(){
         this.setNavigation(this.props);
-        window.addEventListener("keyup", this.navigate);
+        window.addEventListener("keyup", this.onKeyPress);
         this.props.subscribe('media::next', () => {
             this.navigatePage(this.calculateNextPageNumber(this.state.n));
         });
@@ -40,28 +40,20 @@ export class Pager extends React.Component {
     }
 
     componentWillUnmount(){
-        window.removeEventListener("keyup", this.navigate);
+        window.removeEventListener("keyup", this.onKeyPress);
         this.props.unsubscribe('media::next');
         this.props.unsubscribe('media::previous');
-    }
-
-    navigate(e){
-        if(e.target.classList.contains("prevent")) return;
-        if(e.keyCode === 39){
-            this.navigatePage(this.calculateNextPageNumber(this.state.n));
-        }else if(e.keyCode === 37){
-            this.navigatePage(this.calculatePrevPageNumber(this.state.n));
-        }
+        this.hasUnmounted = true;
     }
 
     navigatePage(n){
         if(this.state.files[n]){
-            const url = appendShareToUrl(this.state.files[n].link)
-            this.props.history.push(url);
+            const url = appendShareToUrl(this.state.files[n].link);
             if(this.refs.$page) this.refs.$page.blur();
             let preload_index = (n >= this.state.n || (this.state.n === this.state.files.length - 1 && n === 0)) ? this.calculateNextPageNumber(n) : this.calculatePrevPageNumber(n);
             Files.url(this.state.files[preload_index].path)
                 .then((url) => this.props.emit("media::preload", url))
+                .then(() => this.props.history.push(url))
                 .catch(() => {});
         }
     }
@@ -78,12 +70,14 @@ export class Pager extends React.Component {
         Files._ls_from_cache(dirname(props.path))
             .then((f) => {
                 if(f === null) return Promise.reject({code: "NO_DATA"});
-                return Promise.resolve(f)
+                return Promise.resolve(f);
             })
             .then((f) => f.results.filter((file) => (isImage(file.name) || isVideo(file.name)) && file.type === "file"))
             .then((f) => sort(f, settings_get('filespage_sort') || 'type'))
             .then((f) => findPosition(f, basename(props.path)))
             .then((res) => {
+                if(this.hasUnmounted === true) return;
+                if(this.props.pageChange) this.props.pageChange(res[0]);
                 this.setState({
                     files: res[0],
                     n: res[1]
@@ -108,7 +102,7 @@ export class Pager extends React.Component {
         };
     }
 
-    onPageChange(e){
+    onFormInputChange(e){
         let n = parseInt(e.target.value);
         if(Number.isNaN(n)) n = undefined;
         else if(n < 1) n = 0;
@@ -120,9 +114,18 @@ export class Pager extends React.Component {
         }
     }
 
-    onSubmit(e){
+    onFormSubmit(e){
         if(e) e.preventDefault();
         this.navigatePage(this.state.n);
+    }
+
+    onKeyPress(e){
+        if(e.target.classList.contains("prevent")) return;
+        if(e.keyCode === 39){
+            this.navigatePage(this.calculateNextPageNumber(this.state.n));
+        }else if(e.keyCode === 37){
+            this.navigatePage(this.calculatePrevPageNumber(this.state.n));
+        }
     }
 
     render(){
@@ -142,8 +145,8 @@ export class Pager extends React.Component {
                 <NgIf cond={this.state.files.length > 0} type="inline">
                   <Link to={prevLink()}><Icon name="arrow_left_white"/></Link>
                   <label className="pager">
-                    <form onSubmit={this.onSubmit.bind(this)}>
-                      <input ref="$page" className="prevent" type="number" style={{width: inputWidth+"px"}} onChange={this.onPageChange.bind(this)} value={current_page_number} />
+                    <form onSubmit={this.onFormSubmit.bind(this)}>
+                      <input ref="$page" className="prevent" type="number" style={{width: inputWidth+"px"}} onChange={this.onFormInputChange.bind(this)} value={current_page_number} />
                     </form>
                     <span className="separator">/</span>
                     <span ref="$total">{this.state.files.length}</span>
