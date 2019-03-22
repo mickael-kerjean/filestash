@@ -32,6 +32,10 @@ func (a *AppCache) Set(key map[string]string, value interface{}) {
 	a.Cache.Set(fmt.Sprint(hash), value, cache.DefaultExpiration)
 }
 
+func (a *AppCache) SetKey(key string, value interface{}) {
+	a.Cache.Set(key, value, cache.DefaultExpiration)
+}
+
 func (a *AppCache) Del(key map[string]string) {
 	hash, _ := hashstructure.Hash(key, nil)
 	a.Cache.Delete(fmt.Sprint(hash))
@@ -52,6 +56,20 @@ func NewAppCache(arg ...time.Duration) AppCache {
 	}
 	c := AppCache{}
 	c.Cache = cache.New(retention*time.Minute, cleanup*time.Minute)
+	return c
+}
+
+func NewQuickCache(arg ...time.Duration) AppCache {
+	var retention time.Duration = 5
+	var cleanup time.Duration = 10
+	if len(arg) > 0 {
+		retention = arg[0]
+		if len(arg) > 1 {
+			cleanup = arg[1]
+		}
+	}
+	c := AppCache{}
+	c.Cache = cache.New(retention * time.Second, cleanup * time.Second)
 	return c
 }
 

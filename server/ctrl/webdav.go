@@ -42,15 +42,16 @@ func WebdavHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	h := &webdav.Handler{
 		Prefix: "/s/" + ctx.Share.Id,
-		FileSystem: model.NewWebdavFs(ctx.Backend, ctx.Share.Backend, ctx.Share.Path),
-		LockSystem: webdav.NewMemLS(),
+		FileSystem: model.NewWebdavFs(ctx.Backend, ctx.Share.Backend, ctx.Share.Path, req),
+		LockSystem: model.NewWebdavLock(),
 	}
 	h.ServeHTTP(res, req)
 }
 
+
 /*
  * OSX ask for a lot of crap while mounting as a network drive. To avoid wasting resources with such
- * an imbecile and considering we can't even see the source code they are running, the best approach we 
+ * an imbecile and considering we can't even see the source code they are running, the best approach we
  * could go on is: "crap in, crap out" where useless request coming in are identified and answer appropriatly
  */
 func WebdavBlacklist (fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
