@@ -22,15 +22,11 @@ type FileInfo struct {
 	Time int64  `json:"time"`
 }
 
-const FileCachePath = "data/cache/tmp/"
-
 var FileCache AppCache
 
 func init() {
 	FileCache = NewAppCache()
-	cachePath := filepath.Join(GetCurrentDir(), FileCachePath)
-	os.RemoveAll(cachePath)
-	os.MkdirAll(cachePath, os.ModePerm)
+	cachePath := filepath.Join(GetCurrentDir(), TMP_PATH)
 	FileCache.OnEvict(func(key string, value interface{}) {
 		os.RemoveAll(filepath.Join(cachePath, key))
 	})
@@ -39,7 +35,7 @@ func init() {
 func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	if model.CanRead(&ctx) == false {
 		if model.CanUpload(&ctx) == false {
-			SendErrorResult(res, NewError("Permission denied", 403))
+			SendErrorResult(res, ErrPermissionDenied)
 			return
 		}
 		SendSuccessResults(res, make([]FileInfo, 0))
@@ -50,6 +46,7 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	model.SProc.Append(&ctx, path) // ping the search indexer
 
 	entries, err := ctx.Backend.Ls(path)
 	if err != nil {
@@ -179,7 +176,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 				}
 			}
 		} else {
-			tmpPath := filepath.Join(GetCurrentDir(), FileCachePath, "file_" + QuickString(20) + ".dat")
+			tmpPath := filepath.Join(GetCurrentDir(), filepath.Join(GetCurrentDir(), TMP_PATH), "file_" + QuickString(20) + ".dat")
 			f, err := os.OpenFile(tmpPath, os.O_RDWR|os.O_CREATE, os.ModePerm);
 			if err != nil {
 				SendErrorResult(res, err)

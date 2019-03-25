@@ -200,21 +200,18 @@ export class FilesPage extends React.Component {
         if(search.length < 2){
             return;
         }
-
         if(this._search){
             this._search.unsubscribe();
         }
-
-        this._search = onSearch(search, this.state.path).subscribe((message) => {
-            if(message.type === "search::found"){
-                this.setState({
-                    files: message.files || [],
-                    metadata: {
-                        can_rename: false,
-                        can_delete: false
-                    }
-                });
-            }
+        this._search = onSearch(search, this.state.path).subscribe((f) => {
+            this.setState({
+                files: f || [],
+                metadata: {
+                    can_rename: false,
+                    can_delete: false,
+                    can_share: false
+                }
+            });
         });
     }
 

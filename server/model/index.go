@@ -11,13 +11,11 @@ import (
 
 var DB *sql.DB
 
-const DBCachePath = "data/"
-
 func init() {
-	cachePath := filepath.Join(GetCurrentDir(), DBCachePath)
+	cachePath := filepath.Join(GetCurrentDir(), DB_PATH)
 	os.MkdirAll(cachePath, os.ModePerm)
 	var err error
-	if DB, err = sql.Open("sqlite3", cachePath+"/db.sql?_fk=true"); err != nil {
+	if DB, err = sql.Open("sqlite3", cachePath+"/share.sql?_fk=true"); err != nil {
 		return
 	}
 

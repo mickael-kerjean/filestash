@@ -14,13 +14,6 @@ import (
 	"strings"
 )
 
-
-var EXPORT_PATH string
-func init() {
-	EXPORT_PATH = GetAbsolutePath(TMP_PATH)
-	os.RemoveAll(EXPORT_PATH)
-	os.MkdirAll(EXPORT_PATH, os.ModePerm)
-}
 func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 	http.SetCookie(res, &http.Cookie{
 		Name:   "download",
@@ -41,7 +34,7 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var tmpPath   string = EXPORT_PATH + "/export_" + QuickString(10)
+	var tmpPath   string = GetAbsolutePath(TMP_PATH) + "/export_" + QuickString(10)
 	var cmd       *exec.Cmd
 	var emacsPath string
 	var outPath   string

@@ -368,6 +368,13 @@ class FileSystem{
             });
     }
 
+    search(keyword, path = "/"){
+        const url = appendShareToUrl("/api/files/search?path="+prepare(path)+"&q="+encodeURIComponent(keyword))
+        return http_get(url).then((res) => {
+            return res.results
+        });
+    }
+
     frequents(){
         let data = [];
         return cache.fetchAll((value) => {

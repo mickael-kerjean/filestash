@@ -23,7 +23,8 @@ type File struct {
 	FName     string `json:"name"`
 	FType     string `json:"type"`
 	FTime     int64  `json:"time"`
-	FSize     int64  `json:"size"`
+	FSize     int64  `json:"size"`	
+	FPath     string `json:"path,omitempty"`
 	CanRename *bool  `json:"can_rename,omitempty"`
 	CanMove   *bool  `json:"can_move_directory,omitempty"`
 	CanDelete *bool  `json:"can_delete,omitempty"`
