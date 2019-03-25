@@ -236,9 +236,6 @@ export class ShareComponent extends React.Component {
                   <NgIf type="inline" cond={!this.state.show_advanced}><Icon name="arrow_bottom"/></NgIf>
                 </h2>
                 <div className="share--content advanced-settings no-select">
-                  <NgIf cond={false}>
-                    <SuperCheckbox value={this.state.can_manage_own} label="Can Manage Own" onChange={this.updateState.bind(this, 'can_manage_own')}/>
-                  </NgIf>
                   <NgIf cond={this.state.show_advanced === true}>
                     <SuperCheckbox value={datify(this.state.expire)} label="Expiration" placeholder="The link won't be valid after" onChange={this.updateState.bind(this, 'expire')} inputType="date"/>
                     <NgIf cond={this.state.role === "editor" && this.props.type !== "file"}>
@@ -283,10 +280,10 @@ const SuperCheckbox = (props) => {
         </div>
     );
 };
-SuperCheckbox.propTypes = {
-    label: PropTypes.string.isRequired,
-    onChange: PropTypes.func.isRequired,
-    inputType: PropTypes.string,
-    placeholder: PropTypes.string,
-    value: PropTypes.string
-};
+// SuperCheckbox.propTypes = {
+//     label: PropTypes.string.isRequired,
+//     onChange: PropTypes.func.isRequired,
+//     inputType: PropTypes.string,
+//     placeholder: PropTypes.string,
+//     value: PropTypes.boolean
+// };
