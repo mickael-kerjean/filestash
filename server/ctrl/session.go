@@ -85,7 +85,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	}
-	http.SetCookie(res, &cookie)
+	http.SetCookie(res, &cookie)	
 
 	if home == "" {
 		SendSuccessResult(res, nil)

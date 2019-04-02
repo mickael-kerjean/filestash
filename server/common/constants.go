@@ -1,11 +1,18 @@
 package common
 
+import (
+	"os"
+	"path/filepath"
+)
+
 const (
 	APP_VERSION = "v0.4"
-	CONFIG_PATH = "data/config/"
 	PLUGIN_PATH = "data/plugin/"
-	LOG_PATH    = "data/log/"
-	TMP_PATH    = "data/tmp/"
+	LOG_PATH    = "data/state/log/"
+	CONFIG_PATH = "data/state/config/"
+	DB_PATH     = "data/state/db/"
+	FTS_PATH    = "data/state/db/search/"
+	TMP_PATH    = "data/cache/tmp/"	
 	COOKIE_NAME_AUTH = "auth"
 	COOKIE_NAME_PROOF = "proof"
 	COOKIE_NAME_ADMIN = "admin"
@@ -16,6 +23,15 @@ const (
 	URL_SETUP = "/admin/setup"
 )
 
+func init(){	
+	os.MkdirAll(filepath.Join(GetCurrentDir(), LOG_PATH), os.ModePerm)
+	os.MkdirAll(filepath.Join(GetCurrentDir(), FTS_PATH), os.ModePerm)
+	os.MkdirAll(filepath.Join(GetCurrentDir(), CONFIG_PATH), os.ModePerm)
+	os.RemoveAll(filepath.Join(GetCurrentDir(), TMP_PATH))
+	os.MkdirAll(filepath.Join(GetCurrentDir(), TMP_PATH), os.ModePerm)
+}
+
+
 var (
 	BUILD_NUMBER string
 	SECRET_KEY   string
@@ -23,7 +39,6 @@ var (
 	SECRET_KEY_DERIVATE_FOR_ADMIN string
 	SECRET_KEY_DERIVATE_FOR_USER  string
 )
-
 
 /*
  * Improve security by calculating derivative of the secret key to restrict the attack surface

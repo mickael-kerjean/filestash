@@ -79,7 +79,7 @@ func NewQuickCache(arg ...time.Duration) AppCache {
 
 type KeyValueStore struct {
 	cache map[string]interface{}
-	sync.RWMutex
+	sync.Mutex
 }
 
 func NewKeyValueStore() KeyValueStore {
@@ -87,15 +87,16 @@ func NewKeyValueStore() KeyValueStore {
 }
 
 func (this KeyValueStore) Get(key string) interface{} {
-	this.RLock()
-	defer this.RUnlock()
-	return this.cache[key]
+	this.Lock()
+	val := this.cache[key]
+	this.Unlock()
+	return val
 }
 
 func (this *KeyValueStore) Set(key string, value interface{}) {
 	this.Lock()
-	defer this.Unlock()
 	this.cache[key] = value
+	this.Unlock()
 }
 
 func (this *KeyValueStore) Clear() {

@@ -15,7 +15,7 @@ export class NewThing extends React.Component {
             type: null,
             message: null,
             icon: null,
-            search_enabled: "ServiceWorker" in window ? true : false,
+            search_enabled: CONFIG.enable_search || false,
             search_input_visible: false,
             search_keyword: ""
         };

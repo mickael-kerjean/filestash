@@ -39,7 +39,7 @@ export class FileSystem extends React.PureComponent {
                   <p className="empty_image">
                     <Icon name="file"/>
                   </p>
-                  <p>This folder is empty</p>
+                  <p>There is nothing here</p>
                 </NgIf>
               </Container>
             </div>

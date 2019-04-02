@@ -390,15 +390,24 @@ export const onUpload = function(path, e){
 
 const worker = new Worker();
 export const onSearch = (keyword, path = "/") => {
-    worker.postMessage({
-        action: "search::find",
-        path: path,
-        share: currentShare(),
-        keyword: keyword
-    });
+    if(navigator.onLine == false){
+        notify.send("Result aren't complete because you're not online", "info");
+        worker.postMessage({
+            action: "search::find",
+            path: path,
+            share: currentShare(),
+            keyword: keyword
+        });
+        return new Observable((obs) => {
+            worker.onmessage = (m) => {
+                if(m.data.type === "search::found"){
+                    obs.next(m.data && m.data.files || []);
+                }
+            };
+        });
+    }
+
     return new Observable((obs) => {
-        worker.onmessage = (m) => {
-            obs.next(m.data);
-        };
+        Files.search(keyword, path).then((f) => obs.next(f))
     });
 };

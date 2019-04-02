@@ -77,6 +77,8 @@ func Init(a *App) {
 	files.HandleFunc("/rm",     NewMiddlewareChain(FileRm,     middlewares, *a)).Methods("GET")
 	files.HandleFunc("/mkdir",  NewMiddlewareChain(FileMkdir,  middlewares, *a)).Methods("GET")
 	files.HandleFunc("/touch",  NewMiddlewareChain(FileTouch,  middlewares, *a)).Methods("GET")
+	middlewares = []Middleware{ ApiHeaders, SessionStart, LoggedInOnly }
+	files.HandleFunc("/search",  NewMiddlewareChain(FileSearch,  middlewares, *a)).Methods("GET")
 
 	// API for exporter
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, RedirectSharedLoginIfNeeded, SessionStart, LoggedInOnly }

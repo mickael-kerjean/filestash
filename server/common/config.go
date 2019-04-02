@@ -79,12 +79,6 @@ func NewConfiguration() Configuration {
 				Title: "features",
 				Form: []Form{
 					Form{
-						Title: "search",
-						Elmnts: []FormElement{
-							FormElement{Name: "enable", Type: "boolean", Default: true, Description: "Enable/Disable the search feature"},
-						},
-					},
-					Form{
 						Title: "share",
 						Elmnts: []FormElement{
 							FormElement{Name: "enable", Type: "boolean", Default: true, Description: "Enable/Disable the share feature"},

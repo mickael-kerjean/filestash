@@ -12,7 +12,7 @@ import (
 
 var (
 	logpath = filepath.Join(GetCurrentDir(), LOG_PATH, "access.log")
-	cachepath = filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json")
+	configpath = filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json")
 	pluginpath = filepath.Join(GetCurrentDir(), PLUGIN_PATH)
 )
 
@@ -73,7 +73,7 @@ func PrivateConfigHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 func PrivateConfigUpdateHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	b, _ := ioutil.ReadAll(req.Body)
 	b = PrettyPrint(b)
-	file, err := os.Create(cachepath)
+	file, err := os.Create(configpath)
 	if err != nil {
 		SendErrorResult(res, err)
 		return
