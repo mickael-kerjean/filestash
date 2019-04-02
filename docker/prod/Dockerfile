@@ -1,5 +1,5 @@
 FROM alpine:latest
-MAINTAINER mickael.kerjean@gmail.com
+MAINTAINER mickael@kerjean.me
 
 ENV GOPATH /tmp/go
 ENV CGO_LDFLAGS_ALLOW '-fopenmp'
