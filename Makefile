@@ -1,3 +1,6 @@
+all:
+	make build_backend
+
 build_frontend:
 	NODE_ENV=production npm run build
 
