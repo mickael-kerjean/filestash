@@ -3,6 +3,9 @@
     border: none;
     border-radius: 0;
     width: 100%;
+    &[type="checkbox"]{
+        width: initial;
+    }
     display: inline-block;
     font-family: "San Francisco","Roboto","Arial",sans-serif;
     -webkit-text-size-adjust: 100%;
