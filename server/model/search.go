@@ -182,7 +182,10 @@ func Search(app *App, path string, keyword string) []File {
 	}
 
 	rows, err := s.db.Query(
-		"SELECT type, path, size, modTime FROM file WHERE path IN (SELECT path FROM file_index WHERE file_index MATCH ? AND path >= ? AND path < ? ORDER BY rank LIMIT 2000)",
+		"SELECT type, path, size, modTime FROM file WHERE path IN (" +
+		"   SELECT path FROM file_index WHERE file_index MATCH ? AND path > ? AND path < ?" +
+		"   ORDER BY rank LIMIT 2000" +
+		")",
 		regexp.MustCompile(`(\.|\-)`).ReplaceAllString(keyword, "\"$1\""),
 		path, path + "~",
 	)
