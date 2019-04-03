@@ -5,7 +5,7 @@ import HTML5Backend from 'react-dnd-html5-backend-filedrop';
 import './filespage.scss';
 import './error.scss';
 import { Files } from '../model/';
-import { sort, onCreate, onRename, onDelete, onUpload, onSearch } from './filespage.helper';
+import { sort, onCreate, onRename, onDelete, onUpload, onSearch, createLink } from './filespage.helper';
 import { NgIf, Loader, EventReceiver, LoggedInOnly, ErrorPage } from '../components/';
 import { notify, debounce, goToFiles, goToViewer, event, settings_get, settings_put } from '../helpers/';
 import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from './filespage/';
@@ -122,7 +122,7 @@ export class FilesPage extends React.Component {
                         continue;
                     }
                     files[i] = res.results[i];
-                    files[i].link = res.results[i].type === "file" ? "/view"+path : "/files"+path+"/";
+                    files[i].link = createLink(res.results[i].type, res.results[i].path)
                 }
                 this.setState({
                     metadata: res.metadata,
@@ -205,7 +205,10 @@ export class FilesPage extends React.Component {
         }
         this._search = onSearch(search, this.state.path).subscribe((f) => {
             this.setState({
-                files: f || [],
+                files: f.map((f) => {
+                    f.link = createLink(f.type, f.path);
+                    return f;
+                }) || [],
                 metadata: {
                     can_rename: false,
                     can_delete: false,

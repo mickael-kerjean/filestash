@@ -411,3 +411,7 @@ export const onSearch = (keyword, path = "/") => {
         Files.search(keyword, path).then((f) => obs.next(f))
     });
 };
+
+export const createLink = (type, path) => {
+    return type === "file" ? "/view" + path : "/files" + path;
+}
