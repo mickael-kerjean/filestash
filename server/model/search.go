@@ -6,7 +6,9 @@ import (
 	"encoding/base64"
 	"github.com/mattn/go-sqlite3"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/model/formater"
 	"hash/fnv"
+	"io"
 	"math/rand"
 	"path/filepath"
 	"regexp"
@@ -485,7 +487,43 @@ func(this *SearchIndexer) Discover() bool {
 }
 
 func(this *SearchIndexer) Indexing() bool {
-	return false
+	var path string
+	err := this.db.QueryRow(
+		"SELECT path FROM file WHERE (" +
+		"  type = 'file' AND size < 512000 AND filetype = 'txt' AND indexTime IS NULL" +
+		") LIMIT 1;",
+	).Scan(&path)
+	if err != nil {
+		return false
+	}
+	defer this.db.Exec(
+		"UPDATE file SET indexTime = ? WHERE path = ?",
+		time.Now(), path,
+	)
+
+	mime := GetMimeType(path)
+	var reader io.ReadCloser
+	reader, err = this.Backend.Cat(path)
+	if err != nil {
+		return false
+	}
+	defer reader.Close()
+	switch mime {
+	case "text/plain": reader, err = formater.TxtFormater(reader)
+	case "text/org": reader, err = formater.TxtFormater(reader)
+	case "text/markdown": reader, err = formater.TxtFormater(reader)
+	case "application/pdf": reader, err = formater.PdfFormater(reader)
+	case "application/powerpoint": reader, err = formater.OfficeFormater(reader)
+	case "application/vnd.ms-powerpoint": reader, err = formater.OfficeFormater(reader)
+	case "application/word": reader, err = formater.OfficeFormater(reader)
+	case "application/msword": reader, err = formater.OfficeFormater(reader)
+	default: return true
+	}
+	if err != nil {
+		Log.Warning("search::indexing formater_error (%v)", err)
+		return true
+	}
+	return true
 }
 
 func(this SearchIndexer) Bookkeeping() bool {

@@ -67,6 +67,7 @@
 	"m3u8": "application/vnd.apple.mpegurl",
 	"m4a": "audio/x-m4a",
 	"m4v": "video/x-m4v",
+	"md": "text/markdown",
 	"mdc": "image/x-minolta-mdc",
 	"mef": "image/x-mamiya-mef",
 	"mid": "audio/midi",
