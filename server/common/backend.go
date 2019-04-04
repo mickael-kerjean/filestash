@@ -47,8 +47,8 @@ func (b Nothing) Init(params map[string]string, app *App) (IBackend, error) {
 func (b Nothing) Ls(path string) ([]os.FileInfo, error) {
 	return nil, NewError("", 401)
 }
-func (b Nothing) Cat(path string) (io.Reader, error) {
-	return strings.NewReader(""), NewError("", 401)
+func (b Nothing) Cat(path string) (io.ReadCloser, error) {
+	return NewReadCloserFromReader(strings.NewReader("")), NewError("", 401)
 }
 func (b Nothing) Mkdir(path string) error {
 	return NewError("", 401)

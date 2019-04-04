@@ -208,7 +208,7 @@ func (g Git) Ls(path string) ([]os.FileInfo, error) {
 	return file.Readdir(0)
 }
 
-func (g Git) Cat(path string) (io.Reader, error) {
+func (g Git) Cat(path string) (io.ReadCloser, error) {
 	p, err := g.path(path)
 	if err != nil {
 		return nil, NewError(err.Error(), 403)

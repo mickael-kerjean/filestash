@@ -119,7 +119,7 @@ func (d Dropbox) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
-func (d Dropbox) Cat(path string) (io.Reader, error) {
+func (d Dropbox) Cat(path string) (io.ReadCloser, error) {
 	res, err := d.request("POST", "https://content.dropboxapi.com/2/files/download", nil, func(req *http.Request) {
 		arg := struct {
 			Path string `json:"path"`

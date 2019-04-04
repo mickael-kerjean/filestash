@@ -3,6 +3,8 @@ package common
 import (
 	"bytes"
 	"encoding/json"
+	"io"
+	"io/ioutil"
 )
 
 func NewBool(t bool) *bool {
@@ -55,6 +57,14 @@ func NewStringFromInterface(val interface{}) string {
 		return v
 	default: return ""
 	}
+}
+
+func NewReadCloserFromBytes(t []byte) io.ReadCloser {
+	return ioutil.NopCloser(bytes.NewReader(t))
+}
+
+func NewReadCloserFromReader(r io.Reader) io.ReadCloser {
+	return ioutil.NopCloser(r)
 }
 
 func PrettyPrint(json_dirty []byte) []byte {

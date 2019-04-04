@@ -153,7 +153,7 @@ func (this LDAP) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
-func (this LDAP) Cat(path string) (io.Reader, error) {
+func (this LDAP) Cat(path string) (io.ReadCloser, error) {
 	///////////////////////////////////////////////
 	// STEP1: search for the requested entry
 	baseDN := this.pathToBase(path)
@@ -239,7 +239,7 @@ func (this LDAP) Cat(path string) (io.Reader, error) {
 	if err != nil {
 		return nil, err
 	}
-	return strings.NewReader(string(b)), nil
+	return NewReadCloserFromBytes(b), nil
 }
 
 func (this LDAP) Mkdir(path string) error {

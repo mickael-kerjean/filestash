@@ -127,7 +127,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var file io.Reader
+	var file io.ReadCloser
 	var contentLength int64 = -1
 	var needToCreateCache bool = false
 
@@ -184,12 +184,12 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 			}
 			if _, err = io.Copy(f, file); err != nil {
 				f.Close()
-				if obj, ok := file.(io.Closer); ok { obj.Close() }
+				file.Close()
 				SendErrorResult(res, err)
 				return
 			}
 			f.Close()
-			if obj, ok := file.(io.Closer); ok { obj.Close() }
+			file.Close()
 			if f, err = os.OpenFile(tmpPath, os.O_RDONLY, os.ModePerm); err != nil {
 				SendErrorResult(res, err)
 				return
@@ -252,9 +252,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 			io.Copy(res, file)
 		}
 	}
-	if obj, ok := file.(io.Closer); ok {
-		obj.Close()
-	}
+	file.Close()
 }
 
 func FileAccess(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -293,9 +291,7 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 	defer file.Close()
 
 	err = ctx.Backend.Save(path, file)
-	if obj, ok := file.(interface{ Close() error }); ok {
-		obj.Close()
-	}
+	file.Close()
 	if err != nil {
 		SendErrorResult(res, NewError(err.Error(), 403))
 		return

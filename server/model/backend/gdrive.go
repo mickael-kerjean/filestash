@@ -144,7 +144,7 @@ func (g GDrive) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
-func (g GDrive) Cat(path string) (io.Reader, error) {
+func (g GDrive) Cat(path string) (io.ReadCloser, error) {
 	file, err := g.infoPath(path)
 	if err != nil {
 		return nil, err

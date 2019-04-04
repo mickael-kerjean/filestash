@@ -248,9 +248,7 @@ func (this WebdavFile) pull_remote_file() *os.File {
 			io.Copy(f, reader)
 			f.Close()
 			webdavCache.SetKey(this.cache + "_reader", nil)
-			if obj, ok := reader.(interface{ Close() error }); ok {
-				obj.Close()
-			}
+			reader.Close()
 			if f, err = os.OpenFile(filename, os.O_RDONLY, os.ModePerm); err == nil {
 				return f
 			}

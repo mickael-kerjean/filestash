@@ -145,7 +145,7 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
-func (w WebDav) Cat(path string) (io.Reader, error) {
+func (w WebDav) Cat(path string) (io.ReadCloser, error) {
 	res, err := w.request("GET", w.params.url+encodeURL(path), nil, nil)
 	if err != nil {
 		return nil, err

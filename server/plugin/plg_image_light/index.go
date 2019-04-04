@@ -119,7 +119,7 @@ func Init(conf *Configuration) {
 	os.RemoveAll(cachePath)
 	os.MkdirAll(cachePath, os.ModePerm)
 
-	Hooks.Register.ProcessFileContentBeforeSend(func (reader io.Reader, ctx *App, res *http.ResponseWriter, req *http.Request) (io.Reader, error){
+	Hooks.Register.ProcessFileContentBeforeSend(func (reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.Reader, error){
 		if plugin_enable() == false {
 			return reader, nil
 		}
@@ -169,9 +169,7 @@ func Init(conf *Configuration) {
 		}
 		io.Copy(file, reader)
 		file.Close()
-		if obj, ok := reader.(interface{ Close() error }); ok {
-			obj.Close()
-		}
+		reader.Close()
 		defer func() {
 			os.Remove(transform.Temporary)
 		}()

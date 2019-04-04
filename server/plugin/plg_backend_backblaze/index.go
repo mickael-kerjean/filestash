@@ -189,7 +189,7 @@ func (this Backblaze) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
-func (this Backblaze) Cat(path string) (io.Reader, error) {
+func (this Backblaze) Cat(path string) (io.ReadCloser, error) {
 	res, err := this.request(
 		"GET",
 		this.DownloadUrl + "/file" + path + "?Authorization=" + this.Token,
@@ -436,9 +436,7 @@ func (this Backblaze) Save(path string, file io.Reader) error {
 	defer f.Close()
 	defer os.Remove(backblazeFileDetail.path)
 	io.Copy(f, file)
-	if obj, ok := file.(io.Closer); ok {
-		obj.Close()
-	}
+	if obj, ok := file.(io.Closer); ok { obj.Close() }
 	s, err := f.Stat();
 	if err != nil {
 		return err

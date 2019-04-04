@@ -159,7 +159,7 @@ func (b Sftp) Ls(path string) ([]os.FileInfo, error) {
 	return files, b.err(err)
 }
 
-func (b Sftp) Cat(path string) (io.Reader, error) {
+func (b Sftp) Cat(path string) (io.ReadCloser, error) {
 	remoteFile, err := b.SFTPClient.OpenFile(path, os.O_RDONLY)
 	if err != nil {
 		return nil, b.err(err)

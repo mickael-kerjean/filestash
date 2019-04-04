@@ -118,7 +118,7 @@ func (this Dav) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
-func (this Dav) Cat(path string) (io.Reader, error) {
+func (this Dav) Cat(path string) (io.ReadCloser, error) {
 	var uri string
 	var err error
 	var res *http.Response

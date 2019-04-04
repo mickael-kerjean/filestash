@@ -164,7 +164,7 @@ func (s S3Backend) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
-func (s S3Backend) Cat(path string) (io.Reader, error) {
+func (s S3Backend) Cat(path string) (io.ReadCloser, error) {
 	p := s.path(path)
 	client := s3.New(s.createSession(p.bucket))
 

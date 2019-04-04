@@ -28,11 +28,11 @@ var Hooks = struct {
 	Register: Register{},
 }
 
-var process_file_content_before_send []func(io.Reader, *App, *http.ResponseWriter, *http.Request) (io.Reader, error)
-func (this Register) ProcessFileContentBeforeSend(fn func(io.Reader, *App, *http.ResponseWriter, *http.Request) (io.Reader, error)) {
+var process_file_content_before_send []func(io.ReadCloser, *App, *http.ResponseWriter, *http.Request) (io.ReadCloser, error)
+func (this Register) ProcessFileContentBeforeSend(fn func(io.ReadCloser, *App, *http.ResponseWriter, *http.Request) (io.ReadCloser, error)) {
 	process_file_content_before_send = append(process_file_content_before_send, fn)
 }
-func (this Get) ProcessFileContentBeforeSend() []func(io.Reader, *App, *http.ResponseWriter, *http.Request) (io.Reader, error) {
+func (this Get) ProcessFileContentBeforeSend() []func(io.ReadCloser, *App, *http.ResponseWriter, *http.Request) (io.ReadCloser, error) {
 	return process_file_content_before_send
 }
 
