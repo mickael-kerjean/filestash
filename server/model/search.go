@@ -488,20 +488,22 @@ func(this *SearchIndexer) Discover() bool {
 
 func(this *SearchIndexer) Indexing() bool {
 	var path string
-	err := this.db.QueryRow(
+	// find some file that needs to be indexed
+	var err error
+	if err = this.db.QueryRow(
 		"SELECT path FROM file WHERE (" +
 		"  type = 'file' AND size < 512000 AND filetype = 'txt' AND indexTime IS NULL" +
 		") LIMIT 1;",
-	).Scan(&path)
-	if err != nil {
+	).Scan(&path); err != nil {
 		return false
 	}
 	defer this.db.Exec(
 		"UPDATE file SET indexTime = ? WHERE path = ?",
 		time.Now(), path,
 	)
-
 	mime := GetMimeType(path)
+
+	// Index content
 	var reader io.ReadCloser
 	reader, err = this.Backend.Cat(path)
 	if err != nil {
@@ -527,10 +529,6 @@ func(this *SearchIndexer) Indexing() bool {
 }
 
 func(this SearchIndexer) Bookkeeping() bool {
-	return false
-}
-
-func(this SearchIndexer) Consolidate() bool {
 	return false
 }
 
