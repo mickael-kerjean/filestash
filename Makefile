@@ -7,6 +7,9 @@ build_frontend:
 build_backend:
 	PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/ CGO_CFLAGS_ALLOW='-fopenmp' go build --tags "fts5" -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o dist/filestash server/main.go
 
+build_backend_reload:
+	gin --bin dist/filestash-reload --path ./server/ --port 8333 --appPort 8334 run server/main.go
+
 build_plugins:
 	go build -buildmode=plugin -o ./dist/data/plugin/image.so server/plugin/plg_image_light/index.go
 	go build -buildmode=plugin -o ./dist/data/plugin/backend_dav.so server/plugin/plg_backend_dav/index.go
