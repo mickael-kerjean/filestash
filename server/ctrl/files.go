@@ -46,13 +46,13 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
-	model.SProc.Append(&ctx, path) // ping the search indexer
 
 	entries, err := ctx.Backend.Ls(path)
 	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
+	go model.SProc.HintLs(&ctx, path)
 
 	files := make([]FileInfo, len(entries))
 	etagger := fnv.New32()
@@ -154,6 +154,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		if req.Header.Get("range") != "" {
 			needToCreateCache = true
 		}
+		go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
 	}
 
 	// plugin hooks
@@ -296,6 +297,8 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, NewError(err.Error(), 403))
 		return
 	}
+	go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
+	go model.SProc.HintFile(&ctx, path)
 	SendSuccessResult(res, nil)
 }
 
@@ -325,6 +328,9 @@ func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+
+	go model.SProc.HintRm(&ctx, filepath.Dir(from) + "/")
+	go model.SProc.HintLs(&ctx, filepath.Dir(to) + "/")
 	SendSuccessResult(res, nil)
 }
 
@@ -344,6 +350,7 @@ func FileRm(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	model.SProc.HintRm(&ctx, path)
 	SendSuccessResult(res, nil)
 }
 
@@ -364,6 +371,7 @@ func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
 	SendSuccessResult(res, nil)
 }
 
@@ -384,6 +392,7 @@ func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
 	SendSuccessResult(res, nil)
 }
 
