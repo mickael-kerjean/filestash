@@ -441,7 +441,7 @@ class FileSystem{
         return cache.upsert(cache.FILE_PATH, [currentShare(), dirname(path)], function(res){
             if(!res || !res.results){
                 res = {
-                    path: dirname(path),
+                    path: path,
                     results: [],
                     access_count: 0,
                     last_access: null,
@@ -449,7 +449,7 @@ class FileSystem{
                 };
             }
             let file = {
-                path: dirname(path),
+                path: path,
                 name: basename(path),
                 type: /\/$/.test(path) ? 'directory' : 'file'
             };
