@@ -28,6 +28,7 @@ steps:
   - mv server/plugin/plg_* ../plugin
   - go get -t ./server/...
   - go build -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o dist/filestash server/main.go
+  - timeout 1 ./dist/filestash || true
 
 - name: build_js
   image: node:8-alpine
@@ -55,7 +56,7 @@ steps:
   - apk --no-cache add git gcc libc-dev poppler-utils > /dev/null 2>&1
   - cp ../test/assets/* /tmp/
   - go get -t ../test/unit_go/...
-  - go test --tags "fts5" ../test/unit_go/...
+  - go test -v --tags "fts5" ../test/unit_go/...
 
 - name: test_js
   image: node:8-alpine
