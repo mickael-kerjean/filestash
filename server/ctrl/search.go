@@ -4,6 +4,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
+	"strings"
 )
 
 func FileSearch(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -21,5 +22,11 @@ func FileSearch(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}
-	SendSuccessResults(res, model.Search(&ctx, path, q))
+	searchResults := model.Search(&ctx, path, q)
+	for i:=0; i<len(searchResults); i++ {
+		if ctx.Session["path"] != "" {
+			searchResults[i].FPath = "/" + strings.TrimPrefix(searchResults[i].FPath, ctx.Session["path"])
+		}
+	}
+	SendSuccessResults(res, searchResults)
 }
