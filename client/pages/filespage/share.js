@@ -190,11 +190,11 @@ export class ShareComponent extends React.Component {
               <h2>Create a New Link</h2>
 
               <div className="share--content link-type no-select">
-                <NgIf cond={this.props.type !== "file"}>
+                { this.props.type === "file" ? null :
                   <div onClick={this.updateState.bind(this, 'role', 'uploader')} className={this.state.role === "uploader" ? "active" : ""}>
                     Uploader
                   </div>
-                </NgIf>
+                }
                 <div onClick={this.updateState.bind(this, 'role', 'viewer')} className={this.state.role === "viewer" ? "active" : ""}>
                   Viewer
                 </div>
