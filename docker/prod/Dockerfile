@@ -50,8 +50,8 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     go get -v ./server/plugin/... > /dev/null 2>&1 || true && \
     make build_plugins && \
     #################
-    # External dependencies: emacs and pdflatex
-    apk --no-cache add curl emacs texlive zip && \
+    # External dependencies
+    apk --no-cache add curl emacs texlive zip poppler-utils && \
     curl https://raw.githubusercontent.com/mickael-kerjean/filestash_latex/master/wrapfig.sty > /usr/share/texmf-dist/tex/latex/base/wrapfig.sty && \
     curl https://raw.githubusercontent.com/mickael-kerjean/filestash_latex/master/capt-of.sty > /usr/share/texmf-dist/tex/latex/base/capt-of.sty && \
     curl https://raw.githubusercontent.com/mickael-kerjean/filestash_latex/master/sectsty.sty > /usr/share/texmf-dist/tex/latex/base/sectsty.sty && \

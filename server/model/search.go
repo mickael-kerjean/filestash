@@ -334,6 +334,7 @@ func NewSearchIndexer(id string, b IBackend) SearchIndexer {
 		Log.Warning("search::init can't open database (%v)", err)
 		return s
 	}
+	s.DB = db
 	queryDB := func(sqlQuery string) error {
 		stmt, err := db.Prepare(sqlQuery);
 		if err != nil {
@@ -369,7 +370,6 @@ func NewSearchIndexer(id string, b IBackend) SearchIndexer {
 	if queryDB("CREATE TRIGGER IF NOT EXISTS after_file_update_path UPDATE OF path ON file BEGIN UPDATE file_index SET path = new.path, filepath = new.filepath, filetype = new.filetype WHERE path = old.path; END;"); err != nil {
 		return s
 	}
-	s.DB = db
 	return s
 }
 

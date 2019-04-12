@@ -52,10 +52,10 @@ steps:
   image: golang:1.11-alpine
   depends_on: [ test_prepare ]
   commands:
-  - apk --no-cache add git gcc libc-dev > /dev/null 2>&1
+  - apk --no-cache add git gcc libc-dev poppler-utils > /dev/null 2>&1
   - cp ../test/assets/* /tmp/
   - go get -t ../test/unit_go/...
-  - go test --tags "fts5" -v ../test/unit_go/...
+  - go test --tags "fts5" ../test/unit_go/...
 
 - name: test_js
   image: node:8-alpine
