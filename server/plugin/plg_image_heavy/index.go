@@ -13,7 +13,7 @@ func Init(config *Configuration) {
 	plugin_enable := config.Get("feature.image.enable").Default(true).Bool()
 	plugin_thumbsize := uint(config.Get("feature.image.thumbnail_size").Default(300).Int())
 
-	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.Reader, error){
+	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error){
 		if plugin_enable == false {
 			return reader, nil
 		}
@@ -36,6 +36,6 @@ func Init(config *Configuration) {
 		img = resize.Resize(plugin_thumbsize, 0, img, resize.Lanczos3)
 		out := bytes.NewBufferString("")
 		jpeg.Encode(out, img, &jpeg.Options{50})
-		return out, nil
+		return NewReadCloserFromReader(out), nil
 	})
 }

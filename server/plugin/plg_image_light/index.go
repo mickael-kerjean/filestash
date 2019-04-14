@@ -119,7 +119,7 @@ func Init(conf *Configuration) {
 	os.RemoveAll(cachePath)
 	os.MkdirAll(cachePath, os.ModePerm)
 
-	Hooks.Register.ProcessFileContentBeforeSend(func (reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.Reader, error){
+	Hooks.Register.ProcessFileContentBeforeSend(func (reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error){
 		if plugin_enable() == false {
 			return reader, nil
 		}

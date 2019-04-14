@@ -6,7 +6,6 @@ package lib
 import "C"
 
 import (
-	"bytes"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"runtime"
@@ -31,7 +30,7 @@ func init() {
 	LIBVIPS_INSTALLED = true
 }
 
-func CreateThumbnail(t *Transform) (io.Reader, error) {
+func CreateThumbnail(t *Transform) (io.ReadCloser, error) {
 	if LIBVIPS_INSTALLED == false {
 		return nil, NewError("Libvips not installed", 501)
 	}
@@ -45,7 +44,7 @@ func CreateThumbnail(t *Transform) (io.Reader, error) {
 	}
 	buf := C.GoBytes(buffer, C.int(len))
 	C.g_free(C.gpointer(buffer))
-	return bytes.NewReader(buf), nil
+	return NewReadCloserFromBytes(buf), nil
 }
 
 func boolToCInt(val bool) C.int {
