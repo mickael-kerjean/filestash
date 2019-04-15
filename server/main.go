@@ -110,7 +110,7 @@ func Init(a *App) {
 	r.HandleFunc("/favicon.ico", func(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "/assets/logo/favicon.ico", http.StatusMovedPermanently)
 	})
-	middlewares = []Middleware{ IndexHeaders, SecureHeaders }
+	middlewares = []Middleware{ IndexHeaders }
 	r.HandleFunc("/about",                     NewMiddlewareChain(AboutHandler,                      middlewares, *a)).Methods("GET")
 	for _, obj := range Hooks.Get.HttpEndpoint() {
 		obj(r)
@@ -135,14 +135,21 @@ func Init(a *App) {
 
 
 func ensureAppHasBooted(address string, message string) {
+	i := 0
 	for {
-		time.Sleep(100 * time.Millisecond)
+		if i > 10 {
+			Log.Warning("Filestash hasn't boot ?!?")
+			break
+		}
+		time.Sleep(250 * time.Millisecond)
 		res, err := http.Get(address)
 		if err != nil {
+			i += 1
 			continue
 		}
 		res.Body.Close()
 		if res.StatusCode != http.StatusOK {
+			i += 1
 			continue
 		}
 		Log.Stdout(message)
