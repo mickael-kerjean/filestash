@@ -507,6 +507,9 @@ func(this *SearchIndexer) Discover(tx *sql.Tx) bool {
 			}
 		} else {
 			if err = this.dbInsert(doc.Path, f, tx); err != nil {
+				if e, ok := err.(sqlite3.Error); ok && e.Code == sqlite3.ErrConstraint {
+					return false
+				}
 				Log.Warning("search::insert index_error (%v)", err)
 				return false
 			}
