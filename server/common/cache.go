@@ -86,7 +86,7 @@ func NewKeyValueStore() KeyValueStore {
 	return KeyValueStore{ cache: make(map[string]interface{}) }
 }
 
-func (this KeyValueStore) Get(key string) interface{} {
+func (this *KeyValueStore) Get(key string) interface{} {
 	this.Lock()
 	val := this.cache[key]
 	this.Unlock()
@@ -101,6 +101,6 @@ func (this *KeyValueStore) Set(key string, value interface{}) {
 
 func (this *KeyValueStore) Clear() {
 	this.Lock()
-	defer this.Unlock()
 	this.cache = make(map[string]interface{})
+	this.Unlock()
 }
