@@ -6,6 +6,7 @@ import (
 	"time"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var logfile *os.File
@@ -33,7 +34,9 @@ func (l *log) Info(format string, v ...interface{}) {
 	if l.info && l.enable {
 		message := fmt.Sprintf("%s INFO ", l.now())
 		message = fmt.Sprintf(message + format + "\n", v...)
+
 		logfile.WriteString(message)
+		fmt.Printf(strings.ReplaceAll(message, "%", "%%"))
 	}
 }
 
@@ -41,7 +44,9 @@ func (l *log) Warning(format string, v ...interface{}) {
 	if l.warn && l.enable {
 		message := fmt.Sprintf("%s WARN ", l.now())
 		message = fmt.Sprintf(message + format + "\n", v...)
+
 		logfile.WriteString(message)
+		fmt.Printf(strings.ReplaceAll(message, "%", "%%"))
 	}
 }
 
@@ -49,7 +54,9 @@ func (l *log) Error(format string, v ...interface{}) {
 	if l.error && l.enable {
 		message := fmt.Sprintf("%s ERROR ", l.now())
 		message = fmt.Sprintf(message + format + "\n", v...)
+
 		logfile.WriteString(message)
+		fmt.Printf(strings.ReplaceAll(message, "%", "%%"))
 	}
 }
 
@@ -57,17 +64,16 @@ func (l *log) Debug(format string, v ...interface{}) {
 	if l.debug && l.enable {
 		message := fmt.Sprintf("%s DEBUG ", l.now())
 		message = fmt.Sprintf(message + format + "\n", v...)
+
 		logfile.WriteString(message)
+		fmt.Printf(strings.ReplaceAll(message, "%", "%%"))
 	}
 }
 
 func (l *log) Stdout(format string, v ...interface{}) {
-	slog.Printf(format + "\n", v...)
-	if l.enable {
-		message := fmt.Sprintf("%s MESSAGE: ", l.now())
-		message = fmt.Sprintf(message + format + "\n", v...)
-		logfile.WriteString(message)
-	}
+	message := fmt.Sprintf("%s ", l.now())
+	message = fmt.Sprintf(message + format + "\n", v...)
+	fmt.Printf(strings.ReplaceAll(message, "%", "%%"))
 }
 
 func (l *log) now() string {
