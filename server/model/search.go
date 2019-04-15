@@ -352,10 +352,10 @@ func NewSearchIndexer(id string, b IBackend) SearchIndexer {
 	if queryDB("CREATE TABLE IF NOT EXISTS file(path VARCHAR(1024) PRIMARY KEY, filename VARCHAR(64), filetype VARCHAR(16), type VARCHAR(16), parent VARCHAR(1024), size INTEGER, modTime timestamp, indexTime timestamp DEFAULT NULL);"); err != nil {
 		return s
 	}
-	if queryDB("CREATE INDEX idx_file_index_time ON file(indexTime) WHERE indexTime IS NOT NULL;"); err != nil {
+	if queryDB("CREATE INDEX IF NOT EXISTS idx_file_index_time ON file(indexTime) WHERE indexTime IS NOT NULL;"); err != nil {
 		return s
 	}
-	if queryDB("CREATE INDEX idx_file_parent ON file(parent);"); err != nil {
+	if queryDB("CREATE INDEX IF NOT EXISTS idx_file_parent ON file(parent);"); err != nil {
 		return s
 	}
 	if queryDB("CREATE VIRTUAL TABLE IF NOT EXISTS file_index USING fts5(path UNINDEXED, filename, filetype, content, tokenize = 'porter');"); err != nil {
@@ -378,6 +378,7 @@ func(this *SearchIndexer) Execute(){
 		time.Sleep(1 * time.Second)
 		this.CurrentPhase = PHASE_EXPLORE
 	}
+	Log.Debug("Search::indexing Execute %s", this.CurrentPhase)
 
 	cycleExecute := func(fn func(*sql.Tx) bool) {
 		stopTime := time.Now().Add(time.Duration(CYCLE_TIME()) * time.Second)
