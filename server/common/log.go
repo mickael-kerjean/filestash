@@ -36,7 +36,7 @@ func (l *log) Info(format string, v ...interface{}) {
 		message = fmt.Sprintf(message + format + "\n", v...)
 
 		logfile.WriteString(message)
-		fmt.Printf(strings.ReplaceAll(message, "%", "%%"))
+		fmt.Printf(strings.Replace(message, "%", "%%", -1))
 	}
 }
 
@@ -46,7 +46,7 @@ func (l *log) Warning(format string, v ...interface{}) {
 		message = fmt.Sprintf(message + format + "\n", v...)
 
 		logfile.WriteString(message)
-		fmt.Printf(strings.ReplaceAll(message, "%", "%%"))
+		fmt.Printf(strings.Replace(message, "%", "%%", -1))
 	}
 }
 
@@ -56,7 +56,7 @@ func (l *log) Error(format string, v ...interface{}) {
 		message = fmt.Sprintf(message + format + "\n", v...)
 
 		logfile.WriteString(message)
-		fmt.Printf(strings.ReplaceAll(message, "%", "%%"))
+		fmt.Printf(strings.Replace(message, "%", "%%", -1))
 	}
 }
 
@@ -66,14 +66,14 @@ func (l *log) Debug(format string, v ...interface{}) {
 		message = fmt.Sprintf(message + format + "\n", v...)
 
 		logfile.WriteString(message)
-		fmt.Printf(strings.ReplaceAll(message, "%", "%%"))
+		fmt.Printf(strings.Replace(message, "%", "%%", -1))
 	}
 }
 
 func (l *log) Stdout(format string, v ...interface{}) {
 	message := fmt.Sprintf("%s ", l.now())
 	message = fmt.Sprintf(message + format + "\n", v...)
-	fmt.Printf(strings.ReplaceAll(message, "%", "%%"))
+	fmt.Printf(strings.Replace(message, "%", "%%", -1))
 }
 
 func (l *log) now() string {
