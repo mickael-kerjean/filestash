@@ -33,8 +33,8 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     cd $GOPATH/src/github.com/mickael-kerjean && \
     git clone --depth 1 https://github.com/mickael-kerjean/filestash && \
     cd filestash && \
-    mkdir -p ./dist/data/ && \
-    mv config ./dist/data/ && \
+    mkdir -p ./dist/data/state/ && \
+    mv config ./dist/data/state/ && \
     #################
     # Compile Frontend
     npm install && \
@@ -79,7 +79,7 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     chown -R filestash:filestash /app/
 
 EXPOSE 8334
-VOLUME ["/app/data/config/"]
+VOLUME ["/app/data/"]
 WORKDIR "/app"
 USER filestash
 CMD ["/app/filestash"]
