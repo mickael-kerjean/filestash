@@ -43,7 +43,7 @@ RUN mkdir -p $GOPATH/src/github.com/mickael-kerjean/ && \
     #################
     # Compile Backend
     cd $GOPATH/src/github.com/mickael-kerjean/filestash/server && go get && cd ../ && \
-    go build -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o ./dist/filestash ./server/main.go && \
+    go build --tags "fts5" -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o ./dist/filestash ./server/main.go && \
     #################
     # Compile Plugins
     mkdir -p ./dist/data/plugin && \

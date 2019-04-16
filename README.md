@@ -14,7 +14,7 @@
 
 # Features
 - Manage your files from a browser
-- Org mode friendly ([documentation](https://github.com/mickael-kerjean/filestash/wiki/Release-0.1:-Org-Mode-everywhere))
+- Full org mode client ([documentation](https://github.com/mickael-kerjean/filestash/wiki/Release-0.1:-Org-Mode-everywhere))
 - Photo management
 - Flexible Share mechanism
 - User friendly
@@ -25,6 +25,7 @@
 - Multiple cloud providers and protocols, easily extensible
 - Full Text Search
 - Shared links as WebDAV server
+- Nyan cat loader
 - Audio player
 - Video player
 - Image viewer
