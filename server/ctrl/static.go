@@ -88,22 +88,26 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	}{
 		App:     []string{"Filestash " + APP_VERSION + "." + BUILD_NUMBER, hashFile(filepath.Join(GetCurrentDir(), "/filestash"), 6)},
 		Plugins: func () [][]string {
-			plugins := make([][]string, 0)
-			pPath := filepath.Join(GetCurrentDir(), PLUGIN_PATH)
-			if file, err := os.Open(pPath); err == nil {
-				if files, err := file.Readdir(0); err == nil {
-					for i:=0; i < len(files); i++ {
-						plugins = append(plugins, []string{
-							files[i].Name(),
-							hashFile(pPath + "/" + files[i].Name(), 6),
-						})
-					}
-				}
-			}
-			plugins = append(plugins, []string {
+			plugins := make([][]string, 1)
+			plugins[0] = []string {
 				"config.json",
-				hashFile(filepath.Join(GetCurrentDir(), "/data/config/config.json"), 6),
-			})
+				hashFile(filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"), 6),
+			}
+			pPath := filepath.Join(GetCurrentDir(), PLUGIN_PATH)
+			file, err := os.Open(pPath);
+			if err != nil {
+				return plugins
+			}
+			files, err := file.Readdir(0);
+			if err != nil {
+				return plugins
+			}
+			for i:=0; i < len(files); i++ {
+				plugins = append(plugins, []string{
+					files[i].Name(),
+					hashFile(pPath + "/" + files[i].Name(), 6),
+				})
+			}
 			return plugins
 		}(),
 	})
