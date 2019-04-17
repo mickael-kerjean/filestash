@@ -55,20 +55,20 @@ func GetHome(b IBackend, base string) (string, error) {
 	if _, err := b.Ls(base); err != nil {
 		return base, err
 	}
-	
+
+	home := "/"
 	if obj, ok := b.(interface{ Home() (string, error) }); ok {
-		absolute, err := obj.Home()
+		tmp, err := obj.Home()
 		if err != nil {
-			return "", err
+			return base, err
 		}
-		absolute = EnforceDirectory(absolute)
-		base = EnforceDirectory(base)
-		if strings.HasPrefix(absolute, base) {
-			return "/" + absolute[len(base):], nil
-		}
-		return "/", nil
+		home = EnforceDirectory(tmp)
 	}
-	return base, nil
+	base = EnforceDirectory(base)
+	if strings.HasPrefix(home, base) {
+		return "/" + home[len(base):], nil
+	}
+	return "/", nil
 }
 
 func MapStringInterfaceToMapStringString(m map[string]interface{}) map[string]string {
