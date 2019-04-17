@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"io"
+	"net"
 	"os"
 	"strings"
 )
@@ -72,7 +73,16 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	config := &ssh.ClientConfig{
 		User:            p.username,
 		Auth:            auth,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+			if params["hostkey"] == "" {
+				return nil
+			}
+			hostKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(params["hostkey"]))
+			if err != nil {
+				return err
+			}
+			return ssh.FixedHostKey(hostKey)(hostname, remote, key)
+		},
 	}
 	client, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
@@ -117,7 +127,7 @@ func (b Sftp) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"sftp_path", "sftp_port", "sftp_passphrase"},
+				Target:      []string{"sftp_path", "sftp_port", "sftp_passphrase", "sftp_hostkey"},
 			},
 			FormElement{
 				Id:          "sftp_path",
@@ -137,6 +147,12 @@ func (b Sftp) LoginForm() Form {
 				Name:        "passphrase",
 				Type:        "text",
 				Placeholder: "Passphrase",
+			},
+			FormElement{
+				Id:          "sftp_hostkey",
+				Name:        "hostkey",
+				Type:        "text",
+				Placeholder: "Host key",
 			},
 		},
 	}
