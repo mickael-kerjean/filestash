@@ -24,8 +24,15 @@ import (
 	"strings"
 )
 
+var LDAPCache AppCache
+
 func Init(config *Configuration) {
 	Backend.Register("ldap", LDAP{})
+	LDAPCache = NewAppCache(2, 1)
+	LDAPCache.OnEvict(func(key string, value interface{}) {
+		c := value.(*LDAP)
+		c.dial.Close()
+	})
 }
 
 type LDAP struct {
@@ -34,6 +41,10 @@ type LDAP struct {
 }
 
 func (this LDAP) Init(params map[string]string, app *App) (IBackend, error) {
+	if obj := LDAPCache.Get(params); obj != nil {
+		return obj.(*LDAP), nil
+	}
+
 	dialURL := func() string {
 		if params["port"] == "" {
 			// default port will be set by the LDAP library
@@ -49,7 +60,10 @@ func (this LDAP) Init(params map[string]string, app *App) (IBackend, error) {
 	if err = l.Bind(params["bind_cn"], params["bind_password"]); err != nil {
 		return nil, err
 	}
-	return &LDAP{ baseDN: params["base_dn"], dial: l }, nil
+
+	b := &LDAP{ baseDN: params["base_dn"], dial: l}
+	LDAPCache.Set(params, b)
+	return b, nil
 }
 
 func (this LDAP) LoginForm() Form {
