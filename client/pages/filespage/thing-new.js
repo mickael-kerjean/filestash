@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Card, NgIf, Icon, EventEmitter, EventReceiver } from '../../components/';
-import { pathBuilder, debounce } from '../../helpers/';
+import { pathBuilder } from '../../helpers/';
 import "./thing.scss";
 
 @EventEmitter
@@ -13,50 +13,34 @@ export class NewThing extends React.Component {
         this.state = {
             name: null,
             type: null,
-            message: null,
-            icon: null,
-            search_enabled: CONFIG.enable_search || false,
-            search_input_visible: false,
-            search_keyword: ""
+            icon: null
         };
 
         this._onEscapeKeyPress = (e) => {
             if(e.keyCode === 27) this.onDelete();
         };
-        this._onSearchEvent = debounce((state) => {
-            if(typeof state === "boolean"){
-                if(this.state.search_keyword.length != 0) return;
-                this.setState({search_input_visible: state});
-                return;
-            }
-            this.setState({search_input_visible: !this.state.search_input_visible});
-        }, 200);
-
-        this.onPropageSearch = debounce(() => {
-            this.props.onSearch(this.state.search_keyword);
-        }, 1000);
     }
 
     componentDidMount(){
-        window.addEventListener('keydown', this._onEscapeKeyPress);
-        this.props.subscribe('new::file', () => {
+        window.addEventListener("keydown", this._onEscapeKeyPress);
+        this.props.subscribe("new::file", () => {
             this.onNew("file");
         });
-        this.props.subscribe('new::directory', () => {
+        this.props.subscribe("new::directory", () => {
             this.onNew("directory");
         });
     }
     componentWillUnmount(){
-        window.removeEventListener('keydown', this._onEscapeKeyPress);
-        this.props.unsubscribe('new::file');
-        this.props.unsubscribe('new::directory');
+        window.removeEventListener("keydown", this._onEscapeKeyPress);
+        this.props.unsubscribe("new::file");
+        this.props.unsubscribe("new::directory");
     }
 
     onNew(type){
         if(this.state.type === type){
             this.onDelete();
         }else{
-            this.setState({type: type, name: '', icon: type});
+            this.setState({type: type, name: "", icon: type});
         }
     }
 
@@ -67,21 +51,9 @@ export class NewThing extends React.Component {
     onSave(e){
         e.preventDefault();
         if(this.state.name !== null){
-            this.props.emit('file.create', pathBuilder(this.props.path, this.state.name, this.state.type), this.state.type);
+            this.props.emit("file.create", pathBuilder(this.props.path, this.state.name, this.state.type), this.state.type);
             this.onDelete();
         }
-    }
-
-    onViewChange(e){
-        this.props.onViewUpdate();
-    }
-
-    onSortChange(e){
-        this.props.onSortUpdate(e);
-    }
-
-    onSearchChange(search){
-        this.setState({search_keyword: search});
     }
 
     render(){
@@ -95,9 +67,6 @@ export class NewThing extends React.Component {
                       <input onChange={(e) => this.setState({name: e.target.value})} value={this.state.name} type="text" autoFocus/>
                     </form>
                   </span>
-                  <NgIf className="component_message" cond={this.state.message !== null}>
-                    {this.state.message}
-                  </NgIf>
                   <span className="component_action">
                     <div className="action">
                       <div>
@@ -114,6 +83,5 @@ export class NewThing extends React.Component {
 
 NewThing.propTypes = {
     accessRight: PropTypes.object.isRequired,
-    onSortUpdate: PropTypes.func.isRequired,
     sort: PropTypes.string.isRequired
 };

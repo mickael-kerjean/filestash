@@ -12,7 +12,6 @@ export class Submenu extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            search_enabled: "ServiceWorker" in window ? true : false,
             search_input_visible: false,
             search_keyword: ""
         };
@@ -130,7 +129,7 @@ export class Submenu extends React.Component {
                     </DropdownList>
                   </Dropdown>
                   <div className="view list-grid" onClick={this.onViewChange.bind(this)}><Icon name={this.props.view === "grid" ? "list" : "grid"}/></div>
-                  <NgIf cond={window.CONFIG.enable_search === true} className="view" style={{display: this.state.search_enabled === true ? "block" : "none"}}>
+                  <NgIf cond={window.CONFIG.enable_search === true} className="view">
                     <form onSubmit={(e) => this.onSearchKeypress(this.state.search_keyword, false, e)}>
                       <label className="view search" onClick={this.onSearchToggle.bind(this, null)}>
                         <NgIf cond={this.state.search_input_visible !== true}>
