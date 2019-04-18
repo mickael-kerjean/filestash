@@ -5,8 +5,6 @@ import { Card, NgIf, Icon, EventEmitter, Dropdown, DropdownButton, DropdownList,
 import { pathBuilder, debounce } from '../../helpers/';
 import "./submenu.scss";
 
-let SEARCH_KEYWORD = "";
-
 @EventEmitter
 export class Submenu extends React.Component {
     constructor(props){
@@ -15,11 +13,6 @@ export class Submenu extends React.Component {
             search_input_visible: false,
             search_keyword: ""
         };
-
-        if(SEARCH_KEYWORD){
-            this.state.search_input_visible = true;
-            this.state.search_keyword = SEARCH_KEYWORD;
-        }
 
         this.onSearchChange_Backpressure = debounce(this.onSearchChange, 400);
         this._onEscapeKeyPress = (e) => {
@@ -50,7 +43,6 @@ export class Submenu extends React.Component {
         }
     }
     componentWillUnmount(){
-        SEARCH_KEYWORD = this.state.search_keyword;
         window.removeEventListener('keydown', this._onEscapeKeyPress);
     }
 
