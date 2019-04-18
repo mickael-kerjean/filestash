@@ -580,6 +580,7 @@ func(this *SearchIndexer) updateFile(path string, tx *sql.Tx) error {
 	case "text/plain": reader, err = formater.TxtFormater(reader)
 	case "text/org": reader, err = formater.TxtFormater(reader)
 	case "text/markdown": reader, err = formater.TxtFormater(reader)
+	case "application/x-form": reader, err = formater.TxtFormater(reader)
 	case "application/pdf": reader, err = formater.PdfFormater(reader)
 	case "application/powerpoint": reader, err = formater.OfficeFormater(reader)
 	case "application/vnd.ms-powerpoint": reader, err = formater.OfficeFormater(reader)
