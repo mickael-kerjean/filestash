@@ -4,11 +4,11 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(0,0,0,0.7);
-    box-shadow: 1px 2px 10px rgba(0,0,0,0.2);
+    background: #f2f3f5f0;
     z-index: 1000;
 
     > div{
+        box-shadow: 1px 2px 20px rgba(0, 0, 0, 0.1);
         background: white;
         width: 80%;
         max-width: 310px;
