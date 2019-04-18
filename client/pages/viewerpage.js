@@ -164,6 +164,7 @@ export class ViewerPage extends React.Component {
                                 isSaving={this.state.isSaving}
                                 onSave={this.save.bind(this)}
                                 content={this.state.content || ""}
+                                data={this.state.url}
                                 filename={this.state.filename} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'audio'}>
