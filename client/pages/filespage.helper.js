@@ -102,22 +102,35 @@ export const onDelete = function(path, type){
         .catch((err) => notify.send(err, 'error'));
 };
 
+/*
+ * The upload method has a few strategies:
+ * 1. user is coming from drag and drop + browser provides support to read entire folders
+ * 2. user is coming from drag and drop + browser DOES NOT provides support to read entire folders
+ * 3. user is coming from a upload form button as he doesn't have drag and drop with files
+ */
 export const onUpload = function(path, e){
     const MAX_POOL_SIZE = 15;
     let PRIOR_STATUS = {};
-    if(e.dataTransfer.types && e.dataTransfer.types.length >= 0){
-        if(e.dataTransfer.types[0] === "text/uri-list"){
-            return
-        }
-    }
-    extract_upload_directory_the_way_that_works_but_non_official(e.dataTransfer.items || [], [])
-        .then((files) => {
-            if(files.length === 0){
-                return extract_upload_crappy_hack_but_official_way(e.dataTransfer);
+
+    let extractFiles = null;
+    if(e.dataTransfer === undefined){ // case 3
+        extractFiles = extract_upload_crappy_hack_but_official_way(e.target);
+    } else {
+        if(e.dataTransfer.types && e.dataTransfer.types.length >= 0){
+            if(e.dataTransfer.types[0] === "text/uri-list"){
+                return
             }
-            return Promise.resolve(files);
-        })
-        .then((files) => {
+        }
+        extractFiles = extract_upload_directory_the_way_that_works_but_non_official(e.dataTransfer.items || [], []) // case 1
+            .then((files) => {
+                if(files.length === 0){ // case 2
+                    return extract_upload_crappy_hack_but_official_way(e.dataTransfer);
+                }
+                return Promise.resolve(files);
+            })
+    }
+
+    extractFiles.then((files) => {
             var failed = [],
                 currents = [];
 

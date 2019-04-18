@@ -12,6 +12,7 @@ import img_pause from "../assets/img/pause.svg";
 import img_error from "../assets/img/error.svg";
 import img_loading_white from "../assets/img/loader_white.svg";
 import img_download_white from "../assets/img/download_white.svg";
+import img_upload_white from "../assets/img/upload_white.svg";
 import img_todo_white from '../assets/img/todo_white.svg';
 import img_calendar_white from '../assets/img/calendar_white.svg';
 import img_calendar from '../assets/img/calendar.svg';
@@ -68,6 +69,8 @@ export const Icon = (props) => {
         img = img_loader;
     }else if(props.name === 'download_white'){
         img = img_download_white;
+    }else if(props.name === 'upload_white'){
+        img = img_upload_white;
     }else if(props.name === 'play'){
         img = img_play;
     }else if(props.name === 'pause'){

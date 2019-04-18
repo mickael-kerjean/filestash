@@ -9,6 +9,7 @@ import { sort, onCreate, onRename, onDelete, onUpload, onSearch, createLink } fr
 import { NgIf, Loader, EventReceiver, LoggedInOnly, ErrorPage } from '../components/';
 import { notify, debounce, goToFiles, goToViewer, event, settings_get, settings_put } from '../helpers/';
 import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from './filespage/';
+import { MobileFileUpload } from './filespage/filezone';
 import InfiniteScroll from 'react-infinite-scroller';
 
 const PAGE_NUMBER_INIT = 2;
@@ -252,6 +253,7 @@ export class FilesPage extends React.Component {
                   <NgIf cond={!!this.state.loading}>
                     <Loader/>
                   </NgIf>
+                  <MobileFileUpload path={this.state.path} />
                 </div>
               </div>
               <div className="upload-footer">

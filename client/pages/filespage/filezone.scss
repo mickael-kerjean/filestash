@@ -1,3 +1,5 @@
+@import "../../assets/css/mixin.scss";
+
 .component_filezone{
     border: 2px dashed;
     padding: 25px 0;
@@ -8,4 +10,48 @@
         background: var(--emphasis-primary);
         border: 2px dashed var(--primary);
     }
+}
+
+.component_mobilefileupload{
+    display: inline;
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+
+    input[type="file"]{
+        width: 0.1px;
+	    height: 0.1px;
+	    opacity: 0;
+	    overflow: hidden;
+	    position: absolute;
+	    z-index: -1;
+    }
+    input[type="file"]:focus + label, input[type="file"] + label:hover {
+        opacity: 0.95;
+    }
+    input[type="file"] + label {
+        display: inline-block;
+	    cursor: pointer;
+        background: var(--color);
+        border-radius: 50%;
+        @include ripple(var(--emphasis-secondary), var(--primary));
+        box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+
+        width: 50px;
+        height: 50px;
+        .component_icon{
+            width: 24px;
+            height: 24px;
+            padding: 13px;
+        }
+    }
+}
+
+.mobilefileupload-appear{
+    transform: translateX(75px);
+    transition: transform 0.25s ease;
+}
+.mobilefileupload-appear-active{
+    transition-delay: 0.3s;
+    transform: translateX(0px);
 }

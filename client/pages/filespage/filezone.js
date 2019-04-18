@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { DropTarget } from 'react-dnd';
 
-import { EventEmitter }  from '../../components/';
+import { EventEmitter, Icon }  from '../../components/';
 import './filezone.scss';
 
 @EventEmitter
@@ -27,7 +28,35 @@ export class FileZone extends React.Component{
         );
     }
 }
-
 FileZone.propTypes = {
     path: PropTypes.string.isRequired
+}
+
+@EventEmitter
+export class MobileFileUpload extends React.Component{
+    constructor(props){
+        super(props);
+    }
+
+    onUpload(e){
+        this.props.emit("file.upload", this.props.path, e);
+    }
+    render(){
+        if(/(Android|iPad|iPhone)/.test(navigator.userAgent) === false){
+            return null;
+        }
+
+        return (
+            <ReactCSSTransitionGroup transitionName="mobilefileupload" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={550}>
+              <div className="component_mobilefileupload">
+                <form>
+                  <input onChange={this.onUpload.bind(this)} type="file" name="file" id="mobilefileupload" multiple/>
+                  <label htmlFor="mobilefileupload">
+                    <Icon name="upload_white"/>
+                  </label>
+                </form>
+              </div>
+            </ReactCSSTransitionGroup>
+        );
+    }
 }
