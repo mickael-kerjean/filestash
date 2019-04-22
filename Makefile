@@ -17,3 +17,4 @@ build_plugins:
 	go build -buildmode=plugin -o ./dist/data/plugin/backend_mysql.so server/plugin/plg_backend_mysql/index.go
 	go build -buildmode=plugin -o dist/data/plugin/backend_backblaze.so server/plugin/plg_backend_backblaze/index.go
 	go build -buildmode=plugin -o dist/data/plugin/security_scanner.so server/plugin/plg_security_scanner/index.go
+	go build -buildmode=plugin -o dist/data/plugin/security_svg.so server/plugin/plg_security_svg/index.go
