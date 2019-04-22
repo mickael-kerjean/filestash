@@ -129,7 +129,7 @@ func Init(conf *Configuration) {
 
 		if strings.HasPrefix(mType, "image/") == false {
 			return reader, nil
-		} else if mType == "image/svg" {
+		} else if mType == "image/svg+xml" {
 			return reader, nil
 		} else if mType == "image/x-icon" {
 			return reader, nil
