@@ -46,7 +46,7 @@ func IsRaw(mType string) bool {
 }
 
 func ExtractPreview(t *Transform) error {
-	filename := C.CString(t.Temporary)
+	filename := C.CString(t.Input)
 	err := C.raw_process(filename, C.int(t.Size))
 	if err == LIBRAW_MEMORY_ERROR {
 		// libraw acts weird sometimes and I couldn't

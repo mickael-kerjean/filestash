@@ -140,7 +140,8 @@ func Init(conf *Configuration) {
 		/////////////////////////
 		// Specify transformation
 		transform := &lib.Transform{
-			Temporary: GetAbsolutePath(ImageCachePath + "image_" + QuickString(10)),
+			Input: GetAbsolutePath(ImageCachePath + "imagein_" + QuickString(10)),
+			Output: GetAbsolutePath(ImageCachePath + "imageout_" + QuickString(10)),			
 			Size:      thumb_size(),
 			Crop:      true,
 			Quality:   thumb_quality(),
@@ -163,7 +164,7 @@ func Init(conf *Configuration) {
 		/////////////////////////////
 		// Insert file in the fs
 		// => lower RAM usage while processing
-		file, err := os.OpenFile(transform.Temporary, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+		file, err := os.OpenFile(transform.Input, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 		if err != nil {
 			return reader, ErrFilesystemError
 		}
@@ -171,7 +172,8 @@ func Init(conf *Configuration) {
 		file.Close()
 		reader.Close()
 		defer func() {
-			os.Remove(transform.Temporary)
+			os.Remove(transform.Input)
+			os.Remove(transform.Output)
 		}()
 
 		/////////////////////////

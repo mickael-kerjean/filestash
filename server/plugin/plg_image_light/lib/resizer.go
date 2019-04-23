@@ -8,14 +8,20 @@ import "C"
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
+	"os"
 	"runtime"
 	"unsafe"
+	"sync"
 )
 
-var LIBVIPS_INSTALLED = false
+var (
+	LIBVIPS_INSTALLED = false
+	VIPS_LOCK = &sync.Mutex{}
+)
 
 type Transform struct {
-	Temporary string
+	Input     string
+	Output    string
 	Size      int
 	Crop      bool
 	Quality   int
@@ -23,7 +29,7 @@ type Transform struct {
 }
 
 func init() {
-	if C.resizer_init(C.int(runtime.NumCPU()), 50, 1024) != 0 {
+	if C.resizer_init(C.int(runtime.NumCPU())) != 0 {
 		Log.Warning("Can't load libvips")
 		return
 	}
@@ -34,17 +40,18 @@ func CreateThumbnail(t *Transform) (io.ReadCloser, error) {
 	if LIBVIPS_INSTALLED == false {
 		return nil, NewError("Libvips not installed", 501)
 	}
-	filename := C.CString(t.Temporary)
-	defer C.free(unsafe.Pointer(filename))
-	var buffer unsafe.Pointer
-	len := C.size_t(0)
+	filenameInput := C.CString(t.Input)
+	defer C.free(unsafe.Pointer(filenameInput))
 
-	if C.resizer_process(filename, &buffer, &len, C.int(t.Size), boolToCInt(t.Crop), C.int(t.Quality), boolToCInt(t.Exif)) != 0 {
+	filenameOutput := C.CString(t.Output)
+	defer C.free(unsafe.Pointer(filenameOutput))
+
+	VIPS_LOCK.Lock()
+	if C.resizer_process(filenameInput, filenameOutput, C.int(t.Size), boolToCInt(t.Crop), C.int(t.Quality), boolToCInt(t.Exif)) != 0 {
 		return nil, NewError("", 500)
 	}
-	buf := C.GoBytes(buffer, C.int(len))
-	C.g_free(C.gpointer(buffer))
-	return NewReadCloserFromBytes(buf), nil
+	VIPS_LOCK.Unlock()
+	return os.OpenFile(t.Output, os.O_RDONLY, os.ModePerm)
 }
 
 func boolToCInt(val bool) C.int {
