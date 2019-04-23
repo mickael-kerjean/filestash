@@ -10,6 +10,7 @@ import (
 	"net/http"
     "net/http/pprof"
 	"os"
+	"runtime"
 	"runtime/debug"
 	"strconv"
 	"time"
@@ -24,21 +25,8 @@ func Init(a *App) {
 	var middlewares []Middleware
 	r := mux.NewRouter()
 
-	// Profiling - handy to identify nasty leaks and/or bugs!
 	if os.Getenv("DEBUG") == "true" {
-		r.HandleFunc("/debug/pprof/", pprof.Index)
-		r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-		r.HandleFunc("/debug/pprof/profile", pprof.Profile)
-		r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-		r.HandleFunc("/debug/pprof/trace", pprof.Trace)
-		r.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
-		r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
-		r.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
-		r.Handle("/debug/pprof/block", pprof.Handler("block"))
-		r.HandleFunc("/debug/free", func(w http.ResponseWriter, r *http.Request) {
-			debug.FreeOSMemory()
-			w.Write([]byte("DONE"))
-		})
+		initDebugRoutes(r)
 	}
 
 	// API for Session
@@ -133,6 +121,34 @@ func Init(a *App) {
 	}
 }
 
+func initDebugRoutes(r *mux.Router) {
+	r.HandleFunc("/debug/pprof/", pprof.Index)
+	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	r.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	r.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	r.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
+	r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+	r.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
+	r.Handle("/debug/pprof/block", pprof.Handler("block"))
+	r.HandleFunc("/debug/free", func(w http.ResponseWriter, r *http.Request) {
+		debug.FreeOSMemory()
+		w.Write([]byte("DONE"))
+	})
+	bToMb := func(b uint64) string {
+		return strconv.Itoa(int(b / 1024 / 1024))
+	}
+	r.HandleFunc("/debug/memory", func(w http.ResponseWriter, r *http.Request) {
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+		w.Write([]byte("<p style='font-family:monospace'>"))
+		w.Write([]byte("Alloc      = " + bToMb(m.Alloc) + "MiB <br>"))
+		w.Write([]byte("TotalAlloc = " + bToMb(m.TotalAlloc) + "MiB <br>"))
+		w.Write([]byte("Sys        = " + bToMb(m.Sys) + "MiB <br>"))
+		w.Write([]byte("NumGC      = " + strconv.Itoa(int(m.NumGC))))
+		w.Write([]byte("</p>"))
+	})
+}
 
 func ensureAppHasBooted(address string, message string) {
 	i := 0
