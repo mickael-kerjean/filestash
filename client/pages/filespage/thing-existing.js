@@ -212,9 +212,11 @@ export class ExistingThing extends React.Component {
         }
         className = className.trim();
 
+        let encodedLink = this.props.file.link.split('/').map(val => encodeURIComponent(val)).join('/')
+
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div className={"component_thing view-"+this.props.view}>
-              <ToggleableLink to={this.props.file.link + window.location.search} disabled={this.props.file.icon === "loading"}>
+              <ToggleableLink to={encodedLink + window.location.search} disabled={this.props.file.icon === "loading"}>
                 <Card ref="$card"className={this.state.hover} className={className}>
                   <Image preview={this.state.preview}
                          icon={this.props.file.icon || this.props.file.type}
