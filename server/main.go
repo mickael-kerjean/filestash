@@ -131,6 +131,8 @@ func initDebugRoutes(r *mux.Router) {
 	r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
 	r.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
 	r.Handle("/debug/pprof/block", pprof.Handler("block"))
+	r.Handle("/debug/pprof/allocs", pprof.Handler("allocs"))
+	r.Handle("/debug/pprof/mutex", pprof.Handler("mutex"))
 	r.HandleFunc("/debug/free", func(w http.ResponseWriter, r *http.Request) {
 		debug.FreeOSMemory()
 		w.Write([]byte("DONE"))
