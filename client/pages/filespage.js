@@ -236,8 +236,8 @@ export class FilesPage extends React.Component {
         });
     }
 
-    handleMultiSelect(selectedKeys, e){
-        this.setState({selected: selectedKeys});
+    handleMultiSelect(selectedFiles, e){
+        this.setState({selected: selectedFiles.map((f) => f.path)});
     }
     toggleSelect(path){
         const idx = this.state.selected.indexOf(path);
