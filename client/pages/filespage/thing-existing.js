@@ -24,7 +24,9 @@ const fileSource = {
         if (props.metadata.can_move === false){
             return false;
         }
-        return props.file.icon === 'loading'? false : true;
+        if(props.file.icon === "loading") return false;
+        else if(props.selected === false && props.currentSelection.length > 0) return false;
+        return true;
     },
     endDrag(props, monitor, component){
         if(monitor.didDrop() && component.state.icon !== 'loading'){
