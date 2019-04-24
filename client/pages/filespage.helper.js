@@ -102,6 +102,18 @@ export const onDelete = function(path, type){
         .catch((err) => notify.send(err, 'error'));
 };
 
+export const onMultiDelete = function(arrOfPath){
+    return Promise.all(arrOfPath.map((p) => Files.rm(p)))
+        .then(() => notify.send('All done!', 'success'))
+        .catch((err) => notify.send(err, 'error'));
+}
+
+export const onMultiRename = function(arrOfPath){
+    return Promise.all(arrOfPath.map((p) => Files.mv(p[0], p[1])))
+        .then(() => notify.send('All done!', 'success'))
+        .catch((err) => notify.send(err, 'error'));
+}
+
 /*
  * The upload method has a few strategies:
  * 1. user is coming from drag and drop + browser provides support to read entire folders

@@ -3,10 +3,11 @@ import path from 'path';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { DragSource, DropTarget } from 'react-dnd';
+import { createSelectable } from 'react-selectable';
 
 import './thing.scss';
 import { Card, NgIf, Icon, EventEmitter, Button } from '../../components/';
-import { pathBuilder, prompt, alert, leftPad, getMimeType, debounce, memory } from '../../helpers/';
+import { pathBuilder, basename, filetype, prompt, alert, leftPad, getMimeType, debounce, memory } from '../../helpers/';
 import { Files } from '../../model/';
 import { ShareComponent } from './share';
 import img_placeholder from '../../assets/img/placeholder.png';
@@ -30,6 +31,8 @@ const fileSource = {
             let result = monitor.getDropResult();
             if(result.action === 'rename'){
                 props.emit.apply(component, ['file.rename'].concat(result.args));
+            }else if(result.action === "rename.multiple"){
+                props.emit.call(component, "file.rename.multiple", result.args);
             }else{
                 throw 'unknown action';
             }
@@ -40,19 +43,31 @@ const fileSource = {
 const fileTarget = {
     canDrop(props, monitor){
         let file = monitor.getItem();
-        if(props.file.type === 'directory' && file.name !== props.file.name && props.file.icon !== 'loading'){
-            return true;
-        }else{
-            return false;
-        }
+        if(props.file.type !== "directory") return false;
+        else if(file.name === props.file.name) return false;
+        else if(props.file.icon === "loading") return false;
+        else if(props.selected === true) return false;
+        return true;
     },
     drop(props, monitor, component){
         let src = monitor.getItem();
         let dest = props.file;
 
-        let from = pathBuilder(props.path, src.name, src.type);
-        let to = pathBuilder(props.path, './'+dest.name+'/'+src.name, src.type);
-        return {action: 'rename', args: [from, to, src.type], ctx: 'existingfile'};
+        if(props.currentSelection.length === 0){
+            const from = pathBuilder(props.path, src.name, src.type);
+            const to = pathBuilder(props.path, './'+dest.name+'/'+src.name, src.type);
+            return {action: 'rename', args: [from, to, src.type], ctx: 'existingfile'};
+        } else {
+            return {action: 'rename.multiple', args: props.currentSelection.map((selectionPath) => {
+                const from = selectionPath;
+                const to = pathBuilder(
+                    props.path,
+                    "./"+dest.name+"/"+basename(selectionPath),
+                    filetype(selectionPath)
+                );
+                return [ from, to ];
+            })};
+        }
     }
 };
 
@@ -62,9 +77,10 @@ const nativeFileTarget = {
         let path = pathBuilder(props.path, props.file.name, 'directory');
         props.emit('file.upload', path, monitor.getItem());
     }
-}
+};
 
 
+@createSelectable
 @EventEmitter
 @DropTarget('__NATIVE_FILE__', nativeFileTarget, (connect, monitor) => ({
     connectDropNativeFile: connect.dropTarget(),
@@ -99,7 +115,8 @@ export class ExistingThing extends React.Component {
            this.props.fileIsOver !== nextProps.fileIsOver ||
            this.props.canDropFile !== nextProps.canDropFile ||
            this.props.nativeFileIsOver !== nextProps.nativeFileIsOver ||
-           this.props.canDropNativeFile !== nextProps.canDropNativeFile
+           this.props.canDropNativeFile !== nextProps.canDropNativeFile ||
+           this.props.selected !== nextProps.selected
           ){
             return true;
         }
@@ -188,6 +205,16 @@ export class ExistingThing extends React.Component {
         );
     }
 
+    onThingClick(e){
+        if(e.ctrlKey === true){
+            e.preventDefault();
+            this.props.emit(
+                "file.select",
+                pathBuilder(this.props.path, this.props.file.name, this.props.file.type)
+            );
+        }
+    }
+
     _confirm_delete_text(){
         return this.props.file.name.length > 16? this.props.file.name.substring(0, 10).toLowerCase() : this.props.file.name;
     }
@@ -213,8 +240,8 @@ export class ExistingThing extends React.Component {
         className = className.trim();
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
-            <div className={"component_thing view-"+this.props.view}>
-              <ToggleableLink to={this.props.file.link + window.location.search} disabled={this.props.file.icon === "loading"}>
+            <div className={"component_thing view-"+this.props.view+(this.props.selected === true ? " selected" : " not-selected")}>
+              <ToggleableLink onClick={this.onThingClick.bind(this)} to={this.props.file.link + window.location.search} disabled={this.props.file.icon === "loading"}>
                 <Card ref="$card"className={this.state.hover} className={className}>
                   <Image preview={this.state.preview}
                          icon={this.props.file.icon || this.props.file.type}
@@ -231,6 +258,7 @@ export class ExistingThing extends React.Component {
                   <DateTime show={this.state.icon !== 'loading'} timestamp={this.props.file.time} />
                   <ActionButton onClickRename={this.onRenameRequest.bind(this)} onClickDelete={this.onDeleteRequest.bind(this)} onClickShare={this.onShareRequest.bind(this)} is_renaming={this.state.is_renaming}
                                 can_rename={this.props.metadata.can_rename !== false} can_delete={this.props.metadata.can_delete !== false} can_share={this.props.metadata.can_share !== false && window.CONFIG.enable_share === true} />
+                  <div className="selectionOverlay"></div>
                 </Card>
               </ToggleableLink>
             </div>

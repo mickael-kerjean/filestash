@@ -82,6 +82,19 @@
         }
     }
 
+
+    .selectionOverlay{ display: none; }
+    &.selected .selectionOverlay{
+        display: block;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--primary);
+        z-index: 2;
+        opacity: 0.3;
+    }
 }
 
 
@@ -104,6 +117,7 @@
         @media (max-width: 400px){.box{height: 140px; .info_extension{font-size: 0.8em!important; padding: 3px 10px;}}}
         @media (max-width: 340px){.box{height: 130px}}
         text-align: center;
+
         .box{
             margin: 2px;
             padding: 0;
@@ -190,6 +204,23 @@
                 background: rgba(0,0,0,0);
                 transition: 0.2s ease-out background;
             }
+            .component_filesize, .component_datetime{ display: none; }
+            .component_action{
+                opacity: 0;
+                transform: translateX(5px);
+                transition: 0.15s ease-out all;
+                z-index: 2;
+                display: block;
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                border-radius: 5px;
+                margin-right: 0px;
+                padding: 0px;
+            }
+            img.thumbnail{transition: 0.2s ease-out transform;}
+        }
+        &.not-selected .box{
             &:hover{
                 .component_action{
                     transition-delay: 0.1s;
@@ -214,21 +245,11 @@
                     opacity: 0;
                 }
             }
-            .component_filesize, .component_datetime{ display: none; }
-            .component_action{
-                opacity: 0;
-                transform: translateX(5px);
-                transition: 0.15s ease-out all;
-                z-index: 2;
-                display: block;
-                position: absolute;
-                top: 5px;
-                right: 5px;
-                border-radius: 5px;
-                margin-right: 0px;
-                padding: 0px;
+        }
+        &.selected .box{
+            img.thumbnail{
+                transform: scale(0.6);
             }
-            img.thumbnail{transition: 0.2s ease-out transform;}
         }
     }
 }
