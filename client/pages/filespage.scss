@@ -10,10 +10,16 @@
         box-sizing: border-box;
     }
 
-    .page_container{
+    .page_container, .selectablegroup{
         flex: 1;
         display: flex;
         overflow: hidden;
+    }
+    .selectablegroup{
+        overflow: hidden!important;
+        > div[style] span {
+            border: 1px dashed var(--light)!important;
+        }
     }
 
     .infinite_scroll_loading{

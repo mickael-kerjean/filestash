@@ -86,4 +86,15 @@
             }
         }
     }
+
+    .submenuwithSelection-appear{
+        display: inline-block;
+        opacity: 0;
+        transform: translateY(3px);
+        transition: opacity 0.2s ease, transform 0.4s ease;
+    }
+    .submenuwithSelection-appear.submenuwithSelection-appear-active{
+        opacity: 1;
+        transform: translateY(0px);
+    }
 }

@@ -12,7 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "react-selectable": "^2.0.1"
   },
   "devDependencies": {
     "babel-core": "^6.13.2",

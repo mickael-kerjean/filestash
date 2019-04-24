@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { DropTarget } from 'react-dnd';
 
 import { EventEmitter, BreadCrumb, PathElement } from '../../components/';
-import { pathBuilder } from '../../helpers/';
+import { pathBuilder, filetype, basename } from '../../helpers/';
 
 export class BreadCrumbTargettable extends BreadCrumb {
     constructor(props){
@@ -21,9 +21,21 @@ const fileTarget = {
     },
     drop(props, monitor, component){
         let src = monitor.getItem();
-        let from = pathBuilder(src.path, src.name, src.type);
-        let to = pathBuilder(props.path.full, src.name, src.type);
-        return {action: 'rename', args: [from, to, src.type], ctx: 'breadcrumb'}
+        if(props.currentSelection.length === 0){
+            const from = pathBuilder(src.path, src.name, src.type);
+            const to = pathBuilder(props.path.full, src.name, src.type);
+            return {action: 'rename', args: [from, to, src.type], ctx: 'breadcrumb'};
+        } else {
+            return {action: 'rename.multiple', args: props.currentSelection.map((selectionPath) => {
+                const from = selectionPath;
+                const to = pathBuilder(
+                    props.path.full,
+                    "./"+basename(selectionPath),
+                    filetype(selectionPath)
+                );
+                return [from, to];
+            })};
+        }
     }
 }
 const nativeFileTarget = {
@@ -34,7 +46,7 @@ const nativeFileTarget = {
         let files = monitor.getItem();
         props.emit('file.upload', props.path.full, files);
     }
-}
+};
 
 @EventEmitter
 @DropTarget('__NATIVE_FILE__', nativeFileTarget, (connect, monitor) => ({

@@ -56,7 +56,7 @@ export class BreadCrumb extends React.Component {
                   {
                       this.state.path.map((path, index) => {
                           return (
-                              <Path key={"breadcrumb_"+index} path={path} isLast={this.state.path.length === index + 1} needSaving={this.props.needSaving} />
+                              <Path key={"breadcrumb_"+index} currentSelection={this.props.currentSelection} path={path} isLast={this.state.path.length === index + 1} needSaving={this.props.needSaving} />
                           );
                       })
                 }

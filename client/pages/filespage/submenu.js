@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import { Card, NgIf, Icon, EventEmitter, Dropdown, DropdownButton, DropdownList, DropdownItem, Container } from '../../components/';
-import { pathBuilder, debounce } from '../../helpers/';
+import { pathBuilder, debounce, prompt } from '../../helpers/';
 import "./submenu.scss";
 
 @EventEmitter
@@ -48,6 +49,19 @@ export class Submenu extends React.Component {
 
     onNew(type){
         this.props.emit("new::"+type);
+    }
+    onDelete(arrayOfPaths){
+        prompt.now(
+            "Confirm by typing \"remove\"",
+            (answer) => {
+                if(answer !== "remove"){
+                    return Promise.resolve();
+                }
+                this.props.emit("file.delete.multiple", arrayOfPaths);
+                return Promise.resolve();
+            },
+            () => { /* click on cancel */ }
+        );
     }
 
     onViewChange(){
@@ -104,12 +118,18 @@ export class Submenu extends React.Component {
             <div className="component_submenu">
               <Container>
                 <div className={"menubar no-select "+(this.state.search_input_visible ? "search_focus" : "")}>
-                  <NgIf cond={this.props.accessRight.can_create_file !== false} onClick={this.onNew.bind(this, 'file')} type="inline">
+                  <NgIf cond={this.props.accessRight.can_create_file !== false && this.props.selected.length === 0} onClick={this.onNew.bind(this, 'file')} type="inline">
                     New File
                   </NgIf>
-                  <NgIf cond={this.props.accessRight.can_create_directory !== false} onClick={this.onNew.bind(this, 'directory')} type="inline">
+                  <NgIf cond={this.props.accessRight.can_create_directory !== false && this.props.selected.length === 0} onClick={this.onNew.bind(this, 'directory')} type="inline">
                     New Directory
                   </NgIf>
+                  <NgIf cond={this.props.selected.length > 0} type="inline" onMouseDown={this.onDelete.bind(this, this.props.selected)}>
+                    <ReactCSSTransitionGroup transitionName="submenuwithSelection" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={10000}>
+                      <span>Remove</span>
+                    </ReactCSSTransitionGroup>
+                  </NgIf>
+
                   <Dropdown className="view sort" onChange={this.onSortChange.bind(this)}>
                     <DropdownButton>
                       <Icon name="sort"/>

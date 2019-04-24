@@ -187,6 +187,9 @@ func Init(config *Configuration) {
 		r.PathPrefix("/websql/").Handler(http.HandlerFunc(WelcomePackHandle))
 		r.PathPrefix("/dbadmin/").Handler(http.HandlerFunc(WelcomePackHandle))
 		r.HandleFunc("/xmlrpc.php", WelcomePackHandle)
+		r.PathPrefix("/user/").Handler(http.HandlerFunc(WelcomePackHandle))
+		r.HandleFunc("/vuln.htm", WelcomePackHandle)
+		r.HandleFunc("/webconfig.txt.php", WelcomePackHandle)
 		return nil
 	})
 }

@@ -1,11 +1,12 @@
 import React from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend-filedrop';
+import { SelectableGroup } from 'react-selectable';
 
 import './filespage.scss';
 import './error.scss';
 import { Files } from '../model/';
-import { sort, onCreate, onRename, onDelete, onUpload, onSearch, createLink } from './filespage.helper';
+import { sort, onCreate, onRename, onMultiRename, onDelete, onMultiDelete, onUpload, onSearch, createLink } from './filespage.helper';
 import { NgIf, Loader, EventReceiver, LoggedInOnly, ErrorPage } from '../components/';
 import { notify, debounce, goToFiles, goToViewer, event, settings_get, settings_put } from '../helpers/';
 import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from './filespage/';
@@ -33,13 +34,14 @@ export class FilesPage extends React.Component {
             this.props.history.push(props.match.url + "/");
         }
         this.state = {
-            path: props.match.url.replace('/files', '').replace(/%23/g, "#") || '/',
-            sort: settings_get('filespage_sort') || 'type',
+            path: props.match.url.replace("/files", "").replace(/%23/g, "#") || "/",
+            sort: settings_get("filespage_sort") || "type",
             sort_reverse: true,
-            show_hidden: settings_get('filespage_show_hidden') || CONFIG["display_hidden"],
-            view: settings_get('filespage_view') || 'grid',
+            show_hidden: settings_get("filespage_show_hidden") || CONFIG["display_hidden"],
+            view: settings_get("filespage_view") || "grid",
+            is_search: false,
             files: [],
-            search_loading: false,
+            selected: [],
             metadata: null,
             frequents: null,
             page_number: PAGE_NUMBER_INIT,
@@ -51,31 +53,36 @@ export class FilesPage extends React.Component {
     }
 
     componentDidMount(){
-        this.onRefresh(this.state.path, 'directory');
+        this.onRefresh(this.state.path, "directory");
 
         // subscriptions
-        this.props.subscribe('file.create', function(){
+        this.props.subscribe("file.create", function(){
             return onCreate.apply(this, arguments).then(() => {
                 if(this.state.metadata && this.state.metadata.refresh_on_create === true){
-                    this.onRefresh(this.state.path, 'directory')
+                    this.onRefresh(this.state.path, "directory");
                 }
-                return Promise.resolve()
+                return Promise.resolve();
             });
         }.bind(this));
-        this.props.subscribe('file.upload', onUpload.bind(this));
-        this.props.subscribe('file.rename', onRename.bind(this));
-        this.props.subscribe('file.delete', onDelete.bind(this));
-        this.props.subscribe('file.refresh', this.onRefresh.bind(this));
-        window.addEventListener('keydown', this.toggleHiddenFilesVisibilityonCtrlK);
+        this.props.subscribe("file.upload", onUpload.bind(this));
+        this.props.subscribe("file.rename", onRename.bind(this));
+        this.props.subscribe("file.rename.multiple", onMultiRename.bind(this));
+        this.props.subscribe("file.delete", onDelete.bind(this));
+        this.props.subscribe("file.delete.multiple", onMultiDelete.bind(this));
+        this.props.subscribe("file.refresh", this.onRefresh.bind(this));
+        this.props.subscribe("file.select", this.toggleSelect.bind(this));
+        window.addEventListener("keydown", this.toggleHiddenFilesVisibilityonCtrlK);
     }
 
     componentWillUnmount() {
-        this.props.unsubscribe('file.upload');
-        this.props.unsubscribe('file.create');
-        this.props.unsubscribe('file.rename');
-        this.props.unsubscribe('file.delete');
-        this.props.unsubscribe('file.refresh');
-        window.removeEventListener('keydown', this.toggleHiddenFilesVisibilityonCtrlK);
+        this.props.unsubscribe("file.upload");
+        this.props.unsubscribe("file.create");
+        this.props.unsubscribe("file.rename");
+        this.props.unsubscribe("file.delete");
+        this.props.unsubscribe("file.delete.multiple");
+        this.props.unsubscribe("file.refresh");
+        this.props.unsubscribe("file.select");
+        window.removeEventListener("keydown", this.toggleHiddenFilesVisibilityonCtrlK);
         this._cleanupListeners();
 
         LAST_PAGE_PARAMS.path = this.state.path;
@@ -100,11 +107,11 @@ export class FilesPage extends React.Component {
         if(e.keyCode === 72 && e.ctrlKey === true){
             e.preventDefault();
             this.setState({show_hidden: !this.state.show_hidden}, () => {
-                settings_put('filespage_show_hidden', this.state.show_hidden);
+                settings_put("filespage_show_hidden", this.state.show_hidden);
                 if(!!this.state.show_hidden){
-                    notify.send("Display hidden files", 'info');
+                    notify.send("Display hidden files", "info");
                 }else{
-                    notify.send("Hide hidden files", 'info');
+                    notify.send("Hide hidden files", "info");
                 }
             });
             this.onRefresh();
@@ -114,7 +121,7 @@ export class FilesPage extends React.Component {
     onRefresh(path = this.state.path){
         this._cleanupListeners();
         const observer = Files.ls(path).subscribe((res) => {
-            if(res.status === 'ok'){
+            if(res.status === "ok"){
                 let files = new Array(res.results.length);
                 for(let i=0,l=res.results.length; i<l; i++){
                     let path = this.state.path+res.results[i].name;
@@ -123,12 +130,14 @@ export class FilesPage extends React.Component {
                         continue;
                     }
                     files[i] = res.results[i];
-                    files[i].link = createLink(res.results[i].type, res.results[i].path)
+                    files[i].link = createLink(res.results[i].type, res.results[i].path);
                 }
                 this.setState({
                     metadata: res.metadata,
                     files: sort(files, this.state.sort),
+                    selected: [],
                     loading: false,
+                    is_search: false,
                     page_number: function(){
                         if(this.state.path === LAST_PAGE_PARAMS.path){
                             return LAST_PAGE_PARAMS.page_number;
@@ -141,7 +150,7 @@ export class FilesPage extends React.Component {
                     }
                 });
             }else{
-                notify.send(res, 'error');
+                notify.send(res, "error");
             }
         }, (error) => {
             this.props.error(error);
@@ -162,7 +171,7 @@ export class FilesPage extends React.Component {
     }
 
     onSort(_sort){
-        settings_put('filespage_sort', _sort);
+        settings_put("filespage_sort", _sort);
         const same_sort = _sort === this.state.sort;
         this.setState({
             sort: _sort
@@ -181,7 +190,7 @@ export class FilesPage extends React.Component {
 
     onView(){
         const _view = this.state.view === "list" ? "grid" : "list";
-        settings_put('filespage_view', _view);
+        settings_put("filespage_view", _view);
         this.setState({
             view: _view
         }, () => {
@@ -210,6 +219,7 @@ export class FilesPage extends React.Component {
                     f.link = createLink(f.type, f.path);
                     return f;
                 }) || [],
+                is_search: true,
                 metadata: {
                     can_rename: false,
                     can_delete: false,
@@ -226,6 +236,19 @@ export class FilesPage extends React.Component {
         });
     }
 
+    handleMultiSelect(selectedKeys, e){
+        this.setState({selected: selectedKeys});
+    }
+    toggleSelect(path){
+        const idx = this.state.selected.indexOf(path);
+        if(idx == -1){
+            this.setState({ selected: this.state.selected.concat([path]) });
+        } else {
+            this.state.selected.splice(idx, 1);
+            this.setState({ selected: this.state.selected });
+        }
+    }
+
     render() {
         let $moreLoading = ( <div className="infinite_scroll_loading" key={-1}><Loader/></div> );
         if(this.state.files.length <= this.state.page_number * LOAD_PER_SCROLL){
@@ -233,19 +256,20 @@ export class FilesPage extends React.Component {
         }
         return (
             <div className="component_page_filespage">
-              <BreadCrumb className="breadcrumb" path={this.state.path} />
+              <BreadCrumb className="breadcrumb" path={this.state.path} currentSelection={this.state.selected} />
+              <SelectableGroup onSelection={this.handleMultiSelect.bind(this)} tolerance={2} onNonItemClick={this.handleMultiSelect.bind(this, [])} preventDefault={true} enabled={this.state.is_search === false} className="selectablegroup">
               <div className="page_container">
                 <div ref="$scroll" className="scroll-y">
                   <InfiniteScroll pageStart={0} loader={$moreLoading} hasMore={this.state.files.length > 70}
                     initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={100}>
                     <NgIf className="container" cond={!this.state.loading}>
-                      <NgIf cond={this.state.path === '/'}>
+                      <NgIf cond={this.state.path === "/"}>
                         <FrequentlyAccess files={this.state.frequents} />
                       </NgIf>
-                      <Submenu path={this.state.path} sort={this.state.sort} view={this.state.view} onSearch={this.onSearch.bind(this)} onViewUpdate={(value) => this.onView(value)} onSortUpdate={(value) => {this.onSort(value);}} accessRight={this.state.metadata || {}}></Submenu>
+                      <Submenu path={this.state.path} sort={this.state.sort} view={this.state.view} onSearch={this.onSearch.bind(this)} onViewUpdate={(value) => this.onView(value)} onSortUpdate={(value) => {this.onSort(value);}} accessRight={this.state.metadata || {}} selected={this.state.selected}></Submenu>
                       <NgIf cond={true}>
-                        <FileSystem path={this.state.path} sort={this.state.sort} view={this.state.view}
-                                    files={this.state.files.slice(0, this.state.page_number * LOAD_PER_SCROLL)}
+                        <FileSystem path={this.state.path} sort={this.state.sort} view={this.state.view} selected={this.state.selected}
+                                    files={this.state.files.slice(0, this.state.page_number * LOAD_PER_SCROLL)} isSearch={this.state.is_search}
                                     metadata={this.state.metadata || {}} onSort={this.onSort.bind(this)} onView={this.onView.bind(this)} />
                       </NgIf>
                     </NgIf>
@@ -259,6 +283,7 @@ export class FilesPage extends React.Component {
               <div className="upload-footer">
                 <div className="bar"></div>
               </div>
+              </SelectableGroup>
             </div>
         );
     }
