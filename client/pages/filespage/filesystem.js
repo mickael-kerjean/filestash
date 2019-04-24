@@ -31,6 +31,7 @@ export class FileSystem extends React.PureComponent {
                           if(file.type === 'directory' || file.type === 'file' || file.type === 'link' || file.type === 'bucket'){
                               return ( <ExistingThing view={this.props.view} key={file.name+file.path+(file.icon || '')} file={file} path={this.props.path} metadata={this.props.metadata || {}} selectableKey={file} selected={this.props.selected.indexOf(file.path) !== -1} currentSelection={this.props.selected} /> );
                           }
+                          return null;
                       })
                   }
                   </ReactCSSTransitionGroup>

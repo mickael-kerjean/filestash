@@ -213,12 +213,18 @@ export class FilesPage extends React.Component {
         if(this._search){
             this._search.unsubscribe();
         }
-        this._search = onSearch(search, this.state.path).subscribe((f) => {
+        this._search = onSearch(search, this.state.path).subscribe((f = []) => {
+            let l = f.length;
+            for(let i=0; i<l; i++){
+                f[i].link = createLink(f[i].type, f[i].path);
+                if(this.state.show_hidden == false){
+                    if(f[i].path.split("/").filter((chunk) => chunk[0] === "." ? true : false).length > 0){
+                        delete f[i].type;
+                    }
+                }
+            }
             this.setState({
-                files: f.map((f) => {
-                    f.link = createLink(f.type, f.path);
-                    return f;
-                }) || [],
+                files: f,
                 is_search: true,
                 metadata: {
                     can_rename: false,
