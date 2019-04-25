@@ -100,7 +100,7 @@ steps:
   when:
     branch: master
   settings:
-    command_timeout: 5m
+    command_timeout: 10m
     host: hal.kerjean.me
     user:
       from_secret: SSH_USERNAME
@@ -109,8 +109,9 @@ steps:
     port: 22
     script:
     - cd /app/filestash/
-    - docker pull machines/filestash:latest
-    - docker-compose up -d
+    - docker-compose pull
+    - docker-compose up -d --force-recreate --build
+    - docker image prune -f
 
 - name: report
   image: plugins/irc
