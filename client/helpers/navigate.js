@@ -38,15 +38,7 @@ function encode_path(path){
 }
 
 export function prepare(path){
-    // to send our url correctly without using directly '/'
-    let decoded = '';
-    try {
-        decoded = decodeURIComponent(path);
-    } catch (e) {
-        decoded = decodeURIComponent(path.replace(/%/g, '%25'));
-    }
-
-    return encodeURIComponent(decoded)
+    return encodeURIComponent(decodeURIComponent(path.replace(/%/g, '%25')));
 }
 
 export function urlParams() {
