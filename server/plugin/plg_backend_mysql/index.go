@@ -1,4 +1,4 @@
-package main
+package plg_backend_mysql
 
 import (
 	"database/sql"
@@ -20,7 +20,7 @@ type Mysql struct {
 	db *sql.DB
 }
 
-func Init(config *Configuration) {
+func init() {
 	Backend.Register("mysql", Mysql{})
 }
 

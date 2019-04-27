@@ -1,18 +1,17 @@
-package lib
-
-// #cgo pkg-config: libraw
-// #include <raw.h>
-// #include <stdlib.h>
+package plg_image_light
+// #cgo CFLAGS: -I./deps/src
+// #cgo LDFLAGS: -lm -lgomp -llcms2 -lstdc++ -L./deps -l:libtranscode.a
+// #include "libtranscode.h"
 import "C"
 
 import (
+	"context"
+	"golang.org/x/sync/semaphore"
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"math/rand"
-	"time"
 	"unsafe"
 )
 
-const LIBRAW_MEMORY_ERROR = -1
+var LIBRAW_LOCK = semaphore.NewWeighted(int64(5))
 
 func IsRaw(mType string) bool {
 	switch mType {
@@ -46,20 +45,14 @@ func IsRaw(mType string) bool {
 }
 
 func ExtractPreview(t *Transform) error {
-	filename := C.CString(t.Input)
-	err := C.raw_process(filename, C.int(t.Size))
-	if err == LIBRAW_MEMORY_ERROR {
-		// libraw acts weird sometimes and I couldn't
-		// find a way to increase its available memory :(
-		r := rand.Intn(2000) + 500
-		time.Sleep(time.Duration(r) * time.Millisecond)
-		C.free(unsafe.Pointer(filename))
-		return ExtractPreview(t)
-	} else if err != 0 {
-		C.free(unsafe.Pointer(filename))
-		return NewError("", 500)
-	}
+	LIBRAW_LOCK.Acquire(context.Background(), 1)
+	defer LIBRAW_LOCK.Release(1)
 
-	C.free(unsafe.Pointer(filename))
+	filename := C.CString(t.Input)
+	defer C.free(unsafe.Pointer(filename))
+
+	if err := C.image_transcode_compute(filename, C.int(t.Size)); err != 0 {
+		return ErrNotValid
+	}
 	return nil
 }

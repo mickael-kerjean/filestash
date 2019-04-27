@@ -234,7 +234,9 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	if contentLength != -1 {
 		header.Set("Content-Length", fmt.Sprintf("%d", contentLength))
 	}
-	header.Set("Content-Type", GetMimeType(req.URL.Query().Get("path")))
+	if header.Get("Content-Type") == "" {
+		header.Set("Content-Type", GetMimeType(req.URL.Query().Get("path")))
+	}
 	if header.Get("Content-Security-Policy") == "" {
 		header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'")
 	}

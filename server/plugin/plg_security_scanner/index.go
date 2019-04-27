@@ -1,5 +1,4 @@
-// This plugins attempt to crash http scanners used by script kiddies
-package main
+package plg_security_scanner
 
 import (
 	"bytes"
@@ -16,8 +15,8 @@ var (
 	billionsOfLol *bytes.Buffer
 )
 
-func Init(config *Configuration) {
-	if plugin_enable := config.Get("features.protection.enable").Schema(func(f *FormElement) *FormElement{
+func init() {
+	if plugin_enable := Config.Get("features.protection.enable").Schema(func(f *FormElement) *FormElement{
 		if f == nil {
 			f = &FormElement{}
 		}

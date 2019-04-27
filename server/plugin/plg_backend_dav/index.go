@@ -1,10 +1,4 @@
-package main
-
-/*
- * Compilation
- * ===========
- * go build -buildmode=plugin -o dist/data/plugin/backend_dav.so server/plugin/plg_backend_dav/index.go
- */
+package plg_backend_dav
 
 import (
 	"encoding/xml"
@@ -28,7 +22,7 @@ const (
 	CALDAV  string = "caldav"
 )
 
-func Init(config *Configuration) {
+func init() {
 	DavCache = NewAppCache(2, 1)
 	Backend.Register(CARDDAV, Dav{})
 	Backend.Register(CALDAV,  Dav{})

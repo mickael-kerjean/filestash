@@ -1,9 +1,8 @@
-package main
+package plg_image_light
 
 import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/plugin/plg_image_light/lib"
 	"io"
 	"net/http"
 	"os"
@@ -12,17 +11,11 @@ import (
 	"strconv"
 )
 
-const (
-	ImageCachePath = "data/cache/image/"
-)
+const ImageCachePath = "data/cache/image/"
 
-var Config *Configuration
-
-func Init(conf *Configuration) {
-	Config = conf
-
+func init() {
 	plugin_enable := func() bool {
-		return conf.Get("features.image.enable_image").Schema(func(f *FormElement) *FormElement {
+		return Config.Get("features.image.enable_image").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
 			}
@@ -36,7 +29,7 @@ func Init(conf *Configuration) {
 	plugin_enable()
 
 	thumb_size := func() int {
-		return conf.Get("features.image.thumbnail_size").Schema(func(f *FormElement) *FormElement {			
+		return Config.Get("features.image.thumbnail_size").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
 			}
@@ -52,7 +45,7 @@ func Init(conf *Configuration) {
 	thumb_size()
 
 	thumb_quality := func() int {
-		return conf.Get("features.image.thumbnail_quality").Schema(func(f *FormElement) *FormElement {
+		return Config.Get("features.image.thumbnail_quality").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
 			}
@@ -68,7 +61,7 @@ func Init(conf *Configuration) {
 	thumb_quality()
 
 	thumb_caching := func() int {
-		return conf.Get("features.image.thumbnail_caching").Schema(func(f *FormElement) *FormElement {
+		return Config.Get("features.image.thumbnail_caching").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
 			}
@@ -84,7 +77,7 @@ func Init(conf *Configuration) {
 	thumb_caching()
 
 	image_quality := func() int {
-		return conf.Get("features.image.image_quality").Schema(func(f *FormElement) *FormElement {
+		return Config.Get("features.image.image_quality").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
 			}
@@ -100,7 +93,7 @@ func Init(conf *Configuration) {
 	image_quality()
 
 	image_caching := func() int {
-		return conf.Get("features.image.image_caching").Schema(func(f *FormElement) *FormElement {
+		return Config.Get("features.image.image_caching").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
 			}
@@ -139,9 +132,8 @@ func Init(conf *Configuration) {
 
 		/////////////////////////
 		// Specify transformation
-		transform := &lib.Transform{
+		transform := &Transform{
 			Input: GetAbsolutePath(ImageCachePath + "imagein_" + QuickString(10)),
-			Output: GetAbsolutePath(ImageCachePath + "imageout_" + QuickString(10)),			
 			Size:      thumb_size(),
 			Crop:      true,
 			Quality:   thumb_quality(),
@@ -163,7 +155,7 @@ func Init(conf *Configuration) {
 
 		/////////////////////////////
 		// Insert file in the fs
-		// => lower RAM usage while processing
+		// => impedance matching with something usable by CGO
 		file, err := os.OpenFile(transform.Input, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 		if err != nil {
 			return reader, ErrFilesystemError
@@ -173,26 +165,33 @@ func Init(conf *Configuration) {
 		reader.Close()
 		defer func() {
 			os.Remove(transform.Input)
-			os.Remove(transform.Output)
 		}()
 
 		/////////////////////////
 		// Transcode RAW image
-		if lib.IsRaw(mType) {
-			if lib.ExtractPreview(transform) == nil {
+		if IsRaw(mType) {
+		 	if ExtractPreview(transform) == nil {
 				mType = "image/jpeg"
 				(*res).Header().Set("Content-Type", mType)
 			} else {
 				return reader, nil
-			}
+		 	}
 		}
 
 		/////////////////////////
-		// Final stage: resizing
+		// final stage: resizing
 		if mType != "image/jpeg" && mType != "image/png" && mType != "image/gif" && mType != "image/tiff" {
 			return reader, nil
 		}
 
-		return lib.CreateThumbnail(transform)
+		return CreateThumbnail(transform)
 	})
+}
+
+type Transform struct {
+	Input     string
+	Size      int
+	Crop      bool
+	Quality   int
+	Exif      bool
 }

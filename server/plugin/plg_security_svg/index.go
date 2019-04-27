@@ -1,4 +1,4 @@
-package main
+package plg_security_svg
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -8,9 +8,9 @@ import (
 	"regexp"
 )
 
-func Init(conf *Configuration) {
+func init() {
 	disable_svg := func() bool {
-		return conf.Get("features.protection.disable_svg").Schema(func(f *FormElement) *FormElement {
+		return Config.Get("features.protection.disable_svg").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
 			}

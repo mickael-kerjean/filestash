@@ -1,4 +1,4 @@
-package main
+package plg_backend_backblaze
 
 import (
 	"bytes"
@@ -38,7 +38,7 @@ type BackblazeError struct {
 	Status  int    `json:"status"`
 }
 
-func Init(config *Configuration) {
+func init() {
 	Backend.Register("backblaze", Backblaze{})
 	BackblazeCache = NewAppCache()
 	cachePath := filepath.Join(GetCurrentDir(), BackblazeCachePath)

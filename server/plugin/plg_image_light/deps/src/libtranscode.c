@@ -1,14 +1,9 @@
 #include <stdlib.h>
 #include <libraw/libraw.h>
 
-int save_thumbnail(const char *filename, libraw_data_t *raw){
-  int err;
-  err = libraw_dcraw_thumb_writer(raw, filename);
-  libraw_close(raw);
-  return err;
-}
+int save_thumbnail(const char *filename, libraw_data_t *raw);
 
-int raw_process(const char* filename, int min_width){
+int image_transcode_compute(const char* filename, int min_width) {
   int err;
   libraw_data_t *raw;
   int thumbnail_working = 0;
@@ -64,4 +59,11 @@ int raw_process(const char* filename, int min_width){
 
   libraw_close(raw);
   return 0;
+}
+
+int save_thumbnail(const char *filename, libraw_data_t *raw){
+  int err;
+  err = libraw_dcraw_thumb_writer(raw, filename);
+  libraw_close(raw);
+  return err;
 }
