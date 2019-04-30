@@ -3,12 +3,22 @@ import path from 'path';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import { MenuBar } from './menubar';
-import { Icon, NgIf, Loader, EventEmitter, EventReceiver } from '../../components/';
+import { Bundle, Icon, NgIf, Loader, EventEmitter, EventReceiver } from '../../components/';
 import { alert } from '../../helpers/';
 import { Pager } from './pager';
-import { SmallExif, LargeExif } from './image_exif';
 import './imageviewer.scss';
 import './pager.scss';
+
+const SmallExif = (props) => (
+    <Bundle loader={import(/* webpackChunkName: "exif" */"./image_exif")} symbol="SmallExif">
+      {(Comp) => <Comp {...props}/>}
+    </Bundle>
+);
+const LargeExif = (props) => (
+    <Bundle loader={import(/* webpackChunkName: "exif" */"./image_exif")} symbol="LargeExif">
+      {(Comp) => <Comp {...props}/>}
+    </Bundle>
+);
 
 
 @EventReceiver
