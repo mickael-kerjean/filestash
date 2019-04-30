@@ -78,7 +78,7 @@ if (process.env.NODE_ENV === 'production') {
     config.plugins.push(new CompressionPlugin({
         asset: "[path].gz[query]",
         algorithm: "gzip",
-        test: /\.js$|\.json$|\.html$/,
+        test: /\.js$|\.json$|\.html$|\.svg|\.ico$/,
         threshold: 0,
         minRatio: 0.8
     }));

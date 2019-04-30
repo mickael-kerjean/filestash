@@ -8,7 +8,7 @@ export { NgIf, NgShow } from './ngif';
 export { Card } from './card';
 export { Loader } from './loader';
 export { Fab } from './fab';
-export { Icon } from './icon';
+export { Icon, img_placeholder } from './icon';
 export { Bundle } from './bundle';
 export { Modal } from './modal';
 export { ModalPrompt } from './prompt';

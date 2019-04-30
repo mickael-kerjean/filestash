@@ -1,11 +1,9 @@
 import React from 'react';
 import './icon.scss';
 
-import img_loader from "../assets/img/loader.svg";
 import img_save from "../assets/img/save.svg";
 import img_power from "../assets/img/power.svg";
 import img_bucket from "../assets/img/bucket.svg";
-import img_link from "../assets/img/link.svg";
 import img_loading from "../assets/img/loader.svg";
 import img_play from "../assets/img/play.svg";
 import img_pause from "../assets/img/pause.svg";
@@ -41,6 +39,7 @@ import img_info from '../assets/img/info.svg';
 import img_fullscreen from '../assets/img/fullscreen.svg';
 import img_camera from '../assets/img/camera.svg';
 import img_location from '../assets/img/location.svg';
+export const img_placeholder = "/assets/icons/placeholder.png";
 
 export const Icon = (props) => {
     if(props.name === null) return null;
@@ -49,8 +48,6 @@ export const Icon = (props) => {
         img = "/assets/icons/folder.svg";
     }else if(props.name === 'file'){
         img = "/assets/icons/file.svg";
-    }else if(props.name === 'loader'){
-        img = img_loader;
     }else if(props.name === 'save'){
         img = img_save;
     }else if(props.name === 'power'){
@@ -63,10 +60,6 @@ export const Icon = (props) => {
         img = "/assets/icons/share.svg";
     }else if(props.name === 'bucket'){
         img = img_bucket;
-    }else if(props.name === 'link'){
-        img = img_link;
-    }else if(props.name === 'loading'){
-        img = img_loader;
     }else if(props.name === 'download_white'){
         img = img_download_white;
     }else if(props.name === 'upload_white'){
@@ -79,6 +72,8 @@ export const Icon = (props) => {
         img = img_error;
     }else if(props.name === 'loading_white'){
         img = img_loading_white;
+    }else if(props.name === 'loading'){
+        img = img_loading;
     }else if(props.name === 'calendar_white'){
         img = img_calendar_white;
     }else if(props.name === 'schedule'){
@@ -132,7 +127,7 @@ export const Icon = (props) => {
     }else if(props.name === 'location'){
         img = img_location;
     }else{
-        throw('unknown icon');
+        throw('unknown icon: "'+props.name+"'");
     }
 
     return (

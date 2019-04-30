@@ -6,11 +6,10 @@ import { DragSource, DropTarget } from 'react-dnd';
 import { createSelectable } from 'react-selectable';
 
 import './thing.scss';
-import { Card, NgIf, Icon, EventEmitter, Button } from '../../components/';
+import { Card, NgIf, Icon, EventEmitter, Button, img_placeholder } from '../../components/';
 import { pathBuilder, basename, filetype, prompt, alert, leftPad, getMimeType, debounce, memory } from '../../helpers/';
 import { Files } from '../../model/';
 import { ShareComponent } from './share';
-import img_placeholder from '../../assets/img/placeholder.png';
 
 const fileSource = {
     beginDrag(props, monitor, component) {
