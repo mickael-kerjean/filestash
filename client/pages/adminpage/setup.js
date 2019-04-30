@@ -2,7 +2,8 @@ import React from 'react';
 
 import { Input, Button, Container, Icon } from '../../components/';
 import { Config, Admin } from '../../model/';
-import { notify, FormObjToJSON, alert, prompt, bcrypt_password } from '../../helpers';
+import { notify, FormObjToJSON, alert, prompt } from '../../helpers';
+import { bcrypt_password } from '../../helpers/bcrypt';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import "./setup.scss";

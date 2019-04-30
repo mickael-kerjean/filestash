@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Input, Textarea, Select, Enabler } from './';
-import { FormObjToJSON, bcrypt_password, format, autocomplete, notify } from '../helpers/';
+import { FormObjToJSON, format, autocomplete, notify } from '../helpers/';
 
 import "./formbuilder.scss";
 
@@ -186,9 +186,10 @@ const FormElement = (props) => {
             if(value === ""){
                 return props.onChange(null);
             }
-            return bcrypt_password(value).then((hash) => {
-                props.onChange(hash);
-            });
+            return import(/* webpackChunkName: "bcrypt" */"../helpers/bcrypt")
+                .catch((err) => notify.send(err && err.message, "error"))
+                .then((bcrypt) => bcrypt.bcrypt_password(value))
+                .then((hash) => props.onChange(hash));
         };
         $input = ( <Input onChange={(e) => onBcryptChange(e.target.value)} {...id} name={struct.label} type="password" defaultValue={struct.value || ""} placeholder={struct.placeholder} /> );
         break;

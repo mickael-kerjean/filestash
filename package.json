@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aes-js": "git+https://github.com/mickael-kerjean/aes-js.git",
     "bcryptjs": "^2.4.3",
     "react-selectable": "^2.0.1"
   },

@@ -1,24 +1,17 @@
-import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
-
-const algorithm = 'aes-256-cbc';
+import aesjs from "aes-js";
 
 export function encrypt(obj, key){
-    const cipher = crypto.createCipher(algorithm, key);
-    return cipher.update(JSON.stringify(obj), 'utf8', 'base64') + cipher.final('base64');
+    const textBytes = aesjs.utils.utf8.toBytes(JSON.stringify(obj));
+    const keyBytes = aesjs.padding.pkcs7.pad(aesjs.utils.utf8.toBytes(key));
+    return aesjs.utils.hex.fromBytes(
+        new aesjs.ModeOfOperation.ctr(keyBytes, new aesjs.Counter(5)).encrypt(textBytes)
+    );
 }
-
 
 export function decrypt(text, key){
-    var decipher = crypto.createDecipher(algorithm, key)
-    return JSON.parse(decipher.update(text,'base64','utf8') + decipher.final('utf8'));
-}
-
-export function bcrypt_password(password) {
-    return new Promise((done, error) => {
-        bcrypt.hash(password, 10, (err, hash) => {
-            if(err) return error(err)
-            done(hash);
-        })
-    });
+    const textBytes = aesjs.utils.hex.toBytes(text);
+    const keyBytes = aesjs.padding.pkcs7.pad(aesjs.utils.utf8.toBytes(key));
+    return JSON.parse(aesjs.utils.utf8.fromBytes(
+        new aesjs.ModeOfOperation.ctr(keyBytes, new aesjs.Counter(5)).decrypt(textBytes)
+    ));
 }

@@ -1,7 +1,6 @@
 export { URL_HOME, goToHome, URL_FILES, goToFiles, URL_VIEWER, goToViewer, URL_LOGIN, goToLogin, URL_LOGOUT, goToLogout, urlParams } from './navigate';
 export { opener } from './mimetype';
 export { debounce, throttle } from './backpressure';
-export { encrypt, decrypt, bcrypt_password } from './crypto';
 export { event } from './events';
 export { cache } from './cache';
 export { pathBuilder, basename, dirname, absoluteToRelative, filetype, currentShare, findParams, appendShareToUrl } from './path';

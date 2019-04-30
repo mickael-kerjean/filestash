@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import { ModalPrompt } from '../../components/';
-import { encrypt, decrypt, memory, prompt } from '../../helpers/';
+import { memory, prompt, notify } from '../../helpers/';
 
 const CREDENTIALS_CACHE = "credentials",
       CREDENTIALS_KEY = "credentials_key";
@@ -86,13 +86,17 @@ export class Credentials extends React.Component {
     hidrate_credentials(key){
         let raw = window.localStorage.getItem(CREDENTIALS_CACHE);
         if(raw){
-            try{
-                let credentials = decrypt(raw, key);
-                this.props.onCredentialsFound(credentials);
-                return Promise.resolve();
-            }catch(e){
-                return Promise.reject('Incorrect password');
-            }
+            return import(/* webpackChunkName: "cryto" */"../../helpers/crypto")
+                .then((crypt) => {
+                    try{
+                        let credentials = crypt.decrypt(raw, key);
+                        this.props.onCredentialsFound(credentials);
+                        return Promise.resolve();
+                    }catch(e){
+                        return Promise.reject({message: "Incorrect password"});
+                    }
+                })
+                .catch((err) => notify.send(err && err.message, "error"))
         }else{
             this.saveCreds(this.props.credentials);
             return Promise.resolve();
@@ -102,7 +106,9 @@ export class Credentials extends React.Component {
     saveCreds(creds){
         const key = memory.get(CREDENTIALS_KEY);
         if(key){
-            window.localStorage.setItem(CREDENTIALS_CACHE, encrypt(creds, key));
+            return import(/* webpackChunkName: "cryto" */"../../helpers/crypto")
+                .then((crypt) => window.localStorage.setItem(CREDENTIALS_CACHE, crypt.encrypt(creds, key)))
+                .catch((err) => notify.send(err && err.message, "error"));
         }
     }
 
