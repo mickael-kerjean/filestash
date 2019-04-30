@@ -37,7 +37,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     Config.refresh().then(() => {
         const timeSinceBoot = new Date() - window.initTime;
-        if(timeSinceBoot >= 2000){
+        if(timeSinceBoot >= 1500){
             const timeoutToAvoidFlickering = timeSinceBoot > 2500 ? 0 : 500;
             return waitFor(timeoutToAvoidFlickering)
                 .then(removeLoaderWithAnimation)

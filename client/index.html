@@ -4,147 +4,104 @@
     <meta charset="utf-8">
     <title>Filestash</title>
     <meta name="author" content="Mickael Kerjean <mickael@kerjean.me>">
-    <meta name="owner" content="http://github.com/mickael-kerjean/filestash">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <link rel="manifest" href="/assets/manifest.json">
     <meta content="yes" name="apple-mobile-web-app-capable">
     <meta content="Filestash" name="apple-mobile-web-app-title">
     <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
-
     <meta name="msapplication-TileColor" content="#2b5797">
     <meta name="theme-color" content="#f2f3f5">
-
     <meta name="description" content="browse your files in the cloud">
   </head>
   <body>
     <div id="main" style="height: 100%">
       <style>
-
-       html{ background: #f2f3f5; color: #375160; overflow: hidden; }
-       .background-color{ background: #f2f3f5; }
-       noscript div{ text-align:center;font-family:monospace;margin-top:5%;font-size:15px; }
+        html{ background: #f2f3f5; color: #375160; overflow: hidden; }
+        .background-color{ background: #f2f3f5; }
+        noscript div{ text-align:center;font-family:monospace;margin-top:5%;font-size:15px; }
       </style>
       <script>
-       if(location.pathname == "/" || location.pathname == "/login"){
-           $style = document.querySelector("style");
-           $style.innerText = $style.innerText.replace(/f2f3f5/g, "9AD1ED")
-       }
-       window.initTime = new Date();
+        if(location.pathname == "/" || location.pathname == "/login"){
+            $style = document.querySelector("#main style");
+            $style.innerText = $style.innerText.replace(/f2f3f5/g, "9AD1ED")
+        }
+        window.initTime = new Date();
       </script>
       <style>
-       #nyan_loader{ max-width: 100%; overflow: hidden; }
-       #nyan_loader #cat{
-           position: absolute;
-           top: 50%;
-           left: 0%;
-           margin-left: -250px;
-           margin-top: -125px;
-           width: 100%;
-           height: 150px;
-       }
-       #nyan_loader.loading #cat{ left: 20%; left: calc(50% + 125px); transition: left 4s ease-out; }
-       #nyan_loader.loading.done #cat { left: 100%; left: calc(100% + 250px); transition: left 0.5s linear; }
-
-       #nyan_loader #cat svg{
-           height: 160px;
-           width: 250px;
-           position: absolute;
-       }
-       #nyan_loader #cat #hide-behind{
-           position: absolute;
-           top: 0;
-           left: 55px;
-           bottom: 0;
-           right: -250px;
-       }
-
-       /* RAINBOW */
-       #nyan_loader #rainbows{
-           position: absolute;
-           top: 50%;
-           left: 0;
-           overflow: hidden;
-           height: 145px;
-           margin-top: -110px;
-           width: 100%;
-       }
-       #nyan_loader #rainbows .wrapper{
-           width: 10000px;
-       }
-       #nyan_loader #rainbows .wrapper .rainbow {
-           z-index: -1;
-           font-size: 16em;
-           float: left;
-           position: relative;
-       }
-       #nyan_loader #rainbows .wrapper .rainbow .wave {
-           height: 20px;
-           width: 55px;
-       }
-       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-1 { background: #ff0000; }
-       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-2 { background: #ff9900; }
-       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-3 { background: #ffff00; }
-       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-4 { background: #33ff00; }
-       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-5 { background: #0099ff; }
-       #nyan_loader #rainbows .wrapper .rainbow .wave.wave-6 { background: #6633ff; }
-
-       #nyan_loader #rainbows .wrapper .rainbow.frame-1{ top: 0px; animation: rainbow .6s linear infinite; animation-delay: 0s;}
-       #nyan_loader #rainbows .wrapper .rainbow.frame-2{ top: 0px; animation: rainbow .6s linear infinite; animation-delay: 0.1s;}
-       #nyan_loader #rainbows .wrapper .rainbow.frame-3{ top: 0px; animation: rainbow .6s  linear infinite; animation-delay: 0.2s;}
-       #nyan_loader #rainbows .wrapper .rainbow.frame-4{ top: 0px; animation: rainbow .6s linear infinite; animation-delay: 0.3s;}
-       #nyan_loader #rainbows .wrapper .rainbow.frame-5{ top: 0px; animation: rainbow .6s linear infinite; animation-delay: 0.4s;}
-       #nyan_loader #rainbows .wrapper .rainbow.frame-6{ top: 0px; animation: rainbow .6s linear infinite; animation-delay: 0.5s;}
-       @keyframes rainbow {
-           0%{ top: 0px; }
-           50%{ top: 15px; }
-           100%{ top: 0px; }
-       }
-
-       /* NYAN CAT ANIMATION */
-       @keyframes nyan_all {
-           0%{ transform: translateY(0px); }
-           33%{ transform: translateY(0px); }
-           34%{ transform: translateY(1px); }
-           100%{ transform: translateY(1px); }
-       } #nyan_loader svg g#nyan_all{ animation: nyan_all 0.40s linear infinite; }
-       @keyframes nyan_head {
-           0%{ transform: translateX(0px) translateY(0px); }
-           16%{ transform: translateX(0px) translateY(0px); }
-           17%{ transform: translateX(1px) translateY(0px); }
-           66%{ transform: translateX(1px) translateY(0px); }
-           67%{ transform: translateX(0px) translateY(0px); }
-           83%{ transform: translateX(0px) translateY(0px); }
-           84%{ transform: translateX(0px) translateY(-1px); }
-           100%{ transform: translateX(0px) translateY(-1px); }
-       } #nyan_loader svg g#nyan_head{ animation: nyan_head 0.4s linear infinite; }
-       @keyframes nyan_walk {
-           0%{ transform: translateX(0px); }
-           16%{ transform: translateX(0px); }
-           17%{ transform: translateX(1px); }
-           33%{ transform: translateX(1px); }
-           34%{ transform: translateX(2px); }
-           50%{ transform: translateX(2px); }
-           51%{ transform: translateX(1px); }
-           100%{ transform: translateX(0px); }
-       } #nyan_loader svg g#nyan_feet{ animation: nyan_walk 0.5s linear infinite; }
-       @keyframes nyan_tail {
-           0%{ transform: rotate(0); }
-           16%{ transform: rotate(0); }
-           17%{ transform: rotate(-5deg); }
-           33%{ transform: rotate(-5deg); }
-           34%{ transform: rotate(-10deg); }
-           49%{ transform: rotate(-10deg); }
-           50%{ transform: rotate(-20deg); }
-           66%{ transform: rotate(-20deg); }
-           67%{ transform: rotate(-10deg); }
-           83%{ transform: rotate(-10deg); }
-           84%{ transform: rotate(-5deg); }
-           99%{ transform: rotate(-5deg); }
-           100%{ transform: rotate(0deg); }
-       } #nyan_loader svg g#nyan_tail{ animation: nyan_tail 0.5s linear infinite; transform-origin: 4px 8px; }
+        #n-lder{ max-width: 100%; overflow: hidden; }
+        #n-lder #cat{ position: absolute; top: 50%; left: 0%; margin-left: -250px; margin-top: -125px; width: 100%; height: 150px; }
+        #n-lder.loading #cat{ left: 20%; left: calc(50% + 125px); transition: left 4s ease-out; }
+        #n-lder.loading.done #cat { left: 100%; left: calc(100% + 250px); transition: left 0.5s linear; }
+        #n-lder #cat svg{ height: 160px; width: 250px; position: absolute; }
+        #n-lder #cat #hide-behind{ position: absolute; top: 0; left: 55px; bottom: 0; right: -250px; }
+        
+        #n-lder #rbw{ position: absolute; top: 50%; left: 0; overflow: hidden; height: 145px; margin-top: -110px; width: 100%; }
+        #n-lder #rbw .w{ width: 10000px; }
+        #n-lder #rbw .rbw { z-index: -1; font-size: 16em; float: left; position: relative; }
+        #n-lder #rbw .rbw .wv { height: 20px; width: 55px; }
+        #n-lder #rbw .rbw .wv.wv-1 { background: #ff0000; }
+        #n-lder #rbw .rbw .wv.wv-2 { background: #ff9900; }
+        #n-lder #rbw .rbw .wv.wv-3 { background: #ffff00; }
+        #n-lder #rbw .rbw .wv.wv-4 { background: #33ff00; }
+        #n-lder #rbw .rbw .wv.wv-5 { background: #0099ff; }
+        #n-lder #rbw .rbw .wv.wv-6 { background: #6633ff; }
+        
+        #n-lder #rbw .rbw{ top: 0px; animation: rbw .6s linear infinite; }
+        #n-lder #rbw .rbw.f1{ animation-delay: 0s; }
+        #n-lder #rbw .rbw.f2{ animation-delay: 0.1s; }
+        #n-lder #rbw .rbw.f3{ animation-delay: 0.2s; }
+        #n-lder #rbw .rbw.f4{ animation-delay: 0.3s; }
+        #n-lder #rbw .rbw.f5{ animation-delay: 0.4s; }
+        #n-lder #rbw .rbw.f6{ animation-delay: 0.5s; }
+        @keyframes rbw {
+            0%{ top: 0px; }
+            50%{ top: 15px; }
+            100%{ top: 0px; }
+        }
+        @keyframes nyan_all {
+            0%{ transform: translateY(0px); }
+            33%{ transform: translateY(0px); }
+            34%{ transform: translateY(1px); }
+            100%{ transform: translateY(1px); }
+        } #n-lder svg g#nyan_all{ animation: nyan_all 0.40s linear infinite; }
+        @keyframes nyan_head {
+            0%{ transform: translateX(0px) translateY(0px); }
+            16%{ transform: translateX(0px) translateY(0px); }
+            17%{ transform: translateX(1px) translateY(0px); }
+            66%{ transform: translateX(1px) translateY(0px); }
+            67%{ transform: translateX(0px) translateY(0px); }
+            83%{ transform: translateX(0px) translateY(0px); }
+            84%{ transform: translateX(0px) translateY(-1px); }
+            100%{ transform: translateX(0px) translateY(-1px); }
+        } #n-lder svg g#nyan_head{ animation: nyan_head 0.4s linear infinite; }
+        @keyframes nyan_walk {
+            0%{ transform: translateX(0px); }
+            16%{ transform: translateX(0px); }
+            17%{ transform: translateX(1px); }
+            33%{ transform: translateX(1px); }
+            34%{ transform: translateX(2px); }
+            50%{ transform: translateX(2px); }
+            51%{ transform: translateX(1px); }
+            100%{ transform: translateX(0px); }
+        } #n-lder svg g#nyan_feet{ animation: nyan_walk 0.5s linear infinite; }
+        @keyframes nyan_tail {
+            0%{ transform: rotate(0); }
+            16%{ transform: rotate(0); }
+            17%{ transform: rotate(-5deg); }
+            33%{ transform: rotate(-5deg); }
+            34%{ transform: rotate(-10deg); }
+            49%{ transform: rotate(-10deg); }
+            50%{ transform: rotate(-20deg); }
+            66%{ transform: rotate(-20deg); }
+            67%{ transform: rotate(-10deg); }
+            83%{ transform: rotate(-10deg); }
+            84%{ transform: rotate(-5deg); }
+            99%{ transform: rotate(-5deg); }
+            100%{ transform: rotate(0deg); }
+        } #n-lder svg g#nyan_tail{ animation: nyan_tail 0.5s linear infinite; transform-origin: 4px 8px; }
       </style>
-      <div id="nyan_loader">
+      <div id="n-lder">
         <div id="cat">
           <div id="hide-behind" class="background-color"></div>
           <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="32" height="21" preserveAspectRatio="xMinYMin meet" viewBox="0 0 33 21">
@@ -190,160 +147,43 @@
             </g>
           </svg>
         </div>
-        <div id="rainbows">
-          <div class="wrapper">
-            <div class="rainbow frame-1">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+        <div id="rbw">
+          <div class="w">
+            <div class="rbw f1">
+              <div class="wv wv-1"></div><div class="wv wv-2"></div><div class="wv wv-3"></div>
+              <div class="wv wv-4"></div><div class="wv wv-5"></div><div class="wv wv-6"></div>
             </div>
-            <div class="rainbow frame-2">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            <div class="rbw f2">
+              <div class="wv wv-1"></div><div class="wv wv-2"></div><div class="wv wv-3"></div>
+              <div class="wv wv-4"></div><div class="wv wv-5"></div><div class="wv wv-6"></div>
             </div>
-            <div class="rainbow frame-3">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            <div class="rbw f3">
+              <div class="wv wv-1"></div><div class="wv wv-2"></div><div class="wv wv-3"></div>
+              <div class="wv wv-4"></div><div class="wv wv-5"></div><div class="wv wv-6"></div>
             </div>
-            <div class="rainbow frame-4">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            <div class="rbw f4">
+              <div class="wv wv-1"></div><div class="wv wv-2"></div><div class="wv wv-3"></div>
+              <div class="wv wv-4"></div><div class="wv wv-5"></div><div class="wv wv-6"></div>
             </div>
-            <div class="rainbow frame-5">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            <div class="rbw f5">
+              <div class="wv wv-1"></div><div class="wv wv-2"></div><div class="wv wv-3"></div>
+              <div class="wv wv-4"></div><div class="wv wv-5"></div><div class="wv wv-6"></div>
             </div>
-            <div class="rainbow frame-6">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-1">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-2">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-3">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-4">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-5">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-6">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-1">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-2">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-3">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-4">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-5">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-6">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-1">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-2">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-3">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-4">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-5">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-6">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-1">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-2">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-3">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-4">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-5">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-6">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-1">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-2">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-3">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-4">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-5">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
-            </div>
-            <div class="rainbow frame-6">
-              <div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>
-              <div class="wave wave-4"></div><div class="wave wave-5"></div><div class="wave wave-6"></div>
+            <div class="rbw f6">
+              <div class="wv wv-1"></div><div class="wv wv-2"></div><div class="wv wv-3"></div>
+              <div class="wv wv-4"></div><div class="wv wv-5"></div><div class="wv wv-6"></div>
             </div>
           </div>
         </div>
       </div>
       <script>
-       window.setTimeout(function(){
-           var $loader = document.querySelector("#nyan_loader");
-           if($loader) $loader.classList.add("loading");
-       }, 2000);
+        window.setTimeout(function(){
+            $rbw = document.querySelector("#rbw .w");
+            if($rbw) $rbw.innerHTML = $rbw.innerHTML.repeat(10);
+
+            var $loader = document.querySelector("#n-lder");
+            if($loader) $loader.classList.add("loading");
+        }, 1500);
       </script>
     </div>
     <noscript>
