@@ -12,7 +12,7 @@ clone:
 steps:
 
 - name: build_prepare
-  image: alpine
+  image: alpine:latest
   depends_on: [ clone ]
   commands:
   - mkdir -p ./dist/data/
@@ -24,9 +24,8 @@ steps:
   environment:
     CGO_LDFLAGS_ALLOW: '-fopenmp'
   commands:
-  - mkdir ../plugin/
-  - mv server/plugin/plg_* ../plugin
   - go get -t ./server/...
+  - find server/plugin/plg_* -type f -name "install.sh" -exec {} \;
   - go build -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o dist/filestash server/main.go
   - timeout 1 ./dist/filestash || true
 
@@ -37,8 +36,15 @@ steps:
   - npm install > /dev/null 2>&1
   - NODE_ENV=production npm run build
 
+- name: build_finalise
+  image: alpine:latest
+  depends_on: [ clone ]
+  commands:
+  - cp -R dist /tmp/filestash
+  - tar -C /tmp/ -zcvf filestash.tar.gz ./filestash
+
 - name: test_prepare
-  image: alpine
+  image: alpine:latest
   depends_on: [ clone ]
   environment:
     PASSWORD:
@@ -80,65 +86,66 @@ steps:
   - node servers/webdav.js &
   - npm test
 
-- name: release
-  image: plugins/docker
-  depends_on: [ build_prepare, build_go, build_js, test_prepare, test_go, test_js ]
+- name: release_artifact
+  image: appleboy/drone-scp
+  depends_on: [ test_go, test_js, test_e2e ]
   when:
     branch: master
   settings:
-    dockerfile: ./docker/prod/Dockerfile
-    repo: machines/filestash
-    username:
-      from_secret: DOCKER_USERNAME
-    password:
-      from_secret: DOCKER_PASSWORD
-    tags: latest
-
-- name: deploy
-  image: appleboy/drone-ssh
-  depends_on: [ release ]
-  when:
-    branch: master
-  settings:
-    command_timeout: 10m
+    command_timeout: 30m
     host: hal.kerjean.me
     user:
       from_secret: SSH_USERNAME
     password:
       from_secret: SSH_PASSWORD
-    port: 22
-    script:
-    - cd /app/filestash/
-    - docker-compose pull
-    - docker-compose up -d --force-recreate --build
-    - docker image prune -f
+    source: filestash.tar.gz
+    target: /app/pages/data/projects/filestash/downloads/latest/
 
-- name: report
-  image: plugins/irc
-  depends_on: [ deploy ]
-  settings:
-    prefix: build
-    nick: blipblip
-    channel: filestash
-    host: chat.freenode.net
-    port: 6667
-    template: >
-      {{#success build.status}}
-        Build success: https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
-      {{else}}
-        Build failure: er}} https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
-      {{/success}}
+# - name: release_docker
+#   image: debian:latest
+#   depends_on: [ release_artifact ]
+#   when:
+#     branch: master
+#   settings:
+#     dockerfile: ./docker/prod/Dockerfile
+#     repo: machines/filestash
+#     username:
+#       from_secret: DOCKER_USERNAME
+#     password:
+#       from_secret: DOCKER_PASSWORD
+#     tags: latest
 
-# - name: deployement_state
-#   image: machines/puppeteer
+# - name: deploy
+#   image: appleboy/drone-ssh
+#   depends_on: [ release_docker ]
+#   when:
+#     branch: master
+#   settings:
+#     command_timeout: 10m
+#     host: hal.kerjean.me
+#     user:
+#       from_secret: SSH_USERNAME
+#     password:
+#       from_secret: SSH_PASSWORD
+#     port: 22
+#     script:
+#     - cd /app/filestash/
+#     - docker-compose pull
+#     - docker-compose up -d --force-recreate --build
+#     - docker image prune -f
+
+# - name: report
+#   image: plugins/irc
 #   depends_on: [ deploy ]
-#   environment:
-#     APP_URL: https://demo.filestash.app
-#     GITHUB_TOKEN:
-#       from_secret: GITHUB_TOKEN
-#     CI: true
-#   commands:
-#   - curl -sD - -o /dev/null https://demo.filestash.app/about
-#   - cd ../test/e2e
-#   - npm install > /dev/null 2>&1
-#   - npm run state
+#   settings:
+#     prefix: build
+#     nick: blipblip
+#     channel: filestash
+#     host: chat.freenode.net
+#     port: 6667
+#     template: >
+#       {{#success build.status}}
+#         Build success: https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
+#       {{else}}
+#         Build failure: er}} https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
+#       {{/success}}
