@@ -9,7 +9,6 @@ const CompressionPlugin = require('compression-webpack-plugin');
 
 let config = {
     entry: {
-        polyfill: 'babel-polyfill',
         app: path.join(__dirname, 'client', 'index.js')
     },
     output: {
