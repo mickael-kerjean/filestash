@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include <libraw/libraw.h>
 
-int save_thumbnail(const char *filename, libraw_data_t *raw);
+#define FALSE 0
+#define TRUE !FALSE
 
 int image_transcode_compute(const char* filename, int min_width) {
   int err;
   libraw_data_t *raw;
-  int thumbnail_working = 0;
+  int has_thumbnail = FALSE;
 
   //////////////////////
   // boot up libraw
@@ -19,18 +20,26 @@ int image_transcode_compute(const char* filename, int min_width) {
 
   //////////////////////
   // use thumbnail if available
+  /*
   if(libraw_unpack_thumb(raw) == 0){
-    thumbnail_working = 1;
+    has_thumbnail = TRUE;
     if(raw->thumbnail.twidth > min_width && raw->thumbnail.tformat == LIBRAW_THUMBNAIL_JPEG){
-      return save_thumbnail(filename, raw);
+      err = libraw_dcraw_thumb_writer(raw, filename);
+      libraw_close(raw);
+      return err;
     }
   }
+  */
+  fprintf(stdout, "HERE\n");
+  fflush(stdout);
 
   //////////////////////
   // transcode image
   if(libraw_unpack(raw) != 0){
-    if(thumbnail_working == 1){
-      return save_thumbnail(filename, raw);
+    if(has_thumbnail == TRUE){
+      err = libraw_dcraw_thumb_writer(raw, filename);
+      libraw_close(raw);
+      return err;
     }
     libraw_close(raw);
     return 0;
@@ -42,16 +51,20 @@ int image_transcode_compute(const char* filename, int min_width) {
       libraw_close(raw);
       return -1;
     }
-    if(thumbnail_working == 1){
-      return save_thumbnail(filename, raw);
+    if(has_thumbnail == TRUE){
+      err = libraw_dcraw_thumb_writer(raw, filename);
+      libraw_close(raw);
+      return err;
     }
     libraw_close(raw);
     return 1;
   }
 
   if(libraw_dcraw_ppm_tiff_writer(raw, filename) != 0){
-    if(thumbnail_working == 1){
-      return save_thumbnail(filename, raw);
+    if(has_thumbnail == TRUE){
+      err = libraw_dcraw_thumb_writer(raw, filename);
+      libraw_close(raw);
+      return err;
     }
     libraw_close(raw);
     return 1;
@@ -59,11 +72,4 @@ int image_transcode_compute(const char* filename, int min_width) {
 
   libraw_close(raw);
   return 0;
-}
-
-int save_thumbnail(const char *filename, libraw_data_t *raw){
-  int err;
-  err = libraw_dcraw_thumb_writer(raw, filename);
-  libraw_close(raw);
-  return err;
 }

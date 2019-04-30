@@ -151,6 +151,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 			SendErrorResult(res, err)
 			return
 		}
+		header.Set("Content-Type", GetMimeType(req.URL.Query().Get("path")))
 		if req.Header.Get("range") != "" {
 			needToCreateCache = true
 		}
@@ -233,9 +234,6 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	// publish headers
 	if contentLength != -1 {
 		header.Set("Content-Length", fmt.Sprintf("%d", contentLength))
-	}
-	if header.Get("Content-Type") == "" {
-		header.Set("Content-Type", GetMimeType(req.URL.Query().Get("path")))
 	}
 	if header.Get("Content-Security-Policy") == "" {
 		header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'")

@@ -36,9 +36,12 @@ int image_resize(const char *filename, void **buf, size_t *len, int size, int cr
   return err;
 }
 
+void null_log_handler (const gchar *a, GLogLevelFlags l, const gchar *m, gpointer ud){ }
+
 void __attribute__ ((constructor)) initLibrary(void) {
   VIPS_INIT("imagevips");
   vips_cache_set_max(0);
+  g_log_set_handler( "VIPS", G_LOG_LEVEL_WARNING, null_log_handler, NULL);
 }
 void __attribute__ ((destructor)) cleanUpLibrary(void) {
   vips_shutdown();
