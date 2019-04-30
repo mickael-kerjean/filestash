@@ -46,7 +46,6 @@ func Init(a *App) {
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionGet,            middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionAuthenticate,   middlewares, *a)).Methods("POST")
 	middlewares = []Middleware{ ApiHeaders, AdminOnly, SecureAjax }
-	admin.HandleFunc("/plugin",  NewMiddlewareChain(FetchPluginsHandler,        middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigHandler,       middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, *a)).Methods("POST")
 	middlewares = []Middleware{ IndexHeaders }

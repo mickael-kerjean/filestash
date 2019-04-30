@@ -13,26 +13,7 @@ import (
 var (
 	logpath = filepath.Join(GetCurrentDir(), LOG_PATH, "access.log")
 	configpath = filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json")
-	pluginpath = filepath.Join(GetCurrentDir(), PLUGIN_PATH)
 )
-
-func FetchPluginsHandler(ctx App, res http.ResponseWriter, req *http.Request) {
-	f, err := os.OpenFile(pluginpath, os.O_RDONLY, os.ModePerm)
-	if err != nil {
-		SendErrorResult(res, err)
-		return
-	}
-	files, err := f.Readdir(0)
-	if err != nil {
-		SendErrorResult(res, err)
-		return
-	}
-	plugins := make([]string, 0)
-	for i := 0; i < len(files); i++ {
-		plugins = append(plugins, files[i].Name())
-	}
-	SendSuccessResults(res, plugins)
-}
 
 func FetchLogHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	file, err := os.OpenFile(logpath, os.O_RDONLY, os.ModePerm)

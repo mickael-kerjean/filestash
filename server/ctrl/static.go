@@ -75,42 +75,17 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
     </style>
   </head>
   <body>
-     <h1> {{index .App 0}} <br><span>({{index .App 1}})</span> </h1>
-     <p>{{range .Plugins}}
-       {{ index . 0 }} <span>({{ index . 1 }})</span> <br>{{end}}
-     </p>
+     <h1> {{index .App 0}} <br><span>({{index .App 1}} - {{index .App 2}})</span> </h1>
   </body>
 </html>`
 	t, _ := template.New("about").Parse(page)
 	t.Execute(res, struct {
 		App     []string
-		Plugins [][]string
-	}{
-		App:     []string{"Filestash " + APP_VERSION + "." + BUILD_NUMBER, hashFile(filepath.Join(GetCurrentDir(), "/filestash"), 6)},
-		Plugins: func () [][]string {
-			plugins := make([][]string, 1)
-			plugins[0] = []string {
-				"config.json",
-				hashFile(filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"), 6),
-			}
-			pPath := filepath.Join(GetCurrentDir(), PLUGIN_PATH)
-			file, err := os.Open(pPath);
-			if err != nil {
-				return plugins
-			}
-			files, err := file.Readdir(0);
-			if err != nil {
-				return plugins
-			}
-			for i:=0; i < len(files); i++ {
-				plugins = append(plugins, []string{
-					files[i].Name(),
-					hashFile(pPath + "/" + files[i].Name(), 6),
-				})
-			}
-			return plugins
-		}(),
-	})
+	}{ []string{
+		"Filestash " + APP_VERSION + "." + BUILD_NUMBER,
+		hashFile(filepath.Join(GetCurrentDir(), "/filestash"), 6),
+		hashFile(filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"), 6),
+	}})
 }
 
 func hashFile (path string, n int) string {
