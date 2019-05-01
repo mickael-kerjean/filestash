@@ -15,33 +15,36 @@ steps:
   image: alpine:latest
   depends_on: [ clone ]
   commands:
-  - mkdir -p ./dist/data/
-  - cp -R config dist/data/config
+  - mkdir -p ./dist/data/state/
+  - cp -R config dist/data/state/config
 
-- name: build_go
-  image: golang:1.11-stretch
-  depends_on: [ clone ]
+- name: build_frontend
+  image: node:8-alpine
+  depends_on: [ build_prepare ]
+  commands:
+  - apk add make git > /dev/null
+  - npm install --silent
+  - make build_frontend
+
+- name: build_backend
+  image: golang:1.12-stretch
+  depends_on: [ build_prepare ]
   environment:
     CGO_LDFLAGS_ALLOW: '-fopenmp'
   commands:
+  - apt-get update > /dev/null && apt-get install -y libglib2.0-dev curl make > /dev/null
+  - make build_init
+  - find server/plugin/plg_* -type f -name '*.a' -exec mv {} /usr/local/lib/ \;
   - go get -t ./server/...
-  - find server/plugin/plg_* -type f -name "install.sh" -exec {} \;
-  - go build -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o dist/filestash server/main.go
+  - make build_backend
   - timeout 1 ./dist/filestash || true
 
-- name: build_js
-  image: node:8-alpine
-  depends_on: [ clone ]
-  commands:
-  - npm install > /dev/null 2>&1
-  - NODE_ENV=production npm run build
-
 - name: build_finalise
-  image: alpine:latest
-  depends_on: [ clone ]
+  image: debian:latest
+  depends_on: [ build_go, build_js ]
   commands:
   - cp -R dist /tmp/filestash
-  - tar -C /tmp/ -zcvf filestash.tar.gz ./filestash
+  - tar -C /tmp/ -zcf filestash_linux-amd64.tar.gz ./filestash
 
 - name: test_prepare
   image: alpine:latest
@@ -50,27 +53,27 @@ steps:
     PASSWORD:
       from_secret: GIT_PASSWORD
   commands:
-  - apk --no-cache add git > /dev/null 2>&1
+  - apk add git > /dev/null
   - cd ../ && git clone "https://readonly:$PASSWORD@git.kerjean.me/filestash/test.git"
   - chmod -R 777 ./test/
   - chmod -R 777 ./filestash/dist/data
 
-- name: test_go
-  image: golang:1.11-alpine
-  depends_on: [ test_prepare ]
-  commands:
-  - apk --no-cache add git gcc libc-dev poppler-utils > /dev/null 2>&1
-  - cp ../test/assets/* /tmp/
-  - go get -t ../test/unit_go/...
-  - go test -v --tags "fts5" ../test/unit_go/...
-
-- name: test_js
+- name: test_frontend
   image: node:8-alpine
   depends_on: [ test_prepare ]
   commands:
   - cd ../test/unit_js
-  - npm install > /dev/null 2>&1
+  - npm install --silent
   - npm test
+
+- name: test_backend
+  image: golang:1.12-alpine
+  depends_on: [ test_prepare ]
+  commands:
+  - apk add git gcc libc-dev poppler-utils > /dev/null
+  - cp ../test/assets/* /tmp/
+  - go get -t ../test/unit_go/...
+  - go test -v --tags "fts5" ../test/unit_go/...
 
 - name: test_e2e
   image: machines/puppeteer
@@ -80,10 +83,10 @@ steps:
     APP_URL: http://127.0.0.1:8334
     CI: true
   commands:
-  - ./dist/filestash &
+  - ./dist/filestash > /dev/null &
   - cd ../test/e2e
-  - npm install > /dev/null 2>&1
-  - node servers/webdav.js &
+  - npm install > /dev/null
+  - node servers/webdav.js > /dev/null &
   - npm test
 
 - name: release_artifact
@@ -98,54 +101,56 @@ steps:
       from_secret: SSH_USERNAME
     password:
       from_secret: SSH_PASSWORD
-    source: filestash.tar.gz
+    source: filestash_linux-amd64.tar.gz
     target: /app/pages/data/projects/filestash/downloads/latest/
 
-# - name: release_docker
-#   image: debian:latest
-#   depends_on: [ release_artifact ]
-#   when:
-#     branch: master
-#   settings:
-#     dockerfile: ./docker/prod/Dockerfile
-#     repo: machines/filestash
-#     username:
-#       from_secret: DOCKER_USERNAME
-#     password:
-#       from_secret: DOCKER_PASSWORD
-#     tags: latest
+- name: release_docker
+  image: plugins/docker
+  depends_on: [ release_artifact ]
+  when:
+    branch: master
+  settings:
+    dockerfile: ./docker/Dockerfile
+    repo: machines/filestash
+    username:
+      from_secret: DOCKER_USERNAME
+    password:
+      from_secret: DOCKER_PASSWORD
+    tags: latest
 
-# - name: deploy
-#   image: appleboy/drone-ssh
-#   depends_on: [ release_docker ]
-#   when:
-#     branch: master
-#   settings:
-#     command_timeout: 10m
-#     host: hal.kerjean.me
-#     user:
-#       from_secret: SSH_USERNAME
-#     password:
-#       from_secret: SSH_PASSWORD
-#     port: 22
-#     script:
-#     - cd /app/filestash/
-#     - docker-compose pull
-#     - docker-compose up -d --force-recreate --build
-#     - docker image prune -f
+- name: deploy
+  image: appleboy/drone-ssh
+  depends_on: [ release_docker ]
+  when:
+    branch: master
+  settings:
+    command_timeout: 10m
+    host: hal.kerjean.me
+    user:
+      from_secret: SSH_USERNAME
+    password:
+      from_secret: SSH_PASSWORD
+    port: 22
+    script:
+    - cd /app/filestash/
+    - docker-compose pull
+    - docker-compose up -d --force-recreate --build
+    - docker image prune -f
 
-# - name: report
-#   image: plugins/irc
-#   depends_on: [ deploy ]
-#   settings:
-#     prefix: build
-#     nick: blipblip
-#     channel: filestash
-#     host: chat.freenode.net
-#     port: 6667
-#     template: >
-#       {{#success build.status}}
-#         Build success: https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
-#       {{else}}
-#         Build failure: er}} https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
-#       {{/success}}
+- name: report
+  image: plugins/irc
+  depends_on: [ deploy ]
+  when:
+    branch: master
+  settings:
+    prefix: build
+    nick: blipblip
+    channel: filestash
+    host: chat.freenode.net
+    port: 6667
+    template: >
+      {{#success build.status}}
+        Build success: https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
+      {{else}}
+        Build failure: er}} https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
+      {{/success}}

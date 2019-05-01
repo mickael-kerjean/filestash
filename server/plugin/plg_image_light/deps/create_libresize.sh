@@ -72,3 +72,9 @@ ar x /usr/lib/x86_64-linux-gnu/libpoppler.a
 
 ar rcs libresize.a *.o
 rm *.o *.ao
+
+################################################
+# Stage 4: Gather all the related headers
+#cd /usr/include/
+#tar zcf /tmp/libresize-headers.tar.gz .
+#scp /tmp/libresize-headers.tar.gz mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libresize-linux-headers.tar.gz

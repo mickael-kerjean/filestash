@@ -1,4 +1,4 @@
-package main
+package plg_backend_ldap
 
 /*
  * Introduction
@@ -26,7 +26,7 @@ import (
 
 var LDAPCache AppCache
 
-func Init(config *Configuration) {
+func init() {
 	Backend.Register("ldap", LDAP{})
 	LDAPCache = NewAppCache(2, 1)
 	LDAPCache.OnEvict(func(key string, value interface{}) {

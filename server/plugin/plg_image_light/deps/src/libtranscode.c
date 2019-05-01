@@ -20,7 +20,6 @@ int image_transcode_compute(const char* filename, int min_width) {
 
   //////////////////////
   // use thumbnail if available
-  /*
   if(libraw_unpack_thumb(raw) == 0){
     has_thumbnail = TRUE;
     if(raw->thumbnail.twidth > min_width && raw->thumbnail.tformat == LIBRAW_THUMBNAIL_JPEG){
@@ -29,8 +28,6 @@ int image_transcode_compute(const char* filename, int min_width) {
       return err;
     }
   }
-  */
-  fprintf(stdout, "HERE\n");
   fflush(stdout);
 
   //////////////////////

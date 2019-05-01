@@ -34,7 +34,6 @@
         "\\lstset{columns=flexible, breaklines=true}"
         "\\definecolor{doctitle}{RGB}{51,51,51}"
         "\\usepackage{lmodern}"
-        "\\usepackage{helvet}"
         "\\usepackage{xcolor}"
         "\\renewcommand{\\familydefault}{\\sfdefault}"
         "\\usepackage{sectsty}"

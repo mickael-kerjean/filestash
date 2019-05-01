@@ -1,7 +1,7 @@
 package plg_image_light
 // #cgo pkg-config:glib-2.0
 // #cgo CFLAGS: -I./deps/src
-// #cgo LDFLAGS: -lm -lgmodule-2.0 -lgobject-2.0 -lglib-2.0 -ldl -L./deps -l:libresize.a 
+// #cgo LDFLAGS: -lm -lgmodule-2.0 -lgobject-2.0 -lglib-2.0 -ldl -L./deps -l:libresize.a
 // #include "libresize.h"
 import "C"
 
@@ -18,7 +18,7 @@ var VIPS_LOCK = semaphore.NewWeighted(int64(10))
 func CreateThumbnail(t *Transform) (io.ReadCloser, error) {
 	VIPS_LOCK.Acquire(context.Background(), 1)
 	defer VIPS_LOCK.Release(1)
-	
+
 	filename := C.CString(t.Input)
 	defer C.free(unsafe.Pointer(filename))
 	var buffer unsafe.Pointer
@@ -27,7 +27,7 @@ func CreateThumbnail(t *Transform) (io.ReadCloser, error) {
 		return nil, NewError("", 500)
 	}
 	buf := C.GoBytes(buffer, C.int(len))
-	C.g_free(C.gpointer(buffer))	
+	C.g_free(C.gpointer(buffer))
 	return NewReadCloserFromBytes(buf), nil
 }
 

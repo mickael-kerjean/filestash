@@ -10,7 +10,7 @@ To test the libraries are working fine:
 ```
 # libtranscode:
 gcc -Wall -c src/libtranscode_test.c
-gcc -o main_transcode.bin libtranscode_test.o -lm -lgomp -llcms2 -lstdc++ -L. -l:libtranscode.a
+gcc -o main_transcode.bin libtranscode_test.o -lm -lpthread -L. -l:libtranscode.a
 
 # libresize:
 gcc -Wall -c src/libresize_test.c `pkg-config --cflags glib-2.0`
