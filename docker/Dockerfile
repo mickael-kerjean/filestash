@@ -1,8 +1,7 @@
 FROM debian:stable-slim
 MAINTAINER mickael@kerjean.me
 
-RUN echo "deb http://debian.mirrors.ovh.net/debian stretch main" > /etc/apt/sources.list && \
-    apt-get update > /dev/null && \
+RUN apt-get update > /dev/null && \
     #################
     # Install
     apt-get install -y libglib2.0-0 curl > /dev/null && \
@@ -15,7 +14,8 @@ RUN echo "deb http://debian.mirrors.ovh.net/debian stretch main" > /etc/apt/sour
     # Optional dependencies
     apt-get install -y curl emacs zip poppler-utils > /dev/null&& \
     # Minimal latex dependencies for org-mode
-    cd ~/ && apt-get install -y wget perl > /dev/null && \
+    cd && apt-get install -y wget perl > /dev/null && \
+    export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
     curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh && \
     mv ~/.TinyTeX /usr/share/tinytex && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasy && \
