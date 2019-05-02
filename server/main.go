@@ -94,9 +94,7 @@ func Init(a *App) {
 	r.HandleFunc("/api/backend", NewMiddlewareChain(AdminBackend,                                    middlewares, *a)).Methods("GET")
 	middlewares = []Middleware{ StaticHeaders }
 	r.PathPrefix("/assets").Handler(http.HandlerFunc(NewMiddlewareChain(StaticHandler(FILE_ASSETS),  middlewares, *a))).Methods("GET")
-	r.HandleFunc("/favicon.ico", func(res http.ResponseWriter, req *http.Request) {
-		http.Redirect(res, req, "/assets/logo/favicon.ico", http.StatusMovedPermanently)
-	})
+	r.HandleFunc("/favicon.ico", NewMiddlewareChain(StaticHandler(FILE_ASSETS + "/assets/logo/"),    middlewares, *a)).Methods("GET")
 	middlewares = []Middleware{ IndexHeaders }
 	r.HandleFunc("/about",                     NewMiddlewareChain(AboutHandler,                      middlewares, *a)).Methods("GET")
 	for _, obj := range Hooks.Get.HttpEndpoint() {
