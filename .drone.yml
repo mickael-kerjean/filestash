@@ -39,13 +39,6 @@ steps:
   - make build_backend
   - timeout 1 ./dist/filestash || true
 
-- name: build_finalise
-  image: debian:latest
-  depends_on: [ build_go, build_js ]
-  commands:
-  - cp -R dist /tmp/filestash
-  - tar -C /tmp/ -zcf filestash_linux-amd64.tar.gz ./filestash
-
 - name: test_prepare
   image: alpine:latest
   depends_on: [ clone ]
@@ -60,7 +53,7 @@ steps:
 
 - name: test_frontend
   image: node:8-alpine
-  depends_on: [ test_prepare ]
+  depends_on: [ test_prepare, build_frontend ]
   commands:
   - cd ../test/unit_js
   - npm install --silent
@@ -68,7 +61,7 @@ steps:
 
 - name: test_backend
   image: golang:1.12-alpine
-  depends_on: [ test_prepare ]
+  depends_on: [ test_prepare, build_backend ]
   commands:
   - apk add git gcc libc-dev poppler-utils > /dev/null
   - cp ../test/assets/* /tmp/
@@ -77,7 +70,7 @@ steps:
 
 - name: test_e2e
   image: machines/puppeteer
-  depends_on: [ build_prepare, build_js, build_go ]
+  depends_on: [ build_frontend, build_backend ]
   environment:
     ADMIN_PASSWORD: $$2a$$10$$9OFbPZV4lYpYjU5eUi91o.kgeMyCuW11j878YBRri3gBwccq2lSFy
     APP_URL: http://127.0.0.1:8334
@@ -89,9 +82,25 @@ steps:
   - node servers/webdav.js > /dev/null &
   - npm test
 
-- name: release_artifact
+- name: release_prepare
+  image: debian:latest
+  depends_on: [ test_e2e ]
+  environment:
+    GPG_PRIVATE:
+      from_secret: GPG_PRIVATE
+    GPG_PASSPHRASE:
+      from_secret: GPG_PASSPHRASE
+  commands:
+  - apt update && apt install -y gnupg1
+  - mv dist filestash
+  - tar -cf filestash_linux-amd64.tar ./filestash
+  - echo $GPG_PRIVATE > /tmp/private.key
+  - echo $GPG_PASSPHRASE | gpg1 --import /tmp/private.key
+  - echo $GPG_PASSPHRASE | gpg1 --sign --passphrase-fd 0 --default-key mickael@kerjean.me filestash_linux-amd64.tar
+
+- name: release_publish
   image: appleboy/drone-scp
-  depends_on: [ test_go, test_js, test_e2e ]
+  depends_on: [ release_prepare ]
   when:
     branch: master
   settings:
@@ -101,12 +110,12 @@ steps:
       from_secret: SSH_USERNAME
     password:
       from_secret: SSH_PASSWORD
-    source: filestash_linux-amd64.tar.gz
+    source: filestash_linux-amd64.tar.gpg
     target: /app/pages/data/projects/filestash/downloads/latest/
 
 - name: release_docker
   image: plugins/docker
-  depends_on: [ release_artifact ]
+  depends_on: [ release_publish ]
   when:
     branch: master
   settings:
@@ -118,7 +127,7 @@ steps:
       from_secret: DOCKER_PASSWORD
     tags: latest
 
-- name: deploy
+- name: release_deploy
   image: appleboy/drone-ssh
   depends_on: [ release_docker ]
   when:
@@ -137,9 +146,9 @@ steps:
     - docker-compose up -d --force-recreate --build
     - docker image prune -f
 
-- name: report
+- name: release_report
   image: plugins/irc
-  depends_on: [ deploy ]
+  depends_on: [ release_deploy ]
   when:
     branch: master
   settings:
