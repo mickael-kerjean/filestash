@@ -10,7 +10,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const className = 'ontouchstart' in window ? 'touch-yes' : 'touch-no';
     document.body.classList.add(className);
 
-    const $loader = document.querySelector("#nyan_loader");
+    const $loader = document.querySelector("#n-lder");
 
     function render(){
         ReactDOM.render(<Router/>, document.getElementById("main"));
