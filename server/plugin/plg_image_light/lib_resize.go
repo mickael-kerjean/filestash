@@ -10,25 +10,50 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"golang.org/x/sync/semaphore"
 	"io"
+	"time"
 	"unsafe"
 )
 
-var VIPS_LOCK = semaphore.NewWeighted(int64(10))
+const (
+	THUMBNAIL_TIMEOUT        = 5 * time.Second
+	THUMBNAIL_MAX_CONCURRENT = 50
+)
+
+var VIPS_LOCK = semaphore.NewWeighted(THUMBNAIL_MAX_CONCURRENT)
 
 func CreateThumbnail(t *Transform) (io.ReadCloser, error) {
-	VIPS_LOCK.Acquire(context.Background(), 1)
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(THUMBNAIL_TIMEOUT))
+	defer cancel()
+	if err := VIPS_LOCK.Acquire(ctx, 1); err != nil {
+		return nil, ErrCongestion
+	}
 	defer VIPS_LOCK.Release(1)
 
-	filename := C.CString(t.Input)
-	defer C.free(unsafe.Pointer(filename))
-	var buffer unsafe.Pointer
-	len := C.size_t(0)
-	if C.image_resize(filename, &buffer, &len, C.int(t.Size), boolToCInt(t.Crop), C.int(t.Quality), boolToCInt(t.Exif)) != 0 {
-		return nil, NewError("", 500)
+	imageChannel := make(chan io.ReadCloser, 1)
+	go func() {
+		filename := C.CString(t.Input)
+		len := C.size_t(0)
+		var buffer unsafe.Pointer
+		if C.image_resize(filename, &buffer, &len, C.int(t.Size), boolToCInt(t.Crop), C.int(t.Quality), boolToCInt(t.Exif)) != 0 {
+			C.free(unsafe.Pointer(filename))
+			imageChannel <- nil
+			return
+		}
+		C.free(unsafe.Pointer(filename))
+		buf := C.GoBytes(buffer, C.int(len))
+		C.g_free(C.gpointer(buffer))
+		imageChannel <- NewReadCloserFromBytes(buf)
+	}()
+
+	select {
+	case img := <- imageChannel:
+		if img == nil {
+			return nil, ErrNotValid
+		}
+		return img, nil
+	case <- ctx.Done():
+		return nil, ErrTimeout
 	}
-	buf := C.GoBytes(buffer, C.int(len))
-	C.g_free(C.gpointer(buffer))
-	return NewReadCloserFromBytes(buf), nil
 }
 
 func boolToCInt(val bool) C.int {

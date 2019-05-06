@@ -24,6 +24,8 @@ var (
 	ErrFilesystemError        = NewError("Can't use filesystem", 503)
 	ErrMissingDependency      = NewError("Missing dependency", 424)
 	ErrNotAuthorized          = NewError("Not authorized", 401)
+	ErrCongestion             = NewError("Traffic congestion, try again later", 500)
+	ErrTimeout                = NewError("Timeout", 500)
 )
 
 type AppError struct {

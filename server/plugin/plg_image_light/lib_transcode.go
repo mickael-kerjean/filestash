@@ -8,10 +8,16 @@ import (
 	"context"
 	"golang.org/x/sync/semaphore"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"time"
 	"unsafe"
 )
 
-var LIBRAW_LOCK = semaphore.NewWeighted(int64(5))
+const (
+	TRANSCODE_TIMEOUT        = 10 * time.Second
+	TRANSCODE_MAX_CONCURRENT = 5
+)
+
+var LIBRAW_LOCK = semaphore.NewWeighted(int64(TRANSCODE_MAX_CONCURRENT))
 
 func IsRaw(mType string) bool {
 	switch mType {
@@ -45,14 +51,28 @@ func IsRaw(mType string) bool {
 }
 
 func ExtractPreview(t *Transform) error {
-	LIBRAW_LOCK.Acquire(context.Background(), 1)
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(TRANSCODE_TIMEOUT))
+	defer cancel()
+	
+	if err := LIBRAW_LOCK.Acquire(ctx, 1); err != nil {
+		return ErrCongestion
+	}
 	defer LIBRAW_LOCK.Release(1)
 
-	filename := C.CString(t.Input)
-	defer C.free(unsafe.Pointer(filename))
+	transcodeChannel := make(chan error, 1)
+	go func() {
+		filename := C.CString(t.Input)
+		defer C.free(unsafe.Pointer(filename))
+		if err := C.image_transcode_compute(filename, C.int(t.Size)); err != 0 {
+			transcodeChannel <- ErrNotValid
+		}
+		transcodeChannel <- nil
+	}()
 
-	if err := C.image_transcode_compute(filename, C.int(t.Size)); err != 0 {
-		return ErrNotValid
+	select {
+	case err := <- transcodeChannel:
+		return err
+	case <- ctx.Done():
+		return ErrTimeout		
 	}
-	return nil
 }
