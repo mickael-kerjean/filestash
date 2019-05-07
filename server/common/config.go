@@ -73,6 +73,7 @@ func NewConfiguration() Configuration {
 					FormElement{Name: "display_hidden", Type: "boolean", Default: false, Description: "Should files starting with a dot be visible by default?"},
 					FormElement{Name: "auto_connect", Type: "boolean", Default: false, Description: "User don't have to click on the login button if an admin is prefilling a unique backend"},
 					FormElement{Name: "remember_me", Type: "boolean", Default: true, Description: "Visiblity of the remember me button on the login screen"},
+					FormElement{Name: "upload_button", Type: "boolean", Default: false, Description: "Display the upload button on any device"},
 				},
 			},
 			Form{
@@ -350,6 +351,7 @@ func (this Configuration) Export() interface{} {
 		AutoConnect   bool              `json:"auto_connect"`
 		Name          string            `json:"name"`
 		RememberMe    bool              `json:"remember_me"`
+		UploadButton  bool              `json:"upload_button"`
 		Connections   interface{}       `json:"connections"`
 		EnableSearch  bool              `json:"enable_search"`
 		EnableShare   bool              `json:"enable_share"`
@@ -361,6 +363,7 @@ func (this Configuration) Export() interface{} {
 		AutoConnect:   this.Get("general.auto_connect").Bool(),
 		Name:          this.Get("general.name").String(),
 		RememberMe:    this.Get("general.remember_me").Bool(),
+		UploadButton:  this.Get("general.upload_button").Bool(),
 		Connections:   this.Conn,
 		EnableSearch:  this.Get("features.search.enable").Bool(),
 		EnableShare:   this.Get("features.share.enable").Bool(),
