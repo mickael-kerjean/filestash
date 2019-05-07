@@ -62,7 +62,6 @@ type LogEntry struct {
 	UserAgent  string    `json:"userAgent"`
 	Ip         string    `json:"ip"`
 	Referer    string    `json:"referer"`
-	Timestamp  time.Time `json:"_id"`
 	Duration   float64   `json:"responseTime"`
 	Version    string    `json:"version"`
 	Backend    string    `json:"backend"`
@@ -82,7 +81,6 @@ func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
 			Ip:         req.RemoteAddr,
 			Referer:    req.Referer(),
 			Duration:   float64(time.Now().Sub(obj.start)) / (1000 * 1000),
-			Timestamp:  time.Now().UTC(),
 			Backend:    ctx.Session["type"],
 		}
 		if Config.Get("log.telemetry").Bool() {
@@ -95,34 +93,30 @@ func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 type Telemetry struct {
-	data []LogEntry
+	Data []LogEntry
 	mu   sync.Mutex
 }
 
 func (this *Telemetry) Record(point LogEntry) {
 	this.mu.Lock()
-	this.data = append(this.data, point)
+	this.Data = append(this.Data, point)
 	this.mu.Unlock()
 }
 
 func (this *Telemetry) Flush() {
-	if len(this.data) == 0 {
+	if len(this.Data) == 0 {
 		return
 	}
 	this.mu.Lock()
-	pts := this.data
-	this.data = make([]LogEntry, 0)
+	pts := this.Data
+	this.Data = make([]LogEntry, 0)
 	this.mu.Unlock()
 
-	// send data in bulk: http://docs.couchdb.org/en/2.2.0/api/database/bulk-api.html#inserting-documents-in-bulk
-	data := struct {
-		Docs []LogEntry `json:"docs"`
-	}{ pts }
-	body, err := json.Marshal(data)
+	body, err := json.Marshal(pts)
 	if err != nil {
 		return
 	}
-	r, err := http.NewRequest("POST", "https://log.kerjean.me/trash/_bulk_docs", bytes.NewReader(body))
+	r, err := http.NewRequest("POST", "https://downloads.filestash.app/event", bytes.NewReader(body))
 	r.Header.Set("Connection", "Close")
 	r.Header.Set("Content-Type", "application/json")
 	r.Close = true
@@ -136,16 +130,13 @@ func (this *Telemetry) Flush() {
 	resp.Body.Close()
 }
 
-var telemetry Telemetry = Telemetry{ data: make([]LogEntry, 0) }
+var telemetry Telemetry = Telemetry{ Data: make([]LogEntry, 0) }
 
 func init(){
 	go func(){
 		for {
-			select {
-			default:
-				time.Sleep(1000 * 10 * time.Millisecond)
-				telemetry.Flush()
-			}
+			time.Sleep(10 * time.Second)
+			telemetry.Flush()
 		}
 	}()
 }
