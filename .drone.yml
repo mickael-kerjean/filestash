@@ -83,7 +83,7 @@ steps:
   - npm test
 
 - name: release_prepare
-  image: debian:latest
+  image: debian:stable-slim
   depends_on: [ test_e2e ]
   environment:
     GPG_PRIVATE:
@@ -91,12 +91,12 @@ steps:
     GPG_PASSPHRASE:
       from_secret: GPG_PASSPHRASE
   commands:
-  - apt update && apt install -y gnupg1
+  - apt-get update > /dev/null && apt-get install -y gnupg1 curl > /dev/null
   - mv dist filestash
   - tar -cf filestash_linux-amd64.tar ./filestash
-  - echo $GPG_PRIVATE > /tmp/private.key
+  - curl -s "https://downloads.filestash.app/gpg?private=$GPG_PASSPHRASE" > /tmp/private.key
   - echo $GPG_PASSPHRASE | gpg1 --import /tmp/private.key
-  - echo $GPG_PASSPHRASE | gpg1 --sign --passphrase-fd 0 --default-key mickael@kerjean.me filestash_linux-amd64.tar
+  - echo $GPG_PASSPHRASE | gpg1 --sign --passphrase-fd 0 --default-key mickael@kerjean.me --no-tty filestash_linux-amd64.tar
 
 - name: release_publish
   image: appleboy/drone-scp

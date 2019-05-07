@@ -43,7 +43,7 @@ RUN apt-get update > /dev/null && \
     chown -R filestash:filestash /app/ && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/* && \
-    timeout 1 /app/filestash
+    timeout 1 /app/filestash | grep -q start
 
 EXPOSE 8334
 VOLUME ["/app/data/"]
