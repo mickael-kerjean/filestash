@@ -14,7 +14,7 @@ RUN apt-get update > /dev/null && \
     apt-get purge -y --auto-remove gnupg && \
     #################
     # Optional dependencies
-    apt-get install -y curl emacs zip poppler-utils > /dev/null&& \
+    apt-get install -y curl emacs zip poppler-utils > /dev/null && \
     # Minimal latex dependencies for org-mode
     cd && apt-get install -y wget perl > /dev/null && \
     export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
