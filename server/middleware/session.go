@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -185,6 +187,38 @@ func _extractShare(req *http.Request) (Share, error) {
 	}
 
 	var verifiedProof []model.Proof = model.ShareProofGetAlreadyVerified(req)
+	username, password := func(authHeader string) (string, string){
+		decoded, err := base64.StdEncoding.DecodeString(
+			strings.TrimPrefix(authHeader, "Basic "),
+		)
+		if err != nil {
+			return "", ""
+		}
+		s := bytes.Split(decoded, []byte(":"))
+		if len(s) < 2 {
+			return "", ""
+		}
+		p := string(bytes.Join(s[1:], []byte(":")))
+		usr := regexp.MustCompile(`^(.*)\[([0-9a-zA-Z]+)\]$`).FindStringSubmatch(string(s[0]))
+		if len(usr) != 3 {
+			return "", p
+		}
+		if Hash(usr[1] + SECRET_KEY_DERIVATE_FOR_HASH, 10) != usr[2] {
+			return "", p
+		}
+		return usr[1], p
+	}(req.Header.Get("Authorization"))
+
+	if s.Users != nil && username != "" {
+		if v, ok := model.ShareProofVerifierEmail(*s.Users, username); ok {
+			verifiedProof = append(verifiedProof, model.Proof{ Key: "email", Value: v })
+		}
+	}
+	if s.Password != nil && password != "" {
+		if v, ok := model.ShareProofVerifierPassword(*s.Password, password); ok {
+			verifiedProof = append(verifiedProof, model.Proof{ Key: "password", Value: v })
+		}
+	}
 	var requiredProof []model.Proof = model.ShareProofGetRequired(s)
 	var remainingProof []model.Proof = model.ShareProofCalculateRemainings(requiredProof, verifiedProof)
 	if len(remainingProof) != 0 {

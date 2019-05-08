@@ -132,7 +132,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// 3) process the proof sent by the user
-	submittedProof, err = model.ShareProofVerifier(&ctx, s, submittedProof);
+	submittedProof, err = model.ShareProofVerifier(s, submittedProof);
 	if err != nil {
 		submittedProof.Error = NewString(err.Error())
 		SendSuccessResult(res, submittedProof)

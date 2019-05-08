@@ -128,18 +128,20 @@ func ShareDelete(id string) error {
 	return err
 }
 
-func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
+func ShareProofVerifier(s Share, proof Proof) (Proof, error) {
 	p := proof
 
 	if proof.Key == "password" {
 		if s.Password == nil {
 			return p, NewError("No password required", 400)
 		}
-		time.Sleep(1000 * time.Millisecond)
-		if err := bcrypt.CompareHashAndPassword([]byte(*s.Password), []byte(proof.Value)); err != nil {
+
+		v, ok := ShareProofVerifierPassword(*s.Password, proof.Value);
+		if ok == false {
+			time.Sleep(1000 * time.Millisecond)
 			return p, ErrInvalidPassword
 		}
-		p.Value = *s.Password
+		p.Value = v
 	}
 
 	if proof.Key == "email" {
@@ -147,23 +149,12 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 		if s.Users == nil {
 			return p, NewError("Authentication not required", 400)
 		}
-		var user *string
-		for _, possibleUser := range strings.Split(*s.Users, ",") {
-			possibleUser := strings.Trim(possibleUser, " ")
-			if proof.Value == possibleUser {
-				user = &possibleUser
-				break
-			} else if possibleUser[0:1] == "*" {
-				if strings.HasSuffix(proof.Value, strings.TrimPrefix(possibleUser, "*")) {
-					user = &possibleUser
-					break
-				}
-			}
-		}
-		if user == nil {
+		v, ok := ShareProofVerifierEmail(*s.Users, proof.Value)
+		if ok == false {
 			time.Sleep(1000 * time.Millisecond)
-			return p, NewError("No access was provided", 400)
+			return p, ErrNotAuthorized
 		}
+		user := v
 
 		// prepare the verification code
 		stmt, err := DB.Prepare("INSERT INTO Verification(key, code) VALUES(?, ?)");
@@ -171,7 +162,7 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 			return p, err
 		}
 		code := RandomString(4)
-		if _, err := stmt.Exec("email::" + *user, code); err != nil {
+		if _, err := stmt.Exec("email::" + user, code); err != nil {
 			return p, err
 		}
 
@@ -180,8 +171,9 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 		t := template.New("email")
 		t.Parse(TmplEmailVerification())
 		t.Execute(&b, struct{
-			Code string
-		}{code})
+			Code     string
+			Username string
+		}{code, networkDriveUsernameEnc(user)})
 
 		p.Key = "code"
 		p.Value = ""
@@ -249,6 +241,34 @@ func ShareProofVerifier(ctx *App, s Share, proof Proof) (Proof, error) {
 	return p, nil
 }
 
+func ShareProofVerifierPassword(hashed string, given string) (string, bool) {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(given)); err != nil {
+		return "", false
+	}
+	return hashed, true
+}
+func ShareProofVerifierEmail(users string, wanted string) (string, bool) {
+	s := strings.Split(users, ",")
+	user := ""
+	for _, possibleUser := range s {
+		possibleUser := strings.Trim(possibleUser, " ")
+		if wanted == possibleUser {
+			user = possibleUser
+			break
+		} else if possibleUser[0:1] == "*" {
+			if strings.HasSuffix(wanted, strings.TrimPrefix(possibleUser, "*")) {
+				user = possibleUser
+				break
+			}
+		}
+	}
+
+	if user == "" {
+		return "", false
+	}
+	return user, true
+}
+
 func ShareProofGetAlreadyVerified(req *http.Request) []Proof {
 	var p []Proof
 	var cookieValue string
@@ -303,6 +323,8 @@ func ShareProofCalculateRemainings(ref []Proof, mem []Proof) []Proof {
 func shareProofAreEquivalent(ref Proof,  p Proof) bool {
 	if ref.Key != p.Key {
 		return false
+	} else if ref.Value != "" && ref.Value == p.Value {
+		return true
 	}
 	for _, chunk := range strings.Split(ref.Value, ",") {
 		chunk = strings.Trim(chunk, " ")
@@ -581,6 +603,7 @@ func TmplEmailVerification() string {
                       </td>
                     </tr>
                   </table>
+                  <div style="margin-top:10px;font-style:italic;font-size:0.9em;">When mounted as a network drive, you can authenticate as: {{.Username}}</div>
                 </td>
               </tr>
 
@@ -608,4 +631,8 @@ func TmplEmailVerification() string {
   </body>
 </html>
 `
+}
+
+func networkDriveUsernameEnc(email string) string {
+	return email + "[" + Hash(email + SECRET_KEY_DERIVATE_FOR_HASH, 10) + "]"
 }
