@@ -202,6 +202,3 @@ Data.prototype.destroy = function(){
 }
 
 export const cache = new Data();
-if(typeof WorkerGlobalScope === "undefined"){ // web worker context
-    window.DB = cache;
-}

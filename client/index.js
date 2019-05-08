@@ -45,10 +45,4 @@ window.addEventListener("DOMContentLoaded", () => {
         }
         return removeLoader().then(render);
     });
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/assets/worker/cache.js').catch(function(error) {
-            console.log('ServiceWorker registration failed:', error);
-        });
-    }
 });
