@@ -91,6 +91,7 @@ steps:
     GPG_PASSPHRASE:
       from_secret: GPG_PASSPHRASE
   commands:
+  - cp -R config/* dist/data/state/config/
   - apt-get update > /dev/null && apt-get install -y gnupg1 curl > /dev/null
   - mv dist filestash
   - tar -cf filestash_linux-amd64.tar ./filestash
