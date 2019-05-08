@@ -109,10 +109,10 @@
         line-height: 1.5em;
     }
     .CodeMirror-line{
-        padding-left: 10%; padding-right: 10%; max-width: 950px;
-        @media screen and (max-width: 1150px) { padding-left: 8%; padding-right: 8%; }
-        @media screen and (max-width: 900px) { padding-left: 5%; padding-right: 5%; }
-        @media screen and (max-width: 800px) { padding-left: 2%; padding-right: 2%; }
+        padding-left: 10%; padding-right: 0; max-width: 950px;
+        @media screen and (max-width: 1150px) { padding-left: 8%; padding-right: 0; }
+        @media screen and (max-width: 900px) { padding-left: 5%; padding-right: 0; }
+        @media screen and (max-width: 800px) { padding-left: 2%; padding-right: 0; }
     }
     .CodeMirror-linenumber{ opacity: 0.25; color: var(--color); }
     .CodeMirror-gutters{
