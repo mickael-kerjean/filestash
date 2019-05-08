@@ -42,6 +42,9 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 		header.Set("Content-Type", "text/html")
 		header.Set("Cache-Control", "no-cache")
 		header.Set("Referrer-Policy", "same-origin")
+		header.Set("X-Content-Type-Options", "nosniff")
+		header.Set("X-XSS-Protection", "1; mode=block")
+		header.Set("X-Frame-Options", "DENY")
 		header.Set("X-Powered-By", fmt.Sprintf("Filestash/%s <https://filestash.app>", APP_VERSION + "." + BUILD_NUMBER))
 		fn(ctx, res, req)
 	}
