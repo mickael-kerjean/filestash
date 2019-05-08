@@ -81,7 +81,7 @@ export class SetupPage extends React.Component {
         if(stage === 0){
             return (
                 <div>
-                  <h2>You made it chief! { this.state.creating_password === true ? <Icon style={{height: '40px'}} name="loading"/> : null}</h2>
+                  <h2>You made it chief! { this.state.creating_password === true ? <Icon name="loading"/> : null}</h2>
                   <p>
                     Let's start by protecting the admin area with a password:
                   </p>
