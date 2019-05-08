@@ -78,12 +78,18 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 	zFilePath := filePath + ".gz"
+	bFilePath := filePath + ".br"
+
 	etagNormal := hashFile(filePath, 10)
 	etagGzip := hashFile(zFilePath, 10)
+	etagBr := hashFile(bFilePath, 10)
 
 	if req.Header.Get("If-None-Match") != "" {
 		browserTag := req.Header.Get("If-None-Match")
 		if browserTag == etagNormal {
+			res.WriteHeader(http.StatusNotModified)
+			return
+		} else if browserTag == etagBr {
 			res.WriteHeader(http.StatusNotModified)
 			return
 		} else if browserTag == etagGzip {
@@ -92,7 +98,16 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 		}
 	}
 	head := res.Header()
-	if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
+	acceptEncoding := req.Header.Get("Accept-Encoding")
+	if strings.Contains(acceptEncoding, "br") {
+		if file, err := os.OpenFile(bFilePath, os.O_RDONLY, os.ModePerm); err == nil {
+			head.Set("Content-Encoding", "br")
+			head.Set("Etag", etagBr)
+			io.Copy(res, file)
+			file.Close()
+			return
+		}
+	} else if strings.Contains(acceptEncoding, "gzip") {
 		if file, err := os.OpenFile(zFilePath, os.O_RDONLY, os.ModePerm); err == nil {
 			head.Set("Content-Encoding", "gzip")
 			head.Set("Etag", etagGzip)
