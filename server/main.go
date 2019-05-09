@@ -111,7 +111,7 @@ func Init(a *App) {
 		Handler: r,
 	}
 	Log.Stdout("Filestash %s: starting", APP_VERSION)
-	go ensureAppHasBooted(fmt.Sprintf("http://localhost:%d/about", port), fmt.Sprintf("listening on :%d", port))
+	go ensureAppHasBooted(fmt.Sprintf("http://127.0.0.1:%d/about", port), fmt.Sprintf("listening on :%d", port))
 	if err := srv.ListenAndServe(); err != nil {
 		Log.Stdout("error: %v", err)
 		return
