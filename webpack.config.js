@@ -57,7 +57,13 @@ let config = {
         new webpack.optimize.OccurrenceOrderPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, 'client', 'index.html'),
-            inject: true
+            inject: true,
+            minify: {
+                collapseWhitespace: true,
+                removeComments: true,
+                minifyJS: true,
+                minifyCSS: true,
+            }
         }),
         new CopyWebpackPlugin([
             { from: 'manifest.json', to: "assets/" },
@@ -73,7 +79,8 @@ let config = {
 
 if (process.env.NODE_ENV === 'production') {
     config.plugins.push(new UglifyJSPlugin({
-        sourceMap: false
+        sourceMap: false,
+        extractComments: true,
     }));
     config.plugins.push(new CompressionPlugin({
         asset: "[path].gz[query]",
