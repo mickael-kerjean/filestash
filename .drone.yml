@@ -19,7 +19,7 @@ steps:
   - cp -R config dist/data/state/config
 
 - name: build_frontend
-  image: node:8-alpine
+  image: node:12-alpine
   depends_on: [ build_prepare ]
   commands:
   - apk add make git > /dev/null
