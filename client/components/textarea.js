@@ -17,7 +17,6 @@ export class Textarea extends React.Component {
             className += " hasText";
         }
 
-
         const disabledEnter = (e) => {
             if(e.key === "Enter" && e.shiftKey === false){
                 e.preventDefault();
