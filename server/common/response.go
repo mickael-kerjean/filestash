@@ -1,6 +1,8 @@
 package common
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -33,16 +35,31 @@ func SendSuccessResult(res http.ResponseWriter, data interface{}) {
 	encoder.Encode(APISuccessResult{"ok", data})
 }
 
-func SendSuccessResultWithEtag(res http.ResponseWriter, req *http.Request, data interface{}) {
-	json, _ := json.Marshal(APISuccessResult{"ok", data})
-	hash := QuickHash(string(json), 20)
+func SendSuccessResultWithEtagAndGzip(res http.ResponseWriter, req *http.Request, data interface{}) {
+	dataToSend, _ := json.Marshal(APISuccessResult{"ok", data})
+	mode := "normal"
+	if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") == true {
+		mode = "gzip"
+	}
+	hash := QuickHash(mode + string(dataToSend), 20)
 	if req.Header.Get("If-None-Match") == hash {
 		res.WriteHeader(http.StatusNotModified)
 		return
 	}
-	res.Header().Set("Etag", hash)
-	res.Write(json)
+	head := res.Header()
+	head.Set("Etag", hash)
+	if mode == "gzip" {
+		head.Set("Content-Encoding", "gzip")
+
+		var b bytes.Buffer
+		w, _ := gzip.NewWriterLevel(&b, 1)
+		w.Write(dataToSend)
+		w.Close()
+		dataToSend = b.Bytes()
+	}
+	res.Write(dataToSend)
 }
+
 
 func SendSuccessResults(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)

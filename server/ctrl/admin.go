@@ -82,6 +82,6 @@ func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	for key := range drivers {
 		backends[key] = drivers[key].LoginForm()
 	}
-	SendSuccessResultWithEtag(res, req, backends)
+	SendSuccessResultWithEtagAndGzip(res, req, backends)
 	return
 }

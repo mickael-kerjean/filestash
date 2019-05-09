@@ -71,5 +71,5 @@ func PrivateConfigUpdateHandler(ctx App, res http.ResponseWriter, req *http.Requ
 
 func PublicConfigHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	cfg := Config.Export()
-	SendSuccessResultWithEtag(res, req, cfg)
+	SendSuccessResultWithEtagAndGzip(res, req, cfg)
 }
