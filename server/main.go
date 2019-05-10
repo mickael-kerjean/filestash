@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/ctrl"
@@ -13,7 +12,6 @@ import (
 	"runtime"
 	"runtime/debug"
 	"strconv"
-	"time"
 )
 
 func main() {
@@ -105,17 +103,18 @@ func Init(a *App) {
 	})
 	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX),          middlewares, *a))).Methods("GET")
 
-	port := Config.Get("general.port").Int()
-	srv := &http.Server{
-		Addr:    ":" + strconv.Itoa(port),
-		Handler: r,
+	// Routes are served via plugins to avoid getting stuck with plain HTTP. The idea is to
+	// support many more protocols in the future: HTTPS, HTTP2, TOR or whatever that sounds
+	// fancy I don't know much when this got written: IPFS, solid, ...
+	Log.Info("Filestash %s starting", APP_VERSION)
+	for _, obj := range Hooks.Get.Starter() {
+		go obj(r)
 	}
-	Log.Stdout("Filestash %s: starting", APP_VERSION)
-	go ensureAppHasBooted(fmt.Sprintf("http://127.0.0.1:%d/about", port), fmt.Sprintf("listening on :%d", port))
-	if err := srv.ListenAndServe(); err != nil {
-		Log.Stdout("error: %v", err)
+	if len(Hooks.Get.Starter()) == 0 {
+		Log.Warning("No starter plugin available")
 		return
 	}
+	select { }
 }
 
 func initDebugRoutes(r *mux.Router) {
@@ -147,27 +146,4 @@ func initDebugRoutes(r *mux.Router) {
 		w.Write([]byte("NumGC      = " + strconv.Itoa(int(m.NumGC))))
 		w.Write([]byte("</p>"))
 	})
-}
-
-func ensureAppHasBooted(address string, message string) {
-	i := 0
-	for {
-		if i > 10 {
-			Log.Warning("Filestash hasn't boot ?!?")
-			break
-		}
-		time.Sleep(250 * time.Millisecond)
-		res, err := http.Get(address)
-		if err != nil {
-			i += 1
-			continue
-		}
-		res.Body.Close()
-		if res.StatusCode != http.StatusOK {
-			i += 1
-			continue
-		}
-		Log.Stdout(message)
-		break
-	}
 }

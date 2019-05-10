@@ -43,3 +43,11 @@ func (this Register) HttpEndpoint(fn func(*mux.Router) error) {
 func (this Get) HttpEndpoint() []func(*mux.Router) error {
 	return http_endpoint
 }
+
+var starter_process []func(*mux.Router)
+func (this Register) Starter(fn func(*mux.Router)) {
+	starter_process = append(starter_process, fn)
+}
+func (this Get) Starter() []func(*mux.Router) {
+	return starter_process
+}
