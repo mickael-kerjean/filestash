@@ -151,7 +151,7 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 		}
 		header.Set("Content-Type", mimeType)
 		header.Set("X-XSS-Protection", "1; mode=block")
-		header.Set("Content-Security-Policy", "script-src 'sha256-5jK6iCm+c3Jw2McW1WHurwRQfMEsGaYzAGRBrL1iIBs='")
+		header.Set("Content-Security-Policy", "script-src 'unsafe-inline' 'unsafe-eval' orgmode.org")
 		io.Copy(res, f)
 		return
 	} else if strings.HasPrefix(reqMimeType, "image/") {
