@@ -36,12 +36,12 @@ var HTTP = http.Client{
 }
 
 func NewTransormedTransport(transport http.Transport) http.RoundTripper {
-	return &transformedTransport{ &transport }
+	return &TransformedTransport{ &transport }
 }
-type transformedTransport struct {
-	original http.RoundTripper
+type TransformedTransport struct {
+	Orig http.RoundTripper
 }
-func (this *transformedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+func (this *TransformedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("User-Agent", USER_AGENT)
-	return this.original.RoundTrip(req)
+	return this.Orig.RoundTrip(req)
 }
