@@ -29,7 +29,7 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 		urlObj, err := URL.Parse(req.URL.String())
 		if err != nil {
 			res.WriteHeader(http.StatusInternalServerError)
-			res.Write([]byte(dumbPage("<h1>404 - Not Found</h1>")))
+			res.Write([]byte(Page("<h1>404 - Not Found</h1>")))
 			return
 		}
 		url := urlObj.Path
@@ -41,12 +41,12 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 			strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
 			url != "/login" && url != "/logout" && strings.HasPrefix(url, "/admin") == false {
 			res.WriteHeader(http.StatusNotFound)
-			res.Write([]byte(dumbPage("<h1>404 - Not Found</h1>")))
+			res.Write([]byte(Page("<h1>404 - Not Found</h1>")))
 			return
 		} else if ua := req.Header.Get("User-Agent"); strings.Contains(ua, "MSIE ") {
 			res.WriteHeader(http.StatusBadRequest)
 			res.Write([]byte(
-				dumbPage(`
+				Page(`
                   <h1>Internet explorer is not yet supported</h1>
                   <p>
                     To provide the best possible experience for everyone else, we don't support IE at this time.
@@ -62,7 +62,7 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 }
 
 func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
-	t, _ := template.New("about").Parse(dumbPage(`
+	t, _ := template.New("about").Parse(Page(`
       <h1> {{index .App 0}} <br>
         <span>({{index .App 1}} - {{index .App 2}})</span>
       </h1>
@@ -139,25 +139,4 @@ func hashFile (path string, n int) string {
 		return ""
 	}
 	return QuickHash(fmt.Sprintf("%s %d %d %s", path, stat.Size(), stat.Mode(), stat.ModTime()), n)
-}
-
-func dumbPage (stuff string) string {
-	return `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-    <style>
-      html { background: #f4f4f4; color: #455164; font-size: 16px; font-family: -apple-system,system-ui,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif; }
-      body { text-align: center; padding-top: 50px; text-align: center; }
-      h1 { font-weight: 200; line-height: 1em; font-size: 40px; }
-      p { opacity: 0.7; }
-      span { font-size: 0.7em; opacity: 0.7; }
-    </style>
-  </head>
-  <body>
-    ` + stuff + `
-  </body>
-</html>`
 }

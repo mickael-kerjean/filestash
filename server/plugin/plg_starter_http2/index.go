@@ -1,4 +1,4 @@
-package plg_start_http2
+package plg_starter_http2
 
 /*
  * In golang, HTTP2 server are written in the same way as HTTPS server, the only difference beeing
@@ -22,26 +22,12 @@ func init() {
 	domain := Config.Get("general.host").String()
 
 	Hooks.Register.Starter(func (r *mux.Router) {
-		Log.Info("[https] starting...%s", domain)
+		Log.Info("[https] starting ...%s", domain)
 		srv := &http.Server{
 			Addr: fmt.Sprintf(":https"),
 			Handler: r,
-			TLSConfig: &tls.Config{
-				MinVersion: tls.VersionTLS12,
-				CipherSuites: []uint16{
-					tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-					tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
-					tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
-					tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-				},
-				PreferServerCipherSuites: true,
-				CurvePreferences: []tls.CurveID{
-					tls.CurveP256,
-					tls.X25519,
-				},
-			},
+			TLSConfig: &DefaultTLSConfig,
+			ErrorLog: NewNilLogger(),
 		}
 
 		switch domain {

@@ -1,4 +1,4 @@
-package plg_start_http
+package plg_starter_http
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ func init() {
 	port := Config.Get("general.port").Int()
 
 	Hooks.Register.Starter(func (r *mux.Router) {
-		Log.Info("[http] starting...")
+		Log.Info("[http] starting ...")
 		srv := &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),
 			Handler: r,

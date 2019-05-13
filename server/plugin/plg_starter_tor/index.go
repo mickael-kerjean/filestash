@@ -1,4 +1,4 @@
-package plg_start_tor
+package plg_starter_tor
 
 import (
 	"context"
