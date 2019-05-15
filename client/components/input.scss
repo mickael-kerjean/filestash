@@ -25,7 +25,7 @@
 
 input.component_input[readonly], textarea.component_textarea[readonly]{
     border-bottom-style: dashed;
-    cursor: not-allowed;
+    cursor: pointer;
     font-style: italic;
     opacity: 0.8;
 }

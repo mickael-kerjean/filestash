@@ -13,6 +13,8 @@ import (
 	"io/ioutil"
 	mathrand "math/rand"
 	"math/big"
+	"os"
+	"runtime"
 )
 
 var Letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -220,4 +222,24 @@ func GenerateID(ctx *App) string {
 	}
 	p += "salt => " + SECRET_KEY
 	return Hash(p, 20)
+}
+
+// Create an ID that identify a machine
+func GenerateMachineID() string {
+	if runtime.GOOS == "linux" {
+		if f, err := os.OpenFile("/etc/machine-id", os.O_RDONLY, os.ModePerm); err == nil {
+			defer f.Close()
+			b := make([]byte, 32)
+			if _, err = f.Read(b); err == nil {
+				return string(b)
+			}
+		} else if f, err := os.OpenFile("/var/lib/dbus/machine-id", os.O_RDONLY, os.ModePerm); err == nil {
+			defer f.Close()
+			b := make([]byte, 32)
+			if _, err = f.Read(b); err == nil {
+				return string(b)
+			}
+		}		
+	}
+	return "na"
 }

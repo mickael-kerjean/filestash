@@ -58,10 +58,10 @@ func init() {
 				Addr: fmt.Sprintf(":http"),
 				ReadTimeout:  5 * time.Second,
 				WriteTimeout: 5 * time.Second,
-				Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-					w.Header().Set("Connection", "close")
+				Handler: http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					res.Header().Set("Connection", "close")
 					http.Redirect(
-						w,
+						res,
 						req,
 						"https://" + req.Host + req.URL.String(),
 						http.StatusMovedPermanently,

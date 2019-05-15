@@ -18,6 +18,7 @@ var (
 )
 
 type Configuration struct {
+	OnChange       chan interface{}
 	mu             sync.Mutex
 	currentElement *FormElement
 	cache          KeyValueStore
@@ -57,6 +58,7 @@ func init() {
 
 func NewConfiguration() Configuration {
 	return Configuration{
+		OnChange: make(chan interface{}),
 		mu:    sync.Mutex{},
 		cache: NewKeyValueStore(),
 		form: []Form{
@@ -236,6 +238,7 @@ func (this *Configuration) Load() {
 	this.cache.Clear()
 
 	Log.SetVisibility(this.Get("log.level").String())
+	go func() { this.OnChange <- nil }()
 	return
 }
 
