@@ -22,6 +22,18 @@ export class SetupPage extends React.Component {
     createPassword(e){
         this.setState({creating_password: true});
         e.preventDefault();
+        const enableLog = (value) => {
+            Config.all().then((config) => {
+                config.log.telemetry.value = value;
+                config = FormObjToJSON(config);
+                config.connections = window.CONFIG.connections;
+                Config.save(config, false);
+            });
+        };
+        const start = (e) => {
+            e.preventDefault();
+            this.props.history.push("/");
+        };
         Config.all().then((config) => {
             this.setState({enable_telemetry: config.log.telemetry.value}, () => {
                 if(this.state.enable_telemetry === true) return;
@@ -32,9 +44,9 @@ export class SetupPage extends React.Component {
                           <p style={{textAlign: 'justify'}}>
                             Help making this software better by sending crash reports and anonymous usage statistics
                           </p>
-                          <form onSubmit={this.start.bind(this)} style={{fontSize: '0.9em', marginTop: '10px'}}>
+                          <form onSubmit={start.bind(this)} style={{fontSize: '0.9em', marginTop: '10px'}}>
                             <label>
-                              <Input type="checkbox" style={{width: 'inherit', marginRight: '10px'}} onChange={(e) => this.enableLog(e.target.checked)} defaultChecked={this.state.enable_telemetry} />
+                              <Input type="checkbox" style={{width: 'inherit', marginRight: '10px'}} onChange={(e) => enableLog(e.target.checked)} defaultChecked={this.state.enable_telemetry} />
                                 I accept but the data is not to be share with any third party
                             </label>
                           </form>
