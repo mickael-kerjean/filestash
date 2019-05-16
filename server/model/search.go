@@ -214,15 +214,14 @@ func Search(app *App, path string, keyword string) []File {
 type SearchProcess struct {
 	idx []SearchIndexer
 	n   int
-	mu  sync.Mutex
+	mu  sync.RWMutex
 }
 
 func(this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
 	id := GenerateID(app)
-	this.mu.Lock()
-	defer this.mu.Unlock()
 
 	// try to find the search indexer among the existing ones
+	this.mu.RLock()
 	for i:=len(this.idx)-1; i>=0; i-- {
 		if id == this.idx[i].Id {
 			alreadyHasPath := false
@@ -240,18 +239,24 @@ func(this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
 					Name: filepath.Base(path),
 				})
 			}
-			return &this.idx[i]
+			ret := &this.idx[i]
+			this.mu.RUnlock()
+			return ret
 		}
 	}
+	this.mu.RUnlock()
 
+	
 	// Having all indexers running in memory could be expensive => instead we're cycling a pool
 	search_process_max := SEARCH_PROCESS_MAX()
-	if len(this.idx) > ( search_process_max - 1) {
-		toDel := this.idx[0 : len(this.idx) - ( search_process_max - 1)]
+	this.mu.Lock()
+	lenIdx := len(this.idx)
+	if lenIdx > 0 && search_process_max > 0 && lenIdx > ( search_process_max - 1) {
+		toDel := this.idx[0 : lenIdx - ( search_process_max - 1)]
 		for i := range toDel {
 			toDel[i].DB.Close()
 		}
-		this.idx = this.idx[len(this.idx) - ( search_process_max - 1) :]
+		this.idx = this.idx[lenIdx - ( search_process_max - 1) :]
 	}
 	// instantiate the new indexer
 	s := NewSearchIndexer(id, app.Backend)
@@ -262,27 +267,32 @@ func(this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
 		Name: filepath.Base(path),
 	})
 	this.idx = append(this.idx, s)
+	this.mu.Unlock()
 	return &s
 }
 
 func(this *SearchProcess) HintRm(app *App, path string) {
 	id := GenerateID(app)
+	this.mu.RLock()
 	for i:=len(this.idx)-1; i>=0; i-- {
 		if id == this.idx[i].Id {
 			this.idx[i].DB.Exec("DELETE FROM file WHERE path >= ? AND path < ?", path, path + "~")
 			break
 		}
 	}
+	this.mu.RUnlock()
 }
 
 func(this *SearchProcess) HintFile(app *App, path string) {
 	id := GenerateID(app)
+	this.mu.RLock()
 	for i:=len(this.idx)-1; i>=0; i-- {
 		if id == this.idx[i].Id {
 			this.idx[i].DB.Exec("UPDATE file set indexTime = NULL WHERE path = ?", path)
 			break
 		}
 	}
+	this.mu.RUnlock()
 }
 
 
@@ -302,10 +312,12 @@ func(this *SearchProcess) Peek() *SearchIndexer {
 }
 
 func(this *SearchProcess) Reset() {
+	this.mu.Lock()
 	for i := range this.idx {
 		this.idx[i].DB.Close()
 	}
 	this.idx = make([]SearchIndexer, 0)
+	this.mu.Unlock()
 	this.n = -1
 }
 
