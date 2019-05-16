@@ -65,6 +65,7 @@ func init() {
 				return
 			}
 		}()
+		Config.Get("features.server.tunnel_url").Set(nil)
 		if tunnel_enable() == false {
 			startTunnel := false
 			for {
@@ -90,9 +91,9 @@ func init() {
 					continue
 				}
 				req.Header.Add("X-Machine-ID", GenerateMachineID())
-				res, err := HTTPClient.Do(req)
+				res, err := HTTP.Do(req)
 				if err != nil {
-					Log.Info("[tunnel] registration_failure %s", err.Error())
+					Log.Info("[tunnel] registration_error %s", err.Error())
 					time.Sleep(backoff())
 					continue
 				} else if res.StatusCode != http.StatusOK {

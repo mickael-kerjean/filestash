@@ -37,7 +37,6 @@ func AdminSessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendSuccessResult(res, false)
 		return
 	}
-
 	SendSuccessResult(res, true)
 }
 

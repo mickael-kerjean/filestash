@@ -7,6 +7,8 @@ import (
 	"github.com/tidwall/sjson"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"os/user"
 	"path/filepath"
 	"sync"
 	"strings"
@@ -494,7 +496,34 @@ func (this Configuration) Interface() interface{} {
 }
 
 func (this Configuration) MarshalJSON() ([]byte, error) {
+	form := this.form	
+	form = append(form, Form{
+		Title: "private",
+		Elmnts: []FormElement{
+			FormElement{Name: "user", Type: "boolean", ReadOnly: true, Value: func() string{
+				if u, err := user.Current(); err == nil {
+					if u.Username != "" {
+						return u.Username
+					}
+					return u.Name
+				}
+				return "n/a"
+			}()},
+			FormElement{Name: "emacs", Type: "boolean", ReadOnly: true, Value: func() bool {
+				if _, err := exec.LookPath("emacs"); err == nil {
+					return true
+				}
+				return false
+			}()},
+			FormElement{Name: "pdftotext", Type: "boolean", ReadOnly: true, Value: func() bool {
+				if _, err := exec.LookPath("pdftotext"); err == nil {
+					return true
+				}
+				return false
+			}()},
+		},
+	})
 	return Form{
-		Form: this.form,
+		Form: form,
 	}.MarshalJSON()
 }
