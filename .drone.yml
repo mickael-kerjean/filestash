@@ -47,9 +47,9 @@ steps:
       from_secret: GIT_PASSWORD
   commands:
   - apk add git > /dev/null
+  - chmod -R o+r+w+x ./dist/data
   - cd ../ && git clone "https://readonly:$PASSWORD@git.kerjean.me/filestash/test.git"
   - chmod -R 777 ./test/
-  - chmod -R 777 ./filestash/dist/data
 
 - name: test_frontend
   image: node:8-alpine
@@ -91,7 +91,8 @@ steps:
     GPG_PASSPHRASE:
       from_secret: GPG_PASSPHRASE
   commands:
-  - cp -R config/* dist/data/state/config/
+  - cp -R config/* ./dist/data/state/config/
+  - chmod -R o-r-w-x- ./dist/
   - apt-get update > /dev/null && apt-get install -y gnupg1 curl > /dev/null
   - mv dist filestash
   - tar -cf filestash_linux-amd64.tar ./filestash

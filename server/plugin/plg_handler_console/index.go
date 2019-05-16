@@ -66,7 +66,7 @@ func AuthBasic(credentials func() (string, string), fn http.Handler) http.Handle
 			http.NotFoundHandler().ServeHTTP(res, req)
 			return
 		}
-		
+
 		auth := req.Header.Get("Authorization")
 		if strings.HasPrefix(auth, "Basic ") == false {
 			notAuthorised(res, req)
@@ -273,6 +273,7 @@ func htmlIndex(pathPrefix string) []byte {
 
 func AppScript(pathPrefix string) string {
 	return `
+
 (function() {
     Terminal.applyAddon(fit);
     var term;
@@ -302,7 +303,7 @@ func AppScript(pathPrefix string) string {
         });
 
         var websocket = new WebSocket(
-            (location.protocol === "https:") ? "wss://" : "ws://" +
+            (location.protocol === "https:" ? "wss://" : "ws://") +
             location.hostname + ((location.port) ? (":" + location.port) : "") +
             "`+ pathPrefix +`socket"
         );
@@ -343,7 +344,9 @@ func AppScript(pathPrefix string) string {
         }
 
         websocket.onerror = function(e){
-            term.destroy();
+            var $term = document.getElementById("terminal");
+            if($term) $term.remove();
+            document.getElementById("terminal").remove()
             document.getElementById("error-message").innerText = "Websocket Error";
         }
     }
