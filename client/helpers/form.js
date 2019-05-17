@@ -1,4 +1,5 @@
-export const FormObjToJSON = function(o, fn){
+export const FormObjToJSON = function(o, fn, i = 0){
+    if(i === 0) delete o["constants"];
     let obj = Object.assign({}, o);
     Object.keys(obj).map((key) => {
         let t = obj[key];
@@ -9,7 +10,7 @@ export const FormObjToJSON = function(o, fn){
                 obj[key] = obj[key].value;
             }
         } else {
-            obj[key] = FormObjToJSON(obj[key], fn);
+            obj[key] = FormObjToJSON(obj[key], fn, i+1);
         }
     });
     return obj

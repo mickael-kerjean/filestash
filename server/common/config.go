@@ -498,7 +498,7 @@ func (this Configuration) Interface() interface{} {
 func (this Configuration) MarshalJSON() ([]byte, error) {
 	form := this.form	
 	form = append(form, Form{
-		Title: "private",
+		Title: "constant",
 		Elmnts: []FormElement{
 			FormElement{Name: "user", Type: "boolean", ReadOnly: true, Value: func() string{
 				if u, err := user.Current(); err == nil {

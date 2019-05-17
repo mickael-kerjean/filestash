@@ -113,21 +113,21 @@ export class SetupPage extends React.Component {
                     "severe": true,
                     "message": "This can lead to data leaks. Please use a SSL certificate or expose your instance via a filestash domain"
                 }, {
-                    "name_success": "Application is running as " + config.private.user.value,
+                    "name_success": "Application is running as '" + objectGet(config, ["constant", "user", "value"]) + "'",
                     "name_failure": "Application is running as root",
-                    "pass": objectGet(config, ["private", "user", "value"]) !== "root",
+                    "pass": objectGet(config, ["constant", "user", "value"]) !== "root",
                     "severe": true,
                     "message": "This is dangerous, you should use another user with less privileges"
                 }, {
                     "name_success": "Emacs is installed",
                     "name_failure": "Emacs is not installed",
-                    "pass": objectGet(config, ["private", "emacs", "value"]),
+                    "pass": objectGet(config, ["constant", "emacs", "value"]),
                     "severe": false,
                     "message": "If you want to use all the org-mode features of Filestash, you need to install emacs"
                 }, {
                     "name_success": "Pdftotext is installed",
                     "name_failure": "Pdftotext is not installed",
-                    "pass": objectGet(config, ["private", "pdftotext", "value"]),
+                    "pass": objectGet(config, ["constant", "pdftotext", "value"]),
                     "severe": false,
                     "message": "You won't be able to search through PDF documents without it"
                 }
@@ -211,8 +211,6 @@ class MultiStepForm extends React.Component {
                     });
                 };
                 waitForDomain().then((url) => {
-                    // TODO
-                    console.log("DONE: ", url, this.state);
                     this.setState({redirect_uri: url});
                 }).catch((err) => {
                     window.location.hash = "#2";
