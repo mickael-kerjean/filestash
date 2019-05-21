@@ -12,32 +12,27 @@ class FileSystem{
         this.current_path = null;
     }
 
-    ls(path, internal = false){
+    ls(path){
         this.current_path = path;
         this.obs && this.obs.complete();
-
         return Observable.create((obs) => {
             this.obs = obs;
             let keep_pulling_from_http = false;
-            this._ls_from_cache(path, true)
-                .then((cache) => {
-                    const fetch_from_http = (_path) => {
-                        return this._ls_from_http(_path)
-                            .then(() => new Promise((done, err) => {
-                                window.setTimeout(() => done(), 2000);
-                            }))
-                            .then(() => {
-                                if(keep_pulling_from_http === false) return Promise.resolve();
-                                return fetch_from_http(_path);
-                            })
-                            .catch((e) => {
-                                if(cache === null){
-                                    this.obs && this.obs.error({message: "Unknown Path"});
-                                }
-                            });
-                    };
-                    fetch_from_http(path);
-                });
+            this._ls_from_cache(path, true).then((cache) => {
+                const fetch_from_http = (_path) => {
+                    return this._ls_from_http(_path).then(() => new Promise((done, err) => {
+                        window.setTimeout(() => done(), 2000);
+                    })).then(() => {
+                        if(keep_pulling_from_http === false) return Promise.resolve();
+                        return fetch_from_http(_path);
+                    }).catch((err) => {
+                        if(cache === null){
+                            this.obs && this.obs.error({message: "Unknown Path"});
+                        }
+                    });
+                };
+                fetch_from_http(path);
+            }).catch((err) => this.obs.error({message: err && err.message}));
 
             return () => {
                 keep_pulling_from_http = false;
@@ -46,7 +41,7 @@ class FileSystem{
     }
 
     _ls_from_http(path){
-        let url = appendShareToUrl('/api/files/ls?path='+prepare(path));
+        const url = appendShareToUrl("/api/files/ls?path="+prepare(path));
 
         return http_get(url).then((response) => {
             return cache.upsert(cache.FILE_PATH, [currentShare(), path], (_files) => {
@@ -58,15 +53,10 @@ class FileSystem{
                     metadata: null
                 }, _files);
                 store.results = response.results || [];
-                store.results = store.results.map((f) => {
-                    f.path = pathBuilder(path, f.name, f.type);
-                    return f;
-                });
                 store.metadata = response.metadata;
 
                 if(_files && _files.results){
                     store.access_count = _files.access_count;
-
                     // find out which entry we want to keep from the cache
                     let _files_virtual_to_keep = _files.results.filter((file) => {
                         return file.icon === 'loading';
@@ -85,24 +75,25 @@ class FileSystem{
                     _files_virtual_to_keep = _files_virtual_to_keep.filter((e) => e);
                     store.results = store.results.concat(_files_virtual_to_keep);
                 }
-
-                if(this.current_path === path){
-                    this.obs && this.obs.next({
-                        status: 'ok',
-                        results: store.results,
-                        metadata: store.metadata
-                    });
-                }
                 store.last_update = new Date();
                 store.last_access = new Date();
                 return store;
+            }).catch(() => Promise.resolve(response)).then((data) => {
+                data.results = data.results.map((f) => {
+                    f.path = pathBuilder(path, f.name, f.type);
+                    return f;
+                });
+                if(this.current_path === path){
+                    this.obs && this.obs.next(data);
+                }
+                return Promise.resolve(null);
             });
         }).catch((_err) => {
             if(_err.code === "Unauthorized"){
                 location = "/login?next="+location.pathname;
             }
             this.obs.next(_err);
-            return Promise.reject(null);
+            return Promise.reject(err);
         });
     }
 

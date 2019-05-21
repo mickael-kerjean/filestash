@@ -106,7 +106,7 @@ Data.prototype.upsert = function(type, key, fn){
             };
             query.onerror = error;
         });
-    }).catch(() => Promise.resolve(null));
+    });
 }
 
 Data.prototype.add = function(type, key, data){

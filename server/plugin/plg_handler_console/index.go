@@ -23,12 +23,12 @@ import (
 )
 
 var console_enable = func() bool {
-	return Config.Get("features.server.enable_console").Schema(func(f *FormElement) *FormElement{
+	return Config.Get("features.server.console_enable").Schema(func(f *FormElement) *FormElement{
 		if f == nil {
 			f = &FormElement{}
 		}
 		f.Default = false
-		f.Name = "enable_console"
+		f.Name = "console_enable"
 		f.Type = "boolean"
 		f.Description = "Enable/Disable the interactive web console on your instance. It will be available under `/tty/` where username is 'admin' and password is your admin console"
 		f.Placeholder = "Default: false"

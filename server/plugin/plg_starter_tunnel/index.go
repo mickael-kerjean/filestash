@@ -23,12 +23,12 @@ var backoff func() time.Duration = backoff_strategy()
 
 func init() {
 	tunnel_enable := func() bool {
-		return Config.Get("features.server.enable_tunnel").Schema(func(f *FormElement) *FormElement{
+		return Config.Get("features.server.tunnel_enable").Schema(func(f *FormElement) *FormElement{
 			if f == nil {
 				f = &FormElement{}
 			}
 			f.Default = false
-			f.Name = "enable_tunnel"
+			f.Name = "tunnel_enable"
 			f.Type = "enable"
 			f.Target = []string{"tunnel_url"}
 			f.Description = "Enable/Disable tunnel for secure access from the internet"
@@ -65,7 +65,7 @@ func init() {
 				return
 			}
 		}()
-		Config.Get("features.server.tunnel_url").Set(nil)
+		Config.Get("features.server.tunnel_url").Set(nil)		
 		if tunnel_enable() == false {
 			startTunnel := false
 			for {
@@ -118,7 +118,7 @@ func init() {
 						return false
 					},
 					func(context.Context) error {
-						Log.Info("[tunnel] started, navigate to: %s", string(d))
+						Log.Info("[tunnel] started %s", string(d))
 						Config.Get("features.server.tunnel_url").Set(string(d))
 						return nil
 					},

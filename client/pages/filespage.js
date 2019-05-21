@@ -152,9 +152,7 @@ export class FilesPage extends React.Component {
                     this.refs.$scroll.scrollTop = LAST_PAGE_PARAMS.scroll;
                 }
             });
-        }, (error) => {
-            this.props.error(error);
-        });
+        }, (error) => this.props.error(error));
         this.observers.push(observer);
         if(path === "/"){
             Files.frequents().then((s) => this.setState({frequents: s}));
