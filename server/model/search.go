@@ -152,7 +152,10 @@ func init(){
 	runner := func() {
 		for {
 			if SEARCH_ENABLE() == false {
-				time.Sleep(60 * time.Second)
+				select {
+				case <- Config.OnChange:
+					continue
+				}
 				continue
 			}
 			sidx := SProc.Peek()
@@ -246,7 +249,7 @@ func(this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
 	}
 	this.mu.RUnlock()
 
-	
+
 	// Having all indexers running in memory could be expensive => instead we're cycling a pool
 	search_process_max := SEARCH_PROCESS_MAX()
 	this.mu.Lock()

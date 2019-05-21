@@ -7,7 +7,7 @@ import './filespage.scss';
 import './error.scss';
 import { Files } from '../model/';
 import { sort, onCreate, onRename, onMultiRename, onDelete, onMultiDelete, onUpload, onSearch, createLink } from './filespage.helper';
-import { NgIf, Loader, EventReceiver, LoggedInOnly, ErrorPage } from '../components/';
+import { NgIf, NgShow, Loader, EventReceiver, LoggedInOnly, ErrorPage } from '../components/';
 import { notify, debounce, goToFiles, goToViewer, event, settings_get, settings_put } from '../helpers/';
 import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from './filespage/';
 import { MobileFileUpload } from './filespage/filezone';
@@ -121,37 +121,37 @@ export class FilesPage extends React.Component {
     onRefresh(path = this.state.path){
         this._cleanupListeners();
         const observer = Files.ls(path).subscribe((res) => {
-            if(res.status === "ok"){
-                let files = new Array(res.results.length);
-                for(let i=0,l=res.results.length; i<l; i++){
-                    let path = this.state.path+res.results[i].name;
-                    path = path.replace(/#/g, "%23");
-                    if(this.state.show_hidden === false && res.results[i].name[0] === "."){
-                        continue;
-                    }
-                    files[i] = res.results[i];
-                    files[i].link = createLink(res.results[i].type, res.results[i].path);
-                }
-                this.setState({
-                    metadata: res.metadata,
-                    files: sort(files, this.state.sort),
-                    selected: [],
-                    loading: false,
-                    is_search: false,
-                    page_number: function(){
-                        if(this.state.path === LAST_PAGE_PARAMS.path){
-                            return LAST_PAGE_PARAMS.page_number;
-                        }
-                        return PAGE_NUMBER_INIT;
-                    }.bind(this)()
-                }, () => {
-                    if(this.state.path === LAST_PAGE_PARAMS.path){
-                        this.refs.$scroll.scrollTop = LAST_PAGE_PARAMS.scroll;
-                    }
-                });
-            }else{
+            if(res.status !== "ok"){
                 notify.send(res, "error");
+                return;
             }
+            let files = new Array(res.results.length);
+            for(let i=0,l=res.results.length; i<l; i++){
+                let path = this.state.path+res.results[i].name;
+                path = path.replace(/#/g, "%23");
+                if(this.state.show_hidden === false && res.results[i].name[0] === "."){
+                    continue;
+                }
+                files[i] = res.results[i];
+                files[i].link = createLink(res.results[i].type, res.results[i].path);
+            }
+            this.setState({
+                metadata: res.metadata,
+                files: sort(files, this.state.sort),
+                selected: [],
+                loading: false,
+                is_search: false,
+                page_number: function(){
+                    if(this.state.path === LAST_PAGE_PARAMS.path){
+                        return LAST_PAGE_PARAMS.page_number;
+                    }
+                    return PAGE_NUMBER_INIT;
+                }.bind(this)()
+            }, () => {
+                if(this.state.path === LAST_PAGE_PARAMS.path){
+                    this.refs.$scroll.scrollTop = LAST_PAGE_PARAMS.scroll;
+                }
+            });
         }, (error) => {
             this.props.error(error);
         });
@@ -213,25 +213,39 @@ export class FilesPage extends React.Component {
         if(this._search){
             this._search.unsubscribe();
         }
+        this.setState({
+            files: [],
+            loading: true,
+            is_search: true,
+            page_number: PAGE_NUMBER_INIT,
+        });
         this._search = onSearch(search, this.state.path).subscribe((f = []) => {
-            let l = f.length;
-            for(let i=0; i<l; i++){
+            for(let i=0; i<f.length; i++){
                 f[i].link = createLink(f[i].type, f[i].path);
-                if(this.state.show_hidden == false){
-                    if(f[i].path.split("/").filter((chunk) => chunk[0] === "." ? true : false).length > 0){
-                        delete f[i].type;
-                    }
+                if(this.state.show_hidden === false && f[i].path.indexOf("/.") !== -1){
+                    f.splice(i, 1);
+                    i -= 1;
                 }
             }
             this.setState({
-                files: f,
-                is_search: true,
+                files: sort(f, this.state.sort),
+                loading: false,
                 metadata: {
                     can_rename: false,
                     can_delete: false,
                     can_share: false
                 }
             });
+        }, (err) => {
+            this.setState({
+                loading: false,
+                metadata: {
+                    can_rename: false,
+                    can_delete: false,
+                    can_share: false
+                }
+            });
+            notify.send(err, "error");
         });
     }
 
@@ -264,31 +278,31 @@ export class FilesPage extends React.Component {
             <div className="component_page_filespage">
               <BreadCrumb className="breadcrumb" path={this.state.path} currentSelection={this.state.selected} />
               <SelectableGroup onSelection={this.handleMultiSelect.bind(this)} tolerance={2} onNonItemClick={this.handleMultiSelect.bind(this, [])} preventDefault={true} enabled={this.state.is_search === false} className="selectablegroup">
-              <div className="page_container">
-                <div ref="$scroll" className="scroll-y">
-                  <InfiniteScroll pageStart={0} loader={$moreLoading} hasMore={this.state.files.length > 70}
-                    initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={100}>
-                    <NgIf className="container" cond={!this.state.loading}>
-                      <NgIf cond={this.state.path === "/"}>
-                        <FrequentlyAccess files={this.state.frequents} />
-                      </NgIf>
-                      <Submenu path={this.state.path} sort={this.state.sort} view={this.state.view} onSearch={this.onSearch.bind(this)} onViewUpdate={(value) => this.onView(value)} onSortUpdate={(value) => {this.onSort(value);}} accessRight={this.state.metadata || {}} selected={this.state.selected}></Submenu>
-                      <NgIf cond={true}>
-                        <FileSystem path={this.state.path} sort={this.state.sort} view={this.state.view} selected={this.state.selected}
-                                    files={this.state.files.slice(0, this.state.page_number * LOAD_PER_SCROLL)} isSearch={this.state.is_search}
-                                    metadata={this.state.metadata || {}} onSort={this.onSort.bind(this)} onView={this.onView.bind(this)} />
-                      </NgIf>
+                <div className="page_container">
+                  <div ref="$scroll" className="scroll-y">
+                    <InfiniteScroll pageStart={0} loader={$moreLoading} hasMore={this.state.files.length > 70}
+                                    initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={100}>
+                      <NgShow className="container" cond={!!this.state.is_search || !this.state.loading}>
+                        <NgIf cond={this.state.path === "/"}>
+                          <FrequentlyAccess files={this.state.frequents} />
+                        </NgIf>
+                        <Submenu path={this.state.path} sort={this.state.sort} view={this.state.view} onSearch={this.onSearch.bind(this)} onViewUpdate={(value) => this.onView(value)} onSortUpdate={(value) => this.onSort(value)} accessRight={this.state.metadata || {}} selected={this.state.selected}></Submenu>
+                        <NgIf cond={!this.state.loading}>
+                          <FileSystem path={this.state.path} sort={this.state.sort} view={this.state.view} selected={this.state.selected}
+                                      files={this.state.files.slice(0, this.state.page_number * LOAD_PER_SCROLL)} isSearch={this.state.is_search}
+                                      metadata={this.state.metadata || {}} onSort={this.onSort.bind(this)} onView={this.onView.bind(this)} />
+                        </NgIf>
+                      </NgShow>
+                    </InfiniteScroll>
+                    <NgIf cond={this.state.loading === true}>
+                      <Loader/>
                     </NgIf>
-                  </InfiniteScroll>
-                  <NgIf cond={!!this.state.loading}>
-                    <Loader/>
-                  </NgIf>
-                  <MobileFileUpload path={this.state.path} />
+                    <MobileFileUpload path={this.state.path} />
+                  </div>
                 </div>
-              </div>
-              <div className="upload-footer">
-                <div className="bar"></div>
-              </div>
+                <div className="upload-footer">
+                  <div className="bar"></div>
+                </div>
               </SelectableGroup>
             </div>
         );

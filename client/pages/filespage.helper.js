@@ -412,7 +412,9 @@ export const onUpload = function(path, e){
 
 export const onSearch = (keyword, path = "/") => {
     return new Observable((obs) => {
-        Files.search(keyword, path).then((f) => obs.next(f))
+        Files.search(keyword, path)
+            .then((f) => obs.next(f))
+            .catch((err) => obs.error(err));
     });
 };
 

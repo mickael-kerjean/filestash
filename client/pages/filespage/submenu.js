@@ -16,7 +16,7 @@ export class Submenu extends React.Component {
         };
 
         this.onSearchChange_Backpressure = debounce(this.onSearchChange, 400);
-        this._onEscapeKeyPress = (e) => {
+        this._onKeyPress = (e) => {
             if(e.keyCode === 27){ // escape key
                 this.setState({
                     search_keyword: "",
@@ -38,13 +38,10 @@ export class Submenu extends React.Component {
     }
 
     componentDidMount(){
-        window.addEventListener('keydown', this._onEscapeKeyPress);
-        if(this.state.search_input_visible === true){
-            this.onSearchChange(this.state.search_keyword);
-        }
+        window.addEventListener('keydown', this._onKeyPress);
     }
     componentWillUnmount(){
-        window.removeEventListener('keydown', this._onEscapeKeyPress);
+        window.removeEventListener('keydown', this._onKeyPress);
     }
 
     onNew(type){

@@ -14,7 +14,7 @@
   "dependencies": {
     "aes-js": "git+https://github.com/mickael-kerjean/aes-js.git",
     "bcryptjs": "^2.4.3",
-    "react-selectable": "^2.0.1"
+    "react-selectable": "git+https://github.com/mickael-kerjean/react-selectable.git"
   },
   "devDependencies": {
     "babel-core": "^6.13.2",
