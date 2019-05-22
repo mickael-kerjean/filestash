@@ -14,7 +14,7 @@
 
 # Features
 - Manage your files from a browser
-- Full org mode client ([documentation](https://github.com/mickael-kerjean/filestash/wiki/Release-0.1:-Org-Mode-everywhere))
+- Full org mode client ([documentation](https://www.filestash.app/2018/05/31/release-note-v0.1/))
 - Photo management
 - Flexible Share mechanism
 - User friendly
@@ -55,4 +55,4 @@
 
 # Credits
 - [Contributors](https://github.com/mickael-kerjean/filestash/graphs/contributors) and folks developing awesome libraries (libvips, libraw, ...)
-- Logo derived from the work of [ssnjrthegr8](https://github.com/ssnjrthegr8), Iconography from [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/), loader adapted from [Mr Alien](https://codepen.io/mr_alien/pen/FDLjg)
+- Logo derived from the work of [ssnjrthegr8](https://github.com/ssnjrthegr8), Iconography from [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)
