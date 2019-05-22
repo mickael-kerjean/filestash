@@ -417,7 +417,3 @@ export const onSearch = (keyword, path = "/") => {
             .catch((err) => obs.error(err));
     });
 };
-
-export const createLink = (type, path) => {
-    return type === "file" ? "/view" + path : "/files" + path;
-}

@@ -194,7 +194,6 @@ class MultiStepForm extends React.Component {
             if(value === "tunnel"){
                 const waitForDomain = (count = 0) => {
                     return this.props.tunnelCall().then((url) => {
-                        console.log("- config tunnel_url: %s - %d", url, count);
                         if(url && /\.filestash\.app$/.test(url) === true){
                             return Promise.resolve(url);
                         }

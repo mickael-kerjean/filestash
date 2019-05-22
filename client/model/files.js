@@ -12,7 +12,7 @@ class FileSystem{
         this.current_path = null;
     }
 
-    ls(path){
+    ls(path, show_hidden = false){
         this.current_path = path;
         this.obs && this.obs.complete();
         return Observable.create((obs) => {
@@ -20,7 +20,7 @@ class FileSystem{
             let keep_pulling_from_http = false;
             this._ls_from_cache(path, true).then((cache) => {
                 const fetch_from_http = (_path) => {
-                    return this._ls_from_http(_path).then(() => new Promise((done, err) => {
+                    return this._ls_from_http(_path, show_hidden).then(() => new Promise((done, err) => {
                         window.setTimeout(() => done(), 2000);
                     })).then(() => {
                         if(keep_pulling_from_http === false) return Promise.resolve();
@@ -40,14 +40,11 @@ class FileSystem{
         });
     }
 
-    _ls_from_http(path){
+    _ls_from_http(path, show_hidden){
         const url = appendShareToUrl("/api/files/ls?path="+prepare(path));
 
         return http_get(url).then((response) => {
-            response.results = (response.results || []).map((f) => {
-                f.path = pathBuilder(path, f.name, f.type);
-                return f;
-            });
+            response = fileMiddleware(response, path, show_hidden);
 
             return cache.upsert(cache.FILE_PATH, [currentShare(), path], (_files) => {
                 let store = Object.assign({
@@ -72,13 +69,13 @@ class FileSystem{
                         for(let j=0; j<store.results.length; j++){
                             if(store.results[j].name === _files_virtual_to_keep[i].name){
                                 store.results[j] = Object.assign({}, _files_virtual_to_keep[i]);
-                                _files_virtual_to_keep[i] = null;
+                                _files_virtual_to_keep.splice(i, 1);
+                                i -= 1;
                                 break;
                             }
                         }
                     }
                     // add stuff that didn't exist in our response
-                    _files_virtual_to_keep = _files_virtual_to_keep.filter((e) => e);
                     store.results = store.results.concat(_files_virtual_to_keep);
                 }
                 store.last_update = new Date();
@@ -361,10 +358,11 @@ class FileSystem{
             });
     }
 
-    search(keyword, path = "/"){
+    search(keyword, path = "/", show_hidden){
         const url = appendShareToUrl("/api/files/search?path="+prepare(path)+"&q="+encodeURIComponent(keyword))
-        return http_get(url).then((res) => {
-            return res.results
+        return http_get(url).then((response) => {
+            response = fileMiddleware(response, path, show_hidden);
+            return response.results;
         });
     }
 
@@ -441,11 +439,11 @@ class FileSystem{
                     last_update: new Date()
                 };
             }
-            let file = {
+            let file = mutateFile({
                 path: path,
                 name: basename(path),
                 type: /\/$/.test(path) ? 'directory' : 'file'
-            };
+            }, path);
             if(icon) file.icon = icon;
             res.results.push(file);
             return res;
@@ -467,5 +465,29 @@ class FileSystem{
         return /\ufffd/.test(str);
     }
 }
+
+
+const createLink = (type, path) => {
+    return type === "file" ? "/view" + path : "/files" + path;
+};
+
+const fileMiddleware = (response, path, show_hidden) => {
+    for(let i=0; i<response.results.length; i++){
+        let f = mutateFile(response.results[i], path);
+        if(show_hidden === false && f.path.indexOf("/.") !== -1){
+            response.results.splice(i, 1);
+            i -= 1;
+        }
+    }
+    return response;
+};
+
+const mutateFile = (file, path) => {
+    if(file.path === undefined) {
+        file.path = pathBuilder(path, file.name, file.type);
+    }
+    file.link = createLink(file.type, file.path);
+    return file;
+};
 
 export const Files = new FileSystem();

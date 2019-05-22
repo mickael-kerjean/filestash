@@ -6,7 +6,7 @@ import { SelectableGroup } from 'react-selectable';
 import './filespage.scss';
 import './error.scss';
 import { Files } from '../model/';
-import { sort, onCreate, onRename, onMultiRename, onDelete, onMultiDelete, onUpload, onSearch, createLink } from './filespage.helper';
+import { sort, onCreate, onRename, onMultiRename, onDelete, onMultiDelete, onUpload, onSearch } from './filespage.helper';
 import { NgIf, NgShow, Loader, EventReceiver, LoggedInOnly, ErrorPage } from '../components/';
 import { notify, debounce, goToFiles, goToViewer, event, settings_get, settings_put } from '../helpers/';
 import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from './filespage/';
@@ -120,24 +120,14 @@ export class FilesPage extends React.Component {
 
     onRefresh(path = this.state.path){
         this._cleanupListeners();
-        const observer = Files.ls(path).subscribe((res) => {
+        const observer = Files.ls(path, this.state.show_hidden).subscribe((res) => {
             if(res.status !== "ok"){
                 notify.send(res, "error");
                 return;
             }
-            let files = new Array(res.results.length);
-            for(let i=0,l=res.results.length; i<l; i++){
-                let path = this.state.path+res.results[i].name;
-                path = path.replace(/#/g, "%23");
-                if(this.state.show_hidden === false && res.results[i].name[0] === "."){
-                    continue;
-                }
-                files[i] = res.results[i];
-                files[i].link = createLink(res.results[i].type, res.results[i].path);
-            }
             this.setState({
                 metadata: res.metadata,
-                files: sort(files, this.state.sort),
+                files: sort(res.results, this.state.sort),
                 selected: [],
                 loading: false,
                 is_search: false,
@@ -217,14 +207,7 @@ export class FilesPage extends React.Component {
             is_search: true,
             page_number: PAGE_NUMBER_INIT,
         });
-        this._search = onSearch(search, this.state.path).subscribe((f = []) => {
-            for(let i=0; i<f.length; i++){
-                f[i].link = createLink(f[i].type, f[i].path);
-                if(this.state.show_hidden === false && f[i].path.indexOf("/.") !== -1){
-                    f.splice(i, 1);
-                    i -= 1;
-                }
-            }
+        this._search = onSearch(search, this.state.path, this.state.show_hidden).subscribe((f = []) => {
             this.setState({
                 files: sort(f, this.state.sort),
                 loading: false,
