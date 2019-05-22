@@ -47,17 +47,16 @@ func init() {
 	Hooks.Register.Starter(func (r *mux.Router) {
 		if enable_tor() == false {
 			startTor := false
+			onChange := Config.ListenForChange()
 			for {
 				select {
-				case <- Config.OnChange:
-					if enable_tor() == true {
-						startTor = true
-						break
-					}
+				case <- onChange.Listener: startTor = enable_tor()
 				}
 				if startTor == true { break }
 			}
+			Config.UnlistenForChange(onChange)
 		}
+
 		Log.Info("[tor] starting ...")
 		t, err := tor.Start(nil, &tor.StartConf{
 			DataDir: TOR_PATH,

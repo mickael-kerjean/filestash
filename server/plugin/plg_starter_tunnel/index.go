@@ -65,19 +65,17 @@ func init() {
 				return
 			}
 		}()
-		Config.Get("features.server.tunnel_url").Set(nil)		
+		Config.Get("features.server.tunnel_url").Set(nil)
 		if tunnel_enable() == false {
 			startTunnel := false
+			onChange := Config.ListenForChange()
 			for {
 				select {
-				case <- Config.OnChange:
-					if tunnel_enable() == true {
-						startTunnel = true
-						break
-					}
+				case <- onChange.Listener: startTunnel = tunnel_enable()
 				}
-				if startTunnel == true { break }
+				if startTunnel == true {  break }
 			}
+			Config.UnlistenForChange(onChange)
 		}
 
 		Log.Info("[tunnel] starting ...")

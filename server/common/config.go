@@ -20,7 +20,7 @@ var (
 )
 
 type Configuration struct {
-	OnChange       chan interface{}
+	onChange       []ChangeListener
 	mu             sync.Mutex
 	currentElement *FormElement
 	cache          KeyValueStore
@@ -60,9 +60,9 @@ func init() {
 
 func NewConfiguration() Configuration {
 	return Configuration{
-		OnChange: make(chan interface{}),
-		mu:    sync.Mutex{},
-		cache: NewKeyValueStore(),
+		onChange: make([]ChangeListener, 0),
+		mu:       sync.Mutex{},
+		cache:    NewKeyValueStore(),
 		form: []Form{
 			Form{
 				Title: "general",
@@ -240,7 +240,12 @@ func (this *Configuration) Load() {
 	this.cache.Clear()
 
 	Log.SetVisibility(this.Get("log.level").String())
-	go func() { this.OnChange <- nil }()
+
+	go func() { // Trigger all the event listeners
+		for i:=0; i<len(this.onChange); i++ {
+			this.onChange[i].Listener <- nil
+		}
+	}()
 	return
 }
 
@@ -496,7 +501,7 @@ func (this Configuration) Interface() interface{} {
 }
 
 func (this Configuration) MarshalJSON() ([]byte, error) {
-	form := this.form	
+	form := this.form
 	form = append(form, Form{
 		Title: "constant",
 		Elmnts: []FormElement{
@@ -526,4 +531,35 @@ func (this Configuration) MarshalJSON() ([]byte, error) {
 	return Form{
 		Form: form,
 	}.MarshalJSON()
+}
+
+func (this *Configuration) ListenForChange() ChangeListener {
+	this.mu.Lock()
+	change := ChangeListener{
+		Id: QuickString(20),
+		Listener: make(chan interface{}, 0),
+	}
+	this.onChange = append(this.onChange, change)
+	this.mu.Unlock()
+	return change
+}
+
+func (this *Configuration) UnlistenForChange(c ChangeListener)  {
+	this.mu.Lock()
+	for i:=0; i<len(this.onChange); i++ {
+		if this.onChange[i].Id == c.Id {
+			if len(this.onChange) - 1 >= 0 {
+				close(this.onChange[i].Listener)
+				this.onChange[i] = this.onChange[len(this.onChange)-1]
+				this.onChange = this.onChange[:len(this.onChange)-1]
+			}
+			break
+		}
+	}
+	this.mu.Unlock()
+}
+
+type ChangeListener struct {
+	Id       string
+	Listener chan interface{}
 }

@@ -148,15 +148,17 @@ func init(){
 	}
 	INDEXING_EXT()
 
-
+	onChange := Config.ListenForChange()
 	runner := func() {
+		startSearch := false
 		for {
 			if SEARCH_ENABLE() == false {
 				select {
-				case <- Config.OnChange:
+				case <- onChange.Listener: startSearch = SEARCH_ENABLE()
+				}
+				if startSearch == false {
 					continue
 				}
-				continue
 			}
 			sidx := SProc.Peek()
 			if sidx == nil {
