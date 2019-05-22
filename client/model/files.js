@@ -44,16 +44,22 @@ class FileSystem{
         const url = appendShareToUrl("/api/files/ls?path="+prepare(path));
 
         return http_get(url).then((response) => {
+            response.results = (response.results || []).map((f) => {
+                f.path = pathBuilder(path, f.name, f.type);
+                return f;
+            });
+
             return cache.upsert(cache.FILE_PATH, [currentShare(), path], (_files) => {
                 let store = Object.assign({
                     share: currentShare(),
+                    status: "ok",
                     path: path,
                     results: null,
                     access_count: 0,
                     metadata: null
                 }, _files);
-                store.results = response.results || [];
                 store.metadata = response.metadata;
+                store.results = response.results;
 
                 if(_files && _files.results){
                     store.access_count = _files.access_count;
@@ -79,10 +85,6 @@ class FileSystem{
                 store.last_access = new Date();
                 return store;
             }).catch(() => Promise.resolve(response)).then((data) => {
-                data.results = data.results.map((f) => {
-                    f.path = pathBuilder(path, f.name, f.type);
-                    return f;
-                });
                 if(this.current_path === path){
                     this.obs && this.obs.next(data);
                 }
