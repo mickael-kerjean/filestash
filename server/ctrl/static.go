@@ -43,15 +43,19 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 			res.WriteHeader(http.StatusNotFound)
 			res.Write([]byte(Page("<h1>404 - Not Found</h1>")))
 			return
-		} else if ua := req.Header.Get("User-Agent"); strings.Contains(ua, "MSIE ") {
-			res.WriteHeader(http.StatusBadRequest)
+		}
+		ua := req.Header.Get("User-Agent");
+		if strings.Contains(ua, "MSIE ") || strings.Contains(ua, "Edge/"){
+			// Microsoft is behaving on many occasion differently than Firefox / Chrome.
+			// I have neither the time / motivation for it to work properly
+			res.WriteHeader(http.StatusBadRequest)			
 			res.Write([]byte(
 				Page(`
-                  <h1>Internet explorer is not yet supported</h1>
+                  <h1>Internet explorer is not supported</h1>
                   <p>
-                    To provide the best possible experience for everyone else, we don't support IE at this time.
+                    We don't support IE / Edge at this time
                     <br>
-                    Use either Chromium, Firefox or Chrome
+                    Please use either Chromium, Firefox or Chrome
                   </p>
                 `)))
 			return
