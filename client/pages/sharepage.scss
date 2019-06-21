@@ -1,23 +1,7 @@
-.sharepage_component {
-    form {
-        display: flex;
-        background: white;
-        border-radius: 2px;
-        box-shadow: 2px 2px 2px rgba(0,0,0,0.05);
+@import "../assets/css/mixin.scss";
 
-        input {
-            padding: 15px 20px;
-            border-bottom: 0;
-            margin: 0;
-        }
-        button {
-            width: inherit;
-            padding: 0 10px;
-            .component_icon {
-                height: 25px;
-            }
-        }
-    }
+.sharepage_component {
+    @include inlinedInputWithSubmit();
     .error{
         animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
         transform: translate3d(0, 0, 0);

@@ -240,11 +240,11 @@ class MultiStepForm extends React.Component {
         const hideMenu = <style dangerouslySetInnerHTML={{__html: ".component_menu_sidebar{transform: translateX(-300px)}"}} />;
         if(this.state.current === 0) {
             return (
-                <div id="step1" className="sharepage_component">
+                <div id="step1">
                   <FormStage navleft={false} navright={this.state.has_answered_password === true} current={this.state.current} onStepChange={this.onStepChange.bind(this)}>
                     Step 1/2: Secure your instance
                   </FormStage>
-                  <ReactCSSTransitionGroup transitionName="stepper-form" transitionEnterTimeout={500} transitionAppearTimeout={500} transitionAppear={true} transitionEnter={true} transitionLeave={false}>
+                  <ReactCSSTransitionGroup transitionName="stepper-form" transitionEnterTimeout={600} transitionAppearTimeout={600} transitionAppear={true} transitionEnter={true} transitionLeave={false}>
                     <div key={this.state.current}>
                       <p>Create your admin password: </p>
                       <form onSubmit={this.onAdminPassword.bind(this)}>
@@ -264,7 +264,7 @@ class MultiStepForm extends React.Component {
                   <FormStage navleft={true} navright={this.state.has_answered_expose} current={this.state.current} onStepChange={this.onStepChange.bind(this)}>
                     Step 2/2: Expose your instance to the internet ?
                   </FormStage>
-                  <ReactCSSTransitionGroup transitionName="stepper-form" transitionEnterTimeout={500} transitionAppearTimeout={500} transitionAppear={true} transitionEnter={true} transitionLeave={false}>
+                  <ReactCSSTransitionGroup transitionName="stepper-form" transitionEnterTimeout={600} transitionAppearTimeout={600} transitionAppear={true} transitionEnter={true} transitionLeave={false}>
                     <div key={this.state.current}>
                       <NgIf cond={this.state.redirect_uri !== null}>
                         <div style={{textAlign: "center"}}>
@@ -303,7 +303,7 @@ class MultiStepForm extends React.Component {
                   <FormStage navleft={true} navright={false} current={this.state.current} onStepChange={this.onStepChange.bind(this)}>
                     Summary
                   </FormStage>
-                  <ReactCSSTransitionGroup transitionName="stepper-form" transitionEnterTimeout={500} transitionAppearTimeout={500} transitionAppear={true} transitionEnter={true} transitionLeave={false}>
+                  <ReactCSSTransitionGroup transitionName="stepper-form" transitionEnterTimeout={600} transitionAppearTimeout={600} transitionAppear={true} transitionEnter={true} transitionLeave={false}>
                     <div key={this.state.current}>
                       <NgIf cond={!!this.props.loading}>
                         <Loader/>

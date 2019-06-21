@@ -1,3 +1,5 @@
+@import "../../assets/css/mixin.scss";
+
 .component_setup{
     transform: none!important; // transition and fixed position doesn't cohabit well so we have to resort
                                // to remove animation on this page to preserve the layout
@@ -20,9 +22,11 @@
             font-size: 1.1em;
             margin-bottom: 10px;
         }
-        form{
+
+        form {
             max-width: 400px;
         }
+        @include inlinedInputWithSubmit();
     }
     #step2{
         label{
@@ -61,15 +65,13 @@
     .stepper-form-appear, .stepper-form-enter{
         transition-delay: 0.3s;
         transform: scale(1.02);
-        opacity: 0.8;
-        transition: all 0.2s ease;
+        opacity: 0;
+        transition: all 0.3s ease;
         &.stepper-form-appear-active, &.stepper-form-enter-active{
             opacity: 1;
             transform: scale(1);
         }
-
     }
-
 
     .component_icon{
         width: 30px;
