@@ -47,9 +47,9 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 
 	if params["ftp_tls"] == "implicit" {
-		params["ftp_tls"] = 0
+		params["ftp_tls"] = goftp.TLSImplicit
 	} else {
-		params["ftp_tls"] = 1
+		params["ftp_tls"] = goftp.TLSExplicit
 	}
 
 	conn := 5
