@@ -46,6 +46,12 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		params["password"] = "anonymous"
 	}
 
+	if params["ftp_tls"] == "implicit" {
+		params["ftp_tls"] = 0
+	} else {
+		params["ftp_tls"] = 1
+	}
+
 	conn := 5
 	if params["conn"] != "" {
 		if i, err := strconv.Atoi(params["conn"]); err == nil && i > 0 {
@@ -58,6 +64,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		Password:           params["password"],
 		ConnectionsPerHost: conn,
 		Timeout:            10 * time.Second,
+		TLSMode:			params["ftp_tls"],
 	}
 	client, err := goftp.DialConfig(config, fmt.Sprintf("%s:%s", params["hostname"], params["port"]))
 	if err != nil {
@@ -96,13 +103,19 @@ func (f Ftp) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"ftp_path", "ftp_port", "ftp_conn"},
+				Target:      []string{"ftp_path", "ftp_port", "ftp_conn", "ftp_tls"},
 			},
 			FormElement{
 				Id:          "ftp_path",
 				Name:        "path",
 				Type:        "text",
 				Placeholder: "Path",
+			},
+			FormElement{
+				Id:          "ftp_tls",
+				Name:        "TLS mode",
+				Type:        "text",
+				Placeholder: "implicit",
 			},
 			FormElement{
 				Id:          "ftp_port",
