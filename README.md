@@ -46,8 +46,8 @@
 
 # Documentation
 - [Getting started](https://www.filestash.app/docs)
-- [Installation](https://www.filestash.app/docs/install-and-upgrade)
-- [FAQ](https://www.filestash.app/docs/faq)
+- [Installation](https://www.filestash.app/docs/install-and-upgrade/)
+- [FAQ](https://www.filestash.app/docs/faq/)
 
 # Support the project
 - Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
