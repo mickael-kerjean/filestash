@@ -50,7 +50,7 @@ COPY server /app/server
 
 ################## Copy front
 COPY webpack.config.js /app/webpack.config.js
-COPY --from=0 /app/dist .
+COPY --from=0 /app/dist /app/dist
 
 ################## Prepare
 ENV CGO_LDFLAGS_ALLOW '-fopenmp'
