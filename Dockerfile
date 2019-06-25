@@ -1,5 +1,5 @@
-### Build front
-FROM node:12-alpine
+#################################### Build front
+FROM node:12-alpine AS buildfront
 RUN mkdir -p /app
 WORKDIR /app
 
@@ -17,9 +17,8 @@ ENV NODE_ENV production
 ################## Build
 RUN npm run build
 
-
-### Build back
-FROM golang:1.12-stretch
+# #################################### Build back
+FROM golang:1.12-stretch AS buildback
 WORKDIR /app
 
 ################## Build-time metadata as defined at http://label-schema.org
@@ -45,24 +44,19 @@ RUN apt-get install -y libglib2.0-dev curl make > /dev/null
 
 ################## Copy source
 COPY Makefile /app/Makefile
-COPY config /app/config
-COPY server /app/server
+COPY vendor /app/vendor
+COPY main.go /app/main.go
+COPY config /app/dist/data/state/config
 
 ################## Copy front
 COPY webpack.config.js /app/webpack.config.js
-COPY --from=0 /app/dist /app/dist
+COPY --from=buildfront /app/dist /app/dist
 
 ################## Prepare
-ENV CGO_LDFLAGS_ALLOW '-fopenmp'
-RUN mkdir -p /app/dist/data/state/
-RUN cp -R config /app/dist/data/state/config
 RUN make build_init
-RUN find server/plugin/plg_* -type f -name '*.a' -exec mv {} /usr/local/lib/ \;
-RUN go get -d ./server/...
 
 ################## Build
 RUN make build_backend
-RUN timeout 1 ./dist/filestash || true
 
 ################# Optional dependencies
 RUN apt-get install -y curl emacs zip poppler-utils > /dev/null
@@ -87,8 +81,7 @@ RUN cd && apt-get install -y wget perl > /dev/null && \
 
 ################## Set right and user
 RUN useradd filestash && \
-    chown -R filestash:filestash /app/ && \
-    chmod 777 /app/
+    chown -R filestash:filestash /app/dist/
 
 ################# Cleanup
 RUN find /usr/share/ -name 'doc' | xargs rm -rf && \
@@ -98,10 +91,10 @@ RUN find /usr/share/ -name 'doc' | xargs rm -rf && \
 RUN rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
-################# Run
+################# Test Run
 RUN timeout 1 ./dist/filestash | grep -q start
 
 EXPOSE 8334
-VOLUME ["/app/data/"]
+VOLUME ["/app/dist/data/"]
 USER filestash
 CMD ["./dist/filestash"]
