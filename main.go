@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/ctrl"
-	. "github.com/mickael-kerjean/filestash/server/middleware"
-	_ "github.com/mickael-kerjean/filestash/server/plugin"
+	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/BobCashStory/filestash/server/ctrl"
+	. "github.com/BobCashStory/filestash/server/middleware"
+	_ "github.com/BobCashStory/filestash/server/plugin"
 	"net/http"
     "net/http/pprof"
 	"os"

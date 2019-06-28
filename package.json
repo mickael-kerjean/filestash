@@ -2,7 +2,7 @@
   "name": "filestash",
   "version": "0.0.0",
   "description": "An app to manage your files in the cloud",
-  "repository": "https://github.com/mickael-kerjean/filestash",
+  "repository": "https://github.com/BobCashStory/filestash",
   "main": "server/index.js",
   "scripts": {
     "dev": "webpack --watch",
