@@ -42,18 +42,16 @@ RUN apt-get update > /dev/null
 ################## Install dep
 RUN apt-get install -y libglib2.0-dev curl make > /dev/null
 
-################## Copy source
-COPY Makefile /app/Makefile
-COPY src /app/src
-COPY main.go /app/main.go
-COPY config /app/dist/data/state/config
+################## Get source
+RUN go get github.com/mickael-kerjean/filestash
 
 ################## Copy front
-COPY webpack.config.js /app/webpack.config.js
 COPY --from=buildfront /app/dist /app/dist
 
 ################## Prepare
 RUN make build_init
+RUN find server/plugin/plg_* -type f -name '*.a' -exec mv {} /usr/local/lib/ \;
+RUN go get -t ./server/...
 
 ################## Build
 RUN make build_backend
