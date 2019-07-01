@@ -9,9 +9,9 @@ all:
 	make build_backend
 
 build_init:
-	find ./vendor/github.com/BobCashStory/filestash/plugin/plg_* -type f -name "install.sh" -exec {} \;
-	find ./vendor/github.com/BobCashStory/filestash/plugin/plg_* -type f -name '*.a' -exec mv {} /usr/local/lib/ \;
-	go get -d -v ./vendor/github.com/BobCashStory/filestash/...
+	find ./src/plugin/plg_* -type f -name "install.sh" -exec {} \;
+	find ./src/plugin/plg_* -type f -name '*.a' -exec mv {} /usr/local/lib/ \;
+	go get -d -v ./src/...
 
 build_frontend:
 	npm run build

@@ -44,7 +44,7 @@ RUN apt-get install -y libglib2.0-dev curl make > /dev/null
 
 ################## Copy source
 COPY Makefile /app/Makefile
-COPY vendor /app/vendor
+COPY src /app/src
 COPY main.go /app/main.go
 COPY config /app/dist/data/state/config
 
