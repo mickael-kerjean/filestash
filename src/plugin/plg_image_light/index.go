@@ -2,7 +2,7 @@ package plg_image_light
 
 import (
 	"fmt"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"io"
 	"net/http"
 	"os"

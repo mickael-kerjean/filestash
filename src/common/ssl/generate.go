@@ -4,7 +4,7 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 )
 
 func GenerateSelfSigned() (tls.Certificate, *x509.CertPool, error) {

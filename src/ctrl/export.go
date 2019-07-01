@@ -3,8 +3,8 @@ package ctrl
 import (
 	"bytes"
 	"fmt"
-	. "github.com/BobCashStory/filestash/server/common"
-	"github.com/BobCashStory/filestash/server/model"
+	. "github.com/mickael-kerjean/filestash/src/common"
+	"github.com/mickael-kerjean/filestash/src/model"
 	"github.com/gorilla/mux"
 	"io"
 	"net/http"

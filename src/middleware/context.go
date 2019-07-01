@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"io/ioutil"
 	"net/http"
 )

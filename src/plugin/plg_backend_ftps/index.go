@@ -2,7 +2,7 @@ package plg_backend_ftps
 
 import (
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"github.com/secsy/goftp"
 	"io"
 	"os"

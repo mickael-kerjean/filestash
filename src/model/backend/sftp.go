@@ -2,7 +2,7 @@ package backend
 
 import (
 	"fmt"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"io"

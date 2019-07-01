@@ -12,7 +12,7 @@ package plg_starter_tunnel
 import (
 	"context"
 	"github.com/gorilla/mux"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"github.com/BobCashStory/remotedialer"
 	"io/ioutil"
 	"net/http"

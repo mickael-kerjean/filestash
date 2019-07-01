@@ -1,8 +1,8 @@
 package ctrl
 
 import (
-	. "github.com/BobCashStory/filestash/server/common"
-	"github.com/BobCashStory/filestash/server/model"
+	. "github.com/mickael-kerjean/filestash/src/common"
+	"github.com/mickael-kerjean/filestash/src/model"
 	"github.com/mickael-kerjean/net/webdav"
 	"net/http"
 	"path/filepath"

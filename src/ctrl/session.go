@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	. "github.com/BobCashStory/filestash/server/common"
-	"github.com/BobCashStory/filestash/server/model"
+	. "github.com/mickael-kerjean/filestash/src/common"
+	"github.com/mickael-kerjean/filestash/src/model"
 	"net/http"
 	"time"
 )

@@ -3,7 +3,7 @@ package plg_starter_http
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"net/http"
 	"time"
 )

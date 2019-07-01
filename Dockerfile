@@ -19,7 +19,7 @@ RUN npm run build
 
 # #################################### Build back
 FROM golang:1.12-stretch AS buildback
-WORKDIR /go/src/github.com/mickael-kerjean.me/filestash
+WORKDIR /usr/local/go/src/github.com/mickael-kerjean/filestash
 
 ################## Build-time metadata as defined at http://label-schema.org
 ARG BUILD_DATE

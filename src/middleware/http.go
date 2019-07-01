@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"fmt"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"net/http"
 	"path/filepath"
 )

@@ -2,8 +2,8 @@ package model
 
 import (
 	"fmt"
-	. "github.com/BobCashStory/filestash/server/common"
-	_ "github.com/BobCashStory/filestash/server/model/backend"
+	. "github.com/mickael-kerjean/filestash/src/common"
+	_ "github.com/mickael-kerjean/filestash/src/model/backend"
 	"strings"
 )
 

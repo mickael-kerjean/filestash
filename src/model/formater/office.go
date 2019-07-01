@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"io"
 	"math/rand"
 	"os"

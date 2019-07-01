@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/cretz/bine/tor"
 	"github.com/gorilla/mux"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"net/http"
 	"os"
 	"path/filepath"

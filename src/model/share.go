@@ -1,7 +1,7 @@
 package model
 
 import (
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"bytes"
 	"crypto/tls"
 	"database/sql"

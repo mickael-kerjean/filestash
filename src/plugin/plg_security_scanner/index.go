@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"github.com/gorilla/mux"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"io"
 	"math/rand"
 	"net/http"

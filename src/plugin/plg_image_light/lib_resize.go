@@ -7,7 +7,7 @@ import "C"
 
 import (
 	"context"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"golang.org/x/sync/semaphore"
 	"io"
 	"time"

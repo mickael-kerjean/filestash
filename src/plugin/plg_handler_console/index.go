@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/kr/pty"
-	. "github.com/BobCashStory/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/src/common"
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"net/http"
