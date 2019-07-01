@@ -11,7 +11,7 @@ all:
 build_init:
 	find ./src/plugin/plg_* -type f -name "install.sh" -exec {} \;
 	find ./src/plugin/plg_* -type f -name '*.a' -exec mv {} /usr/local/lib/ \;
-	go get -d -v ./src/...
+	go get -t ./src/...
 
 build_frontend:
 	npm run build
