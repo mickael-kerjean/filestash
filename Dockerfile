@@ -42,21 +42,6 @@ RUN apt-get update > /dev/null
 ################## Install dep
 RUN apt-get install -y libglib2.0-dev curl make > /dev/null
 
-################## copy source
-COPY main.go main.go
-COPY config config
-COPY Makefile Makefile
-COPY src src
-
-################## Copy front
-COPY --from=buildfront /app/dist /app/dist
-
-################## Prepare
-RUN make build_init
-
-################## Build
-RUN make build_backend
-
 ################# Optional dependencies
 RUN apt-get install -y curl emacs zip poppler-utils > /dev/null
 
@@ -78,9 +63,25 @@ RUN cd && apt-get install -y wget perl > /dev/null && \
     ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex && \
     apt-get purge -y --auto-remove perl wget
 
+
+################## copy source
+COPY main.go main.go
+COPY config config
+COPY Makefile Makefile
+COPY src src
+
+################## Copy front
+COPY --from=buildfront /app/dist ./dist
+
+################## Prepare
+RUN make build_init
+
+################## Build
+RUN make build_backend
+
 ################## Set right and user
 RUN useradd filestash && \
-    chown -R filestash:filestash /app/dist/
+    chown -R filestash:filestash ./dist
 
 ################# Cleanup
 RUN find /usr/share/ -name 'doc' | xargs rm -rf && \
