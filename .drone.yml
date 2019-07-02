@@ -3,7 +3,7 @@ name: default
 
 workspace:
   base: /go
-  path: src/github.com/mickael-kerjean/filestash
+  path: src/github.com/mickael-kerjean.me/filestash
 
 clone:
   depth: 1
