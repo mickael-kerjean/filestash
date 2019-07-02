@@ -85,6 +85,9 @@ RUN make build_backend
 RUN useradd filestash && \
     chown -R filestash:filestash ./dist
 
+################# Test Run
+RUN timeout 2 ./dist/filestash | wget -qO- localhost:8334/about | grep Filestash
+
 ################# Cleanup
 RUN find /usr/share/ -name 'doc' | xargs rm -rf && \
     find /usr/share/emacs -name '*.pbm' | xargs rm -f && \
@@ -94,10 +97,7 @@ RUN apt-get purge -y --auto-remove perl wget
 RUN rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
-################# Test Run
-RUN timeout 1 ./dist/filestash | grep -q start
-
 EXPOSE 8334
-VOLUME ["/app/dist/data/"]
+VOLUME ["/usr/local/go/src/github.com/mickael-kerjean/dist/data/"]
 USER filestash
 CMD ["./dist/filestash"]
