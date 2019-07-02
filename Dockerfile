@@ -66,13 +66,13 @@ RUN mv ~/.TinyTeX /usr/share/tinytex && \
 ################## make symlink for pdflatex
 RUN ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex
 
-################## copy source
+################## copy filestash backend source
 COPY main.go main.go
 COPY config config
 COPY Makefile Makefile
 COPY src src
 
-################## Copy front
+################## Copy filestash front builded
 COPY --from=buildfront /app/dist ./dist
 
 ################## Prepare
