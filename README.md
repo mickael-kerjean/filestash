@@ -54,5 +54,5 @@
 - [Patreon](https://www.patreon.com/mickaelk)
 
 # Credits
-- [Contributors](https://github.com/BobCashStory/filestash/graphs/contributors) and folks developing awesome libraries (libvips, libraw, ...)
+- [Contributors](https://github.com/mickael-kerjean/filestash/graphs/contributors) and folks developing awesome libraries (libvips, libraw, ...)
 - Logo derived from the work of [ssnjrthegr8](https://github.com/ssnjrthegr8), Iconography from [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)

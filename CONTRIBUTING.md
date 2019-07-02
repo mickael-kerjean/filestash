@@ -26,7 +26,7 @@ As the copyright owner, you agree to license your contributions under an irrevoc
 export $GOPATH=/wherever/you/want
 cd $GOPATH
 mkdir -p github.com/mickael-kerjean/ && cd github.com/mickael-kerjean/
-git clone https://github.com/BobCashStory/filestash
+git clone https://github.com/mickael-kerjean/filestash
 cd filestash
 ```
 

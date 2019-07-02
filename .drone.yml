@@ -161,7 +161,7 @@ steps:
     port: 6667
     template: >
       {{#success build.status}}
-        Build success: https://github.com/BobCashStory/filestash/commit/{{build.commit}}
+        Build success: https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
       {{else}}
-        Build failure: er}} https://github.com/BobCashStory/filestash/commit/{{build.commit}}
+        Build failure: er}} https://github.com/mickael-kerjean/filestash/commit/{{build.commit}}
       {{/success}}
