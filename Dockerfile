@@ -60,9 +60,7 @@ RUN cd && apt-get install -y wget perl > /dev/null && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install float && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install wrapfig && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install sectsty && \
-    ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex && \
-    apt-get purge -y --auto-remove perl wget
-
+    ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex
 
 ################## copy source
 COPY main.go main.go
@@ -88,6 +86,7 @@ RUN find /usr/share/ -name 'doc' | xargs rm -rf && \
     find /usr/share/emacs -name '*.pbm' | xargs rm -f && \
     find /usr/share/emacs -name '*.png' | xargs rm -f && \
     find /usr/share/emacs -name '*.xpm' | xargs rm -f
+RUN apt-get purge -y --auto-remove perl wget
 RUN rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
