@@ -46,10 +46,12 @@ RUN apt-get install -y libglib2.0-dev curl make > /dev/null
 RUN apt-get install -y curl emacs zip poppler-utils > /dev/null
 
 ################# Minimal latex dependencies for org-mode
-RUN cd && apt-get install -y wget perl > /dev/null && \
-    export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
-    curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh && \
-    mv ~/.TinyTeX /usr/share/tinytex && \
+RUN apt-get install -y wget perl > /dev/null
+RUN export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet"
+
+################# install tinytex dep
+RUN curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh
+RUN mv ~/.TinyTeX /usr/share/tinytex && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasy && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install ulem && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install marvosym && \
@@ -59,8 +61,10 @@ RUN cd && apt-get install -y wget perl > /dev/null && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install parskip && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install float && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install wrapfig && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install sectsty && \
-    ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install sectsty
+
+################## make symlink for pdflatex
+RUN ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex
 
 ################## copy source
 COPY main.go main.go
