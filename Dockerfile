@@ -81,12 +81,12 @@ RUN make build_init
 ################## Build
 RUN make build_backend
 
+################# Test Run && test Front
+RUN timeout 2 ./dist/filestash | grep -q starting | wget -qO- localhost:8334/about | grep Filestash
+
 ################## Set right and user
 RUN useradd filestash && \
     chown -R filestash:filestash ./dist
-
-################# Test Run
-RUN timeout 2 ./dist/filestash | wget -qO- localhost:8334/about | grep Filestash
 
 ################# Cleanup
 RUN find /usr/share/ -name 'doc' | xargs rm -rf && \
