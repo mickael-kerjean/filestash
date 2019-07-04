@@ -63,6 +63,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	home, err := model.GetHome(backend, session["path"])
 	if err != nil {
+		Log.Warning("Can't get home", err)
 		SendErrorResult(res, ErrInvalidPassword)
 		return
 	}

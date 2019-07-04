@@ -1,18 +1,13 @@
 {
-    "general": {
-    },
-    "features": {
-    },
-    "log": {
-    },
-    "email": {
-    },
-    "oauth": {
-    },
+    "general": {},
+    "features": {},
+    "log": {},
+    "email": {},
+    "oauth": {},
     "connections": [
         {
-            "type": "webdav",
-            "label": "WebDav"
+            "type": "ftps",
+            "label": "FTPS"
         },
         {
             "type": "ftp",

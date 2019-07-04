@@ -58,6 +58,10 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		Password:           params["password"],
 		ConnectionsPerHost: conn,
 		Timeout:            10 * time.Second,
+		TLSConfig:          &tls.Config{
+			InsecureSkipVerify: true,
+		},
+		Logger:             os.Stderr,
 	}
 	client, err := goftp.DialConfig(config, fmt.Sprintf("%s:%s", params["hostname"], params["port"]))
 	if err != nil {

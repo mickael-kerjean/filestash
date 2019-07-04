@@ -4,6 +4,7 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/src/common"
 	"github.com/secsy/goftp"
+	"crypto/tls"
 	"io"
 	"os"
 	"regexp"
@@ -59,9 +60,14 @@ func (f Ftps) Init(params map[string]string, app *App) (IBackend, error) {
 		ConnectionsPerHost: conn,
 		Timeout:            10 * time.Second,
 		TLSMode:            goftp.TLSImplicit,
+		Logger:             os.Stderr,
+		TLSConfig:          &tls.Config{
+			InsecureSkipVerify: true,
+		}
 	}
 	client, err := goftp.DialConfig(config, fmt.Sprintf("%s:%s", params["hostname"], params["port"]))
 	if err != nil {
+		Log.Warning("Can't DialConfig", err)
 		return nil, err
 	}
 	backend := Ftps{client}

@@ -75,6 +75,9 @@ COPY src src
 ################## Copy filestash front builded
 COPY --from=buildfront /app/dist ./dist
 
+################## Install dependencies
+RUN make build_install
+
 ################## Prepare
 RUN make build_init
 
