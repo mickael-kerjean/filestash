@@ -63,7 +63,7 @@ func (f Ftps) Init(params map[string]string, app *App) (IBackend, error) {
 		Logger:             os.Stderr,
 		TLSConfig:          &tls.Config{
 			InsecureSkipVerify: true,
-		}
+		},
 	}
 	client, err := goftp.DialConfig(config, fmt.Sprintf("%s:%s", params["hostname"], params["port"]))
 	if err != nil {
