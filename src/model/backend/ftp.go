@@ -4,6 +4,7 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/src/common"
 	"github.com/secsy/goftp"
+	"crypto/tls"
 	"io"
 	"os"
 	"regexp"

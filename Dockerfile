@@ -69,20 +69,23 @@ RUN ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex
 ################## copy filestash backend source
 COPY main.go main.go
 COPY config config
-COPY Makefile Makefile
 COPY src src
+COPY Makefile Makefile
+
+################## Download dependencies
+
+RUN make backend_download
+
+################## Install dependencies
+RUN make backend_install_dep
+
+RUN make backend_install
+
+################## Build
+RUN make backend_build
 
 ################## Copy filestash front builded
 COPY --from=buildfront /app/dist ./dist
-
-################## Install dependencies
-RUN make build_install
-
-################## Prepare
-RUN make build_init
-
-################## Build
-RUN make build_backend
 
 ################# Test Run && test Front
 RUN timeout 2 ./dist/filestash | grep -q starting | wget -qO- localhost:8334/about | grep Filestash

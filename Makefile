@@ -5,18 +5,24 @@ PKG_CONFIG_PATH = /usr/local/lib/pkgconfig/
 CGO_CFLAGS_ALLOW = '-fopenmp'
 
 all:
-	make build_backend
+	make frontend_build
+	make backend_download
+	make backend_install_dep
+	make backend_install
+	make backend_bluid
 
-build_frontend:
+frontend_build:
 	npm run build
 
-build_install:
+backend_download:
 	go get -d -v ./src/...
 
-build_init:
+backend_install_dep:
 	find ./src/plugin/plg_* -type f -name "install.sh" -exec {} \;
 	find ./src/plugin/plg_* -type f -name '*.a' -exec mv {} /usr/local/lib/ \;
+
+backend_install:
 	go install -v ./src/...
 
-build_backend:
+backend_build:
 	go build --tags "fts5" -ldflags "-X github.com/mickael-kerjean/filestash/src/common.BUILD_NUMBER=`date -u +%Y%m%d`" -o ./dist/filestash main.go
