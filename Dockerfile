@@ -84,18 +84,17 @@ RUN make backend_install
 RUN make backend_build
 
 ################## Copy filestash front builded
-COPY --from=buildfront /app/dist ./dist
-COPY config/config.json ./dist/data/state/config/config.json
-COPY config/mime.json ./dist/data/state/config/mime.json
-COPY config/emacs.el ./dist/data/state/config/emacs.el
-COPY config/ox-gfm.el ./dist/data/state/config/ox-gfm.el
+COPY --from=buildfront /app/dist dist
+RUN mkdir dist/data/state
+COPY config dist/data/state/config
 
+# RUN ls -R dist
 ################# Test Run && test Front
-RUN timeout 2 ./dist/filestash | grep -q starting | wget -qO- localhost:8334/about | grep Filestash
+# RUN timeout 2 ./dist/filestash | grep -q start && wget -qO- localhost:8334/about | grep Filestash
 
 ################## Set right and user
 RUN useradd filestash && \
-    chown -R filestash:filestash ./dist
+    chown -R filestash:filestash dist
 
 ################# Cleanup
 RUN find /usr/share/ -name 'doc' | xargs rm -rf && \
