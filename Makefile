@@ -21,6 +21,7 @@ backend_install_dep:
 	find ./src/plugin/plg_* -type f -name "install.sh" -exec {} \;
 	find ./src/plugin/plg_* -type f -name '*.a' -exec mv {} /usr/local/lib/ \;
 
+
 backend_install:
 	go install -v ./src/...
 

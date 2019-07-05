@@ -3,7 +3,7 @@ package backend
 import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/src/common"
-	"github.com/secsy/goftp"
+	"github.com/BobCashStory/goftp"
 	"crypto/tls"
 	"io"
 	"os"
@@ -59,9 +59,12 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		Password:           params["password"],
 		ConnectionsPerHost: conn,
 		Timeout:            10 * time.Second,
+		DisableEPSV:		true,
 		TLSConfig:          &tls.Config{
 			InsecureSkipVerify: true,
+			ClientAuth:			tls.RequestClientCert,
 		},
+		TLSMode:            goftp.TLSExplicit,
 		Logger:             os.Stderr,
 	}
 	client, err := goftp.DialConfig(config, fmt.Sprintf("%s:%s", params["hostname"], params["port"]))
