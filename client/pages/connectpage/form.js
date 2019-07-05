@@ -116,7 +116,7 @@ export class Form extends React.Component {
                  </div>
               </NgIf>
               <div>
-                <form onSubmit={this.onSubmit.bind(this)} autoComplete="off" autoCapitalize="off" spellCheck="false" autoCorrect="off">
+                <form onSubmit={this.onSubmit.bind(this)} autoComplete="on" autoCapitalize="off" spellCheck="false" autoCorrect="off">
                   {
                       this.state.backends_enabled.map((form, i) => {
                           const key = Object.keys(form)[0];
