@@ -104,7 +104,7 @@ func (f Ftp) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"ftp_path", "ftp_port", "ftp_conn", "ftp_tls"},
+				Target:      []string{"ftp_path", "ftp_port", "ftp_conn"},
 			},
 			FormElement{
 				Id:          "ftp_path",
