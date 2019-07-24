@@ -1,8 +1,6 @@
-.EXPORT_ALL_VARIABLES:
-
-NODE_ENV = production
-PKG_CONFIG_PATH = /usr/local/lib/pkgconfig/
-CGO_CFLAGS_ALLOW = '-fopenmp'
+export NODE_ENV = production
+export PKG_CONFIG_PATH = /usr/local/lib/pkgconfig/
+export CGO_CFLAGS_ALLOW = '-fopenmp'
 
 all:
 	make frontend_build
