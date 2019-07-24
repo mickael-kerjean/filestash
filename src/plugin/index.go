@@ -8,7 +8,7 @@ import (
 	_ "github.com/mickael-kerjean/filestash/src/plugin/plg_backend_dav"
 	_ "github.com/mickael-kerjean/filestash/src/plugin/plg_backend_mysql"
 	_ "github.com/mickael-kerjean/filestash/src/plugin/plg_backend_ftps"
-	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_ldap"
+	_ "github.com/mickael-kerjean/filestash/src/plugin/plg_backend_ldap"
 	_ "github.com/mickael-kerjean/filestash/src/plugin/plg_security_scanner"
 	_ "github.com/mickael-kerjean/filestash/src/plugin/plg_security_svg"
 	_ "github.com/mickael-kerjean/filestash/src/plugin/plg_handler_console"
