@@ -39,7 +39,7 @@ LABEL maintainer="mickael@kerjean.me"
 RUN apt-get update > /dev/null && \
     apt-get install -y libglib2.0-dev curl make emacs zip poppler-utils wget perl > /dev/null && \
     ############## Install TinyTeX
-    export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" \
+    export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
     curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh && \
     mv ~/.TinyTeX /usr/share/tinytex && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasy && \
