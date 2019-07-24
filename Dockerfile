@@ -1,4 +1,4 @@
-#################################### Build front
+##################################### Build front
 FROM node:12-alpine AS buildfront
 RUN mkdir -p /app
 WORKDIR /app
@@ -10,14 +10,13 @@ COPY .babelrc /app/.babelrc
 COPY client /app/client
 
 ################## Prepare
-RUN apk add git > /dev/null
-RUN npm install
 ENV NODE_ENV production
+RUN apk add git > /dev/null && \
+    npm install \
+    ############## Build
+    npm run build
 
-################## Build
-RUN npm run build
-
-# #################################### Build back
+##################################### Build back
 FROM golang:1.12-stretch AS buildback
 WORKDIR /usr/local/go/src/github.com/mickael-kerjean/filestash
 
@@ -37,10 +36,11 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 LABEL maintainer="mickael@kerjean.me"
 
 ################## Install dep
-RUN apt-get update > /dev/null \
-    apt-get install -y libglib2.0-dev curl make emacs zip poppler-utils wget perl > /dev/null \
+RUN apt-get update > /dev/null && \
+    apt-get install -y libglib2.0-dev curl make emacs zip poppler-utils wget perl > /dev/null && \
+    ############## Install TinyTeX
     export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" \
-    curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh \
+    curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh && \
     mv ~/.TinyTeX /usr/share/tinytex && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasy && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install ulem && \
@@ -51,8 +51,16 @@ RUN apt-get update > /dev/null \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install parskip && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install float && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install wrapfig && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install sectsty \
-    ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install sectsty && \
+    ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex && \
+    ############## Cleanup
+    find /usr/share/ -name 'doc' | xargs rm -rf && \
+    find /usr/share/emacs -name '*.pbm' | xargs rm -f && \
+    find /usr/share/emacs -name '*.png' | xargs rm -f && \
+    find /usr/share/emacs -name '*.xpm' | xargs rm -f && \
+    apt-get purge -y --auto-remove perl wget && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/*
 
 ################## copy filestash backend source
 COPY main.go main.go
@@ -61,10 +69,10 @@ COPY Makefile Makefile
 
 ################## Download and install dependencies
 
-RUN make backend_download \
-    make backend_install_dep \
-    make backend_install \
-    make backend_build \
+RUN make backend_download && \
+    make backend_install_dep && \
+    make backend_install && \
+    make backend_build && \
     mkdir dist/data/state
 
 ################## Copy filestash front builded
@@ -72,21 +80,12 @@ COPY --from=buildfront /app/dist dist
 COPY config dist/data/state/config
 
 # RUN ls -R dist
-################# Test Run && test Front
+################## Test Run && test Front
 # RUN timeout 2 ./dist/filestash | grep -q start && wget -qO- localhost:8334/about | grep Filestash
 
 ################## Set right and user
 RUN useradd filestash && \
     chown -R filestash:filestash dist
-
-################# Cleanup
-RUN find /usr/share/ -name 'doc' | xargs rm -rf && \
-    find /usr/share/emacs -name '*.pbm' | xargs rm -f && \
-    find /usr/share/emacs -name '*.png' | xargs rm -f && \
-    find /usr/share/emacs -name '*.xpm' | xargs rm -f \
-    apt-get purge -y --auto-remove perl wget \
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf /tmp/*
 
 EXPOSE 8334
 VOLUME ["/usr/local/go/src/github.com/mickael-kerjean/dist/data/"]
