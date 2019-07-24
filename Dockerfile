@@ -36,22 +36,12 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.schema-version="1.0"
 LABEL maintainer="mickael@kerjean.me"
 
-################## Update machine
-RUN apt-get update > /dev/null
-
 ################## Install dep
-RUN apt-get install -y libglib2.0-dev curl make > /dev/null
-
-################# Optional dependencies
-RUN apt-get install -y curl emacs zip poppler-utils > /dev/null
-
-################# Minimal latex dependencies for org-mode
-RUN apt-get install -y wget perl > /dev/null
-RUN export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet"
-
-################# install tinytex dep
-RUN curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh
-RUN mv ~/.TinyTeX /usr/share/tinytex && \
+RUN apt-get update > /dev/null \
+    apt-get install -y libglib2.0-dev curl make emacs zip poppler-utils wget perl > /dev/null \
+    export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" \
+    curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh \
+    mv ~/.TinyTeX /usr/share/tinytex && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasy && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install ulem && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install marvosym && \
@@ -61,31 +51,24 @@ RUN mv ~/.TinyTeX /usr/share/tinytex && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install parskip && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install float && \
     /usr/share/tinytex/bin/x86_64-linux/tlmgr install wrapfig && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install sectsty
-
-################## make symlink for pdflatex
-RUN ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install sectsty \
+    ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex
 
 ################## copy filestash backend source
 COPY main.go main.go
 COPY src src
 COPY Makefile Makefile
 
-################## Download dependencies
+################## Download and install dependencies
 
-RUN make backend_download
-
-################## Install dependencies
-RUN make backend_install_dep
-
-RUN make backend_install
-
-################## Build
-RUN make backend_build
+RUN make backend_download \
+    make backend_install_dep \
+    make backend_install \
+    make backend_build \
+    mkdir dist/data/state
 
 ################## Copy filestash front builded
 COPY --from=buildfront /app/dist dist
-RUN mkdir dist/data/state
 COPY config dist/data/state/config
 
 # RUN ls -R dist
@@ -100,9 +83,9 @@ RUN useradd filestash && \
 RUN find /usr/share/ -name 'doc' | xargs rm -rf && \
     find /usr/share/emacs -name '*.pbm' | xargs rm -f && \
     find /usr/share/emacs -name '*.png' | xargs rm -f && \
-    find /usr/share/emacs -name '*.xpm' | xargs rm -f
-RUN apt-get purge -y --auto-remove perl wget
-RUN rm -rf /var/lib/apt/lists/* && \
+    find /usr/share/emacs -name '*.xpm' | xargs rm -f \
+    apt-get purge -y --auto-remove perl wget \
+    rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
 EXPOSE 8334
