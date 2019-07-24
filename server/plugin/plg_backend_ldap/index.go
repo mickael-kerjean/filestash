@@ -6,10 +6,6 @@ package plg_backend_ldap
  * To get a sample of what this backend can do:
  * - example.com: http://127.0.0.1:8334/login#type=ldap&hostname=ldap://ldap.forumsys.com&bind_cn=uid%3Dtesla,dc%3Dexample,dc%3Dcom&bind_password=password&base_dn=dc%3Dexample,dc%3Dcom
  * - freeipa:     http://127.0.0.1:8334/login#type=ldap&hostname=ldap://ipa.demo1.freeipa.org&bind_cn=uid%3Dadmin,cn%3Dusers,cn%3Daccounts,dc%3Ddemo1,dc%3Dfreeipa,dc%3Dorg&bind_password=Secret123&base_dn=dc%3Ddemo1,dc%3Dfreeipa,dc%3Dorg
- *
- * Compilation
- * ===========
- * go build -buildmode=plugin -o dist/data/plugin/backend_ldap.so server/plugin/plg_backend_ldap/index.go
  */
 
 import (
