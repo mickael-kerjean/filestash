@@ -45,7 +45,7 @@
 </p>
 
 # Documentation
-- [Getting started](https://www.filestash.app/docs/)
+- [Getting started](https://www.filestash.app/docs)
 - [Installation](https://www.filestash.app/docs/install-and-upgrade/)
 - [FAQ](https://www.filestash.app/docs/faq/)
 
