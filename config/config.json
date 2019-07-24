@@ -6,8 +6,8 @@
     "oauth": {},
     "connections": [
         {
-            "type": "ftps",
-            "label": "FTPS"
+            "type": "webdav",
+            "label": "WebDav"
         },
         {
             "type": "ftp",
