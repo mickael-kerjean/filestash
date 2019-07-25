@@ -37,7 +37,7 @@ LABEL maintainer="mickael@kerjean.me"
 
 ################## Install dep
 RUN apt-get update > /dev/null && \
-    apt-get install -y libglib2.0-dev curl make emacs zip poppler-utils wget perl > /dev/null && \
+    apt-get install -y libglib2.0-dev git curl make emacs zip poppler-utils wget perl > /dev/null && \
     ############## Install TinyTeX
     export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
     curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh && \
