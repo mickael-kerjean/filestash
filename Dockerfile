@@ -17,7 +17,7 @@ RUN apk add git > /dev/null && \
     npm run build
 
 ##################################### Build back
-FROM golang:1.12-stretch AS buildback
+FROM golang:alpine AS buildback
 WORKDIR /usr/local/go/src/github.com/mickael-kerjean/filestash
 
 ################## Build-time metadata as defined at http://label-schema.org
@@ -36,8 +36,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 LABEL maintainer="mickael@kerjean.me"
 
 ################## Install dep
-RUN apt-get update > /dev/null && \
-    apt-get install -y libglib2.0-dev git curl make emacs zip poppler-utils wget perl > /dev/null && \
+RUN apk add --no-cache libglib2.0-dev git curl make emacs zip poppler-utils wget perl && \
     ############## Install TinyTeX
     export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
     curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh && \
