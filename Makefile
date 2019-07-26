@@ -3,11 +3,10 @@ export PKG_CONFIG_PATH = /usr/local/lib/pkgconfig/
 export CGO_CFLAGS_ALLOW = '-fopenmp'
 
 all:
-	make frontend_build
 	make backend_download
 	make backend_install_dep
 	make backend_install
-	make backend_bluid
+	make backend_build
 
 frontend_build:
 	npm run build

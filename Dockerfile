@@ -10,14 +10,16 @@ COPY .babelrc /app/.babelrc
 COPY client /app/client
 
 ################## Prepare
-ENV NODE_ENV production
 RUN apk add git > /dev/null && \
-    npm install \
-    ############## Build
-    npm run build
+    npm install
+
+ENV NODE_ENV production
+
+############## Build
+RUN npm run build
 
 ##################################### Build back
-FROM golang:1.12-stretch AS buildback
+FROM golang:1.12 AS buildback
 WORKDIR /usr/local/go/src/github.com/mickael-kerjean/filestash
 
 ################## Build-time metadata as defined at http://label-schema.org
@@ -35,57 +37,54 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.schema-version="1.0"
 LABEL maintainer="mickael@kerjean.me"
 
-################## Install dep
-RUN apt-get update > /dev/null && \
-    apt-get install -y libglib2.0-dev git curl make emacs zip poppler-utils wget perl > /dev/null && \
-    ############## Install TinyTeX
-    export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
-    curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh && \
-    mv ~/.TinyTeX /usr/share/tinytex && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasy && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install ulem && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install marvosym && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasysym && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install xcolor && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install listings && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install parskip && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install float && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install wrapfig && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install sectsty && \
-    ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex && \
-    ############## Cleanup
-    find /usr/share/ -name 'doc' | xargs rm -rf && \
-    find /usr/share/emacs -name '*.pbm' | xargs rm -f && \
-    find /usr/share/emacs -name '*.png' | xargs rm -f && \
-    find /usr/share/emacs -name '*.xpm' | xargs rm -f && \
-    apt-get purge -y --auto-remove perl wget && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf /tmp/*
-
 ################## copy filestash backend source
 COPY main.go main.go
 COPY src src
 COPY Makefile Makefile
 
-################## Download and install dependencies
-
-RUN make backend_download && \
-    make backend_install_dep && \
-    make backend_install && \
-    make backend_build && \
-    mkdir dist/data/state
+RUN mkdir -p /usr/local/go/src/github.com/mickael-kerjean/filestash/dist/data/state 
 
 ################## Copy filestash front builded
-COPY --from=buildfront /app/dist dist
+COPY --from=buildfront /app/dist /usr/local/go/src/github.com/mickael-kerjean/filestash/dist
 COPY config dist/data/state/config
+
+################## Install dep
+RUN apt-get update > /dev/null && \
+    apt-get install -y libglib2.0-dev curl nano zip poppler-utils perl wget make && \
+    ############## Install TinyTeX
+    # export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
+    wget -qO- "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh -s - --admin --no-path && \
+    ~/.TinyTeX/bin/*/tlmgr path add && \
+    chown -R root:staff ~/.TinyTeX && \
+    chmod -R g+w ~/.TinyTeX && \
+    chmod -R g+wx ~/.TinyTeX/bin && \
+    tlmgr install wasy && \
+    tlmgr install ulem && \
+    tlmgr install marvosym && \
+    tlmgr install wasysym && \
+    tlmgr install xcolor && \
+    tlmgr install listings && \
+    tlmgr install parskip && \
+    tlmgr install float && \
+    tlmgr install wrapfig && \
+    tlmgr install sectsty && \
+    ################## Download and install dependencies
+    make all && \
+    ############## Cleanup
+    find /usr/share/ -name 'doc' | xargs rm -rf && \
+    find /usr/share/emacs -name '*.pbm' | xargs rm -f && \
+    find /usr/share/emacs -name '*.png' | xargs rm -f && \
+    find /usr/share/emacs -name '*.xpm' | xargs rm -f && \
+    apt-get purge -y --auto-remove wget perl && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/* && \
+    ################## Set right and user
+    useradd filestash && \
+    chown -R filestash:filestash dist
 
 # RUN ls -R dist
 ################## Test Run && test Front
 # RUN timeout 2 ./dist/filestash | grep -q start && wget -qO- localhost:8334/about | grep Filestash
-
-################## Set right and user
-RUN useradd filestash && \
-    chown -R filestash:filestash dist
 
 EXPOSE 8334
 VOLUME ["/usr/local/go/src/github.com/mickael-kerjean/dist/data/"]

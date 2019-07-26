@@ -49,6 +49,10 @@
 - [Installation](https://www.filestash.app/docs/install-and-upgrade/)
 - [FAQ](https://www.filestash.app/docs/faq/)
 
+# dev
+build new version of container `docker build . -t cashstory/filestash:latest`
+push new version onf container `docker push cashstory/filestash:latest`
+
 # Support the project
 - Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
 - [Patreon](https://www.patreon.com/mickaelk)
