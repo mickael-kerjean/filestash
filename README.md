@@ -52,6 +52,7 @@
 # dev
 build new version of container `docker build . -t cashstory/filestash:latest`
 push new version onf container `docker push cashstory/filestash:latest`
+local run `docker run cashstory/filestash -P 3340:3340`
 
 # Support the project
 - Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
