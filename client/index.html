@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <title>Filestash</title>
     <meta name="author" content="Mickael Kerjean <mickael@kerjean.me>">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
     <link rel="manifest" href="/assets/manifest.json">
     <meta content="yes" name="apple-mobile-web-app-capable">
     <meta content="Filestash" name="apple-mobile-web-app-title">
@@ -18,7 +18,7 @@
     <meta property="og:description" content="Manage your data in your cloud" />
   </head>
   <body>
-    <div id="main" style="height: 100%">
+    <div role="main" style="height: 100%">
       <style>
         html{ background: #f2f3f5; color: #375160; overflow: hidden; }
         .background-color{ background: #f2f3f5; }
@@ -26,7 +26,7 @@
       </style>
       <script>
         if(location.pathname == "/" || location.pathname == "/login"){
-            $style = document.querySelector("#main style");
+            $style = document.querySelector("div[role='main'] style");
             $style.innerText = $style.innerText.replace(/f2f3f5/g, "9AD1ED")
         }
         window.initTime = new Date();

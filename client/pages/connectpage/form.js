@@ -101,7 +101,7 @@ export class Form extends React.Component {
         return (
             <Card style={{marginTop: _marginTop()+"px"}} className="no-select component_page_connection_form">
               <NgIf cond={ window.CONFIG["connections"].length > 1 }>
-                <div className={"buttons "+((window.innerWidth < 600) ? "scroll-x" : "")}>
+                <div role="navigation" className={"buttons "+((window.innerWidth < 600) ? "scroll-x" : "")}>
                   {
                          this.state.backends_enabled.map((backend, i) => {
                              const key = Object.keys(backend)[0];
