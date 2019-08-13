@@ -69,12 +69,12 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 			Name: name,
 			Size: entries[i].Size(),
 			Time: modTime,
-			Type: func(isDir bool) string {
-				if isDir == true {
-					return "directory"
+			Type: func(mode os.FileMode) string {
+				if mode.IsRegular() {
+					return "file"
 				}
-				return "file"
-			}(entries[i].IsDir()),
+				return "directory"
+			}(entries[i].Mode()),
 		}
 	}
 
