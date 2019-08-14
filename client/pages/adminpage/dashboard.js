@@ -49,9 +49,7 @@ export class DashboardPage extends React.Component {
         });
 
         // persist config object in the backend
-        Config.save(json, true, () => {
-            this.componentWillMount();
-        });
+        Config.save(json, true);
     }
 
 
