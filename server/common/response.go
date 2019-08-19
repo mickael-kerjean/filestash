@@ -102,8 +102,7 @@ func Page(stuff string) string {
       html { background: #f4f4f4; color: #455164; font-size: 16px; font-family: -apple-system,system-ui,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif; }
       body { text-align: center; padding-top: 50px; text-align: center; }
       h1 { font-weight: 200; line-height: 1em; font-size: 40px; }
-      p { opacity: 0.7; }
-      span { font-size: 0.7em; opacity: 0.7; }
+      p { opacity: 0.8; font-size: 1.05em; }
     </style>
   </head>
   <body>
