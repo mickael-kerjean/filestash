@@ -34,7 +34,8 @@ func init(){
 
 
 var (
-	BUILD_NUMBER string
+	BUILD_REF    string
+	BUILD_DATE   string
 	SECRET_KEY   string
 	SECRET_KEY_DERIVATE_FOR_PROOF string
 	SECRET_KEY_DERIVATE_FOR_ADMIN string

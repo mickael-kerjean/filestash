@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"hash/fnv"
 	"io"
 	"io/ioutil"
@@ -50,31 +51,34 @@ func DecryptString(secret string, data string) (string, error){
 func Hash(str string, n int) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(str))
-	d := hasher.Sum(nil)
-	h := ""
-	for i:=0; i<len(d); i++ {
-		if n > 0 && len(h) >= n {
-			break
-		}
-		h += ReversedBaseChange(Letters, int(d[i]))
-	}
-
-	if len(h) > n {
-		return h[0:len(h) - 1]
-	}
-	return h
+	return hashSize(hasher.Sum(nil), n)
 }
 
 func QuickHash(str string, n int) string {
-	hash := fnv.New64()
-	hash.Write([]byte(str))
-	d := string(hash.Sum(nil))
+	hasher := fnv.New64()
+	hasher.Write([]byte(str))
+	return hashSize(hasher.Sum(nil), n)
+}
+
+func HashStream(r io.Reader, n int) string {
+	hasher := sha256.New()
+	io.Copy(hasher, r)
+	h := hex.EncodeToString(hasher.Sum(nil))
+	if n == 0 {
+		return h
+	} else if n >= len(h) {
+		return h
+	}
+	return h[0:n]
+}
+
+func hashSize(b []byte, n int) string {
 	h := ""
-	for i:=0; i<len(d); i++ {
+	for i:=0; i<len(b); i++ {
 		if n > 0 && len(h) >= n {
 			break
 		}
-		h += ReversedBaseChange(Letters, int(d[i]))
+		h += ReversedBaseChange(Letters, int(b[i]))
 	}
 
 	if len(h) > n {

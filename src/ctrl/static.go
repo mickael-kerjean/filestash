@@ -67,16 +67,24 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 
 func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	t, _ := template.New("about").Parse(Page(`
-      <h1> {{index .App 0}} <br>
-        <span>({{index .App 1}} - {{index .App 2}})</span>
-      </h1>
+	  <h1> {{index .App 0}} </h1>
+	  <table>
+		<tr> <td> Commit hash </td> <td> {{ index .App 1}} </td> </tr>
+		<tr> <td> Binary hash </td> <td> {{ index .App 2}} </td> </tr>
+		<tr> <td> Config hash </td> <td> {{ index .App 3}} </td> </tr>
+	  </table>
+	  <style>
+		table { margin: 0 auto; font-family: monospace; opacity: 0.8; }
+		td { text-align: right; padding-left: 10px; }
+	  </style>
 	`))
 	t.Execute(res, struct {
 		App     []string
 	}{ []string{
-		"Filestash " + APP_VERSION + "." + BUILD_NUMBER,
-		hashFile(filepath.Join(GetCurrentDir(), "/filestash"), 6),
-		hashFile(filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"), 6),
+		"Filestash " + APP_VERSION + "." + BUILD_DATE,
+		BUILD_REF,
+		hashFileContent(filepath.Join(GetCurrentDir(), "/filestash"), 0),
+		hashFileContent(filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"), 0),
 	}})
 }
 
@@ -131,7 +139,7 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 	file.Close()
 }
 
-func hashFile (path string, n int) string {
+func hashFile(path string, n int) string {
 	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return ""
@@ -143,4 +151,13 @@ func hashFile (path string, n int) string {
 		return ""
 	}
 	return QuickHash(fmt.Sprintf("%s %d %d %s", path, stat.Size(), stat.Mode(), stat.ModTime()), n)
+}
+
+func hashFileContent(path string, n int) string {
+	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()	
+	return HashStream(f, n)
 }

@@ -37,6 +37,9 @@ func (f File) Size() int64 {
 	return f.FSize
 }
 func (f File) Mode() os.FileMode {
+	if f.IsDir() {
+		return os.ModeDir
+	}
 	return 0
 }
 func (f File) ModTime() time.Time {
