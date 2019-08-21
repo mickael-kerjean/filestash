@@ -57,7 +57,7 @@
     "videojs-sublime-skin": "^1.0.3",
     "wavesurfer.js": "^1.4.0",
     "webpack": "^2.7.0",
-    "webpack-bundle-analyzer": "^2.8.2",
+    "webpack-bundle-analyzer": "^3.3.2",
     "worker-loader": "^2.0.0"
   }
 }
