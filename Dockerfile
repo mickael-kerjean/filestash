@@ -8,15 +8,16 @@ COPY package.json /app/package.json
 COPY webpack.config.js /app/webpack.config.js
 COPY .babelrc /app/.babelrc
 COPY client /app/client
+COPY Makefile /app/Makefile
 
 ################## Prepare
-RUN apk add git > /dev/null && \
-    npm install
+RUN apk add git make > /dev/null && \
+    make frontend_install
 
 ENV NODE_ENV production
 
 ############## Build
-RUN npm run build
+RUN make frontend_build
 
 ##################################### Build back
 FROM golang:1.12-stretch AS buildback
@@ -27,13 +28,13 @@ COPY main.go main.go
 COPY src src
 COPY Makefile Makefile
 
-RUN mkdir -p /usr/local/go/src/github.com/mickael-kerjean/filestash/dist/data/state && \
-    apt-get update > /dev/null && \
-    apt-get install -y libglib2.0-dev curl make > /dev/null
-
 ################## Copy filestash config
 
-COPY config /usr/local/go/src/github.com/mickael-kerjean/filestash/dist/data/state/config
+COPY config config
+
+RUN make frontend_config && \
+    apt-get update > /dev/null && \
+    apt-get install -y libglib2.0-dev curl make > /dev/null
 
 ################## Download and install dependencies
 RUN  make all

@@ -15,16 +15,15 @@ steps:
   image: alpine:latest
   depends_on: [ clone ]
   commands:
-  - mkdir -p ./dist/data/state/
-  - cp -R config dist/data/state/config
+  - make frontend_config
 
 - name: build_frontend
   image: node:12-alpine
   depends_on: [ build_prepare ]
   commands:
   - apk add make git > /dev/null
-  - npm install --silent
-  - make build_frontend
+  - make frontend_install 
+  - make frontend_build
 
 - name: build_backend
   image: golang:1.12-stretch
@@ -33,10 +32,7 @@ steps:
     CGO_LDFLAGS_ALLOW: '-fopenmp'
   commands:
   - apt-get update > /dev/null && apt-get install -y libglib2.0-dev curl make > /dev/null
-  - make build_init
-  - find server/plugin/plg_* -type f -name '*.a' -exec mv {} /usr/local/lib/ \;
-  - go get -t ./server/...
-  - make build_backend
+  - make all
   - timeout 1 ./dist/filestash || true
 
 - name: test_prepare
@@ -56,8 +52,8 @@ steps:
   depends_on: [ test_prepare, build_frontend ]
   commands:
   - cd ../test/unit_js
-  - npm install --silent
-  - npm test
+  - make frontend_install
+  - make frontend_test
 
 - name: test_backend
   image: golang:1.12-alpine
@@ -65,8 +61,7 @@ steps:
   commands:
   - apk add git gcc libc-dev poppler-utils > /dev/null
   - cp ../test/assets/* /tmp/
-  - go get -t ../test/unit_go/...
-  - go test -v --tags "fts5" ../test/unit_go/...
+  - make backend_test
 
 - name: test_e2e
   image: machines/puppeteer
@@ -91,8 +86,7 @@ steps:
     GPG_PASSPHRASE:
       from_secret: GPG_PASSPHRASE
   commands:
-  - cp -R config/* ./dist/data/state/config/
-  - chmod -R o-r-w-x- ./dist/
+  - make frontend_config
   - apt-get update > /dev/null && apt-get install -y gnupg1 curl > /dev/null
   - mv dist filestash
   - tar -cf filestash_linux-amd64.tar ./filestash
