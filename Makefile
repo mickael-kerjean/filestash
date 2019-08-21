@@ -22,5 +22,5 @@ backend_install_dep:
 backend_install:
 	go install -v ./src/...
 
-build_backend:
+backend_build:
 	go build --tags "fts5" -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_DATE=`date -u +%Y%m%d` -X github.com/mickael-kerjean/filestash/server/common.BUILD_REF=`git rev-parse HEAD`" -o dist/filestash server/main.go
