@@ -36,4 +36,4 @@ backend_test:
 	go test -v --tags "fts5" ../test/unit_go/...	
 
 backend_build:
-	go build --tags "fts5" -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_DATE=`date -u +%Y%m%d` -X github.com/mickael-kerjean/filestash/server/common.BUILD_REF=`git rev-parse HEAD`" -o dist/filestash server/main.go
+	go build --tags "fts5" -ldflags "-X github.com/mickael-kerjean/filestash/src/common.BUILD_DATE=`date -u +%Y%m%d` -X github.com/mickael-kerjean/filestash/src/common.BUILD_REF=`git rev-parse HEAD`" -o ./dist/filestash main.go
