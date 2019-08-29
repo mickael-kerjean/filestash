@@ -4,12 +4,16 @@
 # cd /path/to/this/script
 # ./create_libtranscode.sh
 set -e
+arch=$(dpkg --print-architecture)
+if [ $arch != "amd64" ] && [ $arch != "armhf" ]; then
+    echo "PLATFORM NOT SUPPORTED"
+    exit 1
+fi
 
 ################################################
 # Tooling
 apt update
 apt install -y curl make gcc g++ xz-utils pkg-config python3-pip autoconf libtool unzip python-setuptools cmake git
-pip3 install --user meson ninja
 export PATH=~/.local/bin:$PATH
 
 ################################################
@@ -18,7 +22,11 @@ INITIAL_PATH=`pwd`
 apt install -y libraw-dev
 cd /tmp/
 # libgomp and libstdc++
-apt-get install -y libgcc-6-dev
+if [ $arch = "amd64" ]; then
+    apt-get install -y libgcc-6-dev
+elif [ $arch = "armhf" ]; then
+    apt-get install -y libgcc-7-dev
+fi
 # libjpeg
 apt-get install -y libjpeg-dev
 # liblcms2
@@ -36,12 +44,21 @@ gcc -Wall -c src/libtranscode.c
 
 ################################################
 # Stage 3: Gather and assemble all the bits and pieces together
-ar x /usr/lib/x86_64-linux-gnu/libraw.a
-ar x /usr/lib/x86_64-linux-gnu/libjpeg.a
-ar x /usr/lib/gcc/x86_64-linux-gnu/6/libstdc++.a
-ar x /usr/local/lib/liblcms2.a
-ar x /usr/lib/gcc/x86_64-linux-gnu/6/libgomp.a
-ar x /usr/lib/x86_64-linux-gnu/libpthread.a
+if [ $arch = "amd64" ]; then
+    ar x /usr/lib/x86_64-linux-gnu/libraw.a
+    ar x /usr/lib/x86_64-linux-gnu/libjpeg.a
+    ar x /usr/lib/gcc/x86_64-linux-gnu/6/libstdc++.a
+    ar x /usr/local/lib/liblcms2.a
+    ar x /usr/lib/gcc/x86_64-linux-gnu/6/libgomp.a
+    ar x /usr/lib/x86_64-linux-gnu/libpthread.a
+elif [ $arch = "armhf" ]; then
+    ar x /usr/lib/arm-linux-gnueabihf/libraw.a
+    ar x /usr/lib/arm-linux-gnueabihf/libjpeg.a
+    ar x /usr/lib/gcc/arm-linux-gnueabihf/8/libstdc++.a
+    ar x /usr/local/lib/liblcms2.a
+    ar x /usr/lib/gcc/arm-linux-gnueabihf/8/libgomp.a
+    ar x /usr/lib/arm-linux-gnueabihf/libpthread.a
+fi
 
 ar rcs libtranscode.a *.o
 rm *.o
