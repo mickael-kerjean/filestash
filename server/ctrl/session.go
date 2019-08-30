@@ -77,21 +77,20 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
-	cookie := http.Cookie{
+	http.SetCookie(res, &http.Cookie{
 		Name:     COOKIE_NAME_AUTH,
 		Value:    obfuscate,
 		MaxAge:   60 * 60 * 24 * 30,
 		Path:     COOKIE_PATH,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
-	}
-	http.SetCookie(res, &cookie)	
+	})
 
-	if home == "" {
-		SendSuccessResult(res, nil)
-	} else {
+	if home != "" {
 		SendSuccessResult(res, home)
+		return
 	}
+	SendSuccessResult(res, nil)
 }
 
 func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
