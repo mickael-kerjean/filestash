@@ -1,15 +1,21 @@
 #!/bin/sh
-# This script is run like this:
-# docker run --name debian -ti -v /home/:/home/ debian bash
-# cd /path/to/this/script
+# # This script handle the creation of the static library used by the plugin to
+# # perform transcoding jobs. You can run it like this:
+# docker run -ti --name debian_build_dep -v /home/:/home/ debian:9 bash
+# apt-get -y update && apt-get -y install git
+# git clone https://github.com/mickael-kerjean/filestash
+# cd filestash/server/plugin/plg_image_light/deps/
 # ./create_libtranscode.sh
 set -e
+arch=$(dpkg --print-architecture)
+if [ $arch != "amd64" ] && [ $arch != "armhf" ]; then
+    echo "PLATFORM NOT SUPPORTED"
+    exit 1
+fi
 
 ################################################
 # Tooling
-apt update
 apt install -y curl make gcc g++ xz-utils pkg-config python3-pip autoconf libtool unzip python-setuptools cmake git
-pip3 install --user meson ninja
 export PATH=~/.local/bin:$PATH
 
 ################################################
@@ -36,19 +42,28 @@ gcc -Wall -c src/libtranscode.c
 
 ################################################
 # Stage 3: Gather and assemble all the bits and pieces together
-ar x /usr/lib/x86_64-linux-gnu/libraw.a
-ar x /usr/lib/x86_64-linux-gnu/libjpeg.a
-ar x /usr/lib/gcc/x86_64-linux-gnu/6/libstdc++.a
+
+libpath=$(
+    if [ $arch = "amd64" ]; then
+        echo "x86_64-linux-gnu";
+    elif [ $arch = "armhf" ]; then
+        echo "arm-linux-gnueabihf"        
+    fi
+)
+ar x /usr/lib/$libpath/libraw.a
+ar x /usr/lib/$libpath/libjpeg.a
 ar x /usr/local/lib/liblcms2.a
-ar x /usr/lib/gcc/x86_64-linux-gnu/6/libgomp.a
-ar x /usr/lib/x86_64-linux-gnu/libpthread.a
+ar x /usr/lib/gcc/$libpath/6/libstdc++.a
+ar x /usr/lib/gcc/$libpath/6/libgomp.a
+ar x /usr/lib/$libpath/libpthread.a
 
 ar rcs libtranscode.a *.o
 rm *.o
-#scp libtranscode.a mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libtranscode-linux-x86-64.a
+
+#scp libtranscode.a mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libtranscode-`uname -s`-`uname -m`.a
 
 ################################################
 # Stage 4: Gather all the related headers
 #cd /usr/include/
 #tar zcf /tmp/libtranscode-headers.tar.gz .
-#scp /tmp/libtranscode-headers.tar.gz mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libtranscode-linux-headers.tar.gz
+#scp /tmp/libtranscode-headers.tar.gz mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libtranscode-`uname -s`-`uname -m`.tar.gz

@@ -1,4 +1,4 @@
-package backend
+package plg_backend_dropbox
 
 import (
 	"encoding/json"
@@ -13,14 +13,14 @@ import (
 	"time"
 )
 
+func init() {
+	Backend.Register("dropbox",  Dropbox{})
+}
+
 type Dropbox struct {
 	ClientId string
 	Hostname string
 	Bearer   string
-}
-
-func init() {
-	Backend.Register("dropbox", Dropbox{})
 }
 
 func (d Dropbox) Init(params map[string]string, app *App) (IBackend, error) {
