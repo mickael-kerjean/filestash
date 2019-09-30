@@ -130,7 +130,7 @@ func (s S3Backend) Ls(path string) ([]os.FileInfo, error) {
 			files = append(files, &File{
 				FName:   *bucket.Name,
 				FType:   "directory",
-				FTime:   bucket.CreationDate.UnixNano() / 1000,
+				FTime:   bucket.CreationDate.Unix(),
 				CanMove: NewBool(false),
 			})
 		}
@@ -151,7 +151,7 @@ func (s S3Backend) Ls(path string) ([]os.FileInfo, error) {
 		files = append(files, &File{
 			FName: filepath.Base(*object.Key),
 			FType: "file",
-			FTime: object.LastModified.UnixNano() / 1000,
+			FTime: object.LastModified.Unix(),
 			FSize: *object.Size,
 		})
 	}
