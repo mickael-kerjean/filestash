@@ -2,7 +2,7 @@
 
 <p align="center">
     A Dropbox-like file manager that let you manage your data anywhere it is located:<br>
-    FTP • FTPS • SFTP • WebDAV • Git • S3 • LDAP • Mysql <br>
+    <a href="https://www.filestash.app/ftp-client.html">FTP</a> • FTPS • SFTP • WebDAV • Git • S3 • LDAP • Mysql <br>
        CardDAV • CalDAV • Backblaze B2 • Minio <br>
                Dropbox • Google Drive
 </p>
