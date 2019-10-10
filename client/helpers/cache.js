@@ -24,6 +24,9 @@ Data.prototype._init = function(){
         });
     } catch (error) {
         console.error('cannont use cache module on safari iframe', error);
+         this.db = new Promise((done, err) => {
+                err(error);
+        });
     }
 }
 
