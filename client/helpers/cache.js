@@ -10,17 +10,21 @@ function Data(){
 const DB_VERSION = 3;
 
 Data.prototype._init = function(){
-    const request = indexedDB.open('filestash', DB_VERSION);
-    request.onupgradeneeded = (e) => this._setup(e);
-
-    this.db = new Promise((done, err) => {
-        request.onsuccess = (e) => {
-            done(e.target.result);
-        }
-        request.onerror = (e) => {
-            err(e);
-        };
-    });
+    try {
+        const request = indexedDB.open('filestash', DB_VERSION);
+        request.onupgradeneeded = (e) => this._setup(e);
+    
+        this.db = new Promise((done, err) => {
+            request.onsuccess = (e) => {
+                done(e.target.result);
+            }
+            request.onerror = (e) => {
+                err(e);
+            };
+        });
+    } catch (err) {
+        console.error('couldn\'t use cache system with indexdb on safari');
+    }
 }
 
 Data.prototype._setup = function(e){
