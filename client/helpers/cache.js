@@ -23,7 +23,10 @@ Data.prototype._init = function(){
             };
         });
     } catch (err) {
-        console.error('couldn\'t use cache system with indexdb on safari');
+        console.error('couldn\'t use cache system with indexdb on safari', error);
+        this.db = new Promise((done, err) => {
+                err(error);
+        });
     }
 }
 
