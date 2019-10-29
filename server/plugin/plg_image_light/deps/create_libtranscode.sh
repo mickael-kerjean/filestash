@@ -42,7 +42,6 @@ gcc -Wall -c src/libtranscode.c
 
 ################################################
 # Stage 3: Gather and assemble all the bits and pieces together
-
 libpath=$(
     if [ $arch = "amd64" ]; then
         echo "x86_64-linux-gnu";
