@@ -38,10 +38,10 @@ export class Submenu extends React.Component {
     }
 
     componentDidMount(){
-        window.addEventListener('keydown', this._onKeyPress);
+        window.addEventListener("keydown", this._onKeyPress);
     }
     componentWillUnmount(){
-        window.removeEventListener('keydown', this._onKeyPress);
+        window.removeEventListener("keydown", this._onKeyPress);
     }
 
     onNew(type){
