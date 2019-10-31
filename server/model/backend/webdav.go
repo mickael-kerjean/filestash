@@ -108,10 +108,11 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 		return nil, NewError("Server not found", 404)
 	}
 
-	LongURLDav := w.params.url+encodeURL(path)
+	LongURLDav := w.params.url+path
 	ShortURLDav := regexp.MustCompile(`^http[s]?://[^/]*`).ReplaceAllString(LongURLDav, "")
 	for _, tag := range r.Responses {
-		if tag.Href == ShortURLDav || tag.Href  == LongURLDav {
+		decodedHref := decodeURL(tag.Href)
+		if decodedHref == ShortURLDav || decodedHref == LongURLDav {
 			continue
 		}
 
@@ -120,11 +121,7 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 				break
 			}
 			files = append(files, File{
-				FName: func(p string) string {
-					name := filepath.Base(p)
-					name = decodeURL(name)
-					return name
-				}(tag.Href),
+				FName: filepath.Base(decodedHref),
 				FType: func(p string) string {
 					if p == "collection" {
 						return "directory"
