@@ -132,11 +132,21 @@ export class PathElementWrapper extends React.Component {
 
     render(){
         let className = "component_path-element-wrapper";
-        if(this.props.highlight) { className += " highlight";}
+        if(this.props.highlight) { className += " highlight"; }
+
+        let href = "/files" + (this.props.path.full || "")
+        href = href
+            .replace(/\%/g, "%2525") // Hack to get the Link Component to work
+                                     // See ExistingThing in 'thing-existing.js'
+            .replace(/#/g, "%23")
+            .replace(/\?/g, "%3F");
+        href = href || "/"
+        href += location.search;
+
         return (
             <li className={className}>
               <NgIf cond={this.props.isLast === false}>
-                <Link to={"/files" + ((this.props.path.full || "").replace(/#/g, "%23") || "/") + location.search} className="label">
+                <Link to={href} className="label">
                   <NgIf cond={this.props.path.minify !== true}>
                     {this.limitSize(this.props.path.label)}
                   </NgIf>

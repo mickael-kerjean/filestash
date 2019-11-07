@@ -240,7 +240,11 @@ export class ExistingThing extends React.Component {
         }
         className = className.trim();
 
-        let fileLink = this.props.file.link.replace(/%2F/g, '/');
+        let fileLink = this.props.file.link
+            .replace(/%2F/g, "/")
+            .replace(/\%/g, "%2525") // Hack to get the Link Component to work
+            .replace(/\?/g, "%3F")
+            .replace(/\#/g, "%23");
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div className={"component_thing view-"+this.props.view+(this.props.selected === true ? " selected" : " not-selected")}>

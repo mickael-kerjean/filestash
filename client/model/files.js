@@ -42,7 +42,6 @@ class FileSystem{
 
     _ls_from_http(path, show_hidden){
         const url = appendShareToUrl("/api/files/ls?path="+prepare(path));
-
         return http_get(url).then((response) => {
             response = fileMiddleware(response, path, show_hidden);
 
@@ -93,7 +92,7 @@ class FileSystem{
             }
             this.obs.next(_err);
             return Promise.reject(err);
-        });
+        })
     }
 
     _ls_from_cache(path, _record_access = false){
