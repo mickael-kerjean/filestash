@@ -3,6 +3,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import { Pager } from './pager';
 import { MenuBar } from './menubar';
+import { getMimeType } from '../../helpers/';
 import videojs from 'video.js';
 import 'videojs-contrib-hls';
 
@@ -18,9 +19,10 @@ export class VideoPlayer extends React.Component {
         this.player = videojs(this.refs.$video, {
             fluid: true,
             controls: true,
-            aspectRatio: '16:9',
+            aspectRatio: "16:9",
             sources: [{
-                src: this.props.data
+                src: this.props.data,
+                type: getMimeType(this.props.data)
             }]
         });
     }
@@ -30,9 +32,10 @@ export class VideoPlayer extends React.Component {
             this.player = videojs(this.refs.$video, {
                 fluid: true,
                 controls: true,
-                aspectRatio: '16:9',
+                aspectRatio: "16:9",
                 sources: [{
-                    src: nextProps.data
+                    src: nextProps.data,
+                    type: getMimeType(this.props.data)
                 }]
             });
         }
