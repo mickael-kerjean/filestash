@@ -15,7 +15,11 @@ RUN apt-get update > /dev/null && \
     #################
     # Optional dependencies
     apt-get install -y curl emacs zip poppler-utils > /dev/null && \
-    # Minimal latex dependencies for org-mode
+    # org-mode: html export
+    curl https://raw.githubusercontent.com/mickael-kerjean/filestash/master/server/.assets/emacs/htmlize.el > /usr/share/emacs/site-lisp/htmlize.el && \
+    # org-mode: markdown export
+    curl https://raw.githubusercontent.com/mickael-kerjean/filestash/master/server/.assets/emacs/ox-gfm.el > /usr/share/emacs/site-lisp/ox-gfm.el && \
+    # org-mode: pdf export (with a light latex distribution)
     cd && apt-get install -y wget perl > /dev/null && \
     export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
     curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh && \
