@@ -47,7 +47,7 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 		header.Set("X-Frame-Options", "DENY")
 		header.Set("X-Powered-By", fmt.Sprintf("Filestash/%s.%s <https://filestash.app>", APP_VERSION, BUILD_DATE))
 
-		cspHeader := "default-src 'none'; style-src 'unsafe-inline'; font-src 'self' data:; manifest-src 'self'; script-src 'self' 'sha256-JNAde5CZQqXtYRLUk8CGgyJXo6C7Zs1lXPPClLM1YM4=' 'sha256-9/gQeQaAmVkFStl6tfCbHXn8mr6PgtxlH+hEp685lzY='; img-src 'self' data:; connect-src 'self'; object-src 'self'; media-src 'self'; worker-src 'self'; form-action 'self'; base-uri 'self';"
+		cspHeader := "default-src 'none'; style-src 'unsafe-inline'; font-src 'self' data:; manifest-src 'self'; script-src 'self' 'sha256-JNAde5CZQqXtYRLUk8CGgyJXo6C7Zs1lXPPClLM1YM4=' 'sha256-9/gQeQaAmVkFStl6tfCbHXn8mr6PgtxlH+hEp685lzY='; img-src 'self' data: https://maps.wikimedia.org; connect-src 'self'; object-src 'self'; media-src 'self'; worker-src 'self'; form-action 'self'; base-uri 'self';"
 		if allowedDomainsForIframe := Config.Get("features.protection.iframe").Schema(func(f *FormElement) *FormElement{
 			if f == nil {
 				f = &FormElement{}
