@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Router  from './router';
 
-import { Config } from "./model/";
+import { Config, Log } from "./model/";
 
 import './assets/css/reset.scss';
 
@@ -46,3 +46,7 @@ window.addEventListener("DOMContentLoaded", () => {
         return removeLoader().then(render);
     });
 });
+
+window.onerror = function (msg, url, lineNo, colNo, error) {
+    Log.report(msg, url, lineNo, colNo, error)
+}

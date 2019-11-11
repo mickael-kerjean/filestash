@@ -1,4 +1,4 @@
-import { http_get } from '../helpers/';
+import { http_get, http_post } from '../helpers/';
 
 class LogManager{
     constructor(){}
@@ -12,7 +12,18 @@ class LogManager{
     }
 
     url(){
-        return "/admin/api/log"
+        return "/admin/api/log";
+    }
+
+    report(msg, link, lineNo, columnNo, error){
+        let url = "/report?";
+        url += "url="+encodeURIComponent(location.href)+"&";
+        url += "error="+encodeURIComponent(error.message)+"&";
+        url += "msg="+encodeURIComponent(msg)+"&";
+        url += "from="+encodeURIComponent(link)+"&";
+        url += "from.lineNo="+lineNo+"&";
+        url += "from.columnNo="+columnNo;
+        return http_post(url);
     }
 }
 
