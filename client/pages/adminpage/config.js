@@ -12,8 +12,10 @@ export class ConfigPage extends React.Component {
     }
 
     componentWillMount(){
-        Config.all().then((log) => {
-            this.setState({form: log});
+        Config.all().then((c) => {
+            delete c.constant; // The constant key contains read only global variable that are
+                               // application wide truth => not editable from the admin area
+            this.setState({form: c});
         });
     }
 
