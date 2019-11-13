@@ -346,6 +346,7 @@ func (this Configuration) Save() Configuration {
 	// deploy the config in our config.json
 	file, err := os.Create(configPath)
 	if err != nil {
+		Log.Error("Filestash needs to be able to create/edit its own configuration which it can't at the moment. Change the permission for filestash to create and edit `%s`", configPath)
 		return this
 	}
 	defer file.Close()
