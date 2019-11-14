@@ -18,7 +18,8 @@ let config = {
         chunkFilename: "assets/js/chunk_[name]_[id]_[chunkhash].js"
     },
     module: {
-        rules: [{
+        rules: [
+            {
                 test: path.join(__dirname, 'client'),
                 use: ['babel-loader'],
                 exclude: /node_modules/

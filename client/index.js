@@ -44,9 +44,21 @@ window.addEventListener("DOMContentLoaded", () => {
                 .then(render);
         }
         return removeLoader().then(render);
+    }).catch((e) => {
+        const msg = "Couldn't boot Filestash";
+        Log.report(msg, location.href);
+        return removeLoaderWithAnimation()
     });
 });
 
 window.onerror = function (msg, url, lineNo, colNo, error) {
     Log.report(msg, url, lineNo, colNo, error)
+}
+
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function() {
+        navigator.serviceWorker.register("/sw_cache.js").catch(function(err){
+            console.error("ServiceWorker registration failed:", err);
+        });
+    });
 }

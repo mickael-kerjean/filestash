@@ -150,6 +150,7 @@ export class Submenu extends React.Component {
                       </label>
                       <NgIf cond={this.state.search_input_visible !== null} type="inline">
                         <input ref="$input" onBlur={this.closeIfEmpty.bind(this, false)} style={{"width": this.state.search_input_visible ? "180px" : "0px"}} value={this.state.search_keyword} onChange={(e) => this.onSearchKeypress(e.target.value, true)} type="text" id="search" placeholder="search" name="search" autoComplete="off" />
+                        <label htmlFor="search" className="hidden">search</label>
                       </NgIf>
                     </form>
                   </NgIf>

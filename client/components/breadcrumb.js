@@ -76,19 +76,19 @@ BreadCrumb.propTypes = {
 const BreadCrumbContainer = (props) => {
     return (
         <div className={props.className}>
-          <ul>
+          <div className="ul">
             {props.children}
-          </ul>
+          </div>
         </div>
     );
 }
 const Logout = (props) => {
     return (
-        <li className="component_logout">
+        <div className="li component_logout">
           <Link to="/logout">
             <Icon name="power"/>
           </Link>
-        </li>
+        </div>
     );
 }
 
@@ -144,7 +144,7 @@ export class PathElementWrapper extends React.Component {
         href += location.search;
 
         return (
-            <li className={className}>
+            <div className={"li "+className}>
               <NgIf cond={this.props.isLast === false}>
                 <Link to={href} className="label">
                   <NgIf cond={this.props.path.minify !== true}>
@@ -163,7 +163,7 @@ export class PathElementWrapper extends React.Component {
                 {this.limitSize(this.props.path.label)}
                 <Saving needSaving={this.props.needSaving} />
               </NgIf>
-            </li>
+            </div>
         );
     }
 }

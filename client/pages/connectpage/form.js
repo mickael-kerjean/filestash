@@ -140,7 +140,7 @@ export class Form extends React.Component {
                                         </label>
                                     );
                                     return (
-                                        <label className={"no-select input_type_" + props.params["type"]}>
+                                        <label htmlFor={props.params["id"]} className={"no-select input_type_" + props.params["type"]}>
                                           <div>
                                             { $input }
                                           </div>

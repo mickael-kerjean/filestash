@@ -16,14 +16,15 @@ class LogManager{
     }
 
     report(msg, link, lineNo, columnNo, error){
+        if(navigator.onLine === false) return Promise.resolve();
         let url = "/report?";
         url += "url="+encodeURIComponent(location.href)+"&";
-        url += "error="+encodeURIComponent(error.message)+"&";
         url += "msg="+encodeURIComponent(msg)+"&";
         url += "from="+encodeURIComponent(link)+"&";
         url += "from.lineNo="+lineNo+"&";
         url += "from.columnNo="+columnNo;
-        return http_post(url);
+        if(error) url += "error="+encodeURIComponent(error.message)+"&";
+        return http_post(url).catch();
     }
 }
 

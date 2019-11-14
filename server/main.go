@@ -93,6 +93,7 @@ func Init(a *App) {
 	middlewares = []Middleware{ StaticHeaders }
 	r.PathPrefix("/assets").Handler(http.HandlerFunc(NewMiddlewareChain(StaticHandler(FILE_ASSETS),  middlewares, *a))).Methods("GET")
 	r.HandleFunc("/favicon.ico", NewMiddlewareChain(StaticHandler(FILE_ASSETS + "/assets/logo/"),    middlewares, *a)).Methods("GET")
+	r.HandleFunc("/sw_cache.js", NewMiddlewareChain(StaticHandler(FILE_ASSETS + "/assets/worker/"),  middlewares, *a)).Methods("GET")
 
 	// Other endpoints
 	middlewares = []Middleware{ ApiHeaders }

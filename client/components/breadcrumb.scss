@@ -9,14 +9,14 @@
         z-index: 1000;
         padding: 4px 0;
 
-        ul{
+        .ul{
             list-style-type: none;
             margin: 0 auto;
             width: 95%;
             max-width: 800px;
             padding: 0;
             > span{display: block; padding: 7px 0;}
-            div, li{
+            div, .li{
                 display: inline-block;
             }
         }
