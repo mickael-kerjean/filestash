@@ -50,8 +50,11 @@
 - [FAQ](https://www.filestash.app/docs/faq/)
 
 # Support the project
+
+If you use Filestash, contributing to my coffee bill would go a long way as I have spent countless hours in the last 3 years working on this project from my local coffee shop.
+
 - Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
-- [Patreon](https://www.patreon.com/mickaelk)
+- [Open Collective](https://opencollective.com/filestash)
 
 # Credits
 - [Contributors](https://github.com/mickael-kerjean/filestash/graphs/contributors) and folks developing awesome libraries (libvips, libraw, ...)
