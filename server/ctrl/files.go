@@ -178,7 +178,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 				}
 			}
 		} else {
-			tmpPath := filepath.Join(GetCurrentDir(), filepath.Join(GetCurrentDir(), TMP_PATH), "file_" + QuickString(20) + ".dat")
+			tmpPath := filepath.Join(GetCurrentDir(), TMP_PATH, "file_" + QuickString(20) + ".dat")
 			f, err := os.OpenFile(tmpPath, os.O_RDWR|os.O_CREATE, os.ModePerm);
 			if err != nil {
 				SendErrorResult(res, err)
@@ -236,7 +236,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		header.Set("Content-Length", fmt.Sprintf("%d", contentLength))
 	}
 	if header.Get("Content-Security-Policy") == "" {
-		header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'")
+		header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; font-src data:")
 	}
 	header.Set("Accept-Ranges", "bytes")
 
