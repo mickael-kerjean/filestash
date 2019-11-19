@@ -1,6 +1,28 @@
 ![screenshot](https://raw.githubusercontent.com/mickael-kerjean/filestash_images/master/.assets/photo.jpg)
 
 <p align="center">
+    <a href="https://github.com/mickael-kerjean/contributors" alt="Contributors">
+        <img src="https://img.shields.io/github/contributors/mickael-kerjean/filestash" style="max-width:100%;">
+    </a>
+    <a href="https://opencollective.com/filestash" alt="Backers on Open Collective">
+        <img src="https://img.shields.io/opencollective/backers/filestash" style="max-width:100%;">
+    </a>
+    <a href="https://opencollective.com/filestash" alt="Sponsors on Open Collective">
+        <img src="https://img.shields.io/opencollective/sponsors/filestash" style="max-width:100%;">
+    </a>
+    <a href="https://hub.docker.com/r/machines/filestash" alt="Docker Hub">
+        <img src="https://img.shields.io/docker/pulls/machines/filestash" style="max-width:100%;">
+    </a>
+    <br>
+    <a href="#" alt="Build">
+        <img src="https://ci.kerjean.me/api/badges/nuage/nuage/status.svg" style="max-width:100%;">
+    </a>
+    <a href="https://kiwiirc.com/nextclient/#irc://irc.freenode.net/#filestash?nick=guest??" alt="Chat on IRC">
+        <img src="https://img.shields.io/badge/IRC-%23filestash-brightgreen.svg" style="max-width:100%;">
+    </a>
+</p>
+
+<p align="center">
     A Dropbox-like file manager that let you manage your data anywhere it is located:<br>
     <a href="https://www.filestash.app/ftp-client.html">FTP</a> • FTPS • SFTP • WebDAV • Git • S3 • LDAP • Mysql <br>
        CardDAV • CalDAV • Backblaze B2 • Minio <br>
