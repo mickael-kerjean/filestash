@@ -14,7 +14,7 @@ RUN apt-get update > /dev/null && \
     apt-get purge -y --auto-remove gnupg && \
     #################
     # Optional dependencies
-    apt-get install -y curl emacs zip poppler-utils > /dev/null && \
+    apt-get install -y curl tor emacs zip poppler-utils > /dev/null && \
     # org-mode: html export
     curl https://raw.githubusercontent.com/mickael-kerjean/filestash/master/server/.assets/emacs/htmlize.el > /usr/share/emacs/site-lisp/htmlize.el && \
     # org-mode: markdown export
