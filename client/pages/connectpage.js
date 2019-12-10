@@ -4,7 +4,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import './connectpage.scss';
 import { Session } from '../model/';
 import { Container, NgIf, NgShow, Loader, Notification, ErrorPage } from '../components/';
-import { ForkMe, RememberMe, Credentials, Form } from './connectpage/';
+import { ForkMe, PoweredByFilestash, RememberMe, Credentials, Form } from './connectpage/';
 import { cache, notify, urlParams } from '../helpers/';
 
 import { Alert } from '../components/';
@@ -113,6 +113,7 @@ export class ConnectPage extends React.Component {
                           onSubmit={this.onFormSubmit.bind(this)} />
                   </ReactCSSTransitionGroup>
                   <ReactCSSTransitionGroup transitionName="remember" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={5000}>
+                    <PoweredByFilestash />
                     <RememberMe state={this.state.remember_me} onChange={this.setRemember.bind(this)}/>
                   </ReactCSSTransitionGroup>
                 </NgShow>

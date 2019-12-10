@@ -14,3 +14,12 @@ export const ForkMe = (props) => {
         </div>
     );
 };
+
+export const PoweredByFilestash = () => {
+    if(!window.CONFIG["fork_button"]) return null;
+    return (
+        <div className="component_poweredbyfilestash">
+          Powered by <strong><a href="https://www.filestash.app">Filestash</a></strong>
+        </div>
+    );
+};

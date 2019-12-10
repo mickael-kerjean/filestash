@@ -20,3 +20,14 @@
         right: 0;
     }
 }
+
+.component_poweredbyfilestash{
+    display: inline-block;
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 0.9em;
+    line-height: 20px;
+    strong{
+        font-weight: normal;
+        a{ text-decoration: underline; }
+    }
+}
