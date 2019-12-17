@@ -31,9 +31,10 @@
 /* SKIN FOR VIDEOJS: */
 .video-js{
     font-size: 14px; /* Chromium bug */
+    max-height: 500px;
 
     .vjs-control-bar{
-        background: rgba(255,255,255,0.15);
+        background: rgba(255,255,255,0.2);
     }
     .vjs-load-progress div{
         background: var(--primary);
@@ -43,7 +44,7 @@
         border-color: var(--emphasis-primary)!important;
         border-width: 2px;
         margin-top: -40px;
-        border-radius: 10px;
+        border-radius: 8px;
         &:before{ font-size: 45px; color: var(--bg-color); }
     }
 }

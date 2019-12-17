@@ -6,7 +6,6 @@ const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
-
 let config = {
     entry: {
         app: path.join(__dirname, 'client', 'index.js')

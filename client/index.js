@@ -55,6 +55,8 @@ window.onerror = function (msg, url, lineNo, colNo, error) {
     Log.report(msg, url, lineNo, colNo, error)
 }
 
+window.overrides = {}; // server generated frontend overrides
+
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", function() {
         navigator.serviceWorker.register("/sw_cache.js").catch(function(err){

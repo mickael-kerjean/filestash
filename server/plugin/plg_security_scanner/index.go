@@ -41,7 +41,7 @@ func init() {
 	}
 	billionsOfLol = bytes.NewBuffer(b)
 
-	Hooks.Register.HttpEndpoint(func(r *mux.Router) error{
+	Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error{
 		// DEFAULT
 		r.HandleFunc("/index.php", WelcomePackHandle)
 		r.PathPrefix("/html/").Handler(http.HandlerFunc(WelcomePackHandle))

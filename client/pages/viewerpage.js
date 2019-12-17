@@ -9,7 +9,7 @@ import { debounce, opener, notify } from '../helpers/';
 import { FileDownloader, ImageViewer, PDFViewer, FormViewer } from './viewerpage/';
 
 const VideoPlayer = (props) => (
-    <Bundle loader={import(/* webpackChunkName: "video" */"../pages/viewerpage/videoplayer")} symbol="VideoPlayer">
+    <Bundle loader={import(/* webpackChunkName: "video" */"../pages/viewerpage/videoplayer")} symbol="VideoPlayer" overrides={["/overrides/video-transcoder.js"]} >
       {(Comp) => <Comp {...props}/>}
     </Bundle>
 );

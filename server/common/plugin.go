@@ -36,11 +36,11 @@ func (this Get) ProcessFileContentBeforeSend() []func(io.ReadCloser, *App, *http
 	return process_file_content_before_send
 }
 
-var http_endpoint []func(*mux.Router) error
-func (this Register) HttpEndpoint(fn func(*mux.Router) error) {
+var http_endpoint []func(*mux.Router, *App) error
+func (this Register) HttpEndpoint(fn func(*mux.Router, *App) error) {
 	http_endpoint = append(http_endpoint, fn)
 }
-func (this Get) HttpEndpoint() []func(*mux.Router) error {
+func (this Get) HttpEndpoint() []func(*mux.Router, *App) error {
 	return http_endpoint
 }
 
@@ -50,4 +50,22 @@ func (this Register) Starter(fn func(*mux.Router)) {
 }
 func (this Get) Starter() []func(*mux.Router) {
 	return starter_process
+}
+
+
+/*
+ * UI Overrides
+ * They are the means by which server plugin change the frontend behaviors.
+ */
+var overrides []string
+func (this Register) FrontendOverrides(url string) {
+	overrides = append(overrides, url)
+}
+func (this Get) FrontendOverrides() []string {
+	return overrides
+}
+
+const OverrideVideoSourceMapper = "/overrides/video-transcoder.js"
+func init() {
+	Hooks.Register.FrontendOverrides(OverrideVideoSourceMapper)
 }

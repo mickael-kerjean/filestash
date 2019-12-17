@@ -1,0 +1,218 @@
+package plg_video_transcoder
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"github.com/gorilla/mux"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/middleware"
+	"io"
+	"math"
+	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
+)
+
+const (
+	HLS_SEGMENT_LENGTH = 10
+	CLEAR_CACHE_AFTER = 12
+	VideoCachePath = "data/cache/video/"
+)
+
+func init(){
+	ffmpegIsInstalled := false
+	ffprobeIsInstalled := false
+	if _, err := exec.LookPath("ffmpeg"); err == nil {
+		ffmpegIsInstalled = true
+	}
+	if _, err := exec.LookPath("ffprobe"); err == nil {
+		ffprobeIsInstalled = true
+	}
+	plugin_enable := func() bool {
+		return Config.Get("features.video.enable_transcoder").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Name = "enable_transcoder"
+			f.Type = "boolean"
+			f.Description = "Enable/Disable on demand video transcoding. The transcoder"
+			f.Default = true
+			if ffmpegIsInstalled == false || ffprobeIsInstalled == false {
+				f.Default = false
+			}
+			return f
+		}).Bool()
+	}
+	if plugin_enable() == false {
+		return
+	} else if ffmpegIsInstalled == false {
+		Log.Warning("[plugin video transcoder] ffmpeg needs to be installed")
+		return
+	} else if ffprobeIsInstalled == false {
+		Log.Warning("[plugin video transcoder] ffprobe needs to be installed")
+		return
+	}
+
+	cachePath := filepath.Join(GetCurrentDir(), VideoCachePath)
+	os.RemoveAll(cachePath)
+	os.MkdirAll(cachePath, os.ModePerm)
+
+	Hooks.Register.ProcessFileContentBeforeSend(hls_playlist)
+	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+		r.PathPrefix("/hls/hls_{segment}.ts").Handler(NewMiddlewareChain(
+			hls_transcode,
+			[]Middleware{ SecureHeaders },
+			*app,
+		)).Methods("GET")
+		return nil
+	})
+
+	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+		r.HandleFunc(OverrideVideoSourceMapper, func(res http.ResponseWriter, req *http.Request) {
+			res.Header().Set("Content-Type", "application/javascript")
+			res.Write([]byte(`
+                window.overrides["video-map-sources"] = function(sources){
+                    return sources.map(function(source){
+                        source.src = source.src + "&transcode=hls";
+                        source.type = "application/x-mpegURL";
+                        return source;
+                    })
+                }
+`))
+		})
+		return nil
+	})
+}
+
+func hls_playlist(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+	query := req.URL.Query()
+	if query.Get("transcode") != "hls" {
+		return reader, nil
+	}
+	path := query.Get("path")
+	if strings.HasPrefix(GetMimeType(path), "video/") == false {
+		return reader, nil
+	}
+
+	cacheName := "vid_" + GenerateID(ctx) + "_" + QuickHash(path, 10) + ".dat"
+	cachePath := filepath.Join(
+		GetCurrentDir(),
+		VideoCachePath,
+		cacheName,
+	)
+	f, err := os.OpenFile(cachePath, os.O_CREATE | os.O_RDWR, os.ModePerm)
+	if err != nil {
+		Log.Stdout("ERR %+v", err)
+		return reader, err
+	}
+	io.Copy(f, reader)
+	reader.Close()
+	f.Close()
+	time.AfterFunc(CLEAR_CACHE_AFTER * time.Hour, func() { os.Remove(cachePath) })
+
+	p, err := ffprobe(cachePath)
+	if err != nil {
+		return reader, err
+	}
+
+	var response string
+	var i int
+	response =  "#EXTM3U\n"
+	response += "#EXT-X-VERSION:3\n"
+	response += "#EXT-X-MEDIA-SEQUENCE:0\n"
+	response += "#EXT-X-ALLOW-CACHE:YES\n"
+	response += fmt.Sprintf("#EXT-X-TARGETDURATION:%d\n", HLS_SEGMENT_LENGTH)
+	for i=0; i< int(p.Format.Duration) / HLS_SEGMENT_LENGTH; i++ {
+		response += fmt.Sprintf("#EXTINF:%d.0000, nodesc\n", HLS_SEGMENT_LENGTH)
+		response += fmt.Sprintf("/hls/hls_%d.ts?path=%s\n", i, cacheName)
+	}
+	if md := math.Mod(p.Format.Duration, HLS_SEGMENT_LENGTH); md > 0 {
+		response += fmt.Sprintf("#EXTINF:%.4f, nodesc\n", md)
+		response += fmt.Sprintf("/hls/hls_%d.ts?path=%s\n", i, cacheName)
+	}
+	response += "#EXT-X-ENDLIST\n"
+	return NewReadCloserFromBytes([]byte(response)), nil
+}
+
+func hls_transcode(ctx App, res http.ResponseWriter, req *http.Request) {
+	segmentNumber, err := strconv.Atoi(mux.Vars(req)["segment"])
+	if err != nil {
+		Log.Info("[plugin hls] invalid segment request '%s'", mux.Vars(req)["segment"])
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	startTime := segmentNumber * HLS_SEGMENT_LENGTH
+	cachePath := filepath.Join(
+		GetCurrentDir(),
+		VideoCachePath,
+		req.URL.Query().Get("path"),
+	)
+	if _, err := os.Stat(cachePath); os.IsNotExist(err) {
+		Log.Info("[plugin hls]: invalid video")
+		res.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	cmd := exec.Command("ffmpeg", []string{
+		"-timelimit", "30",
+		"-ss", fmt.Sprintf("%d.00", startTime),
+		"-i", cachePath,
+		"-t", fmt.Sprintf("%d.00", HLS_SEGMENT_LENGTH),
+		"-vf", fmt.Sprintf("scale=-2:%d", 720),
+		"-vcodec", "libx264",
+		"-preset", "veryfast",
+		"-acodec", "aac",
+		"-pix_fmt", "yuv420p",
+		"-x264opts:0", "subme=0:me_range=4:rc_lookahead=10:me=dia:no_chroma_me:8x8dct=0:partitions=none",
+		"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d.000)", HLS_SEGMENT_LENGTH),
+		"-f", "ssegment",
+		"-segment_time", fmt.Sprintf("%d.00", HLS_SEGMENT_LENGTH),
+		"-segment_start_number", fmt.Sprintf("%d", segmentNumber),
+		"-initial_offset", fmt.Sprintf("%d.00", startTime),
+		"-vsync", "2",
+		"pipe:out%03d.ts",
+	}...)
+
+	var str bytes.Buffer
+	cmd.Stdout = res
+	cmd.Stderr = &str
+	_ = cmd.Run()
+}
+
+type FFProbeData struct {
+	Format struct {
+		Duration float64 `json:"duration,string"`
+		BitRate int `json:"bit_rate,string"`
+	} `json: "format"`
+	Streams []struct {
+		CodecType string `json:"codec_type"`
+		CodecName string `json:"codec_name"`
+		PixelFormat string `json:"pix_fmt"`
+	} `json:"streams"`
+}
+
+func ffprobe(videoPath string) (FFProbeData, error) {
+	var stream bytes.Buffer
+	var probe FFProbeData
+
+	cmd := exec.Command(
+		"ffprobe", strings.Split(fmt.Sprintf(
+			"-v quiet -print_format json -show_format -show_streams %s",
+			videoPath,
+		), " ")...
+	)
+	cmd.Stdout = &stream
+	if err := cmd.Run(); err != nil {
+		return probe, nil
+	}
+	cmd.Run()
+	if err := json.Unmarshal([]byte(stream.String()), &probe); err != nil {
+		return probe, err
+	}
+	return probe, nil
+}

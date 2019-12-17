@@ -13,30 +13,29 @@ import './videoplayer.scss';
 export class VideoPlayer extends React.Component {
     constructor(props){
         super(props);
+        if(!window.overrides["video-map-sources"]){
+            window.overrides["video-map-sources"] = function(s){ return s; };
+        }
     }
 
     componentDidMount(){
         this.player = videojs(this.refs.$video, {
-            fluid: true,
             controls: true,
-            aspectRatio: "16:9",
-            sources: [{
+            sources: window.overrides["video-map-sources"]([{
                 src: this.props.data,
                 type: getMimeType(this.props.data)
-            }]
+            }])
         });
     }
 
     componentWillReceiveProps(nextProps){
         if(this.props.data === nextProps.data){
             this.player = videojs(this.refs.$video, {
-                fluid: true,
                 controls: true,
-                aspectRatio: "16:9",
-                sources: [{
+                sources: window.overrides["video-map-sources"]([{
                     src: nextProps.data,
                     type: getMimeType(this.props.data)
-                }]
+                }])
             });
         }
     }
@@ -54,7 +53,7 @@ export class VideoPlayer extends React.Component {
               <div className="video_container">
                 <ReactCSSTransitionGroup transitionName="video" transitionAppear={true} transitionLeave={false} transitionEnter={true} transitionEnterTimeout={300} transitionAppearTimeout={300}>
                   <div key={this.props.data} data-vjs-player>
-                    <video ref="$video" className="video-js vjs-fluid vjs-default-skin vjs-big-play-centered" style={{boxShadow: 'rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px'}}></video>
+                    <video ref="$video" className="video-js vjs-fill vjs-default-skin vjs-big-play-centered" style={{boxShadow: 'rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px'}}></video>
                   </div>
                 </ReactCSSTransitionGroup>
                 <Pager path={this.props.path} />

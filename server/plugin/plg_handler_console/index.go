@@ -38,7 +38,7 @@ var console_enable = func() bool {
 
 func init() {
 	console_enable()
-	Hooks.Register.HttpEndpoint(func(r *mux.Router) error {
+	Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error {
 		if console_enable() == false {
 			return nil
 		}

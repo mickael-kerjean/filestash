@@ -101,7 +101,13 @@ func Init(a *App) {
 	middlewares = []Middleware{ IndexHeaders }
 	r.HandleFunc("/about",       NewMiddlewareChain(AboutHandler,                                    middlewares, *a)).Methods("GET")
 	for _, obj := range Hooks.Get.HttpEndpoint() {
-		obj(r)
+		obj(r, a)
+	}
+	for _, obj := range Hooks.Get.FrontendOverrides() {
+		r.HandleFunc(obj, func(res http.ResponseWriter, req *http.Request) {
+			res.WriteHeader(http.StatusOK)
+			res.Write([]byte("/* FRONTOFFICE OVERRIDES */"))
+		})
 	}
 	r.HandleFunc("/robots.txt", func(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte(""))

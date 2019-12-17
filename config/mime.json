@@ -72,6 +72,7 @@
 	"mef": "image/x-mamiya-mef",
 	"mid": "audio/midi",
 	"midi": "application/x-midi",
+	"mkv": "video/x-matroska",
 	"mml": "text/mathml",
 	"mng": "video/x-mng",
 	"mos": "image/x-aptus-mos",
