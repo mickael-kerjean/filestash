@@ -136,6 +136,7 @@ func hls_playlist(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req 
 		response += fmt.Sprintf("/hls/hls_%d.ts?path=%s\n", i, cacheName)
 	}
 	response += "#EXT-X-ENDLIST\n"
+	(*res).Header().Set("Content-Type", "application/x-mpegURL")
 	return NewReadCloserFromBytes([]byte(response)), nil
 }
 
