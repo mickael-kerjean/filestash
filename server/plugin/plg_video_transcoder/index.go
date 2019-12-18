@@ -78,6 +78,9 @@ func init(){
 			res.Write([]byte(`
                 window.overrides["video-map-sources"] = function(sources){
                     return sources.map(function(source){
+                        if(source.type == "video/mp4") return source;
+                        else if(source.type == "video/webm") return source;
+                        else if(source.type == "application/ogg") return source;
                         source.src = source.src + "&transcode=hls";
                         source.type = "application/x-mpegURL";
                         return source;
