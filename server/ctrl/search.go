@@ -13,7 +13,7 @@ func FileSearch(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
+	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		path = "/"
 	}

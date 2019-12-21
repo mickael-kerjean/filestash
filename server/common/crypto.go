@@ -20,8 +20,8 @@ import (
 
 var Letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
-func EncryptString(secret string, json string) (string, error) {
-	d, err := compress([]byte(json))
+func EncryptString(secret string, data string) (string, error) {
+	d, err := compress([]byte(data))
 	if err != nil {
 		return "", err
 	}

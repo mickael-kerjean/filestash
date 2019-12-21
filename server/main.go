@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/ctrl"
@@ -22,10 +23,6 @@ func main() {
 func Init(a *App) {
 	var middlewares []Middleware
 	r := mux.NewRouter()
-
-	if os.Getenv("DEBUG") == "true" {
-		initDebugRoutes(r)
-	}
 
 	// API for Session
 	session := r.PathPrefix("/api/session").Subrouter()
@@ -100,18 +97,15 @@ func Init(a *App) {
 	r.HandleFunc("/report",      NewMiddlewareChain(ReportHandler,                                   middlewares, *a)).Methods("POST")
 	middlewares = []Middleware{ IndexHeaders }
 	r.HandleFunc("/about",       NewMiddlewareChain(AboutHandler,                                    middlewares, *a)).Methods("GET")
-	for _, obj := range Hooks.Get.HttpEndpoint() {
-		obj(r, a)
-	}
-	for _, obj := range Hooks.Get.FrontendOverrides() {
-		r.HandleFunc(obj, func(res http.ResponseWriter, req *http.Request) {
-			res.WriteHeader(http.StatusOK)
-			res.Write([]byte("/* FRONTOFFICE OVERRIDES */"))
-		})
-	}
 	r.HandleFunc("/robots.txt", func(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte(""))
 	})
+
+	if os.Getenv("DEBUG") == "true" {
+		initDebugRoutes(r)
+	}
+	initPluginsRoutes(r, a)
+
 	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX),          middlewares, *a))).Methods("GET")
 
 	// Routes are served via plugins to avoid getting stuck with plain HTTP. The idea is to
@@ -156,5 +150,28 @@ func initDebugRoutes(r *mux.Router) {
 		w.Write([]byte("Sys        = " + bToMb(m.Sys) + "MiB <br>"))
 		w.Write([]byte("NumGC      = " + strconv.Itoa(int(m.NumGC))))
 		w.Write([]byte("</p>"))
+	})
+}
+
+func initPluginsRoutes(r *mux.Router, a *App) {
+	// Endpoints hanle by plugins
+	for _, obj := range Hooks.Get.HttpEndpoint() {
+		obj(r, a)
+	}
+	// frontoffice overrides: it is the mean by which plugin can interact with the frontoffice
+	for _, obj := range Hooks.Get.FrontendOverrides() {
+		r.HandleFunc(obj, func(res http.ResponseWriter, req *http.Request) {
+			res.WriteHeader(http.StatusOK)
+			res.Write([]byte(fmt.Sprintf("/* Default '%s' */", obj)))
+		})
+	}
+	// map which file can be open with what application
+	r.HandleFunc("/overrides/xdg-open.js", func(res http.ResponseWriter, req *http.Request) {
+		res.Write([]byte(`window.overrides["xdg-open"] = function(mime){`))
+		openers := Hooks.Get.XDGOpen()
+		for i:=0; i<len(openers); i++ {
+			res.Write([]byte(openers[i]))
+		}
+		res.Write([]byte(`return null;}`))
 	})
 }

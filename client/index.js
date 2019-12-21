@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Router  from './router';
 
 import { Config, Log } from "./model/";
+import load from "little-loader";
 
 import './assets/css/reset.scss';
 
@@ -35,7 +36,7 @@ window.addEventListener("DOMContentLoaded", () => {
         return Promise.resolve();
     }
 
-    Config.refresh().then(() => {
+    Promise.all([Config.refresh(), setup_xdg_open()]).then(() => {
         const timeSinceBoot = new Date() - window.initTime;
         if(timeSinceBoot >= 1500){
             const timeoutToAvoidFlickering = timeSinceBoot > 2500 ? 0 : 500;
@@ -55,12 +56,21 @@ window.onerror = function (msg, url, lineNo, colNo, error) {
     Log.report(msg, url, lineNo, colNo, error)
 }
 
-window.overrides = {}; // server generated frontend overrides
-
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", function() {
         navigator.serviceWorker.register("/sw_cache.js").catch(function(err){
             console.error("ServiceWorker registration failed:", err);
+        });
+    });
+}
+
+// server generated frontend overrides
+window.overrides = {};
+function setup_xdg_open(){
+    return new Promise((done, err) => {
+        load("/overrides/xdg-open.js", function(error) {
+            if(error) return err(error);
+            done()
         });
     });
 }

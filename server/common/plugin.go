@@ -65,6 +65,14 @@ func (this Get) FrontendOverrides() []string {
 	return overrides
 }
 
+var xdg_open []string
+func (this Register) XDGOpen(jsString string) {
+	xdg_open = append(xdg_open, jsString)
+}
+func (this Get) XDGOpen() []string {
+	return xdg_open
+}
+
 const OverrideVideoSourceMapper = "/overrides/video-transcoder.js"
 func init() {
 	Hooks.Register.FrontendOverrides(OverrideVideoSourceMapper)

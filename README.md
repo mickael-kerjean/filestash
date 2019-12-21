@@ -46,6 +46,7 @@
 - Audio player
 - Full Text Search
 - Shared links are full fledge network drive
+- Office documents (docx, xlsx and more)
 - User friendly
 - Mobile friendly
 - Customisable

@@ -1,0 +1,17 @@
+.component_appframe {
+    text-align: center;
+    background: #525659;
+    width: 100%;
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    .error {
+        color: white;
+        font-size: 17px;
+        margin-top: 10px;
+        font-family: monospace;
+    }
+}

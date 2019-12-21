@@ -9,17 +9,22 @@ import { debounce, opener, notify } from '../helpers/';
 import { FileDownloader, ImageViewer, PDFViewer, FormViewer } from './viewerpage/';
 
 const VideoPlayer = (props) => (
-    <Bundle loader={import(/* webpackChunkName: "video" */"../pages/viewerpage/videoplayer")} symbol="VideoPlayer" overrides={["/overrides/video-transcoder.js"]} >
+    <Bundle loader={import(/* webpackChunkName: "video" */"./viewerpage/videoplayer")} symbol="VideoPlayer" overrides={["/overrides/video-transcoder.js"]} >
       {(Comp) => <Comp {...props}/>}
     </Bundle>
 );
 const IDE = (props) => (
-    <Bundle loader={import(/* webpackChunkName: "ide" */"../pages/viewerpage/ide")} symbol="IDE">
+    <Bundle loader={import(/* webpackChunkName: "ide" */"./viewerpage/ide")} symbol="IDE">
       {(Comp) => <Comp {...props}/>}
     </Bundle>
 );
 const AudioPlayer = (props) => (
-    <Bundle loader={import(/* webpackChunkName: "audioplayer" */"../pages/viewerpage/audioplayer")} symbol="AudioPlayer">
+    <Bundle loader={import(/* webpackChunkName: "audioplayer" */"./viewerpage/audioplayer")} symbol="AudioPlayer">
+      {(Comp) => <Comp {...props}/>}
+    </Bundle>
+);
+const Appframe = (props) => (
+    <Bundle loader={import(/* webpackChunkName: "appframe" */"./viewerpage/appframe")} symbol="AppFrame">
       {(Comp) => <Comp {...props}/>}
     </Bundle>
 );
@@ -38,7 +43,8 @@ export class ViewerPage extends React.Component {
             content: null,
             needSaving: false,
             isSaving: false,
-            loading: true
+            loading: true,
+            application_arguments: null
         };
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
     }
@@ -53,11 +59,12 @@ export class ViewerPage extends React.Component {
     componentDidMount(){
         const metadata = () => {
             return new Promise((done, err) => {
-                let app_opener = opener(this.state.path);
+                let [app_opener, app_args] = opener(this.state.path);
                 Files.url(this.state.path).then((url) => {
                     this.setState({
                         url: url,
-                        opener: app_opener
+                        opener: app_opener,
+                        application_arguments: app_args
                     }, () => done(app_opener));
                 }).catch(error => {
                     this.props.error(error);
@@ -172,6 +179,9 @@ export class ViewerPage extends React.Component {
                   </NgIf>
                   <NgIf cond={this.state.opener === 'download'}>
                     <FileDownloader data={this.state.url} filename={this.state.filename} />
+                  </NgIf>
+                  <NgIf cond={this.state.opener === 'appframe'}>
+                    <Appframe data={this.state.path} filename={this.state.filename} args={this.state.application_arguments} />
                   </NgIf>
                 </NgIf>
                 <NgIf cond={this.state.loading === true}>

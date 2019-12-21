@@ -11,7 +11,7 @@ import (
 )
 
 func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
-	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
+	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return

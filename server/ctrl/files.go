@@ -41,7 +41,7 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendSuccessResults(res, make([]FileInfo, 0))
 		return
 	}
-	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
+	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -121,7 +121,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}
-	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
+	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -280,7 +280,7 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
+	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -310,12 +310,12 @@ func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	from, err := pathBuilder(ctx, req.URL.Query().Get("from"))
+	from, err := PathBuilder(ctx, req.URL.Query().Get("from"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
-	to, err := pathBuilder(ctx, req.URL.Query().Get("to"))
+	to, err := PathBuilder(ctx, req.URL.Query().Get("to"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -342,7 +342,7 @@ func FileRm(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
+	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -362,7 +362,7 @@ func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
+	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -383,7 +383,7 @@ func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	path, err := pathBuilder(ctx, req.URL.Query().Get("path"))
+	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -398,7 +398,7 @@ func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func pathBuilder(ctx App, path string) (string, error) {
+func PathBuilder(ctx App, path string) (string, error) {
 	if path == "" {
 		return "", NewError("No path available", 400)
 	}
