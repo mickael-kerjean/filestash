@@ -39,7 +39,8 @@ func init(){
 				f = &FormElement{}
 			}
 			f.Name = "enable_transcoder"
-			f.Type = "boolean"
+			f.Type = "enable"
+			f.Target = []string{"transcoding_blacklist_format"}
 			f.Description = "Enable/Disable on demand video transcoding. The transcoder"
 			f.Default = true
 			if ffmpegIsInstalled == false || ffprobeIsInstalled == false {
@@ -48,6 +49,24 @@ func init(){
 			return f
 		}).Bool()
 	}
+
+	blacklist_format := func() string {
+		return Config.Get("features.video.blacklist_format").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "transcoding_blacklist_format"
+			f.Name = "blacklist_format"
+			f.Type = "text"
+			f.Description = "Video format that won't be transcoded"
+			f.Default = os.Getenv("FEATURE_TRANSCODING_VIDEO_BLACKLIST")
+			if f.Default != "" {
+				f.Placeholder = fmt.Sprintf("Default: '%s'", f.Default)
+			}
+			return f
+		}).String()
+	}
+
 	if plugin_enable() == false {
 		return
 	} else if ffmpegIsInstalled == false {
@@ -75,18 +94,19 @@ func init(){
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
 		r.HandleFunc(OverrideVideoSourceMapper, func(res http.ResponseWriter, req *http.Request) {
 			res.Header().Set("Content-Type", "application/javascript")
-			res.Write([]byte(`
-                window.overrides["video-map-sources"] = function(sources){
-                    return sources.map(function(source){
-                        if(source.type == "video/mp4") return source;
-                        else if(source.type == "video/webm") return source;
-                        else if(source.type == "application/ogg") return source;
-                        source.src = source.src + "&transcode=hls";
-                        source.type = "application/x-mpegURL";
-                        return source;
-                    })
-                }
-`))
+			res.Write([]byte(`window.overrides["video-map-sources"] = function(sources){`))
+			res.Write([]byte(`    return sources.map(function(source){`))
+
+			blacklists := strings.Split(blacklist_format(), ",")
+			for i:=0; i<len(blacklists); i++ {
+				blacklists[i] = strings.TrimSpace(blacklists[i])
+				res.Write([]byte(fmt.Sprintf(`if(source.type == "%s"){ return source; } `, GetMimeType("." + blacklists[i]))))
+			}
+			res.Write([]byte(`        source.src = source.src + "&transcode=hls";`))
+			res.Write([]byte(`        source.type = "application/x-mpegURL";`))
+			res.Write([]byte(`        return source;`))
+			res.Write([]byte(`    })`))
+			res.Write([]byte(`}`))
 		})
 		return nil
 	})
