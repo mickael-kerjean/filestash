@@ -16,7 +16,9 @@ steps:
   depends_on: [ clone ]
   commands:
   - mkdir -p ./dist/data/state/
-  - cp -R config dist/data/state/config
+  - cp -R config ./dist/data/state/
+  - mkdir -p ./filestash/data/state/
+  - cp -R config ./filestash/data/state/
 
 - name: build_frontend
   image: node:12-alpine
@@ -25,6 +27,7 @@ steps:
   - apk add make git > /dev/null
   - npm install --silent
   - make build_frontend
+  - cp -R ./dist/data/public ./filestash/data/public
 
 - name: build_backend
   image: golang:1.12-stretch
@@ -38,6 +41,8 @@ steps:
   - go get -t ./server/...
   - make build_backend
   - timeout 1 ./dist/filestash || true
+  - cp dist/filestash filestash/
+  - chmod -R o+r+w+x ./dist/data
 
 - name: test_prepare
   image: alpine:latest
@@ -47,7 +52,6 @@ steps:
       from_secret: GIT_PASSWORD
   commands:
   - apk add git > /dev/null
-  - chmod -R o+r+w+x ./dist/data
   - cd ../ && git clone "https://readonly:$PASSWORD@git.kerjean.me/filestash/test.git"
   - chmod -R 777 ./test/
 
@@ -70,7 +74,7 @@ steps:
 
 - name: test_e2e
   image: machines/puppeteer
-  depends_on: [ build_frontend, build_backend ]
+  depends_on: [ test_prepare, build_backend, build_frontend ]
   environment:
     ADMIN_PASSWORD: $$2a$$10$$9OFbPZV4lYpYjU5eUi91o.kgeMyCuW11j878YBRri3gBwccq2lSFy
     APP_URL: http://127.0.0.1:8334
@@ -84,17 +88,15 @@ steps:
 
 - name: release_prepare
   image: debian:stable-slim
-  depends_on: [ test_e2e ]
+  depends_on: [ test_frontend, test_backend, test_e2e ]
   environment:
     GPG_PRIVATE:
       from_secret: GPG_PRIVATE
     GPG_PASSPHRASE:
       from_secret: GPG_PASSPHRASE
   commands:
-  - cp -R config/* ./dist/data/state/config/
-  - chmod -R o-r-w-x- ./dist/
   - apt-get update > /dev/null && apt-get install -y gnupg1 curl > /dev/null
-  - mv dist filestash
+  - chmod -R o-r-w-x- ./filestash
   - tar -cf filestash_linux-amd64.tar ./filestash
   - curl -s "https://downloads.filestash.app/gpg?private=$GPG_PASSPHRASE" > /tmp/private.key
   - echo $GPG_PASSPHRASE | gpg1 --import /tmp/private.key
@@ -127,7 +129,9 @@ steps:
       from_secret: DOCKER_USERNAME
     password:
       from_secret: DOCKER_PASSWORD
-    tags: latest
+    tags:
+    - latest
+    - "${DRONE_COMMIT_SHA:0:7}"
 
 - name: release_deploy
   image: appleboy/drone-ssh
