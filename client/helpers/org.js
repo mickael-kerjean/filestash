@@ -130,7 +130,9 @@ export function parse(content){
         if(data = parse_header(text, i)){
             tags = tags.filter(e => e.level < data.level);
             tags.push({ level: data.level, tags: data.tags });
-            data.tags = Array.concat.apply(null, tags.map((e) => e.tags));
+            data.tags = tags.reduce((acc, el) => {
+                return acc.concat(el.tags);
+            }, []);
 
             if(todo.header){
                 todos.push(todo);
