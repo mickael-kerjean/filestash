@@ -47,11 +47,12 @@ RUN apt-get update > /dev/null && \
     useradd filestash && \
     chown -R filestash:filestash /app/ && \
     rm -rf /var/lib/apt/lists/* && \
-    rm -rf /tmp/* && \
-    timeout 1 /app/filestash | grep -q start
+    rm -rf /tmp/*
+
+USER filestash
+RUN timeout 1 /app/filestash | grep -q start
 
 EXPOSE 8334
 VOLUME ["/app/data/"]
 WORKDIR "/app"
-USER filestash
 CMD ["/app/filestash"]
