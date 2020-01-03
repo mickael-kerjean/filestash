@@ -1,11 +1,5 @@
 package plg_editor_onlyoffice
 
-// [ ] TODO shared link respect access right
-// [X] TODO Proper config
-// [ ] TODO Link to frontend:
-       // Hooks.Register.XDGOpen("mtype", "app", args)
-       // Hooks.Get.XDGOpen()
-
 import (
 	"encoding/json"
 	"fmt"
@@ -104,21 +98,52 @@ func init() {
 }
 
 func StaticHandler(res http.ResponseWriter, req *http.Request) {
-	req.URL.Path = strings.TrimPrefix(req.URL.Path, "/onlyoffice/static/")
+	req.URL.Path = strings.TrimPrefix(req.URL.Path, "/onlyoffice/static")
 	oodsLocation := Config.Get("features.office.onlyoffice_server").String()
 	u, err := url.Parse(oodsLocation)
 	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
-	req.Header.Set("X-Forwarded-Proto", "http")
-	req.Header.Set("X-Forwarded-Host", req.Host + "/onlyoffice/static/")
-	proxy := httputil.NewSingleHostReverseProxy(u)
-	proxy.ErrorHandler = func(rw http.ResponseWriter, rq *http.Request, err error) {
+	req.Header.Set("X-Forwarded-Host", req.Host + "/onlyoffice/static")
+	req.Header.Set("X-Forwarded-Proto", func() string {
+		if scheme := req.Header.Get("X-Forwarded-Proto"); scheme != "" {
+			return scheme
+		} else if req.TLS != nil {
+			return "https"
+		}
+		return "http"
+	}())
+
+	// This code is a copy and paste from httputil.NewSingleHostReverseProxy with 1 single change
+	// to do SSL termination.
+	reverseProxy := &httputil.ReverseProxy{
+		Director: func(rq *http.Request) {
+			rq.URL.Scheme = "http" // <- this is the only change from NewSingleHostReverseProxy
+			rq.URL.Host = u.Host
+			rq.URL.Path = func(a, b string) string {
+				aslash := strings.HasSuffix(a, "/")
+				bslash := strings.HasPrefix(b, "/")
+				switch {
+				case aslash && bslash:
+					return a + b[1:]
+				case !aslash && !bslash:
+					return a + "/" + b
+				}
+				return a + b
+			}(u.Path, rq.URL.Path)
+			if u.RawQuery == "" || rq.URL.RawQuery == "" {
+				rq.URL.RawQuery = u.RawQuery + rq.URL.RawQuery
+			} else {
+				rq.URL.RawQuery = u.RawQuery + "&" + rq.URL.RawQuery
+			}
+		},
+	}
+	reverseProxy.ErrorHandler = func(rw http.ResponseWriter, rq *http.Request, err error) {
 		Log.Warning("[onlyoffice] %s", err.Error())
 		SendErrorResult(rw, NewError(err.Error(), http.StatusBadGateway))
 	}
-	proxy.ServeHTTP(res, req)
+	reverseProxy.ServeHTTP(res, req)
 }
 
 func IframeContentHandler(ctx App, res http.ResponseWriter, req *http.Request) {
