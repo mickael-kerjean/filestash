@@ -15,7 +15,7 @@ export class DashboardPage extends React.Component {
         };
     }
 
-    componentWillMount(){
+    componentDidMount(){
         Promise.all([
             Backend.all(),
             Config.all()

@@ -11,7 +11,7 @@ export class ConfigPage extends React.Component {
         };
     }
 
-    componentWillMount(){
+    componentDidMount(){
         Config.all().then((c) => {
             delete c.constant; // The constant key contains read only global variable that are
                                // application wide truth => not editable from the admin area

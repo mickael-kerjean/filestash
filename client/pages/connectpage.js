@@ -21,7 +21,7 @@ export class ConnectPage extends React.Component {
         };
     }
 
-    componentWillMount(){
+    componentDidMount(){
         const urlData = urlParams();
         const get_params = Object.keys(urlData);
         if(get_params.length === 0){

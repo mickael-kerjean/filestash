@@ -6,7 +6,7 @@ import load from "little-loader";
 export class Bundle extends React.Component {
     state = { mod: null };
 
-    componentWillMount() {
+    componentDidMount() {
         this.load(this.props)
     }
 

@@ -16,7 +16,7 @@ export class LogPage extends React.Component {
         };
     }
 
-    componentWillMount(){
+    componentDidMount(){
         Config.all().then((config) => {
             this.setState({
                 form: {"":{"params":config["log"]}},

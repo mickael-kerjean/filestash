@@ -25,10 +25,10 @@ function AdminOnly(WrappedComponent){
                     notify.send("Error: " + (err && err.message) , "error");
                 });
             };
+            this.timeout = window.setInterval(this.admin.bind(this), 30 * 1000);
         }
 
-        componentWillMount(){
-            this.timeout = window.setInterval(this.admin.bind(this), 30 * 1000);
+        componentDidMount(){
             this.admin.call(this);
         }
 

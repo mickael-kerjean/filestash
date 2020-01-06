@@ -20,7 +20,7 @@ export class PluginPage extends React.Component {
         };
     }
 
-    componentWillMount(){
+    componentDidMount(){
         Plugin.all().then((list) => this.setState({plugins: list}));
     }
 

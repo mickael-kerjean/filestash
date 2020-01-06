@@ -46,7 +46,7 @@ export class Enabler extends React.Component {
         super(props);
     }
 
-    componentWillMount(){
+    componentDidMount(){
         requestAnimationFrame(() => {
             this.toggle(this.props.defaultValue || false);
         });

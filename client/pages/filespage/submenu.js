@@ -22,14 +22,14 @@ export class Submenu extends React.Component {
                     search_keyword: "",
                     search_input_visible: false
                 });
-                this.refs.$input.blur();
+                if(this.refs.$input) this.refs.$input.blur();
                 this.props.onSearch(null);
             }else if(e.ctrlKey && e.keyCode === 70){ // 'Ctrl F' shortcut to search
                 e.preventDefault();
                 this.setState({
                     search_input_visible: true
                 });
-                this.refs.$input.focus();
+                if(this.refs.$input) this.refs.$input.focus();
             }else if(e.altKey && (e.keyCode === 49 || e.keyCode === 50)){ // 'alt 1' 'alt 2' shortcut
                 e.preventDefault();
                 this.onViewChange();
