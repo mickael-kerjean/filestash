@@ -46,7 +46,7 @@ libpath=$(
     if [ $arch = "amd64" ]; then
         echo "x86_64-linux-gnu";
     elif [ $arch = "armhf" ]; then
-        echo "arm-linux-gnueabihf"        
+        echo "arm-linux-gnueabihf"
     fi
 )
 ar x /usr/lib/$libpath/libraw.a
@@ -59,10 +59,10 @@ ar x /usr/lib/$libpath/libpthread.a
 ar rcs libtranscode.a *.o
 rm *.o
 
-#scp libtranscode.a mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libtranscode-`uname -s`-`uname -m`.a
+#scp libtranscode.a mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libtranscode_`uname -s`-`uname -m`.a
 
 ################################################
 # Stage 4: Gather all the related headers
 #cd /usr/include/
 #tar zcf /tmp/libtranscode-headers.tar.gz .
-#scp /tmp/libtranscode-headers.tar.gz mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libtranscode-`uname -s`-`uname -m`.tar.gz
+#scp /tmp/libtranscode-headers.tar.gz mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libtranscode_`uname -s`-`uname -m`_headers.tar.gz
