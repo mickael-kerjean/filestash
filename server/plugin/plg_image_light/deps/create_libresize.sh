@@ -1,4 +1,4 @@
-#!/bin/s
+#!/bin/sh
 # # This script handle the creation of the static library used by the plugin to
 # # perform image resizing jobs. You can run it like this:
 # docker run -ti --name debian_build_dep -v /home/:/home/ debian:9 bash
@@ -45,7 +45,7 @@ libpath=$(
     if [ $arch = "amd64" ]; then
         echo "x86_64-linux-gnu";
     elif [ $arch = "armhf" ]; then
-        echo "arm-linux-gnueabihf"        
+        echo "arm-linux-gnueabihf"
     fi
 )
 #ar x /tmp/libresize.a
@@ -86,10 +86,10 @@ ar x /usr/lib/$libpath/libpoppler.a
 ar rcs libresize.a *.o
 rm *.o *.ao
 
-#scp libresize.a mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libresize-`uname -s`-`uname -m`.a
+#scp libresize.a mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libresize_`uname -s`-`uname -m`.a
 
 ################################################
 # Stage 4: Gather all the related headers
 #cd /usr/include/
 #tar zcf /tmp/libresize-headers.tar.gz .
-#scp /tmp/libresize-headers.tar.gz mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libresize-`uname -s`-`uname -m`.tar.gz
+#scp /tmp/libresize-headers.tar.gz mickael@hal.kerjean.me:/home/app/pages/data/projects/filestash/downloads/upload/libresize_`uname -s`-`uname -m`_headers.tar.gz
