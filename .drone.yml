@@ -3,11 +3,10 @@ name: default
 
 workspace:
   base: /go
-  path: src/github.com/mickael-kerjean.me/filestash
+  path: filestash
 
 clone:
   depth: 1
-
 
 steps:
 
@@ -33,12 +32,12 @@ steps:
   image: golang:1.12-stretch
   depends_on: [ build_prepare ]
   environment:
-    CGO_LDFLAGS_ALLOW: '-fopenmp'
+    CGO_LDFLAGS_ALLOW: "-fopenmp"
+    GO111MODULE: "on"
   commands:
   - apt-get update > /dev/null && apt-get install -y libglib2.0-dev curl make > /dev/null
   - make build_init
-  - find server/plugin/plg_* -type f -name '*.a' -exec mv {} /usr/local/lib/ \;
-  - go get -t ./server/...
+  - go get ./server/...
   - make build_backend
   - timeout 1 ./dist/filestash || true
   - cp dist/filestash filestash/
@@ -52,25 +51,27 @@ steps:
       from_secret: GIT_PASSWORD
   commands:
   - apk add git > /dev/null
-  - cd ../ && git clone "https://readonly:$PASSWORD@git.kerjean.me/filestash/test.git"
+  - git clone "https://readonly:$PASSWORD@git.kerjean.me/filestash/test.git"
   - chmod -R 777 ./test/
 
 - name: test_frontend
   image: node:8-alpine
   depends_on: [ test_prepare, build_frontend ]
   commands:
-  - cd ../test/unit_js
+  - cd ./test/unit_js
   - npm install --silent
   - npm test
 
 - name: test_backend
   image: golang:1.12-alpine
   depends_on: [ test_prepare, build_backend ]
+  environment:
+    GO111MODULE: "on"
   commands:
   - apk add git gcc libc-dev poppler-utils > /dev/null
-  - cp ../test/assets/* /tmp/
-  - go get -t ../test/unit_go/...
-  - go test -v --tags "fts5" ../test/unit_go/...
+  - cp ./test/assets/* /tmp/
+  - go get ./test/unit_go/...
+  - go test -v --tags "fts5" ./test/unit_go/...
 
 - name: test_e2e
   image: machines/puppeteer
@@ -81,7 +82,7 @@ steps:
     CI: true
   commands:
   - ./dist/filestash > /dev/null &
-  - cd ../test/e2e
+  - cd ./test/e2e
   - npm install > /dev/null
   - node servers/webdav.js > /dev/null &
   - npm test
@@ -97,10 +98,10 @@ steps:
   commands:
   - apt-get update > /dev/null && apt-get install -y gnupg1 curl > /dev/null
   - chmod -R o-r-w-x- ./filestash
-  - tar -cf filestash_linux-amd64.tar ./filestash
+  - tar -cf filestash_Linux-x86_64.tar ./filestash
   - curl -s "https://downloads.filestash.app/gpg?private=$GPG_PASSPHRASE" > /tmp/private.key
   - echo $GPG_PASSPHRASE | gpg1 --import /tmp/private.key
-  - echo $GPG_PASSPHRASE | gpg1 --sign --passphrase-fd 0 --default-key mickael@kerjean.me --no-tty filestash_linux-amd64.tar
+  - echo $GPG_PASSPHRASE | gpg1 --sign --passphrase-fd 0 --default-key mickael@kerjean.me --no-tty filestash_Linux-x86_64.tar
 
 - name: release_publish
   image: appleboy/drone-scp
@@ -114,7 +115,7 @@ steps:
       from_secret: SSH_USERNAME
     password:
       from_secret: SSH_PASSWORD
-    source: filestash_linux-amd64.tar.gpg
+    source: filestash_Linux-x86_64.tar.gpg
     target: /app/pages/data/projects/filestash/downloads/latest/
 
 - name: release_docker

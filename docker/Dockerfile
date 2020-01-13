@@ -10,7 +10,7 @@ RUN apt-get update > /dev/null && \
     apt-get install -y libglib2.0-0 curl gnupg > /dev/null && \
     echo $PUBLIC_KEY | gpg --import && \
     cd /tmp/ && \
-    curl --resolve downloads.filestash.app:443:94.23.200.66 -s https://downloads.filestash.app/latest/filestash_linux-amd64.tar.gpg | gpg --decrypt | tar xf - && \
+    curl --resolve downloads.filestash.app:443:94.23.200.66 -s https://downloads.filestash.app/latest/filestash_`uname -s`-`uname -m`.tar.gpg | gpg --decrypt | tar xf - && \
     mv filestash /app/ && \
     apt-get purge -y --auto-remove gnupg && \
     #################
