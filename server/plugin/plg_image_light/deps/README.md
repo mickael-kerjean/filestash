@@ -13,8 +13,12 @@ To test the libraries are working fine:
 # libtranscode:
 gcc -Wall -c src/libtranscode_test.c
 gcc -o main_transcode.bin libtranscode_test.o -lm -lpthread -L. -l:libtranscode.a
+curl -O https://archive.kerjean.me/public/2020/sample.CR2
+./main_transcode.bin ./sample.CR2
 
 # libresize:
 gcc -Wall -c src/libresize_test.c `pkg-config --cflags glib-2.0`
 gcc -o main_resize.bin libresize_test.o -lm -lgmodule-2.0 -lgobject-2.0 -lglib-2.0 -L. -l:libresize.a
+curl -O https://archive.kerjean.me/public/2020/sample.jpg
+./main_resize.bin ./sample.jpg
 ```
