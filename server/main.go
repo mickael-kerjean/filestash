@@ -44,8 +44,7 @@ func Init(a *App) {
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigHandler,       middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, *a)).Methods("POST")
 	middlewares = []Middleware{ IndexHeaders }
-	admin.HandleFunc("/log",                        NewMiddlewareChain(FetchLogHandler,          middlewares, *a)).Methods("GET")
-	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a))).Methods("GET")
+	admin.HandleFunc("/log",                        NewMiddlewareChain(FetchLogHandler,          middlewares, *a)).Methods("GET")	
 
 	// API for File management
 	files := r.PathPrefix("/api/files").Subrouter()
@@ -106,7 +105,8 @@ func Init(a *App) {
 	}
 	initPluginsRoutes(r, a)
 
-	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX),          middlewares, *a))).Methods("GET")
+	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a))).Methods("GET")
+	r.PathPrefix("/"     ).Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a))).Methods("GET")
 
 	// Routes are served via plugins to avoid getting stuck with plain HTTP. The idea is to
 	// support many more protocols in the future: HTTPS, HTTP2, TOR or whatever that sounds
