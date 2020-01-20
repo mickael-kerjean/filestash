@@ -1,6 +1,5 @@
 package plg_image_light
 // #cgo CFLAGS: -I./deps/src
-// #cgo LDFLAGS: -lm -lpthread -L./deps -l:libtranscode.a
 // #include "libtranscode.h"
 import "C"
 

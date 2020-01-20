@@ -1,9 +1,9 @@
 package plg_image_light
-// #cgo pkg-config:glib-2.0
+
 // #cgo CFLAGS: -I./deps/src
-// #cgo LDFLAGS: -lm -lgmodule-2.0 -lgobject-2.0 -lglib-2.0 -ldl -L./deps -l:libresize.a
-// #include "libresize.h"
+// #cgo pkg-config:glib-2.0
 // #include "glib-2.0/glib.h"
+// #include "libresize.h"
 import "C"
 
 import (
