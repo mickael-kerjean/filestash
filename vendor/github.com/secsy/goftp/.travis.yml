@@ -1,0 +1,11 @@
+language: go
+
+go:
+  - "1.10"
+  - tip
+
+install:
+  - ./build_test_server.sh
+
+before_script:
+  - echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6

@@ -37,7 +37,6 @@ steps:
   commands:
   - apt-get update > /dev/null && apt-get install -y libglib2.0-dev curl make > /dev/null
   - make build_init
-  - go get ./server/...
   - make build_backend
   - timeout 1 ./dist/filestash || true
   - cp dist/filestash filestash/
@@ -64,14 +63,13 @@ steps:
 
 - name: test_backend
   image: golang:1.12-alpine
-  depends_on: [ test_prepare, build_backend ]
+  depends_on: [ test_prepare, build_backend, build_frontend ]
   environment:
     GO111MODULE: "on"
   commands:
   - apk add git gcc libc-dev poppler-utils > /dev/null
   - cp ./test/assets/* /tmp/
-  - go get ./test/unit_go/...
-  - go test -v --tags "fts5" ./test/unit_go/...
+  - go test -mod=vendor -v --tags "fts5" ./test/unit_go/...
 
 - name: test_e2e
   image: machines/puppeteer
