@@ -167,6 +167,7 @@ func initPluginsRoutes(r *mux.Router, a *App) {
 	}
 	// map which file can be open with what application
 	r.HandleFunc("/overrides/xdg-open.js", func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Set("Content-Type", GetMimeType("xdg-open.js"))
 		res.Write([]byte(`window.overrides["xdg-open"] = function(mime){`))
 		openers := Hooks.Get.XDGOpen()
 		for i:=0; i<len(openers); i++ {
