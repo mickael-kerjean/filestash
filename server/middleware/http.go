@@ -45,7 +45,6 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 		header.Set("Referrer-Policy", "same-origin")
 		header.Set("X-Content-Type-Options", "nosniff")
 		header.Set("X-XSS-Protection", "1; mode=block")
-		header.Set("X-Frame-Options", "DENY")
 		header.Set("X-Powered-By", fmt.Sprintf("Filestash/%s.%s <https://filestash.app>", APP_VERSION, BUILD_DATE))
 
 		cspHeader := "default-src 'none'; "
@@ -99,7 +98,6 @@ func SecureHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx Ap
 		}
 		header.Set("X-Content-Type-Options", "nosniff")
 		header.Set("X-XSS-Protection", "1; mode=block")
-		header.Set("X-Frame-Options", "DENY")
 		fn(ctx, res, req)
 	}
 }
