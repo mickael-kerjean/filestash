@@ -147,7 +147,10 @@ func (s S3Backend) Ls(path string) ([]os.FileInfo, error) {
 		return nil, err
 	}
 
-	for _, object := range objs.Contents {
+	for i, object := range objs.Contents {
+		if i == 0 && *object.Key == p.path {
+			continue
+		}
 		files = append(files, &File{
 			FName: filepath.Base(*object.Key),
 			FType: "file",
