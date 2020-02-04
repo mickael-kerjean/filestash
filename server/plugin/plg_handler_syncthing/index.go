@@ -18,24 +18,21 @@ import (
 )
 
 const SYNCTHING_URI = "/admin/syncthing"
-var syncthing_enable func() bool = func() bool {
-	return Config.Get("features.syncthing.enable").Schema(func(f *FormElement) *FormElement {
+func init() {
+	plugin_enable := Config.Get("features.syncthing.enable").Schema(func(f *FormElement) *FormElement {
 		if f == nil {
 			f = &FormElement{}
 		}
 		f.Name = "enable"
 		f.Type = "enable"
 		f.Target = []string{"syncthing_server_url"}
-		f.Description = "Enable/Disable the office suite to manage word, excel and powerpoint documents. This setting requires a restart to comes into effect"
+		f.Description = "Enable/Disable integration with the syncthing server. This will make your syncthing server available at `/admin/syncthing`"
 		f.Default = false
 		if u := os.Getenv("SYNCTHING_URL"); u != "" {
 			f.Default = true
 		}
 		return f
 	}).Bool()
-}
-func init() {
-	syncthing_enable()
 	Config.Get("features.syncthing.server_url").Schema(func(f *FormElement) *FormElement {
 		if f == nil {
 			f = &FormElement{}
@@ -54,6 +51,9 @@ func init() {
 	})
 
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error {
+		if plugin_enable == false {
+			return nil
+		}
 		r.HandleFunc(SYNCTHING_URI, func (res http.ResponseWriter, req *http.Request) {
 			http.Redirect(res, req, SYNCTHING_URI + "/", http.StatusTemporaryRedirect)
 		})
@@ -77,11 +77,6 @@ func AuthBasic(credentials func() (string, string), fn http.Handler) http.Handle
 	}
 
 	return func(res http.ResponseWriter, req *http.Request) {
-		if syncthing_enable() == false {
-			http.NotFoundHandler().ServeHTTP(res, req)
-			return
-		}
-
 		auth := req.Header.Get("Authorization")
 		if strings.HasPrefix(auth, "Basic ") == false {
 			notAuthorised(res, req)
