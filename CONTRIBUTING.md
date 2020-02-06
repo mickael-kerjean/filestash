@@ -6,66 +6,34 @@ Thanks for taking the time to join our community and start contributing. This gu
 
 ### Before you submit a pull request
 
-For anything else than a typo or an obvious bug fix, please raise an issue to discuss your proposal before submitting any code.
+For anything else than a typo or a bug fix, please raise an issue to discuss your proposal before submitting any code.
 
 ### License for contributions
 
 As the copyright owner, you agree to license your contributions under an irrevocable MIT license.
 
 
-## Building from source
+### Building from source
 
-### Prerequisites
-- Git
-- Make
-- Node
-- Go
+*Prerequisites*: Git, Make, Node, Go
 
-### Download the source
 ```
-export $GOPATH=/wherever/you/want
-cd $GOPATH
-mkdir -p github.com/mickael-kerjean/ && cd github.com/mickael-kerjean/
+# Download the source
 git clone https://github.com/mickael-kerjean/filestash
 cd filestash
-```
 
-### Install dependencies
-```
-# frontend dependencies
-npm install
+# Install dependencies
+npm install # frontend dependencies
+make build_init # install the required static libraries
+mkdir -p ./dist/data/state/
+cp -R config ./dist/data/state/
 
-# backend dependencies
-go get ./server/...
-make build_init # beware this will install the required C headers under /usr/local/include/
-```
-
-### Building
-*Frontend*:
-```
-# Production build:
+# Create the build
 make build_frontend
-
-# Development build:
-npm run dev
-```
-
-*Backend*:
-```
 make build_backend
-```
 
-*Run*:
-```
+# Run the program
 ./dist/filestash
-```
-
-*Clear*:
-```
-# clear the frontend
-rm -rf ./dist/data/public/
-# clear the entire build
-rm -rf ./dist
 ```
 
 ### Tests
