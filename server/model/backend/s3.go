@@ -226,6 +226,14 @@ func (s S3Backend) Rm(path string) error {
 		return NewError("Doesn't exist", 404)
 	}
 
+	if !strings.HasSuffix(p.path, "/") {
+		_, err := client.DeleteObject(&s3.DeleteObjectInput{
+			Bucket: aws.String(p.bucket),
+			Key:    &p.path,
+		})
+		return err
+	}
+
 	objs, err := client.ListObjects(&s3.ListObjectsInput{
 		Bucket:    aws.String(p.bucket),
 		Prefix:    aws.String(p.path),
