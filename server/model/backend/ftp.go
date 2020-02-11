@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"crypto/tls"
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/secsy/goftp"
@@ -45,7 +46,6 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	if params["username"] == "anonymous" && params["password"] == "" {
 		params["password"] = "anonymous"
 	}
-
 	conn := 5
 	if params["conn"] != "" {
 		if i, err := strconv.Atoi(params["conn"]); err == nil && i > 0 {
@@ -53,19 +53,43 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		}
 	}
 
-	config := goftp.Config{
+	configWithoutTLS := goftp.Config{
 		User:               params["username"],
 		Password:           params["password"],
 		ConnectionsPerHost: conn,
 		Timeout:            10 * time.Second,
 	}
-	client, err := goftp.DialConfig(config, fmt.Sprintf("%s:%s", params["hostname"], params["port"]))
-	if err != nil {
-		return nil, err
+	configWithTLS := configWithoutTLS
+	configWithTLS.TLSConfig = &tls.Config{
+		InsecureSkipVerify: true,
+		ClientSessionCache: tls.NewLRUClientSessionCache(32),
 	}
-	backend := Ftp{client}
+	configWithTLS.TLSMode = goftp.TLSExplicit
 
-	FtpCache.Set(params, &backend)
+	var backend *Ftp = nil
+
+	// Attempt to connect using FTPS
+	if client, err := goftp.DialConfig(configWithTLS, fmt.Sprintf("%s:%s", params["hostname"], params["port"])); err == nil {
+		if _, err := client.ReadDir("/"); err != nil {
+			client.Close()
+		} else {
+			backend = &Ftp{client}
+		}
+	}
+
+	// Attempt to create an FTP connection if FTPS isn't available
+	if backend == nil {
+		client, err := goftp.DialConfig(configWithoutTLS, fmt.Sprintf("%s:%s", params["hostname"], params["port"]))
+		if err != nil {
+			return backend, err
+		}
+		if _, err := client.ReadDir("/"); err != nil {
+			return backend, err
+		}
+		backend = &Ftp{client}
+	}
+
+	FtpCache.Set(params, backend)
 	return backend, nil
 }
 
@@ -124,7 +148,7 @@ func (f Ftp) Home() (string, error) {
 	return f.client.Getwd()
 }
 
-func (f Ftp) Ls(path string) ([]os.FileInfo, error) {	
+func (f Ftp) Ls(path string) ([]os.FileInfo, error) {
 	return f.client.ReadDir(path)
 }
 
