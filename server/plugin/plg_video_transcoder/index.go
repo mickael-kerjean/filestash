@@ -66,6 +66,7 @@ func init(){
 			return f
 		}).String()
 	}
+	blacklist_format()
 
 	if plugin_enable() == false {
 		return
