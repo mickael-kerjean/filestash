@@ -10,7 +10,6 @@ import (
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_backblaze"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_dav"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_mysql"
-	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_ftps"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_ldap"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_dropbox"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_security_scanner"
