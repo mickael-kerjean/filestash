@@ -97,7 +97,6 @@ function cacheFirstStrategy(event){
             }
 
             fetchAndCache(event).catch(nil);
-            response.headers.append("Content-Stale", "yes");
             return response;
         });
     });
