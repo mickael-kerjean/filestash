@@ -414,6 +414,7 @@ func (this *Configuration) Get(key string) *Configuration {
 	}
 
 	// increase speed (x4 with our bench) by using a cache
+	this.mu.Lock()
 	tmp := this.cache.Get(key)
 	if tmp == nil {
 		this.currentElement = traverse(&this.form, strings.Split(key, "."))
@@ -421,6 +422,7 @@ func (this *Configuration) Get(key string) *Configuration {
 	} else {
 		this.currentElement = tmp.(*FormElement)
 	}
+	this.mu.Unlock()
 	return this
 }
 
