@@ -7,13 +7,12 @@ import (
 
 const (
 	APP_VERSION = "v0.4rc"
-	PLUGIN_PATH = "data/plugin/"
 	LOG_PATH    = "data/state/log/"
 	CONFIG_PATH = "data/state/config/"
 	DB_PATH     = "data/state/db/"
-	FTS_PATH    = "data/state/db/search/"
+	FTS_PATH    = "data/state/search/"
+	CERT_PATH    = "data/state/certs/"
 	TMP_PATH    = "data/cache/tmp/"
-	CERT_PATH    = "data/certs"
 	COOKIE_NAME_AUTH = "auth"
 	COOKIE_NAME_PROOF = "proof"
 	COOKIE_NAME_ADMIN = "admin"

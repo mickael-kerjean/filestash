@@ -18,7 +18,10 @@ import (
 	"time"
 )
 
+var SSL_PATH string = filepath.Join(GetCurrentDir(), CERT_PATH, "ssl")
+
 func init() {
+	os.MkdirAll(SSL_PATH, os.ModePerm)
 	domain := Config.Get("general.host").String()
 
 	Hooks.Register.Starter(func (r *mux.Router) {
@@ -47,7 +50,7 @@ func init() {
 			mngr := autocert.Manager{
 				Prompt:     autocert.AcceptTOS,
 				HostPolicy: autocert.HostWhitelist(domain),
-				Cache:      autocert.DirCache(filepath.Join(GetCurrentDir(), CERT_PATH)),
+				Cache:      autocert.DirCache(SSL_PATH),
 			}
 			srv.TLSConfig.GetCertificate = mngr.GetCertificate
 		}

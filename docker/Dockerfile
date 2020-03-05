@@ -56,6 +56,6 @@ USER filestash
 RUN timeout 1 /app/filestash | grep -q start
 
 EXPOSE 8334
-VOLUME ["/app/data/"]
+VOLUME ["/app/data/state/"]
 WORKDIR "/app"
 CMD ["/app/filestash"]
