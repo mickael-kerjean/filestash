@@ -94,7 +94,7 @@ func init(){
 
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
 		r.HandleFunc(OverrideVideoSourceMapper, func(res http.ResponseWriter, req *http.Request) {
-			res.Header().Set("Content-Type", "application/javascript")
+			res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
 			res.Write([]byte(`window.overrides["video-map-sources"] = function(sources){`))
 			res.Write([]byte(`    return sources.map(function(source){`))
 

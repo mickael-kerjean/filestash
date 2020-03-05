@@ -161,13 +161,13 @@ func initPluginsRoutes(r *mux.Router, a *App) {
 	// frontoffice overrides: it is the mean by which plugin can interact with the frontoffice
 	for _, obj := range Hooks.Get.FrontendOverrides() {
 		r.HandleFunc(obj, func(res http.ResponseWriter, req *http.Request) {
-			res.WriteHeader(http.StatusOK)
+			res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
 			res.Write([]byte(fmt.Sprintf("/* Default '%s' */", obj)))
 		})
 	}
 	// map which file can be open with what application
 	r.HandleFunc("/overrides/xdg-open.js", func(res http.ResponseWriter, req *http.Request) {
-		res.Header().Set("Content-Type", GetMimeType("xdg-open.js"))
+		res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
 		res.Write([]byte(`window.overrides["xdg-open"] = function(mime){`))
 		openers := Hooks.Get.XDGOpen()
 		for i:=0; i<len(openers); i++ {
