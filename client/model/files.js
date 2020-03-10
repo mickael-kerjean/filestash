@@ -284,6 +284,7 @@ class FileSystem{
                     })
                     .catch((err) => {
                         this._replace(destination_path, null, 'error')
+                            .then(() => this._replace(destination_path, null, 'loading'))
                             .then(() => this._refresh(destination_path));
                         return Promise.reject(err);
                     });
