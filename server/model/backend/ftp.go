@@ -37,6 +37,9 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	if params["hostname"] == "" {
 		params["hostname"] = "localhost"
 	}
+	params["hostname"] = strings.TrimPrefix(params["hostname"], "ftp://")
+	params["hostname"] = strings.TrimPrefix(params["hostname"], "ftps://")
+
 	if params["port"] == "" {
 		params["port"] = "21"
 	}
