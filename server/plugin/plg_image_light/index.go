@@ -128,6 +128,8 @@ func init() {
 			return reader, nil
 		} else if query.Get("thumbnail") != "true" && query.Get("size") == "" {
 			return reader, nil
+		} else if query.Get("thumbnail") != "true" && mType == "image/gif" {
+			return reader, nil
 		}
 
 		/////////////////////////
