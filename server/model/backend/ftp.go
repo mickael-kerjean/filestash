@@ -37,8 +37,6 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	if params["hostname"] == "" {
 		params["hostname"] = "localhost"
 	}
-	params["hostname"] = strings.TrimPrefix(params["hostname"], "ftp://")
-	params["hostname"] = strings.TrimPrefix(params["hostname"], "ftps://")
 
 	if params["port"] == "" {
 		params["port"] = "21"
@@ -72,7 +70,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	var backend *Ftp = nil
 
 	// Attempt to connect using FTPS
-	if client, err := goftp.DialConfig(configWithTLS, fmt.Sprintf("%s:%s", params["hostname"], params["port"])); err == nil {
+	if client, err := goftp.DialConfig(configWithTLS, fmt.Sprintf("%s:%s", strings.TrimPrefix(params["hostname"], "ftps://"), params["port"])); err == nil {
 		if _, err := client.ReadDir("/"); err != nil {
 			client.Close()
 		} else {
@@ -82,7 +80,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 
 	// Attempt to create an FTP connection if FTPS isn't available
 	if backend == nil {
-		client, err := goftp.DialConfig(configWithoutTLS, fmt.Sprintf("%s:%s", params["hostname"], params["port"]))
+		client, err := goftp.DialConfig(configWithoutTLS, fmt.Sprintf("%s:%s", strings.TrimPrefix(params["hostname"], "ftp://"), params["port"]))
 		if err != nil {
 			return backend, err
 		}
