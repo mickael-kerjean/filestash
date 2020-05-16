@@ -58,7 +58,7 @@ func init() {
 			Addr:    ":8334",
 			Handler: r,
 		}
-		go ensureAppHasBooted("http://127.0.0.1:8334/about", "[http] listening on :8334")
+		go ensureAppHasBooted("http://127.0.0.1:8334" + Config.Get("general.url_prefix").String() + "/about", "[http] listening on :8334")
 		go func() {
 			if err := srv.ListenAndServe(); err != nil {
 				Log.Error("error: %v", err)

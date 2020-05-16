@@ -17,7 +17,7 @@ func init() {
 			Addr:    fmt.Sprintf(":%d", port),
 			Handler: r,
 		}
-		go ensureAppHasBooted(fmt.Sprintf("http://127.0.0.1:%d/about", port), fmt.Sprintf("[http] listening on :%d", port))
+		go ensureAppHasBooted(fmt.Sprintf("http://127.0.0.1:%d%s/about", Config.Get("general.url_prefix").String(), port), fmt.Sprintf("[http] listening on :%d", port))
 		go func() {
 			if err := srv.ListenAndServe(); err != nil {
 				Log.Error("error: %v", err)

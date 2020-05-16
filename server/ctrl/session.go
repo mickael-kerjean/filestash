@@ -81,7 +81,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		Name:     COOKIE_NAME_AUTH,
 		Value:    obfuscate,
 		MaxAge:   60 * 60 * 24 * 30,
-		Path:     COOKIE_PATH,
+		Path:     Config.Get("general.url_prefix").String() + COOKIE_PATH,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	})
@@ -103,19 +103,19 @@ func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
 		Name:   COOKIE_NAME_AUTH,
 		Value:  "",
 		MaxAge: -1,
-		Path:   COOKIE_PATH,
+		Path:   Config.Get("general.url_prefix").String() + COOKIE_PATH,
 	})
 	http.SetCookie(res, &http.Cookie{
 		Name:   COOKIE_NAME_ADMIN,
 		Value:  "",
 		MaxAge: -1,
-		Path:   COOKIE_PATH_ADMIN,
+		Path:   Config.Get("general.url_prefix").String() + COOKIE_PATH_ADMIN,
 	})
 	http.SetCookie(res, &http.Cookie{
 		Name:   COOKIE_NAME_PROOF,
 		Value:  "",
 		MaxAge: -1,
-		Path:   COOKIE_PATH,
+		Path:   Config.Get("general.url_prefix").String() + COOKIE_PATH,
 	})
 	SendSuccessResult(res, nil)
 }

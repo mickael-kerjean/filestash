@@ -39,25 +39,25 @@ import img_info from '../assets/img/info.svg';
 import img_fullscreen from '../assets/img/fullscreen.svg';
 import img_camera from '../assets/img/camera.svg';
 import img_location from '../assets/img/location.svg';
-export const img_placeholder = "/assets/icons/placeholder.png";
+export const img_placeholder = "assets/icons/placeholder.png";
 
 export const Icon = (props) => {
     if(props.name === null) return null;
     let img;
     if(props.name === 'directory'){
-        img = "/assets/icons/folder.svg";
+        img = "assets/icons/folder.svg";
     }else if(props.name === 'file'){
-        img = "/assets/icons/file.svg";
+        img = "assets/icons/file.svg";
     }else if(props.name === 'save'){
         img = img_save;
     }else if(props.name === 'power'){
         img = img_power;
     }else if(props.name === 'edit'){
-        img = "/assets/icons/edit.svg";
+        img = "assets/icons/edit.svg";
     }else if(props.name === 'delete'){
-        img = "/assets/icons/delete.svg";
+        img = "assets/icons/delete.svg";
     }else if(props.name === 'share'){
-        img = "/assets/icons/share.svg";
+        img = "assets/icons/share.svg";
     }else if(props.name === 'bucket'){
         img = img_bucket;
     }else if(props.name === 'download_white'){

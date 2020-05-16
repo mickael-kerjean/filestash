@@ -3,12 +3,12 @@
     "short_name": "Filestash",
     "icons": [
         {
-            "src": "/assets/logo/android-chrome-192x192.png",
+            "src": "logo/android-chrome-192x192.png",
             "type": "image/png",
             "sizes": "192x192"
         },
         {
-            "src": "/assets/logo/android-chrome-512x512.png",
+            "src": "logo/android-chrome-512x512.png",
             "type": "image/png",
             "sizes": "512x512"
         }
@@ -17,5 +17,5 @@
     "background_color": "#f2f3f5",
     "orientation": "any",
     "display": "standalone",
-    "start_url": "/"
+    "start_url": ".."
 }

@@ -81,7 +81,7 @@ export function ErrorPage(WrappedComponent){
                 const message = this.state.error.message || "There is nothing in here";
                 return (
                     <div>
-                      <Link onClick={this.navigate.bind(this)} to={`/${window.location.search}`} className="backnav">
+                      <Link onClick={this.navigate.bind(this)} to={`${window.URL_PREFIX}/${window.location.search}`} className="backnav">
                         <Icon name="arrow_left" />{ this.state.has_back_button ? "back" : "home" }
                       </Link>
                       <Container>

@@ -34,7 +34,7 @@ class ConfigModel {
     }
 
     refresh(){
-        return http_get("/api/config").then((config) => {
+        return http_get("api/config").then((config) => {
             window.CONFIG = config.result;
         });
     }
@@ -52,7 +52,7 @@ class BackendModel {
     constructor(){}
 
     all(){
-        return http_get("/api/backend").then((r) => r.result);
+        return http_get("api/backend").then((r) => r.result);
     }
 }
 

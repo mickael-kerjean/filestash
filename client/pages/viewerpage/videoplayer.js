@@ -13,6 +13,10 @@ import './videoplayer.scss';
 export class VideoPlayer extends React.Component {
     constructor(props){
         super(props);
+        videojs.Hls.xhr.beforeRequest = function(options) {
+            options.uri = options.uri.replace('/hls', window.URL_PREFIX + '/hls');
+            return options;
+        }
         if(!window.overrides["video-map-sources"]){
             window.overrides["video-map-sources"] = function(s){ return s; };
         }

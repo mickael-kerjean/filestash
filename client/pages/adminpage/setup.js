@@ -19,7 +19,7 @@ export class SetupPage extends React.Component {
     componentDidMount() {
         const start = (e) => {
             e.preventDefault();
-            this.props.history.push("/");
+            this.props.history.push("");
         };
 
         Config.all().then((config) => {

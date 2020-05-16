@@ -2,8 +2,10 @@ package ctrl
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"text/template"
 	"net/http"
 	URL "net/url"
@@ -16,7 +18,7 @@ func StaticHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		var base string = GetAbsolutePath(_path)
 		var srcPath string
-		if srcPath = JoinPath(base, req.URL.Path); srcPath == base {
+		if srcPath = JoinPath(base, strings.TrimPrefix(req.URL.Path, Config.Get("general.url_prefix").String())); srcPath == base {
 			http.NotFound(res, req)
 			return
 		}
@@ -34,14 +36,22 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 		}
 		url := urlObj.Path
 
+		if !strings.HasPrefix(url, Config.Get("general.url_prefix").String()) {
+			res.WriteHeader(http.StatusNotFound)
+			res.Write([]byte(Page("<h1>404 - Not in file tree: " + url + "</h1>")))
+			return
+		}
+
+		url = strings.TrimPrefix(url, Config.Get("general.url_prefix").String())
+
 		if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
-			http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
+			http.Redirect(res, req, Config.Get("general.url_prefix").String() + URL_SETUP, http.StatusTemporaryRedirect)
 			return
 		} else if url != "/" && strings.HasPrefix(url, "/s/") == false &&
 			strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
 			url != "/login" && url != "/logout" && strings.HasPrefix(url, "/admin") == false {
 			res.WriteHeader(http.StatusNotFound)
-			res.Write([]byte(Page("<h1>404 - Not Found</h1>")))
+			res.Write([]byte(Page("<h1>404 - Not Found: " + url + "</h1>")))
 			return
 		}
 		ua := req.Header.Get("User-Agent");
@@ -61,6 +71,22 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 			return
 		}
 		srcPath := GetAbsolutePath(_path)
+		
+		// If the url prefix is non-zero, rewrite index.html to include a <base> tag
+		if (Config.Get("general.url_prefix").String() != "") {
+			file, err := os.OpenFile(srcPath, os.O_RDONLY, os.ModePerm)
+			if err != nil {
+				http.NotFound(res, req)
+				return
+			}
+
+			filecontent, err := ioutil.ReadAll(file)
+			filecontent = bytes.Replace(filecontent, []byte("<head>"), []byte("<head><base href=\"" + Config.Get("general.url_prefix").String() + "/\">"), -1)
+			res.Write(filecontent)
+			file.Close()
+			return
+		}
+		
 		ServeFile(res, req, srcPath)
 	}
 }

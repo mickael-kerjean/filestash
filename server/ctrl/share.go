@@ -121,7 +121,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 			Name:   COOKIE_NAME_PROOF,
 			Value:  "",
 			MaxAge: -1,
-			Path:   COOKIE_PATH,
+			Path:   Config.Get("general.url_prefix").String() + COOKIE_PATH,
 		})
 		SendErrorResult(res, ErrNotValid)
 		return
@@ -161,7 +161,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 			str, _ := EncryptString(SECRET_KEY_DERIVATE_FOR_PROOF, string(j))
 			return str
 		}(verifiedProof),
-		Path: COOKIE_PATH,
+		Path: Config.Get("general.url_prefix").String() + COOKIE_PATH,
 		MaxAge: 60 * 60 * 24 * 30,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,

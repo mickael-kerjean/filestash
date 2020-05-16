@@ -81,9 +81,9 @@ export class AdminPage extends React.Component {
 const SideMenu = (props) => {
     return (
         <div className="component_menu_sidebar no-select">
-          <NavLink to="/" className="header">
+          <NavLink to={window.URL_PREFIX + "/"} className="header">
             <Icon name="arrow_left" />
-            <img src="/assets/logo/android-chrome-512x512.png" />
+            <img src="assets/logo/android-chrome-512x512.png" />
           </NavLink>
           <h2>Admin console</h2>
           <ul>

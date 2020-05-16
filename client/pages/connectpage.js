@@ -46,7 +46,7 @@ export class ConnectPage extends React.Component {
                 if(location.search.indexOf("?next=") === 0){
                     location = urlParams()["next"];
                 }
-                let url = '/files/';
+                let url = 'files/';
                 let path = user.home;
                 if(path){
                     path = path.replace(/^\/?(.*?)\/?$/, "$1");

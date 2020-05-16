@@ -210,10 +210,10 @@ export class ShareComponent extends React.Component {
                       this.state.existings && this.state.existings.map((link, i) => {
                           return (
                               <div className="link-details" key={i}>
-                                <span onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)} className="copy role">
+                                <span onClick={this.copyLinkInClipboard.bind(this, document.baseURI+"s/"+link.id)} className="copy role">
                                   {link.role}
                                 </span>
-                                <span onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)} className="copy path">{beautifulPath(this.props.path, link.path)}</span>
+                                <span onClick={this.copyLinkInClipboard.bind(this, document.baseURI+"s/"+link.id)} className="copy path">{beautifulPath(this.props.path, link.path)}</span>
                                 <Icon onClick={this.onDeleteLink.bind(this, link.id)} name="delete"/>
                                 <Icon onClick={this.onLoad.bind(this, link)} name="edit"/>
                               </div>
@@ -246,7 +246,7 @@ export class ShareComponent extends React.Component {
                 </div>
 
                 <div className="shared-link">
-                  <input ref="$input" className="copy" onClick={this.onRegisterLink.bind(this)} type="text" value={window.location.origin+"/s/"+(this.state.url || this.state.id)} onChange={() => {}}/>
+                  <input ref="$input" className="copy" onClick={this.onRegisterLink.bind(this)} type="text" value={document.baseURI+"s/"+(this.state.url || this.state.id)} onChange={() => {}}/>
                 </div>
               </NgIf>
             </div>

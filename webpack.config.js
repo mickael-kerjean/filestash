@@ -12,7 +12,7 @@ let config = {
     },
     output: {
         path: path.join(__dirname, 'dist', 'data', 'public'),
-        publicPath: '/',
+        publicPath: '',
         filename: 'assets/js/[name]_[chunkhash].js',
         chunkFilename: "assets/js/chunk_[name]_[id]_[chunkhash].js"
     },

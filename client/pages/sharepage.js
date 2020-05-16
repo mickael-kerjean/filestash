@@ -81,9 +81,9 @@ export class SharePage extends React.Component {
                 }
                 notify.send("You can't do that :)", "error");
             }else if(filetype(this.state.path) === "directory"){
-                return ( <Redirect to={`/files/?share=${this.state.share}`} /> );
+                return ( <Redirect to={`${window.URL_PREFIX}/files/?share=${this.state.share}`} /> );
             }else{
-                return ( <Redirect to={`/view/${basename(this.state.path)}?nav=false&share=${this.state.share}`} /> );
+                return ( <Redirect to={`${window.URL_PREFIX}/view/${basename(this.state.path)}?nav=false&share=${this.state.share}`} /> );
             }
         } else if (this.state.key === null){
             return (

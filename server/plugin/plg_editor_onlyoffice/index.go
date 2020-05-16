@@ -77,7 +77,7 @@ func init() {
 		oods.HandleFunc("/content", FetchContentHandler).Methods("GET")
 
 		r.HandleFunc(
-			COOKIE_PATH + "onlyoffice/iframe",
+			Config.Get("general.url_prefix").String() + COOKIE_PATH + "onlyoffice/iframe",
 			NewMiddlewareChain(
 				IframeContentHandler,
 				[]Middleware{ SessionStart, LoggedInOnly },
@@ -98,7 +98,7 @@ func init() {
 }
 
 func StaticHandler(res http.ResponseWriter, req *http.Request) {
-	req.URL.Path = strings.TrimPrefix(req.URL.Path, "/onlyoffice/static")
+	req.URL.Path = strings.TrimPrefix(req.URL.Path, Config.Get("general.url_prefix").String() + "/onlyoffice/static")
 	oodsLocation := Config.Get("features.office.onlyoffice_server").String()
 	u, err := url.Parse(oodsLocation)
 	if err != nil {

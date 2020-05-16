@@ -9,7 +9,7 @@ import { debounce, opener, notify } from '../helpers/';
 import { FileDownloader, ImageViewer, PDFViewer, FormViewer } from './viewerpage/';
 
 const VideoPlayer = (props) => (
-    <Bundle loader={import(/* webpackChunkName: "video" */"./viewerpage/videoplayer")} symbol="VideoPlayer" overrides={["/overrides/video-transcoder.js"]} >
+    <Bundle loader={import(/* webpackChunkName: "video" */"./viewerpage/videoplayer")} symbol="VideoPlayer" overrides={["overrides/video-transcoder.js"]} >
       {(Comp) => <Comp {...props}/>}
     </Bundle>
 );
@@ -36,9 +36,9 @@ export class ViewerPage extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            path: props.match.url.replace('/view', '').replace(/%23/g, "#") + (location.hash || ""),
+            path: props.match.url.replace(window.URL_PREFIX + '/view', '').replace(/%23/g, "#") + (location.hash || ""),
             url: null,
-            filename: Path.basename(props.match.url.replace('/view', '')) || 'untitled.dat',
+            filename: Path.basename(props.match.url.replace(window.URL_PREFIX + '/view', '')) || 'untitled.dat',
             opener: null,
             content: null,
             needSaving: false,
@@ -51,8 +51,8 @@ export class ViewerPage extends React.Component {
 
     componentWillReceiveProps(props){
         this.setState({
-            path: props.match.url.replace('/view', '').replace(/%23/g, "#") + (location.hash || ""),
-            filename: Path.basename(props.match.url.replace('/view', '')) || 'untitled.dat'
+            path: props.match.url.replace(window.URL_PREFIX + '/view', '').replace(/%23/g, "#") + (location.hash || ""),
+            filename: Path.basename(props.match.url.replace(window.URL_PREFIX + '/view', '')) || 'untitled.dat'
         }, () => { this.componentDidMount(); });
     }
 
@@ -130,7 +130,7 @@ export class ViewerPage extends React.Component {
     }
 
     onPathUpdate(path){
-        this.props.history.push('/files'+path);
+        this.props.history.push('files'+path);
     }
 
     needSaving(bool){

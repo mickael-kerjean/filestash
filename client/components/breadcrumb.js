@@ -87,7 +87,7 @@ const Logout = (props) => {
     if(isRunningFromAnIframe) return null;
     return (
         <div className="li component_logout">
-          <Link to="/logout">
+          <Link to={window.URL_PREFIX + "/logout"}>
             <Icon name="power"/>
           </Link>
         </div>
@@ -136,7 +136,7 @@ export class PathElementWrapper extends React.Component {
         let className = "component_path-element-wrapper";
         if(this.props.highlight) { className += " highlight"; }
 
-        let href = "/files" + (this.props.path.full || "")
+        let href = "files" + (this.props.path.full || "")
         href = href
             .replace(/\%/g, "%2525") // Hack to get the Link Component to work
                                      // See ExistingThing in 'thing-existing.js'
@@ -144,6 +144,7 @@ export class PathElementWrapper extends React.Component {
             .replace(/\?/g, "%3F");
         href = href || "/"
         href += location.search;
+        href = window.URL_PREFIX + "/" + href
 
         return (
             <div className={"li "+className}>

@@ -6,8 +6,8 @@
     <meta name="author" content="Mickael Kerjean <mickael@kerjean.me>">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <link rel="manifest" href="/assets/manifest.json">
-    <link rel="apple-touch-icon" href="/assets/logo/apple-touch-icon.png">
+    <link rel="manifest" href="assets/manifest.json">
+    <link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
     <meta content="yes" name="apple-mobile-web-app-capable">
     <meta content="Filestash" name="apple-mobile-web-app-title">
     <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
@@ -15,7 +15,7 @@
     <meta name="theme-color" content="#f2f3f5">
     <meta name="description" content="Manage your data in your cloud">
     <meta property="og:title" content="Filestash" />
-    <meta property="og:image" content="/assets/logo/og-image.png" />
+    <meta property="og:image" content="assets/logo/og-image.png" />
     <meta property="og:description" content="Manage your data in your cloud" />
   </head>
   <body>
@@ -26,7 +26,7 @@
         noscript div{ text-align:center;font-family:monospace;margin-top:5%;font-size:15px; }
       </style>
       <script>
-        if(location.pathname == "/" || location.pathname == "/login"){
+        if(location.href == document.baseURI || location.href == document.baseURI + "login"){
             $style = document.querySelector("div[role='main'] style");
             $style.innerText = $style.innerText.replace(/f2f3f5/g, "9AD1ED")
         }

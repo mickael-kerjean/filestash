@@ -45,7 +45,7 @@ func init() {
 		r.PathPrefix("/tty/").Handler(
 			AuthBasic(
 				func() (string, string) { return "admin", Config.Get("auth.admin").String() },
-				TTYHandler("/tty/"),
+				TTYHandler(Config.Get("general.url_prefix").String() + "/tty/"),
 			),
 		)
 		return nil

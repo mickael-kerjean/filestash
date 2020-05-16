@@ -143,7 +143,7 @@ export class Pager extends React.Component {
             <div className="component_pager">
               <div className="wrapper no-select">
                 <NgIf cond={this.state.files.length > 0} type="inline">
-                  <Link to={prevLink()}><Icon name="arrow_left_white"/></Link>
+                  <Link to={window.URL_PREFIX + "/" + prevLink()}><Icon name="arrow_left_white"/></Link>
                   <label className="pager">
                     <form onSubmit={this.onFormSubmit.bind(this)}>
                       <input ref="$page" className="prevent" type="number" style={{width: inputWidth+"px"}} onChange={this.onFormInputChange.bind(this)} value={current_page_number} />
@@ -151,7 +151,7 @@ export class Pager extends React.Component {
                     <span className="separator">/</span>
                     <span ref="$total">{this.state.files.length}</span>
                   </label>
-                  <Link to={nextLink()}><Icon name="arrow_right_white"/></Link>
+                  <Link to={window.URL_PREFIX + "/" + nextLink()}><Icon name="arrow_right_white"/></Link>
                 </NgIf>
               </div>
             </div>

@@ -248,7 +248,7 @@ export class ExistingThing extends React.Component {
 
         return connectDragSource(connectDropNativeFile(connectDropFile(
             <div className={"component_thing view-"+this.props.view+(this.props.selected === true ? " selected" : " not-selected")}>
-              <ToggleableLink onClick={this.onThingClick.bind(this)} to={fileLink + window.location.search} disabled={this.props.file.icon === "loading"}>
+              <ToggleableLink onClick={this.onThingClick.bind(this)} to={window.URL_PREFIX + "/" + fileLink + window.location.search} disabled={this.props.file.icon === "loading"}>
                 <Card ref="$card"className={this.state.hover} className={className}>
                   <Image preview={this.state.preview}
                          icon={this.props.file.icon || this.props.file.type}

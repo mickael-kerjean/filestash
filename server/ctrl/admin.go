@@ -68,7 +68,7 @@ func AdminSessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Reques
 	http.SetCookie(res, &http.Cookie{
 		Name:   COOKIE_NAME_ADMIN,
 		Value:  obfuscate,
-		Path:   COOKIE_PATH_ADMIN,
+		Path:   Config.Get("general.url_prefix").String() + COOKIE_PATH_ADMIN,
 		MaxAge: 60*60, // valid for 1 hour
 		SameSite: http.SameSiteStrictMode,
 	})

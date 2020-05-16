@@ -81,7 +81,7 @@ func init() {
 				return
 			}
 		}()
-		go ensureAppHasBooted("https://127.0.0.1/about", fmt.Sprintf("[https] started"))
+		go ensureAppHasBooted("https://127.0.0.1" + Config.Get("general.url_prefix").String() + "/about", fmt.Sprintf("[https] started"))
 	})
 }
 

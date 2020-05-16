@@ -23,7 +23,7 @@ export class NotFoundPage extends React.Component {
                 this.countdown();
             }, 1000);
         }else{
-            this.props.history.push("/");
+            this.props.history.push("");
         }
     }
 
@@ -33,7 +33,7 @@ export class NotFoundPage extends React.Component {
               <h1>Oops!</h1>
               <h2>We can't seem to find the page you're looking for.</h2>
               <p>
-                You will be redirected to the <Link to="/">homepage</Link> in {this.state.timeout} seconds
+                You will be redirected to the <Link to={window.URL_PREFIX + "/"}>homepage</Link> in {this.state.timeout} seconds
               </p>
             </div>
         );

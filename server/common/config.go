@@ -290,6 +290,9 @@ func (this *Configuration) Initialise() {
 	if env := os.Getenv("APPLICATION_URL"); env != "" {
 		this.Get("general.host").Set(env).String()
 	}
+	if env := os.Getenv("URL_PREFIX"); env != "" {
+		this.Get("general.url_prefix").Set(env).String()
+	}
 	if this.Get("general.secret_key").String() == "" {
 		key := RandomString(16)
 		this.Get("general.secret_key").Set(key)

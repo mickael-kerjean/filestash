@@ -16,13 +16,13 @@ export default class AppRouter extends React.Component {
             <div style={{height: '100%'}}>
               <BrowserRouter>
                 <Switch>
-                  <Route exact path="/" component={HomePage} />
-                  <Route path="/s/:id*" component={SharePage} />
-                  <Route path="/login" component={ConnectPage} />
-                  <Route path="/files/:path*" component={FilesPage} />
-                  <Route path="/view/:path*" component={ViewerPage} />
-                  <Route path="/logout" component={LogoutPage} />
-                  <Route path="/admin" component={AdminPage} />
+                  <Route exact path={window.URL_PREFIX+"/"} component={HomePage} />
+                  <Route path={window.URL_PREFIX+"/s/:id*"} component={SharePage} />
+                  <Route path={window.URL_PREFIX+"/login"} component={ConnectPage} />
+                  <Route path={window.URL_PREFIX+"/files/:path*"} component={FilesPage} />
+                  <Route path={window.URL_PREFIX+"/view/:path*"} component={ViewerPage} />
+                  <Route path={window.URL_PREFIX+"/logout"} component={LogoutPage} />
+                  <Route path={window.URL_PREFIX+"/admin"} component={AdminPage} />
                   <Route component={NotFoundPage} />
                 </Switch>
               </BrowserRouter>

@@ -41,7 +41,7 @@ class FileSystem{
     }
 
     _ls_from_http(path, show_hidden){
-        const url = appendShareToUrl("/api/files/ls?path="+prepare(path));
+        const url = appendShareToUrl("api/files/ls?path="+prepare(path));
         return http_get(url).then((response) => {
             response = fileMiddleware(response, path, show_hidden);
 
@@ -88,7 +88,7 @@ class FileSystem{
             });
         }).catch((_err) => {
             if(_err.code === "Unauthorized"){
-                location = "/login?next="+location.pathname;
+                location = "login?next="+location.pathname;
             }
             this.obs.next(_err);
             return Promise.reject(err);
@@ -129,7 +129,7 @@ class FileSystem{
     }
 
     rm(path){
-        const url = appendShareToUrl('/api/files/rm?path='+prepare(path));
+        const url = appendShareToUrl('api/files/rm?path='+prepare(path));
         return this._replace(path, 'loading')
             .then((res) => this.current_path === dirname(path) ? this._ls_from_cache(dirname(path)) : Promise.resolve(res))
             .then(() => http_get(url))
@@ -148,7 +148,7 @@ class FileSystem{
     }
 
     cat(path){
-        const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
+        const url = appendShareToUrl('api/files/cat?path='+prepare(path));
         return http_get(url, 'raw')
             .then((res) => {
                 if(this.is_binary(res) === true){
@@ -172,17 +172,17 @@ class FileSystem{
     }
 
     options(path){
-        const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
+        const url = appendShareToUrl('api/files/cat?path='+prepare(path));
         return http_options(url);
     }
 
     url(path){
-        const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
+        const url = appendShareToUrl('api/files/cat?path='+prepare(path));
         return Promise.resolve(url);
     }
 
     save(path, file){
-        const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
+        const url = appendShareToUrl('api/files/cat?path='+prepare(path));
         let formData = new window.FormData();
         formData.append('file', file, "test");
         return this._replace(path, 'loading')
@@ -200,7 +200,7 @@ class FileSystem{
     }
 
     mkdir(path, step){
-        const url = appendShareToUrl('/api/files/mkdir?path='+prepare(path)),
+        const url = appendShareToUrl('api/files/mkdir?path='+prepare(path)),
               origin_path = pathBuilder(this.current_path, basename(path), 'directoy'),
               destination_path = path;
 
@@ -305,12 +305,12 @@ class FileSystem{
 
             function query(){
                 if(file){
-                    const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
+                    const url = appendShareToUrl('api/files/cat?path='+prepare(path));
                     let formData = new window.FormData();
                     formData.append('file', file);
                     return http_post(url, formData, 'multipart');
                 }else{
-                    const url = appendShareToUrl('/api/files/touch?path='+prepare(path));
+                    const url = appendShareToUrl('api/files/touch?path='+prepare(path));
                     return http_get(url);
                 }
             }
@@ -326,7 +326,7 @@ class FileSystem{
     }
 
     mv(from, to){
-        const url = appendShareToUrl('/api/files/mv?from='+prepare(from)+"&to="+prepare(to)),
+        const url = appendShareToUrl('api/files/mv?from='+prepare(from)+"&to="+prepare(to)),
               origin_path = from,
               destination_path = to;
 
@@ -359,7 +359,7 @@ class FileSystem{
     }
 
     search(keyword, path = "/", show_hidden){
-        const url = appendShareToUrl("/api/files/search?path="+prepare(path)+"&q="+encodeURIComponent(keyword))
+        const url = appendShareToUrl("api/files/search?path="+prepare(path)+"&q="+encodeURIComponent(keyword))
         return http_get(url).then((response) => {
             response = fileMiddleware(response, path, show_hidden);
             return response.results;
@@ -468,7 +468,7 @@ class FileSystem{
 
 
 const createLink = (type, path) => {
-    return type === "file" ? "/view" + path : "/files" + path;
+    return type === "file" ? "view" + path : "files" + path;
 };
 
 const fileMiddleware = (response, path, show_hidden) => {

@@ -29,7 +29,7 @@ export class HomePage extends React.Component {
     }
     render() {
         if(this.state.redirection !== null){
-            return ( <Redirect to={this.state.redirection} /> );
+            return ( <Redirect to={`${window.URL_PREFIX}/${this.state.redirection}`} /> );
         }
         return ( <div> <Loader /> </div> );
     }

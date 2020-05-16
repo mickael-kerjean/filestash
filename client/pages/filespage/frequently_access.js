@@ -23,7 +23,7 @@ export class FrequentlyAccess extends React.Component {
                       {
                           this.props.files && this.props.files.map(function(path, index){
                               return (
-                                  <Link key={path} to={"/files"+path+window.location.search}>
+                                  <Link key={path} to={window.URL_PREFIX+"/files"+path+window.location.search}>
                                     <Icon name={'directory'} />
                                     <div>{Path.basename(path)}</div>
                                   </Link>

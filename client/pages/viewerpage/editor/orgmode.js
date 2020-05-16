@@ -255,7 +255,7 @@ function toggleHandler(cm, e){
             }else{
                 const root_path = dirname(window.location.pathname.replace(/^\/view/, ''));
                 const img_path = src;
-                $img.src = "/api/files/cat?path="+encodeURIComponent(pathBuilder(root_path, img_path));
+                $img.src = "api/files/cat?path="+encodeURIComponent(pathBuilder(root_path, img_path));
             }
             $el.appendChild($img);
             return $el;

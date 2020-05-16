@@ -31,10 +31,10 @@ export class FilesPage extends React.Component {
     constructor(props){
         super(props);
         if(props.match.url.slice(-1) != "/"){
-            this.props.history.push(props.match.url + "/");
+            this.props.history.push(window.URL_PREFIX + props.match.url + "/");
         }
         this.state = {
-            path: (decodeURIComponent(location.pathname).replace("/files", "") || "/" ),
+            path: (decodeURIComponent(location.pathname).replace(window.URL_PREFIX + "/files", "") || "/" ),
             sort: settings_get("filespage_sort") || "type",
             sort_reverse: true,
             show_hidden: settings_get("filespage_show_hidden") || CONFIG["display_hidden"],

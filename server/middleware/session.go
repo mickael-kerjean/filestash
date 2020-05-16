@@ -57,11 +57,14 @@ func SessionStart (fn func(App, http.ResponseWriter, *http.Request)) func(ctx Ap
 			return
 		}
 		if ctx.Session, err = _extractSession(req, &ctx); err != nil {
+			Log.Warning("failed to extract session")
 			SendErrorResult(res, err)
 			return
 		}
 		if ctx.Backend, err = _extractBackend(req, &ctx); err != nil {
+			Log.Warning("failed to extract backend")
 			if len(ctx.Session) == 0 {
+				Log.Warning("no backend")
 				SendErrorResult(res, ErrNotAuthorized)
 				return
 			}
@@ -95,7 +98,7 @@ func RedirectSharedLoginIfNeeded(fn func(App, http.ResponseWriter, *http.Request
 
 		share, err := _extractShare(req);
 		if err != nil || share_id != share.Id {
-			http.Redirect(res, req, fmt.Sprintf("/s/%s?next=%s", share_id, req.URL.Path), http.StatusTemporaryRedirect)
+			http.Redirect(res, req, Config.Get("general.url_prefix").String() + fmt.Sprintf("/s/%s?next=%s", share_id, req.URL.Path), http.StatusTemporaryRedirect)
 			return
 		}
 		fn(ctx, res, req)
@@ -245,9 +248,9 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 			// when the shared link is pointing to a file, we mustn't have access to the surroundings
 			// => we need to take extra care of which path to use as a chroot
 			var path string = req.URL.Query().Get("path")
-			if strings.HasPrefix(req.URL.Path, "/api/export/") == true {
+			if strings.HasPrefix(req.URL.Path, Config.Get("general.url_prefix").String() + "/api/export/") == true {
 				var re = regexp.MustCompile(`^/api/export/[^\/]+/[^\/]+/[^\/]+(\/.+)$`)
-				path = re.ReplaceAllString(req.URL.Path, `$1`)
+				path = re.ReplaceAllString(strings.TrimPrefix(req.URL.Path, Config.Get("general.url_prefix").String()), `$1`)
 			}
 			if strings.HasSuffix(ctx.Share.Path, path) == false {
 				return make(map[string]string), ErrPermissionDenied

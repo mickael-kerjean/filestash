@@ -14,7 +14,7 @@ export class LogoutPage extends React.Component {
         Session.logout()
             .then((res) => {
                 cache.destroy();
-                this.props.history.push('/login');
+                this.props.history.push('login');
             })
             .catch((err) => this.props.error(err));
     }

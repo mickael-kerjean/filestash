@@ -22,7 +22,9 @@ func main() {
 
 func Init(a *App) {
 	var middlewares []Middleware
-	r := mux.NewRouter()
+	toplevel_router := mux.NewRouter()
+
+	var r = toplevel_router.PathPrefix(Config.Get("general.url_prefix").String()).Subrouter()
 
 	// API for Session
 	session := r.PathPrefix("/api/session").Subrouter()
@@ -113,7 +115,7 @@ func Init(a *App) {
 	// fancy I don't know much when this got written: IPFS, solid, ...
 	Log.Info("Filestash %s starting", APP_VERSION)
 	for _, obj := range Hooks.Get.Starter() {
-		go obj(r)
+		go obj(toplevel_router)
 	}
 	if len(Hooks.Get.Starter()) == 0 {
 		Log.Warning("No starter plugin available")

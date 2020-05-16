@@ -68,7 +68,7 @@ type LogEntry struct {
 }
 
 func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
-	if obj, ok := res.(*ResponseWriter); ok && req.RequestURI != "/about" {
+	if obj, ok := res.(*ResponseWriter); ok && req.RequestURI != Config.Get("general.url_prefix").String() + "/about" {
 		point := LogEntry{
 			Version:    APP_VERSION,
 			Scheme:     req.URL.Scheme,

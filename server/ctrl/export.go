@@ -25,7 +25,7 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	p := mux.Vars(req)
 	mimeType := fmt.Sprintf("%s/%s", p["mtype0"], p["mtype1"])
-	path, err := PathBuilder(ctx, strings.Replace(req.URL.Path, fmt.Sprintf("/api/export/%s/%s/%s", p["share"], p["mtype0"], p["mtype1"]), "", 1))
+	path, err := PathBuilder(ctx, strings.TrimPrefix(req.URL.Path, Config.Get("general.url_prefix").String() + fmt.Sprintf("/api/export/%s/%s/%s", p["share"], p["mtype0"], p["mtype1"])))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
