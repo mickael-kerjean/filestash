@@ -261,7 +261,7 @@ class FileSystem{
         }
     }
 
-    touch(path, file, step){
+    touch(path, file, step, params){
         const origin_path = pathBuilder(this.current_path, basename(path), 'file'),
               destination_path = path;
 
@@ -308,7 +308,7 @@ class FileSystem{
                     const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
                     let formData = new window.FormData();
                     formData.append('file', file);
-                    return http_post(url, formData, 'multipart');
+                    return http_post(url, formData, 'multipart', params);
                 }else{
                     const url = appendShareToUrl('/api/files/touch?path='+prepare(path));
                     return http_get(url);
