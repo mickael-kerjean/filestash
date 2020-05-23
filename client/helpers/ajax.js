@@ -43,7 +43,7 @@ export function http_post(url, data, type = 'json', params){
             data = JSON.stringify(data);
             xhr.setRequestHeader('Content-Type', 'application/json');
         }
-        if (params !== undefined && params.progress) {
+        if (params && params.progress) {
             xhr.upload.addEventListener("progress", params.progress, false);
         }
         xhr.send(data);
@@ -68,7 +68,7 @@ export function http_post(url, data, type = 'json', params){
         xhr.onerror = function(){
             handle_error_response(xhr, err)
         }
-        if (params !== undefined && params.abort) {
+        if (params && params.abort) {
             params.abort(() => {
                 xhr.abort();
                 err({ message: 'aborted' });
