@@ -33,7 +33,7 @@ export function http_get(url, type = 'json'){
     });
 }
 
-export function http_post(url, data, type = 'json'){
+export function http_post(url, data, type = 'json', params){
     return new Promise((done, err) => {
         var xhr = new XMLHttpRequest();
         xhr.open("POST", url, true);
@@ -42,6 +42,9 @@ export function http_post(url, data, type = 'json'){
         if(type === 'json'){
             data = JSON.stringify(data);
             xhr.setRequestHeader('Content-Type', 'application/json');
+        }
+        if (params !== undefined && params.progress) {
+            xhr.upload.addEventListener("progress", params.progress, false);
         }
         xhr.send(data);
         xhr.onload = function () {
@@ -64,6 +67,12 @@ export function http_post(url, data, type = 'json'){
         }
         xhr.onerror = function(){
             handle_error_response(xhr, err)
+        }
+        if (params !== undefined && params.abort) {
+            params.abort(() => {
+                xhr.abort();
+                err({ message: 'aborted' });
+            })
         }
     });
 }

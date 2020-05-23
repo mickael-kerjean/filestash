@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Route, IndexRoute, Switch } from 'react-router-dom';
 import { NotFoundPage, ConnectPage, HomePage, SharePage, LogoutPage, FilesPage, ViewerPage } from './pages/';
 import { URL_HOME, URL_FILES, URL_VIEWER, URL_LOGIN, URL_LOGOUT } from  './helpers/';
-import { Bundle, ModalPrompt, ModalAlert, ModalConfirm, Notification, Audio, Video } from './components/';
+import { Bundle, ModalPrompt, ModalAlert, ModalConfirm, Notification, Audio, Video, UploadQueue } from './components/';
 
 const AdminPage = (props) => (
     <Bundle loader={import(/* webpackChunkName: "admin" */"./pages/adminpage")} symbol="AdminPage">
@@ -27,7 +27,7 @@ export default class AppRouter extends React.Component {
                 </Switch>
               </BrowserRouter>
               <ModalPrompt /> <ModalAlert /> <ModalConfirm />
-              <Notification />
+              <Notification /> <UploadQueue/>
             </div>
         );
     }
