@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -55,17 +54,24 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	addr := p.hostname + ":" + p.port
 	var auth []ssh.AuthMethod
 	isPrivateKey := func(pass string) bool {
-		if len(pass) > 1000 && strings.HasPrefix(pass, "-----") {
+		p := strings.TrimSpace(pass)
+		if len(pass) > 1000 && strings.HasPrefix(p, "-----") && strings.HasSuffix(p, "-----") {
 			return true
 		}
 		return false
 	}
 
 	if isPrivateKey(p.password) {
-		signer, err := ssh.ParsePrivateKeyWithPassphrase([]byte(p.password), []byte(p.passphrase))
-		if err == nil {
-			auth = []ssh.AuthMethod{ssh.PublicKeys(signer)}
+		signer, err := func() (ssh.Signer, error) {
+			if p.passphrase == "" {
+				return ssh.ParsePrivateKey([]byte(p.password))
+			}
+			return ssh.ParsePrivateKeyWithPassphrase([]byte(p.password), []byte(p.passphrase))
+		}()
+		if err != nil {
+			return nil, err
 		}
+		auth = []ssh.AuthMethod{ssh.PublicKeys(signer)}
 	} else {
 		auth = []ssh.AuthMethod{ssh.Password(p.password)}
 	}
@@ -84,9 +90,9 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 			return ssh.FixedHostKey(hostKey)(hostname, remote, key)
 		},
 	}
+
 	client, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
-		fmt.Println(err.Error())
 		return &s, NewError("Connection denied", 502)
 	}
 	s.SSHClient = client
