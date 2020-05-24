@@ -52,6 +52,8 @@ github.com/cretz/bine/tor
 github.com/cretz/bine/torutil
 github.com/cretz/bine/torutil/ed25519
 github.com/cretz/bine/torutil/ed25519/internal/edwards25519
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
 # github.com/emirpasic/gods v1.12.0
 github.com/emirpasic/gods/containers
 github.com/emirpasic/gods/lists
@@ -104,6 +106,8 @@ github.com/patrickmn/go-cache
 github.com/pkg/errors
 # github.com/pkg/sftp v1.11.0
 github.com/pkg/sftp
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/secsy/goftp v0.0.0-20190720192957-f31499d7c79a
 github.com/secsy/goftp
 # github.com/sergi/go-diff v1.0.0
@@ -115,6 +119,8 @@ github.com/src-d/gcfg
 github.com/src-d/gcfg/scanner
 github.com/src-d/gcfg/token
 github.com/src-d/gcfg/types
+# github.com/stretchr/testify v1.4.0
+github.com/stretchr/testify/assert
 # github.com/tidwall/gjson v1.3.5
 github.com/tidwall/gjson
 # github.com/tidwall/match v1.0.1
@@ -307,3 +313,5 @@ gopkg.in/src-d/go-git.v4/utils/merkletrie/internal/frame
 gopkg.in/src-d/go-git.v4/utils/merkletrie/noder
 # gopkg.in/warnings.v0 v0.1.2
 gopkg.in/warnings.v0
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2

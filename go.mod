@@ -17,7 +17,7 @@ require (
 	github.com/pkg/sftp v1.11.0
 	github.com/secsy/goftp v0.0.0-20190720192957-f31499d7c79a
 	github.com/sirupsen/logrus v1.4.2 // indirect
-	github.com/stretchr/testify v1.4.0 // indirect
+	github.com/stretchr/testify v1.4.0
 	github.com/tidwall/gjson v1.3.5
 	github.com/tidwall/sjson v1.0.4
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
