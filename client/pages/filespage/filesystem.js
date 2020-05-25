@@ -10,6 +10,7 @@ import { Container, NgIf, Icon } from '../../components/';
 import { NewThing } from './thing-new';
 import { ExistingThing } from './thing-existing';
 import { FileZone } from './filezone';
+import { t } from '../../locales/';
 
 @DropTarget('__NATIVE_FILE__', {}, (connect, monitor) => ({
     connectDropFile: connect.dropTarget(),
@@ -40,7 +41,7 @@ export class FileSystem extends React.PureComponent {
                   <p className="empty_image">
                     <Icon name={this.props.isSearch ? "search" : "file"}/>
                   </p>
-                  <p>There is nothing here</p>
+                  <p>{ t("There is nothing here") }</p>
                 </NgIf>
               </Container>
             </div>

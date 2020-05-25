@@ -5,6 +5,7 @@ import { browserHistory, Redirect } from 'react-router';
 import { Session, Admin } from '../model/';
 import { Container, Loader, Icon, NgIf } from '../components/';
 import { memory, currentShare } from '../helpers/';
+import { t } from '../locales/';
 
 import '../pages/error.scss';
 
@@ -78,7 +79,7 @@ export function ErrorPage(WrappedComponent){
 
         render(){
             if(this.state.error !== null){
-                const message = this.state.error.message || "There is nothing in here";
+                const message = this.state.error.message || t("There is nothing in here");
                 return (
                     <div>
                       <Link onClick={this.navigate.bind(this)} to={`/${window.location.search}`} className="backnav">
@@ -86,8 +87,8 @@ export function ErrorPage(WrappedComponent){
                       </Link>
                       <Container>
                         <div className="error-page">
-                          <h1>Oops!</h1>
-                          <h2>{message}</h2>
+                          <h1>{ t("Oops!") }</h1>
+                          <h2>{ message }</h2>
                         </div>
                       </Container>
                     </div>

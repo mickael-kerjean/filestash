@@ -8,6 +8,7 @@
     .buttons{
         margin: 15px -20px 0 -20px;
         display: flex;
+
         > div {
             display: flex;
             width: 100%;
@@ -18,6 +19,9 @@
         > button{
             width: 50%;
             margin-left: auto;
+        }
+        button{
+            text-transform: uppercase;
         }
     }
     .modal-error-message{

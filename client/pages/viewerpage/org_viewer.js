@@ -5,6 +5,7 @@ import { Modal, Container, NgIf, Icon, Dropdown, DropdownButton, DropdownList, D
 import { extractEvents, extractTodos } from '../../helpers/org';
 import { leftPad } from '../../helpers/common';
 import { debounce } from '../../helpers/';
+import { t } from '../../locales/';
 import './org_viewer.scss';
 
 export class OrgEventsViewer extends React.Component {
@@ -256,13 +257,13 @@ class OrgViewer extends React.Component {
                 <h1>{this.props.title}</h1>
                 <NgIf className="search" cond={this.props.headlines.length > 0}>
                   <label className={this.state.search.length > 0 ? "active" : ""}>
-                    <input type="text" onChange={(e) => this.search(e.target.value)} placeholder="Search ..."/>
+                    <input type="text" onChange={(e) => this.search(e.target.value)} placeholder={t("Search")+" ..."}/>
                     <Icon name="search" />
                   </label>
                 </NgIf>
               </div>
               <NgIf cond={this.props.headlines.length === 0} className="nothing">
-                Nothing
+                { t("empty") }
               </NgIf>
               <NgIf cond={this.props.headlines.length > 0}>
                 <StickyContainer className="container" style={{height: window.innerHeight > 750 ? 545 : window.innerHeight - 202}}>
@@ -407,8 +408,8 @@ class Headline extends React.Component {
                     <Icon name="more" />
                   </DropdownButton>
                   <DropdownList>
-                    <DropdownItem name="navigate" icon="arrow_right"> Navigate </DropdownItem>
-                    <DropdownItem name="properties"> Properties </DropdownItem>
+                    <DropdownItem name="navigate" icon="arrow_right"> { t("Navigate") } </DropdownItem>
+                    <DropdownItem name="properties"> { t("Properties") } </DropdownItem>
                   </DropdownList>
                 </Dropdown>
               </div>

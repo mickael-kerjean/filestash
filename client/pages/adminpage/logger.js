@@ -2,6 +2,7 @@ import React from 'react';
 import { FormBuilder, Loader, Button, Icon } from '../../components/';
 import { Config, Log } from '../../model/';
 import { FormObjToJSON, notify, format } from '../../helpers/';
+import { t } from '../../locales/';
 
 import "./logger.scss";
 
@@ -84,7 +85,7 @@ export class LogPage extends React.Component {
                 }
               </pre>
               <div>
-                <a href={Log.url()} download={filename()}><Button className="primary">Download</Button></a>
+                <a href={Log.url()} download={filename()}><Button className="primary">{ t("Download") }</Button></a>
               </div>
             </div>
         );

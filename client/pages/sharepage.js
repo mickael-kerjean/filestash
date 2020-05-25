@@ -4,6 +4,7 @@ import { Redirect } from 'react-router';
 import { Share } from '../model/';
 import { notify, basename, filetype, findParams } from '../helpers/';
 import { Loader, Input, Button, Container, ErrorPage, Icon, NgIf } from '../components/';
+import { t } from '../locales/';
 import './error.scss';
 import './sharepage.scss';
 
@@ -79,7 +80,7 @@ export class SharePage extends React.Component {
                         </div>
                     );
                 }
-                notify.send("You can't do that :)", "error");
+                notify.send(t("You can't do that :)"), "error");
             }else if(filetype(this.state.path) === "directory"){
                 return ( <Redirect to={`/files/?share=${this.state.share}`} /> );
             }else{
@@ -95,7 +96,7 @@ export class SharePage extends React.Component {
             return (
                 <Container maxWidth="300px" className="sharepage_component">
                   <form className={className} onSubmit={(e) => this.submitProof(e, "code", this.refs.$input.ref.value)} style={marginTop()}>
-                    <Input ref="$input" type="text" placeholder="Code" />
+                    <Input ref="$input" type="text" placeholder={ t("Code") } />
                     <Button theme="transparent">
                       <Icon name={this.state.loading ? "loading" : "arrow_right"}/>
                     </Button>
@@ -106,7 +107,7 @@ export class SharePage extends React.Component {
             return (
                 <Container maxWidth="300px" className="sharepage_component">
                   <form className={className} onSubmit={(e) => this.submitProof(e, "password", this.refs.$input.ref.value)} style={marginTop()}>
-                    <Input ref="$input" type="password" placeholder="Password" />
+                    <Input ref="$input" type="password" placeholder={ t("Password") } />
                     <Button theme="transparent">
                       <Icon name={this.state.loading ? "loading" : "arrow_right"}/>
                     </Button>
@@ -117,7 +118,7 @@ export class SharePage extends React.Component {
             return (
                 <Container maxWidth="300px" className="sharepage_component">
                   <form className={className} onSubmit={(e) => this.submitProof(e, "email", this.refs.$input.ref.value)} style={marginTop()}>
-                    <Input ref="$input" type="text" placeholder="Your email address" />
+                    <Input ref="$input" type="text" placeholder={ t("Your email address") } />
                     <Button theme="transparent">
                       <Icon name={this.state.loading ? "loading" : "arrow_right"}/>
                     </Button>
@@ -128,8 +129,8 @@ export class SharePage extends React.Component {
 
         return (
             <div className="error-page">
-              <h1>Oops!</h1>
-              <h2>There's nothing in here</h2>
+              <h1>{ t("Oops!") }</h1>
+              <h2>{ t("There is nothing in here") }</h2>
             </div>
         );
     }

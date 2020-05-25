@@ -2,6 +2,7 @@ import React from "react";
 import { Container, Card, NgIf, Input, Button, Textarea, FormBuilder } from "../../components/";
 import { gid, settings_get, settings_put, createFormBackend, FormObjToJSON } from "../../helpers/";
 import { Session, Backend } from "../../model/";
+import { t } from "../../locales/";
 import "./form.scss";
 
 export class Form extends React.Component {
@@ -136,7 +137,7 @@ export class Form extends React.Component {
                                     } else if(struct.label === "advanced") return (
                                         <label style={{color: "rgba(0,0,0,0.4)"}}>
                                           { $input }
-                                          advanced
+                                          { t("Advanced") }
                                         </label>
                                     );
                                     return (
@@ -150,7 +151,7 @@ export class Form extends React.Component {
                           );
                       })
                   }
-                  <Button theme="emphasis">CONNECT</Button>
+                  <Button theme="emphasis">{ t("CONNECT") }</Button>
                 </form>
               </div>
             </Card>

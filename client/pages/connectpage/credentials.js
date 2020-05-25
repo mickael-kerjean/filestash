@@ -4,6 +4,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import { ModalPrompt } from '../../components/';
 import { memory, prompt, notify } from '../../helpers/';
+import { t } from '../../locales/';
 
 const CREDENTIALS_CACHE = "credentials",
       CREDENTIALS_KEY = "credentials_key";
@@ -53,9 +54,9 @@ export class Credentials extends React.Component {
 
     promptForExistingPassword(){
         prompt.now(
-            "Your Master Password",
+            t("Your Master Password"),
             (key) => {
-                if(!key.trim()) return Promise.reject("Password can\'t be empty");
+                if(!key.trim()) return Promise.reject(t("Password can\'t be empty"));
                 this.setState({key: key});
                 memory.set(CREDENTIALS_KEY, key);
                 return this.hidrate_credentials(key);
@@ -69,9 +70,9 @@ export class Credentials extends React.Component {
     }
     promptForNewPassword(){
         prompt.now(
-            "Pick a Master Password",
+            t("Pick a Master Password"),
             (key) => {
-                if(!key.trim()) return Promise.reject("Password can\'t be empty");
+                if(!key.trim()) return Promise.reject(t("Password can\'t be empty"));
                 memory.set(CREDENTIALS_KEY, key);
                 this.setState({key: key}, () => {
                     this.saveCreds(this.props.credentials);
@@ -93,7 +94,7 @@ export class Credentials extends React.Component {
                         this.props.onCredentialsFound(credentials);
                         return Promise.resolve();
                     }catch(e){
-                        return Promise.reject({message: "Incorrect password"});
+                        return Promise.reject({message: t("Incorrect password")});
                     }
                 })
                 .catch((err) => notify.send(err && err.message, "error"))

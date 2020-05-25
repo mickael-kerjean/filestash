@@ -9,7 +9,7 @@ import { confirm, currentShare } from '../../helpers/';
 import { Editor } from './editor';
 import { MenuBar } from './menubar';
 import { OrgTodosViewer, OrgEventsViewer } from './org_viewer';
-
+import { t } from '../../locales/';
 
 import './ide.scss';
 
@@ -32,7 +32,7 @@ export class IDE extends React.Component {
             if(this.props.needSaving === false) return true;
             confirm.now(
                 <div style={{textAlign: "center", paddingBottom: "5px"}}>
-                  Do you want to save the changes ?
+                  { t("Do you want to save the changes ?") }
                 </div>,
                 () =>{
                     return this.save()
@@ -121,15 +121,15 @@ export class IDE extends React.Component {
                       <Icon name={/download=yes/.test(document.cookie) ? "loading_white" : "download_white"}/>
                     </DropdownButton>
                     <DropdownList>
-                      <DropdownItem name="na"><a download={this.props.filename} href={this.props.url}>Save current file</a></DropdownItem>
-                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "private")+"/text/html"+this.props.path}>Export as HTML</a></DropdownItem>
-                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "private")+"/application/pdf"+this.props.path}>Export as PDF</a></DropdownItem>
-                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "private")+"/text/markdown"+this.props.path}>Export as Markdown</a></DropdownItem>
-                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "private")+"/text/plain"+this.props.path}>Export as Text</a></DropdownItem>
-                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "tex")}  href={"/api/export/"+(currentShare() || "private")+"/text/x-latex"+this.props.path}>Export as Latex</a></DropdownItem>
-                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "ics")}  href={"/api/export/"+(currentShare() || "private")+"/text/calendar"+this.props.path}>Export as Calendar</a></DropdownItem>
-                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "odt")}  href={"/api/export/"+(currentShare() || "private")+"/application/vnd.oasis.opendocument.text"+this.props.path}>Export as Open office</a></DropdownItem>
-                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "pdf")}  href={"/api/export/"+(currentShare() || "private")+"/application/pdf"+this.props.path+"?mode=beamer"}>Export as Beamer</a></DropdownItem>
+                      <DropdownItem name="na"><a download={this.props.filename} href={this.props.url}>{ t("Save current file") }</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "private")+"/text/html"+this.props.path}>{ t("Export as {{VALUE}}", "HTML") }</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "private")+"/application/pdf"+this.props.path}>{ t("Export as {{VALUE}}", "PDF") }</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "private")+"/text/markdown"+this.props.path}>{ t("Export as {{VALUE}}", "Markdown") }</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} href={"/api/export/"+(currentShare() || "private")+"/text/plain"+this.props.path}>{ t("Export as {{VALUE}}", "TXT") }</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "tex")}  href={"/api/export/"+(currentShare() || "private")+"/text/x-latex"+this.props.path}>{ t("Export as {{VALUE}}", "Latex") }</a></DropdownItem>
+            <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "ics")}  href={"/api/export/"+(currentShare() || "private")+"/text/calendar"+this.props.path}>{ t("Export as {{VALUE}}", "ical") }</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "odt")}  href={"/api/export/"+(currentShare() || "private")+"/application/vnd.oasis.opendocument.text"+this.props.path}>{ t("Export as {{VALUE}}", "Open office") }</a></DropdownItem>
+                      <DropdownItem name="na"><a target={this.props.needSaving ? "_blank" : "_self"} download={changeExt(this.props.filename, "pdf")}  href={"/api/export/"+(currentShare() || "private")+"/application/pdf"+this.props.path+"?mode=beamer"}>{ t("Export as {{VALUE}}", "Beamer") }</a></DropdownItem>
                     </DropdownList>
                   </Dropdown>
 

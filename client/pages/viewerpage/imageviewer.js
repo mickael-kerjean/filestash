@@ -6,6 +6,7 @@ import { MenuBar } from './menubar';
 import { Bundle, Icon, NgIf, Loader, EventEmitter, EventReceiver } from '../../components/';
 import { alert } from '../../helpers/';
 import { Pager } from './pager';
+import { t } from '../../locales/';
 import './imageviewer.scss';
 import './pager.scss';
 
@@ -104,7 +105,7 @@ export class ImageViewer extends React.Component{
                 </div>
                 <div className={"images_aside scroll-y"+(this.state.show_exif ? " open": "")}>
                   <div className="header">
-                    <div>Info</div>
+                    <div>{ t("Info") }</div>
                     <div style={{flex: 1}}>
                       <Icon name="close" onClick={this.toggleExif.bind(this)} />
                     </div>
@@ -230,7 +231,7 @@ class ImageFancy extends React.Component {
         if(this.state.isError){
             return (
                 <span className="error">
-                  <div><div className="label">Can't load this picture</div></div>
+                  <div><div className="label">{ t("Can't load this picture") }</div></div>
                 </span>
             );
         }

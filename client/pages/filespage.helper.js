@@ -4,6 +4,7 @@ import { Files } from '../model/';
 import { notify, upload } from '../helpers/';
 import Path from 'path';
 import { Observable } from "rxjs/Observable";
+import { t } from '../locales/';
 
 export const sort = function(files, type){
     if(type === 'name'){
@@ -73,7 +74,7 @@ export const onCreate = function(path, type, file){
     if(type === 'file'){
         return Files.touch(path, file)
             .then(() => {
-                notify.send('A file named "'+Path.basename(path)+'" was created', 'success');
+                notify.send(t('A file named "{{VALUE}}" was created', Path.basename(path)), 'success');
                 return Promise.resolve();
             })
             .catch((err) => {
@@ -82,34 +83,34 @@ export const onCreate = function(path, type, file){
             });
     }else if(type === 'directory'){
         return Files.mkdir(path)
-            .then(() => notify.send('A folder named "'+Path.basename(path)+'" was created', 'success'))
+            .then(() => notify.send(t('A folder named "{{VALUE}}" was created"', Path.basename(path)), 'success'))
             .catch((err) => notify.send(err, 'error'));
     }else{
-        return Promise.reject({message: 'internal error: can\'t create a '+type.toString(), code: 'UNKNOWN_TYPE'});
+        return Promise.reject({message: t('internal error: can\'t create a {{VALUE}}', type.toString()), code: 'UNKNOWN_TYPE'});
     }
 };
 
 export const onRename = function(from, to, type){
     return Files.mv(from, to, type)
-        .then(() => notify.send('The file "'+Path.basename(from)+'" was renamed', 'success'))
+        .then(() => notify.send(t('The file "{{VALUE}}" was renamed', Path.basename(from)), 'success'))
         .catch((err) => notify.send(err, 'error'));
 };
 
 export const onDelete = function(path, type){
     return Files.rm(path, type)
-        .then(() => notify.send('The file "'+Path.basename(path)+'" was deleted', 'success'))
+        .then(() => notify.send(t('The file {{VALUE}} was deleted"', Path.basename(path)), 'success'))
         .catch((err) => notify.send(err, 'error'));
 };
 
 export const onMultiDelete = function(arrOfPath){
     return Promise.all(arrOfPath.map((p) => Files.rm(p)))
-        .then(() => notify.send('All done!', 'success'))
+        .then(() => notify.send(t('All done!'), 'success'))
         .catch((err) => notify.send(err, 'error'));
 }
 
 export const onMultiRename = function(arrOfPath){
     return Promise.all(arrOfPath.map((p) => Files.mv(p[0], p[1])))
-        .then(() => notify.send('All done!', 'success'))
+        .then(() => notify.send(t('All done!'), 'success'))
         .catch((err) => notify.send(err, 'error'));
 }
 
