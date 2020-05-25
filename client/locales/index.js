@@ -1,6 +1,5 @@
 export function t(str = "", value){
     const key = str.toUpperCase().replace(/ /g, "_").replace(/[^a-zA-Z0-9\-\_\*\{\}\?]/g, "").replace(/\_+$/, "");
-    console.log(key);
     return reformat(
         (window.LNG && window.LNG[key]) || str || "",
         key

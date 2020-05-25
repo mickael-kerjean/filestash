@@ -79,19 +79,14 @@ function setup_xdg_open(){
 function translation(){
     const userLanguage = navigator.language.split("-")[0];
     const selectedLanguage = [
-        "fr"
+        "fr",
+        // add new locales here
     ].indexOf(userLanguage) === -1 ? "en" : userLanguage;
-    if(selectedLanguage === "en"){
-        done();
-        return
-    }
 
-    return new Promise((done, err) => {
-        http_get("/assets/locales/"+selectedLanguage+".json").then((d) => {
-            window.LNG = d;
-            done();
-        }).catch((error) => {
-            err(error)
-        });
+    if(selectedLanguage === "en"){
+        return Promise.resolve();
+    }
+    return http_get("/assets/locales/"+selectedLanguage+".json").then((d) => {
+        window.LNG = d;
     });
 }
