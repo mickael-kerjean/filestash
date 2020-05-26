@@ -1,9 +1,10 @@
-export function t(str = "", value){
-    const key = str.toUpperCase().replace(/ /g, "_").replace(/[^a-zA-Z0-9\-\_\*\{\}\?]/g, "").replace(/\_+$/, "");
+export function t(str = "", replacementString, requestedKey){
+    const calculatedKey = str.toUpperCase().replace(/ /g, "_").replace(/[^a-zA-Z0-9\-\_\*\{\}\?]/g, "").replace(/\_+$/, "");
+    const value = requestedKey === undefined ? window.LNG && window.LNG[calculatedKey] : window.LNG && window.LNG[requestedKey];
     return reformat(
-        (window.LNG && window.LNG[key]) || str || "",
-        key
-    ).replace("{{VALUE}}", value);
+        value || str || "",
+        str
+    ).replace("{{VALUE}}", replacementString);
 }
 
 function reformat(translated, initial){
