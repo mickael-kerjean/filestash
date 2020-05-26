@@ -1,6 +1,7 @@
 import React from 'react';
 import { debounce } from '../helpers/';
 import { Icon, Loader, NgIf } from './';
+import { t } from '../locales/';
 import './mapshot.scss';
 
 export class MapShot extends React.Component {
@@ -93,7 +94,7 @@ export class MapShot extends React.Component {
             <div ref="$wrapper" className={"component_mapshot"+(this.state.tile_loaded === 9 ? " loaded" : "")+(this.state.error === true ? " error": "")} style={{height: (this.state.tile_size*3)+"px"}}>
               <div className="wrapper">
                 <div className="mapshot_placeholder error">
-                  <span><div>ERROR</div></span>
+                  <span><div>t("ERROR")</div></span>
                 </div>
                 <div className="mapshot_placeholder loading">
                   <Loader/>
@@ -122,5 +123,4 @@ export class MapShot extends React.Component {
             </div>
         );
     }
-
 }

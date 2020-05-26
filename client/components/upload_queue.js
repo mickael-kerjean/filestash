@@ -4,6 +4,7 @@ import Path from 'path';
 import { Files } from '../model/';
 import { confirm, notify, upload } from '../helpers/';
 import { Icon, NgIf } from './';
+import { t } from '../locales/';
 import './upload_queue.scss';
 
 const MAX_POOL_SIZE = 15;
@@ -76,7 +77,7 @@ export class UploadQueue extends React.Component {
 
         if(navigator && navigator.clipboard){
             navigator.clipboard.writeText(path);
-            notify.send("Copied to clipboard", "info");
+            notify.send(t("Copied to clipboard"), "info");
         }
     }
 
@@ -282,15 +283,15 @@ export class UploadQueue extends React.Component {
             speedStr = " ~ " + humanFileSize(avgSpeed) + "/s";
         }
         if (this.state.running) {
-            return "Running..." + speedStr;
+            return t("Running")+"..." + speedStr;
         }
-        return "Done" + speedStr;
+        return t("Done") + speedStr;
     }
 
     onClose() {
         if(this.state.running) {
             confirm.now(
-                "Abort current uploads?",
+                t("Abort current uploads?"),
                 () => {
                     this.setState({
                         running: false,
@@ -332,7 +333,7 @@ export class UploadQueue extends React.Component {
             <NgIf cond={totalFiles > 0}>
                 <div className="component_upload_queue">
                     <h2>
-                        CURRENT UPLOAD
+                        { t("CURRENT UPLOAD") }
                         <div className="count_block">
                             <span className="completed">{finished.length}</span>
                             <span className="grandTotal">{totalFiles}</span>
@@ -344,7 +345,7 @@ export class UploadQueue extends React.Component {
                         {this.renderRows(
                             finished,
                             "done",
-                            (_) => (<div className="file_state file_state_done">Done</div>),
+                            (_) => (<div className="file_state file_state_done">{ t("Done") }</div>),
                         )}
                         {this.renderRows(
                             currents,
@@ -362,7 +363,7 @@ export class UploadQueue extends React.Component {
                             processes,
                             "todo",
                             (_) => (
-                                <div className="file_state file_state_todo">Waiting</div>
+                                <div className="file_state file_state_todo">{ t("Waiting") }</div>
                             )
                         )}
                         {this.renderRows(
@@ -371,9 +372,9 @@ export class UploadQueue extends React.Component {
                             (p) => (
                                 (p.err && p.err.message == 'aborted')
                                 ?
-                                <div className="file_state file_state_error">Aborted</div>
+                                    <div className="file_state file_state_error">{ t("Aborted") }</div>
                                 :
-                                <div className="file_state file_state_error">Error</div>
+                                <div className="file_state file_state_error">{ t("Error") }</div>
                             ),
                             (p) => (
                                 <Icon name="refresh" onClick={(e) => this.retryFiles(p)} ></Icon>

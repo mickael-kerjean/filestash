@@ -4,6 +4,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { withRouter } from 'react-router-dom';
 
 import { NgIf, Icon, EventReceiver, MapShot, Button } from '../../components/';
+import { t } from '../../locales/';
 import './image_exif.scss';
 
 class Exif extends React.Component {
@@ -152,19 +153,19 @@ export class SmallExif extends Exif{
         return (
             <div className="component_metadata">
               <div>
-                <span className="label no-select">Date: </span>
+                <span className="label no-select">{ t("Date") }: </span>
                 <span className="value">{this.formatDate("-")}</span>
               </div>
               <div>
-                <span className="label no-select">Location: </span>
+                <span className="label no-select">{ t("Location") }: </span>
                 <span className="value small"><a href={"https://www.google.com/maps/search/?api=1&query="+display_location(this.state.location)}>{display_location(this.state.location)}</a></span>
               </div>
               <div>
-                <span className="label no-select">Settings: </span>
+                <span className="label no-select">{ t("Settings") }: </span>
                 <span className="value">{display_settings(this.state.aperture, this.state.shutter, this.state.iso)}</span>
               </div>
               <div>
-                <span className="label no-select">Camera: </span>
+                <span className="label no-select">{ t("Camera") }: </span>
                 <span className="value">{display_camera(this.state.model,this.state.focal)}</span>
               </div>
             </div>

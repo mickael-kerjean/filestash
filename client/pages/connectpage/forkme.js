@@ -1,5 +1,6 @@
 import React from 'react';
 import './forkme.scss';
+import { t } from '../../locales/';
 
 export const ForkMe = (props) => {
     return (
@@ -19,7 +20,7 @@ export const PoweredByFilestash = () => {
     if(!window.CONFIG["fork_button"]) return null;
     return (
         <div className="component_poweredbyfilestash">
-          Powered by <strong><a href="https://www.filestash.app">Filestash</a></strong>
+            { t('Powered by') } <strong><a href="https://www.filestash.app">Filestash</a></strong>
         </div>
     );
 };

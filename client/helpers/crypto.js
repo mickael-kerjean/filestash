@@ -15,3 +15,4 @@ export function decrypt(text, key){
         new aesjs.ModeOfOperation.ctr(keyBytes, new aesjs.Counter(5)).decrypt(textBytes)
     ));
 }
+

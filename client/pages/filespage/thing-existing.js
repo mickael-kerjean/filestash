@@ -10,6 +10,7 @@ import { Card, NgIf, Icon, EventEmitter, Button, img_placeholder } from '../../c
 import { pathBuilder, basename, filetype, prompt, alert, leftPad, getMimeType, debounce, memory } from '../../helpers/';
 import { Files } from '../../model/';
 import { ShareComponent } from './share';
+import { t } from '../../locales/';
 
 const fileSource = {
     beginDrag(props, monitor, component) {
@@ -167,7 +168,7 @@ export class ExistingThing extends React.Component {
 
     onDeleteRequest(filename){
         prompt.now(
-            "Confirm by typing \""+this._confirm_delete_text()+"\"",
+            t("Confirm by typing") +" \""+this._confirm_delete_text()+"\"",
             (answer) => { // click on ok
                 if(answer === this._confirm_delete_text()){
                     this.setState({icon: 'loading'});
@@ -178,7 +179,7 @@ export class ExistingThing extends React.Component {
                     );
                     return Promise.resolve();
                 }else{
-                    return Promise.reject("Doesn't match");
+                    return Promise.reject(t("Doesn't match"));
                 }
             },
             () => { /* click on cancel */ });
@@ -192,7 +193,7 @@ export class ExistingThing extends React.Component {
                 this.props.file.type
             );
         }else{
-            this.setState({delete_error: "Doesn't match"});
+            this.setState({delete_error: t("Doesn't match")});
         }
     }
     onDeleteCancel(){

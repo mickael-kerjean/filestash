@@ -3,6 +3,7 @@ import { Redirect } from 'react-router';
 
 import { Input, Button, Container, Icon, Loader } from '../../components/';
 import { Config, Admin } from '../../model/';
+import { t } from '../../locales/';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 export class LoginPage extends React.Component {
@@ -42,7 +43,7 @@ export class LoginPage extends React.Component {
         return (
             <Container maxWidth="300px" className="sharepage_component">
               <form className={this.state.error ? "error" : ""} onSubmit={this.authenticate.bind(this)} style={marginTop()}>
-                <Input ref="$input" type="password" placeholder="Password" />
+                <Input ref="$input" type="password" placeholder={ t("Password") } />
                 <Button theme="transparent">
                   <Icon name={this.state.loading ? "loading" : "arrow_right"}/>
                 </Button>

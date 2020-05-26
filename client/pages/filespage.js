@@ -12,6 +12,7 @@ import { notify, debounce, goToFiles, goToViewer, event, settings_get, settings_
 import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from './filespage/';
 import { MobileFileUpload } from './filespage/filezone';
 import InfiniteScroll from 'react-infinite-scroller';
+import { t } from '../locales/';
 
 const PAGE_NUMBER_INIT = 2;
 const LOAD_PER_SCROLL = 48;
@@ -109,9 +110,9 @@ export class FilesPage extends React.Component {
             this.setState({show_hidden: !this.state.show_hidden}, () => {
                 settings_put("filespage_show_hidden", this.state.show_hidden);
                 if(!!this.state.show_hidden){
-                    notify.send("Display hidden files", "info");
+                    notify.send(t("Display hidden files"), "info");
                 }else{
-                    notify.send("Hide hidden files", "info");
+                    notify.send(t("Hide hidden files"), "info");
                 }
             });
             this.onRefresh();

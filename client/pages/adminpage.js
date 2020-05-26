@@ -9,6 +9,7 @@ import { Icon, LoadingPage } from '../components/';
 import { Config, Admin } from '../model';
 import { notify } from '../helpers/';
 import { HomePage, DashboardPage, ConfigPage, LogPage, PluginPage, SupportPage, SetupPage, LoginPage } from './adminpage/';
+import { t } from '../locales/';
 
 
 function AdminOnly(WrappedComponent){
@@ -85,26 +86,26 @@ const SideMenu = (props) => {
             <Icon name="arrow_left" />
             <img src="/assets/logo/android-chrome-512x512.png" />
           </NavLink>
-          <h2>Admin console</h2>
+          <h2>{ t("Admin console") }</h2>
           <ul>
             <li>
               <NavLink activeClassName="active" to={props.url + "/dashboard"}>
-                Dashboard
+                { t("Dashboard") }
               </NavLink>
             </li>
             <li>
               <NavLink activeClassName="active" to={props.url + "/configure"}>
-                Configure
+                { t("Configure") }
               </NavLink>
             </li>
             <li>
               <NavLink activeClassName="active" to={props.url + "/activity"}>
-                Activity
+                { t("Activity") }
               </NavLink>
             </li>
             <li>
               <NavLink activeClassName="active" to={props.url + "/support"}>
-                Support
+                { t("Support") }
               </NavLink>
             </li>
           </ul>

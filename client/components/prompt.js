@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { Input, Button, Modal, NgIf } from './';
 import { prompt } from '../helpers/';
 import { Popup } from './popup';
+import { t } from '../locales/';
 
 export class ModalPrompt extends Popup {
     constructor(props){
@@ -45,8 +46,8 @@ export class ModalPrompt extends Popup {
     modalContentFooter(){
         return (
             <div>
-              <Button type="button" onClick={this.onCancel.bind(this)}>CANCEL</Button>
-              <Button type="submit" theme="emphasis" onClick={this.onSubmit.bind(this)}>OK</Button>
+              <Button type="button" onClick={this.onCancel.bind(this)}>{ t("CANCEL") }</Button>
+              <Button type="submit" theme="emphasis" onClick={this.onSubmit.bind(this)}>{ t("OK") }</Button>
             </div>
         );
     }

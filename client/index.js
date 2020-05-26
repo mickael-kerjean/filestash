@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Router  from './router';
 
 import { Config, Log } from "./model/";
+import { http_get } from "./helpers/ajax";
 import load from "little-loader";
 
 import './assets/css/reset.scss';
@@ -36,7 +37,7 @@ window.addEventListener("DOMContentLoaded", () => {
         return Promise.resolve();
     }
 
-    Promise.all([Config.refresh(), setup_xdg_open()]).then(() => {
+    Promise.all([Config.refresh(), setup_xdg_open(), translation()]).then(() => {
         const timeSinceBoot = new Date() - window.initTime;
         if(timeSinceBoot >= 1500){
             const timeoutToAvoidFlickering = timeSinceBoot > 2500 ? 0 : 500;
@@ -72,5 +73,20 @@ function setup_xdg_open(){
             if(error) return err(error);
             done()
         });
+    });
+}
+
+function translation(){
+    const userLanguage = navigator.language.split("-")[0];
+    const selectedLanguage = [
+        "fr",
+        // add new locales here
+    ].indexOf(userLanguage) === -1 ? "en" : userLanguage;
+
+    if(selectedLanguage === "en"){
+        return Promise.resolve();
+    }
+    return http_get("/assets/locales/"+selectedLanguage+".json").then((d) => {
+        window.LNG = d;
     });
 }

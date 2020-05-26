@@ -4,6 +4,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { DropTarget } from 'react-dnd';
 
 import { EventEmitter, Icon }  from '../../components/';
+import { t } from '../../locales/';
 import './filezone.scss';
 
 @EventEmitter
@@ -23,7 +24,7 @@ export class FileZone extends React.Component{
     render(){
         return this.props.connectDropFile(
             <div className={"component_filezone "+(this.props.fileIsOver ? "hover" : "")}>
-              DROP HERE TO UPLOAD
+              { t("DROP HERE TO UPLOAD") }
             </div>
         );
     }

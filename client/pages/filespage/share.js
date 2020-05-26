@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { NgIf, Icon, Button } from '../../components/';
 import { Share } from '../../model/';
 import { randomString, notify, absoluteToRelative, copyToClipboard, filetype } from '../../helpers/';
+import { t } from '../../locales/';
 import './share.scss';
 
 export class ShareComponent extends React.Component {
@@ -93,7 +94,7 @@ export class ShareComponent extends React.Component {
 
     copyLinkInClipboard(link){
         copyToClipboard(link);
-        notify.send("The link was copied in the clipboard", "INFO");
+        notify.send(t("The link was copied in the clipboard"), "INFO");
     }
 
     onRegisterLink(e){
@@ -187,31 +188,31 @@ export class ShareComponent extends React.Component {
 
         return (
             <div className="component_share">
-              <h2>Create a New Link</h2>
+              <h2>{ t("Create a New Link") }</h2>
 
               <div className="share--content link-type no-select">
                 { this.props.type === "file" ? null :
                   <div onClick={this.updateState.bind(this, 'role', 'uploader')} className={this.state.role === "uploader" ? "active" : ""}>
-                    Uploader
+                    { t("Uploader") }
                   </div>
                 }
                 <div onClick={this.updateState.bind(this, 'role', 'viewer')} className={this.state.role === "viewer" ? "active" : ""}>
-                  Viewer
+                  { t("Viewer") }
                 </div>
                 <div onClick={this.updateState.bind(this, 'role', 'editor')} className={this.state.role === "editor" ? "active" : ""}>
-                  Editor
+                  { t("Editor") }
                 </div>
               </div>
 
               <NgIf cond={this.state.role === null && !!this.state.existings && this.state.existings.length > 0}>
-                <h2>Existing Links</h2>
+                <h2>{ t("Existing Links") }</h2>
                 <div className="share--content existing-links" style={{"maxHeight": this.state.existings && this.state.existings.length > 5 ? '90px' : 'inherit'}}>
                   {
                       this.state.existings && this.state.existings.map((link, i) => {
                           return (
                               <div className="link-details" key={i}>
                                 <span onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)} className="copy role">
-                                  {link.role}
+                                  { t(link.role) }
                                 </span>
                                 <span onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)} className="copy path">{beautifulPath(this.props.path, link.path)}</span>
                                 <Icon onClick={this.onDeleteLink.bind(this, link.id)} name="delete"/>
@@ -224,24 +225,24 @@ export class ShareComponent extends React.Component {
               </NgIf>
 
               <NgIf cond={this.state.role !== null}>
-                <h2>Restrictions</h2>
+                <h2>{ t("Restrictions") }</h2>
                 <div className="share--content advanced-settings no-select">
-                  <SuperCheckbox value={this.state.users} label="Only for users" placeholder="name0@email.com,name1@email.com" onChange={this.updateState.bind(this, 'users')} inputType="text"/>
-                  <SuperCheckbox value={this.state.password} label="Password" placeholder="protect access with a password" onChange={this.updateState.bind(this, 'password')} inputType="password"/>
+                  <SuperCheckbox value={this.state.users} label={ t("Only for users") } placeholder="name0@email.com,name1@email.com" onChange={this.updateState.bind(this, 'users')} inputType="text"/>
+                  <SuperCheckbox value={this.state.password} label={ t("Password") } placeholder={ t("protect access with a password") } onChange={this.updateState.bind(this, 'password')} inputType="password"/>
                 </div>
 
                 <h2 className="no-select pointer" onClick={this.updateState.bind(this, 'show_advanced', !this.state.show_advanced)}>
-                  Advanced
+                  { t("Advanced") }
                   <NgIf type="inline" cond={!!this.state.show_advanced}><Icon name="arrow_top"/></NgIf>
                   <NgIf type="inline" cond={!this.state.show_advanced}><Icon name="arrow_bottom"/></NgIf>
                 </h2>
                 <div className="share--content advanced-settings no-select">
                   <NgIf cond={this.state.show_advanced === true}>
-                    <SuperCheckbox value={datify(this.state.expire)} label="Expiration" placeholder="The link won't be valid after" onChange={this.updateState.bind(this, 'expire')} inputType="date"/>
+                    <SuperCheckbox value={datify(this.state.expire)} label={ t("Expiration") } placeholder={ t("The link won't be valid after") } onChange={this.updateState.bind(this, 'expire')} inputType="date"/>
                     <NgIf cond={this.state.role === "editor" && this.props.type !== "file"}>
-                      <SuperCheckbox value={this.state.can_share} label="Can Reshare" onChange={this.updateState.bind(this, 'can_share')}/>
+                      <SuperCheckbox value={this.state.can_share} label={ t("Can Reshare") } onChange={this.updateState.bind(this, 'can_share')}/>
                     </NgIf>
-                    <SuperCheckbox value={this.state.url} label="Custom Link url" placeholder="beautiful_url" onChange={(val) => this.updateState('url', urlify(val))} inputType="text"/>
+                    <SuperCheckbox value={this.state.url} label={ t("Custom Link url") } placeholder={ t("beautiful_url") } onChange={(val) => this.updateState('url', urlify(val))} inputType="text"/>
                   </NgIf>
                 </div>
 

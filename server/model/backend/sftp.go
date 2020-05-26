@@ -93,13 +93,13 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 
 	client, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
-		return &s, NewError("Connection denied", 502)
+		return &s, ErrAuthenticationFailed
 	}
 	s.SSHClient = client
 
 	session, err := sftp.NewClient(s.SSHClient)
 	if err != nil {
-		return &s, NewError("Can't establish connection", 502)
+		return &s, err
 	}
 	s.SFTPClient = session
 	SftpCache.Set(params, &s)

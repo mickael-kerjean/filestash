@@ -3,10 +3,11 @@ import React from 'react';
 import { MenuBar } from './menubar';
 import { NgIf, Icon } from '../../components/';
 import './filedownloader.scss';
+import { t } from '../../locales/';
 
 export class FileDownloader extends React.Component{
     constructor(props){
-        super(props)
+        super(props);
         this.state = {loading: false, id: null};
     }
 
@@ -16,7 +17,7 @@ export class FileDownloader extends React.Component{
             loading: true,
             id: window.setInterval(function(){
                 if(/download=yes/.test(document.cookie) === false){
-                    this.setState({loading: false})
+                    this.setState({loading: false});
                     window.clearInterval(this.state.id);
                 }
             }.bind(this), 80)
@@ -24,7 +25,7 @@ export class FileDownloader extends React.Component{
     }
 
     componentWillUnmount(){
-        window.clearInterval(this.state.id)
+        window.clearInterval(this.state.id);
     }
 
     render(){
@@ -33,7 +34,7 @@ export class FileDownloader extends React.Component{
               <div className="download_button">
                 <a download={this.props.filename} href={this.props.data}>
                   <NgIf onClick={this.onClick.bind(this)} cond={!this.state.loading}>
-                    DOWNLOAD
+                    { t("DOWNLOAD") }
                   </NgIf>
                 </a>
                 <NgIf cond={this.state.loading}>

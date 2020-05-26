@@ -193,7 +193,7 @@ func (s S3Backend) Cat(path string) (io.ReadCloser, error) {
 		} else if awsErr.Code() == "InvalidArgument" && strings.Contains(awsErr.Message(), "secret key was invalid") {
 			return nil, NewError("This file is encrypted file, you need the correct key!", 400)
 		} else if awsErr.Code() == "AccessDenied" {
-			return nil, NewError("Access denied", 403)
+			return nil, ErrNotAllowed
 		}
 		return nil ,err
 	}
@@ -223,7 +223,7 @@ func (s S3Backend) Rm(path string) error {
 	client := s3.New(s.createSession(p.bucket))
 
 	if p.bucket == "" {
-		return NewError("Doesn't exist", 404)
+		return ErrNotFound
 	}
 
 	objs, err := client.ListObjects(&s3.ListObjectsInput{
@@ -276,7 +276,7 @@ func (s S3Backend) Mv(from string, to string) error {
 	client := s3.New(s.createSession(f.bucket))
 
 	if f.path == "" {
-		return NewError("Can't move this", 403)
+		return ErrNotImplemented
 	}
 
 	input := &s3.CopyObjectInput{
@@ -303,7 +303,7 @@ func (s S3Backend) Touch(path string) error {
 	client := s3.New(s.createSession(p.bucket))
 
 	if p.bucket == "" {
-		return NewError("Can't do that on S3", 403)
+		return ErrNotValid
 	}
 
 	input := &s3.PutObjectInput{
@@ -324,7 +324,7 @@ func (s S3Backend) Save(path string, file io.Reader) error {
 	p := s.path(path)
 
 	if p.bucket == "" {
-		return NewError("Can't do that on S3", 403)
+		return ErrNotValid
 	}
 	uploader := s3manager.NewUploader(s.createSession(path))
 	input := s3manager.UploadInput{
