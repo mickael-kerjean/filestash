@@ -87,7 +87,7 @@ func SecureHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx Ap
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		if host := Config.Get("general.host").String(); host != "" {
 			if req.Host != host && req.Host != fmt.Sprintf("%s:443", host) {
-				Log.Error("Invalid access from host: %s", req.Host)
+				Log.Error("Request coming from \"%s\" was blocked, only traffic from \"%s\" is allowed. You can change this from the admin console under configure -> host", req.Host, host)
 				SendErrorResult(res, ErrNotAllowed)
 				return
 			}
