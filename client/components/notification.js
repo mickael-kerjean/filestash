@@ -3,6 +3,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import { NgIf, Icon } from './';
 import { notify } from '../helpers/';
+import { t } from '../locales/';
 import './notification.scss';
 
 export class Notification extends React.Component {
@@ -71,7 +72,7 @@ export class Notification extends React.Component {
               <NgIf key={this.state.message_text+this.state.message_type+this.state.appear} cond={this.state.appear === true} className="no-select">
                 <div className={"component_notification--container "+(this.state.message_type || 'info')}>
                   <div className="message">
-                    { this.state.message_text }
+                    { t(this.state.message_text || "") }
                   </div>
                   <div className="close" onClick={this.cancelAnimation.bind(this)}>
                     <Icon name="close" />

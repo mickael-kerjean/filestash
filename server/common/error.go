@@ -20,7 +20,7 @@ var (
 	ErrNotReachable error     = NewError("Cannot establish a connection", 502)
 	ErrInvalidPassword        = NewError("Invalid Password", 403)
 	ErrNotImplemented         = NewError("Not Implemented", 501)
-	ErrNotSupported           = NewError("This feature is not supported", 501)
+	ErrNotSupported           = NewError("Not supported", 501)
 	ErrFilesystemError        = NewError("Can't use filesystem", 503)
 	ErrMissingDependency      = NewError("Missing dependency", 424)
 	ErrNotAuthorized          = NewError("Not authorised", 401)

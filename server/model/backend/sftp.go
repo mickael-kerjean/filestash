@@ -99,7 +99,7 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 
 	session, err := sftp.NewClient(s.SSHClient)
 	if err != nil {
-		return &s, ErrNotReachable
+		return &s, err
 	}
 	s.SFTPClient = session
 	SftpCache.Set(params, &s)

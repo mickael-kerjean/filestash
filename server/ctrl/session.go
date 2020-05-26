@@ -63,7 +63,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	home, err := model.GetHome(backend, session["path"])
 	if err != nil {
-		SendErrorResult(res, ErrInvalidPassword)
+		SendErrorResult(res, ErrAuthenticationFailed)
 		return
 	}
 
