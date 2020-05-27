@@ -59,6 +59,11 @@ window.onerror = function (msg, url, lineNo, colNo, error) {
 
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", function() {
+        if(navigator.userAgent.indexOf("Mozilla/") !== -1 && navigator.userAgent.indexOf("Firefox/") !== -1 && navigator.userAgent.indexOf("Gecko/") !== -1){
+            // Firefox was acting weird with service worker so we disabled it
+            // see: https://github.com/mickael-kerjean/filestash/issues/255
+            return
+        }
         navigator.serviceWorker.register("/sw_cache.js").catch(function(err){
             console.error("ServiceWorker registration failed:", err);
         });
