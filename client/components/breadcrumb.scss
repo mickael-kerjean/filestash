@@ -160,3 +160,16 @@ body.touch-yes{
         }
     }
 }
+
+.dark-mode{
+    .component_breadcrumb{
+        .breadcrumb{
+            background: var(--dark);
+            border-bottom-color: rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .label{
+            color: var(--super-light);
+        }
+    }
+}

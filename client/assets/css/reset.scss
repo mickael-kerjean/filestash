@@ -46,24 +46,24 @@
     --error: #f26d6d;
     --success: #63d9b1;
     --dark: #313538;
+    --dark-mode-bg-color: #242424;
 }
 
 html {
     font-family: "Roboto", sans-serif;
     -webkit-text-size-adjust:100%;
+}
+body {
+    overflow: hidden;
     background: var(--bg-color);
     color: var(--color);
 }
-
-body {
-    overflow: hidden;
-}
-
-body,
-html {
+body, html {
     height: 100%;
     margin: 0;
 }
+body.dark-mode{ background: var(--dark-mode-bg-color); }
+
 
 .center{
     text-align: center;

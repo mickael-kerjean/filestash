@@ -31,3 +31,16 @@
         a{ text-decoration: underline; }
     }
 }
+
+
+.dark-mode{
+    .component_poweredbyfilestash{
+        color: var(--light);
+    }
+    .component_forkme{
+        .octo-arm, .octo-body{
+            fill: var(--dark-mode-bg-color);
+        }
+        .bg{ fill: var(--light); }
+    }
+}

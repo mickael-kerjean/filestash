@@ -97,3 +97,13 @@
         background:rgba(0,0,0,.1)
     }
 }
+
+.dark-mode{
+    .component_page_connection_form{
+        background: var(--bg-color);
+    }
+    div.buttons button.active{
+        background: var(--dark-mode-bg-color);
+        color: var(--light);
+    }
+}

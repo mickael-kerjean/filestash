@@ -102,3 +102,17 @@
          opacity: 1;
      }
  }
+
+ .dark-mode .component_frequently-access{
+     .frequent_wrapper a{
+         color: var(--light);
+         background: var(--dark);
+         box-shadow: 2px 2px 10px rgba(0,0,0,0.15);
+         &:hover{
+             box-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+         }
+     }
+     .nothing_placeholder{
+         background: var(--dark);
+     }
+ }

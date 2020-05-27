@@ -253,3 +253,23 @@
         }
     }
 }
+
+.dark-mode .component_thing {
+    &:hover .box{
+        background: var(--emphasis-primary);
+        border-radius: 2px;
+    }
+    .box{
+        background: inherit;
+        box-shadow: none;
+    }
+    .component_filename{
+        color: var(--bg-color);
+    }
+    &:hover .box .component_filename{
+        color: inherit;
+    }
+    .box.highlight{
+        background: var(--emphasis-primary);
+    }
+}
