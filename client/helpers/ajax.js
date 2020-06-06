@@ -94,7 +94,7 @@ export function http_delete(url){
                             err(data);
                         }
                     }catch(error){
-                        err({message: 'oups', trace: error});
+                        err({message: 'oops', trace: error});
                     }
                 }else{
                     handle_error_response(xhr, err);
@@ -148,9 +148,9 @@ function handle_error_response(xhr, err){
     if(navigator.onLine === false){
         err({message: 'Connection Lost', code: "NO_INTERNET"});
     }else if(xhr.status === 0 && xhr.responseText === "") {
-        err({message: "Service unavailable, if the problem persist, contact your administrator", code: "INTERNAL_SERVER_ERROR"});
+        err({message: "Service unavailable. If the problem persists, contact your administrator", code: "INTERNAL_SERVER_ERROR"});
     }else if(xhr.status === 500){
-        err({message: message || "Oups something went wrong with our servers", code: "INTERNAL_SERVER_ERROR"});
+        err({message: message || "Oops something went wrong with our servers", code: "INTERNAL_SERVER_ERROR"});
     }else if(xhr.status === 401){
         err({message: message || "Authentication error", code: "Unauthorized"});
     }else if(xhr.status === 403){
@@ -163,9 +163,9 @@ function handle_error_response(xhr, err){
         if(response["error_summary"]){ // dropbox way to say doesn't exist
             err({message: "Doesn\'t exist", code: "UNKNOWN_PATH"})
         }else{
-            err({message: message || "Oups you just ran into a conflict", code: "CONFLICT"});
+            err({message: message || "Oops you just ran into a conflict", code: "CONFLICT"});
         }
     }else{
-        err({message: message || 'Oups something went wrong'});
+        err({message: message || 'Oops something went wrong'});
     }
 }
