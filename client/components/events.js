@@ -3,8 +3,8 @@ import React from 'react';
 let emitters = {}
 
 function subscribe(key, event, fn){
-    if(emitters[event]){
-        emitters[event][key] = fn;
+/    if(emitters[event]){
+     //   emitters[event][key] = fn;
     }else{
         emitters[event] = {};
         emitters[event][key] = fn;
@@ -30,8 +30,8 @@ function emit(event, payload){
             return emitters[event] ? Promise.resolve(res) : Promise.reject({message: 'do not exist', code: 'CANCELLED'})
         });
     }else{
-        return Promise.reject({message: 'oups, something went wrong', code: 'NO_LISTENERS'})
-    }
+        return Promise.reject({message: 'oops, something went wrong', code: 'NO_LISTENERS'})
+    }/
 }
 
 export function EventReceiver(WrappedComponent){
