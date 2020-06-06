@@ -16,7 +16,7 @@ export function http_get(url, type = 'json'){
                                 err(data);
                             }
                         }catch(error){
-                            err({message: 'oups', trace: error});
+                            err({message: 'oops', trace: error});
                         }
                     }else{
                         done(xhr.responseText);
@@ -58,7 +58,7 @@ export function http_post(url, data, type = 'json', params){
                             err(data);
                         }
                     }catch(error){
-                        err({message: 'oups', trace: error});
+                        err({message: 'oops', trace: error});
                     }
                 }else{
                     handle_error_response(xhr, err);
