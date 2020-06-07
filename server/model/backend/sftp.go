@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -53,12 +54,28 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 
 	addr := p.hostname + ":" + p.port
 	var auth []ssh.AuthMethod
+
 	isPrivateKey := func(pass string) bool {
 		p := strings.TrimSpace(pass)
-		if len(pass) > 1000 && strings.HasPrefix(p, "-----") && strings.HasSuffix(p, "-----") {
-			return true
+		keyStartMatcher := regexp.MustCompile(`^-----BEGIN [A-Z\ ]+-----`)
+		keyEndMatcher := regexp.MustCompile(`-----END [A-Z\ ]+-----$`)
+		keyContentMatcher := regexp.MustCompile(`^[a-zA-Z0-9\+\/\=\n]+$`)
+
+		// match private key beginning
+		if keyStartMatcher.FindStringIndex(p) == nil {
+			return false
 		}
-		return false
+		p = keyStartMatcher.ReplaceAllString(p, "")
+		// match private key ending
+		if keyEndMatcher.FindStringIndex(p) == nil {
+			return false
+		}
+		p = keyEndMatcher.ReplaceAllString(p, "")
+		// match private key content
+		if keyContentMatcher.FindStringIndex(p) == nil {
+			return false
+		}
+		return true
 	}
 
 	if isPrivateKey(p.password) {
