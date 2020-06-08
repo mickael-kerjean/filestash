@@ -18,7 +18,7 @@ export class SupportPage extends React.Component {
                   </svg>
                   <strong>Enterprise Support</strong>
                   <p>
-                    We offer support and maintenance, see our <a href="https://www.filestash.app/pricing">pricing page</a> or drop us <a href="mailto:mickael@kerjean.me">a email</a>.
+                    We offer support and maintenance, see our <a href="https://www.filestash.app/pricing">pricing page</a> or drop us <a href="mailto:mickael@kerjean.me">an email</a>.
                   </p>
                 </div>
                 <div>
@@ -27,7 +27,7 @@ export class SupportPage extends React.Component {
                   </svg>
                   <strong>Bug & Feature request</strong>
                   <p>
-                    To report a bug or issue, open an issue on the <a href="http://github.com/mickael-kerjean/filestash">Github repo</a>.
+                    To report a bug or a problem, open an issue on the <a href="http://github.com/mickael-kerjean/filestash">Github repo</a>.
                   </p>
                 </div>
                 <div>
@@ -36,7 +36,7 @@ export class SupportPage extends React.Component {
                   </svg>
                   <strong>Community Support</strong>
                   <p>
-                    The official IRC chanel of the project is on freenode <a href="https://kiwiirc.com/nextclient/#irc://irc.freenode.net/#filestash?nick=guest??">#filestash</a>. Come on over and chat with us
+                    The official IRC chanel of the project is on Freenode <a href="https://kiwiirc.com/nextclient/#irc://irc.freenode.net/#filestash?nick=guest??">#filestash</a>. Come over and chat with us
                   </p>
                 </div>
               </div>
@@ -47,7 +47,7 @@ export class SupportPage extends React.Component {
                   </svg>
                   <strong>Documentation</strong>
                   <p>
-                    The place for everything documentation related, see our <a href="https://www.filestash.app/docs">documentation</a>
+                    See our <a href="https://www.filestash.app/docs">documentation</a>
                   </p>
                 </div>
                 <div>
@@ -56,7 +56,7 @@ export class SupportPage extends React.Component {
                   </svg>
                   <strong>FAQ</strong>
                   <p>
-                    The commonly asked questions we get ask a lot, see our <a href="https://www.filestash.app/docs/faq/">FAQ</a>
+                    See our list of <a href="https://www.filestash.app/docs/faq/">frequently asked questions</a>
                   </p>
                 </div>
                 <div></div>
