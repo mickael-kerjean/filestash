@@ -1,7 +1,8 @@
 import React from 'react';
 import { FormBuilder } from '../../components/';
 import { Config } from '../../model/';
-import { format }  from '../../helpers';
+import { format, notify }  from '../../helpers';
+import { t } from '../../locales/';
 
 export class ConfigPage extends React.Component {
     constructor(props){
@@ -36,8 +37,13 @@ export class ConfigPage extends React.Component {
 
     onChange(form){
         form.connections = window.CONFIG.connections;
-        Config.save(form);
-        this.setState({refresh: Math.random()});
+        this.props.isSaving(true);
+        Config.save(form, true, () => {
+            this.props.isSaving(false);
+        }, (err) => {
+            notify.send(err || t('Oops'), 'error');
+            this.props.isSaving(false);
+        });
     }
 
     render(){

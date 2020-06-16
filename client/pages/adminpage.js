@@ -53,19 +53,24 @@ export class AdminPage extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            isAdmin: null
+            isAdmin: null,
+            isSaving: false
         };
+    }
+
+    isSaving(yesOrNo){
+        this.setState({isSaving: yesOrNo});
     }
 
     render(){
         return (
             <div className="component_page_admin">
-              <SideMenu url={this.props.match.url}/>
+              <SideMenu url={this.props.match.url} isLoading={this.state.isSaving}/>
               <div className="page_container scroll-y">
                 <ReactCSSTransitionGroup key={window.location.pathname} transitionName="adminpage" transitionLeave={true} transitionEnter={true} transitionLeaveTimeout={15000} transitionEnterTimeout={20000} transitionAppear={true} transitionAppearTimeout={20000}>
                   <Switch>
                     <Route path={this.props.match.url + "/dashboard"} component={DashboardPage} />
-                    <Route path={this.props.match.url + "/configure"} component={ConfigPage} />
+                    <Route path={this.props.match.url + "/configure"} render={()=><ConfigPage isSaving={this.isSaving.bind(this)}/>} />
                     <Route path={this.props.match.url + "/activity"} component={LogPage} />
                     <Route path={this.props.match.url + "/plugins"} component={PluginPage} />
                     <Route path={this.props.match.url + "/support"} component={SupportPage} />
@@ -82,10 +87,16 @@ export class AdminPage extends React.Component {
 const SideMenu = (props) => {
     return (
         <div className="component_menu_sidebar no-select">
-          <NavLink to="/" className="header">
-            <Icon name="arrow_left" />
-            <img src="/assets/logo/android-chrome-512x512.png" />
-          </NavLink>
+          { props.isLoading ?
+            <div className="header">
+              <Icon name="arrow_left" style={{"opacity": 0}}/>
+              <Icon name="loading" />
+            </div> :
+            <NavLink to="/" className="header">
+              <Icon name="arrow_left" />
+              <img src="/assets/logo/android-chrome-512x512.png" />
+            </NavLink>
+          }
           <h2>{ t("Admin console") }</h2>
           <ul>
             <li>
