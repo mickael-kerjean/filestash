@@ -114,16 +114,6 @@ func NewConfiguration() Configuration {
 				Elmnts: []FormElement{
 					FormElement{Name: "admin", Type: "bcrypt", Default: "", Description: "Password of the admin section."},
 				},
-				Form: []Form{
-					Form{
-						Title: "custom",
-						Elmnts: []FormElement{
-							FormElement{Name: "client_secret", Type: "password"},
-							FormElement{Name: "client_id", Type: "text"},
-							FormElement{Name: "sso_domain", Type: "text"},
-						},
-					},
-				},
 			},
 		},
 		Conn: make([]map[string]interface{}, 0),
