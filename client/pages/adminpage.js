@@ -8,7 +8,7 @@ import './adminpage.scss';
 import { Icon, LoadingPage } from '../components/';
 import { Config, Admin } from '../model';
 import { notify } from '../helpers/';
-import { HomePage, DashboardPage, ConfigPage, LogPage, PluginPage, SupportPage, SetupPage, LoginPage } from './adminpage/';
+import { HomePage, DashboardPage, ConfigPage, LogPage, SupportPage, SetupPage, LoginPage } from './adminpage/';
 import { t } from '../locales/';
 
 
@@ -72,7 +72,6 @@ export class AdminPage extends React.Component {
                     <Route path={this.props.match.url + "/dashboard"} component={DashboardPage} />
                     <Route path={this.props.match.url + "/configure"} render={()=><ConfigPage isSaving={this.isSaving.bind(this)}/>} />
                     <Route path={this.props.match.url + "/activity"} component={LogPage} />
-                    <Route path={this.props.match.url + "/plugins"} component={PluginPage} />
                     <Route path={this.props.match.url + "/support"} component={SupportPage} />
                     <Route path={this.props.match.url + "/setup"} component={SetupPage} />
                     <Route path={this.props.match.url} component={HomePage} />
