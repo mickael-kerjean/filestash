@@ -2,6 +2,7 @@ import React from 'react';
 import { FormBuilder, Icon, Input } from "../../components/";
 import { Backend, Config } from "../../model/";
 import { FormObjToJSON, notify, format, createFormBackend } from "../../helpers/";
+import { t } from '../../locales/';
 
 import "./dashboard.scss";
 
@@ -49,7 +50,13 @@ export class DashboardPage extends React.Component {
         });
 
         // persist config object in the backend
-        Config.save(json, true);
+        this.props.isSaving(true);
+        Config.save(json, true, () => {
+            this.props.isSaving(false);
+        }, (err) => {
+            notify.send(err && err.message || t('Oops'), 'error');
+            this.props.isSaving(false);
+        });
     }
 
 

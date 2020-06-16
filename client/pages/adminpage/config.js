@@ -41,7 +41,7 @@ export class ConfigPage extends React.Component {
         Config.save(form, true, () => {
             this.props.isSaving(false);
         }, (err) => {
-            notify.send(err || t('Oops'), 'error');
+            notify.send(err && err.message || t('Oops'), 'error');
             this.props.isSaving(false);
         });
     }

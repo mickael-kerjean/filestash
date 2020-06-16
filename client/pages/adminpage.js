@@ -69,9 +69,9 @@ export class AdminPage extends React.Component {
               <div className="page_container scroll-y">
                 <ReactCSSTransitionGroup key={window.location.pathname} transitionName="adminpage" transitionLeave={true} transitionEnter={true} transitionLeaveTimeout={15000} transitionEnterTimeout={20000} transitionAppear={true} transitionAppearTimeout={20000}>
                   <Switch>
-                    <Route path={this.props.match.url + "/dashboard"} component={DashboardPage} />
+                    <Route path={this.props.match.url + "/dashboard"} render={()=><DashboardPage isSaving={this.isSaving.bind(this)}/>} />
                     <Route path={this.props.match.url + "/configure"} render={()=><ConfigPage isSaving={this.isSaving.bind(this)}/>} />
-                    <Route path={this.props.match.url + "/activity"} component={LogPage} />
+                    <Route path={this.props.match.url + "/activity"} render={() =><LogPage isSaving={this.isSaving.bind(this)}/>} />
                     <Route path={this.props.match.url + "/support"} component={SupportPage} />
                     <Route path={this.props.match.url + "/setup"} component={SetupPage} />
                     <Route path={this.props.match.url} component={HomePage} />
