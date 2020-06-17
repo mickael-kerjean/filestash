@@ -45,5 +45,7 @@
 
 ;; markdown export
 (add-to-list 'load-path (file-name-directory load-file-name))
-(require 'ox-gfm)
-(defalias 'org-md-export-to-markdown 'org-gfm-export-to-markdown)
+
+(when (require 'ox-gfm nil 'noerror)
+  (defalias 'org-md-export-to-markdown 'org-gfm-export-to-markdown))
+

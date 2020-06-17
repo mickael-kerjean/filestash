@@ -14,10 +14,10 @@ steps:
   image: alpine:latest
   depends_on: [ clone ]
   commands:
-  - mkdir -p ./dist/data/state/
-  - cp -R config ./dist/data/state/
-  - mkdir -p ./filestash/data/state/
-  - cp -R config ./filestash/data/state/
+  - mkdir -p ./dist/data/state/config
+  - cp config/config.josn ./dist/data/state/config/
+  - mkdir -p ./filestash/data/state/config
+  - cp config/config.json ./filestash/data/state/config/
 
 - name: build_frontend
   image: node:12-alpine

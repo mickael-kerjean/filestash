@@ -14,6 +14,10 @@ import (
 	"strings"
 )
 
+//go:generate sh -c "go run ../generator/emacs-el.go > export_generated.go && go fmt export_generated.go"
+var EmacsElConfig string = ""
+
+
 func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 	http.SetCookie(res, &http.Cookie{
 		Name:   "download",
@@ -52,6 +56,18 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 						emacsPath = "/usr/local/Cellar/emacs/" + dirs[0] + "/bin/emacs"
 					}
 				}
+			}
+		}
+
+		// initialise the default emacs.el
+		if f, err := os.OpenFile(GetAbsolutePath(CONFIG_PATH + "emacs.el"), os.O_WRONLY | os.O_CREATE | os.O_EXCL, os.ModePerm); err == nil {
+			if _, err = f.Write([]byte(EmacsElConfig)); err != nil {
+				SendErrorResult(res, ErrFilesystemError)
+				return
+			}
+			if err = f.Close(); err != nil {
+				SendErrorResult(res, ErrFilesystemError)
+				return
 			}
 		}
 

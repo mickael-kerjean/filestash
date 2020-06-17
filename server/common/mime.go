@@ -1,23 +1,12 @@
 package common
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 )
 
-var MimeTypes map[string]string = map[string]string{ "txt": "text/plain" }
-
-func init() {
-	path := filepath.Join(GetCurrentDir(), CONFIG_PATH + "mime.json")
-	if f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm); err == nil {
-		j, _ := ioutil.ReadAll(f)
-		json.Unmarshal(j, &MimeTypes)
-		f.Close()
-	}
-}
+//go:generate sh -c "go run ../generator/mime.go > mime_generated.go && go fmt mime_generated.go"
+var MimeTypes map[string]string = make(map[string]string, 0)
 
 func GetMimeType(p string) string {
 	ext := filepath.Ext(p)

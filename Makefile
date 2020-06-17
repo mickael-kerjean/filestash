@@ -3,6 +3,7 @@ all:
 
 build_init:
 	find server/plugin/plg_* -type f -name "install.sh" -exec {} \;
+	go generate -x ./server/...
 
 build_frontend:
 	NODE_ENV=production npm run build
