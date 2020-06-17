@@ -88,9 +88,11 @@ func AuthBasic(credentials func() (string, string), fn http.Handler) http.Handle
 		password := strings.Join(stuffs[1:], ":")
 		refUsername, refPassword := credentials()
 		if refUsername != username {
+			Log.Info("[tty] username is 'admin'")
 			notAuthorised(res, req)
 			return
 		} else if len(strings.TrimSpace(password)) < 5 {
+			Log.Info("[tty] password is too short")
 			notAuthorised(res, req)
 			return
 		} else if err = bcrypt.CompareHashAndPassword([]byte(refPassword), []byte(password)); err != nil {
