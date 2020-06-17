@@ -15,7 +15,7 @@ steps:
   depends_on: [ clone ]
   commands:
   - mkdir -p ./dist/data/state/config
-  - cp config/config.josn ./dist/data/state/config/
+  - cp config/config.json ./dist/data/state/config/
   - mkdir -p ./filestash/data/state/config
   - cp config/config.json ./filestash/data/state/config/
 
@@ -108,13 +108,13 @@ steps:
     branch: master
   settings:
     command_timeout: 30m
-    host: hal.kerjean.me
+    host: rick.kerjean.me
     user:
       from_secret: SSH_USERNAME
     password:
       from_secret: SSH_PASSWORD
     source: filestash_Linux-x86_64.tar.gpg
-    target: /app/pages/data/projects/filestash/downloads/latest/
+    target: /mnt/me-kerjean-pages/projects/filestash/downloads/latest/
 
 - name: release_docker
   image: plugins/docker
@@ -131,25 +131,6 @@ steps:
     tags:
     - latest
     - "${DRONE_COMMIT_SHA:0:7}"
-
-- name: release_deploy
-  image: appleboy/drone-ssh
-  depends_on: [ release_docker ]
-  when:
-    branch: master
-  settings:
-    command_timeout: 10m
-    host: hal.kerjean.me
-    user:
-      from_secret: SSH_USERNAME
-    password:
-      from_secret: SSH_PASSWORD
-    port: 22
-    script:
-    - cd /app/filestash/
-    - docker-compose pull
-    - docker-compose up -d --force-recreate --build
-    - docker image prune -f
 
 - name: release_report
   image: plugins/irc
