@@ -109,12 +109,13 @@ steps:
   settings:
     command_timeout: 30m
     host: rick.kerjean.me
-    user:
+    username:
       from_secret: SSH_USERNAME
     password:
       from_secret: SSH_PASSWORD
     source: filestash_Linux-x86_64.tar.gpg
     target: /mnt/me-kerjean-pages/projects/filestash/downloads/latest/
+    overwrite: true
 
 - name: release_docker
   image: plugins/docker
@@ -134,7 +135,8 @@ steps:
 
 - name: release_report
   image: plugins/irc
-  depends_on: [ release_deploy ]
+  failure: ignore
+  depends_on: [ release_docker ]
   when:
     branch: master
   settings:

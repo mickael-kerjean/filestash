@@ -14,7 +14,6 @@ import (
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_dropbox"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_security_scanner"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_security_svg"
-	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_console"
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
