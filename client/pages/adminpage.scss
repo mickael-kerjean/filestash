@@ -93,7 +93,7 @@
 
 .component_menu_sidebar{
     height: 100vh;
-    background: var(--dark);
+    background: linear-gradient(#313538, var(--dark));
     width: 250px;
     border-right: 2px solid var(--color);
     padding: 50px 0px 0px 40px;
@@ -107,7 +107,7 @@
         margin: 25px 0 40px 0;
     }
     ul {
-        color: var(--light);
+        color: rgba(255,255,255,0.5);
         list-style-type: none;
         padding: 0;
         li {
