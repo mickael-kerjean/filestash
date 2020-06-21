@@ -250,6 +250,19 @@ func (pconn *persistentConn) logIn() error {
 		return ftpError{code: code, msg: msg}
 	}
 
+	if pconn.config.TLSConfig != nil && pconn.config.TLSMode == TLSImplicit {
+
+		err = pconn.sendCommandExpected(replyGroupPositiveCompletion, "PBSZ 0")
+		if err != nil {
+			return err
+		}
+
+		err = pconn.sendCommandExpected(replyGroupPositiveCompletion, "PROT P")
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

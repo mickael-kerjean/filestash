@@ -108,7 +108,7 @@ github.com/pkg/errors
 github.com/pkg/sftp
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/secsy/goftp v0.0.0-20190720192957-f31499d7c79a
+# github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4
 github.com/secsy/goftp
 # github.com/sergi/go-diff v1.0.0
 github.com/sergi/go-diff/diffmatchpatch
