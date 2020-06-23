@@ -514,6 +514,7 @@ func (this Backblaze) request(method string, url string, body io.Reader, fn func
 	} else {
 		req.Header.Set("Authorization", this.Token)
 	}
+	req.Header.Set("User-Agent", "Filestash " + APP_VERSION + "." + BUILD_DATE)
 	req.Header.Set("Accept", "application/json")
 	if fn != nil {
 		fn(req)
