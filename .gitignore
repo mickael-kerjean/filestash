@@ -1,4 +1,8 @@
 node_modules/
+*_generated.go
+*.a
+*.o
+*.bin
 test/
 dist/
 .DS_Store
