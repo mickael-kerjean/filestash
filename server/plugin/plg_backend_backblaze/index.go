@@ -13,7 +13,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -66,9 +68,6 @@ func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error)
 	}
 	if err := json.Unmarshal(body, &this); err != nil {
 		return nil, err
-	}
-	if this.Status == 401 {
-		return nil, ErrAuthenticationFailed
 	}
 
 	// Extract bucket related information as backblaze use bucketId as an identifer
@@ -517,13 +516,43 @@ func (this Backblaze) request(method string, url string, body io.Reader, fn func
 	}
 	req.Header.Set("User-Agent", "Filestash " + APP_VERSION + "." + BUILD_DATE)
 	req.Header.Set("Accept", "application/json")
+	//req.Header.Set("X-Bz-Test-Mode", "force_cap_exceeded")
 	if fn != nil {
 		fn(req)
 	}
 	if req.Body != nil {
 		defer req.Body.Close()
 	}
-	return HTTPClient.Do(req)
+
+	res, err := HTTPClient.Do(req)
+	if err != nil {
+		return res, err
+	}
+
+	if res.StatusCode == 401 {
+		res.Body.Close()
+		return res, ErrAuthenticationFailed
+	} else if res.StatusCode == 403 {
+		res.Body.Close()
+		return res, ErrNotAllowed
+	} else if res.StatusCode == 429 {
+		res.Body.Close()
+		retryAfter, err := strconv.Atoi(res.Header.Get("Retry-After"))
+		if err == nil && retryAfter < 10 && retryAfter >= 0 {
+			time.Sleep(time.Duration(retryAfter) * time.Second)
+			return this.request(method, url, body, fn)
+		}
+		return res, ErrCongestion
+	} else if res.StatusCode == 503 {
+		res.Body.Close()
+		retryAfter, err := strconv.Atoi(res.Header.Get("Retry-After"))
+		if err == nil && retryAfter < 10 && retryAfter >= 0 {
+			time.Sleep(time.Duration(retryAfter) * time.Second)
+			return this.request(method, url, body, fn)
+		}
+		return res, ErrCongestion
+	}
+	return res, nil
 }
 
 type BackblazePath struct {
