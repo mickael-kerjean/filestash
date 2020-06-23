@@ -103,6 +103,7 @@ func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error)
 	for i := range buckets.Buckets {
 		this.Buckets[buckets.Buckets[i].BucketName] = buckets.Buckets[i].BucketId
 	}
+	delete(params, "password")
 	BackblazeCache.Set(params, &this)
 	return this, nil
 }
