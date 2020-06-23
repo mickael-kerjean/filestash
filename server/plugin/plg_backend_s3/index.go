@@ -297,7 +297,7 @@ func (s S3Backend) Mv(from string, to string) error {
 	t := s.path(to)
 	client := s3.New(s.createSession(f.bucket))
 
-	if f.path == "" {
+	if f.path == "" || strings.HasSuffix(from, "/") {
 		return ErrNotImplemented
 	}
 
