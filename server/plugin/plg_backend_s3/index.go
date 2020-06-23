@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"fmt"
 )
 
@@ -116,9 +117,9 @@ func (s S3Backend) Meta(path string) Metadata {
 	return Metadata{}
 }
 
-func (s S3Backend) Ls(path string) ([]os.FileInfo, error) {
+func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
+	files = make([]os.FileInfo, 0)
 	p := s.path(path)
-	files := make([]os.FileInfo, 0)
 
 	if p.bucket == "" {
 		b, err := s.client.ListBuckets(&s3.ListBucketsInput{})
@@ -135,35 +136,55 @@ func (s S3Backend) Ls(path string) ([]os.FileInfo, error) {
 		}
 		return files, nil
 	}
-
 	client := s3.New(s.createSession(p.bucket))
-	objs, err := client.ListObjects(&s3.ListObjectsInput{
-		Bucket:    aws.String(p.bucket),
-		Prefix:    aws.String(p.path),
-		Delimiter: aws.String("/"),
-	})
-	if err != nil {
-		return nil, err
-	}
 
-	for i, object := range objs.Contents {
-		if i == 0 && *object.Key == p.path {
-			continue
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() { // Verify the path really exist
+		defer wg.Done()
+		if p.path == "" {
+			return
+		} else if _, errTmp := client.GetObject(&s3.GetObjectInput{
+			Bucket:    aws.String(p.bucket),
+			Key:       aws.String(p.path),
+		}); errTmp != nil {
+			err = errTmp
 		}
-		files = append(files, &File{
-			FName: filepath.Base(*object.Key),
-			FType: "file",
-			FTime: object.LastModified.Unix(),
-			FSize: *object.Size,
+	}()
+
+	go func() { // List the content
+		defer wg.Done()
+		objs, errTmp := client.ListObjects(&s3.ListObjectsInput{
+			Bucket:    aws.String(p.bucket),
+			Prefix:    aws.String(p.path),
+			Delimiter: aws.String("/"),
 		})
-	}
-	for _, object := range objs.CommonPrefixes {
-		files = append(files, &File{
-			FName: filepath.Base(*object.Prefix),
-			FType: "directory",
-		})
-	}
-	return files, nil
+		if errTmp != nil {
+			err = errTmp
+			return
+		}
+		for i, object := range objs.Contents {
+			if i == 0 && *object.Key == p.path {
+				continue
+			}
+			files = append(files, &File{
+				FName: filepath.Base(*object.Key),
+				FType: "file",
+				FTime: object.LastModified.Unix(),
+				FSize: *object.Size,
+			})
+		}
+		for _, object := range objs.CommonPrefixes {
+			files = append(files, &File{
+				FName: filepath.Base(*object.Prefix),
+				FType: "directory",
+			})
+		}
+	}()
+	wg.Wait()
+
+	return files, err
 }
 
 func (s S3Backend) Cat(path string) (io.ReadCloser, error) {
