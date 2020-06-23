@@ -21,8 +21,6 @@ var (
 	BackblazeCache     AppCache
 )
 
-
-
 type Backblaze struct {
 	params      map[string]string
 	Buckets     map[string]string
@@ -30,6 +28,7 @@ type Backblaze struct {
 	DownloadUrl string            `json:"downloadUrl"`
 	AccountId   string            `json:"accountId"`
 	Token       string            `json:"authorizationToken"`
+	Status      int               `json:"status"`
 }
 
 type BackblazeError struct {
@@ -67,6 +66,9 @@ func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error)
 	}
 	if err := json.Unmarshal(body, &this); err != nil {
 		return nil, err
+	}
+	if this.Status == 401 {
+		return nil, ErrAuthenticationFailed
 	}
 
 	// Extract bucket related information as backblaze use bucketId as an identifer
@@ -114,14 +116,14 @@ func (this Backblaze) LoginForm() Form {
 				Value:       "backblaze",
 			},
 			FormElement{
-				Name:        "application_key",
+				Name:        "username",
 				Type:        "text",
-				Placeholder: "Application Key",
+				Placeholder: "KeyID",
 			},
 			FormElement{
-				Name:        "application_key_id",
-				Type:        "text",
-				Placeholder: "Key Id",
+				Name:        "password",
+				Type:        "password",
+				Placeholder: "applicationKey",
 			},
 		},
 	}
@@ -505,7 +507,7 @@ func (this Backblaze) request(method string, url string, body io.Reader, fn func
 			fmt.Sprintf(
 				"Basic %s",
 				base64.StdEncoding.EncodeToString(
-					[]byte(fmt.Sprintf("%s:%s", this.params["application_key_id"], this.params["application_key"])),
+					[]byte(fmt.Sprintf("%s:%s", this.params["username"], this.params["password"])),
 				),
 			),
 		)
