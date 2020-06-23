@@ -243,7 +243,7 @@ func (s S3Backend) Rm(path string) error {
 	client := s3.New(s.createSession(p.bucket))
 	if p.bucket == "" {
 		return ErrNotFound
-	} else if strings.Contains(path, "/") == false {
+	} else if strings.HasSuffix(path, "/") == false {
 		_, err := client.DeleteObject(&s3.DeleteObjectInput{
 			Bucket: aws.String(p.bucket),
 			Key:    aws.String(p.path),
