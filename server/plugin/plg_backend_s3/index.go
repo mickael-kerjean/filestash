@@ -1,4 +1,4 @@
-package backend
+package plg_backend_s3
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
@@ -27,7 +27,6 @@ func init() {
 	Backend.Register("s3", S3Backend{})
 	S3Cache = NewAppCache(2, 1)
 }
-
 
 func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 	if params["encryption_key"] != "" && len(params["encryption_key"]) != 32 {
@@ -235,6 +234,7 @@ func (s S3Backend) Rm(path string) error {
 		return err
 	}
 	for _, obj := range objs.Contents {
+		// TODO: bug
 		_, err := client.DeleteObject(&s3.DeleteObjectInput{
 			Bucket: aws.String(p.bucket),
 			Key:    obj.Key,
@@ -244,6 +244,7 @@ func (s S3Backend) Rm(path string) error {
 		}
 	}
 	for _, pref := range objs.CommonPrefixes {
+		// TODO: bug
 		s.Rm("/" + p.bucket + "/" + *pref.Prefix)
 		_, err := client.DeleteObject(&s3.DeleteObjectInput{
 			Bucket: aws.String(p.bucket),
