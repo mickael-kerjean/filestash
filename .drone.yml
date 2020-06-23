@@ -133,6 +133,20 @@ steps:
     - latest
     - "${DRONE_COMMIT_SHA:0:7}"
 
+- name: deployment
+  image: quay.io/honestbee/drone-kubernetes
+  depends_on: [ release_publish ]
+  when:
+    branch: [ master ]
+  kubernetes_server: ${KUBERNETES_SERVER}
+  kubernetes_cert: ${KUBERNETES_CERT}
+  kubernetes_token: ${KUBERNETES_TOKEN}
+  deployment: app-filestash-demo
+  repo: machines/filestash
+  namespace: filestash
+  container: app-filestash-demo
+  tag: latest
+
 - name: release_report
   image: plugins/irc
   failure: ignore
