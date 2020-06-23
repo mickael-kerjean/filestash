@@ -241,9 +241,14 @@ func (s S3Backend) Mkdir(path string) error {
 func (s S3Backend) Rm(path string) error {
 	p := s.path(path)
 	client := s3.New(s.createSession(p.bucket))
-
 	if p.bucket == "" {
 		return ErrNotFound
+	} else if strings.Contains(path, "/") == false {
+		_, err := client.DeleteObject(&s3.DeleteObjectInput{
+			Bucket: aws.String(p.bucket),
+			Key:    aws.String(p.path),
+		})
+		return err
 	}
 
 	objs, err := client.ListObjects(&s3.ListObjectsInput{
@@ -255,7 +260,6 @@ func (s S3Backend) Rm(path string) error {
 		return err
 	}
 	for _, obj := range objs.Contents {
-		// TODO: bug
 		_, err := client.DeleteObject(&s3.DeleteObjectInput{
 			Bucket: aws.String(p.bucket),
 			Key:    obj.Key,
@@ -265,7 +269,6 @@ func (s S3Backend) Rm(path string) error {
 		}
 	}
 	for _, pref := range objs.CommonPrefixes {
-		// TODO: bug
 		s.Rm("/" + p.bucket + "/" + *pref.Prefix)
 		_, err := client.DeleteObject(&s3.DeleteObjectInput{
 			Bucket: aws.String(p.bucket),
@@ -274,9 +277,6 @@ func (s S3Backend) Rm(path string) error {
 		if err != nil {
 			return err
 		}
-	}
-	if err != nil {
-		return err
 	}
 
 	if p.path == "" {
