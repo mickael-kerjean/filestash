@@ -11,5 +11,18 @@
         height: 100%;
         width: 100%;
         flex-grow: 1;
+
+
+        /* PDFJS */
+        canvas{
+            margin: 0 auto;
+        }
+        .react-pdf__Document{
+            overflow-y: scroll;
+            height: 100%;
+            .react-pdf__Page{
+                margin-top: 15px;
+            }
+        }
     }
 }

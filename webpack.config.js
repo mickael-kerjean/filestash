@@ -71,8 +71,11 @@ let config = {
             { from: "worker/*.js", to: "assets/" },
             { from: "assets/logo/*" },
             { from: "assets/icons/*" },
-            { from: "assets/fonts/*" }
+            { from: "assets/fonts/*" },
         ], { context: path.join(__dirname, 'client') }),
+        new CopyWebpackPlugin([
+            { from: "node_modules/pdfjs-dist/", to: "assets/vendor/pdfjs"}
+        ]),
         //new BundleAnalyzerPlugin()
     ]
 };
