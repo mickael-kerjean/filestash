@@ -55,6 +55,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
 window.onerror = function (msg, url, lineNo, colNo, error) {
     Log.report(msg, url, lineNo, colNo, error)
+
+    let $code = document.createElement("code");
+    $code.style.textAlign = "center";
+    $code.style.display = "block";
+    $code.style.margin = "50px 0";
+    $code.style.fontSize = "1.3rem";
+    $code.textContent = msg;
+    document.body.innerHTML = "";
+    document.body.appendChild($code);
 }
 
 if ("serviceWorker" in navigator) {
