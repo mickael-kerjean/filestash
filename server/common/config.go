@@ -354,7 +354,6 @@ func (this Configuration) Export() interface{} {
 		RememberMe    bool              `json:"remember_me"`
 		UploadButton  bool              `json:"upload_button"`
 		Connections   interface{}       `json:"connections"`
-		EnableSearch  bool              `json:"enable_search"`
 		EnableShare   bool              `json:"enable_share"`
 		MimeTypes     map[string]string `json:"mime"`
 	}{
@@ -366,7 +365,6 @@ func (this Configuration) Export() interface{} {
 		RememberMe:    this.Get("general.remember_me").Bool(),
 		UploadButton:  this.Get("general.upload_button").Bool(),
 		Connections:   this.Conn,
-		EnableSearch:  this.Get("features.search.enable").Bool(),
 		EnableShare:   this.Get("features.share.enable").Bool(),
 		MimeTypes:     AllMimeTypes(),
 	}

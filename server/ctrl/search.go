@@ -8,11 +8,6 @@ import (
 )
 
 func FileSearch(ctx App, res http.ResponseWriter, req *http.Request) {
-	if Config.Get("features.search.enable").Bool() == false {
-		SendErrorResult(res, ErrNotAllowed)
-		return
-	}
-
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		path = "/"
@@ -22,10 +17,20 @@ func FileSearch(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}
-	searchResults := model.Search(&ctx, path, q)
-	for i:=0; i<len(searchResults); i++ {
-		if ctx.Session["path"] != "" {
-			searchResults[i].FPath = "/" + strings.TrimPrefix(searchResults[i].FPath, ctx.Session["path"])
+
+	var searchResults []File
+	if Config.Get("features.search.enable").Bool() {
+		searchResults = model.SearchStateFull(&ctx, path, q)
+	} else {
+		searchResults = model.SearchStateLess(&ctx, path, q)
+	}
+
+	if ctx.Session["path"] != "" {
+		for i:=0; i<len(searchResults); i++ {
+			searchResults[i].FPath = "/" + strings.TrimPrefix(
+				searchResults[i].FPath,
+				ctx.Session["path"],
+			)
 		}
 	}
 	SendSuccessResults(res, searchResults)
