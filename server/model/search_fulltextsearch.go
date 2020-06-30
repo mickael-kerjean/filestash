@@ -175,7 +175,7 @@ func init(){
 	}
 }
 
-func SearchStateFull(app *App, path string, keyword string) []File {
+func SearchStateful(app *App, path string, keyword string) []File {
 	var files []File = make([]File, 0)
 
 	// extract our search indexer

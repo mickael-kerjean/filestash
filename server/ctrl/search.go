@@ -20,7 +20,7 @@ func FileSearch(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	var searchResults []File
 	if Config.Get("features.search.enable").Bool() {
-		searchResults = model.SearchStateFull(&ctx, path, q)
+		searchResults = model.SearchStateful(&ctx, path, q)
 	} else {
 		searchResults = model.SearchStateLess(&ctx, path, q)
 	}

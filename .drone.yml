@@ -61,7 +61,7 @@ steps:
   - npm install --silent
   - npm test
 
-- name: test_backend
+- name: test_backend_unit
   image: golang:1.12-alpine
   depends_on: [ test_prepare, build_backend, build_frontend ]
   environment:
@@ -70,6 +70,15 @@ steps:
   - apk add git gcc libc-dev poppler-utils > /dev/null
   - cp ./test/assets/* /tmp/
   - go test -mod=vendor -v --tags "fts5" ./test/unit_go/...
+
+- name: test_backend_integration
+  image: golang:1.12-alpine
+  depends_on: [ test_prepare, build_backend, build_frontend ]
+  environment:
+    GO111MODULE: "on"
+  commands:
+  - apk add git gcc libc-dev poppler-utils > /dev/null
+  - go test -mod=vendor -v ./test/integration_go/
 
 - name: test_e2e
   image: machines/puppeteer
@@ -87,7 +96,7 @@ steps:
 
 - name: release_prepare
   image: debian:stable-slim
-  depends_on: [ test_frontend, test_backend, test_e2e ]
+  depends_on: [ test_frontend, test_backend_unit, test_backend_integration, test_e2e ]
   environment:
     GPG_PRIVATE:
       from_secret: GPG_PRIVATE
