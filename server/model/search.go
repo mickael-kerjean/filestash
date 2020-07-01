@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"database/sql"
 	"encoding/base64"
+	"fmt"
 	"github.com/mattn/go-sqlite3"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model/formater"
@@ -27,6 +28,7 @@ const (
 )
 var (
 	SEARCH_ENABLE func() bool
+	SEARCH_TIMEOUT func() time.Duration
 	SEARCH_PROCESS_MAX func() int
 	SEARCH_PROCESS_PAR func() int
 	SEARCH_REINDEX func() int
@@ -50,13 +52,28 @@ func init(){
 			f.Name = "enable"
 			f.Type = "enable"
 			f.Target = []string{"process_max", "process_par", "reindex_time", "cycle_time", "max_size", "indexer_ext"}
-			f.Description = "Enable/Disable the search feature"
+			f.Description = "Enable/Disable full text search"
 			f.Placeholder = "Default: false"
 			f.Default = false
 			return f
 		}).Bool()
 	}
 	SEARCH_ENABLE()
+	SEARCH_TIMEOUT = func() time.Duration {
+		return time.Duration(Config.Get("features.search.explore_timeout").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Name = "explore_timeout"
+			f.Type = "number"
+			f.Default = 300
+			f.Description = `When full text search is disabled, the search engine recursively explore
+ directories to find results. Exploration can't last longer than what is confured here`
+			f.Placeholder = fmt.Sprintf("Default: %dms", f.Default)
+			return f
+		}).Int()) * time.Millisecond
+	}
+	SEARCH_TIMEOUT()
 	SEARCH_PROCESS_MAX = func() int {
 		return Config.Get("features.search.process_max").Schema(func(f *FormElement) *FormElement {
 			if f == nil {

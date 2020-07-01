@@ -68,7 +68,7 @@ func scoreBoostOnDepth(p string) int {
 func SearchStateLess(app *App, path string, keyword string) []File {
 	files := make([]File, 0)
 	toVisit := []PathQuandidate{PathQuandidate{path, 0}}
-	MAX_SEARCH_TIME := 300 * time.Millisecond
+	MAX_SEARCH_TIME := SEARCH_TIMEOUT()
 
 	for start := time.Now() ; time.Since(start) < MAX_SEARCH_TIME; {
 		if len(toVisit) == 0 {
