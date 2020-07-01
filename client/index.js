@@ -47,15 +47,20 @@ window.addEventListener("DOMContentLoaded", () => {
         }
         return removeLoader().then(render);
     }).catch((e) => {
-        const msg = "Couldn't boot Filestash";
+        const msg = "CAN'T LOAD FILESTASH";
         Log.report(msg, location.href);
-        return removeLoaderWithAnimation()
+        return removeLoaderWithAnimation().then(() => {
+            $error(msg);
+        });
     });
 });
 
 window.onerror = function (msg, url, lineNo, colNo, error) {
-    Log.report(msg, url, lineNo, colNo, error)
+    Log.report(msg, url, lineNo, colNo, error);
+    $error(msg);
+}
 
+function $error(msg){
     let $code = document.createElement("code");
     $code.style.textAlign = "center";
     $code.style.display = "block";
