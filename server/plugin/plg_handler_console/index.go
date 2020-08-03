@@ -42,10 +42,10 @@ func init() {
 		if console_enable() == false {
 			return nil
 		}
-		r.PathPrefix("/tty/").Handler(
+		r.PathPrefix("/admin/tty/").Handler(
 			AuthBasic(
 				func() (string, string) { return "admin", Config.Get("auth.admin").String() },
-				TTYHandler("/tty/"),
+				TTYHandler("/admin/tty/"),
 			),
 		)
 		return nil
@@ -62,7 +62,10 @@ var notAuthorised = func(res http.ResponseWriter, req *http.Request) {
 
 func AuthBasic(credentials func() (string, string), fn http.Handler) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		if console_enable() == false {
+		if strings.HasSuffix(Config.Get("general.host").String(), "filestash.app") {
+			http.NotFoundHandler().ServeHTTP(res, req)
+			return
+		} else if console_enable() == false {
 			http.NotFoundHandler().ServeHTTP(res, req)
 			return
 		}
