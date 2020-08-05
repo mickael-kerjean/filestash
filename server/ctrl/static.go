@@ -28,8 +28,7 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		urlObj, err := URL.Parse(req.URL.String())
 		if err != nil {
-			res.WriteHeader(http.StatusInternalServerError)
-			res.Write([]byte(Page("<h1>404 - Not Found</h1>")))
+			NotFoundHandler(ctx, res, req)
 			return
 		}
 		url := urlObj.Path
@@ -40,15 +39,14 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 		} else if url != "/" && strings.HasPrefix(url, "/s/") == false &&
 			strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
 			url != "/login" && url != "/logout" && strings.HasPrefix(url, "/admin") == false {
-			res.WriteHeader(http.StatusNotFound)
-			res.Write([]byte(Page("<h1>404 - Not Found</h1>")))
+			NotFoundHandler(ctx, res, req)
 			return
 		}
 		ua := req.Header.Get("User-Agent");
 		if strings.Contains(ua, "MSIE ") || strings.Contains(ua, "Edge/"){
 			// Microsoft is behaving on many occasion differently than Firefox / Chrome.
 			// I have neither the time / motivation for it to work properly
-			res.WriteHeader(http.StatusBadRequest)			
+			res.WriteHeader(http.StatusBadRequest)
 			res.Write([]byte(
 				Page(`
                   <h1>Internet explorer is not supported</h1>
@@ -63,6 +61,11 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 		srcPath := GetAbsolutePath(_path)
 		ServeFile(res, req, srcPath)
 	}
+}
+
+func NotFoundHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+	res.WriteHeader(http.StatusNotFound)
+	res.Write([]byte(Page(`<img style="max-width:800px" src="/assets/icons/404.svg" />`)))
 }
 
 func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -158,6 +161,6 @@ func hashFileContent(path string, n int) string {
 	if err != nil {
 		return ""
 	}
-	defer f.Close()	
+	defer f.Close()
 	return HashStream(f, n)
 }

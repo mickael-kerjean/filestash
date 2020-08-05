@@ -100,7 +100,7 @@ func Page(stuff string) string {
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <style>
       html { background: #f4f4f4; color: #455164; font-size: 16px; font-family: -apple-system,system-ui,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif; }
-      body { text-align: center; padding-top: 50px; text-align: center; }
+      body { text-align: center; padding-top: 50px; text-align: center; margin: 0; }
       h1 { font-weight: 200; line-height: 1em; font-size: 40px; }
       p { opacity: 0.8; font-size: 1.05em; }
     </style>
