@@ -99,6 +99,7 @@ func Init(a *App) {
 	r.HandleFunc("/robots.txt", func(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte(""))
 	})
+	r.HandleFunc("/.well-known/security.txt", NewMiddlewareChain(WellKnownSecurityHandler, []Middleware{}, *a)).Methods("GET")
 
 	if os.Getenv("DEBUG") == "true" {
 		initDebugRoutes(r)

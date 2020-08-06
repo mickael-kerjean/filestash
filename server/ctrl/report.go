@@ -10,3 +10,10 @@ func ReportHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	// this function is called.
 	SendSuccessResult(res, nil)
 }
+
+func WellKnownSecurityHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+	res.WriteHeader(http.StatusOK)
+	res.Write([]byte("# If you would like to report a security issue\n"))
+	res.Write([]byte("# you may report it to me via email\n"))
+	res.Write([]byte("Contact: mickael@kerjean.me"))
+}
