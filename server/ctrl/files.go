@@ -403,7 +403,7 @@ func PathBuilder(ctx App, path string) (string, error) {
 		return "", NewError("No path available", 400)
 	}
 	sessionPath := ctx.Session["path"]
-	basePath := filepath.Join(sessionPath, path)
+	basePath := filepath.ToSlash(filepath.Join(sessionPath, path))
 	if path[len(path)-1:] == "/" && basePath != "/" {
 		basePath += "/"
 	}
