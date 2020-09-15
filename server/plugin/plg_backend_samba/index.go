@@ -108,45 +108,47 @@ func (smb Samba) Ls(path string) ([]os.FileInfo, error) {
 	path = toSambaPath(path)
 	dir, err := smb.share.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, fromSambaErr(err)
 	}
 	defer dir.Close()
 
-	return dir.Readdir(-1) // lists all files
+	fs, err := dir.Readdir(-1) // lists all files
+	return fs, fromSambaErr(err)
 }
 
 func (smb Samba) Cat(path string) (io.ReadCloser, error) {
 	path = toSambaPath(path)
-	return smb.share.Open(path)
+	f, err := smb.share.Open(path)
+	return f, fromSambaErr(err)
 }
 
 func (smb Samba) Mkdir(path string) error {
 	path = toSambaPath(path)
-	return smb.share.Mkdir(path, os.ModeDir)
+	return fromSambaErr(smb.share.Mkdir(path, os.ModeDir))
 }
 
 func (smb Samba) Rm(path string) error {
 	path = toSambaPath(path)
-	return smb.share.RemoveAll(path)
+	return fromSambaErr(smb.share.RemoveAll(path))
 }
 
 func (smb Samba) Mv(from, to string) error {
 	from = toSambaPath(from)
 	to = toSambaPath(to)
-	return smb.share.Rename(from, to)
+	return fromSambaErr(smb.share.Rename(from, to))
 }
 
 func (smb Samba) Save(path string, content io.Reader) error {
 	path = toSambaPath(path)
 	f, err := smb.share.Create(path)
 	if err != nil {
-		return err
+		return fromSambaErr(err)
 	}
 
 	_, err = io.Copy(f, content)
 	if err != nil {
 		f.Close()
-		return err
+		return fromSambaErr(err)
 	}
 
 	return f.Close()
@@ -160,4 +162,13 @@ func (smb Samba) Touch(path string) error {
 func toSambaPath(path string) string {
 	path = strings.TrimLeft(path, `/`)
 	return strings.Replace(path, `/`, `\`, -1) // replace all path separators
+}
+
+func fromSambaErr(err error) error {
+	switch {
+	case os.IsPermission(err):
+		return ErrPermissionDenied
+	default:
+		return err
+	}
 }
