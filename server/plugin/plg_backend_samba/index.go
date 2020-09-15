@@ -37,7 +37,7 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		return c.(*Samba), nil
 	}
 
-	conn, err := net.DialTimeout("tcp", params["host"]+":445", 10 * time.Second)
+	conn, err := net.DialTimeout("tcp", params["host"]+":"+params["port"], 10 * time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +93,12 @@ func (smb Samba) LoginForm() Form {
 				Type: "text",
 				Placeholder: "example.com",
 				Required: true,
+			},
+			{
+				Name: "port",
+				Type: "number",
+				Placeholder: "445",
+				Default: 445,
 			},
 			{
 				Name: "share",
@@ -161,7 +167,7 @@ func (smb Samba) Touch(path string) error {
 
 func toSambaPath(path string) string {
 	path = strings.TrimLeft(path, `/`)
-	return strings.Replace(path, `/`, `\`, -1) // replace all path separators
+	return strings.ReplaceAll(path, `/`, `\`)
 }
 
 func fromSambaErr(err error) error {
