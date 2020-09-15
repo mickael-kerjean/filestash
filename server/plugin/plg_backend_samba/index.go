@@ -116,6 +116,7 @@ func (smb Samba) Save(path string, content io.Reader) error {
 
 	_, err = io.Copy(f, content)
 	if err != nil {
+		f.Close()
 		return err
 	}
 
