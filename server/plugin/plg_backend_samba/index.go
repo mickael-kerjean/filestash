@@ -166,7 +166,11 @@ func (smb Samba) Save(path string, content io.Reader) error {
 
 func (smb Samba) Touch(path string) error {
 	path = toSambaPath(path)
-	return smb.Touch(path)
+	f, err := smb.share.Create(path)
+	if err != nil {
+		return fromSambaErr(err)
+	}
+	return fromSambaErr(f.Close())
 }
 
 func toSambaPath(path string) string {
