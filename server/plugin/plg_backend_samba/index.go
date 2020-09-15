@@ -97,7 +97,7 @@ func (smb Samba) LoginForm() Form {
 			{
 				Name: "port",
 				Type: "number",
-				Placeholder: "445",
+				Placeholder: "Default: 445",
 				Default: 445,
 			},
 			{
