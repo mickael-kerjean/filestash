@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/hirochachacha/go-smb2"
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 var SambaCache AppCache
@@ -20,15 +20,19 @@ func init() {
 	SambaCache.OnEvict(func(key string, value interface{}) {
 		smb := value.(*Samba)
 		err := smb.share.Umount()
-		if err != nil { Log.Warning("samba: error unmounting share: %v", err) }
+		if err != nil {
+			Log.Warning("samba: error unmounting share: %v", err)
+		}
 		err = smb.session.Logoff()
-		if err != nil { Log.Warning("samba: error logging out: %v", err) }
+		if err != nil {
+			Log.Warning("samba: error logging out: %v", err)
+		}
 	})
 }
 
 type Samba struct {
 	session *smb2.Session
-	share *smb2.Share
+	share   *smb2.Share
 }
 
 func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
@@ -37,16 +41,16 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		return c.(*Samba), nil
 	}
 
-	conn, err := net.DialTimeout("tcp", params["host"]+":"+params["port"], 10 * time.Second)
+	conn, err := net.DialTimeout("tcp", params["host"]+":"+params["port"], 10*time.Second)
 	if err != nil {
 		return nil, err
 	}
 
 	d := &smb2.Dialer{
 		Initiator: &smb2.NTLMInitiator{
-			User: params["username"],
+			User:     params["username"],
 			Password: params["password"],
-			Domain: params["domain"],
+			Domain:   params["domain"],
 		},
 	}
 
@@ -69,42 +73,42 @@ func (smb Samba) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			{
-				Name: "type",
-				Type: "hidden",
+				Name:  "type",
+				Type:  "hidden",
 				Value: "samba",
 			},
 			{
-				Name: "username",
-				Type: "text",
+				Name:        "username",
+				Type:        "text",
 				Placeholder: "Username",
 			},
 			{
-				Name: "domain",
-				Type: "text",
+				Name:        "domain",
+				Type:        "text",
 				Placeholder: "Domain",
 			},
 			{
-				Name: "password",
-				Type: "long_password",
+				Name:        "password",
+				Type:        "long_password",
 				Placeholder: "Password",
 			},
 			{
-				Name: "host",
-				Type: "text",
+				Name:        "host",
+				Type:        "text",
 				Placeholder: "example.com",
-				Required: true,
+				Required:    true,
 			},
 			{
-				Name: "port",
-				Type: "number",
+				Name:        "port",
+				Type:        "number",
 				Placeholder: "Default: 445",
-				Default: 445,
+				Default:     445,
 			},
 			{
-				Name: "share",
-				Type: "text",
+				Name:        "share",
+				Type:        "text",
 				Placeholder: `sharename`,
-				Required: true,
+				Required:    true,
 			},
 		},
 	}
