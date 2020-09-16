@@ -1,6 +1,13 @@
 package plg_backend_s3
 
 import (
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -8,12 +15,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"io"
-	"os"
-	"path/filepath"
-	"strings"
-	"sync"
-	"fmt"
 )
 
 var S3Cache AppCache
@@ -38,7 +39,7 @@ func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 		params["region"] = "us-east-2"
 	}
 	config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials(params["access_key_id"], params["secret_access_key"], ""),
+		Credentials:      credentials.NewStaticCredentials(params["access_key_id"], params["secret_access_key"], params["session_token"]),
 		S3ForcePathStyle: aws.Bool(true),
 		Region:           aws.String(params["region"]),
 	}
@@ -57,9 +58,9 @@ func (s S3Backend) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
-				Name:        "type",
-				Type:        "hidden",
-				Value:       "s3",
+				Name:  "type",
+				Type:  "hidden",
+				Value: "s3",
 			},
 			FormElement{
 				Name:        "access_key_id",
@@ -75,7 +76,13 @@ func (s S3Backend) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"s3_path", "s3_encryption_key", "s3_region", "s3_endpoint"},
+				Target:      []string{"s3_path", "s3_session_token", "s3_encryption_key", "s3_region", "s3_endpoint"},
+			},
+			FormElement{
+				Id:          "s3_session_token",
+				Name:        "session_token",
+				Type:        "text",
+				Placeholder: "Session Token",
 			},
 			FormElement{
 				Id:          "s3_path",
@@ -146,8 +153,8 @@ func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 		if p.path == "" {
 			return
 		} else if _, errTmp := client.GetObject(&s3.GetObjectInput{
-			Bucket:    aws.String(p.bucket),
-			Key:       aws.String(p.path),
+			Bucket: aws.String(p.bucket),
+			Key:    aws.String(p.path),
 		}); errTmp != nil {
 			err = errTmp
 		}
@@ -201,7 +208,7 @@ func (s S3Backend) Cat(path string) (io.ReadCloser, error) {
 	}
 	obj, err := client.GetObject(input)
 	if err != nil {
-		awsErr, ok := err.(awserr.Error);
+		awsErr, ok := err.(awserr.Error)
 		if ok == false {
 			return nil, err
 		}
@@ -215,7 +222,7 @@ func (s S3Backend) Cat(path string) (io.ReadCloser, error) {
 		} else if awsErr.Code() == "AccessDenied" {
 			return nil, ErrNotAllowed
 		}
-		return nil ,err
+		return nil, err
 	}
 
 	return obj.Body, nil
