@@ -429,10 +429,11 @@ class FileSystem{
         });
     }
     _add(path, icon){
-        return cache.upsert(cache.FILE_PATH, [currentShare(), dirname(path)], function(res){
+        return cache.upsert(cache.FILE_PATH, [currentShare(), dirname(path)], (res) => {
             if(!res || !res.results){
                 res = {
                     path: path,
+                    share: currentShare(),
                     results: [],
                     access_count: 0,
                     last_access: null,
