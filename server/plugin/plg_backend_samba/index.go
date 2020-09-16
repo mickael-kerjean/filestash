@@ -115,7 +115,11 @@ func (smb Samba) LoginForm() Form {
 }
 
 func (smb Samba) Ls(path string) ([]os.FileInfo, error) {
-	path = toSambaPath(path)
+	path, err := toSambaPath(path)
+	if err != nil {
+		return nil, err
+	}
+
 	dir, err := smb.share.Open(path)
 	if err != nil {
 		return nil, fromSambaErr(err)
@@ -127,29 +131,53 @@ func (smb Samba) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (smb Samba) Cat(path string) (io.ReadCloser, error) {
-	path = toSambaPath(path)
+	path, err := toSambaPath(path)
+	if err != nil {
+		return nil, err
+	}
+
 	f, err := smb.share.Open(path)
 	return f, fromSambaErr(err)
 }
 
 func (smb Samba) Mkdir(path string) error {
-	path = toSambaPath(path)
+	path, err := toSambaPath(path)
+	if err != nil {
+		return err
+	}
+
 	return fromSambaErr(smb.share.Mkdir(path, os.ModeDir))
 }
 
 func (smb Samba) Rm(path string) error {
-	path = toSambaPath(path)
+	path, err := toSambaPath(path)
+	if err != nil {
+		return err
+	}
+
 	return fromSambaErr(smb.share.RemoveAll(path))
 }
 
 func (smb Samba) Mv(from, to string) error {
-	from = toSambaPath(from)
-	to = toSambaPath(to)
+	from, err := toSambaPath(from)
+	if err != nil {
+		return err
+	}
+
+	to, err = toSambaPath(to)
+	if err != nil {
+		return err
+	}
+
 	return fromSambaErr(smb.share.Rename(from, to))
 }
 
 func (smb Samba) Save(path string, content io.Reader) error {
-	path = toSambaPath(path)
+	path, err := toSambaPath(path)
+	if err != nil {
+		return err
+	}
+
 	f, err := smb.share.Create(path)
 	if err != nil {
 		return fromSambaErr(err)
@@ -165,7 +193,11 @@ func (smb Samba) Save(path string, content io.Reader) error {
 }
 
 func (smb Samba) Touch(path string) error {
-	path = toSambaPath(path)
+	path, err := toSambaPath(path)
+	if err != nil {
+		return err
+	}
+
 	f, err := smb.share.Create(path)
 	if err != nil {
 		return fromSambaErr(err)
@@ -173,9 +205,15 @@ func (smb Samba) Touch(path string) error {
 	return fromSambaErr(f.Close())
 }
 
-func toSambaPath(path string) string {
+func toSambaPath(path string) (string, error) {
+	if strings.ContainsRune(path, '\\') {
+		// Backslashes aren't allowed on Windows, so we are conservative here
+		// since Samba volumes are often (not always) exposed from Windows
+		return "", ErrNotAllowed
+	}
+
 	path = strings.TrimLeft(path, `/`)
-	return strings.ReplaceAll(path, `/`, `\`)
+	return strings.ReplaceAll(path, `/`, `\`), nil
 }
 
 func fromSambaErr(err error) error {
