@@ -15,7 +15,7 @@ As the copyright owner, you agree to license your contributions under an irrevoc
 
 ### Building from source
 
-*Prerequisites*: Git, Make, Node, Go
+*Prerequisites*: Git, Make, Node, Go, Glib 2.0
 
 ```
 # Download the source
