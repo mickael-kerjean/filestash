@@ -1,0 +1,82 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "install",
+			"problemMatcher": [],
+			"label": "npm: install",
+			"detail": "install dependencies from package"
+		},
+		{
+			"label": "default config",
+			"type": "shell",
+			"command": "if [ ! -d \"${workspaceFolder}/dist/data/state/config\" ]; then mkdir -p ${workspaceFolder}/dist/data/state/ && cp -R ${workspaceFolder}/config ${workspaceFolder}/dist/data/state/; fi;",
+			"group": "build",
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "build_init",
+			"type": "shell",
+			"command": "make build_init",
+			"group": "build",
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "init",
+			"dependsOn": [
+				"npm: install",
+				"build_init",
+				"default config"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "build_frontend",
+			"type": "shell",
+			"command": "make build_frontend",
+			"group": "build",
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "build_backend",
+			"type": "shell",
+			"command": "make build_backend",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": "$go"
+		},
+		{
+			"label": "build",
+			"dependsOn": [
+				"build_frontend",
+				"build_backend"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "run",
+			"type": "shell",
+			"command": "${workspaceFolder}/dist/filestash",
+			"group": "none",
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
+		}
+	]
+}
