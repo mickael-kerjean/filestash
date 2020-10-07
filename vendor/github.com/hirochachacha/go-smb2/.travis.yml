@@ -1,0 +1,18 @@
+language: go
+go:
+  - 1.12
+  - 1.13
+  - tip
+os:
+  - linux
+addons:
+  apt:
+    packages:
+      - samba
+before_install:
+  - cp .travis/client_conf.json ./
+  - sudo cp .travis/smb.conf /etc/samba/smb.conf
+  - (echo travis; echo travis) | sudo smbpasswd -a -s travis
+  - sudo smbd
+script:
+  - go test -v -race ./...
