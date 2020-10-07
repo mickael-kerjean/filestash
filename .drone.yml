@@ -97,9 +97,9 @@ steps:
 - name: release_prepare
   image: debian:stable-slim
   depends_on: [ test_frontend, test_backend_unit, test_backend_integration, test_e2e ]
+  when:
+    branch: master
   environment:
-    GPG_PRIVATE:
-      from_secret: GPG_PRIVATE
     GPG_PASSPHRASE:
       from_secret: GPG_PASSPHRASE
   commands:
@@ -146,7 +146,7 @@ steps:
   image: quay.io/honestbee/drone-kubernetes
   depends_on: [ release_publish ]
   when:
-    branch: [ master ]
+    branch: master
   kubernetes_server: ${KUBERNETES_SERVER}
   kubernetes_cert: ${KUBERNETES_CERT}
   kubernetes_token: ${KUBERNETES_TOKEN}
