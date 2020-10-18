@@ -91,6 +91,11 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	}})
 }
 
+func CustomCssHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-Type", "text/css");
+	io.WriteString(res, Config.Get("general.custom_css").String());
+}
+
 func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 	zFilePath := filePath + ".gz"
 	bFilePath := filePath + ".br"
