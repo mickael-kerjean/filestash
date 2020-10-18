@@ -96,7 +96,7 @@ export class Editor extends React.Component {
                 value: this.props.content,
                 lineNumbers: true,
                 mode: mode,
-                keyMap: CONFIG["editor"],
+                keyMap: ["emacs", "vim"].indexOf(CONFIG["editor"]) === -1 ? "sublime" : CONFIG["editor"],
                 lineWrapping: true,
                 readOnly: !this.props.readonly,
                 foldOptions: {
