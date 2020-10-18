@@ -101,6 +101,7 @@ func Init(a *App) {
 	})
 	r.HandleFunc("/.well-known/security.txt", NewMiddlewareChain(WellKnownSecurityHandler, []Middleware{}, *a)).Methods("GET")
 	r.HandleFunc("/healthz", NewMiddlewareChain(HealthHandler, []Middleware{}, *a)).Methods("GET")
+	r.HandleFunc("/custom.css", NewMiddlewareChain(CustomCssHandler, []Middleware{}, *a)).Methods("GET")
 
 	if os.Getenv("DEBUG") == "true" {
 		initDebugRoutes(r)

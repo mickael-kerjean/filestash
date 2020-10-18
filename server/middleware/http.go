@@ -48,7 +48,7 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 		header.Set("X-Powered-By", fmt.Sprintf("Filestash/%s.%s <https://filestash.app>", APP_VERSION, BUILD_DATE))
 
 		cspHeader := "default-src 'none'; "
-		cspHeader += "style-src 'unsafe-inline'; "
+		cspHeader += "style-src 'self' 'unsafe-inline'; "
 		cspHeader += "font-src 'self' data:; "
 		cspHeader += "manifest-src 'self'; "
 		cspHeader += "script-src 'self' 'sha256-JNAde5CZQqXtYRLUk8CGgyJXo6C7Zs1lXPPClLM1YM4=' 'sha256-9/gQeQaAmVkFStl6tfCbHXn8mr6PgtxlH+hEp685lzY=' 'sha256-ER9LZCe8unYk8AJJ2qopE+rFh7OUv8QG5q3h6jZeoSk='; "
