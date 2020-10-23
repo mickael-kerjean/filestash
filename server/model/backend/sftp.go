@@ -55,11 +55,12 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	addr := p.hostname + ":" + p.port
 	var auth []ssh.AuthMethod
 
+	keyStartMatcher := regexp.MustCompile(`^-----BEGIN [A-Z\ ]+-----`)
+	keyEndMatcher := regexp.MustCompile(`-----END [A-Z\ ]+-----$`)
+	keyContentMatcher := regexp.MustCompile(`^[a-zA-Z0-9\+\/\=\n]+$`)
+
 	isPrivateKey := func(pass string) bool {
 		p := strings.TrimSpace(pass)
-		keyStartMatcher := regexp.MustCompile(`^-----BEGIN [A-Z\ ]+-----`)
-		keyEndMatcher := regexp.MustCompile(`-----END [A-Z\ ]+-----$`)
-		keyContentMatcher := regexp.MustCompile(`^[a-zA-Z0-9\+\/\=\n]+$`)
 
 		// match private key beginning
 		if keyStartMatcher.FindStringIndex(p) == nil {
@@ -71,6 +72,7 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 			return false
 		}
 		p = keyEndMatcher.ReplaceAllString(p, "")
+		p = strings.Replace(p, " ", "", -1)
 		// match private key content
 		if keyContentMatcher.FindStringIndex(p) == nil {
 			return false
@@ -78,12 +80,26 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 		return true
 	}
 
+	restorePrivateKeyLineBreaks := func(pass string) string {
+		p := strings.TrimSpace(pass)
+
+		keyStartString := keyStartMatcher.FindString(p)
+		p = keyStartMatcher.ReplaceAllString(p, "")
+		keyEndString := keyEndMatcher.FindString(p)
+		p = keyEndMatcher.ReplaceAllString(p, "")
+		p = strings.Replace(p, " ", "", -1)
+		keyContentString := keyContentMatcher.FindString(p)
+
+		return keyStartString + "\n" + keyContentString + "\n" + keyEndString
+	}
+
 	if isPrivateKey(p.password) {
+		privateKey := restorePrivateKeyLineBreaks(p.password)
 		signer, err := func() (ssh.Signer, error) {
 			if p.passphrase == "" {
-				return ssh.ParsePrivateKey([]byte(p.password))
+				return ssh.ParsePrivateKey([]byte(privateKey))
 			}
-			return ssh.ParsePrivateKeyWithPassphrase([]byte(p.password), []byte(p.passphrase))
+			return ssh.ParsePrivateKeyWithPassphrase([]byte(privateKey), []byte(p.passphrase))
 		}()
 		if err != nil {
 			return nil, err
@@ -143,7 +159,7 @@ func (b Sftp) LoginForm() Form {
 			},
 			FormElement{
 				Name:        "password",
-				Type:        "long_password",
+				Type:        "password",
 				Placeholder: "Password",
 			},
 			FormElement{
@@ -168,7 +184,7 @@ func (b Sftp) LoginForm() Form {
 			FormElement{
 				Id:          "sftp_passphrase",
 				Name:        "passphrase",
-				Type:        "text",
+				Type:        "password",
 				Placeholder: "Passphrase",
 			},
 			FormElement{
