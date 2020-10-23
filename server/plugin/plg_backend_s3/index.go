@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -145,51 +144,32 @@ func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 	}
 	client := s3.New(s.createSession(p.bucket))
 
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	go func() { // Verify the path really exist
-		defer wg.Done()
-		if p.path == "" {
-			return
-		} else if _, errTmp := client.GetObject(&s3.GetObjectInput{
-			Bucket: aws.String(p.bucket),
-			Key:    aws.String(p.path),
-		}); errTmp != nil {
-			err = errTmp
+	objs, errTmp := client.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket:    aws.String(p.bucket),
+		Prefix:    aws.String(p.path),
+		Delimiter: aws.String("/"),
+	})
+	if errTmp != nil {
+		err = errTmp
+		return
+	}
+	for i, object := range objs.Contents {
+		if i == 0 && *object.Key == p.path {
+			continue
 		}
-	}()
-
-	go func() { // List the content
-		defer wg.Done()
-		objs, errTmp := client.ListObjects(&s3.ListObjectsInput{
-			Bucket:    aws.String(p.bucket),
-			Prefix:    aws.String(p.path),
-			Delimiter: aws.String("/"),
+		files = append(files, &File{
+			FName: filepath.Base(*object.Key),
+			FType: "file",
+			FTime: object.LastModified.Unix(),
+			FSize: *object.Size,
 		})
-		if errTmp != nil {
-			err = errTmp
-			return
-		}
-		for i, object := range objs.Contents {
-			if i == 0 && *object.Key == p.path {
-				continue
-			}
-			files = append(files, &File{
-				FName: filepath.Base(*object.Key),
-				FType: "file",
-				FTime: object.LastModified.Unix(),
-				FSize: *object.Size,
-			})
-		}
-		for _, object := range objs.CommonPrefixes {
-			files = append(files, &File{
-				FName: filepath.Base(*object.Prefix),
-				FType: "directory",
-			})
-		}
-	}()
-	wg.Wait()
+	}
+	for _, object := range objs.CommonPrefixes {
+		files = append(files, &File{
+			FName: filepath.Base(*object.Prefix),
+			FType: "directory",
+		})
+	}
 
 	return files, err
 }
