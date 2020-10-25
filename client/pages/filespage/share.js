@@ -38,7 +38,8 @@ export class ShareComponent extends React.Component {
             this.setState({
                 existings: existings.sort((a, b) => {
                     return a.path.split("/").length > b.path.split("/").length;
-                })
+                }),
+                role: existings.length === 0 ? "editor" : null
             });
         });
     }
@@ -246,8 +247,13 @@ export class ShareComponent extends React.Component {
                   </NgIf>
                 </div>
 
-                <div className="shared-link">
-                  <input ref="$input" className="copy" onClick={this.onRegisterLink.bind(this)} type="text" value={window.location.origin+"/s/"+(this.state.url || this.state.id)} onChange={() => {}}/>
+                <div className="shared-link" onClick={this.onRegisterLink.bind(this)}>
+                  <input ref="$input" className="copy" type="text" value={window.location.origin+"/s/"+(this.state.url || this.state.id)} readOnly/>
+                  <div>
+                    <button title={t("Copy URL")}>
+                      <Icon name="copy"/>
+                    </button>
+                  </div>
                 </div>
               </NgIf>
             </div>

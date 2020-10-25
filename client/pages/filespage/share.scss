@@ -77,15 +77,38 @@
         }
     }
     .shared-link{
+        display: table;
         input{
+            display: table-cell;
             width: 100%;
             font-size: 0.9em;
-            background: var(--emphasis-primary);
+            background: var(--bg-color);
             color: var(--emphasis);
-            padding: 3px 5px;
-            border-radius: 2px;
             box-sizing: border-box;
+            padding: 4px 5px;
+            border-radius: 3px;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
             border: 2px solid var(--primary);
+            border-right: none;
+        }
+        > div {
+            border-radius: 5px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border: 2px solid var(--primary);
+            background: var(--bg-color);
+
+            display: table-cell;
+            width: 1%;
+            button{
+                padding: 0px 8px;
+                img{
+                    width: 16px;
+                    height: 16px;
+                    vertical-align: middle;
+                }
+            }
         }
     }
 }
