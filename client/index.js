@@ -47,7 +47,7 @@ window.addEventListener("DOMContentLoaded", () => {
         }
         return removeLoader().then(render);
     }).catch((e) => {
-        const msg = "CAN'T LOAD FILESTASH";
+        const msg = navigator.onLine === false ? "OFFLINE" : "CAN'T LOAD FILESTASH";
         Log.report(msg, location.href);
         return removeLoaderWithAnimation().then(() => {
             $error(msg);
