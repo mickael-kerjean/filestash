@@ -50,6 +50,7 @@ func Init(a *App) {
 	files := r.PathPrefix("/api/files").Subrouter()
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly }
 	files.HandleFunc("/cat",    NewMiddlewareChain(FileCat,    middlewares, *a)).Methods("GET", "HEAD")
+	files.HandleFunc("/folder", NewMiddlewareChain(FolderDownload, middlewares, *a)).Methods("GET")
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax, SessionStart, LoggedInOnly }
 	files.HandleFunc("/cat",    NewMiddlewareChain(FileAccess, middlewares, *a)).Methods("OPTIONS")
 	files.HandleFunc("/cat",    NewMiddlewareChain(FileSave,   middlewares, *a)).Methods("POST")

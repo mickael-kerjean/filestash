@@ -111,6 +111,10 @@ export class Submenu extends React.Component {
         }
     }
 
+    getFolderDownloadUrl(){
+      return "/api/files/folder?path=" + encodeURIComponent(this.props.path)
+    }
+
     render(){
         return (
             <div className="component_submenu">
@@ -121,6 +125,11 @@ export class Submenu extends React.Component {
                   </NgIf>
                   <NgIf cond={this.props.accessRight.can_create_directory !== false && this.props.selected.length === 0} onClick={this.onNew.bind(this, 'directory')} type="inline">
                     { window.innerWidth < 410 && t("New Directory").length > 10 ? t("New Directory", null, "NEW_DIRECTORY::SHORT") : t("New Directory") }
+                  </NgIf>
+                  <NgIf cond={this.props.accessRight.can_read !== false && this.props.selected.length === 0} type="inline">
+                    <a href={this.getFolderDownloadUrl()}>
+                    { window.innerWidth < 410 && t("Download Directory").length > 10 ? t("Download Directory", null, "DOWNLOAD_DIRECTORY::SHORT") : t("Download Directory") }
+                    </a>
                   </NgIf>
                   <NgIf cond={this.props.selected.length > 0} type="inline" onMouseDown={this.onDelete.bind(this, this.props.selected)}>
                     <ReactCSSTransitionGroup transitionName="submenuwithSelection" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={10000}>

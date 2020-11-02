@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	"archive/zip"
 	"encoding/base64"
 	"fmt"
 	"hash/fnv"
@@ -411,4 +412,71 @@ func PathBuilder(ctx App, path string) (string, error) {
 		return "", NewError("There's nothing here", 403)
 	}
 	return basePath, nil
+}
+
+func FolderDownload(ctx App, res http.ResponseWriter, req *http.Request) {
+	if model.CanRead(&ctx) == false {
+		SendErrorResult(res, ErrPermissionDenied)
+		return
+	}
+
+	query := req.URL.Query()
+	path, err := PathBuilder(ctx, query.Get("path"))
+	if err != nil {
+		SendErrorResult(res, err)
+		return
+	}
+
+	res.Header().Set("Content-Type", "application/zip")
+	res.Header().Set(
+		"Content-Disposition",
+		fmt.Sprintf("attachment; filename=\"%s.zip\"", filepath.Base(path)))
+
+	zipWriter := zip.NewWriter(res)
+
+	addToZipRecursive(ctx, zipWriter, path, "")
+
+	err = zipWriter.Close()
+	if err != nil {
+		SendErrorResult(res, err)
+		return
+	}
+
+	return
+}
+
+func addToZipRecursive(ctx App, zipWriter *zip.Writer, path string, subpath string) error {
+	entries, err := ctx.Backend.Ls(filepath.Join(path, subpath))
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < len(entries); i++ {
+		if entries[i].IsDir() {
+			newPath := filepath.Join(subpath, entries[i].Name())
+			err = addToZipRecursive(ctx, zipWriter, path, newPath)
+			if err != nil {
+				return err
+			}
+			continue
+		}
+
+		fileName := filepath.Join(subpath, entries[i].Name())
+		zipFile, err := (*zipWriter).Create(fileName)
+		if err != nil {
+			return err
+		}
+
+		fullPath := filepath.Join(path, subpath, entries[i].Name())
+		file, err := ctx.Backend.Cat(fullPath)
+		if err != nil {
+			return err
+		}
+
+		_, err = io.Copy(zipFile, file)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
