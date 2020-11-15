@@ -52,10 +52,6 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 }
 
 func GetHome(b IBackend, base string) (string, error) {
-	if _, err := b.Ls(base); err != nil {
-		return base, err
-	}
-
 	home := "/"
 	if obj, ok := b.(interface{ Home() (string, error) }); ok {
 		tmp, err := obj.Home()
@@ -63,7 +59,10 @@ func GetHome(b IBackend, base string) (string, error) {
 			return base, err
 		}
 		home = EnforceDirectory(tmp)
+	} else if _, err := b.Ls(base); err != nil {
+		return base, err
 	}
+
 	base = EnforceDirectory(base)
 	if strings.HasPrefix(home, base) {
 		return "/" + home[len(base):], nil
