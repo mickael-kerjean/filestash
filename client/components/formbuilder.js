@@ -125,7 +125,7 @@ const FormElement = (props) => {
         };
 
         const list_id = struct.datalist ? "list_"+Math.random() : null;
-        $input = ( <Input list={list_id} onChange={(e) => onTextChange(e.target.value)} {...id} name={struct.label} type="text" value={struct.value || ""} placeholder={ t(struct.placeholder) } readOnly={struct.readonly}/> );
+        $input = ( <Input list={list_id} onChange={(e) => onTextChange(e.target.value)} {...id} name={struct.label} type="text" value={struct.value || ""} placeholder={ t(struct.placeholder) } readOnly={struct.readonly} autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" /> );
         if(list_id != null){
             const filtered = function(multi, datalist, currentValue){
                 if(multi !== true || currentValue == null) return datalist;
@@ -166,7 +166,7 @@ const FormElement = (props) => {
             }
             props.onChange(value);
         };
-        $input = ( <Input onChange={(e) => onPasswordChange(e.target.value)} {...id} name={struct.label} type="password" value={struct.value || ""} placeholder={ t(struct.placeholder) } /> );
+        $input = ( <Input onChange={(e) => onPasswordChange(e.target.value)} {...id} name={struct.label} type="password" value={struct.value || ""} placeholder={ t(struct.placeholder) } autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/> );
         break;
     case "long_password":
         const onLongPasswordChange = (value) => {
@@ -176,11 +176,11 @@ const FormElement = (props) => {
             props.onChange(value);
         };
         $input = (
-            <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => onLongPasswordChange(e.target.value)} type="text" rows="1" name={struct.label} placeholder={ t(struct.placeholder) }  autoComplete="new-password" />
+            <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => onLongPasswordChange(e.target.value)} type="text" rows="1" name={struct.label} placeholder={ t(struct.placeholder) }  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
         );
         break;
     case "long_text":
-        $input = ( <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => props.onChange(e.target.value)} type="text" rows="3" name={struct.label} placeholder={ t(struct.placeholder) }  autoComplete="new-password" /> );
+        $input = ( <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => props.onChange(e.target.value)} type="text" rows="3" name={struct.label} placeholder={ t(struct.placeholder) } autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" /> );
         break;
     case "bcrypt":
         const onBcryptChange = (value) => {
