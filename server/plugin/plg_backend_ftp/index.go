@@ -1,4 +1,4 @@
-package backend
+package plg_backend_ftp
 
 import (
 	"crypto/tls"
@@ -15,6 +15,10 @@ import (
 
 var FtpCache AppCache
 
+type Ftp struct {
+	client *goftp.Client
+}
+
 func init() {
 	Backend.Register("ftp", Ftp{})
 
@@ -23,10 +27,6 @@ func init() {
 		c := value.(*Ftp)
 		c.Close()
 	})
-}
-
-type Ftp struct {
-	client *goftp.Client
 }
 
 func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
