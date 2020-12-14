@@ -26,6 +26,23 @@ export class VideoPlayer extends React.Component {
                 type: getMimeType(this.props.data)
             }])
         });
+	
+	const subtitlesOctopusScript = document.createElement("script");
+	subtitlesOctopusScript.src = "/assets/vendor/libass-wasm/subtitles-octopus.js";
+	subtitlesOctopusScript.async = true;
+	subtitlesOctopusScript.onload = () => this.subtitlesOctopusInstantiate();
+
+	document.head.appendChild(subtitlesOctopusScript);
+    }
+
+    subtitlesOctopusInstantiate() {
+	var options = {
+    	    video: this.refs.$video,
+    	    subUrl: this.props.data.substr(0, this.props.data.lastIndexOf(".")) + ".ass",
+    	    workerUrl: '/assets/vendor/libass-wasm/subtitles-octopus-worker.js',
+    	    legacyWorkerUrl: '/assets/vendor/libass-wasm/subtitles-octopus-worker-legacy.js'
+	};
+	var instance = new SubtitlesOctopus(options);
     }
 
     componentWillReceiveProps(nextProps){

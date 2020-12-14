@@ -16,6 +16,7 @@
     "bcryptjs": "^2.4.3",
     "codemirror": "^5.26.0",
     "exif-js": "^2.3.0",
+    "libass-wasm": "^4.0.0",
     "little-loader": "^0.2.0",
     "pdfjs-dist": "^2.1.266",
     "prop-types": "^15.5.10",
