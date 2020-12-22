@@ -1,6 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import './container.scss';
+import React from "react";
+import "./container.scss";
 
 export class Container extends React.Component {
     constructor(props){

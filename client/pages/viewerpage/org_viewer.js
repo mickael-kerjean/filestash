@@ -1,12 +1,12 @@
-import React from 'react';
-import { StickyContainer, Sticky } from 'react-sticky';
+import React from "react";
+import { StickyContainer, Sticky } from "react-sticky";
 
-import { Modal, Container, NgIf, Icon, Dropdown, DropdownButton, DropdownList, DropdownItem } from '../../components/';
-import { extractEvents, extractTodos } from '../../helpers/org';
-import { leftPad } from '../../helpers/common';
-import { debounce } from '../../helpers/';
-import { t } from '../../locales/';
-import './org_viewer.scss';
+import { Modal, NgIf, Icon, Dropdown, DropdownButton, DropdownList, DropdownItem } from "../../components/";
+import { extractEvents, extractTodos } from "../../helpers/org";
+import { leftPad } from "../../helpers/common";
+import { debounce } from "../../helpers/";
+import { t } from "../../locales/";
+import "./org_viewer.scss";
 
 export class OrgEventsViewer extends React.Component {
     shouldComponentUpdate(nextProps){
@@ -47,7 +47,7 @@ class OrgViewer extends React.Component {
         this.state = {
             headlines: this.buildHeadlines(props.headlines),
             content: props.content,
-            search: '',
+            search: "",
             _: null
         };
         this.rerender = () => {this.setState({_: Math.random()});};
@@ -64,8 +64,8 @@ class OrgViewer extends React.Component {
     buildHeadlines(headlines){
         return headlines
             .reduce((acc, headline) => {
-                if(!acc[headline['key']]){ acc[headline['key']] = []; }
-                acc[headline['key']].push(headline);
+                if(!acc[headline["key"]]){ acc[headline["key"]] = []; }
+                acc[headline["key"]].push(headline);
                 return acc;
             }, {});
     }
@@ -88,14 +88,14 @@ class OrgViewer extends React.Component {
             break;
         case "subtask":
             if(value === "DONE"){
-                content[line] = content[line].replace(/\[.\]/, '[X]');
+                content[line] = content[line].replace(/\[.\]/, "[X]");
             }else{
-                content[line] = content[line].replace(/\[.\]/, '[ ]');
+                content[line] = content[line].replace(/\[.\]/, "[ ]");
             }
             break;
         case "existing_scheduled":
             [head_line, head_status, item_line] = line;
-            content[item_line] = content[item_line].replace(/SCHEDULED\: \<.*?\>\s*/, value ? "SCHEDULED: "+orgdate(value)+" " : "");
+            content[item_line] = content[item_line].replace(/SCHEDULED: <.*?>\s*/, value ? "SCHEDULED: "+orgdate(value)+" " : "");
             this.state.headlines[head_status] = this.state.headlines[head_status]
                 .map((todo) => {
                     if(todo.line === head_line){
@@ -108,7 +108,7 @@ class OrgViewer extends React.Component {
             break;
         case "existing_deadline":
             [head_line, head_status, item_line] = line;
-            content[item_line] = content[item_line].replace(/DEADLINE\: \<.*?\>\s*/, value ? "DEADLINE: "+orgdate(value) : "");
+            content[item_line] = content[item_line].replace(/DEADLINE: <.*?>\s*/, value ? "DEADLINE: "+orgdate(value) : "");
             this.state.headlines[head_status] = this.state.headlines[head_status]
                 .map((todo) => {
                     if(todo.line === head_line){
@@ -185,7 +185,7 @@ class OrgViewer extends React.Component {
                 this.setState({headlines: this.state.headlines});
             }
             break;
-        };
+        }
         this.setState({content: content.join("\n")});
 
         function orgdate(_date){
@@ -194,8 +194,9 @@ class OrgViewer extends React.Component {
 
             function day(n){
                 switch(navigator.language.split("-")[0]){
-                    case "de": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][n];
-                    default: return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][n];
+                  case "de": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][n];
+                    break;
+                  default: return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][n];
                 }
             }
         }
@@ -212,10 +213,10 @@ class OrgViewer extends React.Component {
     }
 
     componentDidMount(){
-        window.addEventListener('resize', this.rerender);
+        window.addEventListener("resize", this.rerender);
     }
     componentWillUnmount(){
-        window.removeEventListener('resize', this.rerender);
+        window.removeEventListener("resize", this.rerender);
     }
 
     search(terms){
@@ -231,8 +232,8 @@ class OrgViewer extends React.Component {
                 const keywords = terms.split(" ");
                 const head = function(){
                     let str = " ";
-                    str += headline['status'] + " ";
-                    str += headline['title'] + " ";
+                    str += headline["status"] + " ";
+                    str += headline["title"] + " ";
                     str += headline.tags.map((tag) => "#"+tag).join(" ") + " ";
                     str += headline.scheduled ? "scheduled "+headline.scheduled.timestamp + " ": "";
                     str += headline.deadline ? "deadline "+headline.deadline.timestamp + " ": "";
@@ -273,7 +274,7 @@ class OrgViewer extends React.Component {
                             <div key={i}>
                               <Sticky relative>
                                 {
-                                  ({isSticky, wasSticky, style, distanceFromTop, distanceFromBottom, calculatedHeight}) => {
+                                  ({style}) => {
                                     return (
                                             <div className="sticky_header no-select" style={{...style, overflow: "auto", background: "white", zIndex: 4}}>
                                           <h2>{list} <span>{this.state.headlines[list].length}</span></h2>
@@ -328,7 +329,7 @@ class Headline extends React.Component {
         };
     }
 
-    onMenuAction(key, value){
+    onMenuAction(key){
         if(key === "navigate"){
             this.props.goTo();
         }else if(key === "properties"){
@@ -339,14 +340,14 @@ class Headline extends React.Component {
     onStatusToggle(){
         if(!this.props.todo_status) return;
 
-        const new_status = this.state.status === 'todo' ? 'done' : 'todo';
+        const new_status = this.state.status === "todo" ? "done" : "todo";
         this.setState({status: new_status});
 
         const new_status_label = function(new_status, initial_status, initial_keyword){
             if(new_status === initial_status) return initial_keyword;
             return new_status === "todo" ? "TODO" : "DONE";
         }(new_status, this.props.todo_status, this.props.status);
-        this.props.onTaskUpdate('status', this.props.line, new_status_label);
+        this.props.onTaskUpdate("status", this.props.line, new_status_label);
     }
 
     onTimeSet(keyword, existing, value){
@@ -417,30 +418,30 @@ class Headline extends React.Component {
                 <div>
                   <label> <Icon name="schedule" />
                     <NgIf cond={this.props.scheduled !== null}>
-                      <input type="date" value={dateInput(this.props.scheduled)} onChange={(e) => this.onTimeSet('scheduled', true, e.target.value)}/>
+                      <input type="date" value={dateInput(this.props.scheduled)} onChange={(e) => this.onTimeSet("scheduled", true, e.target.value)}/>
                     </NgIf>
                     <NgIf cond={this.props.scheduled === null}>
-                      <input type="date" onChange={(e) => this.onTimeSet('scheduled', false, e.target.value)}/>
+                      <input type="date" onChange={(e) => this.onTimeSet("scheduled", false, e.target.value)}/>
                     </NgIf>
                   </label>
                 </div>
                 <div>
                   <label> <Icon name="deadline" />
                     <NgIf cond={this.props.deadline !== null}>
-                      <input type="date" value={dateInput(this.props.deadline)} onChange={(e) => this.onTimeSet('deadline', true, e.target.value)}/>
+                      <input type="date" value={dateInput(this.props.deadline)} onChange={(e) => this.onTimeSet("deadline", true, e.target.value)}/>
                     </NgIf>
                     <NgIf cond={this.props.deadline === null}>
-                      <input type="date" onChange={(e) => this.onTimeSet('deadline', false, e.target.value)}/>
+                      <input type="date" onChange={(e) => this.onTimeSet("deadline", false, e.target.value)}/>
                     </NgIf>
                   </label>
                 </div>
               </NgIf>
-              <NgIf cond={this.props.tasks.length > 0 && this.state.status === "todo" && this.props.type === 'todos'} className="subtask_container">
+              <NgIf cond={this.props.tasks.length > 0 && this.state.status === "todo" && this.props.type === "todos"} className="subtask_container">
                 {
                     this.props.tasks.map((task, i) => {
                         return (
                             <Subtask key={i} label={task.title} status={task.status}
-                                     onStatusChange={this.props.onTaskUpdate.bind(this, 'subtask', task.line)} />
+                                     onStatusChange={this.props.onTaskUpdate.bind(this, "subtask", task.line)} />
                         );
                     })
                 }

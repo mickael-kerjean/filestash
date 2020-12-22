@@ -1,8 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Modal } from './';
+import React from "react";
+import { Modal } from "./";
 
-import './popup.scss';
+import "./popup.scss";
 
 export class Popup extends React.Component {
     constructor(props){

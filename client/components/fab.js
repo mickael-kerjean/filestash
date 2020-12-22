@@ -1,8 +1,7 @@
-import React from 'react';
+import React from "react";
+import "./fab.scss";
 
-import './fab.scss';
-
-export const Fab = (props) => {
+export function Fab(props){
     return (
         <div className="component_fab" onClick={props.onClick}>
             <div className="content">

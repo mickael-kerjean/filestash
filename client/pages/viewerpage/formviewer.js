@@ -1,10 +1,10 @@
-import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import React from "react";
+import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
-import { MenuBar } from './menubar';
-import { Container, FormBuilder, NgIf, Icon, Fab } from '../../components/';
-import { appendShareToUrl } from '../../helpers/';
-import './formviewer.scss';
+import { MenuBar } from "./menubar";
+import { Container, FormBuilder, NgIf, Icon, Fab } from "../../components/";
+import { appendShareToUrl } from "../../helpers/";
+import "./formviewer.scss";
 
 export class FormViewer extends React.Component {
     constructor(props){
@@ -29,7 +29,7 @@ export class FormViewer extends React.Component {
 
     save(){
         if(this.props.needSaving === false) return;
-        let blob = new window.Blob([JSON.stringify(this.state.form)], {type : 'text/plain'});
+        let blob = new window.Blob([JSON.stringify(this.state.form)], {type : "text/plain"});
         return this.props
             .onSave(blob)
             .then(() => this.props.needSavingUpdate(false));

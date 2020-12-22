@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import { Input, Textarea, Select, Enabler } from './';
-import { FormObjToJSON, format, autoComplete, notify } from '../helpers/';
-import { t } from '../locales/';
+import { Input, Textarea, Select, Enabler } from "./";
+import { FormObjToJSON, format, autoComplete, notify } from "../helpers/";
+import { t } from "../locales/";
 
 import "./formbuilder.scss";
 
@@ -29,7 +29,7 @@ export class FormBuilder extends React.Component {
                 let _advanced = [];
                 for (let key in s){
                     const tmp = {key: key, data: s[key]};
-                    'id' in s[key] ? _advanced.push(tmp) : _normal.push(tmp);
+                    "id" in s[key] ? _advanced.push(tmp) : _normal.push(tmp);
                 }
                 return [_normal, _advanced];
             }(struct);
@@ -116,7 +116,7 @@ const FormElement = (props) => {
     let struct = props.params;
     let $input = ( <Input onChange={(e) => props.onChange(e.target.value)} {...id} name={struct.label} type="text" defaultValue={struct.value} placeholder={ t(struct.placeholder) } /> );
     switch(props.params["type"]){
-    case "text":
+    case "text": {
         const onTextChange = (value) => {
             if(value === ""){
                 value = null;
@@ -152,14 +152,16 @@ const FormElement = (props) => {
             );
         }
         break;
-    case "number":
+    }
+    case "number": {
         const onNumberChange = (value) => {
             value = value === "" ? null : parseInt(value);
             props.onChange(value);
         };
         $input = ( <Input onChange={(e) => onNumberChange(e.target.value)} {...id} name={struct.label} type="number" value={struct.value === null ? "" : struct.value} placeholder={ t(struct.placeholder) } /> );
         break;
-    case "password":
+    }
+    case "password": {
         const onPasswordChange = (value) => {
             if(value === ""){
                 value = null;
@@ -168,7 +170,8 @@ const FormElement = (props) => {
         };
         $input = ( <Input onChange={(e) => onPasswordChange(e.target.value)} {...id} name={struct.label} type="password" value={struct.value || ""} placeholder={ t(struct.placeholder) } autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"/> );
         break;
-    case "long_password":
+    }
+    case "long_password": {
         const onLongPasswordChange = (value) => {
             if(value === ""){
                 value = null;
@@ -179,10 +182,11 @@ const FormElement = (props) => {
             <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => onLongPasswordChange(e.target.value)} type="text" rows="1" name={struct.label} placeholder={ t(struct.placeholder) }  autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" />
         );
         break;
+    }
     case "long_text":
         $input = ( <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => props.onChange(e.target.value)} type="text" rows="3" name={struct.label} placeholder={ t(struct.placeholder) } autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" /> );
         break;
-    case "bcrypt":
+    case "bcrypt": {
         const onBcryptChange = (value) => {
             if(value === ""){
                 return props.onChange(null);
@@ -194,6 +198,7 @@ const FormElement = (props) => {
         };
         $input = ( <Input onChange={(e) => onBcryptChange(e.target.value)} {...id} name={struct.label} type="password" defaultValue={struct.value || ""} placeholder={ t(struct.placeholder) } /> );
         break;
+    }
     case "hidden":
         $input = ( <Input name={struct.label} type="hidden" defaultValue={struct.value} /> );
         break;
@@ -215,7 +220,7 @@ const FormElement = (props) => {
     case "image":
         $input = ( <img {...id} src={struct.value} /> );
         break;
-    case "file":
+    case "file": {
         const getBase64 = function(file){
             return new Promise((resolve, reject) => {
                 const reader = new window.FileReader();
@@ -242,6 +247,7 @@ const FormElement = (props) => {
             </div>
         );
         break;
+    }
     case "oauth2":
         $input = null;
         break;

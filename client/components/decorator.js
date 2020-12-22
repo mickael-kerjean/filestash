@@ -1,22 +1,21 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { browserHistory, Redirect } from 'react-router';
+import React from "react";
+import { Link } from "react-router-dom";
 
-import { Session, Admin } from '../model/';
-import { Container, Loader, Icon, NgIf } from '../components/';
-import { memory, currentShare } from '../helpers/';
-import { t } from '../locales/';
+import { Session } from "../model/";
+import { Container, Loader, Icon } from "../components/";
+import { memory, currentShare } from "../helpers/";
+import { t } from "../locales/";
 
-import '../pages/error.scss';
+import "../pages/error.scss";
 
 export function LoggedInOnly(WrappedComponent){
-    memory.set('user::authenticated', false);
+    memory.set("user::authenticated", false);
 
     return class extends React.Component {
         constructor(props){
             super(props);
             this.state = {
-                is_logged_in: memory.get('user::authenticated')
+                is_logged_in: memory.get("user::authenticated")
             };
         }
 
@@ -27,7 +26,7 @@ export function LoggedInOnly(WrappedComponent){
                         this.props.error({message: "Authentication Required"});
                         return;
                     }
-                    memory.set('user::authenticated', true);
+                    memory.set("user::authenticated", true);
                     this.setState({is_logged_in: true});
                 }).catch((err) => {
                     if(err.code === "NO_INTERNET"){
@@ -56,7 +55,7 @@ export function ErrorPage(WrappedComponent){
                 error: null,
                 has_back_button: false
             };
-            this.unlisten = this.props.history.listen((location, action) => {
+            this.unlisten = this.props.history.listen(() => {
                 this.setState({has_back_button: false});
                 this.unlisten();
             });
@@ -101,9 +100,9 @@ export function ErrorPage(WrappedComponent){
     };
 }
 
-export const LoadingPage = (props) => {
+export const LoadingPage = () => {
     return (
-        <div style={{marginTop: parseInt(window.innerHeight / 3)+'px'}}>
+        <div style={{marginTop: parseInt(window.innerHeight / 3)+"px"}}>
           <Loader />
         </div>
     );

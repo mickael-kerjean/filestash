@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import React from "react";
+import PropTypes from "prop-types";
+import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
-import { Container, NgIf, Icon } from '../../components/';
-import './menubar.scss';
+import { Container, NgIf, Icon } from "../../components/";
+import "./menubar.scss";
 
 
 export const MenuBar = (props) => {
@@ -11,7 +11,7 @@ export const MenuBar = (props) => {
         <div className="component_menubar">
           <Container>
             <ReactCSSTransitionGroup transitionName="menubar" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={550}>
-              <div className="titlebar" style={{letterSpacing: '0.3px'}}>{props.title}</div>
+              <div className="titlebar" style={{letterSpacing: "0.3px"}}>{props.title}</div>
               <div className="action-item no-select">
                 <span className="specific">
                   {props.children}
@@ -37,14 +37,15 @@ class DownloadButton extends React.Component {
         this.setState({
             loading: true
         });
-
         document.cookie = "download=yes; path=/; max-age=120;";
-        this.state.id = window.setInterval(() => {
-            if(/download=yes/.test(document.cookie) === false){
-                window.clearInterval(this.state.id);
-                this.setState({loading: false});
-            }
-        }, 100);
+        this.setState({
+            id: window.setInterval(() => {
+                if(/download=yes/.test(document.cookie) === false){
+                    window.clearInterval(this.state.id);
+                    this.setState({loading: false});
+                }
+            }, 100)
+        });
     }
 
     componentWillUnmount(){

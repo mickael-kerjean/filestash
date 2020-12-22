@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import './button.scss';
+import "./button.scss";
 
 export class Button extends React.Component {
     constructor(props){
@@ -12,7 +12,7 @@ export class Button extends React.Component {
         let props = Object.assign({}, this.props);
         delete props.theme;
         return (
-            <button {...props} className={this.props.theme || '' +" "+this.props.className || ''}>
+            <button {...props} className={(this.props.theme || "") + " " + (this.props.className || "")}>
               {this.props.children}
             </button>
         );

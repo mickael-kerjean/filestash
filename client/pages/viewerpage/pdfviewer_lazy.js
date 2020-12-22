@@ -1,7 +1,7 @@
-import React from 'react';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import { Document, Page, pdfjs } from 'react-pdf';
-pdfjs.GlobalWorkerOptions.workerSrc = `/assets/vendor/pdfjs/build/pdf.worker.min.js`;
+import React from "react";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import { Document, Page, pdfjs } from "react-pdf";
+pdfjs.GlobalWorkerOptions.workerSrc = "/assets/vendor/pdfjs/build/pdf.worker.min.js";
 
 export class PDFJSViewer extends React.Component {
     state = {
@@ -18,7 +18,7 @@ export class PDFJSViewer extends React.Component {
               file={this.props.src}
               onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
               options={{
-                  cMapUrl: '/assets/vendor/pdfjs/cmaps/',
+                  cMapUrl: "/assets/vendor/pdfjs/cmaps/",
                   cMapPacked: true,
               }}
             >

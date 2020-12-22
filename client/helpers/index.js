@@ -1,4 +1,4 @@
-export { URL_HOME, goToHome, URL_FILES, goToFiles, URL_VIEWER, goToViewer, URL_LOGIN, goToLogin, URL_LOGOUT, goToLogout, urlParams } from './navigate';
+export { URL_HOME, goToHome, URL_FILES, goToFiles, URL_VIEWER, goToViewer, URL_LOGIN, goToLogin, URL_LOGOUT, goToLogout, urlParams, URL_ADMIN, URL_SHARE } from './navigate';
 export { opener } from './mimetype';
 export { debounce, throttle } from './backpressure';
 export { event } from './events';

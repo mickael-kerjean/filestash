@@ -1,6 +1,6 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import './input.scss';
+import React from "react";
+import PropTypes from "prop-types";
+import "./input.scss";
 
 export class Input extends React.Component {
     constructor(props){
@@ -72,7 +72,7 @@ export class Enabler extends React.Component {
                 // reset value
                 if($el.value){
                     $el.value = null;
-                    let event = new Event('input', { bubbles: true});
+                    let event = new Event("input", { bubbles: true});
                     event.simulated = true;
                     $el.dispatchEvent(event);
                 }
@@ -85,4 +85,4 @@ export class Enabler extends React.Component {
             <Input type="checkbox" onChange={this.onChange.bind(this)} defaultChecked={this.props.defaultValue} />
         );
     }
-};
+}

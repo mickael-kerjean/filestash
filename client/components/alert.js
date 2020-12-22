@@ -1,10 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
 
-import { Input, Button, Modal, NgIf } from './';
-import { alert } from '../helpers/';
-import { Popup } from './popup';
-import { t } from '../locales/';
+import { Button } from "./";
+import { alert } from "../helpers/";
+import { Popup } from "./popup";
+import { t } from "../locales/";
 
 import "./alert.scss";
 
@@ -23,7 +22,7 @@ export class ModalAlert extends Popup {
         });
     }
 
-    onSubmit(e){
+    onSubmit(){
         this.setState({appear: false}, () => {
             requestAnimationFrame(() => this.state.fn && this.state.fn());
         });
