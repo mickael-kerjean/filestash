@@ -10,6 +10,6 @@ export class HomePage extends React.Component {
     }
 
     render(){
-        return ( <Redirect to="/admin/dashboard" /> );
+        return ( <Redirect to="/admin/backend" /> );
     }
 }

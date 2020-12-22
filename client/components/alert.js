@@ -6,6 +6,8 @@ import { alert } from '../helpers/';
 import { Popup } from './popup';
 import { t } from '../locales/';
 
+import "./alert.scss";
+
 export class ModalAlert extends Popup {
     constructor(props){
         super(props);
@@ -40,4 +42,12 @@ export class ModalAlert extends Popup {
             <Button type="submit" theme="emphasis" onClick={this.onSubmit.bind(this)}>{ t("OK") }</Button>
         );
     }
+}
+
+export function Alert({ children = null, className = null }) {
+    return (
+        <div className={"alert" + (className ? ` ${className}`: "")}>
+          { children }
+        </div>
+    );
 }

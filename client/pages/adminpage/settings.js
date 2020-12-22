@@ -4,7 +4,7 @@ import { Config } from '../../model/';
 import { format, notify }  from '../../helpers';
 import { t } from '../../locales/';
 
-export class ConfigPage extends React.Component {
+export class SettingsPage extends React.Component {
     constructor(props){
         super(props);
         this.state = {

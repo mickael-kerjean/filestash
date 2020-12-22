@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Input, Textarea, Select, Enabler } from './';
-import { FormObjToJSON, format, autocomplete, notify } from '../helpers/';
+import { FormObjToJSON, format, autoComplete, notify } from '../helpers/';
 import { t } from '../locales/';
 
 import "./formbuilder.scss";
@@ -125,12 +125,12 @@ const FormElement = (props) => {
         };
 
         const list_id = struct.datalist ? "list_"+Math.random() : null;
-        $input = ( <Input list={list_id} onChange={(e) => onTextChange(e.target.value)} {...id} name={struct.label} type="text" value={struct.value || ""} placeholder={ t(struct.placeholder) } readOnly={struct.readonly} autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" /> );
+        $input = ( <Input list={list_id} onChange={(e) => onTextChange(e.target.value)} {...id} name={struct.label} type="text" value={struct.value || ""} placeholder={ t(struct.placeholder) } readOnly={struct.readonly} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" /> );
         if(list_id != null){
             const filtered = function(multi, datalist, currentValue){
                 if(multi !== true || currentValue == null) return datalist;
 
-                return autocomplete(
+                return autoComplete(
                     currentValue
                         .split(",")
                         .map((t) => t.trim())
@@ -166,7 +166,7 @@ const FormElement = (props) => {
             }
             props.onChange(value);
         };
-        $input = ( <Input onChange={(e) => onPasswordChange(e.target.value)} {...id} name={struct.label} type="password" value={struct.value || ""} placeholder={ t(struct.placeholder) } autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/> );
+        $input = ( <Input onChange={(e) => onPasswordChange(e.target.value)} {...id} name={struct.label} type="password" value={struct.value || ""} placeholder={ t(struct.placeholder) } autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"/> );
         break;
     case "long_password":
         const onLongPasswordChange = (value) => {
@@ -176,11 +176,11 @@ const FormElement = (props) => {
             props.onChange(value);
         };
         $input = (
-            <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => onLongPasswordChange(e.target.value)} type="text" rows="1" name={struct.label} placeholder={ t(struct.placeholder) }  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+            <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => onLongPasswordChange(e.target.value)} type="text" rows="1" name={struct.label} placeholder={ t(struct.placeholder) }  autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" />
         );
         break;
     case "long_text":
-        $input = ( <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => props.onChange(e.target.value)} type="text" rows="3" name={struct.label} placeholder={ t(struct.placeholder) } autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" /> );
+        $input = ( <Textarea {...id} disabledEnter={true} value={struct.value || ""} onChange={(e) => props.onChange(e.target.value)} type="text" rows="3" name={struct.label} placeholder={ t(struct.placeholder) } autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" /> );
         break;
     case "bcrypt":
         const onBcryptChange = (value) => {

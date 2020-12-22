@@ -12,7 +12,7 @@ export { Icon, img_placeholder } from './icon';
 export { Bundle } from './bundle';
 export { Modal } from './modal';
 export { ModalPrompt } from './prompt';
-export { ModalAlert } from './alert';
+export { ModalAlert, Alert } from './alert';
 export { ModalConfirm } from './confirm';
 export { Notification } from './notification';
 export { Audio } from './audio';

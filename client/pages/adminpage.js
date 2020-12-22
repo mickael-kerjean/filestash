@@ -8,7 +8,7 @@ import './adminpage.scss';
 import { Icon, LoadingPage } from '../components/';
 import { Config, Admin } from '../model';
 import { notify } from '../helpers/';
-import { HomePage, DashboardPage, ConfigPage, LogPage, SupportPage, SetupPage, LoginPage } from './adminpage/';
+import { HomePage, BackendPage, SettingsPage, LogPage, SetupPage, LoginPage } from './adminpage/';
 import { t } from '../locales/';
 
 
@@ -69,10 +69,9 @@ export class AdminPage extends React.Component {
               <div className="page_container scroll-y">
                 <ReactCSSTransitionGroup key={window.location.pathname} transitionName="adminpage" transitionLeave={true} transitionEnter={true} transitionLeaveTimeout={15000} transitionEnterTimeout={20000} transitionAppear={true} transitionAppearTimeout={20000}>
                   <Switch>
-                    <Route path={this.props.match.url + "/dashboard"} render={()=><DashboardPage isSaving={this.isSaving.bind(this)}/>} />
-                    <Route path={this.props.match.url + "/configure"} render={()=><ConfigPage isSaving={this.isSaving.bind(this)}/>} />
-                    <Route path={this.props.match.url + "/activity"} render={() =><LogPage isSaving={this.isSaving.bind(this)}/>} />
-                    <Route path={this.props.match.url + "/support"} component={SupportPage} />
+                    <Route path={this.props.match.url + "/backend"} render={()=><BackendPage isSaving={this.isSaving.bind(this)}/>} />
+                    <Route path={this.props.match.url + "/settings"} render={()=><SettingsPage isSaving={this.isSaving.bind(this)}/>} />
+                    <Route path={this.props.match.url + "/logs"} render={() =><LogPage isSaving={this.isSaving.bind(this)}/>} />
                     <Route path={this.props.match.url + "/setup"} component={SetupPage} />
                     <Route path={this.props.match.url} component={HomePage} />
                   </Switch>
@@ -99,23 +98,18 @@ const SideMenu = (props) => {
           <h2>{ t("Admin console") }</h2>
           <ul>
             <li>
-              <NavLink activeClassName="active" to={props.url + "/dashboard"}>
-                { t("Dashboard") }
+              <NavLink activeClassName="active" to={props.url + "/backend"}>
+                { t("Backend") }
               </NavLink>
             </li>
             <li>
-              <NavLink activeClassName="active" to={props.url + "/configure"}>
-                { t("Configure") }
+              <NavLink activeClassName="active" to={props.url + "/settings"}>
+                { t("Settings") }
               </NavLink>
             </li>
             <li>
-              <NavLink activeClassName="active" to={props.url + "/activity"}>
-                { t("Activity") }
-              </NavLink>
-            </li>
-            <li>
-              <NavLink activeClassName="active" to={props.url + "/support"}>
-                { t("Support") }
+              <NavLink activeClassName="active" to={props.url + "/logs"}>
+                { t("Logs") }
               </NavLink>
             </li>
           </ul>
