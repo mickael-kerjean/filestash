@@ -29,18 +29,6 @@
         @include inlinedInputWithSubmit();
     }
     #step2{
-        label{
-            display: block;
-            background: #f2f3f5;
-            margin: 10px 0;
-            padding: 10px 10px;
-            border-radius: 3px;
-            input[type="radio"]{ display: none; }
-            transition: background 0.05s ease;
-            &:hover, &.active{ background: var(--emphasis-primary); }
-        }
-    }
-    #step3{
         .component_dependency_installed{
             margin: 10px 0;
             padding: 10px 10px;

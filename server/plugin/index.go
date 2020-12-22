@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_starter_tunnel"
+	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_starter_http"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_starter_tor"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_console"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_video_transcoder"
