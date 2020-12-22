@@ -25,6 +25,7 @@ steps:
   commands:
   - apk add make git > /dev/null
   - npm install --silent
+  - npm run lint
   - make build_frontend
   - cp -R ./dist/data/public ./filestash/data/public
 
