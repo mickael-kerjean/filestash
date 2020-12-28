@@ -44,7 +44,8 @@ export class ViewerPage extends React.Component {
             needSaving: false,
             isSaving: false,
             loading: true,
-            application_arguments: null
+            application_arguments: null,
+            subtitlesTrack: null
         };
         this.props.subscribe('file.select', this.onPathUpdate.bind(this));
     }
@@ -89,6 +90,26 @@ export class ViewerPage extends React.Component {
                         this.setState({opener: 'download', loading: false});
                     }else{
                         this.props.error(err);
+                    }
+                });
+            } else if (app === "video") {
+                const currentDirectory = this.state.path.substr(0, this.state.path.lastIndexOf("/") + 1);
+                const videoFileWithoutExt = this.state.filename.substr(0, this.state.filename.lastIndexOf("."));
+                const subtitlesTracks = [videoFileWithoutExt + ".ssa", videoFileWithoutExt + ".ass"];
+                var searchPromises = [];
+                for (const subtitlesTrack of subtitlesTracks) {
+                    searchPromises.push(Files.search(subtitlesTrack, currentDirectory));
+                }
+                return Promise.all(searchPromises).then((allSearchResults) => {
+                    for (const searchResults of allSearchResults) {
+                        if (Array.isArray(searchResults) && searchResults.length > 0) {
+                            Files.url(searchResults[0].path).then((subtitlesTrackUrl) => {
+                                this.setState({
+                                    subtitlesTrack: subtitlesTrackUrl,
+                                    loading: false
+                                });
+                            });
+                        }
                     }
                 });
             }
@@ -163,7 +184,7 @@ export class ViewerPage extends React.Component {
                     <PDFViewer data={this.state.url} filename={this.state.filename} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'video'}>
-                    <VideoPlayer data={this.state.url} filename={this.state.filename} path={this.state.path} />
+                    <VideoPlayer data={this.state.url} filename={this.state.filename} path={this.state.path} subtitlesTrack={this.state.subtitlesTrack} />
                   </NgIf>
                   <NgIf cond={this.state.opener === 'form'}>
                     <FormViewer needSavingUpdate={this.needSaving.bind(this)}
