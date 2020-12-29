@@ -27,12 +27,14 @@ export class VideoPlayer extends React.Component {
             }])
         });
 
-        const subtitlesOctopusScript = document.createElement("script");
-        subtitlesOctopusScript.src = "/assets/vendor/libass-wasm/subtitles-octopus.js";
-        subtitlesOctopusScript.async = true;
-        subtitlesOctopusScript.onload = () => this.subtitlesOctopusInstantiate();
+        if (this.props.subtitlesTrack !== null) {
+            const subtitlesOctopusScript = document.createElement("script");
+            subtitlesOctopusScript.src = "/assets/vendor/libass-wasm/subtitles-octopus.js";
+            subtitlesOctopusScript.async = true;
+            subtitlesOctopusScript.onload = () => this.subtitlesOctopusInstantiate();
 
-        document.head.appendChild(subtitlesOctopusScript);
+            document.head.appendChild(subtitlesOctopusScript);
+        }
     }
 
     subtitlesOctopusInstantiate() {

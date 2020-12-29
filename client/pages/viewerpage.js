@@ -96,21 +96,19 @@ export class ViewerPage extends React.Component {
                 const currentDirectory = this.state.path.substr(0, this.state.path.lastIndexOf("/") + 1);
                 const videoFileWithoutExt = this.state.filename.substr(0, this.state.filename.lastIndexOf("."));
                 const subtitlesTracks = [videoFileWithoutExt + ".ssa", videoFileWithoutExt + ".ass"];
-                var searchPromises = [];
+                var catPromises = [];
                 for (const subtitlesTrack of subtitlesTracks) {
-                    searchPromises.push(Files.search(subtitlesTrack, currentDirectory));
+                    catPromises.push(Files.cat(currentDirectory + subtitlesTrack));
                 }
-                return Promise.all(searchPromises).then((allSearchResults) => {
-                    for (const searchResults of allSearchResults) {
-                        if (Array.isArray(searchResults) && searchResults.length > 0) {
-                            Files.url(searchResults[0].path).then((subtitlesTrackUrl) => {
-                                this.setState({
-                                    subtitlesTrack: subtitlesTrackUrl,
-                                    loading: false
-                                });
+                return Promise.allSettled(catPromises).then((catResults) => {
+                    for (let i = 0; i < subtitlesTracks.length; i++) {
+                        if (catResults[i].status === "fulfilled") {
+                            Files.url(currentDirectory + subtitlesTracks[i]).then(url => {
+                                this.setState({subtitlesTrack: url});
                             });
                         }
                     }
+                    this.setState({loading: false});
                 });
             }
             this.setState({loading: false});
