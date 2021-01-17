@@ -65,6 +65,12 @@ func ShareGet(id string) (Share, error) {
 
 func ShareUpsert(p *Share) error {
 	if p.Password != nil {
+		encryptedAuth, err := EncryptString(AuthKeyFromPassword(*p.Password), p.Auth)
+		if err != nil {
+			return err
+		}
+		p.Auth = encryptedAuth
+
 		if *p.Password == PASSWORD_DUMMY {
 			if s, err := ShareGet(p.Id); err != nil {
 				p.Password = s.Password
@@ -90,7 +96,7 @@ func ShareUpsert(p *Share) error {
 		}
 	}
 
-	stmt, err = DB.Prepare("INSERT INTO Share(id, related_backend, related_path, params, auth) VALUES($1, $2, $3, $4, $5) ON CONFLICT(id) DO UPDATE SET related_backend = $2, related_path = $3, params = $4")
+	stmt, err = DB.Prepare("INSERT INTO Share(id, related_backend, related_path, params, auth) VALUES($1, $2, $3, $4, $5) ON CONFLICT(id) DO UPDATE SET related_backend = $2, related_path = $3, params = $4, auth = $5")
 	if err != nil {
 		return err
 	}
@@ -333,6 +339,13 @@ func shareProofAreEquivalent(ref Proof,  p Proof) bool {
 		}
 	}
 	return false
+}
+
+func AuthKeyFromPassword(password string) string {
+	// a more complicated hash could be used here (with salt for instance)
+	// but since the hash will only be stored on the client side, and encrypted,
+	// it sould be ok.
+	return Hash(password, len(SECRET_KEY))
 }
 
 func TmplEmailVerification() string {

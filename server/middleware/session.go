@@ -217,12 +217,24 @@ func _extractShare(req *http.Request) (Share, error) {
 	if s.Password != nil && password != "" {
 		if v, ok := model.ShareProofVerifierPassword(*s.Password, password); ok {
 			verifiedProof = append(verifiedProof, model.Proof{ Key: "password", Value: v })
+			verifiedProof = append(verifiedProof, model.Proof{ Key: "authKey", Id: model.AuthKeyFromPassword(password) })
 		}
 	}
 	var requiredProof []model.Proof = model.ShareProofGetRequired(s)
 	var remainingProof []model.Proof = model.ShareProofCalculateRemainings(requiredProof, verifiedProof)
 	if len(remainingProof) != 0 {
 		return Share{}, NewError("Unauthorized Shared space", 400)
+	}
+
+	// If the proof contains an AuthKey (generated from the password), 
+	// then the Auth value is encrypted with it
+	var proofAuthKey = _getProofAuthKey(verifiedProof)
+	if proofAuthKey != "" {
+		decryptedAuth, err := DecryptString(proofAuthKey, s.Auth)
+		if err != nil {
+			return Share{}, NewError("Unauthorized Shared space", 400)
+		}
+		s.Auth = decryptedAuth
 	}
 	return s, nil
 }
@@ -273,4 +285,13 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 
 func _extractBackend(req *http.Request, ctx *App) (IBackend, error) {
 	return model.NewBackend(ctx, ctx.Session)
+}
+
+func _getProofAuthKey(p []model.Proof) string {
+	for i := 0; i < len(p); i++ {
+		if p[i].Key == "authKey"{
+			return p[i].Id
+		}
+	}
+	return ""
 }

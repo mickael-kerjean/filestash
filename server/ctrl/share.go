@@ -95,6 +95,7 @@ func ShareDelete(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	var submittedProof model.Proof
+	var verifiedSubmittedProof  model.Proof
 	var verifiedProof []model.Proof
 	var requiredProof []model.Proof
 	var remainingProof []model.Proof
@@ -132,22 +133,30 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// 3) process the proof sent by the user
-	submittedProof, err = model.ShareProofVerifier(s, submittedProof);
+	verifiedSubmittedProof, err = model.ShareProofVerifier(s, submittedProof);
 	if err != nil {
-		submittedProof.Error = NewString(err.Error())
-		SendSuccessResult(res, submittedProof)
+		verifiedSubmittedProof.Error = NewString(err.Error())
+		SendSuccessResult(res, verifiedSubmittedProof)
 		return
 	}
-	if submittedProof.Key == "code" {
-		submittedProof.Value = ""
-		submittedProof.Message = NewString("We've sent you a message with a verification code")
-		SendSuccessResult(res, submittedProof)
+	if verifiedSubmittedProof.Key == "code" {
+		verifiedSubmittedProof.Value = ""
+		verifiedSubmittedProof.Message = NewString("We've sent you a message with a verification code")
+		SendSuccessResult(res, verifiedSubmittedProof)
 		return
 	}
 
-	if submittedProof.Key != "" {
-		submittedProof.Id = Hash(submittedProof.Key + "::" + submittedProof.Value, 20)
-		verifiedProof = append(verifiedProof, submittedProof)
+	if verifiedSubmittedProof.Key != "" {
+		verifiedSubmittedProof.Id = Hash(verifiedSubmittedProof.Key + "::" + verifiedSubmittedProof.Value, 20)
+		verifiedProof = append(verifiedProof, verifiedSubmittedProof)
+	}
+	
+	// The password should be kept client side to decrypt the Auth info later
+	if verifiedSubmittedProof.Key == "password" {
+		verifiedProof = append(verifiedProof, model.Proof{ 
+			Key: "authKey", 
+			Id: model.AuthKeyFromPassword(submittedProof.Value),
+		})
 	}
 
 	// 4) Find remaining proofs: requiredProof - verifiedProof
