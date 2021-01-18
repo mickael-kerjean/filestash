@@ -42,25 +42,30 @@ import img_location from '../assets/img/location.svg';
 import img_stop from '../assets/img/stop.svg';
 import img_refresh from '../assets/img/refresh.svg';
 import img_copy from '../assets/img/copy.svg';
+import img_dir from '../assets/img/folder.svg';
+import img_file from '../assets/img/file.svg';
+import img_edit from '../assets/img/edit.svg';
+import img_delete from '../assets/img/delete.svg';
+import img_share from '../assets/img/share.svg';
 export const img_placeholder = "/assets/icons/placeholder.png";
 
 export const Icon = (props) => {
     if(props.name === null) return null;
     let img;
     if(props.name === 'directory'){
-        img = "/assets/icons/folder.svg";
+        img = img_dir;
     }else if(props.name === 'file'){
-        img = "/assets/icons/file.svg";
+        img = img_file;
     }else if(props.name === 'save'){
         img = img_save;
     }else if(props.name === 'power'){
         img = img_power;
     }else if(props.name === 'edit'){
-        img = "/assets/icons/edit.svg";
+        img = img_edit;
     }else if(props.name === 'delete'){
-        img = "/assets/icons/delete.svg";
+        img = img_delete;
     }else if(props.name === 'share'){
-        img = "/assets/icons/share.svg";
+        img = img_share;
     }else if(props.name === 'bucket'){
         img = img_bucket;
     }else if(props.name === 'download_white'){
