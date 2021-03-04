@@ -91,7 +91,7 @@ class FileSystem{
                 location = "/login?next="+location.pathname;
             }
             this.obs.next(_err);
-            return Promise.reject(err);
+            return Promise.reject(_err);
         })
     }
 
@@ -388,7 +388,7 @@ class FileSystem{
             const reader = new FileReader();
             reader.readAsText(file);
             reader.onload = () => this.is_binary(reader.result) === false? update_cache(reader.result).then(done) : done();
-            reader.onerror = (err) => err(err);
+            reader.onerror = (_err) => err(_err);
         });
 
         function update_cache(result){
