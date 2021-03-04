@@ -43,7 +43,7 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 			return
 		}
 		ua := req.Header.Get("User-Agent");
-		if strings.Contains(ua, "MSIE ") || strings.Contains(ua, "Edge/"){
+		if strings.Contains(ua, "MSIE ") || strings.Contains(ua, "Trident/") || strings.Contains(ua, "Edge/") {
 			// Microsoft is behaving on many occasion differently than Firefox / Chrome.
 			// I have neither the time / motivation for it to work properly
 			res.WriteHeader(http.StatusBadRequest)
