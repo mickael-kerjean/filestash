@@ -181,8 +181,11 @@ export class BackendPage extends React.Component {
                                     <div className="icons no-select" onClick={this.removeBackend.bind(this, index)}>
                                       <Icon name="delete" />
                                     </div>
-                                    <FormBuilder onChange={this.onChange.bind(this)} idx={index} key={index}
+                                    <FormBuilder onChange={this.onChange.bind(this)} 
+                                                 idx={index} 
+                                                 key={index}
                                                  form={{"": backend_enable}}
+                                                 autoComplete="new-password"
                                                  render={ ($input, props, struct, onChange) => {
                                                      let $checkbox = (
                                                          <Input type="checkbox" style={{width: "inherit", marginRight: '6px', top: '6px'}}

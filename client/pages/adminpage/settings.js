@@ -49,7 +49,10 @@ export class SettingsPage extends React.Component {
     render(){
         return (
             <form className="sticky">
-                <FormBuilder form={this.state.form} onChange={this.onChange.bind(this)} render={ ($input, props, struct, onChange) => {
+                <FormBuilder form={this.state.form} 
+                             onChange={this.onChange.bind(this)} 
+                             autoComplete="new-password"
+                             render={ ($input, props, struct, onChange) => {
                     return (
                         <label className={"no-select input_type_" + props.params["type"]}>
                           <div>
