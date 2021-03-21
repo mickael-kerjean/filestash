@@ -171,6 +171,12 @@ class FileSystem{
             });
     }
 
+    zip(paths){
+        const url = '/api/files/zip?'+paths.map((p)=> "path=" +prepare(p)).join("&")
+        window.open(url);
+        return Promise.resolve();
+    }
+
     options(path){
         const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
         return http_options(url);

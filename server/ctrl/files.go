@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	"archive/zip"
 	"encoding/base64"
 	"fmt"
 	"hash/fnv"
@@ -21,6 +22,8 @@ type FileInfo struct {
 	Size int64  `json:"size"`
 	Time int64  `json:"time"`
 }
+
+const ZIP_TIMEOUT = 100
 
 var FileCache AppCache
 
@@ -396,6 +399,82 @@ func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
 	SendSuccessResult(res, nil)
+}
+
+func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
+	var err error
+	if model.CanRead(&ctx) == false {
+		SendErrorResult(res, ErrPermissionDenied)
+		return
+	}
+	paths := req.URL.Query()["path"]
+	for i:=0; i<len(paths); i++ {
+		if paths[i], err = PathBuilder(ctx, paths[i]); err != nil {
+			SendErrorResult(res, err)
+			return
+		}
+	}
+
+	resHeader := res.Header()
+	resHeader.Set("Content-Type", "application/zip")
+	filename := "download"
+	if len(paths) == 1 {
+		filename = filepath.Base(paths[0])
+	}
+	resHeader.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", filename))
+
+	start := time.Now()
+	var addToZipRecursive func(App, *zip.Writer, string, string) error
+	addToZipRecursive = func(c App, zw *zip.Writer, backendPath string, zipRoot string) (err error) {
+		if time.Now().Sub(start) > ZIP_TIMEOUT * time.Second {
+			return ErrTimeout
+		}
+		if strings.HasSuffix(backendPath, "/") == false {
+			// Process File
+			zipPath := strings.TrimPrefix(backendPath, zipRoot)
+			zipFile, err := zw.Create(zipPath)
+			if err != nil {
+				return err
+			}
+			file, err := ctx.Backend.Cat(backendPath)
+			if err != nil {
+				io.Copy(zipFile, strings.NewReader(""))
+				return err
+			}
+			if _, err = io.Copy(zipFile, file); err != nil {
+				io.Copy(zipFile, strings.NewReader(""))
+				return err
+			}
+			return nil
+		}
+		// Process Folder
+		entries, err := c.Backend.Ls(backendPath)
+		if err != nil {
+			return err
+		}
+		for i := 0; i < len(entries); i++ {
+			newBackendPath := backendPath + entries[i].Name()
+			if entries[i].IsDir() {
+				newBackendPath += "/"
+			}
+			if err = addToZipRecursive(ctx, zw, newBackendPath, zipRoot); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	zipWriter := zip.NewWriter(res)
+	defer zipWriter.Close()
+	for i:=0; i<len(paths); i++ {
+		zipRoot := ""
+		if strings.HasSuffix(paths[i], "/") {
+			zipRoot = strings.TrimSuffix(paths[i], filepath.Base(paths[i]) + "/")
+		} else {
+			zipRoot = strings.TrimSuffix(paths[i], filepath.Base(paths[i]))
+		}
+		addToZipRecursive(ctx, zipWriter, paths[i], zipRoot)
+	}
 }
 
 func PathBuilder(ctx App, path string) (string, error) {

@@ -61,6 +61,9 @@ export class Submenu extends React.Component {
             () => { /* click on cancel */ }
         );
     }
+    onDownload(arrayOfPaths){
+        this.props.emit("file.download.multiple", arrayOfPaths);
+    }
 
     onViewChange(){
         requestAnimationFrame(() => this.props.onViewUpdate());
@@ -121,6 +124,11 @@ export class Submenu extends React.Component {
                   </NgIf>
                   <NgIf cond={this.props.accessRight.can_create_directory !== false && this.props.selected.length === 0} onClick={this.onNew.bind(this, 'directory')} type="inline">
                     { window.innerWidth < 410 && t("New Directory").length > 10 ? t("New Directory", null, "NEW_DIRECTORY::SHORT") : t("New Directory") }
+                  </NgIf>
+                  <NgIf cond={this.props.selected.length > 0} type="inline" onMouseDown={this.onDownload.bind(this, this.props.selected)}>
+                    <ReactCSSTransitionGroup transitionName="submenuwithSelection" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={10000}>
+                      <span>{ t("Download") }</span>
+                    </ReactCSSTransitionGroup>
                   </NgIf>
                   <NgIf cond={this.props.selected.length > 0} type="inline" onMouseDown={this.onDelete.bind(this, this.props.selected)}>
                     <ReactCSSTransitionGroup transitionName="submenuwithSelection" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={10000}>

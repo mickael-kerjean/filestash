@@ -6,7 +6,7 @@ import { SelectableGroup } from 'react-selectable';
 import './filespage.scss';
 import './error.scss';
 import { Files } from '../model/';
-import { sort, onCreate, onRename, onMultiRename, onDelete, onMultiDelete, onUpload, onSearch } from './filespage.helper';
+import { sort, onCreate, onRename, onMultiRename, onDelete, onMultiDelete, onMultiDownload, onUpload, onSearch } from './filespage.helper';
 import { NgIf, NgShow, Loader, EventReceiver, LoggedInOnly, ErrorPage } from '../components/';
 import { notify, debounce, goToFiles, goToViewer, event, settings_get, settings_put } from '../helpers/';
 import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from './filespage/';
@@ -70,6 +70,7 @@ export class FilesPage extends React.Component {
         this.props.subscribe("file.rename.multiple", onMultiRename.bind(this));
         this.props.subscribe("file.delete", onDelete.bind(this));
         this.props.subscribe("file.delete.multiple", onMultiDelete.bind(this));
+        this.props.subscribe("file.download.multiple", onMultiDownload.bind(this));
         this.props.subscribe("file.refresh", this.onRefresh.bind(this));
         this.props.subscribe("file.select", this.toggleSelect.bind(this));
         window.addEventListener("keydown", this.toggleHiddenFilesVisibilityonCtrlK);

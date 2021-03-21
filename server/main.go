@@ -44,20 +44,21 @@ func Init(a *App) {
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigHandler,       middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config",  NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, *a)).Methods("POST")
 	middlewares = []Middleware{ IndexHeaders, AdminOnly, SecureAjax }
-	admin.HandleFunc("/log",                        NewMiddlewareChain(FetchLogHandler,          middlewares, *a)).Methods("GET")	
+	admin.HandleFunc("/log",                        NewMiddlewareChain(FetchLogHandler,          middlewares, *a)).Methods("GET")
 
 	// API for File management
 	files := r.PathPrefix("/api/files").Subrouter()
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly }
 	files.HandleFunc("/cat",    NewMiddlewareChain(FileCat,    middlewares, *a)).Methods("GET", "HEAD")
+	files.HandleFunc("/zip",    NewMiddlewareChain(FileDownloader, middlewares, *a)).Methods("GET")
 	middlewares = []Middleware{ ApiHeaders, SecureHeaders, SecureAjax, SessionStart, LoggedInOnly }
-	files.HandleFunc("/cat",    NewMiddlewareChain(FileAccess, middlewares, *a)).Methods("OPTIONS")
-	files.HandleFunc("/cat",    NewMiddlewareChain(FileSave,   middlewares, *a)).Methods("POST")
-	files.HandleFunc("/ls",     NewMiddlewareChain(FileLs,     middlewares, *a)).Methods("GET")
-	files.HandleFunc("/mv",     NewMiddlewareChain(FileMv,     middlewares, *a)).Methods("GET")
-	files.HandleFunc("/rm",     NewMiddlewareChain(FileRm,     middlewares, *a)).Methods("GET")
-	files.HandleFunc("/mkdir",  NewMiddlewareChain(FileMkdir,  middlewares, *a)).Methods("GET")
-	files.HandleFunc("/touch",  NewMiddlewareChain(FileTouch,  middlewares, *a)).Methods("GET")
+	files.HandleFunc("/cat",    NewMiddlewareChain(FileAccess,     middlewares, *a)).Methods("OPTIONS")
+	files.HandleFunc("/cat",    NewMiddlewareChain(FileSave,       middlewares, *a)).Methods("POST")
+	files.HandleFunc("/ls",     NewMiddlewareChain(FileLs,         middlewares, *a)).Methods("GET")
+	files.HandleFunc("/mv",     NewMiddlewareChain(FileMv,         middlewares, *a)).Methods("GET")
+	files.HandleFunc("/rm",     NewMiddlewareChain(FileRm,         middlewares, *a)).Methods("GET")
+	files.HandleFunc("/mkdir",  NewMiddlewareChain(FileMkdir,      middlewares, *a)).Methods("GET")
+	files.HandleFunc("/touch",  NewMiddlewareChain(FileTouch,      middlewares, *a)).Methods("GET")
 	middlewares = []Middleware{ ApiHeaders, SessionStart, LoggedInOnly }
 	files.HandleFunc("/search",  NewMiddlewareChain(FileSearch,  middlewares, *a)).Methods("GET")
 
