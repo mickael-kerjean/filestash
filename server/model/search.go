@@ -68,7 +68,7 @@ func init(){
 			f.Type = "number"
 			f.Default = 300
 			f.Description = `When full text search is disabled, the search engine recursively explore
- directories to find results. Exploration can't last longer than what is confured here`
+ directories to find results. Exploration can't last longer than what is configured here`
 			f.Placeholder = fmt.Sprintf("Default: %dms", f.Default)
 			return f
 		}).Int()) * time.Millisecond
