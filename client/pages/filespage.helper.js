@@ -122,6 +122,11 @@ export const onMultiDelete = function(arrOfPath){
         .catch((err) => notify.send(err, 'error'));
 }
 
+export const onMultiDownload = function(arr){
+    return Files.zip(arr)
+        .catch((err) => notify.send(err, 'error'));
+}
+
 export const onMultiRename = function(arrOfPath){
     return Promise.all(arrOfPath.map((p) => Files.mv(p[0], p[1])))
         .then(() => notify.send(t('All done!'), 'success'))

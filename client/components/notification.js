@@ -1,10 +1,10 @@
-import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import React from "react";
+import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
-import { NgIf, Icon } from './';
-import { notify } from '../helpers/';
-import { t } from '../locales/';
-import './notification.scss';
+import { NgIf, Icon } from "./";
+import { notify } from "../helpers/";
+import { t } from "../locales/";
+import "./notification.scss";
 
 export class Notification extends React.Component {
     constructor(props){
@@ -16,12 +16,10 @@ export class Notification extends React.Component {
         };
         this.runner = new TaskManager();
         this.notification_current = null;
-        this.notification_is_first = null;
-        this.notification_is_last = null;
     }
 
     componentDidMount(){
-        this.runner.before_run((task, isFirst, isLast) => {
+        this.runner.before_run((task) => {
             this.notification_current = task;
         });
 
@@ -35,9 +33,9 @@ export class Notification extends React.Component {
         });
 
         function stringify(data){
-            if(typeof data === 'object' && data.message){
+            if(typeof data === "object" && data.message){
                 return data.message;
-            }else if(typeof data === 'string'){
+            }else if(typeof data === "string"){
                 return data;
             }
             return JSON.stringify(data);
@@ -45,7 +43,7 @@ export class Notification extends React.Component {
     }
 
     closeNotification(){
-        return new Promise((done ,err) => {
+        return new Promise((done) => {
             this.setState({
                 appear: false
             }, done);
@@ -53,7 +51,7 @@ export class Notification extends React.Component {
     }
 
     openNotification(message){
-        return new Promise((done ,err) => {
+        return new Promise((done) => {
             this.setState({
                 appear: true,
                 message_text: message.text,
@@ -70,7 +68,7 @@ export class Notification extends React.Component {
         return (
             <ReactCSSTransitionGroup transitionName="notification" transitionLeave={true} transitionLeaveTimeout={200} transitionEnter={true} transitionEnterTimeout={100} transitionAppear={false} className="component_notification">
               <NgIf key={this.state.message_text+this.state.message_type+this.state.appear} cond={this.state.appear === true} className="no-select">
-                <div className={"component_notification--container "+(this.state.message_type || 'info')}>
+                <div className={"component_notification--container "+(this.state.message_type || "info")}>
                   <div className="message">
                     { t(this.state.message_text || "") }
                   </div>
@@ -92,8 +90,6 @@ function TaskManager(){
     let is_running = false;
     let subscriber = null;
     let current_task = null;
-    let is_first = null;
-    let is_last = null;
 
     const ret ={
         addTask: function(task){
@@ -112,12 +108,11 @@ function TaskManager(){
         },
         _run: function(){
             current_task = tasks.shift();
-            is_last = tasks.length === 0;
             if(!current_task){
                 is_running = false;
                 return Promise.resolve();
             }else{
-                const mode = tasks.length > 0 ? 'minimal' : 'normal';
+                const mode = tasks.length > 0 ? "minimal" : "normal";
                 subscriber(current_task, mode);
                 return current_task.run(mode).then(ret._run);
             }
@@ -133,17 +128,17 @@ function Task(_runCallback, _finishCallback, wait_time_before_finish, minimum_ru
     let timeout = null;
 
     const ret = {
-        run: function(mode = 'normal'){
-            const wait = mode === 'minimal' ? minimum_running_time : wait_time_before_finish;
+        run: function(mode = "normal"){
+            const wait = mode === "minimal" ? minimum_running_time : wait_time_before_finish;
             start_date = new Date();
 
-            new Promise((_done, err) => {
+            new Promise((_done) => {
                 timeout = window.setTimeout(() => {
                     _done();
                 }, 200);
             })
                 .then(_runCallback)
-                .then(() => new Promise((_done, err) => {
+                .then(() => new Promise((_done) => {
                     timeout = window.setTimeout(() => {
                         _done();
                     }, wait);

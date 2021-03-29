@@ -1,10 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
 
-import { Input, Button, Modal, NgIf } from './';
-import { confirm } from '../helpers/';
-import { Popup } from './popup';
-import { t } from '../locales/';
+import { Button } from "./";
+import { confirm } from "../helpers/";
+import { Popup } from "./popup";
+import { t } from "../locales/";
 
 export class ModalConfirm extends Popup{
     constructor(props){

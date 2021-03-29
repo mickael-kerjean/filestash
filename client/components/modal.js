@@ -1,10 +1,10 @@
-import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import PropTypes from 'prop-types';
+import React from "react";
+import ReactCSSTransitionGroup from "react-addons-css-transition-group";
+import PropTypes from "prop-types";
 
-import { Input, Button, NgIf } from './';
-import { debounce } from '../helpers/';
-import './modal.scss';
+import { NgIf } from "./";
+import { debounce } from "../helpers/";
+import "./modal.scss";
 
 export class Modal extends React.Component {
     constructor(props){
@@ -17,7 +17,7 @@ export class Modal extends React.Component {
     }
 
     onClick(e){
-        if(e.target.getAttribute('id') === 'modal-box'){
+        if(e.target.getAttribute("id") === "modal-box"){
             this.props.onQuit && this.props.onQuit();
         }
     }
@@ -31,11 +31,11 @@ export class Modal extends React.Component {
 
     componentDidMount(){
         window.addEventListener("resize", this._resetMargin);
-        window.addEventListener('keydown', this._onEscapeKeyPress);
+        window.addEventListener("keydown", this._onEscapeKeyPress);
     }
     componentWillUnmount(){
         window.removeEventListener("resize", this._resetMargin);
-        window.removeEventListener('keydown', this._onEscapeKeyPress);
+        window.removeEventListener("keydown", this._onEscapeKeyPress);
     }
 
     _resetMargin(){
@@ -51,7 +51,7 @@ export class Modal extends React.Component {
 
     _marginTop(){
         let size = 300;
-        const $box = document.querySelector('#modal-box > div');
+        const $box = document.querySelector("#modal-box > div");
         if($box) size = $box.offsetHeight;
 
         size = Math.round((document.body.offsetHeight - size) / 2);
@@ -69,7 +69,7 @@ export class Modal extends React.Component {
               >
               <NgIf key={"modal-"+this.props.isActive} cond={this.props.isActive}>
                 <div className={"component_modal"+(this.props.className? " " + this.props.className : "")} onClick={this.onClick.bind(this)} id="modal-box">
-                  <div style={{margin: this.state.marginTop+'px auto 0 auto', visibility: this.state.marginTop === -1 ? "hidden" : "visible"}}>
+                  <div style={{margin: this.state.marginTop+"px auto 0 auto", visibility: this.state.marginTop === -1 ? "hidden" : "visible"}}>
                     {this.props.children}
                   </div>
                 </div>

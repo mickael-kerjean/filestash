@@ -91,7 +91,7 @@ class FileSystem{
                 location = "/login?next="+location.pathname;
             }
             this.obs.next(_err);
-            return Promise.reject(err);
+            return Promise.reject(_err);
         })
     }
 
@@ -169,6 +169,12 @@ class FileSystem{
                     return file;
                 }).then((response) => Promise.resolve(response.result));
             });
+    }
+
+    zip(paths){
+        const url = '/api/files/zip?'+paths.map((p)=> "path=" +prepare(p)).join("&")
+        window.open(url);
+        return Promise.resolve();
     }
 
     options(path){
@@ -388,7 +394,7 @@ class FileSystem{
             const reader = new FileReader();
             reader.readAsText(file);
             reader.onload = () => this.is_binary(reader.result) === false? update_cache(reader.result).then(done) : done();
-            reader.onerror = (err) => err(err);
+            reader.onerror = (_err) => err(_err);
         });
 
         function update_cache(result){

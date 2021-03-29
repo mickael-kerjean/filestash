@@ -85,6 +85,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 			return backend, err
 		}
 		if _, err := client.ReadDir("/"); err != nil {
+			client.Close()
 			return backend, ErrAuthenticationFailed
 		}
 		backend = &Ftp{client}

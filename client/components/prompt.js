@@ -1,10 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
 
-import { Input, Button, Modal, NgIf } from './';
-import { prompt } from '../helpers/';
-import { Popup } from './popup';
-import { t } from '../locales/';
+import { Input, Button } from "./";
+import { prompt } from "../helpers/";
+import { Popup } from "./popup";
+import { t } from "../locales/";
 
 export class ModalPrompt extends Popup {
     constructor(props){
@@ -15,10 +14,10 @@ export class ModalPrompt extends Popup {
         prompt.subscribe((text, okCallback, cancelCallback, type) => {
             this.setState({
                 appear: true,
-                value: '',
+                value: "",
                 error: null,
-                type: type || 'text',
-                text: text || '',
+                type: type || "text",
+                text: text || "",
                 fns: {ok: okCallback, cancel: cancelCallback}
             });
         });

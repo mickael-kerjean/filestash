@@ -1,8 +1,8 @@
-import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import './loader.scss';
+import React from "react";
+import ReactCSSTransitionGroup from "react-addons-css-transition-group";
+import "./loader.scss";
 
-export const Loader = (props) => {
+export const Loader = () => {
     return (
         <ReactCSSTransitionGroup transitionName="loader" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={400}>
           <div className="component_loader">

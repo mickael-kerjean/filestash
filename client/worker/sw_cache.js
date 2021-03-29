@@ -1,5 +1,4 @@
 const CACHE_NAME = "v0.3";
-const DELAY_BEFORE_SENDING_CACHE = 2000;
 
 /*
  * Control everything going through the wire, applying different
@@ -33,7 +32,7 @@ self.addEventListener("error", function(err){
  * When a newly installed service worker is coming in, we want to use it
  * straight away (make it active). By default it would be in a "waiting state"
  */
-self.addEventListener("install", function(event){
+self.addEventListener("install", function(){
     caches.open(CACHE_NAME).then(function(cache) {
         return cache.addAll([
             "/",
@@ -81,7 +80,8 @@ function vacuum(event){
 }
 
 function _pathname(request){
-    return request.url.replace(/^http[s]?:\/\/[^\/]*\//, "").split("/")
+    //eslint-disable-next-line no-useless-escape
+    return request.url.replace(/^http[s]?:\/\/[^\/]*\//, "").split("/");
 }
 
 /*
@@ -118,5 +118,5 @@ function cacheFirstStrategy(event){
                 return response;
             });
     }
-    function nil(e){}
+    function nil(){}
 }

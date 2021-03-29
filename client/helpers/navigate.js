@@ -29,6 +29,10 @@ export function goToLogout(history){
     return Promise.resolve("ok");
 }
 
+export const URL_ADMIN = "/admin";
+
+export const URL_SHARE = "/s";
+
 function encode_path(path){
     if(/%2F/.test(path) === false){
         return encodeURIComponent(path).replace(/%2F/g, "/"); // replace slash to make url more friendly

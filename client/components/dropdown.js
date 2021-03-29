@@ -3,12 +3,11 @@
  * we replace the dirty select on desktop by something more fancy but not on ios/android
  * as there's just no reason for doing that.
  */
-
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React from "react";
+import ReactDOM from "react-dom";
 
 import { Icon, NgIf } from "./";
-import './dropdown.scss';
+import "./dropdown.scss";
 
 export class Dropdown extends React.Component {
     constructor(props){
@@ -44,9 +43,9 @@ export class Dropdown extends React.Component {
         this.setState({button: false});
     }
 
-    toggleDropdown(e){
+    toggleDropdown(){
         if(this.props.enable === false){
-            return
+            return;
         }
         document.body.removeEventListener("click", this.closeDropdown);
         this.setState({button: !this.state.button}, () => {
@@ -81,7 +80,7 @@ export const DropdownButton = (props) => {
           { props.children }
         </div>
     );
-}
+};
 
 
 export const DropdownList = (props) => {
@@ -107,7 +106,7 @@ export const DropdownItem = (props) => {
         <div onClick={props.onSelect.bind(null, props.name)}>
           {props.children}
           <NgIf cond={!!props.icon} type="inline">
-            <span style={{float: 'right'}}>
+            <span style={{float: "right"}}>
               <Icon name={props.icon} />
             </span>
           </NgIf>

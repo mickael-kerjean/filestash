@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import './textarea.scss';
+import "./textarea.scss";
 
 export class Textarea extends React.Component {
     constructor(props){
@@ -22,7 +22,7 @@ export class Textarea extends React.Component {
                 e.preventDefault();
                 const $form = getForm(this.refs.el);
                 if($form){
-                    $form.dispatchEvent(new Event('submit', { cancelable: true }));
+                    $form.dispatchEvent(new Event("submit", { cancelable: true }));
                 }
             }
 
@@ -46,7 +46,7 @@ export class Textarea extends React.Component {
               onKeyPress={disabledEnter}
               {...inputProps(this.props)}
               className={className}
-              ref={"el"}
+              ref="el"
               ></textarea>
         );
     }

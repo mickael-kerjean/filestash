@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "webpack --watch",
     "build": "webpack",
-    "test": "jest ./client/"
+    "test": "jest ./client/",
+    "lint": "eslint ./client/"
   },
   "author": "",
   "license": "ISC",
@@ -50,6 +51,8 @@
     "compression-webpack-plugin": "^1.1.11",
     "copy-webpack-plugin": "^4.5.2",
     "css-loader": "^0.28.10",
+    "eslint": "^7.16.0",
+    "eslint-plugin-react": "^7.21.5",
     "html-loader": "^0.4.5",
     "html-webpack-plugin": "^3.2.0",
     "node-sass": "^4.10.0",
