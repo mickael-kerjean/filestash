@@ -23,9 +23,10 @@ type FileInfo struct {
 	Time int64  `json:"time"`
 }
 
-const ZIP_TIMEOUT = 100
-
-var FileCache AppCache
+var (
+	FileCache AppCache
+	ZipTimeout int
+)
 
 func init() {
 	FileCache = NewAppCache()
@@ -33,6 +34,17 @@ func init() {
 	FileCache.OnEvict(func(key string, value interface{}) {
 		os.RemoveAll(filepath.Join(cachePath, key))
 	})
+	ZipTimeout = Config.Get("features.protection.zip_timeout").Schema(func(f *FormElement) *FormElement{
+		if f == nil {
+			f = &FormElement{}
+		}
+		f.Default = 60
+		f.Name = "zip_timeout"
+		f.Type = "number"
+		f.Description = "Timeout when user wants to download archive as a zip"
+		f.Placeholder = "Default: 60seconds"
+			return f
+	}).Int()
 }
 
 func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -426,7 +438,7 @@ func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 	var addToZipRecursive func(App, *zip.Writer, string, string) error
 	addToZipRecursive = func(c App, zw *zip.Writer, backendPath string, zipRoot string) (err error) {
-		if time.Now().Sub(start) > ZIP_TIMEOUT * time.Second {
+		if time.Now().Sub(start) > time.Duration(ZipTimeout) * time.Second {
 			return ErrTimeout
 		}
 		if strings.HasSuffix(backendPath, "/") == false {
