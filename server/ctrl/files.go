@@ -457,6 +457,7 @@ func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 				io.Copy(zipFile, strings.NewReader(""))
 				return err
 			}
+			file.Close()
 			return nil
 		}
 		// Process Folder
