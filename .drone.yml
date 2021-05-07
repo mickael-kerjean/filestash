@@ -50,7 +50,7 @@ steps:
       from_secret: GIT_PASSWORD
   commands:
   - apk add git > /dev/null
-  - git clone "https://readonly:$PASSWORD@git.kerjean.me/filestash/test.git"
+  - git clone https://mickael-kerjean:$PASSWORD@github.com/mickael-kerjean/filestash-test test
   - chmod -R 777 ./test/
 
 - name: test_frontend
