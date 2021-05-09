@@ -135,7 +135,7 @@ steps:
 
 - name: deployment
   image: quay.io/honestbee/drone-kubernetes
-  depends_on: [ release_publish ]
+  depends_on: [ release_docker ]
   when:
     branch: master
   kubernetes_server: ${KUBERNETES_SERVER}
