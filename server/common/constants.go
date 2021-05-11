@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	APP_VERSION = "v0.4rc"
+	APP_VERSION = "v0.5"
 	LOG_PATH    = "data/state/log/"
 	CONFIG_PATH = "data/state/config/"
 	DB_PATH     = "data/state/db/"
