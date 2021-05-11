@@ -74,18 +74,18 @@
 - [Installation](https://www.filestash.app/docs/install-and-upgrade/)
 - [FAQ](https://www.filestash.app/docs/faq/)
 
+# Support
+
+Support is only available to people who financially contribute to the project either via:
+- a support contract: mickael@kerjean.me
+- Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
+- [Open Collective](https://opencollective.com/filestash)
+
 # The core idea
 
 Filestash aims to solve the Dropbox problem by abstracting the storage aspect. This makes it possible to bring your own backend or create your own by implementing a simple interface. The power of that model makes it possible for non nerds to easily interact with complex systems without prior training (assuming they are familiar with Dropbox). As an example of that superpower, see our [LDAP backend](https://www.filestash.app/ldap-browser.html) and the Mysql one that emulate a file system where first level folder are the databases, tables are represented as subfolders and each row is represented as a file:
 
 ![infographic](https://www.filestash.app/img/illustration/filestash-framework.png)
-
-# Support the project
-
-If you use Filestash, contributing to my coffee bill would go a long way as I have spent countless hours in the last 3 years working on this project from my local coffee shop.
-
-- Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
-- [Open Collective](https://opencollective.com/filestash)
 
 # Credits
 - [Contributors](https://github.com/mickael-kerjean/filestash/graphs/contributors) and folks developing [awesome libraries](https://github.com/mickael-kerjean/filestash/blob/master/go.mod)
