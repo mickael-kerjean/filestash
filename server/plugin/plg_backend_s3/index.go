@@ -144,32 +144,32 @@ func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 	}
 	client := s3.New(s.createSession(p.bucket))
 
-	objs, errTmp := client.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket:    aws.String(p.bucket),
-		Prefix:    aws.String(p.path),
-		Delimiter: aws.String("/"),
-	})
-	if errTmp != nil {
-		err = errTmp
-		return
-	}
-	for i, object := range objs.Contents {
-		if i == 0 && *object.Key == p.path {
-			continue
-		}
-		files = append(files, &File{
-			FName: filepath.Base(*object.Key),
-			FType: "file",
-			FTime: object.LastModified.Unix(),
-			FSize: *object.Size,
+	err = client.ListObjectsV2Pages(
+		&s3.ListObjectsV2Input{
+			Bucket:    aws.String(p.bucket),
+			Prefix:    aws.String(p.path),
+			Delimiter: aws.String("/"),
+		},
+		func(objs *s3.ListObjectsV2Output, lastPage bool) bool {
+			for i, object := range objs.Contents {
+				if i == 0 && *object.Key == p.path {
+					continue
+				}
+				files = append(files, &File{
+					FName: filepath.Base(*object.Key),
+					FType: "file",
+					FTime: object.LastModified.Unix(),
+					FSize: *object.Size,
+				})
+			}
+			for _, object := range objs.CommonPrefixes {
+				files = append(files, &File{
+					FName: filepath.Base(*object.Prefix),
+					FType: "directory",
+				})
+			}
+			return true
 		})
-	}
-	for _, object := range objs.CommonPrefixes {
-		files = append(files, &File{
-			FName: filepath.Base(*object.Prefix),
-			FType: "directory",
-		})
-	}
 
 	return files, err
 }
