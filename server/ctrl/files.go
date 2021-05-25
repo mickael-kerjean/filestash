@@ -5,15 +5,16 @@ import (
 	"encoding/base64"
 	"fmt"
 	"hash/fnv"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/model"
 )
 
 type FileInfo struct {
@@ -300,6 +301,13 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+
+	maxMemory := int64(32 << 20) // 32MB
+	err = req.ParseMultipartForm(maxMemory)
+    if err != nil {
+		SendErrorResult(res, err)
+		return
+    }
 
 	file, _, err := req.FormFile("file")
 	if err != nil {
