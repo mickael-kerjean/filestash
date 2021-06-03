@@ -224,6 +224,7 @@ export class ShareComponent extends React.Component {
                                 <span onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)} className="copy path">{beautifulPath(this.props.path, link.path)}</span>
                                 <Icon onClick={this.onDeleteLink.bind(this, link.id)} name="delete"/>
                                 <Icon onClick={this.onLoad.bind(this, link)} name="edit"/>
+                                <Icon onClick={this.copyLinkInClipboard.bind(this, window.location.origin+'/api/files/cat?path='+this.props.path+'&share='+link.id)} name="download_white"/>
                               </div>
                           );
                       })
