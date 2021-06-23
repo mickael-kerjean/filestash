@@ -1,8 +1,8 @@
 {
     "A_FILE_NAMED_{{VALUE}}_WAS_CREATED": "{{VALUE}} adlı bir dosya oluşturuldu",
     "A_FOLDER_NAMED_{{VALUE}}_WAS_CREATED": "{{VALUE}} adlı bir klasör oluşturuldu",
-    "ABORTED": "İptal edildi",
-    "ABORT_CURRENT_UPLOADS?": "Mevcut yükleme iptal edilsin mi?",
+    "ABORTED": "Sonlandırıldı",
+    "ABORT_CURRENT_UPLOADS?": "Mevcut yükleme sonlandırılsın mı?",
     "ACTIVITY": "Hareketlilik",
     "ADMIN_CONSOLE": "Yönetici Konsolu",
     "ADVANCED": "Gelişmiş",
