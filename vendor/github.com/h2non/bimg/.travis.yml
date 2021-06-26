@@ -1,0 +1,33 @@
+language: go
+
+dist: focal
+sudo: required
+
+services:
+  - docker
+
+env:
+  # - LIBVIPS=8.6.2
+  # - LIBVIPS=8.7.4
+  # - LIBVIPS=8.8.4
+  # - LIBVIPS=8.9.2
+  - LIBVIPS=8.10.1
+  - LIBVIPS=8.10.2
+
+matrix:
+  allow_failures:
+    - env: LIBVIPS=8.8.4
+
+cache:
+  apt:
+  directories:
+    - $HOME/libvips
+
+install:
+  - docker build -t h2non/bimg:ci --build-arg LIBVIPS_VERSION=$LIBVIPS .
+
+script:
+  - docker run h2non/bimg:ci sh -c 'export LD_LIBRARY_PATH=/vips/lib:/usr/local/lib:$LD_LIBRARY_PATH; export PKG_CONFIG_PATH=/vips/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/X11/lib/pkgconfig;  go vet . && golint . && go test -v -race -covermode=atomic -coverprofile=coverage.out'
+
+# after_success:
+#   - goveralls -coverprofile=coverage.out -service=travis-ci

@@ -73,6 +73,8 @@ github.com/googleapis/gax-go/v2
 github.com/gorilla/mux
 # github.com/gorilla/websocket v1.4.1
 github.com/gorilla/websocket
+# github.com/h2non/bimg v1.1.5
+github.com/h2non/bimg
 # github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hirochachacha/go-smb2 v1.0.2
