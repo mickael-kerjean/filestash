@@ -19,6 +19,7 @@ export const FormObjToJSON = function(o, fn, i = 0){
 
 export function createFormBackend(backend_available, backend_data){
     if(!backend_available) return {};
+    else if(!backend_data) return {};
     else if(!backend_available[backend_data.type]) return {};
 
     let template = JSON.parse(JSON.stringify(backend_available[backend_data.type]));
