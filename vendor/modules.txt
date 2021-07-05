@@ -75,6 +75,8 @@ github.com/googleapis/gax-go/v2
 github.com/gorilla/mux
 # github.com/gorilla/websocket v1.4.1
 github.com/gorilla/websocket
+# github.com/h2non/bimg v1.1.5
+github.com/h2non/bimg
 # github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hirochachacha/go-smb2 v1.0.2
@@ -93,8 +95,6 @@ github.com/jbenet/go-context/io
 github.com/jmespath/go-jmespath
 # github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd
 github.com/kevinburke/ssh_config
-# github.com/konsorten/go-windows-terminal-sequences v1.0.1
-github.com/konsorten/go-windows-terminal-sequences
 # github.com/kr/fs v0.1.0
 github.com/kr/fs
 # github.com/kr/pty v1.1.8
@@ -104,8 +104,6 @@ github.com/mattn/go-sqlite3
 # github.com/mickael-kerjean/net v0.0.0-20191120063050-2457c043ba06
 github.com/mickael-kerjean/net/webdav
 github.com/mickael-kerjean/net/webdav/internal/xml
-# github.com/mickael-kerjean/remotedialer v0.0.0-20190515040733-a8c50bf75a94
-github.com/mickael-kerjean/remotedialer
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/hashstructure v1.0.0
@@ -122,8 +120,6 @@ github.com/pmezard/go-difflib/difflib
 github.com/secsy/goftp
 # github.com/sergi/go-diff v1.0.0
 github.com/sergi/go-diff/diffmatchpatch
-# github.com/sirupsen/logrus v1.4.2
-github.com/sirupsen/logrus
 # github.com/src-d/gcfg v1.4.0
 github.com/src-d/gcfg
 github.com/src-d/gcfg/scanner
@@ -182,6 +178,9 @@ golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/knownhosts
+# golang.org/x/image v0.0.0-20210622092929-e6eecd499c2c
+golang.org/x/image/draw
+golang.org/x/image/math/f64
 # golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
@@ -205,7 +204,7 @@ golang.org/x/sync/semaphore
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.2
+# golang.org/x/text v0.3.6
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi

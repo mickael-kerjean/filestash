@@ -84,10 +84,15 @@ const BreadCrumbContainer = (props) => {
 }
 const Logout = (props) => {
     const isRunningFromAnIframe = window.self !== window.top;
-    if(isRunningFromAnIframe) return null;
+    if(isRunningFromAnIframe || CONFIG["logout"] === "hide") return null;
+    let href = "/logout"
+    if(CONFIG["logout"] === "referrer") {
+        if(document.referrer === "") return null;
+        href = document.referrer;
+    }
     return (
         <div className="li component_logout">
-          <Link to="/logout">
+          <Link to={href}>
             <Icon name="power"/>
           </Link>
         </div>

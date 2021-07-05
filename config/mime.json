@@ -111,7 +111,7 @@
 	"ppam": "application/vnd.ms-powerpoint.addin.macroEnabled.12",
 	"pps": "application/vnd.ms-powerpoint",
 	"ppsx": "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
-	"ppsm": "application/vnd.ms-powerpoint.slideshow.macroEnabled.12"
+	"ppsm": "application/vnd.ms-powerpoint.slideshow.macroEnabled.12",
 	"ppt": "application/vnd.ms-powerpoint",
 	"pptm": "application/vnd.ms-powerpoint.presentation.macroEnabled.12",
 	"pptx": "application/powerpoint",
