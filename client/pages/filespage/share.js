@@ -98,6 +98,15 @@ export class ShareComponent extends React.Component {
         notify.send(t("The link was copied in the clipboard"), "INFO");
     }
 
+    sendToTiddlyWiki(ev, eventprops, link){
+        var tiddlerData = [
+            {title: eventprops.path, type: eventprops.type, _canonical_uri: window.location.origin+'/api/files/cat?path='+eventprops.path+'&share='+link.id},
+        ];
+        ev.dataTransfer.setData("URL","data:text/vnd.tiddler," + encodeURIComponent(JSON.stringify(tiddlerData)));
+        ev.stopPropagation();
+        return false;
+    }
+
     onRegisterLink(e){
         this.copyLinkInClipboard(this.refs.$input.value);
 
@@ -217,16 +226,23 @@ export class ShareComponent extends React.Component {
                   {
                       this.state.existings && this.state.existings.map((link, i) => {
                           return (
+                            <div>
                               <div className="link-details" key={i}>
                                 <span onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)} className="copy role">
                                   { t(link.role) }
                                 </span>
                                 <span onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)} className="copy path">{beautifulPath(this.props.path, link.path)}</span>
+                              </div>
+                              <div className="link-details">
                                 <Icon onClick={this.onDeleteLink.bind(this, link.id)} name="delete"/>
                                 <Icon onClick={this.onLoad.bind(this, link)} name="edit"/>
-                                <Icon onClick={this.copyLinkInClipboard.bind(this, window.location.origin+'/api/files/cat?path='+this.props.path+'&share='+link.id)} name="download_white"/>
+                                <Icon onClick={this.copyLinkInClipboard.bind(this, window.location.origin+'/api/files/cat?path='+this.props.path+'&share='+link.id)} name="download_blue"/>
+                                <div style={{textAlign: 'right'}}><span id="fs_draggable" draggable="true" onDragStart={(ev) => {this.sendToTiddlyWiki(ev, this.props, link)}}>
+                                    <Icon name="tiddlywiki"/>
+                                </span></div>
                               </div>
-                          );
+                            </div>
+                        );
                       })
                   }
                 </div>

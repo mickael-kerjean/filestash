@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .heavy { font-weight: bold; font-size: 35px; font-family: sans-serif; fill: orange; }
+  </style>
+  <text x="2" y="45" class="heavy">TW</text>
+</svg>
