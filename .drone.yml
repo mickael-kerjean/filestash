@@ -89,7 +89,8 @@ steps:
   image: debian:stable-slim
   depends_on: [ test_frontend, test_backend_unit, test_e2e ]
   when:
-    branch: master
+    branch:
+    - master
   environment:
     GPG_PASSPHRASE:
       from_secret: GPG_PASSPHRASE
@@ -105,7 +106,8 @@ steps:
   image: appleboy/drone-scp
   depends_on: [ release_prepare ]
   when:
-    branch: master
+    branch:
+    - master
   settings:
     command_timeout: 30m
     host: rick.kerjean.me
@@ -121,7 +123,8 @@ steps:
   image: plugins/docker
   depends_on: [ release_publish ]
   when:
-    branch: master
+    branch:
+    - master
   settings:
     dockerfile: ./docker/Dockerfile
     repo: machines/filestash
@@ -137,7 +140,8 @@ steps:
   image: quay.io/honestbee/drone-kubernetes
   depends_on: [ release_docker ]
   when:
-    branch: master
+    branch:
+    - master
   kubernetes_server: ${KUBERNETES_SERVER}
   kubernetes_cert: ${KUBERNETES_CERT}
   kubernetes_token: ${KUBERNETES_TOKEN}
@@ -152,7 +156,8 @@ steps:
   failure: ignore
   depends_on: [ release_docker ]
   when:
-    branch: master
+    branch:
+    - master
   settings:
     prefix: build
     nick: blipblip

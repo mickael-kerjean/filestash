@@ -1,10 +1,11 @@
 node_modules/
+dist/
 *_generated.go
+test/
+pkg/
 *.a
 *.o
 *.bin
-test/
-dist/
 .DS_Store
 package-lock.json
 \#*\#
