@@ -3,20 +3,19 @@ package common
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"strings"
 	"sync"
-
-	"github.com/tidwall/gjson"
-	"github.com/tidwall/sjson"
+	"strings"
 )
 
 var (
-	Config     Configuration
+	Config Configuration
 	configPath string = filepath.Join(GetCurrentDir(), CONFIG_PATH + "config.json")
 )
 
@@ -98,7 +97,7 @@ func NewConfiguration() Configuration {
 				Title: "log",
 				Elmnts: []FormElement{
 					FormElement{Name: "enable", Type: "enable", Target: []string{"log_level"}, Default: true},
-					FormElement{Name: "level", Type: "select", Default: "INFO", Opts: []string{"DEBUG", "INFO", "WARNING", "ERROR"}, Id: "log_level", Description: "Default: \"INFO\". This setting determines the level of detail at which log events are written to the log file"},
+					FormElement{Name: "level", Type: "select", Default: "INFO", Opts: []string{"DEBUG", "INFO", "WARNING", "ERROR"}, Id: "log_level",  Description: "Default: \"INFO\". This setting determines the level of detail at which log events are written to the log file"},
 					FormElement{Name: "telemetry", Type: "boolean", Default: false, Description: "We won't share anything with any third party. This will only to be used to improve Filestash"},
 				},
 			},
@@ -178,7 +177,6 @@ type FormIterator struct {
 	Path string
 	*FormElement
 }
-
 func (this *Form) Iterator() []FormIterator {
 	slice := make([]FormIterator, 0)
 
@@ -236,7 +234,7 @@ func (this *Configuration) Load() {
 	Log.SetVisibility(this.Get("log.level").String())
 
 	go func() { // Trigger all the event listeners
-		for i := 0; i < len(this.onChange); i++ {
+		for i:=0; i<len(this.onChange); i++ {
 			this.onChange[i].Listener <- nil
 		}
 	}()
@@ -292,31 +290,31 @@ func (this *Configuration) Initialise() {
 	if len(this.Conn) == 0 {
 		this.Conn = []map[string]interface{}{
 			map[string]interface{}{
-				"type":  "webdav",
+				"type": "webdav",
 				"label": "WebDav",
 			},
 			map[string]interface{}{
-				"type":  "ftp",
+				"type": "ftp",
 				"label": "FTP",
 			},
 			map[string]interface{}{
-				"type":  "sftp",
+				"type": "sftp",
 				"label": "SFTP",
 			},
 			map[string]interface{}{
-				"type":  "git",
+				"type": "git",
 				"label": "GIT",
 			},
 			map[string]interface{}{
-				"type":  "s3",
+				"type": "s3",
 				"label": "S3",
 			},
 			map[string]interface{}{
-				"type":  "dropbox",
+				"type": "dropbox",
 				"label": "Dropbox",
 			},
 			map[string]interface{}{
-				"type":  "gdrive",
+				"type": "gdrive",
 				"label": "Drive",
 			},
 		}
@@ -350,28 +348,28 @@ func (this Configuration) Save() Configuration {
 
 func (this Configuration) Export() interface{} {
 	return struct {
-		Editor         string            `json:"editor"`
-		ForkButton     bool              `json:"fork_button"`
-		DisplayHidden  bool              `json:"display_hidden"`
-		AutoConnect    bool              `json:"auto_connect"`
-		Name           string            `json:"name"`
-		RememberMe     bool              `json:"remember_me"`
-		UploadButton   bool              `json:"upload_button"`
-		Connections    interface{}       `json:"connections"`
-		EnableShare    bool              `json:"enable_share"`
-		MimeTypes      map[string]string `json:"mime"`
+		Editor        string            `json:"editor"`
+		ForkButton    bool              `json:"fork_button"`
+		DisplayHidden bool              `json:"display_hidden"`
+		AutoConnect   bool              `json:"auto_connect"`
+		Name          string            `json:"name"`
+		RememberMe    bool              `json:"remember_me"`
+		UploadButton  bool              `json:"upload_button"`
+		Connections   interface{}       `json:"connections"`
+		EnableShare   bool              `json:"enable_share"`
+		MimeTypes     map[string]string `json:"mime"`
 		UploadPoolSize int               `json:"upload_pool_size"`
 	}{
-		Editor:         this.Get("general.editor").String(),
-		ForkButton:     this.Get("general.fork_button").Bool(),
-		DisplayHidden:  this.Get("general.display_hidden").Bool(),
-		AutoConnect:    this.Get("general.auto_connect").Bool(),
-		Name:           this.Get("general.name").String(),
-		RememberMe:     this.Get("general.remember_me").Bool(),
-		UploadButton:   this.Get("general.upload_button").Bool(),
-		Connections:    this.Conn,
-		EnableShare:    this.Get("features.share.enable").Bool(),
-		MimeTypes:      AllMimeTypes(),
+		Editor:        this.Get("general.editor").String(),
+		ForkButton:    this.Get("general.fork_button").Bool(),
+		DisplayHidden: this.Get("general.display_hidden").Bool(),
+		AutoConnect:   this.Get("general.auto_connect").Bool(),
+		Name:          this.Get("general.name").String(),
+		RememberMe:    this.Get("general.remember_me").Bool(),
+		UploadButton:  this.Get("general.upload_button").Bool(),
+		Connections:   this.Conn,
+		EnableShare:   this.Get("features.share.enable").Bool(),
+		MimeTypes:     AllMimeTypes(),
 		UploadPoolSize: this.Get("general.upload_pool_size").Int(),
 	}
 }
@@ -462,8 +460,8 @@ func (this *Configuration) Set(value interface{}) *Configuration {
 func (this Configuration) String() string {
 	val := this.Interface()
 	switch val.(type) {
-		case string: return val.(string)
-		case []byte: return string(val.([]byte))
+	    case string: return val.(string)
+	    case []byte: return string(val.([]byte))
 	}
 	return ""
 }
@@ -471,9 +469,9 @@ func (this Configuration) String() string {
 func (this Configuration) Int() int {
 	val := this.Interface()
 	switch val.(type) {
-		case float64: return int(val.(float64))
-		case int64:   return int(val.(int64))
-		case int:     return val.(int)
+	    case float64: return int(val.(float64))
+	    case int64: return int(val.(int64))
+	    case int: return val.(int)
 	}
 	return 0
 }
@@ -481,7 +479,7 @@ func (this Configuration) Int() int {
 func (this Configuration) Bool() bool {
 	val := this.Interface()
 	switch val.(type) {
-		case bool: return val.(bool)
+	    case bool: return val.(bool)
 	}
 	return false
 }
@@ -533,7 +531,7 @@ func (this Configuration) MarshalJSON() ([]byte, error) {
 func (this *Configuration) ListenForChange() ChangeListener {
 	this.mu.Lock()
 	change := ChangeListener{
-		Id:       QuickString(20),
+		Id: QuickString(20),
 		Listener: make(chan interface{}, 0),
 	}
 	this.onChange = append(this.onChange, change)
@@ -541,9 +539,9 @@ func (this *Configuration) ListenForChange() ChangeListener {
 	return change
 }
 
-func (this *Configuration) UnlistenForChange(c ChangeListener) {
+func (this *Configuration) UnlistenForChange(c ChangeListener)  {
 	this.mu.Lock()
-	for i := 0; i < len(this.onChange); i++ {
+	for i:=0; i<len(this.onChange); i++ {
 		if this.onChange[i].Id == c.Id {
 			if len(this.onChange) - 1 >= 0 {
 				close(this.onChange[i].Listener)
