@@ -14,6 +14,7 @@ export const PDFViewer = (props) => {
     const ViewerComponent = "application/pdf" in navigator.mimeTypes ?
           <embed src={props.data+"#toolbar=0"} type="application/pdf" style={{height: "100%", width: "100%"}}></embed>
           : <PDFJSViewer src={props.data} />;
+
     return (
         <div className="component_pdfviewer">
           <MenuBar title={props.filename} download={props.data} />
