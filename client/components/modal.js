@@ -3,11 +3,11 @@ import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import PropTypes from "prop-types";
 
 import { NgIf } from "./";
-import { debounce } from "../helpers/";
+import { debounce, nop } from "../helpers/";
 import "./modal.scss";
 
 export function Modal({
-    isActive = false, children = null, className = null, onQuit = ()=>{}
+    isActive = false, children = null, className = null, onQuit = nop
 }) {
     const calculateMarginTop = () => {
         let size = 300;
