@@ -324,6 +324,10 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
 	go model.SProc.HintFile(&ctx, path)
+	// Added to clear cache on upload
+	if remErr := req.MultipartForm.RemoveAll(); remErr != nil {
+			// Log error?
+		}
 	SendSuccessResult(res, nil)
 }
 
