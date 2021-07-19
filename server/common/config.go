@@ -78,6 +78,7 @@ func NewConfiguration() Configuration {
 					FormElement{Name: "display_hidden", Type: "boolean", Default: false, Description: "Should files starting with a dot be visible by default?"},
 					FormElement{Name: "auto_connect", Type: "boolean", Default: false, Description: "User don't have to click on the login button if an admin is prefilling a unique backend"},
 					FormElement{Name: "upload_button", Type: "boolean", Default: false, Description: "Display the upload button on any device"},
+					FormElement{Name: "upload_pool_size", Type: "number", Default: 10, Description: "Maximum number of files upload in parallel"},
 					FormElement{Name: "custom_css", Type: "long_text", Default: "", Description: "Set custom css code for your instance"},
 				},
 			},
@@ -358,6 +359,7 @@ func (this Configuration) Export() interface{} {
 		EnableShare   bool              `json:"enable_share"`
 		Logout        string            `json:"logout"`
 		MimeTypes     map[string]string `json:"mime"`
+		UploadPoolSize int               `json:"upload_pool_size"`
 	}{
 		Editor:        this.Get("general.editor").String(),
 		ForkButton:    this.Get("general.fork_button").Bool(),
@@ -369,6 +371,7 @@ func (this Configuration) Export() interface{} {
 		EnableShare:   this.Get("features.share.enable").Bool(),
 		Logout:        this.Get("general.logout").String(),
 		MimeTypes:     AllMimeTypes(),
+		UploadPoolSize: this.Get("general.upload_pool_size").Int(),
 	}
 }
 
