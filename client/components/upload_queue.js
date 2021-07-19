@@ -7,7 +7,6 @@ import { Icon, NgIf } from "./";
 import { t } from "../locales/";
 import "./upload_queue.scss";
 
-
 function humanFileSize(bytes, si) {
     var thresh = si ? 1000 : 1024;
     if (Math.abs(bytes) < thresh) {
@@ -224,10 +223,6 @@ export class UploadQueue extends React.Component {
         requestAnimationFrame(() => this.start());
     }
 
-    maxPoolSize() {
-        return window.CONFIG["upload_pool_size"] || 10;
-    }
-
     start() {
         if (!this.state.running) {
             window.setTimeout(() => this.calcSpeed(), 500);
@@ -235,7 +230,7 @@ export class UploadQueue extends React.Component {
                 running: true,
                 error: null
             });
-            Promise.all(Array.apply(null, Array(this.maxPoolSize())).map(() => {
+            Promise.all(Array.apply(null, Array(window.CONFIG["upload_pool_size"])).map(() => {
                 return this.runner();
             })).then(() => {
                 this.setState({ running: false });
