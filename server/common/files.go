@@ -12,6 +12,9 @@ func GetCurrentDir() string {
 	if MOCK_CURRENT_DIR != "" {
 		return MOCK_CURRENT_DIR
 	}
+	if os.Getenv("WORK_DIR") != "" {
+		return os.Getenv("WORK_DIR")
+	}
 	ex, _ := os.Executable()
 	return filepath.Dir(ex)
 }
