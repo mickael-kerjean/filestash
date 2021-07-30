@@ -324,6 +324,9 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
 	go model.SProc.HintFile(&ctx, path)
+	if remErr := req.MultipartForm.RemoveAll(); remErr != nil {
+		Log.Error("couldn't remove multipartform data: %s", err.Error())
+		}
 	SendSuccessResult(res, nil)
 }
 
