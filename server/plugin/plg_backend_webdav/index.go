@@ -1,4 +1,4 @@
-package backend
+package plg_backend_webdav
 
 import (
 	"encoding/xml"
@@ -45,9 +45,9 @@ func (w WebDav) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
-				Name:        "type",
-				Type:        "hidden",
-				Value:       "webdav",
+				Name:  "type",
+				Type:  "hidden",
+				Value: "webdav",
 			},
 			FormElement{
 				Name:        "url",
@@ -108,7 +108,7 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 		return nil, NewError("Server not found", 404)
 	}
 
-	LongURLDav := w.params.url+path
+	LongURLDav := w.params.url + path
 	ShortURLDav := regexp.MustCompile(`^http[s]?://[^/]*`).ReplaceAllString(LongURLDav, "")
 	for _, tag := range r.Responses {
 		decodedHref := decodeURL(tag.Href)
