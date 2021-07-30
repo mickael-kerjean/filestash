@@ -30,6 +30,9 @@ func init() {
 
 func (w WebDav) Init(params map[string]string, app *App) (IBackend, error) {
 	params["url"] = regexp.MustCompile(`\/$`).ReplaceAllString(params["url"], "")
+	if strings.HasPrefix(params["url"], "http://") == false && strings.HasPrefix(params["url"], "https://") == false {
+		return nil, NewError("Malformed URL - missing http or https", 400)
+	}
 	backend := WebDav{
 		params: &WebDavParams{
 			params["url"],
