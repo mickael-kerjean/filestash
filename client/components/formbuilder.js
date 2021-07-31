@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 
 import { Input, Textarea, Select, Enabler } from "./";
-import { FormObjToJSON, format, autoComplete, notify } from "../helpers/";
+import { FormObjToJSON, format, autocomplete, notify } from "../helpers/";
 import { t } from "../locales/";
 
 import "./formbuilder.scss";
@@ -131,7 +131,7 @@ const FormElement = (props) => {
             const filtered = function(multi, datalist, currentValue){
                 if(multi !== true || currentValue == null) return datalist;
 
-                return autoComplete(
+                return autocomplete(
                     currentValue
                         .split(",")
                         .map((t) => t.trim())
