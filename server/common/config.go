@@ -74,7 +74,7 @@ func NewConfiguration() Configuration {
 					FormElement{Name: "force_ssl", Type: "boolean", Description: "Enable the web security mechanism called 'Strict Transport Security'"},
 					FormElement{Name: "editor", Type: "select", Default: "emacs", Opts: []string{"base", "emacs", "vim"}, Description: "Keybinding to be use in the editor. Default: \"emacs\""},
 					FormElement{Name: "fork_button", Type: "boolean", Default: true, Description: "Display the fork button in the login screen"},
-					FormElement{Name: "logout", Type: "select", Default: "default", Opts: []string{"default", "hide", "referrer"}, Description: "Behaviour of the logout button. By default it redirects to the login page but can also be hidden or redirect to the referrer URL"},
+					FormElement{Name: "logout", Type: "text", Default: "", Description: "Redirection URL whenever user click on the logout button"},
 					FormElement{Name: "display_hidden", Type: "boolean", Default: false, Description: "Should files starting with a dot be visible by default?"},
 					FormElement{Name: "auto_connect", Type: "boolean", Default: false, Description: "User don't have to click on the login button if an admin is prefilling a unique backend"},
 					FormElement{Name: "remember_me", Type: "boolean", Default: true, Description: "Visiblity of the remember me button on the login screen"},
