@@ -349,28 +349,28 @@ func (this Configuration) Save() Configuration {
 
 func (this Configuration) Export() interface{} {
 	return struct {
-		Editor        string            `json:"editor"`
-		ForkButton    bool              `json:"fork_button"`
-		DisplayHidden bool              `json:"display_hidden"`
-		AutoConnect   bool              `json:"auto_connect"`
-		Name          string            `json:"name"`
-		UploadButton  bool              `json:"upload_button"`
-		Connections   interface{}       `json:"connections"`
-		EnableShare   bool              `json:"enable_share"`
-		Logout        string            `json:"logout"`
-		MimeTypes     map[string]string `json:"mime"`
+		Editor         string            `json:"editor"`
+		ForkButton     bool              `json:"fork_button"`
+		DisplayHidden  bool              `json:"display_hidden"`
+		AutoConnect    bool              `json:"auto_connect"`
+		Name           string            `json:"name"`
+		UploadButton   bool              `json:"upload_button"`
+		Connections    interface{}       `json:"connections"`
+		EnableShare    bool              `json:"enable_share"`
+		Logout         string            `json:"logout"`
+		MimeTypes      map[string]string `json:"mime"`
 		UploadPoolSize int               `json:"upload_pool_size"`
 	}{
-		Editor:        this.Get("general.editor").String(),
-		ForkButton:    this.Get("general.fork_button").Bool(),
-		DisplayHidden: this.Get("general.display_hidden").Bool(),
-		AutoConnect:   this.Get("general.auto_connect").Bool(),
-		Name:          this.Get("general.name").String(),
-		UploadButton:  this.Get("general.upload_button").Bool(),
-		Connections:   this.Conn,
-		EnableShare:   this.Get("features.share.enable").Bool(),
-		Logout:        this.Get("general.logout").String(),
-		MimeTypes:     AllMimeTypes(),
+		Editor:         this.Get("general.editor").String(),
+		ForkButton:     this.Get("general.fork_button").Bool(),
+		DisplayHidden:  this.Get("general.display_hidden").Bool(),
+		AutoConnect:    this.Get("general.auto_connect").Bool(),
+		Name:           this.Get("general.name").String(),
+		UploadButton:   this.Get("general.upload_button").Bool(),
+		Connections:    this.Conn,
+		EnableShare:    this.Get("features.share.enable").Bool(),
+		Logout:         this.Get("general.logout").String(),
+		MimeTypes:      AllMimeTypes(),
 		UploadPoolSize: this.Get("general.upload_pool_size").Int(),
 	}
 }
