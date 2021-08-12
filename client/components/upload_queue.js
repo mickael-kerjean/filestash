@@ -3,7 +3,7 @@ import Path from "path";
 
 import { Files } from "../model/";
 import { confirm, notify, upload } from "../helpers/";
-import { Icon, NgIf } from "./";
+import { Icon, NgIf, EventEmitter } from "./";
 import { t } from "../locales/";
 import "./upload_queue.scss";
 
@@ -33,6 +33,7 @@ function waitABit() {
     });
 }
 
+@EventEmitter
 export class UploadQueue extends React.Component {
     constructor(props) {
         super(props);
@@ -124,6 +125,9 @@ export class UploadQueue extends React.Component {
                                 [current_process.id]: true
                             }
                         });
+                    }
+                    if(window.CONFIG["refresh_after_upload"]) {
+                        this.props.emit("file.refresh");
                     }
                     this.setState({
                         currents: this.state.currents.filter((c) => c.path != current_process.path),
