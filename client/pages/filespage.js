@@ -266,14 +266,10 @@ export class FilesPage extends React.Component {
                     <InfiniteScroll pageStart={0} loader={$moreLoading} hasMore={this.state.files.length > 70}
                                     initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={100}>
                       <NgShow className="container" cond={!!this.state.is_search || !this.state.loading}>
-                        <NgIf cond={this.state.path === "/" && CONFIG["hide_menubar"] === false}>
+                        <NgIf cond={this.state.path === "/"}>
                           <FrequentlyAccess files={this.state.frequents} />
                         </NgIf>
-                        {
-                          CONFIG["hide_menubar"] === false && (
-                            <Submenu path={this.state.path} sort={this.state.sort} view={this.state.view} onSearch={this.onSearch.bind(this)} onViewUpdate={(value) => this.onView(value)} onSortUpdate={(value) => this.onSort(value)} accessRight={this.state.metadata || {}} selected={this.state.selected}></Submenu>
-                          )
-                        }
+                        <Submenu path={this.state.path} sort={this.state.sort} view={this.state.view} onSearch={this.onSearch.bind(this)} onViewUpdate={(value) => this.onView(value)} onSortUpdate={(value) => this.onSort(value)} accessRight={this.state.metadata || {}} selected={this.state.selected}></Submenu>
                         <NgIf cond={!this.state.loading}>
                           <FileSystem path={this.state.path} sort={this.state.sort} view={this.state.view} selected={this.state.selected}
                                       files={this.state.files.slice(0, this.state.page_number * LOAD_PER_SCROLL)} isSearch={this.state.is_search}

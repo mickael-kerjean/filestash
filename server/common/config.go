@@ -76,7 +76,6 @@ func NewConfiguration() Configuration {
 					FormElement{Name: "fork_button", Type: "boolean", Default: true, Description: "Display the fork button in the login screen"},
 					FormElement{Name: "logout", Type: "text", Default: "", Description: "Redirection URL whenever user click on the logout button"},
 					FormElement{Name: "display_hidden", Type: "boolean", Default: false, Description: "Should files starting with a dot be visible by default?"},
-					FormElement{Name: "hide_menubar", Type: "boolean", Default: false, Description: "Hide entire menubar"},
 					FormElement{Name: "refresh_after_upload", Type: "boolean", Default: false, Description: "Refresh directory listing after upload"},
 					FormElement{Name: "auto_connect", Type: "boolean", Default: false, Description: "User don't have to click on the login button if an admin is prefilling a unique backend"},
 					FormElement{Name: "remember_me", Type: "boolean", Default: true, Description: "Visiblity of the remember me button on the login screen"},
@@ -361,7 +360,6 @@ func (this Configuration) Export() interface{} {
 		Connections        interface{}       `json:"connections"`
 		EnableShare        bool              `json:"enable_share"`
 		Logout             string            `json:"logout"`
-		HideMenubar        bool              `json:"hide_menubar"`
 		MimeTypes          map[string]string `json:"mime"`
 		UploadPoolSize     int               `json:"upload_pool_size"`
 		RefreshAfterUpload bool              `json:"refresh_after_upload"`
@@ -376,7 +374,6 @@ func (this Configuration) Export() interface{} {
 		Connections:        this.Conn,
 		EnableShare:        this.Get("features.share.enable").Bool(),
 		Logout:             this.Get("general.logout").String(),
-		HideMenubar:        this.Get("general.hide_menubar").Bool(),
 		MimeTypes:          AllMimeTypes(),
 		UploadPoolSize:     this.Get("general.upload_pool_size").Int(),
 		RefreshAfterUpload: this.Get("general.refresh_after_upload").Bool(),
