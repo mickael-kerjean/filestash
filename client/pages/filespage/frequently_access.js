@@ -19,7 +19,7 @@ export class FrequentlyAccess extends React.Component {
               <ReactCSSTransitionGroup transitionName="frequent-access" transitionLeave={false} transitionEnter={true} transitionAppear={true} transitionEnterTimeout={500} transitionAppearTimeout={300}>
 			    <Container key={this.props.files === null ? 'nothing' : 'something'}>
 			      <NgIf cond={!!this.props.files && this.props.files.length > 0}>
-                    <span className="caption">Quick Access</span>
+                    <span className="caption">{t("Quick Access")}</span>
                     <div className="frequent_wrapper">
                       {
                           this.props.files && this.props.files.map(function(path, index){
