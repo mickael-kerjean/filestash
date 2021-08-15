@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from "react";
 
-import { Session } from '../model/';
-import { Loader, ErrorPage } from '../components/';
-import { cache } from '../helpers/';
+import { Session } from "../model/";
+import { Loader, ErrorPage } from "../components/";
+import { cache } from "../helpers/";
 
 @ErrorPage
 export class LogoutPage extends React.Component {
@@ -11,13 +11,12 @@ export class LogoutPage extends React.Component {
     }
 
     componentDidMount(){
-        Session.logout()
-            .then((res) => {
-                cache.destroy();
-                this.props.history.push('/login');
-            })
-            .catch((err) => this.props.error(err));
+        Session.logout().then((res) => {
+            cache.destroy();
+            this.props.history.push("/");
+        }).catch((err) => this.props.error(err));
     }
+
     render() {
         return (
             <div> <Loader /> </div>
