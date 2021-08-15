@@ -1,54 +1,44 @@
-import React from 'react';
-import { Redirect } from 'react-router';
+import React, { useState, useRef } from "react";
+import { Redirect } from "react-router";
 
-import { Input, Button, Container, Icon, Loader } from '../../components/';
-import { Config, Admin } from '../../model/';
-import { t } from '../../locales/';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { Input, Button, Container, Icon } from "../../components/";
+import { Admin } from "../../model/";
+import { nop } from "../../helpers/";
+import { t } from "../../locales/";
 
-export class LoginPage extends React.Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            loading: false,
-            error: null
-        };
-    }
-
-    componentDidMount(){
-        this.refs.$input.ref.focus();
-    }
-
-    authenticate(e){
+export function LoginPage({ reload = nop }) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasError, setHasError] = useState(false);
+    const $input = useRef();
+    const marginTop = () => ({ marginTop: `${parseInt(window.innerHeight / 3)}px` })
+    const authenticate = (e) => {
         e.preventDefault();
-        this.setState({loading: true});
-        Admin.login(this.refs.$input.ref.value)
-            .then(() => this.props.reload())
-            .catch(() => {
-                this.refs.$input.ref.value = "";
-                this.setState({
-                    loading: false,
-                    error: true
-                }, () => {
-                    window.setTimeout(() => {
-                        this.setState({error: false});
-                    }, 500);
-                });
+        setIsLoading(true);
+        Admin.login($input.current.ref.value)
+            .then(() => reload())
+            .catch(() => {                
+                $input.current.ref.value = "";
+                setIsLoading(false)
+                setHasError(true);
+                setTimeout(() => {
+                    setHasError(false);
+                }, 500);
             });
     }
 
-    render(){
-        const marginTop = () => { return {marginTop: parseInt(window.innerHeight / 3)+'px'};};
+    useRef(() => {
+        $input.current.ref.focus();
+    }, []);
 
-        return (
-            <Container maxWidth="300px" className="sharepage_component">
-              <form className={this.state.error ? "error" : ""} onSubmit={this.authenticate.bind(this)} style={marginTop()}>
-                <Input ref="$input" type="password" placeholder={ t("Password") } />
+
+    return (
+        <Container maxWidth="300px" className="sharepage_component">
+            <form className={hasError ? "error" : ""} onSubmit={authenticate} style={marginTop()}>
+                <Input ref={$input} type="password" placeholder={ t("Password") } />
                 <Button theme="transparent">
-                  <Icon name={this.state.loading ? "loading" : "arrow_right"}/>
+                    <Icon name={isLoading ? "loading" : "arrow_right"}/>
                 </Button>
-              </form>
-            </Container>
-        );
-    }
+            </form>
+        </Container>
+    )
 }

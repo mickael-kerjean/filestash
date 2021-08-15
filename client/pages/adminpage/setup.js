@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { createRef } from "react";
 
-import { Input, Button, Container, Icon, NgIf, Loader } from '../../components/';
-import { Config, Admin } from '../../model/';
-import { notify, FormObjToJSON, alert, prompt } from '../../helpers';
-import { bcrypt_password } from '../../helpers/bcrypt';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { Input, Button, Container, Icon, NgIf, Loader, CSSTransition } from "../../components/";
+import { Config, Admin } from "../../model/";
+import { notify, FormObjToJSON, alert, prompt } from "../../helpers";
+import { bcrypt_password } from "../../helpers/bcrypt";
+//import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
 import "./setup.scss";
 
@@ -28,12 +28,12 @@ export class SetupPage extends React.Component {
                 this.unlisten();
                 alert.now((
                     <div>
-                      <p style={{textAlign: 'justify'}}>
+                      <p style={{textAlign: "justify"}}>
                         Help making this software better by sending crash reports and anonymous usage statistics
                       </p>
-                      <form onSubmit={start.bind(this)} style={{fontSize: '0.9em', marginTop: '10px'}}>
+                      <form onSubmit={start.bind(this)} style={{fontSize: "0.9em", marginTop: "10px"}}>
                         <label>
-                          <Input type="checkbox" style={{width: 'inherit', marginRight: '10px'}} onChange={(e) => this.enableLog(e.target.checked)} defaultChecked={config.log.telemetry.value} />
+                          <Input type="checkbox" style={{width: "inherit", marginRight: "10px"}} onChange={(e) => this.enableLog(e.target.checked)} defaultChecked={config.log.telemetry.value} />
                           I accept but the data is not to be share with any third party
                         </label>
                       </form>
@@ -134,6 +134,7 @@ class MultiStepForm extends React.Component {
             has_answered_password: false,
             deps: []
         };
+        this.$input = createRef()
     }
 
     componentDidMount(){
@@ -166,17 +167,17 @@ class MultiStepForm extends React.Component {
                   <FormStage navleft={false} navright={this.state.has_answered_password === true} current={this.state.current} onStepChange={this.onStepChange.bind(this)}>
                     Admin Password
                   </FormStage>
-                  <ReactCSSTransitionGroup transitionName="stepper-form" transitionEnterTimeout={600} transitionAppearTimeout={600} transitionAppear={true} transitionEnter={true} transitionLeave={false}>
+                  <CSSTransition transitionName="stepper-form" transitionEnterTimeout={600} transitionAppearTimeout={600} transitionAppear={true} transitionEnter={true} transitionLeave={false}>
                     <div key={this.state.current}>
                       <p>Create your instance admin password: </p>
                       <form onSubmit={this.onAdminPassword.bind(this)}>
-                        <Input ref="$input" type="password" placeholder="Password" value={this.state.answer_password} onChange={(e) => this.setState({answer_password: e.target.value})}/>
+                        <Input ref={this.$input} type="password" placeholder="Password" value={this.state.answer_password} onChange={(e) => this.setState({answer_password: e.target.value})}/>
                         <Button theme="transparent">
                           <Icon name={this.props.loading ? "loading" : "arrow_right"}/>
                         </Button>
                       </form>
                     </div>
-                  </ReactCSSTransitionGroup>
+                  </CSSTransition>
                 {hideMenu}
                 </div>
             );
@@ -186,7 +187,7 @@ class MultiStepForm extends React.Component {
                   <FormStage navleft={true} navright={false} current={this.state.current} onStepChange={this.onStepChange.bind(this)}>
                     Summary
                   </FormStage>
-                  <ReactCSSTransitionGroup transitionName="stepper-form" transitionEnterTimeout={600} transitionAppearTimeout={600} transitionAppear={true} transitionEnter={true} transitionLeave={false}>
+                  <CSSTransition transitionName="stepper-form" transitionEnterTimeout={600} transitionAppearTimeout={600} transitionAppear={true} transitionEnter={true} transitionLeave={false}>
                     <div key={this.state.current}>
                       <NgIf cond={!!this.props.loading}>
                         <Loader/>
@@ -204,7 +205,7 @@ class MultiStepForm extends React.Component {
                         }
                       </NgIf>
                     </div>
-                  </ReactCSSTransitionGroup>
+                  </CSSTransition>
                 </div>
             );
         }

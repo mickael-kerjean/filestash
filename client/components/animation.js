@@ -7,24 +7,20 @@ import React, { useState, useEffect } from "react";
  * to realise it would be easier to write this simpler wrapper than migrate things over
  */
 export function CSSTransition({ transitionName = "animate", children = null, transitionAppearTimeout = 300 }) {
-    const [child, setChildren] = useState(React.cloneElement(children, {
-        className: `${children.props.className} ${transitionName}-appear`
-    }));
+    const [className, setClassName] = useState(`${transitionName} ${transitionName}-appear`);
 
     useEffect(() => {
-        setChildren(React.cloneElement(child, {
-            className: `${children.props.className} ${transitionName}-appear ${transitionName}-appear-active`
-        }))
-        const timeout = setTimeout(() => {
-            setChildren(React.cloneElement(child, {
-                className: `${children.props.className}`
-            }))
-        }, transitionAppearTimeout);
+        setClassName(`${transitionName} ${transitionName}-appear ${transitionName}-appear-active`)
 
-        return () => {
-            clearTimeout(timeout);
-        };
+        const timeout = setTimeout(() => {
+            setClassName(`${transitionName}`)
+        }, transitionAppearTimeout);
+        return () => clearTimeout(timeout);
     }, []);
 
-    return child;
+    return (
+        <div className={className}>
+            { children }
+        </div>
+    )
 }

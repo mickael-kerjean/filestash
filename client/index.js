@@ -15,7 +15,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const $loader = document.querySelector("#n-lder");
 
     function render(){
-        ReactDOM.render(<Router/>, document.querySelector("div[role='main']"));
+        ReactDOM.render(<React.StrictMode><Router/></React.StrictMode>, document.querySelector("div[role='main']"));
         return Promise.resolve();
     };
     function waitFor(n){

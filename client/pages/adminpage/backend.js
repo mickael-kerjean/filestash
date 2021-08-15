@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 import { FormBuilder, Icon, Input, Alert } from "../../components/";
 import { Backend, Config } from "../../model/";
 import { FormObjToJSON, notify, format, createFormBackend } from "../../helpers/";
-import { t } from '../../locales/';
+import { t } from "../../locales/";
 
 import "./backend.scss";
 
@@ -26,7 +26,7 @@ export class BackendPage extends React.Component {
             let [backend, config] = data;
             this.setState({
                 backend_available: backend,
-                backend_enabled: window.CONFIG["connections"].map((conn) => {
+                backend_enabled: window.CONFIG["connections"].filter((b) => b).map((conn) => {
                     return createFormBackend(backend, conn);
                 }),
                 config: config
@@ -56,12 +56,12 @@ export class BackendPage extends React.Component {
         return Config.save(json, true, () => {
             this.props.isSaving(false);
         }, (err) => {
-            notify.send(err && err.message || t('Oops'), 'error');
+            notify.send(err && err.message || t("Oops"), "error");
             this.props.isSaving(false);
         });
     }
 
-    addBackend(backend_id){        
+    addBackend(backend_id){
         this.setState({
             backend_enabled: this.state.backend_enabled.concat(
                 createFormBackend(this.state.backend_available, {
@@ -105,7 +105,7 @@ export class BackendPage extends React.Component {
         const isActiveBackend = (backend_key) => {
             return this.state.backend_enabled
                 .map((b) => Object.keys(b)[0])
-                .indexOf(backend_key) !== -1;            
+                .indexOf(backend_key) !== -1;
         };
 
         const isActiveAuth = (auth_key) => {
@@ -134,7 +134,7 @@ export class BackendPage extends React.Component {
               </div>
 
               <h2>Authentication Middleware</h2>
-              
+
               <Alert>
                 Integrate Filestash with your identity management system
               </Alert>
@@ -163,8 +163,6 @@ export class BackendPage extends React.Component {
                         <Alert className="success">
                           <i><strong>Register your interest: <a href={`mailto:mickael@kerjean.me?Subject=Filestash - Authentication Middleware - ${this.state.auth_enabled}`}>mickael@kerjean.me</a></strong></i>
                         </Alert>
-
-                        
                       </React.Fragment>
                   )
               }
@@ -181,14 +179,14 @@ export class BackendPage extends React.Component {
                                     <div className="icons no-select" onClick={this.removeBackend.bind(this, index)}>
                                       <Icon name="delete" />
                                     </div>
-                                    <FormBuilder onChange={this.onChange.bind(this)} 
-                                                 idx={index} 
+                                    <FormBuilder onChange={this.onChange.bind(this)}
+                                                 idx={index}
                                                  key={index}
                                                  form={{"": backend_enable}}
                                                  autoComplete="new-password"
                                                  render={ ($input, props, struct, onChange) => {
                                                      let $checkbox = (
-                                                         <Input type="checkbox" style={{width: "inherit", marginRight: '6px', top: '6px'}}
+                                                         <Input type="checkbox" style={{width: "inherit", marginRight: "6px", top: "6px"}}
                                                                 checked={enable(struct)} onChange={(e) => onChange(update.bind(this, e.target.checked))}/>
                                                      );
                                                      if(struct.label === "label"){
@@ -203,13 +201,13 @@ export class BackendPage extends React.Component {
                                                                { $checkbox }
                                                                { format(struct.label) }:
                                                              </span>
-                                                             <div style={{width: '100%'}}>
+                                                             <div style={{width: "100%"}}>
                                                                { $input }
                                                              </div>
                                                            </div>
                                                            <div>
                                                              <span className="nothing"></span>
-                                                             <div style={{width: '100%'}}>
+                                                             <div style={{width: "100%"}}>
                                                                {
                                                                    struct.description ? (<div className="description">{struct.description}</div>) : null
                                                                }
@@ -224,7 +222,7 @@ export class BackendPage extends React.Component {
                       }
                     </form>
                   </div> : <Alert>You need to enable a backend first.</Alert>
-              } 
+              }
             </div>
         );
     }
