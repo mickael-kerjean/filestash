@@ -1,10 +1,10 @@
 import React from "react";
-import ReactCSSTransitionGroup from "react-addons-css-transition-group";
+import { CSSTransition } from "./animation";
 import "./loader.scss";
 
 export const Loader = () => {
     return (
-        <ReactCSSTransitionGroup transitionName="loader" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={400}>
+        <CSSTransition transitionName="loader" transitionAppearTimeout={700}>
           <div className="component_loader">
             <svg width="120px" height="120px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
               <rect x="0" y="0" width="100" height="100" fill="none"></rect>
@@ -15,6 +15,6 @@ export const Loader = () => {
               </circle>
             </svg>
           </div>
-        </ReactCSSTransitionGroup>
+        </CSSTransition>
     );
 };

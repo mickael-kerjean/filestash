@@ -7,7 +7,7 @@
     opacity: 0;
 }
 .loader-appear.loader-appear-active{
-    transition: opacity 0.1s ease-out;
-    transition-delay: 0.3s;
+    transition: opacity 0.2s ease-out;
+    transition-delay: 0.5s;
     opacity: 1;
 }
