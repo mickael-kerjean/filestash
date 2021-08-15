@@ -1,36 +1,24 @@
-import React from 'react';
-import { Redirect } from 'react-router';
+import React, { useState, useEffect } from 'react';
+import { Redirect } from "react-router";
 
-import { Session } from '../model/';
-import { Loader } from '../components/';
+import { Session } from "../model/";
+import { Loader } from "../components/";
 
-export class HomePage extends React.Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            redirection: null
-        };
-    }
+export function HomePage() {
+    const [redirection, setRedirection] = useState(null);
 
-    componentDidMount(){
-        Session.currentUser()
-            .then((res) => {
-                if(res && res.is_authenticated === true){
-                    let url = "/files"
-                    if(res.home){
-                        url += res.home
-                    }
-                    this.setState({redirection: url});
-                }else{
-                    this.setState({redirection: "/login"});
-                }
-            })
-            .catch((err) => this.setState({redirection: "/login"}));
-    }
-    render() {
-        if(this.state.redirection !== null){
-            return ( <Redirect to={this.state.redirection} /> );
-        }
+    useEffect(() => {
+        Session.currentUser().then((res) => {
+            if(res && res.is_authenticated === true){
+                setRedirection(res.home ? "/files" + res.home : "/files");
+            }else{
+                setRedirection("/login");
+            }
+        }).catch((err) => setRedirection("/login"));
+    }, []);
+
+    if(!redirection) {
         return ( <div> <Loader /> </div> );
     }
+    return ( <Redirect to={redirection} /> );
 }
