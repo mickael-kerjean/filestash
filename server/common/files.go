@@ -44,8 +44,21 @@ func JoinPath(base, file string) string {
 func EnforceDirectory(path string) string {
 	if path == "" {
 		return "/"
-	} else if path[len(path) - 1:] == "/" {
+	} else if path[len(path)-1:] == "/" {
 		return path
 	}
 	return path + "/"
+}
+
+func SplitPath(path string) (root string, filename string) {
+	if path == "" {
+		path = "/"
+	}
+	if IsDirectory(path) == false {
+		filename = filepath.Base(path)
+	}
+	if root = strings.TrimSuffix(path, filename); root == "" {
+		root = "/"
+	}
+	return root, filename
 }

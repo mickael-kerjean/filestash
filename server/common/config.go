@@ -76,14 +76,7 @@ func NewConfiguration() Configuration {
 					FormElement{Name: "fork_button", Type: "boolean", Default: true, Description: "Display the fork button in the login screen"},
 					FormElement{Name: "logout", Type: "text", Default: "", Description: "Redirection URL whenever user click on the logout button"},
 					FormElement{Name: "display_hidden", Type: "boolean", Default: false, Description: "Should files starting with a dot be visible by default?"},
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-					FormElement{Name: "hide_menubar", Type: "boolean", Default: false, Description: "Hide entire menubar"},
-=======
->>>>>>> d91726e (maintain (feature): remove option from admin backend)
 					FormElement{Name: "refresh_after_upload", Type: "boolean", Default: false, Description: "Refresh directory listing after upload"},
->>>>>>> 16310b9 (feature (refresh): option to refresh content after upload)
 					FormElement{Name: "auto_connect", Type: "boolean", Default: false, Description: "User don't have to click on the login button if an admin is prefilling a unique backend"},
 					FormElement{Name: "upload_button", Type: "boolean", Default: false, Description: "Display the upload button on any device"},
 					FormElement{Name: "upload_pool_size", Type: "number", Default: 15, Description: "Maximum number of files upload in parallel (Default: 15)"},
@@ -357,31 +350,6 @@ func (this Configuration) Save() Configuration {
 
 func (this Configuration) Export() interface{} {
 	return struct {
-<<<<<<< HEAD
-		Editor         string            `json:"editor"`
-		ForkButton     bool              `json:"fork_button"`
-		DisplayHidden  bool              `json:"display_hidden"`
-		AutoConnect    bool              `json:"auto_connect"`
-		Name           string            `json:"name"`
-		UploadButton   bool              `json:"upload_button"`
-		Connections    interface{}       `json:"connections"`
-		EnableShare    bool              `json:"enable_share"`
-		Logout         string            `json:"logout"`
-		MimeTypes      map[string]string `json:"mime"`
-		UploadPoolSize int               `json:"upload_pool_size"`
-	}{
-		Editor:         this.Get("general.editor").String(),
-		ForkButton:     this.Get("general.fork_button").Bool(),
-		DisplayHidden:  this.Get("general.display_hidden").Bool(),
-		AutoConnect:    this.Get("general.auto_connect").Bool(),
-		Name:           this.Get("general.name").String(),
-		UploadButton:   this.Get("general.upload_button").Bool(),
-		Connections:    this.Conn,
-		EnableShare:    this.Get("features.share.enable").Bool(),
-		Logout:         this.Get("general.logout").String(),
-		MimeTypes:      AllMimeTypes(),
-		UploadPoolSize: this.Get("general.upload_pool_size").Int(),
-=======
 		Editor             string            `json:"editor"`
 		ForkButton         bool              `json:"fork_button"`
 		DisplayHidden      bool              `json:"display_hidden"`
@@ -409,7 +377,6 @@ func (this Configuration) Export() interface{} {
 		MimeTypes:          AllMimeTypes(),
 		UploadPoolSize:     this.Get("general.upload_pool_size").Int(),
 		RefreshAfterUpload: this.Get("general.refresh_after_upload").Bool(),
->>>>>>> 16310b9 (feature (refresh): option to refresh content after upload)
 	}
 }
 

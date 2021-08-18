@@ -291,23 +291,39 @@ func FileAccess(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
-	if model.CanEdit(&ctx) == false {
-		SendErrorResult(res, NewError("Permission denied", 403))
-		return
-	}
-
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
 
+	if model.CanEdit(&ctx) == false {
+		if model.CanUpload(&ctx) == false {
+			SendErrorResult(res, ErrPermissionDenied)
+			return
+		}
+		// for user who cannot edit but can upload => we want to ensure there
+		// won't be any overwritten data
+		root, filename := SplitPath(path)
+		entries, err := ctx.Backend.Ls(root)
+		if err != nil {
+			SendErrorResult(res, ErrPermissionDenied)
+			return
+		}
+		for i := 0; i < len(entries); i++ {
+			if entries[i].Name() == filename {
+				SendErrorResult(res, ErrConflict)
+				return
+			}
+		}
+	}
+
 	maxMemory := int64(32 << 20) // 32MB
 	err = req.ParseMultipartForm(maxMemory)
-    if err != nil {
+	if err != nil {
 		SendErrorResult(res, err)
 		return
-    }
+	}
 
 	file, _, err := req.FormFile("file")
 	if err != nil {
