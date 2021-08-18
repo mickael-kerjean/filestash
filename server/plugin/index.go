@@ -11,6 +11,7 @@ import (
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_ftp"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_backblaze"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_dav"
+	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_webdav"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_mysql"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_s3"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_ldap"
