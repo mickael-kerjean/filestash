@@ -52,7 +52,7 @@ type FormElement struct {
 }
 
 func init() {
-	PerformMigration()
+	//PerformMigration()
 	Config = NewConfiguration()
 	Config.Load()
 	Config.Save()

@@ -28,12 +28,8 @@ export default class AppRouter extends React.Component {
                   <Route component={NotFoundPage} />
                 </Switch>
               </BrowserRouter>
-                {
-                    /*
               <ModalPrompt /> <ModalAlert /> <ModalConfirm />
               <Notification /> <UploadQueue/>
-                     */
-                }
             </div>
         );
     }
