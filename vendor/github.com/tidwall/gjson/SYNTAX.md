@@ -77,6 +77,14 @@ Special purpose characters, such as `.`, `*`, and `?` can be escaped with `\`.
 fav\.movie             "Deer Hunter"
 ```
 
+You'll also need to make sure that the `\` character is correctly escaped when hardcoding a path in source code.
+
+```go
+res := gjson.Get(json, "fav\\.movie")  // must escape the slash
+res := gjson.Get(json, `fav\.movie`)   // no need to escape the slash 
+
+```
+
 ### Arrays
 
 The `#` character allows for digging into JSON Arrays.
@@ -181,11 +189,15 @@ children.@reverse                   ["Jack","Alex","Sara"]
 children.@reverse.0                 "Jack"
 ```
 
-There are currently three built-in modifiers:
+There are currently the following built-in modifiers:
 
 - `@reverse`: Reverse an array or the members of an object.
 - `@ugly`: Remove all whitespace from JSON.
 - `@pretty`: Make the JSON more human readable.
+- `@this`: Returns the current element. It can be used to retrieve the root element.
+- `@valid`: Ensure the json document is valid.
+- `@flatten`: Flattens an array.
+- `@join`: Joins multiple objects into a single object.
 
 #### Modifier arguments
 
