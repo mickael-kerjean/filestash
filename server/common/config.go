@@ -356,6 +356,10 @@ func (this Configuration) Export() interface{} {
 		DisplayHidden      bool              `json:"display_hidden"`
 		AutoConnect        bool              `json:"auto_connect"`
 		Name               string            `json:"name"`
+<<<<<<< HEAD
+=======
+		RememberMe         bool              `json:"remember_me"`
+>>>>>>> 96c32d4447138d628ede2943fe343bd82ae7454b
 		UploadButton       bool              `json:"upload_button"`
 		Connections        interface{}       `json:"connections"`
 		EnableShare        bool              `json:"enable_share"`
@@ -369,6 +373,10 @@ func (this Configuration) Export() interface{} {
 		DisplayHidden:      this.Get("general.display_hidden").Bool(),
 		AutoConnect:        this.Get("general.auto_connect").Bool(),
 		Name:               this.Get("general.name").String(),
+<<<<<<< HEAD
+=======
+		RememberMe:         this.Get("general.remember_me").Bool(),
+>>>>>>> 96c32d4447138d628ede2943fe343bd82ae7454b
 		UploadButton:       this.Get("general.upload_button").Bool(),
 		Connections:        this.Conn,
 		EnableShare:        this.Get("features.share.enable").Bool(),
