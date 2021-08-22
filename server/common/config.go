@@ -52,6 +52,7 @@ type FormElement struct {
 }
 
 func init() {
+	PerformMigration()
 	Config = NewConfiguration()
 	Config.Load()
 	Config.Save()
@@ -355,7 +356,6 @@ func (this Configuration) Export() interface{} {
 		DisplayHidden      bool              `json:"display_hidden"`
 		AutoConnect        bool              `json:"auto_connect"`
 		Name               string            `json:"name"`
-		RememberMe         bool              `json:"remember_me"`
 		UploadButton       bool              `json:"upload_button"`
 		Connections        interface{}       `json:"connections"`
 		EnableShare        bool              `json:"enable_share"`
@@ -369,7 +369,6 @@ func (this Configuration) Export() interface{} {
 		DisplayHidden:      this.Get("general.display_hidden").Bool(),
 		AutoConnect:        this.Get("general.auto_connect").Bool(),
 		Name:               this.Get("general.name").String(),
-		RememberMe:         this.Get("general.remember_me").Bool(),
 		UploadButton:       this.Get("general.upload_button").Bool(),
 		Connections:        this.Conn,
 		EnableShare:        this.Get("features.share.enable").Bool(),
@@ -569,4 +568,60 @@ func (this *Configuration) UnlistenForChange(c ChangeListener) {
 type ChangeListener struct {
 	Id       string
 	Listener chan interface{}
+}
+
+func PerformMigration() (err error) {
+	Log.SetVisibility("DEBUG")
+	loadConfig := func() (string, error) {
+		file, err := os.OpenFile(configPath, os.O_RDONLY, os.ModePerm)
+		if err != nil {
+			Log.Stdout("BOOT Can't read config file")
+			return "", ErrFilesystemError
+		}
+		defer file.Close()
+		cFile, err := ioutil.ReadAll(file)
+		if err != nil {
+			Log.Stdout("BOOT Can't parse config file")
+			return "", ErrFilesystemError
+		}
+		return string(cFile), nil
+	}
+	saveConfig := func(version int, content string) (err error) {
+		content, err = sjson.Set(content, "constant.schema", version)
+		if err != nil {
+			Log.Stdout("BOOT Migration failed on schema key")
+			return err
+		}
+		file, err := os.Create(configPath)
+		if err != nil {
+			Log.Stdout("BOOT Can't create config file")
+			return ErrFilesystemError
+		}
+		file.Write(PrettyPrint([]byte(content)))
+		file.Close()
+		return nil
+	}
+
+	jsonStr, err := loadConfig()
+	if err != nil {
+		return err
+	}
+	schemaVersion := int(gjson.Get(jsonStr, "constant.schema").Int())
+	if schemaVersion == 0 {
+		Log.Stdout("BOOT Migrate config v%d -> v%d", schemaVersion, schemaVersion+1)
+		if jsonStr, err = sjson.Delete(jsonStr, "general.remember_me"); err != nil {
+			Log.Stdout("BOOT Migration error: remember_me")
+			return err
+		}
+		if jsonStr, err = sjson.Delete(jsonStr, "general.hide_menubar"); err != nil {
+			Log.Stdout("BOOT Migration error: hide_menubar")
+			return err
+		}
+		if err = saveConfig(schemaVersion+1, jsonStr); err != nil {
+			Log.Stdout("BOOT Couldn't save config")
+			return err
+		}
+		return PerformMigration()
+	}
+	return nil
 }
