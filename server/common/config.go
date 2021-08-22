@@ -617,6 +617,10 @@ func PerformMigration() (err error) {
 			Log.Stdout("BOOT Migration error: hide_menubar")
 			return err
 		}
+		if jsonStr, err = sjson.Delete(jsonStr, "features.protection.iframe"); err != nil {
+			Log.Stdout("BOOT Migration error: features.protection.iframe")
+			return err
+		}
 		if err = saveConfig(schemaVersion+1, jsonStr); err != nil {
 			Log.Stdout("BOOT Couldn't save config")
 			return err

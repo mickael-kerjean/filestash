@@ -4,7 +4,6 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"net/http"
-	"os"
 	"path/filepath"
 )
 
@@ -59,25 +58,6 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 		cspHeader += "worker-src 'self' blob:; "
 		cspHeader += "form-action 'self'; base-uri 'self'; "
 		cspHeader += "frame-src 'self'; "
-		if allowedDomainsForIframe := Config.Get("features.protection.iframe").Schema(func(f *FormElement) *FormElement {
-			if f == nil {
-				f = &FormElement{}
-			}
-			f.Default = ""
-			f.Placeholder = "Default: disabled"
-			if envValue := os.Getenv("FEATURES_IFRAME_PROTECTION"); envValue != "" {
-				f.Default = envValue
-				f.Placeholder = "Default: " + envValue
-			}
-
-			f.Name = "iframe"
-			f.Type = "text"
-			f.Target = []string{}
-			f.Description = "The frame-ancestors's value as part of the Content Security Policy header. Use with caution, this setting can make you vulnerable to clicjacking security issues."
-			return f
-		}).String(); allowedDomainsForIframe != "" {
-			cspHeader += "frame-ancestors " + allowedDomainsForIframe
-		}
 		header.Set("Content-Security-Policy", cspHeader)
 		fn(ctx, res, req)
 	}
