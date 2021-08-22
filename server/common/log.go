@@ -1,17 +1,17 @@
 package common
 
 import (
-	slog "log"
 	"fmt"
-	"time"
+	slog "log"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var logfile *os.File
 
-func init(){
+func init() {
 	var err error
 	logPath := filepath.Join(GetCurrentDir(), LOG_PATH)
 	logfile, err = os.OpenFile(filepath.Join(logPath, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
@@ -22,7 +22,7 @@ func init(){
 	logfile.WriteString("")
 }
 
-type log struct{
+type log struct {
 	enable bool
 	debug  bool
 	info   bool
@@ -33,7 +33,7 @@ type log struct{
 func (l *log) Info(format string, v ...interface{}) {
 	if l.info && l.enable {
 		message := fmt.Sprintf("%s INFO ", l.now())
-		message = fmt.Sprintf(message + format + "\n", v...)
+		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
 		fmt.Printf(strings.Replace(message, "%", "%%", -1))
@@ -43,7 +43,7 @@ func (l *log) Info(format string, v ...interface{}) {
 func (l *log) Warning(format string, v ...interface{}) {
 	if l.warn && l.enable {
 		message := fmt.Sprintf("%s WARN ", l.now())
-		message = fmt.Sprintf(message + format + "\n", v...)
+		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
 		fmt.Printf(strings.Replace(message, "%", "%%", -1))
@@ -53,7 +53,7 @@ func (l *log) Warning(format string, v ...interface{}) {
 func (l *log) Error(format string, v ...interface{}) {
 	if l.error && l.enable {
 		message := fmt.Sprintf("%s ERROR ", l.now())
-		message = fmt.Sprintf(message + format + "\n", v...)
+		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
 		fmt.Printf(strings.Replace(message, "%", "%%", -1))
@@ -63,7 +63,7 @@ func (l *log) Error(format string, v ...interface{}) {
 func (l *log) Debug(format string, v ...interface{}) {
 	if l.debug && l.enable {
 		message := fmt.Sprintf("%s DEBUG ", l.now())
-		message = fmt.Sprintf(message + format + "\n", v...)
+		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
 		fmt.Printf(strings.Replace(message, "%", "%%", -1))
@@ -72,7 +72,7 @@ func (l *log) Debug(format string, v ...interface{}) {
 
 func (l *log) Stdout(format string, v ...interface{}) {
 	message := fmt.Sprintf("%s ", l.now())
-	message = fmt.Sprintf(message + format + "\n", v...)
+	message = fmt.Sprintf(message+format+"\n", v...)
 	fmt.Printf(strings.Replace(message, "%", "%%", -1))
 }
 
@@ -114,11 +114,11 @@ func (l *log) SetVisibility(str string) {
 	}
 }
 
-func(l *log) Enable(val bool) {
+func (l *log) Enable(val bool) {
 	l.enable = val
 }
 
-var Log = func () log {
+var Log = func() log {
 	l := log{}
 	l.Enable(true)
 	return l

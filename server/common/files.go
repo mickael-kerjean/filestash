@@ -24,7 +24,7 @@ func IsDirectory(path string) bool {
 	if path == "" {
 		return false
 	}
-	if path[len(path) - 1:] != "/" {
+	if path[len(path)-1:] != "/" {
 		return false
 	}
 	return true

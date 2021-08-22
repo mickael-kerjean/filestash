@@ -6,7 +6,7 @@ import (
 
 func CanRead(ctx *App) bool {
 	if ctx.Share.Id != "" {
-		return ctx.Share.CanRead 
+		return ctx.Share.CanRead
 	}
 	return true
 }

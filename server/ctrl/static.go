@@ -1,15 +1,15 @@
 package ctrl
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"fmt"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"text/template"
 	"net/http"
 	URL "net/url"
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 )
 
 func StaticHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
@@ -42,7 +42,7 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 			NotFoundHandler(ctx, res, req)
 			return
 		}
-		ua := req.Header.Get("User-Agent");
+		ua := req.Header.Get("User-Agent")
 		if strings.Contains(ua, "MSIE ") || strings.Contains(ua, "Trident/") || strings.Contains(ua, "Edge/") {
 			// Microsoft is behaving on many occasion differently than Firefox / Chrome.
 			// I have neither the time / motivation for it to work properly
@@ -82,8 +82,8 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	  </style>
 	`))
 	t.Execute(res, struct {
-		App     []string
-	}{ []string{
+		App []string
+	}{[]string{
 		"Filestash " + APP_VERSION + "." + BUILD_DATE,
 		BUILD_REF,
 		hashFileContent(filepath.Join(GetCurrentDir(), "/filestash"), 0),
@@ -92,8 +92,8 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func CustomCssHandler(ctx App, res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("Content-Type", "text/css");
-	io.WriteString(res, Config.Get("general.custom_css").String());
+	res.Header().Set("Content-Type", "text/css")
+	io.WriteString(res, Config.Get("general.custom_css").String())
 }
 
 func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {

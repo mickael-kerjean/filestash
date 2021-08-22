@@ -5,9 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
-	"github.com/gorilla/mux"
 	"net/http"
 	"regexp"
 	"strings"
@@ -26,13 +26,13 @@ func LoggedInOnly(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 func AdminOnly(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		if admin := Config.Get("auth.admin").String(); admin != "" {
-			c, err := req.Cookie(COOKIE_NAME_ADMIN);
+			c, err := req.Cookie(COOKIE_NAME_ADMIN)
 			if err != nil {
 				SendErrorResult(res, ErrPermissionDenied)
 				return
 			}
 
-			str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, c.Value);
+			str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, c.Value)
 			if err != nil {
 				SendErrorResult(res, ErrPermissionDenied)
 				return
@@ -49,7 +49,7 @@ func AdminOnly(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, r
 	}
 }
 
-func SessionStart (fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
+func SessionStart(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		var err error
 		if ctx.Share, err = _extractShare(req); err != nil {
@@ -72,7 +72,7 @@ func SessionStart (fn func(App, http.ResponseWriter, *http.Request)) func(ctx Ap
 	}
 }
 
-func SessionTry (fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
+func SessionTry(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		ctx.Share, _ = _extractShare(req)
 		ctx.Session, _ = _extractSession(req, &ctx)
@@ -93,7 +93,7 @@ func RedirectSharedLoginIfNeeded(fn func(App, http.ResponseWriter, *http.Request
 			return
 		}
 
-		share, err := _extractShare(req);
+		share, err := _extractShare(req)
 		if err != nil || share_id != share.Id {
 			http.Redirect(res, req, fmt.Sprintf("/s/%s?next=%s", share_id, req.URL.Path), http.StatusTemporaryRedirect)
 			return
@@ -187,7 +187,7 @@ func _extractShare(req *http.Request) (Share, error) {
 	}
 
 	var verifiedProof []model.Proof = model.ShareProofGetAlreadyVerified(req)
-	username, password := func(authHeader string) (string, string){
+	username, password := func(authHeader string) (string, string) {
 		decoded, err := base64.StdEncoding.DecodeString(
 			strings.TrimPrefix(authHeader, "Basic "),
 		)
@@ -203,7 +203,7 @@ func _extractShare(req *http.Request) (Share, error) {
 		if len(usr) != 3 {
 			return "", p
 		}
-		if Hash(usr[1] + SECRET_KEY_DERIVATE_FOR_HASH, 10) != usr[2] {
+		if Hash(usr[1]+SECRET_KEY_DERIVATE_FOR_HASH, 10) != usr[2] {
 			return "", p
 		}
 		return usr[1], p
@@ -211,12 +211,12 @@ func _extractShare(req *http.Request) (Share, error) {
 
 	if s.Users != nil && username != "" {
 		if v, ok := model.ShareProofVerifierEmail(*s.Users, username); ok {
-			verifiedProof = append(verifiedProof, model.Proof{ Key: "email", Value: v })
+			verifiedProof = append(verifiedProof, model.Proof{Key: "email", Value: v})
 		}
 	}
 	if s.Password != nil && password != "" {
 		if v, ok := model.ShareProofVerifierPassword(*s.Password, password); ok {
-			verifiedProof = append(verifiedProof, model.Proof{ Key: "password", Value: v })
+			verifiedProof = append(verifiedProof, model.Proof{Key: "password", Value: v})
 		}
 	}
 	var requiredProof []model.Proof = model.ShareProofGetRequired(s)

@@ -3,8 +3,8 @@ package common
 import (
 	"crypto/tls"
 	"fmt"
-	"net/http"
 	"net"
+	"net/http"
 	"time"
 )
 
@@ -54,11 +54,13 @@ var DefaultTLSConfig = tls.Config{
 }
 
 func NewTransormedTransport(transport http.Transport) http.RoundTripper {
-	return &TransformedTransport{ &transport }
+	return &TransformedTransport{&transport}
 }
+
 type TransformedTransport struct {
 	Orig http.RoundTripper
 }
+
 func (this *TransformedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("User-Agent", USER_AGENT)
 	return this.Orig.RoundTrip(req)

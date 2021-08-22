@@ -18,6 +18,7 @@ import (
 )
 
 const SYNCTHING_URI = "/admin/syncthing"
+
 func init() {
 	plugin_enable := Config.Get("features.syncthing.enable").Schema(func(f *FormElement) *FormElement {
 		if f == nil {
@@ -54,10 +55,10 @@ func init() {
 		if plugin_enable == false {
 			return nil
 		}
-		r.HandleFunc(SYNCTHING_URI, func (res http.ResponseWriter, req *http.Request) {
-			http.Redirect(res, req, SYNCTHING_URI + "/", http.StatusTemporaryRedirect)
+		r.HandleFunc(SYNCTHING_URI, func(res http.ResponseWriter, req *http.Request) {
+			http.Redirect(res, req, SYNCTHING_URI+"/", http.StatusTemporaryRedirect)
 		})
-		r.Handle(SYNCTHING_URI + "/", AuthBasic(
+		r.Handle(SYNCTHING_URI+"/", AuthBasic(
 			func() (string, string) { return "admin", Config.Get("auth.admin").String() },
 			http.HandlerFunc(SyncthingProxyHandler),
 		))
@@ -111,7 +112,7 @@ func AuthBasic(credentials func() (string, string), fn http.Handler) http.Handle
 
 func SyncthingProxyHandler(res http.ResponseWriter, req *http.Request) {
 	req.URL.Path = strings.TrimPrefix(req.URL.Path, SYNCTHING_URI)
-	req.Header.Set("X-Forwarded-Host", req.Host + SYNCTHING_URI)
+	req.Header.Set("X-Forwarded-Host", req.Host+SYNCTHING_URI)
 	req.Header.Set("X-Forwarded-Proto", func() string {
 		if scheme := req.Header.Get("X-Forwarded-Proto"); scheme != "" {
 			return scheme

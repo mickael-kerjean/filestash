@@ -1,16 +1,16 @@
 package model
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"bytes"
 	"crypto/tls"
 	"database/sql"
 	"encoding/json"
 	"github.com/mattn/go-sqlite3"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
-	"net/http"
 	"html/template"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -95,26 +95,26 @@ func ShareUpsert(p *Share) error {
 		return err
 	}
 	j, _ := json.Marshal(&struct {
-        Password     *string  `json:"password,omitempty"`
-		Users        *string  `json:"users,omitempty"`
-		Expire       *int64   `json:"expire,omitempty"`
-		Url          *string  `json:"url,omitempty"`
-		CanShare     bool     `json:"can_share"`
-		CanManageOwn bool     `json:"can_manage_own"`
-		CanRead      bool     `json:"can_read"`
-		CanWrite     bool     `json:"can_write"`
-		CanUpload    bool     `json:"can_upload"`
-    }{
-		Password: p.Password,
-		Users: p.Users,
-		Expire: p.Expire,
-		Url: p.Url,
-		CanShare: p.CanShare,
+		Password     *string `json:"password,omitempty"`
+		Users        *string `json:"users,omitempty"`
+		Expire       *int64  `json:"expire,omitempty"`
+		Url          *string `json:"url,omitempty"`
+		CanShare     bool    `json:"can_share"`
+		CanManageOwn bool    `json:"can_manage_own"`
+		CanRead      bool    `json:"can_read"`
+		CanWrite     bool    `json:"can_write"`
+		CanUpload    bool    `json:"can_upload"`
+	}{
+		Password:     p.Password,
+		Users:        p.Users,
+		Expire:       p.Expire,
+		Url:          p.Url,
+		CanShare:     p.CanShare,
 		CanManageOwn: p.CanManageOwn,
-		CanRead: p.CanRead,
-		CanWrite: p.CanWrite,
-		CanUpload: p.CanUpload,
-    })
+		CanRead:      p.CanRead,
+		CanWrite:     p.CanWrite,
+		CanUpload:    p.CanUpload,
+	})
 	_, err = stmt.Exec(p.Id, p.Backend, p.Path, j, p.Auth)
 	return err
 }
@@ -136,7 +136,7 @@ func ShareProofVerifier(s Share, proof Proof) (Proof, error) {
 			return p, NewError("No password required", 400)
 		}
 
-		v, ok := ShareProofVerifierPassword(*s.Password, proof.Value);
+		v, ok := ShareProofVerifierPassword(*s.Password, proof.Value)
 		if ok == false {
 			time.Sleep(1000 * time.Millisecond)
 			return p, ErrInvalidPassword
@@ -157,12 +157,12 @@ func ShareProofVerifier(s Share, proof Proof) (Proof, error) {
 		user := v
 
 		// prepare the verification code
-		stmt, err := DB.Prepare("INSERT INTO Verification(key, code) VALUES(?, ?)");
+		stmt, err := DB.Prepare("INSERT INTO Verification(key, code) VALUES(?, ?)")
 		if err != nil {
 			return p, err
 		}
 		code := RandomString(4)
-		if _, err := stmt.Exec("email::" + user, code); err != nil {
+		if _, err := stmt.Exec("email::"+user, code); err != nil {
 			return p, err
 		}
 
@@ -170,7 +170,7 @@ func ShareProofVerifier(s Share, proof Proof) (Proof, error) {
 		var b bytes.Buffer
 		t := template.New("email")
 		t.Parse(TmplEmailVerification())
-		t.Execute(&b, struct{
+		t.Execute(&b, struct {
 			Code     string
 			Username string
 		}{code, networkDriveUsernameEnc(user)})
@@ -188,10 +188,10 @@ func ShareProofVerifier(s Share, proof Proof) (Proof, error) {
 			From     string `json:"from"`
 		}{
 			Hostname: Config.Get("email.server").String(),
-			Port: Config.Get("email.port").Int(),
+			Port:     Config.Get("email.port").Int(),
 			Username: Config.Get("email.username").String(),
 			Password: Config.Get("email.password").String(),
-			From: Config.Get("email.from").String(),
+			From:     Config.Get("email.from").String(),
 		}
 
 		m := gomail.NewMessage()
@@ -308,7 +308,7 @@ func ShareProofCalculateRemainings(ref []Proof, mem []Proof) []Proof {
 		for j := 0; j < len(mem); j++ {
 			if shareProofAreEquivalent(ref[i], mem[j]) {
 				keep = false
-				break;
+				break
 			}
 		}
 		if keep {
@@ -319,8 +319,7 @@ func ShareProofCalculateRemainings(ref []Proof, mem []Proof) []Proof {
 	return remainingProof
 }
 
-
-func shareProofAreEquivalent(ref Proof,  p Proof) bool {
+func shareProofAreEquivalent(ref Proof, p Proof) bool {
 	if ref.Key != p.Key {
 		return false
 	} else if ref.Value != "" && ref.Value == p.Value {
@@ -328,7 +327,7 @@ func shareProofAreEquivalent(ref Proof,  p Proof) bool {
 	}
 	for _, chunk := range strings.Split(ref.Value, ",") {
 		chunk = strings.Trim(chunk, " ")
-		if p.Id == Hash(ref.Key + "::" + chunk, 20) {
+		if p.Id == Hash(ref.Key+"::"+chunk, 20) {
 			return true
 		}
 	}
@@ -634,5 +633,5 @@ func TmplEmailVerification() string {
 }
 
 func networkDriveUsernameEnc(email string) string {
-	return email + "[" + Hash(email + SECRET_KEY_DERIVATE_FOR_HASH, 10) + "]"
+	return email + "[" + Hash(email+SECRET_KEY_DERIVATE_FOR_HASH, 10) + "]"
 }

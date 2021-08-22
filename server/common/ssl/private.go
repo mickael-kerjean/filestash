@@ -31,7 +31,7 @@ func generateNewPrivateKey() (*rsa.PrivateKey, []byte, error) {
 		return nil, nil, err
 	}
 	return key, pem.EncodeToMemory(&pem.Block{
-		Type: "RSA PRIVATE KEY",
+		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(key),
 	}), nil
 }
@@ -56,7 +56,7 @@ func pullPrivateKeyFromFS() (*rsa.PrivateKey, []byte, error) {
 }
 
 func savePrivateKeyToFS(privatePEM []byte) error {
-	file, err := os.OpenFile(keyPEMPath, os.O_WRONLY | os.O_CREATE, 0600)
+	file, err := os.OpenFile(keyPEMPath, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}

@@ -12,8 +12,8 @@ import (
 	"hash/fnv"
 	"io"
 	"io/ioutil"
-	mathrand "math/rand"
 	"math/big"
+	mathrand "math/rand"
 	"os"
 	"runtime"
 )
@@ -32,7 +32,7 @@ func EncryptString(secret string, data string) (string, error) {
 	return base64.URLEncoding.EncodeToString(d), nil
 }
 
-func DecryptString(secret string, data string) (string, error){
+func DecryptString(secret string, data string) (string, error) {
 	d, err := base64.URLEncoding.DecodeString(data)
 	if err != nil {
 		return "", err
@@ -74,7 +74,7 @@ func HashStream(r io.Reader, n int) string {
 
 func hashSize(b []byte, n int) string {
 	h := ""
-	for i:=0; i<len(b); i++ {
+	for i := 0; i < len(b); i++ {
 		if n > 0 && len(h) >= n {
 			break
 		}
@@ -82,7 +82,7 @@ func hashSize(b []byte, n int) string {
 	}
 
 	if len(h) > n {
-		return h[0:len(h) - 1]
+		return h[0 : len(h)-1]
 	}
 	return h
 }
@@ -90,7 +90,7 @@ func hashSize(b []byte, n int) string {
 func ReversedBaseChange(alphabet []rune, i int) string {
 	str := ""
 	for {
-		str += string(alphabet[i % len(alphabet)])
+		str += string(alphabet[i%len(alphabet)])
 		i = i / len(alphabet)
 		if i == 0 {
 			break
@@ -122,42 +122,42 @@ func QuickString(n int) string {
 }
 
 func encrypt(key []byte, plaintext []byte) ([]byte, error) {
-    c, err := aes.NewCipher(key)
-    if err != nil {
-        return nil, err
-    }
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
 
-    gcm, err := cipher.NewGCM(c)
-    if err != nil {
-        return nil, err
-    }
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		return nil, err
+	}
 
-    nonce := make([]byte, gcm.NonceSize())
-    if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-        return nil, err
-    }
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		return nil, err
+	}
 
-    return gcm.Seal(nonce, nonce, plaintext, nil), nil
+	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
 func decrypt(key []byte, ciphertext []byte) ([]byte, error) {
-    c, err := aes.NewCipher(key)
-    if err != nil {
-        return nil, err
-    }
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
 
-    gcm, err := cipher.NewGCM(c)
-    if err != nil {
-        return nil, err
-    }
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		return nil, err
+	}
 
-    nonceSize := gcm.NonceSize()
-    if len(ciphertext) < nonceSize {
-        return nil, NewError("ciphertext too short", 500)
-    }
+	nonceSize := gcm.NonceSize()
+	if len(ciphertext) < nonceSize {
+		return nil, NewError("ciphertext too short", 500)
+	}
 
-    nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
-    return gcm.Open(nil, nonce, ciphertext, nil)
+	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
+	return gcm.Open(nil, nonce, ciphertext, nil)
 }
 
 func compress(something []byte) ([]byte, error) {
@@ -243,7 +243,7 @@ func GenerateMachineID() string {
 			if _, err = f.Read(b); err == nil {
 				return string(b)
 			}
-		}		
+		}
 	}
 	return "na"
 }

@@ -11,12 +11,12 @@ import (
 )
 
 var (
-	gzipBomb *bytes.Buffer
+	gzipBomb      *bytes.Buffer
 	billionsOfLol *bytes.Buffer
 )
 
 func init() {
-	if plugin_enable := Config.Get("features.protection.enable").Schema(func(f *FormElement) *FormElement{
+	if plugin_enable := Config.Get("features.protection.enable").Schema(func(f *FormElement) *FormElement {
 		if f == nil {
 			f = &FormElement{}
 		}
@@ -41,7 +41,7 @@ func init() {
 	}
 	billionsOfLol = bytes.NewBuffer(b)
 
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error{
+	Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error {
 		// DEFAULT
 		r.HandleFunc("/index.php", WelcomePackHandle)
 		r.PathPrefix("/html/").Handler(http.HandlerFunc(WelcomePackHandle))
@@ -210,7 +210,7 @@ func WelcomePackHandle(res http.ResponseWriter, req *http.Request) {
 		HandleRedirectOwnIP(res, req)
 	} else if r < 55 {
 		HandleRedirectGeo(res, req)
-	}else if r < 70 {
+	} else if r < 70 {
 		HandleXMLBomb(res, req)
 	} else {
 		HandleGzipBomb(res, req)

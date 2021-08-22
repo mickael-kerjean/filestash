@@ -20,22 +20,22 @@ func GetRoot() (*x509.Certificate, error) {
 		Subject: pkix.Name{
 			Organization: []string{"Filestash"},
 		},
-		NotBefore:             time.Now().Add(- 24 * time.Hour),
+		NotBefore:             time.Now().Add(-24 * time.Hour),
 		NotAfter:              time.Now().Add(24 * 365 * 100 * time.Hour),
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
 		IsCA:                  false,
-		IPAddresses:           func() []net.IP {
+		IPAddresses: func() []net.IP {
 			ips := []net.IP{}
 			ifaces, err := net.Interfaces()
 			if err != nil {
-				return []net.IP{ net.ParseIP("127.0.0.1") }
+				return []net.IP{net.ParseIP("127.0.0.1")}
 			}
 			for _, i := range ifaces {
 				addrs, err := i.Addrs()
 				if err != nil {
-					return []net.IP{ net.ParseIP("127.0.0.1") }
+					return []net.IP{net.ParseIP("127.0.0.1")}
 				}
 				for _, addr := range addrs {
 					var ip net.IP

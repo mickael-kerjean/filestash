@@ -3,9 +3,9 @@ package ctrl
 import (
 	"bytes"
 	"fmt"
+	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
-	"github.com/gorilla/mux"
 	"io"
 	"net/http"
 	"os"
@@ -16,7 +16,6 @@ import (
 
 //go:generate sh -c "go run ../generator/emacs-el.go > export_generated.go && go fmt export_generated.go"
 var EmacsElConfig string = ""
-
 
 func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 	http.SetCookie(res, &http.Cookie{
@@ -38,10 +37,10 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var tmpPath   string = GetAbsolutePath(TMP_PATH) + "/export_" + QuickString(10)
-	var cmd       *exec.Cmd
+	var tmpPath string = GetAbsolutePath(TMP_PATH) + "/export_" + QuickString(10)
+	var cmd *exec.Cmd
 	var emacsPath string
-	var outPath   string
+	var outPath string
 	reqMimeType := GetMimeType(path)
 	if reqMimeType == "text/org" {
 		if emacsPath, err = exec.LookPath("emacs"); err != nil {
@@ -60,7 +59,7 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 		}
 
 		// initialise the default emacs.el
-		if f, err := os.OpenFile(GetAbsolutePath(CONFIG_PATH + "emacs.el"), os.O_WRONLY | os.O_CREATE | os.O_EXCL, os.ModePerm); err == nil {
+		if f, err := os.OpenFile(GetAbsolutePath(CONFIG_PATH+"emacs.el"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.ModePerm); err == nil {
 			if _, err = f.Write([]byte(EmacsElConfig)); err != nil {
 				SendErrorResult(res, ErrFilesystemError)
 				return
@@ -75,57 +74,57 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
 				"--eval", "(setq org-html-extension \"org\")",
-				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
-				tmpPath + "/index.org", "-f", "org-html-export-to-html",
+				"--load", GetAbsolutePath(CONFIG_PATH+"emacs.el"),
+				tmpPath+"/index.org", "-f", "org-html-export-to-html",
 			)
 			outPath = "index.org.org"
 		} else if mimeType == "application/pdf" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
-				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
-				tmpPath + "/index.org", "-f", "org-latex-export-to-pdf",
+				"--load", GetAbsolutePath(CONFIG_PATH+"emacs.el"),
+				tmpPath+"/index.org", "-f", "org-latex-export-to-pdf",
 			)
 			if query.Get("mode") == "beamer" {
 				cmd = exec.Command(
 					emacsPath, "--no-init-file", "--batch",
-					"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
-					tmpPath + "/index.org", "-f", "org-beamer-export-to-pdf",
+					"--load", GetAbsolutePath(CONFIG_PATH+"emacs.el"),
+					tmpPath+"/index.org", "-f", "org-beamer-export-to-pdf",
 				)
 			}
 			outPath = "index.pdf"
 		} else if mimeType == "text/calendar" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
-				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
-				tmpPath + "/index.org", "-f", "org-icalendar-export-to-ics",
+				"--load", GetAbsolutePath(CONFIG_PATH+"emacs.el"),
+				tmpPath+"/index.org", "-f", "org-icalendar-export-to-ics",
 			)
 			outPath = "index.ics"
 		} else if mimeType == "text/plain" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
-				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
-				tmpPath + "/index.org", "-f", "org-ascii-export-to-ascii",
+				"--load", GetAbsolutePath(CONFIG_PATH+"emacs.el"),
+				tmpPath+"/index.org", "-f", "org-ascii-export-to-ascii",
 			)
 			outPath = "index.txt"
 		} else if mimeType == "text/x-latex" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
-				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
-				tmpPath + "/index.org", "-f", "org-latex-export-to-latex",
+				"--load", GetAbsolutePath(CONFIG_PATH+"emacs.el"),
+				tmpPath+"/index.org", "-f", "org-latex-export-to-latex",
 			)
 			outPath = "index.tex"
 		} else if mimeType == "text/markdown" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
-				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
-				tmpPath + "/index.org", "-f", "org-md-export-to-markdown",
+				"--load", GetAbsolutePath(CONFIG_PATH+"emacs.el"),
+				tmpPath+"/index.org", "-f", "org-md-export-to-markdown",
 			)
 			outPath = "index.md"
 		} else if mimeType == "application/vnd.oasis.opendocument.text" {
 			cmd = exec.Command(
 				emacsPath, "--no-init-file", "--batch",
-				"--load", GetAbsolutePath(CONFIG_PATH + "emacs.el"),
-				tmpPath + "/index.org", "-f", "org-odt-export-to-odt",
+				"--load", GetAbsolutePath(CONFIG_PATH+"emacs.el"),
+				tmpPath+"/index.org", "-f", "org-odt-export-to-odt",
 			)
 			outPath = "index.odt"
 		} else if mimeType == "text/org" {
@@ -137,7 +136,7 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 
 		os.MkdirAll(tmpPath, os.ModePerm)
 		defer os.RemoveAll(tmpPath)
-		f, err := os.OpenFile(tmpPath + "/index.org", os.O_WRONLY|os.O_CREATE, os.ModePerm)
+		f, err := os.OpenFile(tmpPath+"/index.org", os.O_WRONLY|os.O_CREATE, os.ModePerm)
 		if err != nil {
 			SendErrorResult(res, ErrFilesystemError)
 			return
@@ -160,7 +159,7 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-		f, err = os.OpenFile(tmpPath + "/"+outPath, os.O_RDONLY, os.ModePerm)
+		f, err = os.OpenFile(tmpPath+"/"+outPath, os.O_RDONLY, os.ModePerm)
 		if err != nil {
 			SendErrorResult(res, ErrFilesystemError)
 			return

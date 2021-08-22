@@ -40,7 +40,8 @@ func (d *Driver) Drivers() map[string]IBackend {
 	return d.ds
 }
 
-type Nothing struct {}
+type Nothing struct{}
+
 func (b Nothing) Init(params map[string]string, app *App) (IBackend, error) {
 	return &Nothing{}, nil
 }

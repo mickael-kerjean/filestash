@@ -16,7 +16,7 @@ import (
 func OfficeFormater(r io.ReadCloser) (io.ReadCloser, error) {
 	tmpName := fmt.Sprintf("/tmp/docx_%d.docx", rand.Intn(1000000))
 	defer os.Remove(tmpName)
-	f, err := os.OpenFile(tmpName, os.O_CREATE | os.O_WRONLY, os.ModePerm)
+	f, err := os.OpenFile(tmpName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
@@ -25,17 +25,21 @@ func OfficeFormater(r io.ReadCloser) (io.ReadCloser, error) {
 		return nil, err
 	}
 	z, err := zip.OpenReader(tmpName)
-    if err != nil {
+	if err != nil {
 		return nil, err
-    }
-    defer z.Close()
+	}
+	defer z.Close()
 
 	hasData := false
 	content := bytes.NewBuffer([]byte{})
 	for _, f := range z.File {
 		shouldExtract := false
-		if f.Name == "word/document.xml" { shouldExtract = true }
-		if strings.HasPrefix(f.Name, "ppt/slides/slide") { shouldExtract = true }
+		if f.Name == "word/document.xml" {
+			shouldExtract = true
+		}
+		if strings.HasPrefix(f.Name, "ppt/slides/slide") {
+			shouldExtract = true
+		}
 
 		if shouldExtract == false {
 			continue
@@ -75,7 +79,6 @@ func OfficeFormater(r io.ReadCloser) (io.ReadCloser, error) {
 	}
 	return NewReadCloserFromReader(content), nil
 }
-
 
 type WordDoc struct {
 	Text []byte `xml:",innerxml"`

@@ -3,8 +3,8 @@ package plg_backend_backblaze
 import (
 	"bytes"
 	"crypto/sha1"
-	"encoding/json"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
@@ -26,11 +26,11 @@ var (
 type Backblaze struct {
 	params      map[string]string
 	Buckets     map[string]string
-	ApiUrl      string            `json:"apiUrl"`
-	DownloadUrl string            `json:"downloadUrl"`
-	AccountId   string            `json:"accountId"`
-	Token       string            `json:"authorizationToken"`
-	Status      int               `json:"status"`
+	ApiUrl      string `json:"apiUrl"`
+	DownloadUrl string `json:"downloadUrl"`
+	AccountId   string `json:"accountId"`
+	Token       string `json:"authorizationToken"`
+	Status      int    `json:"status"`
 }
 
 type BackblazeError struct {
@@ -57,7 +57,7 @@ func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error)
 	}
 
 	// To perform some query, we need to first know things like where we will have to query, get a token, ...
-	res, err := this.request("GET", "https://api.backblazeb2.com/b2api/v2/b2_authorize_account", nil, nil);
+	res, err := this.request("GET", "https://api.backblazeb2.com/b2api/v2/b2_authorize_account", nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error)
 	// BucketId is just some internal ref as people expect to see the bucketName
 	res, err = this.request(
 		"POST",
-		this.ApiUrl + "/b2api/v2/b2_list_buckets",
+		this.ApiUrl+"/b2api/v2/b2_list_buckets",
 		strings.NewReader(fmt.Sprintf(
 			`{"accountId":"%s"}`,
 			this.AccountId,
@@ -90,7 +90,7 @@ func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error)
 		return nil, err
 	}
 	var buckets struct {
-		Buckets []struct{
+		Buckets []struct {
 			BucketId   string `json:"bucketId"`
 			BucketName string `json:"bucketName"`
 		} `json:"buckets"`
@@ -111,9 +111,9 @@ func (this Backblaze) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
-				Name:        "type",
-				Type:        "hidden",
-				Value:       "backblaze",
+				Name:  "type",
+				Type:  "hidden",
+				Value: "backblaze",
 			},
 			FormElement{
 				Name:        "username",
@@ -148,10 +148,10 @@ func (this Backblaze) Ls(path string) ([]os.FileInfo, error) {
 		Delimiter    string `json:"delimiter"`
 		MaxFileCount int    `json:"maxFileCount"`
 		Prefix       string `json:"prefix"`
-	}{ p.BucketId, "/", 10000, p.Prefix })
+	}{p.BucketId, "/", 10000, p.Prefix})
 	res, err := this.request(
 		"POST",
-		this.ApiUrl + "/b2api/v2/b2_list_file_names",
+		this.ApiUrl+"/b2api/v2/b2_list_file_names",
 		bytes.NewReader(reqJSON),
 		nil,
 	)
@@ -194,7 +194,7 @@ func (this Backblaze) Ls(path string) ([]os.FileInfo, error) {
 func (this Backblaze) Cat(path string) (io.ReadCloser, error) {
 	res, err := this.request(
 		"GET",
-		this.DownloadUrl + "/file" + path + "?Authorization=" + this.Token,
+		this.DownloadUrl+"/file"+path+"?Authorization="+this.Token,
 		nil, nil,
 	)
 	if err != nil {
@@ -216,7 +216,7 @@ func (this Backblaze) Mkdir(path string) error {
 		}
 		res, err := this.request(
 			"POST",
-			this.ApiUrl + "/b2api/v2/b2_create_bucket",
+			this.ApiUrl+"/b2api/v2/b2_create_bucket",
 			strings.NewReader(fmt.Sprintf(
 				`{"accountId": "%s", "bucketName": "%s", "bucketType": "allPrivate"}`,
 				this.AccountId,
@@ -254,7 +254,7 @@ func (this Backblaze) Rm(path string) error {
 		BackblazeCache.Del(this.params) // cache invalidation
 		res, err := this.request(
 			"POST",
-			this.ApiUrl + "/b2api/v2/b2_delete_bucket",
+			this.ApiUrl+"/b2api/v2/b2_delete_bucket",
 			strings.NewReader(fmt.Sprintf(
 				`{"accountId": "%s", "bucketId": "%s"}`,
 				this.AccountId,
@@ -284,7 +284,7 @@ func (this Backblaze) Rm(path string) error {
 	// Step 1: find every files in a folder: b2_list_file_names
 	res, err := this.request(
 		"POST",
-		this.ApiUrl + "/b2api/v2/b2_list_file_names",
+		this.ApiUrl+"/b2api/v2/b2_list_file_names",
 		strings.NewReader(fmt.Sprintf(
 			`{"bucketId": "%s", "maxFileCount": 10000, "delimiter": "/", "prefix": "%s"}`,
 			p.BucketId, p.Prefix,
@@ -312,7 +312,7 @@ func (this Backblaze) Rm(path string) error {
 	for i := range bRes.Files {
 		res, err := this.request(
 			"POST",
-			this.ApiUrl + "/b2api/v2/b2_delete_file_version",
+			this.ApiUrl+"/b2api/v2/b2_delete_file_version",
 			strings.NewReader(fmt.Sprintf(
 				`{"fileName": "%s", "fileId": "%s"}`,
 				bRes.Files[i].FileName, bRes.Files[i].FileId,
@@ -347,7 +347,7 @@ func (this Backblaze) Touch(path string) error {
 	// Step 1: get the URL we will proceed to the upload
 	res, err := this.request(
 		"POST",
-		this.ApiUrl + "/b2api/v2/b2_get_upload_url",
+		this.ApiUrl+"/b2api/v2/b2_get_upload_url",
 		strings.NewReader(fmt.Sprintf(`{"bucketId": "%s"}`, p.BucketId)),
 		nil,
 	)
@@ -372,7 +372,7 @@ func (this Backblaze) Touch(path string) error {
 		"POST",
 		resBody.UploadUrl,
 		nil,
-		func(r *http.Request){
+		func(r *http.Request) {
 			r.Header.Set("Authorization", resBody.Token)
 			r.Header.Set("X-Bz-File-Name", url.QueryEscape(p.Prefix))
 			r.Header.Set("Content-Type", "application/octet-stream")
@@ -404,7 +404,7 @@ func (this Backblaze) Save(path string, file io.Reader) error {
 	// Step 1: get the URL we will proceed to the upload
 	res, err := this.request(
 		"POST",
-		this.ApiUrl + "/b2api/v2/b2_get_upload_url",
+		this.ApiUrl+"/b2api/v2/b2_get_upload_url",
 		strings.NewReader(fmt.Sprintf(`{"bucketId": "%s"}`, p.BucketId)),
 		nil,
 	)
@@ -431,15 +431,17 @@ func (this Backblaze) Save(path string, file io.Reader) error {
 		Sha1          []byte
 	}{}
 	backblazeFileDetail.path = GetAbsolutePath(BackblazeCachePath + "data_" + QuickString(20) + ".dat")
-	f, err := os.OpenFile(backblazeFileDetail.path, os.O_CREATE | os.O_RDWR, os.ModePerm)
+	f, err := os.OpenFile(backblazeFileDetail.path, os.O_CREATE|os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 	defer os.Remove(backblazeFileDetail.path)
 	io.Copy(f, file)
-	if obj, ok := file.(io.Closer); ok { obj.Close() }
-	s, err := f.Stat();
+	if obj, ok := file.(io.Closer); ok {
+		obj.Close()
+	}
+	s, err := f.Stat()
 	if err != nil {
 		return err
 	}
@@ -457,7 +459,7 @@ func (this Backblaze) Save(path string, file io.Reader) error {
 		"POST",
 		resBody.UploadUrl,
 		f,
-		func(r *http.Request){
+		func(r *http.Request) {
 			r.ContentLength = backblazeFileDetail.ContentLength
 			r.Header.Set("Authorization", resBody.Token)
 			r.Header.Set("X-Bz-File-Name", url.QueryEscape(p.Prefix))
@@ -495,7 +497,7 @@ func (this Backblaze) Meta(path string) Metadata {
 	return m
 }
 
-func (this Backblaze) request(method string, url string, body io.Reader, fn func(req *http.Request)) (*http.Response, error){
+func (this Backblaze) request(method string, url string, body io.Reader, fn func(req *http.Request)) (*http.Response, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
@@ -514,7 +516,7 @@ func (this Backblaze) request(method string, url string, body io.Reader, fn func
 	} else {
 		req.Header.Set("Authorization", this.Token)
 	}
-	req.Header.Set("User-Agent", "Filestash " + APP_VERSION + "." + BUILD_DATE)
+	req.Header.Set("User-Agent", "Filestash "+APP_VERSION+"."+BUILD_DATE)
 	req.Header.Set("Accept", "application/json")
 	//req.Header.Set("X-Bz-Test-Mode", "force_cap_exceeded")
 	if fn != nil {

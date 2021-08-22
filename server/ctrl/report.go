@@ -35,7 +35,7 @@ func HealthHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	defer file.Close()
 
 	// CHECK2: read from the filesystem
-    if _, err := file.Read(make([]byte, 10)); err != nil {
+	if _, err := file.Read(make([]byte, 10)); err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte(`{"status": "error", "reason": "fs read error"}`))
 		return

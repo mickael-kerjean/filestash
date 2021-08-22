@@ -25,14 +25,14 @@ const (
 func init() {
 	DavCache = NewAppCache(2, 1)
 	Backend.Register(CARDDAV, Dav{})
-	Backend.Register(CALDAV,  Dav{})
+	Backend.Register(CALDAV, Dav{})
 }
 
 type Dav struct {
-	which    string
-	url      string
-	params   map[string]string
-	cache    map[string]interface{}
+	which  string
+	url    string
+	params map[string]string
+	cache  map[string]interface{}
 }
 
 func (this Dav) Init(params map[string]string, app *App) (IBackend, error) {
@@ -41,9 +41,9 @@ func (this Dav) Init(params map[string]string, app *App) (IBackend, error) {
 		return backend, nil
 	}
 	backend := Dav{
-		url:      params["url"],
-		which:    params["type"],
-		params:   params,
+		url:    params["url"],
+		which:  params["type"],
+		params: params,
 	}
 	DavCache.Set(params, &backend)
 	return backend, nil
@@ -53,9 +53,9 @@ func (this Dav) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
-				Name:        "type",
-				Type:        "hidden",
-				Value:       this.which,
+				Name:  "type",
+				Type:  "hidden",
+				Value: this.which,
 			},
 			FormElement{
 				Name:        "url",
@@ -296,9 +296,9 @@ func (this Dav) Touch(path string) error {
 
 func (this Dav) Save(path string, file io.Reader) error {
 	var uriInit string
-	var uri     string
-	var err     error
-	var res     *http.Response
+	var uri string
+	var err error
+	var res *http.Response
 
 	if uriInit, err = this.getResourceURI(path); err != nil {
 		uriInit = ""
@@ -340,21 +340,21 @@ func (this Dav) Save(path string, file io.Reader) error {
 
 func (this Dav) Meta(path string) Metadata {
 	m := Metadata{
-		CanMove:            NewBool(false),
-		HideExtension:      NewBool(true),
+		CanMove:       NewBool(false),
+		HideExtension: NewBool(true),
 	}
 	if path == "/" {
-		m.CanCreateFile =      NewBool(false)
+		m.CanCreateFile = NewBool(false)
 		m.CanCreateDirectory = NewBool(true)
-		m.CanRename =          NewBool(false)
-		m.CanUpload =          NewBool(false)
-		m.RefreshOnCreate =    NewBool(false)
+		m.CanRename = NewBool(false)
+		m.CanUpload = NewBool(false)
+		m.RefreshOnCreate = NewBool(false)
 	} else {
-		m.CanCreateFile =      NewBool(true)
+		m.CanCreateFile = NewBool(true)
 		m.CanCreateDirectory = NewBool(false)
-		m.CanRename =          NewBool(true)
-		m.CanUpload =          NewBool(true)
-		m.RefreshOnCreate =    NewBool(true)
+		m.CanRename = NewBool(true)
+		m.CanUpload = NewBool(true)
+		m.RefreshOnCreate = NewBool(true)
 	}
 	return m
 }
@@ -448,7 +448,7 @@ func (this Dav) getCollections() ([]DavCollection, error) {
              <getcontenttype/>
              <displayname />
            </prop>
-         </propfind>`), func (req *http.Request) {
+         </propfind>`), func(req *http.Request) {
 		req.Header.Add("Depth", "1")
 		req.Header.Add("Content-Type", "application/xml")
 	}); err != nil {
@@ -497,7 +497,7 @@ func (this Dav) getCollectionURI(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	for i:=0; i<len(coll); i++ {
+	for i := 0; i < len(coll); i++ {
 		if coll[i].Name == string(p[0]) {
 			return this.parseURL(coll[i].Url)
 		}
@@ -536,7 +536,7 @@ func (this Dav) getResources(path string) ([]DavResource, error) {
                            </D:prop>
                          </C:calendar-query>`
 			}
-			return strings.NewReader(query);
+			return strings.NewReader(query)
 		}(),
 		func(req *http.Request) {
 			req.Header.Add("Depth", "1")
@@ -569,7 +569,7 @@ func (this Dav) getResources(path string) ([]DavResource, error) {
 				name += ".vcf"
 			} else if this.which == CALDAV {
 				strToInt := func(chunk string) int {
-					ret, _ := strconv.Atoi(chunk);
+					ret, _ := strconv.Atoi(chunk)
 					return ret
 				}
 				for _, line := range strings.Split(r.Responses[i].Ical, "\n") {
@@ -581,7 +581,7 @@ func (this Dav) getResources(path string) ([]DavResource, error) {
 						c := strings.TrimSuffix(strings.TrimSpace(strings.TrimPrefix(line, "DTSTART:")), "Z")
 						if len(c) == 15 && t == 0 {
 							t = time.Date(
-								strToInt(c[0:4]), time.Month(strToInt(c[4:6]) + 1), strToInt(c[6:8]),   // date
+								strToInt(c[0:4]), time.Month(strToInt(c[4:6])+1), strToInt(c[6:8]), // date
 								strToInt(c[9:11]), strToInt(c[11:13]), strToInt(c[13:15]), // time
 								0, time.UTC,
 							).Unix()
@@ -590,8 +590,8 @@ func (this Dav) getResources(path string) ([]DavResource, error) {
 						c := strings.TrimSpace(strings.TrimPrefix(line, "DTSTART;VALUE=DATE:"))
 						if len(c) == 8 && t == 0 {
 							t = time.Date(
-								strToInt(c[0:4]), time.Month(strToInt(c[4:6]) + 1), strToInt(c[6:8]),   // date
-								0,0,0, // time
+								strToInt(c[0:4]), time.Month(strToInt(c[4:6])+1), strToInt(c[6:8]), // date
+								0, 0, 0, // time
 								0, time.UTC,
 							).Unix()
 						}
@@ -613,7 +613,7 @@ func (this Dav) getResourceURI(path string) (string, error) {
 	}
 
 	var resources []DavResource
-	var err       error
+	var err error
 	if resources, err = this.getResources(path); err != nil {
 		return "", ErrNotFound
 	}
@@ -627,9 +627,9 @@ func (this Dav) getResourceURI(path string) (string, error) {
 }
 
 func (this Dav) parseURL(link string) (string, error) {
-	var origin     *url.URL
+	var origin *url.URL
 	var destination *url.URL
-	var err        error
+	var err error
 
 	if destination, _ = url.Parse(link); err != nil {
 		return "", err
@@ -663,8 +663,8 @@ type DavCollection struct {
 	Url  string `xml:"href"`
 	Name string `xml:"propstat>prop>displayname,omitempty"`
 	User string `xml:"propstat>prop>current-user-principal>href,omitempty"`
-	Type  struct {
-		Inner   string `xml:",innerxml"`
+	Type struct {
+		Inner string `xml:",innerxml"`
 	} `xml:"propstat>prop>resourcetype,omitempty"`
 }
 

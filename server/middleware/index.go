@@ -3,17 +3,17 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
-	"net/http"
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"time"
+	"net/http"
 	"sync"
+	"time"
 )
 
 type Middleware func(func(App, http.ResponseWriter, *http.Request)) func(App, http.ResponseWriter, *http.Request)
 
 func NewMiddlewareChain(fn func(App, http.ResponseWriter, *http.Request), m []Middleware, app App) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		var resw ResponseWriter                             = NewResponseWriter(res)
+		var resw ResponseWriter = NewResponseWriter(res)
 		var f func(App, http.ResponseWriter, *http.Request) = fn
 
 		for i := len(m) - 1; i >= 0; i-- {
@@ -36,7 +36,7 @@ type ResponseWriter struct {
 func NewResponseWriter(res http.ResponseWriter) ResponseWriter {
 	return ResponseWriter{
 		ResponseWriter: res,
-		start: time.Now(),
+		start:          time.Now(),
 	}
 }
 
@@ -53,18 +53,18 @@ func (w *ResponseWriter) Write(b []byte) (int, error) {
 }
 
 type LogEntry struct {
-	Host       string    `json:"host"`
-	Method     string    `json:"method"`
-	RequestURI string    `json:"pathname"`
-	Proto      string    `json:"proto"`
-	Status     int       `json:"status"`
-	Scheme     string    `json:"scheme"`
-	UserAgent  string    `json:"userAgent"`
-	Ip         string    `json:"ip"`
-	Referer    string    `json:"referer"`
-	Duration   float64   `json:"responseTime"`
-	Version    string    `json:"version"`
-	Backend    string    `json:"backend"`
+	Host       string  `json:"host"`
+	Method     string  `json:"method"`
+	RequestURI string  `json:"pathname"`
+	Proto      string  `json:"proto"`
+	Status     int     `json:"status"`
+	Scheme     string  `json:"scheme"`
+	UserAgent  string  `json:"userAgent"`
+	Ip         string  `json:"ip"`
+	Referer    string  `json:"referer"`
+	Duration   float64 `json:"responseTime"`
+	Version    string  `json:"version"`
+	Backend    string  `json:"backend"`
 }
 
 func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -130,10 +130,10 @@ func (this *Telemetry) Flush() {
 	resp.Body.Close()
 }
 
-var telemetry Telemetry = Telemetry{ Data: make([]LogEntry, 0) }
+var telemetry Telemetry = Telemetry{Data: make([]LogEntry, 0)}
 
-func init(){
-	go func(){
+func init() {
+	go func() {
 		for {
 			time.Sleep(10 * time.Second)
 			telemetry.Flush()

@@ -25,7 +25,7 @@ func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	for i:=0; i<len(listOfSharedLinks); i++ {
+	for i := 0; i < len(listOfSharedLinks); i++ {
 		listOfSharedLinks[i].Path = "/" + strings.TrimPrefix(listOfSharedLinks[i].Path, path)
 	}
 	SendSuccessResults(res, listOfSharedLinks)
@@ -38,24 +38,24 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	s := Share{
-		Id:   share_id,
+		Id: share_id,
 		Auth: func() string {
 			if ctx.Share.Id == "" {
 				a, err := req.Cookie(COOKIE_NAME_AUTH)
 				if err != nil {
 					return ""
-				}				
+				}
 				return a.Value
 			}
 			return ctx.Share.Auth
 		}(),
-		Backend: func () string {
+		Backend: func() string {
 			if ctx.Share.Id == "" {
 				return GenerateID(&ctx)
 			}
 			return ctx.Share.Backend
 		}(),
-	    Path: func () string {
+		Path: func() string {
 			leftPath := "/"
 			rightPath := strings.TrimPrefix(NewStringFromInterface(ctx.Body["path"]), "/")
 			if ctx.Share.Id != "" {
@@ -103,13 +103,13 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	// 1) initialise the current context
 	share_id := mux.Vars(req)["share"]
-	s, err = model.ShareGet(share_id);
+	s, err = model.ShareGet(share_id)
 	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
 	submittedProof = model.Proof{
-		Key: fmt.Sprint(ctx.Body["type"]),
+		Key:   fmt.Sprint(ctx.Body["type"]),
 		Value: fmt.Sprint(ctx.Body["value"]),
 	}
 	verifiedProof = model.ShareProofGetAlreadyVerified(req)
@@ -132,7 +132,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// 3) process the proof sent by the user
-	submittedProof, err = model.ShareProofVerifier(s, submittedProof);
+	submittedProof, err = model.ShareProofVerifier(s, submittedProof)
 	if err != nil {
 		submittedProof.Error = NewString(err.Error())
 		SendSuccessResult(res, submittedProof)
@@ -146,7 +146,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	if submittedProof.Key != "" {
-		submittedProof.Id = Hash(submittedProof.Key + "::" + submittedProof.Value, 20)
+		submittedProof.Id = Hash(submittedProof.Key+"::"+submittedProof.Value, 20)
 		verifiedProof = append(verifiedProof, submittedProof)
 	}
 
@@ -161,8 +161,8 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 			str, _ := EncryptString(SECRET_KEY_DERIVATE_FOR_PROOF, string(j))
 			return str
 		}(verifiedProof),
-		Path: COOKIE_PATH,
-		MaxAge: 60 * 60 * 24 * 30,
+		Path:     COOKIE_PATH,
+		MaxAge:   60 * 60 * 24 * 30,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	}
@@ -174,10 +174,10 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	SendSuccessResult(res, struct {
-		Id string   `json:"id"`
+		Id   string `json:"id"`
 		Path string `json:"path"`
 	}{
-		Id: s.Id,
+		Id:   s.Id,
 		Path: s.Path,
 	})
 }

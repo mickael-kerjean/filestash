@@ -8,10 +8,10 @@ import (
 )
 
 func GenerateSelfSigned() (tls.Certificate, *x509.CertPool, error) {
-	var err     error
-	var key     *rsa.PrivateKey
-	var root    *x509.Certificate
-	var keyPEM  []byte
+	var err error
+	var key *rsa.PrivateKey
+	var root *x509.Certificate
+	var keyPEM []byte
 	var certPEM []byte
 	var TLSCert tls.Certificate
 

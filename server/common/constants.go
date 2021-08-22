@@ -6,24 +6,24 @@ import (
 )
 
 const (
-	APP_VERSION = "v0.5"
-	LOG_PATH    = "data/state/log/"
-	CONFIG_PATH = "data/state/config/"
-	DB_PATH     = "data/state/db/"
-	FTS_PATH    = "data/state/search/"
-	CERT_PATH    = "data/state/certs/"
-	TMP_PATH    = "data/cache/tmp/"
-	COOKIE_NAME_AUTH = "auth"
+	APP_VERSION       = "v0.5"
+	LOG_PATH          = "data/state/log/"
+	CONFIG_PATH       = "data/state/config/"
+	DB_PATH           = "data/state/db/"
+	FTS_PATH          = "data/state/search/"
+	CERT_PATH         = "data/state/certs/"
+	TMP_PATH          = "data/cache/tmp/"
+	COOKIE_NAME_AUTH  = "auth"
 	COOKIE_NAME_PROOF = "proof"
 	COOKIE_NAME_ADMIN = "admin"
 	COOKIE_PATH_ADMIN = "/admin/api/"
-	COOKIE_PATH = "/api/"
-	FILE_INDEX = "./data/public/index.html"
-	FILE_ASSETS = "./data/public/"
-	URL_SETUP = "/admin/setup"
+	COOKIE_PATH       = "/api/"
+	FILE_INDEX        = "./data/public/index.html"
+	FILE_ASSETS       = "./data/public/"
+	URL_SETUP         = "/admin/setup"
 )
 
-func init(){	
+func init() {
 	os.MkdirAll(filepath.Join(GetCurrentDir(), LOG_PATH), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetCurrentDir(), FTS_PATH), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetCurrentDir(), CONFIG_PATH), os.ModePerm)
@@ -31,11 +31,10 @@ func init(){
 	os.MkdirAll(filepath.Join(GetCurrentDir(), TMP_PATH), os.ModePerm)
 }
 
-
 var (
-	BUILD_REF    string
-	BUILD_DATE   string
-	SECRET_KEY   string
+	BUILD_REF                     string
+	BUILD_DATE                    string
+	SECRET_KEY                    string
 	SECRET_KEY_DERIVATE_FOR_PROOF string
 	SECRET_KEY_DERIVATE_FOR_ADMIN string
 	SECRET_KEY_DERIVATE_FOR_USER  string
@@ -48,8 +47,8 @@ var (
  */
 func InitSecretDerivate(secret string) {
 	SECRET_KEY = secret
-	SECRET_KEY_DERIVATE_FOR_PROOF = Hash("PROOF_" + SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_ADMIN = Hash("ADMIN_" + SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_USER = Hash("USER_" + SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_HASH = Hash("HASH_" + SECRET_KEY, len(SECRET_KEY))
+	SECRET_KEY_DERIVATE_FOR_PROOF = Hash("PROOF_"+SECRET_KEY, len(SECRET_KEY))
+	SECRET_KEY_DERIVATE_FOR_ADMIN = Hash("ADMIN_"+SECRET_KEY, len(SECRET_KEY))
+	SECRET_KEY_DERIVATE_FOR_USER = Hash("USER_"+SECRET_KEY, len(SECRET_KEY))
+	SECRET_KEY_DERIVATE_FOR_HASH = Hash("HASH_"+SECRET_KEY, len(SECRET_KEY))
 }

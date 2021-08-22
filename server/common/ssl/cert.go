@@ -30,7 +30,7 @@ func generateNewCertificate(root *x509.Certificate, key *rsa.PrivateKey) (*x509.
 	if err != nil {
 		return nil, nil, err
 	}
-	cert, err := x509.ParseCertificate(certDER);
+	cert, err := x509.ParseCertificate(certDER)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -58,7 +58,7 @@ func pullCertificateFromFS() (*x509.Certificate, []byte, error) {
 }
 
 func saveCertificateToFS(certPEM []byte) error {
-	file, err := os.OpenFile(certPEMPath, os.O_WRONLY | os.O_CREATE, 0600)
+	file, err := os.OpenFile(certPEMPath, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}

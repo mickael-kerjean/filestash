@@ -23,7 +23,7 @@ type File struct {
 	FName     string `json:"name"`
 	FType     string `json:"type"`
 	FTime     int64  `json:"time"`
-	FSize     int64  `json:"size"`	
+	FSize     int64  `json:"size"`
 	FPath     string `json:"path,omitempty"`
 	CanRename *bool  `json:"can_rename,omitempty"`
 	CanMove   *bool  `json:"can_move_directory,omitempty"`
@@ -75,19 +75,19 @@ type Metadata struct {
 const PASSWORD_DUMMY = "{{PASSWORD}}"
 
 type Share struct {
-	Id           string   `json:"id"`
-	Backend      string   `json:"-"`
-	Auth         string   `json:"auth,omitempty"`
-	Path         string   `json:"path"`
-	Password     *string  `json:"password,omitempty"`
-	Users        *string  `json:"users,omitempty"`
-	Expire       *int64   `json:"expire,omitempty"`
-	Url          *string  `json:"url,omitempty"`
-	CanShare     bool     `json:"can_share"`
-	CanManageOwn bool     `json:"can_manage_own"`
-	CanRead      bool     `json:"can_read"`
-	CanWrite     bool     `json:"can_write"`
-	CanUpload    bool     `json:"can_upload"`
+	Id           string  `json:"id"`
+	Backend      string  `json:"-"`
+	Auth         string  `json:"auth,omitempty"`
+	Path         string  `json:"path"`
+	Password     *string `json:"password,omitempty"`
+	Users        *string `json:"users,omitempty"`
+	Expire       *int64  `json:"expire,omitempty"`
+	Url          *string `json:"url,omitempty"`
+	CanShare     bool    `json:"can_share"`
+	CanManageOwn bool    `json:"can_manage_own"`
+	CanRead      bool    `json:"can_read"`
+	CanWrite     bool    `json:"can_write"`
+	CanUpload    bool    `json:"can_upload"`
 }
 
 func (s Share) IsValid() error {
@@ -106,7 +106,7 @@ func (s *Share) MarshalJSON() ([]byte, error) {
 		s.Backend,
 		"",
 		s.Path,
-		func(pass *string) *string{
+		func(pass *string) *string {
 			if pass != nil {
 				return NewString(PASSWORD_DUMMY)
 			}
@@ -123,22 +123,31 @@ func (s *Share) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(p)
 }
-func(s *Share) UnmarshallJSON(b []byte) error {
+func (s *Share) UnmarshallJSON(b []byte) error {
 	var tmp map[string]interface{}
 	if err := json.Unmarshal(b, &tmp); err != nil {
 		return err
 	}
 	for key, value := range tmp {
 		switch key {
-		case "password": s.Password = NewStringpFromInterface(value)
-		case "users": s.Users = NewStringpFromInterface(value)
-		case "expire": s.Expire = NewInt64pFromInterface(value)
-		case "url": s.Url = NewStringpFromInterface(value)
-		case "can_share": s.CanShare = NewBoolFromInterface(value)
-		case "can_manage_own": s.CanManageOwn = NewBoolFromInterface(value)
-		case "can_read": s.CanRead = NewBoolFromInterface(value)
-		case "can_write": s.CanWrite = NewBoolFromInterface(value)
-		case "can_upload": s.CanUpload = NewBoolFromInterface(value)
+		case "password":
+			s.Password = NewStringpFromInterface(value)
+		case "users":
+			s.Users = NewStringpFromInterface(value)
+		case "expire":
+			s.Expire = NewInt64pFromInterface(value)
+		case "url":
+			s.Url = NewStringpFromInterface(value)
+		case "can_share":
+			s.CanShare = NewBoolFromInterface(value)
+		case "can_manage_own":
+			s.CanManageOwn = NewBoolFromInterface(value)
+		case "can_read":
+			s.CanRead = NewBoolFromInterface(value)
+		case "can_write":
+			s.CanWrite = NewBoolFromInterface(value)
+		case "can_upload":
+			s.CanUpload = NewBoolFromInterface(value)
 		}
 	}
 	return nil

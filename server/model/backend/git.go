@@ -96,7 +96,7 @@ func (git Git) Init(params map[string]string, app *App) (IBackend, error) {
 		return nil, NewError("Your password doesn't fit in a cookie :/", 500)
 	}
 
-	hash := GenerateID(app)	
+	hash := GenerateID(app)
 	p.basePath = GetAbsolutePath(GitCachePath + "repo_" + hash + "/")
 
 	repo, err := g.git.open(p, p.basePath)
@@ -112,9 +112,9 @@ func (g Git) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
-				Name:        "type",
-				Value:       "git",
-				Type:        "hidden",
+				Name:  "type",
+				Value: "git",
+				Type:  "hidden",
 			},
 			FormElement{
 				Name:        "repo",
@@ -135,7 +135,7 @@ func (g Git) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{
+				Target: []string{
 					"git_path", "git_passphrase", "git_commit",
 					"git_branch", "git_author_email", "git_author_name",
 					"git_committer_email", "git_committer_name",
@@ -152,7 +152,6 @@ func (g Git) LoginForm() Form {
 				Name:        "passphrase",
 				Type:        "text",
 				Placeholder: "Passphrase",
-
 			},
 			FormElement{
 				Id:          "git_commit",
@@ -193,7 +192,6 @@ func (g Git) LoginForm() Form {
 		},
 	}
 }
-
 
 func (g Git) Ls(path string) ([]os.FileInfo, error) {
 	g.git.refresh()

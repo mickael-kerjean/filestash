@@ -41,7 +41,7 @@ func SendSuccessResultWithEtagAndGzip(res http.ResponseWriter, req *http.Request
 	if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") == true {
 		mode = "gzip"
 	}
-	hash := QuickHash(mode + string(dataToSend), 20)
+	hash := QuickHash(mode+string(dataToSend), 20)
 	if req.Header.Get("If-None-Match") == hash {
 		res.WriteHeader(http.StatusNotModified)
 		return
@@ -59,7 +59,6 @@ func SendSuccessResultWithEtagAndGzip(res http.ResponseWriter, req *http.Request
 	}
 	res.Write(dataToSend)
 }
-
 
 func SendSuccessResults(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)

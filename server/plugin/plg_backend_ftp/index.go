@@ -99,9 +99,9 @@ func (f Ftp) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
-				Name:        "type",
-				Type:        "hidden",
-				Value:       "ftp",
+				Name:  "type",
+				Type:  "hidden",
+				Value: "ftp",
 			},
 			FormElement{
 				Name:        "hostname",

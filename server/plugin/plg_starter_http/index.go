@@ -11,7 +11,7 @@ import (
 func init() {
 	port := Config.Get("general.port").Int()
 
-	Hooks.Register.Starter(func (r *mux.Router) {
+	Hooks.Register.Starter(func(r *mux.Router) {
 		Log.Info("[http] starting ...")
 		srv := &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),

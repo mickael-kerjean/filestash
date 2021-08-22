@@ -1,12 +1,13 @@
 package plg_image_light
+
 // #cgo CFLAGS: -I./deps/src
 // #include "libtranscode.h"
 import "C"
 
 import (
 	"context"
-	"golang.org/x/sync/semaphore"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"golang.org/x/sync/semaphore"
 	"time"
 	"unsafe"
 )
@@ -52,7 +53,7 @@ func IsRaw(mType string) bool {
 func ExtractPreview(t *Transform) error {
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(TRANSCODE_TIMEOUT))
 	defer cancel()
-	
+
 	if err := LIBRAW_LOCK.Acquire(ctx, 1); err != nil {
 		return ErrCongestion
 	}
@@ -69,9 +70,9 @@ func ExtractPreview(t *Transform) error {
 	}()
 
 	select {
-	case err := <- transcodeChannel:
+	case err := <-transcodeChannel:
 		return err
-	case <- ctx.Done():
-		return ErrTimeout		
+	case <-ctx.Done():
+		return ErrTimeout
 	}
 }

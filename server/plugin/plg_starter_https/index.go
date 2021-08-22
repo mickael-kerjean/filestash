@@ -18,14 +18,14 @@ func init() {
 	os.MkdirAll(SSL_PATH, os.ModePerm)
 	domain := Config.Get("general.host").String()
 
-	Hooks.Register.Starter(func (r *mux.Router) {
+	Hooks.Register.Starter(func(r *mux.Router) {
 		Log.Info("[https] starting ...%s", domain)
 		srv := &http.Server{
-			Addr: fmt.Sprintf(":https"),
-			Handler: r,
+			Addr:         fmt.Sprintf(":https"),
+			Handler:      r,
 			TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
-			TLSConfig: &DefaultTLSConfig,
-			ErrorLog: NewNilLogger(),
+			TLSConfig:    &DefaultTLSConfig,
+			ErrorLog:     NewNilLogger(),
 		}
 
 		switch domain {
@@ -34,7 +34,7 @@ func init() {
 			if err != nil {
 				return
 			}
-			srv.TLSConfig.Certificates = []tls.Certificate{ TLSCert }
+			srv.TLSConfig.Certificates = []tls.Certificate{TLSCert}
 			HTTPClient.Transport.(*TransformedTransport).Orig.(*http.Transport).TLSClientConfig = &tls.Config{
 				RootCAs: roots,
 			}
@@ -58,7 +58,7 @@ func init() {
 		}()
 		go func() {
 			srv := http.Server{
-				Addr: fmt.Sprintf(":http"),
+				Addr:         fmt.Sprintf(":http"),
 				ReadTimeout:  5 * time.Second,
 				WriteTimeout: 5 * time.Second,
 				Handler: http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -66,7 +66,7 @@ func init() {
 					http.Redirect(
 						res,
 						req,
-						"https://" + req.Host + req.URL.String(),
+						"https://"+req.Host+req.URL.String(),
 						http.StatusMovedPermanently,
 					)
 				}),
@@ -79,7 +79,6 @@ func init() {
 		go ensureAppHasBooted("https://127.0.0.1/about", fmt.Sprintf("[https] started"))
 	})
 }
-
 
 func ensureAppHasBooted(address string, message string) {
 	i := 0

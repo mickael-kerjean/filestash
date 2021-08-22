@@ -25,7 +25,7 @@ func init() {
 	}
 	disable_svg()
 
-	Hooks.Register.ProcessFileContentBeforeSend(func (reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error){
+	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
 		if GetMimeType(req.URL.Query().Get("path")) != "image/svg+xml" {
 			return reader, nil
 		} else if disable_svg() == true {

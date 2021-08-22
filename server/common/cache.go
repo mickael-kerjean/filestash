@@ -69,13 +69,11 @@ func NewQuickCache(arg ...time.Duration) AppCache {
 		}
 	}
 	c := AppCache{}
-	c.Cache = cache.New(retention * time.Second, cleanup * time.Second)
+	c.Cache = cache.New(retention*time.Second, cleanup*time.Second)
 	return c
 }
 
-
 // ============================================================================
-
 
 type KeyValueStore struct {
 	cache map[string]interface{}
@@ -83,7 +81,7 @@ type KeyValueStore struct {
 }
 
 func NewKeyValueStore() KeyValueStore {
-	return KeyValueStore{ cache: make(map[string]interface{}) }
+	return KeyValueStore{cache: make(map[string]interface{})}
 }
 
 func (this *KeyValueStore) Get(key string) interface{} {

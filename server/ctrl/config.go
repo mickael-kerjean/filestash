@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	logpath = filepath.Join(GetCurrentDir(), LOG_PATH, "access.log")
+	logpath    = filepath.Join(GetCurrentDir(), LOG_PATH, "access.log")
 	configpath = filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json")
 )
 

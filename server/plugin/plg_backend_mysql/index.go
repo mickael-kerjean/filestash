@@ -10,14 +10,14 @@ import (
 	"os"
 	"regexp"
 	"sort"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
 )
 
 type Mysql struct {
 	params map[string]string
-	db *sql.DB
+	db     *sql.DB
 }
 
 func init() {
@@ -47,7 +47,7 @@ func (this Mysql) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 	return Mysql{
 		params: params,
-		db: db,
+		db:     db,
 	}, nil
 }
 
@@ -55,9 +55,9 @@ func (this Mysql) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
-				Name:        "type",
-				Type:        "hidden",
-				Value:       "mysql",
+				Name:  "type",
+				Type:  "hidden",
+				Value: "mysql",
 			},
 			FormElement{
 				Name:        "host",
@@ -189,7 +189,7 @@ func (this Mysql) Ls(path string) ([]os.FileInfo, error) {
 		extractNamePlus := func(s []QuerySelection) []string {
 			t := make([]string, 0, len(s))
 			for i := range s {
-				t = append(t, "IFNULL(" + extractSingleName(s[i]) + ", '')")
+				t = append(t, "IFNULL("+extractSingleName(s[i])+", '')")
 			}
 			return t
 		}
@@ -203,7 +203,7 @@ func (this Mysql) Ls(path string) ([]os.FileInfo, error) {
 				}
 				return q
 			}(),
-			func() string{
+			func() string {
 				if extractSingleName(sqlFields.Date) != "" {
 					return ", " + extractSingleName(sqlFields.Date) + " as date "
 				}
@@ -217,7 +217,7 @@ func (this Mysql) Ls(path string) ([]os.FileInfo, error) {
 				}
 				return ""
 			}(),
-		));
+		))
 		if err != nil {
 			return nil, err
 		}
@@ -235,7 +235,7 @@ func (this Mysql) Ls(path string) ([]os.FileInfo, error) {
 				}
 			}
 			files = append(files, File{
-				FName: string(name_raw)+".form",
+				FName: string(name_raw) + ".form",
 				FType: "file",
 				FSize: -1,
 				FTime: func() int64 {
@@ -348,9 +348,9 @@ func (this Mysql) Cat(path string) (io.ReadCloser, error) {
 			case "enum":
 				el.Type = "select"
 				reg := regexp.MustCompile(`^'(.*)'$`)
-				el.Opts = func () []string{
+				el.Opts = func() []string {
 					r := strings.Split(strings.TrimSuffix(strings.TrimPrefix(fields.All[columnsName[i]].RawType, "enum("), ")"), ",")
-					for i:=0; i<len(r); i++ {
+					for i := 0; i < len(r); i++ {
 						r[i] = reg.ReplaceAllString(r[i], `$1`)
 					}
 					return r
@@ -389,7 +389,7 @@ func (this Mysql) Cat(path string) (io.ReadCloser, error) {
 				el.MultiValue = false
 				el.Datalist = choices
 
-				if l, err := FindWhoOwns(this.db, DBLocation{ location.db, location.table, columnsName[i]}); err == nil {
+				if l, err := FindWhoOwns(this.db, DBLocation{location.db, location.table, columnsName[i]}); err == nil {
 					el.Description = fmt.Sprintf(
 						"Relates to object in %s",
 						generateLink(this.params["path"], l, el.Value),
@@ -403,12 +403,12 @@ func (this Mysql) Cat(path string) (io.ReadCloser, error) {
 
 				if len(locations) > 0 {
 					text := []string{}
-					for i:=0; i<len(locations); i++ {
+					for i := 0; i < len(locations); i++ {
 						text = append(
 							text,
 							fmt.Sprintf(
 								"%s (%d)",
-								generateLink(this.params["path"], DBLocation{ locations[i].db, locations[i].table, locations[i].row }, el.Value),
+								generateLink(this.params["path"], DBLocation{locations[i].db, locations[i].table, locations[i].row}, el.Value),
 								FindHowManyOccurenceOfaValue(this.db, locations[i], el.Value),
 							),
 						)
@@ -421,7 +421,7 @@ func (this Mysql) Cat(path string) (io.ReadCloser, error) {
 	}
 
 	// STEP 3: Send the form back to the user
-	b, err := Form{Elmnts: forms}.MarshalJSON();
+	b, err := Form{Elmnts: forms}.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
@@ -506,7 +506,7 @@ func (this Mysql) Touch(path string) error {
 			}
 			return strings.Join(values, ",")
 		}(),
-		func()string {
+		func() string {
 			values := make([]string, len(fields.Select))
 			for i := range values {
 				values[i] = "?"
@@ -532,7 +532,7 @@ func (this Mysql) Touch(path string) error {
 		}
 		return valuesOfQuery
 	}()
-	_ ,err = this.db.Exec(query, queryValues...)
+	_, err = this.db.Exec(query, queryValues...)
 	return err
 }
 
@@ -540,6 +540,7 @@ type SqlKeyParams struct {
 	Key   string
 	Value interface{}
 }
+
 func (this Mysql) Save(path string, file io.Reader) error {
 	defer this.db.Close()
 	location, err := NewDBLocation(path)
@@ -635,7 +636,7 @@ func NewDBLocation(path string) (DBLocation, error) {
 		return location, nil
 	} else if lPath == 2 {
 		location = DBLocation{
-			db: p[0],
+			db:    p[0],
 			table: p[1],
 		}
 		if isValid(p[0]) == false || isValid(p[1]) == false {
@@ -644,9 +645,9 @@ func NewDBLocation(path string) (DBLocation, error) {
 		return location, nil
 	} else if lPath == 3 {
 		location = DBLocation{
-			db: p[0],
+			db:    p[0],
 			table: p[1],
-			row: strings.TrimSuffix(p[2], ".form"),
+			row:   strings.TrimSuffix(p[2], ".form"),
 		}
 		if isValid(p[0]) == false || isValid(p[1]) == false {
 			return location, ErrNotValid
@@ -691,10 +692,10 @@ func sqlWhereClause(s SqlFields, location DBLocation) (string, []interface{}) {
 func FindQuerySelection(db *sql.DB, location DBLocation) (SqlFields, error) {
 	var queryCandidates []QuerySelection = make([]QuerySelection, 0)
 	var fields SqlFields = SqlFields{
-		Order: make([]QuerySelection, 0),
-		Select: make([]QuerySelection, 0),
+		Order:     make([]QuerySelection, 0),
+		Select:    make([]QuerySelection, 0),
 		Esthetics: make([]QuerySelection, 0),
-		All: make(map[string]QuerySelection, 0),
+		All:       make(map[string]QuerySelection, 0),
 	}
 	if location.db == "" || location.table == "" {
 		return fields, ErrNotValid
@@ -736,7 +737,7 @@ func FindQuerySelection(db *sql.DB, location DBLocation) (SqlFields, error) {
 				return false
 			}(),
 			RawType: column_type,
-			Key: column_key,
+			Key:     column_key,
 		}
 		fields.All[column_name] = q
 		queryCandidates = append(queryCandidates, q)
@@ -746,7 +747,7 @@ func FindQuerySelection(db *sql.DB, location DBLocation) (SqlFields, error) {
 	}
 
 	// STEP 2: filter out unwanted fields from the schema
-	for i:=0; i<len(queryCandidates); i++ {
+	for i := 0; i < len(queryCandidates); i++ {
 		if queryCandidates[i].Key == "PRI" || queryCandidates[i].Key == "UNI" {
 			fields.Select = append(fields.Select, queryCandidates[i])
 			if queryCandidates[i].Type == "date" {
@@ -780,7 +781,7 @@ func FindQuerySelection(db *sql.DB, location DBLocation) (SqlFields, error) {
 			return queryCandidates[i].Size < queryCandidates[j].Size
 		})
 		var size int = 0
-		var i    int = 0
+		var i int = 0
 		for i = range queryCandidates {
 			query := fmt.Sprintf(
 				"SELECT COUNT(%s), COUNT(DISTINCT(%s)) FROM %s.%s",
@@ -790,14 +791,14 @@ func FindQuerySelection(db *sql.DB, location DBLocation) (SqlFields, error) {
 				location.table,
 			)
 			size += queryCandidates[i].Size
-			var count_all       int
+			var count_all int
 			var count_distinct int
 			if err := db.QueryRow(query).Scan(&count_all, &count_distinct); err != nil {
 				return fields, err
 			}
 			if count_all == count_distinct {
 				fields.Select = append(fields.Select, queryCandidates[i])
-				fields.Esthetics = func() []QuerySelection{
+				fields.Esthetics = func() []QuerySelection {
 					var i int
 					esthetics := make([]QuerySelection, 0, len(fields.Esthetics))
 					for i = range fields.Esthetics {
@@ -810,7 +811,7 @@ func FindQuerySelection(db *sql.DB, location DBLocation) (SqlFields, error) {
 				break
 			}
 		}
-		if i == len(queryCandidates) - 1 {
+		if i == len(queryCandidates)-1 {
 			if size > 200 {
 				return fields, NewError("This table doesn't have any defined keys.", 405)
 			}
@@ -852,7 +853,7 @@ func FindQuerySelection(db *sql.DB, location DBLocation) (SqlFields, error) {
 		}
 		return fields.Order[0].Name
 	}()
-	fields.Esthetics = func() []QuerySelection{ // fields whose only value is to make our generated field look good
+	fields.Esthetics = func() []QuerySelection { // fields whose only value is to make our generated field look good
 		var size int = 0
 		var i int
 		for i = range fields.Select {
@@ -860,12 +861,12 @@ func FindQuerySelection(db *sql.DB, location DBLocation) (SqlFields, error) {
 		}
 		for i = range fields.Esthetics {
 			s := fields.Esthetics[i].Size
-			if size + s > 100 {
+			if size+s > 100 {
 				break
 			}
 			size += s
 		}
-		if i+1 > len(fields.Esthetics){
+		if i+1 > len(fields.Esthetics) {
 			return fields.Esthetics
 		}
 		return fields.Esthetics[:i+1]
@@ -920,9 +921,9 @@ func FindWhoIsUsing(db *sql.DB, location DBLocation) ([]DBLocation, error) {
 			return locations, err
 		}
 		locations = append(locations, DBLocation{
-			db: table_schema,
+			db:    table_schema,
 			table: table_name,
-			row: column_name,
+			row:   column_name,
 		})
 	}
 	return locations, nil
@@ -941,7 +942,7 @@ func FindWhoOwns(db *sql.DB, location DBLocation) (DBLocation, error) {
 	).Scan(&referenced_table_schema, &referenced_table_name, &referenced_column_name); err != nil {
 		return DBLocation{}, err
 	}
-	return DBLocation{ referenced_table_schema, referenced_table_name, referenced_column_name }, nil
+	return DBLocation{referenced_table_schema, referenced_table_name, referenced_column_name}, nil
 }
 
 func FindHowManyOccurenceOfaValue(db *sql.DB, location DBLocation, value interface{}) int {

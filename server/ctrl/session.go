@@ -11,12 +11,12 @@ import (
 )
 
 type Session struct {
-	Home *string `json:"home,omitempty"`
-	IsAuth bool  `json:"is_authenticated"`
+	Home   *string `json:"home,omitempty"`
+	IsAuth bool    `json:"is_authenticated"`
 }
 
 func SessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
-	r := Session {
+	r := Session{
 		IsAuth: false,
 	}
 
@@ -67,7 +67,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	s, err := json.Marshal(session);
+	s, err := json.Marshal(session)
 	if err != nil {
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return

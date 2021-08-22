@@ -110,8 +110,8 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 
 	config := &ssh.ClientConfig{
-		User:            p.username,
-		Auth:            auth,
+		User: p.username,
+		Auth: auth,
 		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
 			if params["hostkey"] == "" {
 				return nil
@@ -143,9 +143,9 @@ func (b Sftp) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
-				Name:        "type",
-				Type:        "hidden",
-				Value:       "sftp",
+				Name:  "type",
+				Type:  "hidden",
+				Value: "sftp",
 			},
 			FormElement{
 				Name:        "hostname",
@@ -179,7 +179,6 @@ func (b Sftp) LoginForm() Form {
 				Name:        "port",
 				Type:        "number",
 				Placeholder: "Port",
-
 			},
 			FormElement{
 				Id:          "sftp_passphrase",

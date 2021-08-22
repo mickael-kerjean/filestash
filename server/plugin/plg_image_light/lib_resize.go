@@ -47,12 +47,12 @@ func CreateThumbnail(t *Transform) (io.ReadCloser, error) {
 	}()
 
 	select {
-	case img := <- imageChannel:
+	case img := <-imageChannel:
 		if img == nil {
 			return nil, ErrNotValid
 		}
 		return img, nil
-	case <- ctx.Done():
+	case <-ctx.Done():
 		return nil, ErrTimeout
 	}
 }

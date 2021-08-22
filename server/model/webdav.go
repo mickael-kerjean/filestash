@@ -12,8 +12,8 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/net/webdav"
-	"net/http"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,6 +21,7 @@ import (
 )
 
 const DAVCachePath = "data/cache/webdav/"
+
 var (
 	cachePath   string
 	webdavCache AppCache
@@ -63,10 +64,10 @@ func (this WebdavFs) Mkdir(ctx context.Context, name string, perm os.FileMode) e
 }
 
 func (this *WebdavFs) OpenFile(ctx context.Context, name string, flag int, perm os.FileMode) (webdav.File, error) {
-	cachePath := fmt.Sprintf("%stmp_%s", cachePath, Hash(this.id + name, 20))
+	cachePath := fmt.Sprintf("%stmp_%s", cachePath, Hash(this.id+name, 20))
 	fwriteFile := func() *os.File {
 		if this.req.Method == "PUT" {
-			f, err := os.OpenFile(cachePath+"_writer", os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.ModePerm);
+			f, err := os.OpenFile(cachePath+"_writer", os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.ModePerm)
 			if err != nil {
 				return nil
 			}
@@ -82,10 +83,10 @@ func (this *WebdavFs) OpenFile(ctx context.Context, name string, flag int, perm 
 		return nil, os.ErrNotExist
 	}
 	this.webdavFile = &WebdavFile{
-		path: name,
+		path:    name,
 		backend: this.backend,
-		cache: cachePath,
-		fwrite: fwriteFile(),
+		cache:   cachePath,
+		fwrite:  fwriteFile(),
 	}
 	return this.webdavFile, nil
 }
@@ -116,9 +117,9 @@ func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error
 		return nil, os.ErrNotExist
 	}
 	this.webdavFile = &WebdavFile{
-		path: fullname,
+		path:    fullname,
 		backend: this.backend,
-		cache: fmt.Sprintf("%stmp_%s", cachePath, Hash(this.id + name, 20)),
+		cache:   fmt.Sprintf("%stmp_%s", cachePath, Hash(this.id+name, 20)),
 	}
 	return this.webdavFile.Stat()
 }
@@ -133,7 +134,6 @@ func (this WebdavFs) fullpath(path string) string {
 	}
 	return p
 }
-
 
 /*
  * Implement a webdav.File and os.Stat : https://godoc.org/golang.org/x/net/webdav#File
@@ -177,7 +177,7 @@ func (this *WebdavFile) Close() error {
 
 func (this *WebdavFile) Seek(offset int64, whence int) (int64, error) {
 	if this.fread == nil {
-		this.fread = this.pull_remote_file();
+		this.fread = this.pull_remote_file()
 		if this.fread == nil {
 			return offset, ErrNotFound
 		}
@@ -239,7 +239,7 @@ func (this *WebdavFile) Write(p []byte) (int, error) {
 }
 
 func (this WebdavFile) pull_remote_file() *os.File {
-	filename := this.cache+"_reader"
+	filename := this.cache + "_reader"
 	if f, err := os.OpenFile(filename, os.O_RDONLY, os.ModePerm); err == nil {
 		return f
 	}
@@ -247,7 +247,7 @@ func (this WebdavFile) pull_remote_file() *os.File {
 		if reader, err := this.backend.Cat(this.path); err == nil {
 			io.Copy(f, reader)
 			f.Close()
-			webdavCache.SetKey(this.cache + "_reader", nil)
+			webdavCache.SetKey(this.cache+"_reader", nil)
 			reader.Close()
 			if f, err = os.OpenFile(filename, os.O_RDONLY, os.ModePerm); err == nil {
 				return f
@@ -264,15 +264,15 @@ func (this *WebdavFile) push_to_remote_if_needed() error {
 		return nil
 	}
 	this.fwrite.Close()
-	f, err := os.OpenFile(this.cache + "_writer", os.O_RDONLY, os.ModePerm);
+	f, err := os.OpenFile(this.cache+"_writer", os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return err
 	}
 	err = this.backend.Save(this.path, f)
 	if err == nil {
-		if err = os.Rename(this.cache + "_writer", this.cache + "_reader"); err == nil {
+		if err = os.Rename(this.cache+"_writer", this.cache+"_reader"); err == nil {
 			this.fwrite = nil
-			webdavCache.SetKey(this.cache + "_reader", nil)
+			webdavCache.SetKey(this.cache+"_reader", nil)
 		}
 	}
 	f.Close()
@@ -329,6 +329,7 @@ func (this WebdavFile) ETag(ctx context.Context) (string, error) {
 }
 
 var lock webdav.LockSystem
+
 func NewWebdavLock() webdav.LockSystem {
 	if lock == nil {
 		lock = webdav.NewMemLS()

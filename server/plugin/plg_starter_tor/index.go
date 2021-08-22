@@ -16,7 +16,7 @@ var TOR_PATH string = filepath.Join(GetCurrentDir(), CERT_PATH, "tor")
 func init() {
 	os.MkdirAll(TOR_PATH, os.ModePerm)
 	enable_tor := func() bool {
-		return Config.Get("features.server.tor_enable").Schema(func(f *FormElement) *FormElement{
+		return Config.Get("features.server.tor_enable").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
 			}
@@ -30,7 +30,7 @@ func init() {
 		}).Bool()
 	}
 	enable_tor()
-	Config.Get("features.server.tor_url").Schema(func(f *FormElement) *FormElement{
+	Config.Get("features.server.tor_url").Schema(func(f *FormElement) *FormElement {
 		if f == nil {
 			f = &FormElement{}
 		}
@@ -44,15 +44,18 @@ func init() {
 		return f
 	})
 
-	Hooks.Register.Starter(func (r *mux.Router) {
+	Hooks.Register.Starter(func(r *mux.Router) {
 		if enable_tor() == false {
 			startTor := false
 			onChange := Config.ListenForChange()
 			for {
 				select {
-				case <- onChange.Listener: startTor = enable_tor()
+				case <-onChange.Listener:
+					startTor = enable_tor()
 				}
-				if startTor == true { break }
+				if startTor == true {
+					break
+				}
 			}
 			Config.UnlistenForChange(onChange)
 		}

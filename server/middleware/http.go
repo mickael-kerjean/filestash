@@ -59,7 +59,7 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 		cspHeader += "worker-src 'self' blob:; "
 		cspHeader += "form-action 'self'; base-uri 'self'; "
 		cspHeader += "frame-src 'self'; "
-		if allowedDomainsForIframe := Config.Get("features.protection.iframe").Schema(func(f *FormElement) *FormElement{
+		if allowedDomainsForIframe := Config.Get("features.protection.iframe").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
 			}

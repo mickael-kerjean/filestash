@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	Backend.Register("dropbox",  Dropbox{})
+	Backend.Register("dropbox", Dropbox{})
 }
 
 type Dropbox struct {
@@ -45,21 +45,21 @@ func (d Dropbox) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
-				Name:        "type",
-				Type:        "hidden",
-				Value:       "dropbox",
+				Name:  "type",
+				Type:  "hidden",
+				Value: "dropbox",
 			},
 			FormElement{
-				ReadOnly:    true,
-				Name:        "oauth2",
-				Type:        "text",
-				Value:       "/api/session/auth/dropbox",
+				ReadOnly: true,
+				Name:     "oauth2",
+				Type:     "text",
+				Value:    "/api/session/auth/dropbox",
 			},
 			FormElement{
-				ReadOnly:    true,
-				Name:        "image",
-				Type:        "image",
-				Value:       "data:image/svg+xml;utf8;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNDIuNCAzOS41IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICA8cG9seWdvbiBmaWxsPSIjMDA3RUU1IiBwb2ludHM9IjEyLjUsMCAwLDguMSA4LjcsMTUuMSAyMS4yLDcuMyIvPgo8cG9seWdvbiBmaWxsPSIjMDA3RUU1IiBwb2ludHM9IjAsMjEuOSAxMi41LDMwLjEgMjEuMiwyMi44IDguNywxNS4xIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDdFRTUiIHBvaW50cz0iMjEuMiwyMi44IDMwLDMwLjEgNDIuNCwyMiAzMy44LDE1LjEiLz4KPHBvbHlnb24gZmlsbD0iIzAwN0VFNSIgcG9pbnRzPSI0Mi40LDguMSAzMCwwIDIxLjIsNy4zIDMzLjgsMTUuMSIvPgo8cG9seWdvbiBmaWxsPSIjMDA3RUU1IiBwb2ludHM9IjIxLjMsMjQuNCAxMi41LDMxLjcgOC44LDI5LjIgOC44LDMyIDIxLjMsMzkuNSAzMy44LDMyIDMzLjgsMjkuMiAzMCwzMS43Ii8+Cjwvc3ZnPgo=",
+				ReadOnly: true,
+				Name:     "image",
+				Type:     "image",
+				Value:    "data:image/svg+xml;utf8;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNDIuNCAzOS41IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICA8cG9seWdvbiBmaWxsPSIjMDA3RUU1IiBwb2ludHM9IjEyLjUsMCAwLDguMSA4LjcsMTUuMSAyMS4yLDcuMyIvPgo8cG9seWdvbiBmaWxsPSIjMDA3RUU1IiBwb2ludHM9IjAsMjEuOSAxMi41LDMwLjEgMjEuMiwyMi44IDguNywxNS4xIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDdFRTUiIHBvaW50cz0iMjEuMiwyMi44IDMwLDMwLjEgNDIuNCwyMiAzMy44LDE1LjEiLz4KPHBvbHlnb24gZmlsbD0iIzAwN0VFNSIgcG9pbnRzPSI0Mi40LDguMSAzMCwwIDIxLjIsNy4zIDMzLjgsMTUuMSIvPgo8cG9seWdvbiBmaWxsPSIjMDA3RUU1IiBwb2ludHM9IjIxLjMsMjQuNCAxMi41LDMxLjcgOC44LDI5LjIgOC44LDMyIDIxLjMsMzkuNSAzMy44LDMyIDMzLjgsMjkuMiAzMCwzMS43Ii8+Cjwvc3ZnPgo=",
 			},
 		},
 	}

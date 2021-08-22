@@ -9,13 +9,13 @@ const (
 )
 
 type AdminToken struct {
-	Claim  string     `json:"token"`
-	Expire time.Time  `json:"time"`
+	Claim  string    `json:"token"`
+	Expire time.Time `json:"time"`
 }
 
 func NewAdminToken() AdminToken {
 	return AdminToken{
-		Claim: ADMIN_CLAIM,
+		Claim:  ADMIN_CLAIM,
 		Expire: time.Now().Add(time.Hour * 24),
 	}
 }

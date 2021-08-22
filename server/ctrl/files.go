@@ -25,7 +25,7 @@ type FileInfo struct {
 }
 
 var (
-	FileCache AppCache
+	FileCache  AppCache
 	ZipTimeout int
 )
 
@@ -35,7 +35,7 @@ func init() {
 	FileCache.OnEvict(func(key string, value interface{}) {
 		os.RemoveAll(filepath.Join(cachePath, key))
 	})
-	ZipTimeout = Config.Get("features.protection.zip_timeout").Schema(func(f *FormElement) *FormElement{
+	ZipTimeout = Config.Get("features.protection.zip_timeout").Schema(func(f *FormElement) *FormElement {
 		if f == nil {
 			f = &FormElement{}
 		}
@@ -44,7 +44,7 @@ func init() {
 		f.Type = "number"
 		f.Description = "Timeout when user wants to download archive as a zip"
 		f.Placeholder = "Default: 60seconds"
-			return f
+		return f
 	}).Int()
 }
 
@@ -73,7 +73,7 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	files := make([]FileInfo, len(entries))
 	etagger := fnv.New32()
 	etagger.Write([]byte(path + strconv.Itoa(len(entries))))
-	for i:=0; i<len(entries); i++ {
+	for i := 0; i < len(entries); i++ {
 		name := entries[i].Name()
 		modTime := entries[i].ModTime().UnixNano() / int64(time.Millisecond)
 
@@ -151,7 +151,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	if req.Header.Get("range") != "" {
 		ctx.Session["_path"] = path
 		if p := FileCache.Get(ctx.Session); p != nil {
-			f, err := os.OpenFile(p.(string), os.O_RDONLY, os.ModePerm);
+			f, err := os.OpenFile(p.(string), os.O_RDONLY, os.ModePerm)
 			if err == nil {
 				file = f
 				if fi, err := f.Stat(); err == nil {
@@ -171,7 +171,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		if req.Header.Get("range") != "" {
 			needToCreateCache = true
 		}
-		go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
+		go model.SProc.HintLs(&ctx, filepath.Dir(path)+"/")
 	}
 
 	// plugin hooks
@@ -194,8 +194,8 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 				}
 			}
 		} else {
-			tmpPath := filepath.Join(GetCurrentDir(), TMP_PATH, "file_" + QuickString(20) + ".dat")
-			f, err := os.OpenFile(tmpPath, os.O_RDWR|os.O_CREATE, os.ModePerm);
+			tmpPath := filepath.Join(GetCurrentDir(), TMP_PATH, "file_"+QuickString(20)+".dat")
+			f, err := os.OpenFile(tmpPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 			if err != nil {
 				SendErrorResult(res, err)
 				return
@@ -241,7 +241,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 				}
 			}
 
-			if start != -1 && end != -1 && end - start >= 0 {
+			if start != -1 && end != -1 && end-start >= 0 {
 				ranges = append(ranges, []int64{start, end})
 			}
 		}
@@ -261,9 +261,9 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		if f, ok := file.(io.ReadSeeker); ok && len(ranges) > 0 {
 			if _, err = f.Seek(ranges[0][0], io.SeekStart); err == nil {
 				header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", ranges[0][0], ranges[0][1], contentLength))
-				header.Set("Content-Length", fmt.Sprintf("%d", ranges[0][1] - ranges[0][0] + 1))
+				header.Set("Content-Length", fmt.Sprintf("%d", ranges[0][1]-ranges[0][0]+1))
 				res.WriteHeader(http.StatusPartialContent)
-				io.CopyN(res, f, ranges[0][1] - ranges[0][0] + 1)
+				io.CopyN(res, f, ranges[0][1]-ranges[0][0]+1)
 			} else {
 				res.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
 			}
@@ -276,13 +276,13 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func FileAccess(ctx App, res http.ResponseWriter, req *http.Request) {
 	allowed := []string{}
-	if model.CanRead(&ctx){
+	if model.CanRead(&ctx) {
 		allowed = append(allowed, "GET")
 	}
-	if model.CanEdit(&ctx){
+	if model.CanEdit(&ctx) {
 		allowed = append(allowed, "PUT")
 	}
-	if model.CanUpload(&ctx){
+	if model.CanUpload(&ctx) {
 		allowed = append(allowed, "POST")
 	}
 	header := res.Header()
@@ -338,11 +338,11 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, NewError(err.Error(), 403))
 		return
 	}
-	go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
+	go model.SProc.HintLs(&ctx, filepath.Dir(path)+"/")
 	go model.SProc.HintFile(&ctx, path)
 	if remErr := req.MultipartForm.RemoveAll(); remErr != nil {
 		Log.Error("couldn't remove multipartform data: %s", err.Error())
-		}
+	}
 	SendSuccessResult(res, nil)
 }
 
@@ -373,8 +373,8 @@ func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	go model.SProc.HintRm(&ctx, filepath.Dir(from) + "/")
-	go model.SProc.HintLs(&ctx, filepath.Dir(to) + "/")
+	go model.SProc.HintRm(&ctx, filepath.Dir(from)+"/")
+	go model.SProc.HintLs(&ctx, filepath.Dir(to)+"/")
 	SendSuccessResult(res, nil)
 }
 
@@ -415,7 +415,7 @@ func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
-	go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
+	go model.SProc.HintLs(&ctx, filepath.Dir(path)+"/")
 	SendSuccessResult(res, nil)
 }
 
@@ -436,7 +436,7 @@ func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
-	go model.SProc.HintLs(&ctx, filepath.Dir(path) + "/")
+	go model.SProc.HintLs(&ctx, filepath.Dir(path)+"/")
 	SendSuccessResult(res, nil)
 }
 
@@ -447,7 +447,7 @@ func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	paths := req.URL.Query()["path"]
-	for i:=0; i<len(paths); i++ {
+	for i := 0; i < len(paths); i++ {
 		if paths[i], err = PathBuilder(ctx, paths[i]); err != nil {
 			SendErrorResult(res, err)
 			return
@@ -465,7 +465,7 @@ func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 	var addToZipRecursive func(App, *zip.Writer, string, string) error
 	addToZipRecursive = func(c App, zw *zip.Writer, backendPath string, zipRoot string) (err error) {
-		if time.Now().Sub(start) > time.Duration(ZipTimeout) * time.Second {
+		if time.Now().Sub(start) > time.Duration(ZipTimeout)*time.Second {
 			return ErrTimeout
 		}
 		if strings.HasSuffix(backendPath, "/") == false {
@@ -506,10 +506,10 @@ func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	zipWriter := zip.NewWriter(res)
 	defer zipWriter.Close()
-	for i:=0; i<len(paths); i++ {
+	for i := 0; i < len(paths); i++ {
 		zipRoot := ""
 		if strings.HasSuffix(paths[i], "/") {
-			zipRoot = strings.TrimSuffix(paths[i], filepath.Base(paths[i]) + "/")
+			zipRoot = strings.TrimSuffix(paths[i], filepath.Base(paths[i])+"/")
 		} else {
 			zipRoot = strings.TrimSuffix(paths[i], filepath.Base(paths[i]))
 		}

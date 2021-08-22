@@ -57,7 +57,7 @@ func (this LDAP) Init(params map[string]string, app *App) (IBackend, error) {
 		return nil, err
 	}
 
-	b := &LDAP{ baseDN: params["base_dn"], dial: l}
+	b := &LDAP{baseDN: params["base_dn"], dial: l}
 	LDAPCache.Set(params, b)
 	return b, nil
 }
@@ -66,9 +66,9 @@ func (this LDAP) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
-				Name:        "type",
-				Type:        "hidden",
-				Value:       "ldap",
+				Name:  "type",
+				Type:  "hidden",
+				Value: "ldap",
 			},
 			FormElement{
 				Name:        "hostname",
@@ -128,11 +128,11 @@ func (this LDAP) Ls(path string) ([]os.FileInfo, error) {
 		return files, err
 	}
 
-	for i:=0; i<len(sr.Entries); i++ {
+	for i := 0; i < len(sr.Entries); i++ {
 		entry := sr.Entries[i]
 
 		// filename as will appear in the UI:
-		filename := strings.TrimSuffix(entry.DN, "," + baseDN)
+		filename := strings.TrimSuffix(entry.DN, ","+baseDN)
 
 		// data type as will appear in the UI
 		t := "file"
@@ -140,7 +140,7 @@ func (this LDAP) Ls(path string) ([]os.FileInfo, error) {
 			continue
 		}
 		objectClasses := entry.Attributes[0].Values
-		for j:=0; j<len(objectClasses); j++ {
+		for j := 0; j < len(objectClasses); j++ {
 			if s := Schema[objectClasses[j]]; s != nil {
 				if s.IsContainer {
 					t = "directory"
@@ -185,7 +185,7 @@ func (this LDAP) Cat(path string) (io.ReadCloser, error) {
 	///////////////////////////////////////////////
 	// STEP2: create the form that fits in the entry schema
 	var forms []FormElement = []FormElement{
-		NewFormElementFromAttributeWithValue("dn",          baseDN),
+		NewFormElementFromAttributeWithValue("dn", baseDN),
 		NewFormElementFromAttributeWithValue("objectClass", strings.Join(entry.GetAttributeValues("objectClass"), ", ")),
 	}
 	forms[0].ReadOnly = true
@@ -205,12 +205,12 @@ func (this LDAP) Cat(path string) (io.ReadCloser, error) {
 	///////////////////////////////////////////////
 	// STEP3: fillup the form with the entry values
 
-	for i:=0; i<len(entry.Attributes); i++ {
-		data := struct{
-			key  string
+	for i := 0; i < len(entry.Attributes); i++ {
+		data := struct {
+			key   string
 			value string
 		}{
-			key: entry.Attributes[i].Name,
+			key:   entry.Attributes[i].Name,
 			value: strings.Join(entry.Attributes[i].Values, ", "),
 		}
 
@@ -245,7 +245,7 @@ func (this LDAP) Cat(path string) (io.ReadCloser, error) {
 
 	///////////////////////////////////////////////
 	// STEP4: Send the form data over
-	b, err := Form{Elmnts: forms}.MarshalJSON();
+	b, err := Form{Elmnts: forms}.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
@@ -260,9 +260,12 @@ func (this LDAP) Mkdir(path string) error {
 
 	var objectClass string
 	switch ldapNode[0] {
-	case "ou": objectClass = "organizationalUnit"
-	case "o": objectClass = "organization"
-	case "c": objectClass = "country"
+	case "ou":
+		objectClass = "organizationalUnit"
+	case "o":
+		objectClass = "organization"
+	case "c":
+		objectClass = "country"
 	default:
 		return ErrNotValid
 	}
@@ -271,7 +274,7 @@ func (this LDAP) Mkdir(path string) error {
 	for i := range forms {
 		if forms[i].Name == "objectClass" {
 			forms[i].Value = strings.Join(FindDerivatedClasses(objectClass), ", ")
-		}else {
+		} else {
 			forms[i].Value = ldapNode[1]
 		}
 	}
@@ -280,7 +283,7 @@ func (this LDAP) Mkdir(path string) error {
 		DN: this.pathToBase(path),
 		Attributes: func() []ldap.Attribute {
 			attributes := make([]ldap.Attribute, 0, len(forms))
-			for i:=0; i<len(forms); i++ {
+			for i := 0; i < len(forms); i++ {
 				attributes = append(attributes, ldap.Attribute{
 					Type: forms[i].Name,
 					Vals: strings.Split(fmt.Sprintf("%s", forms[i].Value), ", "),
@@ -303,12 +306,12 @@ func (this LDAP) Rm(path string) error {
 		"(objectClass=*)",
 		[]string{},
 		nil,
-	));
+	))
 	if err != nil {
 		return err
 	}
 
-	for i:=len(sr.Entries)-1; i>=0; i-- {
+	for i := len(sr.Entries) - 1; i >= 0; i-- {
 		if err == nil {
 			err = this.dial.Del(&ldap.DelRequest{
 				DN: sr.Entries[i].DN,
@@ -349,14 +352,15 @@ func (this LDAP) Touch(path string) error {
 	}
 	var objectClass []string
 	switch ldapNode[0] {
-	case "cn": objectClass = []string{"inetOrgPerson", "posixAccount"}
+	case "cn":
+		objectClass = []string{"inetOrgPerson", "posixAccount"}
 	default:
 		return ErrNotValid
 	}
 	ldapNode[1] = strings.TrimSuffix(ldapNode[1], ".form")
 
 	var uniqueForms map[string]FormElement = make(map[string]FormElement)
-	for i:=0; i<len(objectClass); i++ {
+	for i := 0; i < len(objectClass); i++ {
 		for _, obj := range FindRequiredAttributesForObject(objectClass[i]) {
 			uniqueForms[obj.Name] = obj
 		}
@@ -375,7 +379,7 @@ func (this LDAP) Touch(path string) error {
 		DN: this.pathToBase(path),
 		Attributes: func() []ldap.Attribute {
 			attributes := make([]ldap.Attribute, 0, len(forms))
-			for i:=0; i<len(forms); i++ {
+			for i := 0; i < len(forms); i++ {
 				attributes = append(attributes, ldap.Attribute{
 					Type: forms[i].Name,
 					Vals: strings.Split(fmt.Sprintf("%s", forms[i].Value), ", "),
@@ -406,7 +410,7 @@ func (this LDAP) Save(path string, file io.Reader) error {
 		"(objectClass=*)",
 		[]string{},
 		nil,
-	));
+	))
 	if err != nil {
 		return err
 	}
@@ -415,7 +419,7 @@ func (this LDAP) Save(path string, file io.Reader) error {
 	}
 
 	var attributes map[string]*[]string = make(map[string]*[]string)
-	for i:=0; i<len(sr.Entries[0].Attributes); i++ {
+	for i := 0; i < len(sr.Entries[0].Attributes); i++ {
 		attributes[sr.Entries[0].Attributes[i].Name] = &sr.Entries[0].Attributes[i].Values
 	}
 	modifyRequest := ldap.NewModifyRequest(fmt.Sprintf("%s", data["dn"].Value), nil)
@@ -443,9 +447,9 @@ func (this LDAP) Save(path string, file io.Reader) error {
 
 func (this LDAP) Meta(path string) Metadata {
 	return Metadata{
-		CanUpload:          NewBool(false),
-		HideExtension:      NewBool(true),
-		RefreshOnCreate:    NewBool(true),
+		CanUpload:       NewBool(false),
+		HideExtension:   NewBool(true),
+		RefreshOnCreate: NewBool(true),
 	}
 }
 
@@ -457,7 +461,7 @@ func (this LDAP) pathToBase(path string) string {
 	pathArray := strings.Split(path, "/")
 	baseArray := strings.Split(this.baseDN, ",")
 	reversedPath := []string{}
-	for i:=len(pathArray)-1; i>=0; i-- {
+	for i := len(pathArray) - 1; i >= 0; i-- {
 		reversedPath = append(reversedPath, pathArray[i])
 	}
 	return strings.Join(append(reversedPath, baseArray...), ",")
@@ -471,31 +475,40 @@ func (this LDAP) autocompleteLDAP(filter string, value string) []string {
 		filter,
 		[]string{value},
 		nil,
-	));
+	))
 	if err != nil {
 		return val
 	}
-	for i:=0; i<len(sr.Entries); i++ {
+	for i := 0; i < len(sr.Entries); i++ {
 		val = append(val, sr.Entries[i].GetAttributeValue(value))
 	}
 	sort.Strings(val)
 	return val
 }
 
-
 func (this LDAP) generateLDAP(name string, deflts string) string {
 	d := strings.Split(deflts, "-")
 	switch name {
-	case "cn": return strings.ToLower(deflts)
-	case "uid": return strings.ToLower(deflts)
-	case "uidNumber": return "65534"
-	case "homeDirectory": return "/home/"+strings.ToLower(deflts)
-	case "loginShell": return "/bin/false"
-	case "aliasedObjectName": return strings.ToLower(deflts)
-	case "c": return strings.ToLower(deflts)
-	case "o": return strings.ToLower(deflts)
-	case "userPassword": return "welcome"
-	case "gidNumber": return "65534"
+	case "cn":
+		return strings.ToLower(deflts)
+	case "uid":
+		return strings.ToLower(deflts)
+	case "uidNumber":
+		return "65534"
+	case "homeDirectory":
+		return "/home/" + strings.ToLower(deflts)
+	case "loginShell":
+		return "/bin/false"
+	case "aliasedObjectName":
+		return strings.ToLower(deflts)
+	case "c":
+		return strings.ToLower(deflts)
+	case "o":
+		return strings.ToLower(deflts)
+	case "userPassword":
+		return "welcome"
+	case "gidNumber":
+		return "65534"
 	case "sn":
 		if len(d) == 2 {
 			return strings.Title(d[1])
@@ -506,10 +519,10 @@ func (this LDAP) generateLDAP(name string, deflts string) string {
 			return strings.Title(d[0])
 		}
 		return strings.Title(strings.Join(d, " "))
-	default: return deflts
+	default:
+		return deflts
 	}
 }
-
 
 type LDAPSchema struct {
 	IsContainer bool     // can be used as a folder to store more entry?
@@ -526,11 +539,11 @@ func FindRequiredAttributesForObject(objectClass string) []FormElement {
 		return make([]FormElement, 0)
 	}
 	elements := make([]FormElement, 0, len(Schema[objectClass].Required))
-	for i:=0; i<len(Schema[objectClass].Inherit); i++{
+	for i := 0; i < len(Schema[objectClass].Inherit); i++ {
 		els := FindRequiredAttributesForObject(Schema[objectClass].Inherit[i])
 		elements = append(elements, els...)
 	}
-	for i:=0; i<len(Schema[objectClass].Required); i++{
+	for i := 0; i < len(Schema[objectClass].Required); i++ {
 		elements = append(
 			elements,
 			func() FormElement {
@@ -548,11 +561,11 @@ func FindOptionalAttributesForObject(objectClass string) []FormElement {
 		return make([]FormElement, 0)
 	}
 	elements := make([]FormElement, 0, len(Schema[objectClass].Optional))
-	for i:=0; i<len(Schema[objectClass].Inherit); i++{
+	for i := 0; i < len(Schema[objectClass].Inherit); i++ {
 		els := FindOptionalAttributesForObject(Schema[objectClass].Inherit[i])
 		elements = append(elements, els...)
 	}
-	for i:=0; i<len(Schema[objectClass].Optional); i++{
+	for i := 0; i < len(Schema[objectClass].Optional); i++ {
 		elements = append(
 			elements,
 			NewFormElementFromAttribute(Schema[objectClass].Optional[i]),
@@ -586,7 +599,7 @@ func FindDerivatedClasses(objectClass string) []string {
 	if Schema[objectClass] == nil {
 		return classes
 	}
-	for i:=0; i<len(Schema[objectClass].Inherit); i++ {
+	for i := 0; i < len(Schema[objectClass].Inherit); i++ {
 		classes = append(classes, FindDerivatedClasses(Schema[objectClass].Inherit[i])...)
 	}
 	return classes
@@ -632,743 +645,743 @@ var Schema map[string]*LDAPSchema = map[string]*LDAPSchema{
 	// SCHEMA: core.schema
 	"top": &LDAPSchema{
 		Description: "Top of the superclass chain - RFC2256",
-		Type: "ABSTRACT",
+		Type:        "ABSTRACT",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{},
-		Required: []string{"objectClass"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{},
+		Required:    []string{"objectClass"},
+		Optional:    []string{},
 	},
 	"alias": &LDAPSchema{
 		Description: "An alias - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"aliasedObjectName"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"aliasedObjectName"},
+		Optional:    []string{},
 	},
 	"country": &LDAPSchema{
 		Description: "A country - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: true,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"c"},
-		Optional: []string{"searchGuide", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"c"},
+		Optional:    []string{"searchGuide", "description"},
 	},
 	"locality": &LDAPSchema{
 		Description: "A locality - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"street", "seeAlso", "searchGuide", "st", "l", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"street", "seeAlso", "searchGuide", "st", "l", "description"},
 	},
 	"organization": &LDAPSchema{
 		Description: "An organization - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: true,
-		Silent: false,
-		Inherit: []string{"top"},
-		Required: []string{"o"},
-		Optional: []string{"userPassword", "searchGuide", "seeAlso", "businessCategory", "x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "st", "l", "description"},
+		Silent:      false,
+		Inherit:     []string{"top"},
+		Required:    []string{"o"},
+		Optional:    []string{"userPassword", "searchGuide", "seeAlso", "businessCategory", "x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "st", "l", "description"},
 	},
 	"organizationalUnit": &LDAPSchema{
 		Description: "An organizational unit - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: true,
-		Silent: false,
-		Inherit: []string{"top"},
-		Required: []string{"ou"},
-		Optional: []string{"userPassword", "searchGuide", "seeAlso", "businessCategory", "x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "st", "l", "description"},
+		Silent:      false,
+		Inherit:     []string{"top"},
+		Required:    []string{"ou"},
+		Optional:    []string{"userPassword", "searchGuide", "seeAlso", "businessCategory", "x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "st", "l", "description"},
 	},
 	"person": &LDAPSchema{
 		Description: "A person - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: false,
-		Inherit: []string{"top"},
-		Required: []string{"sn", "cn"},
-		Optional: []string{"userPassword", "telephoneNumber", "seeAlso", "description"},
+		Silent:      false,
+		Inherit:     []string{"top"},
+		Required:    []string{"sn", "cn"},
+		Optional:    []string{"userPassword", "telephoneNumber", "seeAlso", "description"},
 	},
 	"organizationalPerson": &LDAPSchema{
 		Description: "An organizational person - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: false,
-		Inherit: []string{"person"},
-		Required: []string{},
-		Optional: []string{"title", "x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "ou", "st", "l"},
+		Silent:      false,
+		Inherit:     []string{"person"},
+		Required:    []string{},
+		Optional:    []string{"title", "x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "ou", "st", "l"},
 	},
 	"organizationalRole": &LDAPSchema{
 		Description: "An organizational role - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
-		Optional: []string{"x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "seeAlso", "roleOccupant", "preferredDeliveryMethod", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "ou", "st", "l", "description"},
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
+		Optional:    []string{"x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "seeAlso", "roleOccupant", "preferredDeliveryMethod", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "ou", "st", "l", "description"},
 	},
 	"groupOfNames": &LDAPSchema{
 		Description: "A group of names (DNs) - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"member", "cn"},
-		Optional: []string{"businessCategory", "seeAlso", "owner", "ou", "o", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"member", "cn"},
+		Optional:    []string{"businessCategory", "seeAlso", "owner", "ou", "o", "description"},
 	},
 	"residentialPerson": &LDAPSchema{
 		Description: "An residential person - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"person"},
-		Required: []string{"l"},
-		Optional: []string{"businessCategory", "x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "preferredDeliveryMethod", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "st", "l"},
+		Silent:      true,
+		Inherit:     []string{"person"},
+		Required:    []string{"l"},
+		Optional:    []string{"businessCategory", "x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "preferredDeliveryMethod", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "st", "l"},
 	},
 	"applicationProcess": &LDAPSchema{
 		Description: "An application process - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
-		Optional: []string{"seeAlso", "ou", "l", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
+		Optional:    []string{"seeAlso", "ou", "l", "description"},
 	},
 	"applicationEntity": &LDAPSchema{
 		Description: "An application entity - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"presentationAddress", "cn"},
-		Optional: []string{"supportedApplicationContext", "seeAlso", "ou", "o", "l", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"presentationAddress", "cn"},
+		Optional:    []string{"supportedApplicationContext", "seeAlso", "ou", "o", "l", "description"},
 	},
 	"dSA": &LDAPSchema{
 		Description: "A directory system agent (a server) - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"applicationEntity STRUCTURAL"},
-		Required: []string{},
-		Optional: []string{"knowledgeInformation"},
+		Silent:      true,
+		Inherit:     []string{"applicationEntity STRUCTURAL"},
+		Required:    []string{},
+		Optional:    []string{"knowledgeInformation"},
 	},
 	"device": &LDAPSchema{
 		Description: "A device - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
-		Optional: []string{"serialNumber", "seeAlso", "owner", "ou", "o", "l", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
+		Optional:    []string{"serialNumber", "seeAlso", "owner", "ou", "o", "l", "description"},
 	},
 	"strongAuthenticationUser": &LDAPSchema{
 		Description: "A strong authentication user - RFC2256",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"userCertificate"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"userCertificate"},
+		Optional:    []string{},
 	},
 	"certificationAuthority": &LDAPSchema{
 		Description: "A certificate authority - RFC2256",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"authorityRevocationList", "certificateRevocationList", ""},
-		Optional: []string{"crossCertificatePair"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"authorityRevocationList", "certificateRevocationList", ""},
+		Optional:    []string{"crossCertificatePair"},
 	},
 	"groupOfUniqueNames": &LDAPSchema{
 		Description: "A group of unique names (DN and Unique Identifier) - RFC2256",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"uniqueMember", "cn"},
-		Optional: []string{"businessCategory", "seeAlso", "owner", "ou", "o", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"uniqueMember", "cn"},
+		Optional:    []string{"businessCategory", "seeAlso", "owner", "ou", "o", "description"},
 	},
 	"userSecurityInformation": &LDAPSchema{
 		Description: "A user security information - RFC2256",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"supportedAlgorithms"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"supportedAlgorithms"},
 	},
 	"certificationAuthority-V2": &LDAPSchema{
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"certificationAuthority"},
-		Required: []string{},
-		Optional: []string{"deltaRevocationList"},
+		Silent:      true,
+		Inherit:     []string{"certificationAuthority"},
+		Required:    []string{},
+		Optional:    []string{"deltaRevocationList"},
 	},
 	"cRLDistributionPoint": &LDAPSchema{
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
-		Optional: []string{"certificateRevocationList", "authorityRevocationList", "deltaRevocationList"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
+		Optional:    []string{"certificateRevocationList", "authorityRevocationList", "deltaRevocationList"},
 	},
 	"dmd": &LDAPSchema{
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"dmdName"},
-		Optional: []string{"userPassword", "searchGuide", "seeAlso", "businessCategory", "x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "st", "l", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"dmdName"},
+		Optional:    []string{"userPassword", "searchGuide", "seeAlso", "businessCategory", "x121Address", "registeredAddress", "destinationIndicator", "preferredDeliveryMethod", "telexNumber", "teletexTerminalIdentifier", "telephoneNumber", "internationaliSDNNumber", "facsimileTelephoneNumber", "street", "postOfficeBox", "postalCode", "postalAddress", "physicalDeliveryOfficeName", "st", "l", "description"},
 	},
 	"pkiUser": &LDAPSchema{
 		Description: "A PKI user - RFC2587",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"userCertificate"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"userCertificate"},
 	},
 	"pkiCA": &LDAPSchema{
 		Description: "PKI certificate authority - RFC2587",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"authorityRevocationList", "certificateRevocationList", "cACertificate", "crossCertificatePair"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"authorityRevocationList", "certificateRevocationList", "cACertificate", "crossCertificatePair"},
 	},
 	"deltaCRL": &LDAPSchema{
 		Description: "PKI user - RFC2587",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"deltaRevocationList"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"deltaRevocationList"},
 	},
 	"labeledURIObject": &LDAPSchema{
 		Description: "Object that contains the URI attribute type - RFC2079",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"labeledURI"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"labeledURI"},
 	},
 	"simpleSecurityObject": &LDAPSchema{
 		Description: "Simple security object - RFC1274",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: false,
-		Inherit: []string{"top"},
-		Required: []string{"userPassword"},
-		Optional: []string{},
+		Silent:      false,
+		Inherit:     []string{"top"},
+		Required:    []string{"userPassword"},
+		Optional:    []string{},
 	},
 	"dcObject": &LDAPSchema{
 		Description: "Domain component object - RFC2247",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: true,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"dc"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"dc"},
+		Optional:    []string{},
 	},
 	"uidObject": &LDAPSchema{
 		Description: "Uid object - RFC2377",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"uid"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"uid"},
+		Optional:    []string{},
 	},
 	// SCHEMA: inetorgperson.schema
 	"inetOrgPerson": &LDAPSchema{
 		Description: "Internet Organizational Person - RFC2798",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: false,
-		Inherit: []string{"organizationalPerson"},
-		Required: []string{},
-		Optional: []string{"audio", "businessCategory", "carLicense", "departmentNumber", "displayName", "employeeNumber", "employeeType", "givenName", "homePhone", "homePostalAddress", "initials", "jpegPhoto", "labeledURI", "mail", "manager", "mobile", "o", "pager", "photo", "roomNumber", "secretary", "uid", "userCertificate", "x500uniqueIdentifier", "preferredLanguage", "userSMIMECertificate", "userPKCS12"},
+		Silent:      false,
+		Inherit:     []string{"organizationalPerson"},
+		Required:    []string{},
+		Optional:    []string{"audio", "businessCategory", "carLicense", "departmentNumber", "displayName", "employeeNumber", "employeeType", "givenName", "homePhone", "homePostalAddress", "initials", "jpegPhoto", "labeledURI", "mail", "manager", "mobile", "o", "pager", "photo", "roomNumber", "secretary", "uid", "userCertificate", "x500uniqueIdentifier", "preferredLanguage", "userSMIMECertificate", "userPKCS12"},
 	},
 	// SCHEMA: collective.schema
 	// SCHEMA: corba.schema
 	"corbaContainer": &LDAPSchema{
 		Description: "Container for a CORBA object",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
+		Optional:    []string{},
 	},
 	"corbaObject": &LDAPSchema{
 		Description: "CORBA object representation",
-		Type: "ABSTRACT",
+		Type:        "ABSTRACT",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"corbaRepositoryId", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"corbaRepositoryId", "description"},
 	},
 	"corbaObjectReference": &LDAPSchema{
 		Description: "CORBA interoperable object reference",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"corbaObject"},
-		Required: []string{"corbaIor"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"corbaObject"},
+		Required:    []string{"corbaIor"},
+		Optional:    []string{},
 	},
 	// SCHEMA: cosine.schema
 	"pilotObject": &LDAPSchema{
 		Description: "Pilot object - RFC1274",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"info", "photo", "manager", "uniqueIdentifier", "lastModifiedTime", "lastModifiedBy", "dITRedirect", "audio"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"info", "photo", "manager", "uniqueIdentifier", "lastModifiedTime", "lastModifiedBy", "dITRedirect", "audio"},
 	},
 	"pilotPerson": &LDAPSchema{
 		Description: "The PilotPerson object class is used as a sub-class of person, to allow the use of a number of additional attributes to be assigned to entries of object class person",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"person"},
-		Required: []string{},
-		Optional: []string{"userid", "textEncodedORAddress", "rfc822Mailbox", "favouriteDrink", "roomNumber", "userClass", "homeTelephoneNumber", "homePostalAddress", "secretary", "personalTitle", "preferredDeliveryMethod", "businessCategory", "janetMailbox", "otherMailbox", "mobileTelephoneNumber", "pagerTelephoneNumber", "organizationalStatus", "mailPreferenceOption", "personalSignature"},
+		Silent:      true,
+		Inherit:     []string{"person"},
+		Required:    []string{},
+		Optional:    []string{"userid", "textEncodedORAddress", "rfc822Mailbox", "favouriteDrink", "roomNumber", "userClass", "homeTelephoneNumber", "homePostalAddress", "secretary", "personalTitle", "preferredDeliveryMethod", "businessCategory", "janetMailbox", "otherMailbox", "mobileTelephoneNumber", "pagerTelephoneNumber", "organizationalStatus", "mailPreferenceOption", "personalSignature"},
 	},
 	"newPilotPerson": &LDAPSchema{
 		Description: "The PilotPerson object class is used as a sub-class of person, to allow the use of a number of additional attributes to be assigned to entries of object class person",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"person"},
-		Required: []string{},
-		Optional: []string{"userid", "textEncodedORAddress", "rfc822Mailbox", "favouriteDrink", "roomNumber", "userClass", "homeTelephoneNumber", "homePostalAddress", "secretary", "personalTitle", "preferredDeliveryMethod", "businessCategory", "janetMailbox", "otherMailbox", "mobileTelephoneNumber", "pagerTelephoneNumber", "organizationalStatus", "mailPreferenceOption", "personalSignature"},
+		Silent:      true,
+		Inherit:     []string{"person"},
+		Required:    []string{},
+		Optional:    []string{"userid", "textEncodedORAddress", "rfc822Mailbox", "favouriteDrink", "roomNumber", "userClass", "homeTelephoneNumber", "homePostalAddress", "secretary", "personalTitle", "preferredDeliveryMethod", "businessCategory", "janetMailbox", "otherMailbox", "mobileTelephoneNumber", "pagerTelephoneNumber", "organizationalStatus", "mailPreferenceOption", "personalSignature"},
 	},
 	"account": &LDAPSchema{
 		Description: "The Account object class is used to define entries representing computer accounts.  The userid attribute should be used for naming entries of this object class.",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"userid"},
-		Optional: []string{"description", "seeAlso", "localityName", "organizationName", "organizationalUnitName", "host"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"userid"},
+		Optional:    []string{"description", "seeAlso", "localityName", "organizationName", "organizationalUnitName", "host"},
 	},
 	"document": &LDAPSchema{
 		Description: "The Document object class is used to define entries which represent documents.",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"documentIdentifier"},
-		Optional: []string{"commonName", "description", "seeAlso", "localityName", "organizationName", "organizationalUnitName", "documentTitle", "documentVersion", "documentAuthor", "documentLocation", "documentPublisher"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"documentIdentifier"},
+		Optional:    []string{"commonName", "description", "seeAlso", "localityName", "organizationName", "organizationalUnitName", "documentTitle", "documentVersion", "documentAuthor", "documentLocation", "documentPublisher"},
 	},
 	"room": &LDAPSchema{
 		Description: "The Room object class is used to define entries representing rooms. The commonName attribute should be used for naming pentries of this object class.",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"commonName"},
-		Optional: []string{"roomNumber", "description", "seeAlso", "telephoneNumber"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"commonName"},
+		Optional:    []string{"roomNumber", "description", "seeAlso", "telephoneNumber"},
 	},
 	"documentSeries": &LDAPSchema{
 		Description: "The Document Series object class is used to define an entry which represents a series of documents (e.g., The Request For Comments papers).",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"commonName"},
-		Optional: []string{"description", "seeAlso", "telephonenumber", "localityName", "organizationName", "organizationalUnitName"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"commonName"},
+		Optional:    []string{"description", "seeAlso", "telephonenumber", "localityName", "organizationName", "organizationalUnitName"},
 	},
 	"domain": &LDAPSchema{
 		Description: "The Domain object class is used to define entries which represent DNS or NRS domains.  The domainComponent attribute should be used for naming entries of this object class.",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"domainComponent"},
-		Optional: []string{"associatedName", "organizationName", "description", "businessCategory", "seeAlso", "searchGuide", "userPassword", "localityName", "stateOrProvinceName", "streetAddress", "physicalDeliveryOfficeName", "postalAddress", "postalCode", "postOfficeBox", "streetAddress", "facsimileTelephoneNumber", "internationalISDNNumber", "telephoneNumber", "teletexTerminalIdentifier", "telexNumber", "preferredDeliveryMethod", "destinationIndicator", "registeredAddress", "x121Address"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"domainComponent"},
+		Optional:    []string{"associatedName", "organizationName", "description", "businessCategory", "seeAlso", "searchGuide", "userPassword", "localityName", "stateOrProvinceName", "streetAddress", "physicalDeliveryOfficeName", "postalAddress", "postalCode", "postOfficeBox", "streetAddress", "facsimileTelephoneNumber", "internationalISDNNumber", "telephoneNumber", "teletexTerminalIdentifier", "telexNumber", "preferredDeliveryMethod", "destinationIndicator", "registeredAddress", "x121Address"},
 	},
 	"RFC822localPart": &LDAPSchema{
 		Description: "The RFC822 Local Part object class is used to define entries which represent the local part of RFC822 mail addresses.  This treats this part of an RFC822 address as a domain.",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"domain"},
-		Required: []string{},
-		Optional: []string{"commonName", "surname", "description", "seeAlso", "telephoneNumber", "physicalDeliveryOfficeName", "postalAddress", "postalCode", "postOfficeBox", "streetAddress", "facsimileTelephoneNumber", "internationalISDNNumber", "telephoneNumber", "teletexTerminalIdentifier", "telexNumber", "preferredDeliveryMethod", "destinationIndicator", "registeredAddress", "x121Address"},
+		Silent:      true,
+		Inherit:     []string{"domain"},
+		Required:    []string{},
+		Optional:    []string{"commonName", "surname", "description", "seeAlso", "telephoneNumber", "physicalDeliveryOfficeName", "postalAddress", "postalCode", "postOfficeBox", "streetAddress", "facsimileTelephoneNumber", "internationalISDNNumber", "telephoneNumber", "teletexTerminalIdentifier", "telexNumber", "preferredDeliveryMethod", "destinationIndicator", "registeredAddress", "x121Address"},
 	},
 	"dNSDomain": &LDAPSchema{
 		Description: "The DNS Domain (Domain NameServer) object class is used to define entries for DNS domains.",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"domain"},
-		Required: []string{},
-		Optional: []string{"ARecord", "MDRecord", "MXRecord", "NSRecord", "SOARecord", "CNAMERecord"},
+		Silent:      true,
+		Inherit:     []string{"domain"},
+		Required:    []string{},
+		Optional:    []string{"ARecord", "MDRecord", "MXRecord", "NSRecord", "SOARecord", "CNAMERecord"},
 	},
 	"domainRelatedObject": &LDAPSchema{
 		Description: "An object related to an domain - RFC1274. The Domain Related Object object class is used to define entries which represent DNS/NRS domains which are \"equivalent\" to an X.500 domain: e.g., an organisation or organisational unit",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"associatedDomain"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"associatedDomain"},
+		Optional:    []string{},
 	},
 	"friendlyCountry": &LDAPSchema{
 		Description: "The Friendly Country object class is used to define country entries in the DIT.  The object class is used to allow friendlier naming of countries than that allowed by the object class country.  The naming attribute of object class country, countryName, has to be a 2 letter string defined in ISO 3166.",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"country"},
-		Required: []string{"friendlyCountryName"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"country"},
+		Required:    []string{"friendlyCountryName"},
+		Optional:    []string{},
 	},
 	"pilotOrganization": &LDAPSchema{
 		Description: "The PilotOrganization object class is used as a sub-class of organization and organizationalUnit to allow a number of additional attributes to be assigned to entries of object classes organization and organizationalUnit.",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"organization", "organizationalUnit"},
-		Required: []string{},
-		Optional: []string{"buildingName"},
+		Silent:      true,
+		Inherit:     []string{"organization", "organizationalUnit"},
+		Required:    []string{},
+		Optional:    []string{"buildingName"},
 	},
 	"pilotDSA": &LDAPSchema{
 		Description: "The PilotDSA object class is used as a sub-class of the dsa object class to allow additional attributes to be assigned to entries for DSAs.",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"dsa"},
-		Required: []string{},
-		Optional: []string{"dSAQuality"},
+		Silent:      true,
+		Inherit:     []string{"dsa"},
+		Required:    []string{},
+		Optional:    []string{"dSAQuality"},
 	},
 	"qualityLabelledData": &LDAPSchema{
 		Description: "The Quality Labelled Data object class is used to allow the ssignment of the data quality attributes to subtrees in the DIT",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"dsaQuality"},
-		Optional: []string{"subtreeMinimumQuality", "subtreeMaximumQuality"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"dsaQuality"},
+		Optional:    []string{"subtreeMinimumQuality", "subtreeMaximumQuality"},
 	},
 	// SCHEMA: duaconf.schema
 	"DUAConfigProfile": &LDAPSchema{
 		Description: "Abstraction of a base configuration for a DUA",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
-		Optional: []string{"defaultServerList", "preferredServerList", "defaultSearchBase", "defaultSearchScope", "searchTimeLimit", "bindTimeLimit", "credentialLevel", "authenticationMethod", "followReferrals", "dereferenceAliases", "serviceSearchDescriptor", "serviceCredentialLevel", "serviceAuthenticationMethod", "objectclassMap", "attributeMap", "profileTTL"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
+		Optional:    []string{"defaultServerList", "preferredServerList", "defaultSearchBase", "defaultSearchScope", "searchTimeLimit", "bindTimeLimit", "credentialLevel", "authenticationMethod", "followReferrals", "dereferenceAliases", "serviceSearchDescriptor", "serviceCredentialLevel", "serviceAuthenticationMethod", "objectclassMap", "attributeMap", "profileTTL"},
 	},
 	// SCHEMA: dyngroup.schema
 	"groupOfURLs": &LDAPSchema{
 		Description: "undefined",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
-		Optional: []string{"memberURL", "businessCategory", "description", "o", "ou", "owner", "seeAlso"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
+		Optional:    []string{"memberURL", "businessCategory", "description", "o", "ou", "owner", "seeAlso"},
 	},
 	"dgIdentityAux": &LDAPSchema{
 		Description: "undefined",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"dgIdentity", "dgAuthz"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"dgIdentity", "dgAuthz"},
 	},
 	// SCHEMA: java.schema
 	"javaContainer": &LDAPSchema{
 		Description: "Container for a Java object",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
+		Optional:    []string{},
 	},
 	"javaObject": &LDAPSchema{
 		Description: "Java object representation",
-		Type: "ABSTRACT",
+		Type:        "ABSTRACT",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"javaClassName"},
-		Optional: []string{"javaClassNames", "javaCodebase", "javaDoc", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"javaClassName"},
+		Optional:    []string{"javaClassNames", "javaCodebase", "javaDoc", "description"},
 	},
 	"javaSerializedObject": &LDAPSchema{
 		Description: "Java serialized object",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"javaObject"},
-		Required: []string{"javaSerializedData"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"javaObject"},
+		Required:    []string{"javaSerializedData"},
+		Optional:    []string{},
 	},
 	"javaMarshalledObject": &LDAPSchema{
 		Description: "Java marshalled object",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"javaObject"},
-		Required: []string{"javaSerializedData"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"javaObject"},
+		Required:    []string{"javaSerializedData"},
+		Optional:    []string{},
 	},
 	"javaNamingReference": &LDAPSchema{
 		Description: "JNDI reference",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"javaObject"},
-		Required: []string{},
-		Optional: []string{"javaReferenceAddress", "javaFactory"},
+		Silent:      true,
+		Inherit:     []string{"javaObject"},
+		Required:    []string{},
+		Optional:    []string{"javaReferenceAddress", "javaFactory"},
 	},
 	// SCHEMA: misc.schema
 	"inetLocalMailRecipient": &LDAPSchema{
 		Description: "Internet local mail recipient",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{},
 	},
 	"nisMailAlias": &LDAPSchema{
 		Description: "NIS mail alias",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
 	},
 	// SCHEMA: msuser.schema
 	"mstop": &LDAPSchema{
-		Type: "ABSTRACT",
+		Type:        "ABSTRACT",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"objectClass", "instanceType", "nTSecurityDescriptor", "objectCategory"},
-		Optional: []string{"cn", "description", "distinguishedName", "whenCreated", "whenChanged", "subRefs", "displayName", "uSNCreated", "isDeleted", "dSASignature", "objectVersion", "repsTo", "repsFrom", "memberOf", "ownerBL", "uSNChanged", "uSNLastObjRem", "showInAdvancedViewOnly", "adminDisplayName", "proxyAddresses", "adminDescription", "extensionName", "uSNDSALastObjRemoved", "displayNamePrintable", "directReports", "wWWHomePage", "USNIntersite", "name", "objectGUID", "replPropertyMetaData", "replUpToDateVector", "flags", "revision", "wbemPath", "fSMORoleOwner", "systemFlags", "siteObjectBL", "serverReferenceBL", "nonSecurityMemberBL", "queryPolicyBL", "wellKnownObjects", "isPrivilegeHolder", "partialAttributeSet", "managedObjects", "partialAttributeDeletionList", "url", "lastKnownParent", "bridgeheadServerListBL", "netbootSCPBL", "isCriticalSystemObject", "frsComputerReferenceBL", "fRSMemberReferenceBL", "uSNSource", "fromEntry", "allowedChildClasses", "allowedChildClassesEffective", "allowedAttributes", "allowedAttributesEffective", "possibleInferiors", "canonicalName", "proxiedObjectName", "sDRightsEffective", "dSCorePropagationData", "otherWellKnownObjects", "mS-DS-ConsistencyGuid", "mS-DS-ConsistencyChildCount", "masteredBy", "msCOM-PartitionSetLink", "msCOM-UserLink", "msDS-Approx-Immed-Subordinates", "msDS-NCReplCursors", "msDS-NCReplInboundNeighbors", "msDS-NCReplOutboundNeighbors", "msDS-ReplAttributeMetaData", "msDS-ReplValueMetaData", "msDS-NonMembersBL", "msDS-MembersForAzRoleBL", "msDS-OperationsForAzTaskBL", "msDS-TasksForAzTaskBL", "msDS-OperationsForAzRoleBL", "msDS-TasksForAzRoleBL", "msDs-masteredBy", "msDS-ObjectReferenceBL", "msDS-PrincipalName", "msDS-RevealedDSAs", "msDS-KrbTgtLinkBl", "msDS-IsFullReplicaFor", "msDS-IsDomainFor", "msDS-IsPartialReplicaFor", "msDS-AuthenticatedToAccountlist", "msDS-NC-RO-Replica-Locations-BL", "msDS-RevealedListBL", "msDS-PSOApplied", "msDS-NcType", "msDS-OIDToGroupLinkBl", "msDS-HostServiceAccountBL", "isRecycled", "msDS-LocalEffectiveDeletionTime", "msDS-LocalEffectiveRecycleTime", "msDS-LastKnownRDN", "msDS-EnabledFeatureBL", "msDS-ClaimSharesPossibleValuesWithBL", "msDS-MembersOfResourcePropertyListBL", "msDS-IsPrimaryComputerFor", "msDS-ValueTypeReferenceBL", "msDS-TDOIngressBL", "msDS-TDOEgressBL", "msDS-parentdistname", "msDS-ReplValueMetaDataExt", "msds-memberOfTransitive", "msds-memberTransitive", "msSFU30PosixMemberOf", "msDFSR-MemberReferenceBL", "msDFSR-ComputerReferenceBL"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"objectClass", "instanceType", "nTSecurityDescriptor", "objectCategory"},
+		Optional:    []string{"cn", "description", "distinguishedName", "whenCreated", "whenChanged", "subRefs", "displayName", "uSNCreated", "isDeleted", "dSASignature", "objectVersion", "repsTo", "repsFrom", "memberOf", "ownerBL", "uSNChanged", "uSNLastObjRem", "showInAdvancedViewOnly", "adminDisplayName", "proxyAddresses", "adminDescription", "extensionName", "uSNDSALastObjRemoved", "displayNamePrintable", "directReports", "wWWHomePage", "USNIntersite", "name", "objectGUID", "replPropertyMetaData", "replUpToDateVector", "flags", "revision", "wbemPath", "fSMORoleOwner", "systemFlags", "siteObjectBL", "serverReferenceBL", "nonSecurityMemberBL", "queryPolicyBL", "wellKnownObjects", "isPrivilegeHolder", "partialAttributeSet", "managedObjects", "partialAttributeDeletionList", "url", "lastKnownParent", "bridgeheadServerListBL", "netbootSCPBL", "isCriticalSystemObject", "frsComputerReferenceBL", "fRSMemberReferenceBL", "uSNSource", "fromEntry", "allowedChildClasses", "allowedChildClassesEffective", "allowedAttributes", "allowedAttributesEffective", "possibleInferiors", "canonicalName", "proxiedObjectName", "sDRightsEffective", "dSCorePropagationData", "otherWellKnownObjects", "mS-DS-ConsistencyGuid", "mS-DS-ConsistencyChildCount", "masteredBy", "msCOM-PartitionSetLink", "msCOM-UserLink", "msDS-Approx-Immed-Subordinates", "msDS-NCReplCursors", "msDS-NCReplInboundNeighbors", "msDS-NCReplOutboundNeighbors", "msDS-ReplAttributeMetaData", "msDS-ReplValueMetaData", "msDS-NonMembersBL", "msDS-MembersForAzRoleBL", "msDS-OperationsForAzTaskBL", "msDS-TasksForAzTaskBL", "msDS-OperationsForAzRoleBL", "msDS-TasksForAzRoleBL", "msDs-masteredBy", "msDS-ObjectReferenceBL", "msDS-PrincipalName", "msDS-RevealedDSAs", "msDS-KrbTgtLinkBl", "msDS-IsFullReplicaFor", "msDS-IsDomainFor", "msDS-IsPartialReplicaFor", "msDS-AuthenticatedToAccountlist", "msDS-NC-RO-Replica-Locations-BL", "msDS-RevealedListBL", "msDS-PSOApplied", "msDS-NcType", "msDS-OIDToGroupLinkBl", "msDS-HostServiceAccountBL", "isRecycled", "msDS-LocalEffectiveDeletionTime", "msDS-LocalEffectiveRecycleTime", "msDS-LastKnownRDN", "msDS-EnabledFeatureBL", "msDS-ClaimSharesPossibleValuesWithBL", "msDS-MembersOfResourcePropertyListBL", "msDS-IsPrimaryComputerFor", "msDS-ValueTypeReferenceBL", "msDS-TDOIngressBL", "msDS-TDOEgressBL", "msDS-parentdistname", "msDS-ReplValueMetaDataExt", "msds-memberOfTransitive", "msds-memberTransitive", "msSFU30PosixMemberOf", "msDFSR-MemberReferenceBL", "msDFSR-ComputerReferenceBL"},
 	},
 	"group": &LDAPSchema{
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"mstop"},
-		Required: []string{"groupType"},
-		Optional: []string{"member", "nTGroupMembers", "operatorCount", "adminCount", "groupAttributes", "groupMembershipSAM", "controlAccessRights", "desktopProfile", "nonSecurityMember", "managedBy", "primaryGroupToken", "msDS-AzLDAPQuery", "msDS-NonMembers", "msDS-AzBizRule", "msDS-AzBizRuleLanguage", "msDS-AzLastImportedBizRulePath", "msDS-AzApplicationData", "msDS-AzObjectGuid", "msDS-AzGenericData", "msDS-PrimaryComputer", "mail", "msSFU30Name", "msSFU30NisDomain", "msSFU30PosixMember"},
+		Silent:      true,
+		Inherit:     []string{"mstop"},
+		Required:    []string{"groupType"},
+		Optional:    []string{"member", "nTGroupMembers", "operatorCount", "adminCount", "groupAttributes", "groupMembershipSAM", "controlAccessRights", "desktopProfile", "nonSecurityMember", "managedBy", "primaryGroupToken", "msDS-AzLDAPQuery", "msDS-NonMembers", "msDS-AzBizRule", "msDS-AzBizRuleLanguage", "msDS-AzLastImportedBizRulePath", "msDS-AzApplicationData", "msDS-AzObjectGuid", "msDS-AzGenericData", "msDS-PrimaryComputer", "mail", "msSFU30Name", "msSFU30NisDomain", "msSFU30PosixMember"},
 	},
 	"user": &LDAPSchema{
 		Description: "undefined",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"mstop", "organizationalPerson"},
-		Required: []string{},
-		Optional: []string{"o", "businessCategory", "userCertificate", "givenName", "initials", "x500uniqueIdentifier", "displayName", "networkAddress", "employeeNumber", "employeeType", "homePostalAddress", "userAccountControl", "badPwdCount", "codePage", "homeDirectory", "homeDrive", "badPasswordTime", "lastLogoff", "lastLogon", "dBCSPwd", "localeID", "scriptPath", "logonHours", "logonWorkstation", "maxStorage", "userWorkstations", "unicodePwd", "otherLoginWorkstations", "ntPwdHistory", "pwdLastSet", "preferredOU", "primaryGroupID", "userParameters", "profilePath", "operatorCount", "adminCount", "accountExpires", "lmPwdHistory", "groupMembershipSAM", "logonCount", "controlAccessRights", "defaultClassStore", "groupsToIgnore", "groupPriority", "desktopProfile", "dynamicLDAPServer", "userPrincipalName", "lockoutTime", "userSharedFolder", "userSharedFolderOther", "servicePrincipalName", "aCSPolicyName", "terminalServer", "mSMQSignCertificates", "mSMQDigests", "mSMQDigestsMig", "mSMQSignCertificatesMig", "msNPAllowDialin", "msNPCallingStationID", "msNPSavedCallingStationID", "msRADIUSCallbackNumber", "msRADIUSFramedIPAddress", "msRADIUSFramedRoute", "msRADIUSServiceType", "msRASSavedCallbackNumber", "msRASSavedFramedIPAddress", "msRASSavedFramedRoute", "mS-DS-CreatorSID", "msCOM-UserPartitionSetLink", "msDS-Cached-Membership", "msDS-Cached-Membership-Time-Stamp", "msDS-Site-Affinity", "msDS-User-Account-Control-Computed", "lastLogonTimestamp", "msIIS-FTPRoot", "msIIS-FTPDir", "msDRM-IdentityCertificate", "msDS-SourceObjectDN", "msPKIRoamingTimeStamp", "msPKIDPAPIMasterKeys", "msPKIAccountCredentials", "msRADIUS-FramedInterfaceId", "msRADIUS-SavedFramedInterfaceId", "msRADIUS-FramedIpv6Prefix", "msRADIUS-SavedFramedIpv6Prefix", "msRADIUS-FramedIpv6Route", "msRADIUS-SavedFramedIpv6Route", "msDS-SecondaryKrbTgtNumber", "msDS-AuthenticatedAtDC", "msDS-SupportedEncryptionTypes", "msDS-LastSuccessfulInteractiveLogonTime", "msDS-LastFailedInteractiveLogonTime", "msDS-FailedInteractiveLogonCount", "msDS-FailedInteractiveLogonCountAtLastSuccessfulLogon", "msTSProfilePath", "msTSHomeDirectory", "msTSHomeDrive", "msTSAllowLogon", "msTSRemoteControl", "msTSMaxDisconnectionTime", "msTSMaxConnectionTime", "msTSMaxIdleTime", "msTSReconnectionAction", "msTSBrokenConnectionAction", "msTSConnectClientDrives", "msTSConnectPrinterDrives", "msTSDefaultToMainPrinter", "msTSWorkDirectory", "msTSInitialProgram", "msTSProperty01", "msTSProperty02", "msTSExpireDate", "msTSLicenseVersion", "msTSManagingLS", "msDS-UserPasswordExpiryTimeComputed", "msTSExpireDate2", "msTSLicenseVersion2", "msTSManagingLS2", "msTSExpireDate3", "msTSLicenseVersion3", "msTSManagingLS3", "msTSExpireDate4", "msTSLicenseVersion4", "msTSManagingLS4", "msTSLSProperty01", "msTSLSProperty02", "msDS-ResultantPSO", "msPKI-CredentialRoamingTokens", "msTSPrimaryDesktop", "msTSSecondaryDesktops", "msDS-PrimaryComputer", "msDS-SyncServerUrl", "msDS-AssignedAuthNPolicySilo", "msDS-AuthNPolicySiloMembersBL", "msDS-AssignedAuthNPolicy", "userSMIMECertificate", "uid", "mail", "roomNumber", "photo", "manager", "homePhone", "secretary", "mobile", "pager", "audio", "jpegPhoto", "carLicense", "departmentNumber", "preferredLanguage", "userPKCS12", "labeledURI", "msSFU30Name", "msSFU30NisDomain"},
+		Silent:      true,
+		Inherit:     []string{"mstop", "organizationalPerson"},
+		Required:    []string{},
+		Optional:    []string{"o", "businessCategory", "userCertificate", "givenName", "initials", "x500uniqueIdentifier", "displayName", "networkAddress", "employeeNumber", "employeeType", "homePostalAddress", "userAccountControl", "badPwdCount", "codePage", "homeDirectory", "homeDrive", "badPasswordTime", "lastLogoff", "lastLogon", "dBCSPwd", "localeID", "scriptPath", "logonHours", "logonWorkstation", "maxStorage", "userWorkstations", "unicodePwd", "otherLoginWorkstations", "ntPwdHistory", "pwdLastSet", "preferredOU", "primaryGroupID", "userParameters", "profilePath", "operatorCount", "adminCount", "accountExpires", "lmPwdHistory", "groupMembershipSAM", "logonCount", "controlAccessRights", "defaultClassStore", "groupsToIgnore", "groupPriority", "desktopProfile", "dynamicLDAPServer", "userPrincipalName", "lockoutTime", "userSharedFolder", "userSharedFolderOther", "servicePrincipalName", "aCSPolicyName", "terminalServer", "mSMQSignCertificates", "mSMQDigests", "mSMQDigestsMig", "mSMQSignCertificatesMig", "msNPAllowDialin", "msNPCallingStationID", "msNPSavedCallingStationID", "msRADIUSCallbackNumber", "msRADIUSFramedIPAddress", "msRADIUSFramedRoute", "msRADIUSServiceType", "msRASSavedCallbackNumber", "msRASSavedFramedIPAddress", "msRASSavedFramedRoute", "mS-DS-CreatorSID", "msCOM-UserPartitionSetLink", "msDS-Cached-Membership", "msDS-Cached-Membership-Time-Stamp", "msDS-Site-Affinity", "msDS-User-Account-Control-Computed", "lastLogonTimestamp", "msIIS-FTPRoot", "msIIS-FTPDir", "msDRM-IdentityCertificate", "msDS-SourceObjectDN", "msPKIRoamingTimeStamp", "msPKIDPAPIMasterKeys", "msPKIAccountCredentials", "msRADIUS-FramedInterfaceId", "msRADIUS-SavedFramedInterfaceId", "msRADIUS-FramedIpv6Prefix", "msRADIUS-SavedFramedIpv6Prefix", "msRADIUS-FramedIpv6Route", "msRADIUS-SavedFramedIpv6Route", "msDS-SecondaryKrbTgtNumber", "msDS-AuthenticatedAtDC", "msDS-SupportedEncryptionTypes", "msDS-LastSuccessfulInteractiveLogonTime", "msDS-LastFailedInteractiveLogonTime", "msDS-FailedInteractiveLogonCount", "msDS-FailedInteractiveLogonCountAtLastSuccessfulLogon", "msTSProfilePath", "msTSHomeDirectory", "msTSHomeDrive", "msTSAllowLogon", "msTSRemoteControl", "msTSMaxDisconnectionTime", "msTSMaxConnectionTime", "msTSMaxIdleTime", "msTSReconnectionAction", "msTSBrokenConnectionAction", "msTSConnectClientDrives", "msTSConnectPrinterDrives", "msTSDefaultToMainPrinter", "msTSWorkDirectory", "msTSInitialProgram", "msTSProperty01", "msTSProperty02", "msTSExpireDate", "msTSLicenseVersion", "msTSManagingLS", "msDS-UserPasswordExpiryTimeComputed", "msTSExpireDate2", "msTSLicenseVersion2", "msTSManagingLS2", "msTSExpireDate3", "msTSLicenseVersion3", "msTSManagingLS3", "msTSExpireDate4", "msTSLicenseVersion4", "msTSManagingLS4", "msTSLSProperty01", "msTSLSProperty02", "msDS-ResultantPSO", "msPKI-CredentialRoamingTokens", "msTSPrimaryDesktop", "msTSSecondaryDesktops", "msDS-PrimaryComputer", "msDS-SyncServerUrl", "msDS-AssignedAuthNPolicySilo", "msDS-AuthNPolicySiloMembersBL", "msDS-AssignedAuthNPolicy", "userSMIMECertificate", "uid", "mail", "roomNumber", "photo", "manager", "homePhone", "secretary", "mobile", "pager", "audio", "jpegPhoto", "carLicense", "departmentNumber", "preferredLanguage", "userPKCS12", "labeledURI", "msSFU30Name", "msSFU30NisDomain"},
 	},
 	"container": &LDAPSchema{
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"mstop"},
-		Required: []string{"cn"},
-		Optional: []string{"schemaVersion", "defaultClassStore", "msDS-ObjectReference"},
+		Silent:      true,
+		Inherit:     []string{"mstop"},
+		Required:    []string{"cn"},
+		Optional:    []string{"schemaVersion", "defaultClassStore", "msDS-ObjectReference"},
 	},
 	"computer": &LDAPSchema{
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"user"},
-		Required: []string{},
-		Optional: []string{"cn", "networkAddress", "localPolicyFlags", "defaultLocalPolicyObject", "machineRole", "location", "netbootInitialization", "netbootGUID", "netbootMachineFilePath", "siteGUID", "operatingSystem", "operatingSystemVersion", "operatingSystemServicePack", "operatingSystemHotfix", "volumeCount", "physicalLocationObject", "dNSHostName", "policyReplicationFlags", "managedBy", "rIDSetReferences", "catalogs", "netbootSIFFile", "netbootMirrorDataFile", "msDS-AdditionalDnsHostName", "msDS-AdditionalSamAccountName", "msDS-ExecuteScriptPassword", "msDS-KrbTgtLink", "msDS-RevealedUsers", "msDS-NeverRevealGroup", "msDS-RevealOnDemandGroup", "msDS-RevealedList", "msDS-AuthenticatedAtDC", "msDS-isGC", "msDS-isRODC", "msDS-SiteName", "msDS-PromotionSettings", "msTPM-OwnerInformation", "msTSProperty01", "msTSProperty02", "msDS-IsUserCachableAtRodc", "msDS-HostServiceAccount", "msTSEndpointData", "msTSEndpointType", "msTSEndpointPlugin", "msTSPrimaryDesktopBL", "msTSSecondaryDesktopBL", "msTPM-TpmInformationForComputer", "msDS-GenerationId", "msImaging-ThumbprintHash", "msImaging-HashAlgorithm", "netbootDUID", "msSFU30Name", "msSFU30Aliases", "msSFU30NisDomain", "nisMapName"},
+		Silent:      true,
+		Inherit:     []string{"user"},
+		Required:    []string{},
+		Optional:    []string{"cn", "networkAddress", "localPolicyFlags", "defaultLocalPolicyObject", "machineRole", "location", "netbootInitialization", "netbootGUID", "netbootMachineFilePath", "siteGUID", "operatingSystem", "operatingSystemVersion", "operatingSystemServicePack", "operatingSystemHotfix", "volumeCount", "physicalLocationObject", "dNSHostName", "policyReplicationFlags", "managedBy", "rIDSetReferences", "catalogs", "netbootSIFFile", "netbootMirrorDataFile", "msDS-AdditionalDnsHostName", "msDS-AdditionalSamAccountName", "msDS-ExecuteScriptPassword", "msDS-KrbTgtLink", "msDS-RevealedUsers", "msDS-NeverRevealGroup", "msDS-RevealOnDemandGroup", "msDS-RevealedList", "msDS-AuthenticatedAtDC", "msDS-isGC", "msDS-isRODC", "msDS-SiteName", "msDS-PromotionSettings", "msTPM-OwnerInformation", "msTSProperty01", "msTSProperty02", "msDS-IsUserCachableAtRodc", "msDS-HostServiceAccount", "msTSEndpointData", "msTSEndpointType", "msTSEndpointPlugin", "msTSPrimaryDesktopBL", "msTSSecondaryDesktopBL", "msTPM-TpmInformationForComputer", "msDS-GenerationId", "msImaging-ThumbprintHash", "msImaging-HashAlgorithm", "netbootDUID", "msSFU30Name", "msSFU30Aliases", "msSFU30NisDomain", "nisMapName"},
 	},
 	// SCHEMA: nis.schema
 	"posixAccount": &LDAPSchema{
 		Description: "Abstraction of an account with POSIX attributes",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: false,
-		Inherit: []string{"top"},
-		Required: []string{"cn", "uid", "uidNumber", "gidNumber", "homeDirectory"},
-		Optional: []string{"userPassword", "loginShell", "gecos", "description"},
+		Silent:      false,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn", "uid", "uidNumber", "gidNumber", "homeDirectory"},
+		Optional:    []string{"userPassword", "loginShell", "gecos", "description"},
 	},
 	"shadowAccount": &LDAPSchema{
 		Description: "Additional attributes for shadow passwords",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"uid"},
-		Optional: []string{"userPassword", "shadowLastChange", "shadowMin", "shadowMax", "shadowWarning", "shadowInactive", "shadowExpire", "shadowFlag", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"uid"},
+		Optional:    []string{"userPassword", "shadowLastChange", "shadowMin", "shadowMax", "shadowWarning", "shadowInactive", "shadowExpire", "shadowFlag", "description"},
 	},
 	"posixGroup": &LDAPSchema{
 		Description: "Abstraction of a group of accounts",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: false,
-		Inherit: []string{"top"},
-		Required: []string{"cn", "gidNumber"},
-		Optional: []string{"userPassword", "memberUid", "description"},
+		Silent:      false,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn", "gidNumber"},
+		Optional:    []string{"userPassword", "memberUid", "description"},
 	},
 	"ipService": &LDAPSchema{
 		Description: "Abstraction an Internet Protocol service",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn", "ipServicePort", "ipServiceProtocol"},
-		Optional: []string{"description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn", "ipServicePort", "ipServiceProtocol"},
+		Optional:    []string{"description"},
 	},
 	"ipProtocol": &LDAPSchema{
 		Description: "Abstraction of an IP protocol",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn", "ipProtocolNumber", "description"},
-		Optional: []string{"description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn", "ipProtocolNumber", "description"},
+		Optional:    []string{"description"},
 	},
 	"oncRpc": &LDAPSchema{
 		Description: "Abstraction of an ONC/RPC binding",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn", "oncRpcNumber", "description"},
-		Optional: []string{"description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn", "oncRpcNumber", "description"},
+		Optional:    []string{"description"},
 	},
 	"ipHost": &LDAPSchema{
 		Description: "Abstraction of a host, an IP device",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn", "ipHostNumber"},
-		Optional: []string{"l", "description", "manager"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn", "ipHostNumber"},
+		Optional:    []string{"l", "description", "manager"},
 	},
 	"ipNetwork": &LDAPSchema{
 		Description: "Abstraction of an IP network",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn", "ipNetworkNumber"},
-		Optional: []string{"ipNetmaskNumber", "l", "description", "manager"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn", "ipNetworkNumber"},
+		Optional:    []string{"ipNetmaskNumber", "l", "description", "manager"},
 	},
 	"nisNetgroup": &LDAPSchema{
 		Description: "Abstraction of a netgroup",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
-		Optional: []string{"nisNetgroupTriple", "memberNisNetgroup", "description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
+		Optional:    []string{"nisNetgroupTriple", "memberNisNetgroup", "description"},
 	},
 	"nisMap": &LDAPSchema{
 		Description: "A generic abstraction of a NIS map",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"nisMapName"},
-		Optional: []string{"description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"nisMapName"},
+		Optional:    []string{"description"},
 	},
 	"nisObject": &LDAPSchema{
 		Description: "An entry in a NIS map",
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn", "nisMapEntry", "nisMapName"},
-		Optional: []string{"description"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn", "nisMapEntry", "nisMapName"},
+		Optional:    []string{"description"},
 	},
 	"ieee802Device": &LDAPSchema{
 		Description: "A device with a MAC address",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"macAddress"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"macAddress"},
 	},
 	"bootableDevice": &LDAPSchema{
 		Description: "A device with boot parameters",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"bootFile", "bootParameter"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"bootFile", "bootParameter"},
 	},
 	// SCHEMA: openldap.schema
 	"OpenLDAPorg": &LDAPSchema{
 		Description: "OpenLDAP Organizational Object",
-		Type: "UNSPECIFIED",
+		Type:        "UNSPECIFIED",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"organization"},
-		Required: []string{},
-		Optional: []string{"buildingName", "displayName", "labeledURI"},
+		Silent:      true,
+		Inherit:     []string{"organization"},
+		Required:    []string{},
+		Optional:    []string{"buildingName", "displayName", "labeledURI"},
 	},
 	"OpenLDAPou": &LDAPSchema{
 		Description: "OpenLDAP Organizational Unit Object",
-		Type: "UNSPECIFIED",
+		Type:        "UNSPECIFIED",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"organizationalUnit"},
-		Required: []string{},
-		Optional: []string{"buildingName", "displayName", "labeledURI", "o"},
+		Silent:      true,
+		Inherit:     []string{"organizationalUnit"},
+		Required:    []string{},
+		Optional:    []string{"buildingName", "displayName", "labeledURI", "o"},
 	},
 	"OpenLDAPperson": &LDAPSchema{
 		Description: "OpenLDAP Person",
-		Type: "UNSPECIFIED",
+		Type:        "UNSPECIFIED",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{"pilotPerson", "inetOrgPerson"},
-		Required: []string{"uid", "cn"},
-		Optional: []string{"givenName", "labeledURI", "o"},
+		Silent:      true,
+		Inherit:     []string{"pilotPerson", "inetOrgPerson"},
+		Required:    []string{"uid", "cn"},
+		Optional:    []string{"givenName", "labeledURI", "o"},
 	},
 	"OpenLDAPdisplayableObject": &LDAPSchema{
 		Description: "OpenLDAP Displayable Object",
-		Type: "AUXILIARY",
+		Type:        "AUXILIARY",
 		IsContainer: false,
-		Silent: true,
-		Inherit: []string{},
-		Required: []string{},
-		Optional: []string{"displayName"},
+		Silent:      true,
+		Inherit:     []string{},
+		Required:    []string{},
+		Optional:    []string{"displayName"},
 	},
 	// SCHEMA: extra
 	"nsContainer": &LDAPSchema{ // https://access.redhat.com/documentation/en-US/Red_Hat_Directory_Server/8.1/html/Configuration_and_Command_Reference/config-object-classes.html
 		Description: "Container Entry",
-		Type: "UNSPECIFIED",
+		Type:        "UNSPECIFIED",
 		IsContainer: true,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{"cn"},
-		Optional: []string{},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{"cn"},
+		Optional:    []string{},
 	},
 	"aeZone": &LDAPSchema{ // https://docs.ldap.com/specs/draft-howard-namedobject-01.txt
-		Type: "STRUCTURAL",
+		Type:        "STRUCTURAL",
 		IsContainer: true,
-		Silent: true,
-		Inherit: []string{"top"},
-		Required: []string{},
-		Optional: []string{"cn"},
+		Silent:      true,
+		Inherit:     []string{"top"},
+		Required:    []string{},
+		Optional:    []string{"cn"},
 	},
 }
 
@@ -1377,7 +1390,7 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	// SCHEMA: core.schema:
 	"objectClass": &FormElement{
 		Description: "Object classes of the entity - RFC2256",
-		Order: 1,
+		Order:       1,
 		Datalist: func() []string {
 			list := make([]string, 0)
 			for key, _ := range Schema {
@@ -1401,19 +1414,19 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"cn": &FormElement{
 		Description: "Common name(s) for which the entity is known by - RFC2256",
-		Order: 1,
+		Order:       1,
 	},
 	"commonName": &FormElement{
 		Description: "Common name(s) for which the entity is known by - RFC2256",
-		Order: 2,
+		Order:       2,
 	},
 	"sn": &FormElement{
 		Description: "Last (family) name(s) for which the entity is known by - RFC2256",
-		Order: 4,
+		Order:       4,
 	},
 	"surname": &FormElement{
 		Description: "Last (family) name(s) for which the entity is known by - RFC2256",
-		Order: 4,
+		Order:       4,
 	},
 	"serialNumber": &FormElement{
 		Description: "Serial number of the entity - RFC2256",
@@ -1423,55 +1436,55 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"countryName": &FormElement{
 		Description: "Two-letter ISO-3166 country code - RFC4519",
-		Order: 15,
+		Order:       15,
 	},
 	"l": &FormElement{
 		Description: "Locality which this object resides in - RFC2256",
-		Order: 15,
+		Order:       15,
 	},
 	"localityName": &FormElement{
 		Description: "Locality which this object resides in - RFC2256",
-		Order: 15,
+		Order:       15,
 	},
 	"st": &FormElement{
 		Description: "State or province which this object resides in - RFC2256",
-		Order: 15,
+		Order:       15,
 	},
 	"stateOrProvinceName": &FormElement{
 		Description: "State or province which this object resides in - RFC2256",
-		Order: 15,
+		Order:       15,
 	},
 	"street": &FormElement{
 		Description: "Street address of this object - RFC2256",
-		Order: 15,
+		Order:       15,
 	},
 	"streetAddress": &FormElement{
 		Description: "Street address of this object - RFC2256",
-		Order: 15,
+		Order:       15,
 	},
 	"o": &FormElement{
 		Description: "Organization this object belongs to - RFC2256",
-		Order: 10,
+		Order:       10,
 	},
 	"organizationName": &FormElement{
 		Description: "Organization this object belongs to - RFC2256",
-		Order: 10,
+		Order:       10,
 	},
 	"ou": &FormElement{
 		Description: "Organizational unit this object belongs to - RFC2256",
-		Order: 10,
+		Order:       10,
 	},
 	"organizationalUnitName": &FormElement{
 		Description: "Organizational unit this object belongs to - RFC2256",
-		Order: 10,
+		Order:       10,
 	},
 	"title": &FormElement{
 		Description: "Title associated with the entity - RFC2256",
-		Order: 20,
+		Order:       20,
 	},
 	"description": &FormElement{
 		Description: "Descriptive information - RFC2256",
-		Order: 5,
+		Order:       5,
 	},
 	"searchGuide": &FormElement{
 		Description: "Search guide, deprecated by enhancedSearchGuide - RFC2256",
@@ -1481,39 +1494,39 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"postalAddress": &FormElement{
 		Description: "Postal address - RFC2256",
-		Order: 15,
+		Order:       15,
 	},
 	"postalCode": &FormElement{
 		Description: "Postal code - RFC2256",
-		Order: 15,
+		Order:       15,
 	},
 	"postOfficeBox": &FormElement{
 		Description: "Post Office Box - RFC2256",
-		Order: 15,
+		Order:       15,
 	},
 	"physicalDeliveryOfficeName": &FormElement{
 		Description: "Physical Delivery Office Name - RFC2256",
-		Order: 20,
+		Order:       20,
 	},
 	"telephoneNumber": &FormElement{
 		Description: "Telephone Number - RFC2256",
-		Order: 8,
+		Order:       8,
 	},
 	"telexNumber": &FormElement{
 		Description: "Telex Number - RFC2256",
-		Order: 25,
+		Order:       25,
 	},
 	"teletexTerminalIdentifier": &FormElement{
 		Description: "Teletex Terminal Identifier - RFC2256",
-		Order: 25,
+		Order:       25,
 	},
 	"facsimileTelephoneNumber": &FormElement{
 		Description: "Facsimile (Fax) Telephone Number - RFC2256",
-		Order: 25,
+		Order:       25,
 	},
 	"fax": &FormElement{
 		Description: "Facsimile (Fax) Telephone Number - RFC2256",
-		Order: 25,
+		Order:       25,
 	},
 	"x121Address": &FormElement{
 		Description: "X.121 Address - RFC2256",
@@ -1523,7 +1536,7 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"registeredAddress": &FormElement{
 		Description: "Registered postal address - RFC2256",
-		Order: 15,
+		Order:       15,
 	},
 	"destinationIndicator": &FormElement{
 		Description: "Destination indicator - RFC2256",
@@ -1548,11 +1561,11 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"seeAlso": &FormElement{
 		Description: "DN of related object - RFC2256",
-		Order: 20,
+		Order:       20,
 	},
 	"userPassword": &FormElement{
 		Description: "Password of user - RFC2256/2307",
-		Order: 6,
+		Order:       6,
 	},
 	"userCertificate": &FormElement{
 		Description: "X.509 user certificate, use ;binary - RFC2256",
@@ -1574,15 +1587,15 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"givenName": &FormElement{
 		Description: "First name(s) for which the entity is known by - RFC2256",
-		Order: 4,
+		Order:       4,
 	},
 	"gn": &FormElement{
 		Description: "First name(s) for which the entity is known by - RFC2256",
-		Order: 4,
+		Order:       4,
 	},
 	"initials": &FormElement{
 		Description: "Initials of some or all of names, but not the surname(s). - RFC2256",
-		Order: 20,
+		Order:       20,
 	},
 	"generationQualifier": &FormElement{
 		Description: "Name qualifier indicating a generation - RFC2256",
@@ -1599,11 +1612,10 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	"protocolInformation": &FormElement{
 		Description: "Protocol information - RFC2256",
 	},
-	"distinguishedName": &FormElement{
-	},
+	"distinguishedName": &FormElement{},
 	"uniqueMember": &FormElement{
 		Description: "Unique member of a group - RFC2256",
-		Order: 9,
+		Order:       9,
 	},
 	"houseIdentifier": &FormElement{
 		Description: "House identifier - RFC2256",
@@ -1625,25 +1637,25 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"uid": &FormElement{
 		Description: "User identifier - RFC1274",
-		Order: 7,
+		Order:       7,
 	},
 	"userid": &FormElement{
 		Description: "User identifier - RFC1274",
 	},
 	"mail": &FormElement{
 		Description: "RFC822 Mailbox - RFC1274",
-		Order: 7,
+		Order:       7,
 	},
 	"rfc822Mailbox": &FormElement{
 		Description: "RFC822 Mailbox - RFC1274",
 	},
 	"dc": &FormElement{
 		Description: "Domain component - RFC1274/2247",
-		Order: 10,
+		Order:       10,
 	},
 	"domainComponent": &FormElement{
 		Description: "Domain component - RFC1274/2247",
-		Order: 10,
+		Order:       10,
 	},
 	"associatedDomain": &FormElement{
 		Description: "Domain associated with object - RFC1274",
@@ -1661,31 +1673,31 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	// SCHEMA: inetorgperson.schema
 	"carLicense": &FormElement{
 		Description: "Vehicle license or registration plate - RFC2798",
-		Order: 20,
+		Order:       20,
 	},
 	"departmentNumber": &FormElement{
 		Description: "Identifies a department within an organization - RFC2798",
-		Order: 20,
+		Order:       20,
 	},
 	"displayName": &FormElement{
 		Description: "Preferred name to be used when displaying entries - RFC2798",
-		Order: 5,
+		Order:       5,
 	},
 	"employeeNumber": &FormElement{
 		Description: "Numerically identifies an employee within an organization - RFC2798",
-		Order: 20,
+		Order:       20,
 	},
 	"employeeType": &FormElement{
 		Description: "Type of employment for a person - RFC2798",
-		Order: 20,
+		Order:       20,
 	},
 	"jpegPhoto": &FormElement{
 		Description: "A JPEG image - RFC2798",
-		Order: 17,
+		Order:       17,
 	},
 	"preferredLanguage": &FormElement{
 		Description: "Preferred written or spoken language for a person - RFC2798",
-		Order: 19,
+		Order:       19,
 	},
 	"userSMIMECertificate": &FormElement{
 		Description: "PKCS7 SignedData used to support S/MIME - RFC2798",
@@ -1706,34 +1718,34 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"c-o": &FormElement{
 		Description: "Organization name for the collection of entries",
-		Order: 10,
+		Order:       10,
 	},
 	"c-ou": &FormElement{
 		Description: "Organizational unit name for the collection of entries",
-		Order: 10,
+		Order:       10,
 	},
 	"c-PostalAddress": &FormElement{
 		Description: "Postal address for the collection of entries",
-		Order: 15,
+		Order:       15,
 	},
 	"c-PostalCode": &FormElement{
-		Order: 15,
+		Order:       15,
 		Description: "Postal code for the collection of entries",
 	},
 	"c-PostOfficeBox": &FormElement{
-		Order: 15,
+		Order:       15,
 		Description: "Post office box for the collection of entries",
 	},
 	"c-PhysicalDeliveryOfficeName": &FormElement{
-		Order: 20,
+		Order:       20,
 		Description: "Physical dlivery office name for a collection of entries.",
 	},
 	"c-TelephoneNumber": &FormElement{
-		Order: 8,
+		Order:       8,
 		Description: "telephone number for the collection of entries",
 	},
 	"c-TelexNumber": &FormElement{
-		Order: 25,
+		Order:       25,
 		Description: "Telex number for the collection of entries",
 	},
 	"c-FacsimileTelephoneNumber": &FormElement{
@@ -1766,11 +1778,11 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"roomNumber": &FormElement{
 		Description: "Room number - RFC1274",
-		Order: 20,
+		Order:       20,
 	},
 	"photo": &FormElement{
 		Description: "Photo (G3 fax) - RFC1274",
-		Order: 17,
+		Order:       17,
 	},
 	"userClass": &FormElement{
 		Description: "Category of user - RFC1274",
@@ -1780,7 +1792,7 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"manager": &FormElement{
 		Description: "DN of manager - RFC1274",
-		Order: 20,
+		Order:       20,
 	},
 	"documentIdentifier": &FormElement{
 		Description: "Unique identifier of document - RFC1274",
@@ -1799,7 +1811,7 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"homePhone": &FormElement{
 		Description: "Home telephone number - RFC1274",
-		Order: 8,
+		Order:       8,
 	},
 	"homeTelephoneNumber": &FormElement{
 		Description: "Home telephone number - RFC1274",
@@ -1807,8 +1819,7 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	"secretary": &FormElement{
 		Description: "DN of secretary - RFC1274",
 	},
-	"otherMailbox": &FormElement{
-	},
+	"otherMailbox": &FormElement{},
 	"lastModifiedTime": &FormElement{
 		Description: "Time of last modify, replaced by modifyTimestamp - RFC1274",
 	},
@@ -1818,8 +1829,7 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	"aRecord": &FormElement{
 		Description: "Type A (Address) DNS resource record",
 	},
-	"mDRecord": &FormElement{
-	},
+	"mDRecord": &FormElement{},
 	"mXRecord": &FormElement{
 		Description: "Mail Exchange DNS resource record",
 	},
@@ -1837,26 +1847,26 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"homePostalAddress": &FormElement{
 		Description: "Home postal address - RFC1274",
-		Order: 15,
+		Order:       15,
 	},
 	"personalTitle": &FormElement{
 		Description: "Personal title - RFC1274",
 	},
 	"mobile": &FormElement{
 		Description: "Mobile telephone number - RFC1274",
-		Order: 8,
+		Order:       8,
 	},
 	"mobileTelephoneNumber": &FormElement{
 		Description: "Mobile telephone number - RFC1274",
-		Order: 8,
+		Order:       8,
 	},
 	"pager": &FormElement{
 		Description: "Pager telephone number - RFC1274",
-		Order: 20,
+		Order:       20,
 	},
 	"pagerTelephoneNumber": &FormElement{
 		Description: "Pager telephone number - RFC1274",
-		Order: 20,
+		Order:       20,
 	},
 	"co": &FormElement{
 		Description: "Friendly country name - RFC1274",
@@ -2003,1910 +2013,966 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	//////////////////////////
 	// SCHEMA: msuser.schema
-	"ownerBL": &FormElement{
-	},
-	"msCOM-PartitionSetLink": &FormElement{
-	},
-	"msCOM-UserLink": &FormElement{
-	},
-	"msDS-Approx-Immed-Subordinates": &FormElement{
-	},
-	"msDS-NCReplCursors": &FormElement{
-	},
-	"msDS-NCReplInboundNeighbors": &FormElement{
-	},
-	"msDS-NCReplOutboundNeighbors": &FormElement{
-	},
-	"msDS-ReplAttributeMetaData": &FormElement{
-	},
-	"msDS-ReplValueMetaData": &FormElement{
-	},
-	"msDS-NonMembers": &FormElement{
-	},
-	"msDS-NonMembersBL": &FormElement{
-	},
-	"msDS-MembersForAzRole": &FormElement{
-	},
-	"msDS-MembersForAzRoleBL": &FormElement{
-	},
-	"msDS-OperationsForAzTask": &FormElement{
-	},
-	"msDS-OperationsForAzTaskBL": &FormElement{
-	},
-	"msDS-TasksForAzTask": &FormElement{
-	},
-	"msDS-TasksForAzTaskBL": &FormElement{
-	},
-	"msDS-OperationsForAzRole": &FormElement{
-	},
-	"msDS-OperationsForAzRoleBL": &FormElement{
-	},
-	"msDS-TasksForAzRole": &FormElement{
-	},
-	"msDS-TasksForAzRoleBL": &FormElement{
-	},
-	"msDs-masteredBy": &FormElement{
-	},
-	"msDS-ObjectReference": &FormElement{
-	},
-	"msDS-ObjectReferenceBL": &FormElement{
-	},
-	"msDS-PrincipalName": &FormElement{
-	},
-	"msDS-RevealedDSAs": &FormElement{
-	},
-	"msDS-KrbTgtLinkBl": &FormElement{
-	},
-	"msDS-IsFullReplicaFor": &FormElement{
-	},
-	"msDS-IsDomainFor": &FormElement{
-	},
-	"msDS-IsPartialReplicaFor": &FormElement{
-	},
-	"msDS-AuthenticatedToAccountlist": &FormElement{
-	},
-	"msDS-AuthenticatedAtDC": &FormElement{
-	},
-	"msDS-RevealedListBL": &FormElement{
-	},
-	"msDS-NC-RO-Replica-Locations-BL": &FormElement{
-	},
-	"msDS-PSOApplied": &FormElement{
-	},
-	"msDS-NcType": &FormElement{
-	},
-	"msDS-OIDToGroupLinkBl": &FormElement{
-	},
-	"isRecycled": &FormElement{
-	},
-	"msDS-LocalEffectiveDeletionTime": &FormElement{
-	},
-	"msDS-LocalEffectiveRecycleTime": &FormElement{
-	},
-	"msDS-LastKnownRDN": &FormElement{
-	},
-	"msDS-EnabledFeatureBL": &FormElement{
-	},
-	"msDS-MembersOfResourcePropertyListBL": &FormElement{
-	},
-	"msDS-ValueTypeReferenceBL": &FormElement{
-	},
-	"msDS-TDOIngressBL": &FormElement{
-	},
-	"msDS-TDOEgressBL": &FormElement{
-	},
-	"msDS-parentdistname": &FormElement{
-	},
-	"msDS-ReplValueMetaDataExt": &FormElement{
-	},
-	"msds-memberOfTransitive": &FormElement{
-	},
-	"msds-memberTransitive": &FormElement{
-	},
-	"msSFU30PosixMemberOf": &FormElement{
-	},
-	"msDFSR-MemberReferenceBL": &FormElement{
-	},
-	"msDFSR-ComputerReferenceBL": &FormElement{
-	},
-	"msDS-AzLDAPQuery": &FormElement{
-	},
-	"msDS-AzBizRuleLanguage": &FormElement{
-	},
-	"msDS-AzLastImportedBizRulePath": &FormElement{
-	},
-	"msDS-AzApplicationData": &FormElement{
-	},
-	"msDS-AzObjectGuid": &FormElement{
-	},
-	"msDS-AzGenericData": &FormElement{
-	},
-	"msDS-PrimaryComputer": &FormElement{
-	},
-	"msSFU30Name": &FormElement{
-	},
-	"msSFU30NisDomain": &FormElement{
-	},
-	"msSFU30PosixMember": &FormElement{
-	},
-	"msCOM-UserPartitionSetLink": &FormElement{
-	},
-	"msDS-Cached-Membership": &FormElement{
-	},
-	"msDS-Cached-Membership-Time-Stamp": &FormElement{
-	},
-	"msDS-Site-Affinity": &FormElement{
-	},
-	"msDS-User-Account-Control-Computed": &FormElement{
-	},
-	"lastLogonTimestamp": &FormElement{
-	},
-	"msIIS-FTPRoot": &FormElement{
-	},
-	"msIIS-FTPDir": &FormElement{
-	},
-	"msDRM-IdentityCertificate": &FormElement{
-	},
-	"msDS-SourceObjectDN": &FormElement{
-	},
-	"msPKIRoamingTimeStamp": &FormElement{
-	},
-	"msPKIDPAPIMasterKeys": &FormElement{
-	},
-	"msPKIAccountCredentials": &FormElement{
-	},
-	"msRADIUS-FramedInterfaceId": &FormElement{
-	},
-	"msRADIUS-SavedFramedInterfaceId": &FormElement{
-	},
-	"msRADIUS-FramedIpv6Prefix": &FormElement{
-	},
-	"msRADIUS-SavedFramedIpv6Prefix": &FormElement{
-	},
-	"msRADIUS-FramedIpv6Route": &FormElement{
-	},
-	"msRADIUS-SavedFramedIpv6Route": &FormElement{
-	},
-	"msDS-SecondaryKrbTgtNumber": &FormElement{
-	},
-	"msDS-SupportedEncryptionTypes": &FormElement{
-	},
-	"msDS-LastSuccessfulInteractiveLogonTime": &FormElement{
-	},
-	"msDS-LastFailedInteractiveLogonTime": &FormElement{
-	},
-	"msDS-FailedInteractiveLogonCount": &FormElement{
-	},
-	"msDS-FailedInteractiveLogonCountAtLastSuccessfulLogon": &FormElement{
-	},
-	"msTSProfilePath": &FormElement{
-	},
-	"msTSHomeDirectory": &FormElement{
-	},
-	"msTSHomeDrive": &FormElement{
-	},
-	"msTSAllowLogon": &FormElement{
-	},
-	"msTSRemoteControl": &FormElement{
-	},
-	"msTSMaxDisconnectionTime": &FormElement{
-	},
-	"msTSMaxConnectionTime": &FormElement{
-	},
-	"msTSMaxIdleTime": &FormElement{
-	},
-	"msTSReconnectionAction": &FormElement{
-	},
-	"msTSBrokenConnectionAction": &FormElement{
-	},
-	"msTSConnectClientDrives": &FormElement{
-	},
-	"msTSConnectPrinterDrives": &FormElement{
-	},
-	"msTSDefaultToMainPrinter": &FormElement{
-	},
-	"msTSWorkDirectory": &FormElement{
-	},
-	"msTSInitialProgram": &FormElement{
-	},
-	"msTSProperty01": &FormElement{
-	},
-	"msTSProperty02": &FormElement{
-	},
-	"msTSExpireDate": &FormElement{
-	},
-	"msTSLicenseVersion": &FormElement{
-	},
-	"msTSManagingLS": &FormElement{
-	},
-	"msDS-UserPasswordExpiryTimeComputed": &FormElement{
-	},
-	"msTSManagingLS4": &FormElement{
-	},
-	"msTSManagingLS3": &FormElement{
-	},
-	"msTSManagingLS2": &FormElement{
-	},
-	"msTSExpireDate4": &FormElement{
-	},
-	"msTSExpireDate3": &FormElement{
-	},
-	"msTSExpireDate2": &FormElement{
-	},
-	"msTSLicenseVersion3": &FormElement{
-	},
-	"msTSLicenseVersion2": &FormElement{
-	},
-	"msTSLicenseVersion4": &FormElement{
-	},
-	"msTSLSProperty01": &FormElement{
-	},
-	"msTSLSProperty02": &FormElement{
-	},
-	"msDS-ResultantPSO": &FormElement{
-	},
-	"msPKI-CredentialRoamingTokens": &FormElement{
-	},
-	"msTSPrimaryDesktop": &FormElement{
-	},
-	"msTSSecondaryDesktops": &FormElement{
-	},
-	"msDS-SyncServerUrl": &FormElement{
-	},
-	"msDS-AssignedAuthNPolicySilo": &FormElement{
-	},
-	"msDS-AuthNPolicySiloMembersBL": &FormElement{
-	},
-	"msDS-AssignedAuthNPolicy": &FormElement{
-	},
-	"msDS-Behavior-Version": &FormElement{
-	},
-	"msDS-PerUserTrustQuota": &FormElement{
-	},
-	"msDS-AllUsersTrustQuota": &FormElement{
-	},
-	"msDS-PerUserTrustTombstonesQuota": &FormElement{
-	},
-	"msDS-AdditionalDnsHostName": &FormElement{
-	},
-	"msDS-AdditionalSamAccountName": &FormElement{
-	},
-	"msDS-ExecuteScriptPassword": &FormElement{
-	},
-	"msDS-KrbTgtLink": &FormElement{
-	},
-	"msDS-RevealedUsers": &FormElement{
-	},
-	"msDS-NeverRevealGroup": &FormElement{
-	},
-	"msDS-RevealOnDemandGroup": &FormElement{
-	},
-	"msDS-RevealedList": &FormElement{
-	},
-	"msDS-isGC": &FormElement{
-	},
-	"msDS-isRODC": &FormElement{
-	},
-	"msDS-SiteName": &FormElement{
-	},
-	"msDS-PromotionSettings": &FormElement{
-	},
-	"msTPM-OwnerInformation": &FormElement{
-	},
-	"msDS-IsUserCachableAtRodc": &FormElement{
-	},
-	"msDS-HostServiceAccount": &FormElement{
-	},
-	"msTSEndpointData": &FormElement{
-	},
-	"msTSEndpointType": &FormElement{
-	},
-	"msTSEndpointPlugin": &FormElement{
-	},
-	"msTSPrimaryDesktopBL": &FormElement{
-	},
-	"msTSSecondaryDesktopBL": &FormElement{
-	},
-	"msTPM-TpmInformationForComputer": &FormElement{
-	},
-	"msDS-GenerationId": &FormElement{
-	},
-	"msImaging-ThumbprintHash": &FormElement{
-	},
-	"msImaging-HashAlgorithm": &FormElement{
-	},
-	"netbootDUID": &FormElement{
-	},
-	"msSFU30Aliases": &FormElement{
-	},
-	"netbootNewMachineOU": &FormElement{
-	},
-	"builtinCreationTime": &FormElement{
-	},
-	"pKIEnrollmentAccess": &FormElement{
-	},
-	"pKIExtendedKeyUsage": &FormElement{
-	},
-	"msNPCalledStationID": &FormElement{
-	},
-	"initialAuthIncoming": &FormElement{
-	},
-	"objectClassCategory": &FormElement{
-	},
-	"generatedConnection": &FormElement{
-	},
-	"allowedChildClasses": &FormElement{
-	},
-	"machineArchitecture": &FormElement{
-	},
-	"aCSMaxPeakBandwidth": &FormElement{
-	},
-	"marshalledInterface": &FormElement{
-	},
-	"rIDManagerReference": &FormElement{
-	},
-	"aCSEnableACSService": &FormElement{
-	},
-	"mSMQRoutingService": &FormElement{
-	},
-	"mS-SQL-AllowQueuedUpdatingSubscription": &FormElement{
-	},
-	"primaryTelexNumber": &FormElement{
-	},
-	"userAccountControl": &FormElement{
-	},
-	"shellPropertyPages": &FormElement{
-	},
-	"replUpToDateVector": &FormElement{
-	},
-	"fRSDirectoryFilter": &FormElement{
-	},
-	"printSeparatorFile": &FormElement{
-	},
-	"pKIMaxIssuingDepth": &FormElement{
-	},
-	"accountNameHistory": &FormElement{
-	},
-	"mS-SQL-GPSLongitude": &FormElement{
-	},
-	"adminPropertyPages": &FormElement{
-	},
-	"securityIdentifier": &FormElement{
-	},
-	"groupMembershipSAM": &FormElement{
-	},
-	"serviceDNSNameType": &FormElement{
-	},
-	"meetingIsEncrypted": &FormElement{
-	},
-	"mS-SQL-Applications": &FormElement{
-	},
-	"lastUpdateSequence": &FormElement{
-	},
-	"lastContentIndexed": &FormElement{
-	},
-	"meetingDescription": &FormElement{
-	},
-	"fRSTimeLastCommand": &FormElement{
-	},
-	"monikerDisplayName": &FormElement{
-	},
-	"requiredCategories": &FormElement{
-	},
-	"upgradeProductCode": &FormElement{
-	},
-	"aCSMaxNoOfLogFiles": &FormElement{
-	},
-	"mS-SQL-CharacterSet": &FormElement{
-	},
-	"meetingContactInfo": &FormElement{
-	},
-	"mS-SQL-CreationDate": &FormElement{
-	},
-	"domainPolicyObject": &FormElement{
-	},
-	"dhcpObjDescription": &FormElement{
-	},
-	"meetingApplication": &FormElement{
-	},
-	"defaultHidingValue": &FormElement{
-	},
-	"fRSMemberReference": &FormElement{
-	},
-	"dhcpIdentification": &FormElement{
-	},
-	"trustAuthOutgoing": &FormElement{
-	},
-	"systemMustContain": &FormElement{
-	},
-	"primaryGroupToken": &FormElement{
-	},
-	"rpcNsProfileEntry": &FormElement{
-	},
-	"trustAuthIncoming": &FormElement{
-	},
-	"mSMQPrevSiteGates": &FormElement{
-	},
-	"queryPolicyObject": &FormElement{
-	},
-	"optionDescription": &FormElement{
-	},
-	"aCSMaximumSDUSize": &FormElement{
-	},
-	"nonSecurityMember": &FormElement{
-	},
-	"fRSReplicaSetType": &FormElement{
-	},
-	"aCSTotalNoOfFlows": &FormElement{
-	},
-	"possibleInferiors": &FormElement{
-	},
-	"netbootMaxClients": &FormElement{
-	},
-	"mS-SQL-GPSLatitude": &FormElement{
-	},
-	"aCSPermissionBits": &FormElement{
-	},
-	"mSMQTransactional": &FormElement{
-	},
-	"mS-SQL-Description": &FormElement{
-	},
-	"allowedAttributes": &FormElement{
-	},
-	"fRSFaultCondition": &FormElement{
-	},
-	"tombstoneLifetime": &FormElement{
-	},
-	"remoteStorageGUID": &FormElement{
-	},
-	"showInAddressBook": &FormElement{
-	},
-	"defaultClassStore": &FormElement{
-	},
-	"meetingOriginator": &FormElement{
-	},
-	"userPrincipalName": &FormElement{
-	},
-	"aCSMinimumLatency": &FormElement{
-	},
-	"isPrivilegeHolder": &FormElement{
-	},
-	"fRSReplicaSetGUID": &FormElement{
-	},
-	"rIDAllocationPool": &FormElement{
-	},
-	"pKIDefaultKeySpec": &FormElement{
-	},
-	"dynamicLDAPServer": &FormElement{
-	},
-	"serverReferenceBL": &FormElement{
-	},
-	"fRSServiceCommand": &FormElement{
-	},
-	"sDRightsEffective": &FormElement{
-	},
-	"proxiedObjectName": &FormElement{
-	},
-	"meetingRecurrence": &FormElement{
-	},
-	"cOMTreatAsClassId": &FormElement{
-	},
-	"globalAddressList": &FormElement{
-	},
-	"extendedClassInfo": &FormElement{
-	},
-	"machineWidePolicy": &FormElement{
-	},
-	"foreignIdentifier": &FormElement{
-	},
-	"dNReferenceUpdate": &FormElement{
-	},
-	"trustPosixOffset": &FormElement{
-	},
-	"enabledConnection": &FormElement{
-	},
-	"ipsecNFAReference": &FormElement{
-	},
-	"userWorkstations": &FormElement{
-	},
-	"garbageCollPeriod": &FormElement{
-	},
-	"mSMQComputerType": &FormElement{
-	},
-	"logonWorkstation": &FormElement{
-	},
-	"mSMQJournalQuota": &FormElement{
-	},
-	"remoteSourceType": &FormElement{
-	},
-	"pwdHistoryLength": &FormElement{
-	},
-	"mSMQBasePriority": &FormElement{
-	},
-	"systemMayContain": &FormElement{
-	},
-	"mS-SQL-ThirdParty": &FormElement{
-	},
-	"mSMQQueueNameExt": &FormElement{
-	},
-	"fRSUpdateTimeout": &FormElement{
-	},
-	"mSMQPrivacyLevel": &FormElement{
-	},
-	"shellContextMenu": &FormElement{
-	},
-	"wellKnownObjects": &FormElement{
-	},
-	"transportDLLName": &FormElement{
-	},
-	"qualityOfService": &FormElement{
-	},
-	"lockoutThreshold": &FormElement{
-	},
-	"remoteServerName": &FormElement{
-	},
-	"previousParentCA": &FormElement{
-	},
-	"dSUIShellMaximum": &FormElement{
-	},
-	"notificationList": &FormElement{
-	},
-	"addressBookRoots": &FormElement{
-	},
-	"fRSPrimaryMember": &FormElement{
-	},
-	"meetingStartTime": &FormElement{
-	},
-	"mSMQSiteGatesMig": &FormElement{
-	},
-	"dhcpReservations": &FormElement{
-	},
-	"adminContextMenu": &FormElement{
-	},
-	"pKIOverlapPeriod": &FormElement{
-	},
-	"winsockAddresses": &FormElement{
-	},
-	"mSMQAuthenticate": &FormElement{
-	},
-	"dSUIAdminMaximum": &FormElement{
-	},
-	"appSchemaVersion": &FormElement{
-	},
-	"serviceClassInfo": &FormElement{
-	},
-	"aCSEventLogLevel": &FormElement{
-	},
-	"userSharedFolder": &FormElement{
-	},
-	"domainWidePolicy": &FormElement{
-	},
-	"rIDSetReferences": &FormElement{
-	},
-	"canUpgradeScript": &FormElement{
-	},
-	"classDisplayName": &FormElement{
-	},
-	"adminDescription": &FormElement{
-	},
-	"lSAModifiedCount": &FormElement{
-	},
-	"serviceClassName": &FormElement{
-	},
-	"localPolicyFlags": &FormElement{
-	},
-	"rpcNsInterfaceID": &FormElement{
-	},
-	"adminDisplayName": &FormElement{
-	},
-	"nameServiceFlags": &FormElement{
-	},
-	"meetingBandwidth": &FormElement{
-	},
-	"domainIdentifier": &FormElement{
-	},
-	"rIDAvailablePool": &FormElement{
-	},
-	"legacyExchangeDN": &FormElement{
-	},
-	"trustAttributes": &FormElement{
-	},
-	"fRSRootSecurity": &FormElement{
-	},
-	"superiorDNSRoot": &FormElement{
-	},
-	"printMaxYExtent": &FormElement{
-	},
-	"printMaxXExtent": &FormElement{
-	},
-	"printMinYExtent": &FormElement{
-	},
-	"printMinXExtent": &FormElement{
-	},
-	"attributeSyntax": &FormElement{
-	},
-	"printAttributes": &FormElement{
-	},
-	"groupAttributes": &FormElement{
-	},
-	"fileExtPriority": &FormElement{
-	},
-	"mSMQServiceType": &FormElement{
-	},
-	"operatingSystem": &FormElement{
-	},
-	"mS-SQL-SortOrder": &FormElement{
-	},
-	"versionNumberLo": &FormElement{
-	},
-	"msRRASAttribute": &FormElement{
-	},
-	"lastKnownParent": &FormElement{
-	},
-	"shortServerName": &FormElement{
-	},
-	"lockoutDuration": &FormElement{
-	},
-	"defaultPriority": &FormElement{
-	},
-	"rpcNsEntryFlags": &FormElement{
-	},
-	"optionsLocation": &FormElement{
-	},
-	"versionNumberHi": &FormElement{
-	},
-	"rpcNsAnnotation": &FormElement{
-	},
-	"purportedSearch": &FormElement{
-	},
-	"aCSDSBMPriority": &FormElement{
-	},
-	"mSMQSiteForeign": &FormElement{
-	},
-	"currentLocation": &FormElement{
-	},
-	"meetingProtocol": &FormElement{
-	},
-	"publicKeyPolicy": &FormElement{
-	},
-	"mS-SQL-Publisher": &FormElement{
-	},
-	"createWizardExt": &FormElement{
-	},
-	"mS-SQL-Clustered": &FormElement{
-	},
-	"volTableIdxGUID": &FormElement{
-	},
-	"currentParentCA": &FormElement{
-	},
-	"seqNotification": &FormElement{
-	},
-	"serverReference": &FormElement{
-	},
-	"msNPAllowDialin": &FormElement{
-	},
-	"mS-SQL-GPSHeight": &FormElement{
-	},
-	"mS-SQL-AppleTalk": &FormElement{
-	},
-	"linkTrackSecret": &FormElement{
-	},
-	"dnsAllowDynamic": &FormElement{
-	},
-	"badPasswordTime": &FormElement{
-	},
-	"privilegeHolder": &FormElement{
-	},
-	"printMediaReady": &FormElement{
-	},
-	"printMACAddress": &FormElement{
-	},
-	"lSACreationTime": &FormElement{
-	},
-	"meetingLocation": &FormElement{
-	},
-	"aCSIdentityName": &FormElement{
-	},
-	"mS-DS-CreatorSID": &FormElement{
-	},
-	"mS-SQL-NamedPipe": &FormElement{
-	},
-	"lDAPAdminLimits": &FormElement{
-	},
-	"lDAPDisplayName": &FormElement{
-	},
-	"applicationName": &FormElement{
-	},
-	"pendingParentCA": &FormElement{
-	},
-	"aCSCacheTimeout": &FormElement{
-	},
-	"meetingLanguage": &FormElement{
-	},
-	"aCSDSBMDeadTime": &FormElement{
-	},
-	"cACertificateDN": &FormElement{
-	},
-	"userParameters": &FormElement{
-	},
-	"trustDirection": &FormElement{
-	},
-	"mSMQQueueQuota": &FormElement{
-	},
-	"mSMQEncryptKey": &FormElement{
-	},
-	"terminalServer": &FormElement{
-	},
-	"printStartTime": &FormElement{
-	},
-	"syncWithObject": &FormElement{
-	},
-	"groupsToIgnore": &FormElement{
-	},
-	"syncMembership": &FormElement{
-	},
-	"syncAttributes": &FormElement{
-	},
-	"nextLevelStore": &FormElement{
-	},
-	"sAMAccountType": &FormElement{
-	},
-	"mS-SQL-Keywords": &FormElement{
-	},
-	"proxyAddresses": &FormElement{
-	},
-	"bytesPerMinute": &FormElement{
-	},
-	"printMaxCopies": &FormElement{
-	},
-	"primaryGroupID": &FormElement{
-	},
-	"nTGroupMembers": &FormElement{
-	},
-	"mSMQDsServices": &FormElement{
-	},
-	"fRSVersionGUID": &FormElement{
-	},
-	"fRSWorkingPath": &FormElement{
-	},
-	"otherTelephone": &FormElement{
-	},
-	"otherHomePhone": &FormElement{
-	},
-	"oEMInformation": &FormElement{
-	},
-	"networkAddress": &FormElement{
-	},
-	"mSMQDigestsMig": &FormElement{
-	},
-	"meetingKeyword": &FormElement{
-	},
-	"lDAPIPDenyList": &FormElement{
-	},
-	"installUiLevel": &FormElement{
-	},
-	"gPCFileSysPath": &FormElement{
-	},
-	"fRSStagingPath": &FormElement{
-	},
-	"auxiliaryClass": &FormElement{
-	},
-	"accountExpires": &FormElement{
-	},
-	"dhcpProperties": &FormElement{
-	},
-	"desktopProfile": &FormElement{
-	},
-	"aCSServiceType": &FormElement{
-	},
-	"assocNTAccount": &FormElement{
-	},
-	"creationWizard": &FormElement{
-	},
-	"cOMOtherProgId": &FormElement{
-	},
-	"auditingPolicy": &FormElement{
-	},
-	"privilegeValue": &FormElement{
-	},
-	"mS-SQL-Location": &FormElement{
-	},
-	"pKIDefaultCSPs": &FormElement{
-	},
-	"printShareName": &FormElement{
-	},
-	"isSingleValued": &FormElement{
-	},
-	"domainCrossRef": &FormElement{
-	},
-	"netbootSIFFile": &FormElement{
-	},
-	"cOMUniqueLIBID": &FormElement{
-	},
-	"serviceDNSName": &FormElement{
-	},
-	"objectCategory": &FormElement{
-	},
-	"serviceClassID": &FormElement{
-	},
-	"dhcpUpdateTime": &FormElement{
-	},
-	"sAMAccountName": &FormElement{
-	},
-	"meetingEndTime": &FormElement{
-	},
-	"mS-SQL-Language": &FormElement{
-	},
-	"aCSDSBMRefresh": &FormElement{
-	},
-	"mS-SQL-Database": &FormElement{
-	},
-	"cOMInterfaceID": &FormElement{
-	},
-	"mS-SQL-AllowKnownPullSubscription": &FormElement{
-	},
-	"mS-SQL-AllowAnonymousSubscription": &FormElement{
-	},
-	"managedObjects": &FormElement{
-	},
-	"possSuperiors": &FormElement{
-	},
-	"transportType": &FormElement{
-	},
-	"groupPriority": &FormElement{
-	},
-	"rpcNsPriority": &FormElement{
-	},
-	"mSMQQueueType": &FormElement{
-	},
-	"versionNumber": &FormElement{
-	},
-	"uSNLastObjRem": &FormElement{
-	},
-	"templateRoots": &FormElement{
-	},
-	"pwdProperties": &FormElement{
-	},
-	"printNumberUp": &FormElement{
-	},
-	"fRSExtensions": &FormElement{
-	},
-	"printRateUnit": &FormElement{
-	},
-	"msiScriptSize": &FormElement{
-	},
-	"printSpooling": &FormElement{
-	},
-	"queryPolicyBL": &FormElement{
-	},
-	"proxyLifetime": &FormElement{
-	},
-	"operatorCount": &FormElement{
-	},
-	"netbootServer": &FormElement{
-	},
-	"fSMORoleOwner": &FormElement{
-	},
-	"driverVersion": &FormElement{
-	},
-	"mS-SQL-Version": &FormElement{
-	},
-	"mSMQNameStyle": &FormElement{
-	},
-	"schemaVersion": &FormElement{
-	},
-	"directReports": &FormElement{
-	},
-	"addressSyntax": &FormElement{
-	},
-	"printFormName": &FormElement{
-	},
-	"msiScriptPath": &FormElement{
-	},
-	"aCSServerList": &FormElement{
-	},
-	"moveTreeState": &FormElement{
-	},
-	"mSMQSiteGates": &FormElement{
-	},
-	"mSMQDsService": &FormElement{
-	},
-	"objectVersion": &FormElement{
-	},
-	"dNSTombstoned": &FormElement{
-	},
-	"mSMQLongLived": &FormElement{
-	},
-	"fRSLevelLimit": &FormElement{
-	},
-	"msiScriptName": &FormElement{
-	},
-	"dhcpUniqueKey": &FormElement{
-	},
-	"extensionName": &FormElement{
-	},
-	"rpcNsBindings": &FormElement{
-	},
-	"printBinNames": &FormElement{
-	},
-	"replicaSource": &FormElement{
-	},
-	"printLanguage": &FormElement{
-	},
-	"mS-SQL-Contact": &FormElement{
-	},
-	"nTMixedDomain": &FormElement{
-	},
-	"fRSFileFilter": &FormElement{
-	},
-	"birthLocation": &FormElement{
-	},
-	"friendlyNames": &FormElement{
-	},
-	"ipsecDataType": &FormElement{
-	},
-	"meetingRating": &FormElement{
-	},
-	"indexedScopes": &FormElement{
-	},
-	"rpcNsObjectID": &FormElement{
-	},
-	"modifiedCount": &FormElement{
-	},
-	"oMObjectClass": &FormElement{
-	},
-	"aCSPolicyName": &FormElement{
-	},
-	"timeVolChange": &FormElement{
-	},
-	"currMachineId": &FormElement{
-	},
-	"schemaFlagsEx": &FormElement{
-	},
-	"validAccesses": &FormElement{
-	},
-	"domainReplica": &FormElement{
-	},
-	"mSMQInterval2": &FormElement{
-	},
-	"mSMQInterval1": &FormElement{
-	},
-	"canonicalName": &FormElement{
-	},
-	"ntPwdHistory": &FormElement{
-	},
-	"trustPartner": &FormElement{
-	},
-	"lmPwdHistory": &FormElement{
-	},
-	"mS-SQL-Status": &FormElement{
-	},
-	"USNIntersite": &FormElement{
-	},
-	"netbootTools": &FormElement{
-	},
-	"priorSetTime": &FormElement{
-	},
-	"mS-SQL-Memory": &FormElement{
-	},
-	"mSMQServices": &FormElement{
-	},
-	"currentValue": &FormElement{
-	},
-	"siteLinkList": &FormElement{
-	},
-	"remoteSource": &FormElement{
-	},
-	"setupCommand": &FormElement{
-	},
-	"dSHeuristics": &FormElement{
-	},
-	"replInterval": &FormElement{
-	},
-	"printEndTime": &FormElement{
-	},
-	"instanceType": &FormElement{
-	},
-	"otherIpPhone": &FormElement{
-	},
-	"mSMQSiteName": &FormElement{
-	},
-	"meetingOwner": &FormElement{
-	},
-	"printCollate": &FormElement{
-	},
-	"defaultGroup": &FormElement{
-	},
-	"minPwdLength": &FormElement{
-	},
-	"netbootSCPBL": &FormElement{
-	},
-	"mhsORAddress": &FormElement{
-	},
-	"rpcNsCodeset": &FormElement{
-	},
-	"hasMasterNCs": &FormElement{
-	},
-	"mSMQMigrated": &FormElement{
-	},
-	"dSASignature": &FormElement{
-	},
-	"invocationId": &FormElement{
-	},
-	"cOMTypelibId": &FormElement{
-	},
-	"creationTime": &FormElement{
-	},
-	"meetingScope": &FormElement{
-	},
-	"volTableGUID": &FormElement{
-	},
-	"siteObjectBL": &FormElement{
-	},
-	"aCSTimeOfDay": &FormElement{
-	},
-	"aCSDirection": &FormElement{
-	},
-	"maxTicketAge": &FormElement{
-	},
-	"schemaUpdate": &FormElement{
-	},
-	"minTicketAge": &FormElement{
-	},
-	"ipsecNegotiationPolicyReference": &FormElement{
-	},
-	"helpFileName": &FormElement{
-	},
-	"schemaIDGUID": &FormElement{
-	},
-	"createDialog": &FormElement{
-	},
-	"mSMQNt4Flags": &FormElement{
-	},
-	"packageFlags": &FormElement{
-	},
-	"wWWHomePage": &FormElement{
-	},
-	"volumeCount": &FormElement{
-	},
-	"printStatus": &FormElement{
-	},
-	"uPNSuffixes": &FormElement{
-	},
-	"trustParent": &FormElement{
-	},
-	"tokenGroups": &FormElement{
-	},
-	"systemFlags": &FormElement{
-	},
-	"syncWithSID": &FormElement{
-	},
-	"dNSProperty": &FormElement{
-	},
-	"superScopes": &FormElement{
-	},
-	"sPNMappings": &FormElement{
-	},
-	"printNotify": &FormElement{
-	},
-	"printMemory": &FormElement{
-	},
-	"serverState": &FormElement{
-	},
-	"mSMQVersion": &FormElement{
-	},
-	"rIDUsedPool": &FormElement{
-	},
-	"queryFilter": &FormElement{
-	},
-	"printerName": &FormElement{
-	},
-	"preferredOU": &FormElement{
-	},
-	"primaryInternationalISDNNumber": &FormElement{
-	},
-	"oMTIndxGuid": &FormElement{
-	},
-	"mSMQUserSid": &FormElement{
-	},
-	"fRSRootPath": &FormElement{
-	},
-	"mSMQJournal": &FormElement{
-	},
-	"contextMenu": &FormElement{
-	},
-	"aCSPriority": &FormElement{
-	},
-	"mSMQSignKey": &FormElement{
-	},
-	"netbootGUID": &FormElement{
-	},
-	"mSMQOwnerID": &FormElement{
-	},
-	"mustContain": &FormElement{
-	},
-	"dnsAllowXFR": &FormElement{
-	},
-	"mS-SQL-Vines": &FormElement{
-	},
-	"mSMQDigests": &FormElement{
-	},
-	"lockoutTime": &FormElement{
-	},
-	"lastSetTime": &FormElement{
-	},
-	"countryCode": &FormElement{
-	},
-	"mS-SQL-TCPIP": &FormElement{
-	},
-	"mSMQForeign": &FormElement{
-	},
-	"meetingType": &FormElement{
-	},
-	"dhcpOptions": &FormElement{
-	},
-	"dhcpServers": &FormElement{
-	},
-	"assetNumber": &FormElement{
-	},
-	"addressType": &FormElement{
-	},
-	"mSMQCSPName": &FormElement{
-	},
-	"msiFileList": &FormElement{
-	},
-	"dNSHostName": &FormElement{
-	},
-	"dhcpSubnets": &FormElement{
-	},
-	"pKIKeyUsage": &FormElement{
-	},
-	"attributeID": &FormElement{
-	},
-	"objectCount": &FormElement{
-	},
-	"timeRefresh": &FormElement{
-	},
-	"profilePath": &FormElement{
-	},
-	"productCode": &FormElement{
-	},
-	"otherMobile": &FormElement{
-	},
-	"badPwdCount": &FormElement{
-	},
-	"mS-SQL-Build": &FormElement{
-	},
-	"nETBIOSName": &FormElement{
-	},
-	"mS-SQL-Alias": &FormElement{
-	},
-	"maxRenewAge": &FormElement{
-	},
-	"treatAsLeaf": &FormElement{
-	},
-	"mSMQNt4Stub": &FormElement{
-	},
-	"packageType": &FormElement{
-	},
-	"isEphemeral": &FormElement{
-	},
-	"dMDLocation": &FormElement{
-	},
-	"dhcpClasses": &FormElement{
-	},
-	"forceLogoff": &FormElement{
-	},
-	"whenCreated": &FormElement{
-	},
-	"meetingName": &FormElement{
-	},
-	"mailAddress": &FormElement{
-	},
-	"meetingBlob": &FormElement{
-	},
-	"machineRole": &FormElement{
-	},
-	"searchFlags": &FormElement{
-	},
-	"whenChanged": &FormElement{
-	},
-	"dhcpObjName": &FormElement{
-	},
-	"aCSMaxAggregatePeakRatePerUser": &FormElement{
-	},
-	"packageName": &FormElement{
-	},
-	"systemOnly": &FormElement{
-	},
-	"mSMQOSType": &FormElement{
-	},
-	"queryPoint": &FormElement{
-	},
-	"printOwner": &FormElement{
-	},
-	"uSNCreated": &FormElement{
-	},
-	"siteServer": &FormElement{
-	},
-	"rpcNsGroup": &FormElement{
-	},
-	"sIDHistory": &FormElement{
-	},
-	"fRSVersion": &FormElement{
-	},
-	"logonHours": &FormElement{
-	},
-	"netbootAnswerOnlyValidClients": &FormElement{
-	},
-	"pwdLastSet": &FormElement{
-	},
-	"printColor": &FormElement{
-	},
-	"mS-SQL-Type": &FormElement{
-	},
-	"fromServer": &FormElement{
-	},
-	"serverRole": &FormElement{
-	},
-	"priorValue": &FormElement{
-	},
-	"logonCount": &FormElement{
-	},
-	"unicodePwd": &FormElement{
-	},
-	"subClassOf": &FormElement{
-	},
-	"mS-SQL-Size": &FormElement{
-	},
-	"privateKey": &FormElement{
-	},
-	"siteObject": &FormElement{
-	},
-	"scriptPath": &FormElement{
-	},
-	"serverName": &FormElement{
-	},
-	"mSMQSiteID": &FormElement{
-	},
-	"rightsGuid": &FormElement{
-	},
-	"rIDNextRID": &FormElement{
-	},
-	"meetingURL": &FormElement{
-	},
-	"addressEntryDisplayTableMSDOS": &FormElement{
-	},
-	"maxStorage": &FormElement{
-	},
-	"rangeUpper": &FormElement{
-	},
-	"rangeLower": &FormElement{
-	},
-	"otherPager": &FormElement{
-	},
-	"isMemberOfPartialAttributeSet": &FormElement{
-	},
-	"parentGUID": &FormElement{
-	},
-	"department": &FormElement{
-	},
-	"mayContain": &FormElement{
-	},
-	"adminCount": &FormElement{
-	},
-	"lastLogoff": &FormElement{
-	},
-	"masteredBy": &FormElement{
-	},
-	"employeeID": &FormElement{
-	},
-	"dhcpMaxKey": &FormElement{
-	},
-	"driverName": &FormElement{
-	},
-	"mS-SQL-Name": &FormElement{
-	},
-	"categoryId": &FormElement{
-	},
-	"additionalTrustedServiceNames": &FormElement{
-	},
-	"scopeFlags": &FormElement{
-	},
-	"categories": &FormElement{
-	},
-	"netbootNewMachineNamingPolicy": &FormElement{
-	},
-	"cOMClassID": &FormElement{
-	},
-	"uSNChanged": &FormElement{
-	},
-	"objectGUID": &FormElement{
-	},
-	"dhcpRanges": &FormElement{
-	},
-	"schemaInfo": &FormElement{
-	},
-	"otherFacsimileTelephoneNumber": &FormElement{
-	},
-	"machinePasswordChangeInterval": &FormElement{
-	},
-	"rootTrust": &FormElement{
-	},
-	"trustType": &FormElement{
-	},
-	"groupType": &FormElement{
-	},
-	"uSNSource": &FormElement{
-	},
-	"mSMQQuota": &FormElement{
-	},
-	"mSMQSites": &FormElement{
-	},
-	"fromEntry": &FormElement{
-	},
-	"mS-SQL-SPX": &FormElement{
-	},
-	"gPOptions": &FormElement{
-	},
-	"msiScript": &FormElement{
-	},
-	"printRate": &FormElement{
-	},
-	"cRLPartitionedRevocationList": &FormElement{
-	},
-	"assistant": &FormElement{
-	},
-	"fRSDSPoll": &FormElement{
-	},
-	"partialAttributeDeletionList": &FormElement{
-	},
-	"lastLogon": &FormElement{
-	},
-	"governsID": &FormElement{
-	},
-	"appliesTo": &FormElement{
-	},
-	"eFSPolicy": &FormElement{
-	},
-	"uASCompat": &FormElement{
-	},
-	"prefixMap": &FormElement{
-	},
-	"isDefunct": &FormElement{
-	},
-	"dhcpSites": &FormElement{
-	},
-	"iPSECNegotiationPolicyAction": &FormElement{
-	},
-	"dnsRecord": &FormElement{
-	},
-	"cOMProgID": &FormElement{
-	},
-	"homeDrive": &FormElement{
-	},
-	"meetingIP": &FormElement{
-	},
-	"aCSNonReservedMinPolicedSize": &FormElement{
-	},
-	"dhcpState": &FormElement{
-	},
-	"mSMQLabel": &FormElement{
-	},
-	"maxPwdAge": &FormElement{
-	},
-	"minPwdAge": &FormElement{
-	},
-	"cRLObject": &FormElement{
-	},
-	"objectSid": &FormElement{
-	},
-	"meetingID": &FormElement{
-	},
-	"ipsecName": &FormElement{
-	},
-	"isDeleted": &FormElement{
-	},
-	"aCSAggregateTokenRatePerUser": &FormElement{
-	},
-	"ipsecData": &FormElement{
-	},
-	"domainCAs": &FormElement{
-	},
-	"cAConnect": &FormElement{
-	},
-	"printMaxResolutionSupported": &FormElement{
-	},
-	"dhcpFlags": &FormElement{
-	},
-	"helpData16": &FormElement{
-	},
-	"managedBy": &FormElement{
-	},
-	"helpData32": &FormElement{
-	},
-	"mSMQSite2": &FormElement{
-	},
-	"mSMQSite1": &FormElement{
-	},
-	"replTopologyStayOfExecution": &FormElement{
-	},
-	"allowedChildClassesEffective": &FormElement{
-	},
-	"oMSyntax": &FormElement{
-	},
-	"priority": &FormElement{
-	},
-	"keywords": &FormElement{
-	},
-	"mSMQCost": &FormElement{
-	},
-	"siteList": &FormElement{
-	},
-	"revision": &FormElement{
-	},
-	"repsFrom": &FormElement{
-	},
-	"userCert": &FormElement{
-	},
-	"mSMQQMID": &FormElement{
-	},
-	"portName": &FormElement{
-	},
-	"netbootLocallyInstalledOSes": &FormElement{
-	},
-	"division": &FormElement{
-	},
-	"aCSMaxSizeOfRSVPAccountFile": &FormElement{
-	},
-	"dhcpType": &FormElement{
-	},
-	"wbemPath": &FormElement{
-	},
-	"siteGUID": &FormElement{
-	},
-	"rDNAttID": &FormElement{
-	},
-	"aCSRSVPAccountFilesLocation": &FormElement{
-	},
-	"mSMQDependentClientServices": &FormElement{
-	},
-	"location": &FormElement{
-	},
-	"fRSFlags": &FormElement{
-	},
-	"iconPath": &FormElement{
-	},
-	"cAWEBURL": &FormElement{
-	},
-	"mscopeId": &FormElement{
-	},
-	"treeName": &FormElement{
-	},
-	"schedule": &FormElement{
-	},
-	"parentCA": &FormElement{
-	},
-	"cOMCLSID": &FormElement{
-	},
-	"catalogs": &FormElement{
-	},
-	"memberOf": &FormElement{
-	},
-	"cAUsages": &FormElement{
-	},
-	"dhcpMask": &FormElement{
-	},
-	"flatName": &FormElement{
-	},
-	"domainID": &FormElement{
-	},
-	"localeID": &FormElement{
-	},
-	"codePage": &FormElement{
-	},
-	"aCSEnableRSVPMessageLogging": &FormElement{
-	},
-	"printOrientationsSupported": &FormElement{
-	},
-	"msRRASVendorAttributeEntry": &FormElement{
-	},
-	"interSiteTopologyGenerator": &FormElement{
-	},
-	"options": &FormElement{
-	},
-	"dnsRoot": &FormElement{
-	},
-	"iPSECNegotiationPolicyType": &FormElement{
-	},
-	"mS-SQL-InformationDirectory": &FormElement{
-	},
-	"operatingSystemServicePack": &FormElement{
-	},
-	"nextRid": &FormElement{
-	},
-	"pekList": &FormElement{
-	},
-	"subRefs": &FormElement{
-	},
-	"oMTGuid": &FormElement{
-	},
-	"pKTGuid": &FormElement{
-	},
-	"company": &FormElement{
-	},
-	"moniker": &FormElement{
-	},
-	"comment": &FormElement{
-	},
-	"ipPhone": &FormElement{
-	},
-	"mS-DS-ConsistencyChildCount": &FormElement{
-	},
-	"creator": &FormElement{
-	},
-	"uNCName": &FormElement{
-	},
-	"dBCSPwd": &FormElement{
-	},
-	"mSMQDependentClientService": &FormElement{
-	},
-	"certificateAuthorityObject": &FormElement{
-	},
-	"ipsecID": &FormElement{
-	},
-	"allowedAttributesEffective": &FormElement{
-	},
-	"aCSMaxPeakBandwidthPerFlow": &FormElement{
-	},
-	"Enabled": &FormElement{
-	},
-	"perRecipDialogDisplayTable": &FormElement{
-	},
-	"interSiteTopologyFailover": &FormElement{
-	},
-	"transportAddressAttribute": &FormElement{
-	},
-	"netbootCurrentClientCount": &FormElement{
-	},
-	"rIDPreviousAllocationPool": &FormElement{
-	},
-	"repsTo": &FormElement{
-	},
-	"defaultSecurityDescriptor": &FormElement{
-	},
-	"lastBackupRestorationTime": &FormElement{
-	},
-	"fRSControlOutboundBacklog": &FormElement{
-	},
-	"vendor": &FormElement{
-	},
-	"gPLink": &FormElement{
-	},
-	"originalDisplayTableMSDOS": &FormElement{
-	},
-	"linkID": &FormElement{
-	},
-	"msNPSavedCallingStationID": &FormElement{
-	},
-	"mAPIID": &FormElement{
-	},
-	"serviceBindingInformation": &FormElement{
-	},
-	"nCName": &FormElement{
-	},
-	"tokenGroupsNoGCAcceptable": &FormElement{
-	},
-	"tokenGroupsGlobalAndUniversal": &FormElement{
-	},
-	"msRASSavedFramedIPAddress": &FormElement{
-	},
-	"aCSAllocableRSVPBandwidth": &FormElement{
-	},
-	"lockOutObservationWindow": &FormElement{
-	},
-	"netbootIntelliMirrorOSes": &FormElement{
-	},
-	"aCSNonReservedMaxSDUSize": &FormElement{
-	},
-	"notes": &FormElement{
-	},
-	"retiredReplDSASignatures": &FormElement{
-	},
-	"aCSMaxTokenBucketPerFlow": &FormElement{
-	},
-	"addressEntryDisplayTable": &FormElement{
-	},
-	"aCSMinimumDelayVariation": &FormElement{
-	},
-	"fRSControlInboundBacklog": &FormElement{
-	},
-	"flags": &FormElement{
-	},
-	"mS-SQL-LastDiagnosticDate": &FormElement{
-	},
-	"gPCMachineExtensionNames": &FormElement{
-	},
-	"ms-DS-MachineAccountQuota": &FormElement{
-	},
-	"perMsgDialogDisplayTable": &FormElement{
-	},
-	"defaultLocalPolicyObject": &FormElement{
-	},
-	"msRASSavedCallbackNumber": &FormElement{
-	},
-	"parentCACertificateChain": &FormElement{
-	},
-	"gPCFunctionalityVersion": &FormElement{
-	},
-	"fRSServiceCommandStatus": &FormElement{
-	},
-	"aCSNonReservedTokenSize": &FormElement{
-	},
-	"aCSMaxSizeOfRSVPLogFile": &FormElement{
-	},
-	"cost": &FormElement{
-	},
-	"modifiedCountAtLastProm": &FormElement{
-	},
-	"aCSRSVPLogFilesLocation": &FormElement{
-	},
-	"supplementalCredentials": &FormElement{
-	},
-	"bridgeheadTransportList": &FormElement{
-	},
-	"mSMQSignCertificatesMig": &FormElement{
-	},
-	"msRADIUSFramedIPAddress": &FormElement{
-	},
-	"mS-DS-ReplicatesNCReason": &FormElement{
-	},
-	"aCSEnableRSVPAccounting": &FormElement{
-	},
-	"fRSTimeLastConfigChange": &FormElement{
-	},
-	"printStaplingSupported": &FormElement{
-	},
-	"interSiteTopologyRenew": &FormElement{
-	},
-	"operatingSystemVersion": &FormElement{
-	},
-	"otherLoginWorkstations": &FormElement{
-	},
-	"netbootAllowNewClients": &FormElement{
-	},
-	"mS-SQL-UnicodeSortOrder": &FormElement{
-	},
-	"url": &FormElement{
-	},
-	"pKT": &FormElement{
-	},
-	"serviceInstanceVersion": &FormElement{
-	},
-	"showInAdvancedViewOnly": &FormElement{
-	},
-	"aCSMaxTokenRatePerFlow": &FormElement{
-	},
-	"isCriticalSystemObject": &FormElement{
-	},
-	"meetingMaxParticipants": &FormElement{
-	},
-	"aNR": &FormElement{
-	},
-	"rid": &FormElement{
-	},
-	"proxyGenerationEnabled": &FormElement{
-	},
-	"fRSControlDataCreation": &FormElement{
-	},
-	"previousCACertificates": &FormElement{
-	},
-	"contentIndexingAllowed": &FormElement{
-	},
-	"policyReplicationFlags": &FormElement{
-	},
-	"frsComputerReferenceBL": &FormElement{
-	},
-	"aCSNonReservedPeakRate": &FormElement{
-	},
-	"aCSMaxNoOfAccountFiles": &FormElement{
-	},
-	"physicalLocationObject": &FormElement{
-	},
-	"mSMQOutRoutingServers": &FormElement{
-	},
-	"bridgeheadServerListBL": &FormElement{
-	},
-	"msRADIUSCallbackNumber": &FormElement{
-	},
-	"netbootMachineFilePath": &FormElement{
-	},
-	"mSMQQueueJournalQuota": &FormElement{
-	},
-	"netbootAnswerRequests": &FormElement{
-	},
-	"operatingSystemHotfix": &FormElement{
-	},
-	"attributeSecurityGUID": &FormElement{
-	},
-	"superScopeDescription": &FormElement{
-	},
-	"otherWellKnownObjects": &FormElement{
-	},
-	"aCSNonReservedTxLimit": &FormElement{
-	},
-	"authenticationOptions": &FormElement{
-	},
-	"altSecurityIdentities": &FormElement{
-	},
-	"gPCUserExtensionNames": &FormElement{
-	},
-	"netbootInitialization": &FormElement{
-	},
-	"mS-SQL-RegisteredOwner": &FormElement{
-	},
-	"aCSMaxDurationPerFlow": &FormElement{
-	},
-	"pKICriticalExtensions": &FormElement{
-	},
-	"attributeDisplayNames": &FormElement{
-	},
-	"mS-SQL-AllowImmediateUpdatingSubscription": &FormElement{
-	},
-	"msRASSavedFramedRoute": &FormElement{
-	},
-	"userSharedFolderOther": &FormElement{
-	},
-	"extendedAttributeInfo": &FormElement{
-	},
-	"netbootMirrorDataFile": &FormElement{
-	},
-	"aCSMinimumPolicedSize": &FormElement{
-	},
-	"localizationDisplayId": &FormElement{
-	},
-	"meetingAdvertiseScope": &FormElement{
-	},
-	"dSUIAdminNotification": &FormElement{
-	},
-	"mS-SQL-LastUpdatedDate": &FormElement{
-	},
-	"dSCorePropagationData": &FormElement{
-	},
-	"implementedCategories": &FormElement{
-	},
-	"defaultObjectCategory": &FormElement{
-	},
-	"domainPolicyReference": &FormElement{
-	},
-	"mSMQInRoutingServers": &FormElement{
-	},
-	"printDuplexSupported": &FormElement{
-	},
-	"pendingCACertificates": &FormElement{
-	},
-	"nTSecurityDescriptor": &FormElement{
-	},
-	"systemAuxiliaryClass": &FormElement{
-	},
-	"aCSNonReservedTxSize": &FormElement{
-	},
-	"mS-SQL-InformationURL": &FormElement{
-	},
-	"replPropertyMetaData": &FormElement{
-	},
-	"mS-SQL-PublicationURL": &FormElement{
-	},
-	"printKeepPrintedJobs": &FormElement{
-	},
-	"uSNDSALastObjRemoved": &FormElement{
-	},
-	"dnsNotifySecondaries": &FormElement{
-	},
-	"mS-DS-ConsistencyGuid": &FormElement{
-	},
-	"frsComputerReference": &FormElement{
-	},
-	"mS-SQL-ServiceAccount": &FormElement{
-	},
-	"msNPCallingStationID": &FormElement{
-	},
-	"mSMQSignCertificates": &FormElement{
-	},
-	"ipsecOwnersReference": &FormElement{
-	},
-	"builtinModifiedCount": &FormElement{
-	},
-	"privilegeDisplayName": &FormElement{
-	},
-	"dnsSecureSecondaries": &FormElement{
-	},
-	"localizedDescription": &FormElement{
-	},
-	"systemPossSuperiors": &FormElement{
-	},
-	"displayNamePrintable": &FormElement{
-	},
-	"servicePrincipalName": &FormElement{
-	},
-	"pekKeyChangeInterval": &FormElement{
-	},
-	"originalDisplayTable": &FormElement{
-	},
-	"mS-SQL-LastBackupDate": &FormElement{
-	},
-	"ipsecPolicyReference": &FormElement{
-	},
-	"certificateTemplates": &FormElement{
-	},
-	"hasPartialReplicaNCs": &FormElement{
-	},
-	"localPolicyReference": &FormElement{
-	},
-	"extendedCharsAllowed": &FormElement{
-	},
-	"ipsecFilterReference": &FormElement{
-	},
-	"ipsecISAKMPReference": &FormElement{
-	},
-	"fRSMemberReferenceBL": &FormElement{
-	},
-	"rpcNsTransferSyntax": &FormElement{
-	},
-	"mSMQRoutingServices": &FormElement{
-	},
-	"mS-SQL-MultiProtocol": &FormElement{
-	},
-	"enrollmentProviders": &FormElement{
-	},
-	"printNetworkAddress": &FormElement{
-	},
-	"msRADIUSServiceType": &FormElement{
-	},
-	"printPagesPerMinute": &FormElement{
-	},
-	"printMediaSupported": &FormElement{
-	},
-	"signatureAlgorithms": &FormElement{
-	},
-	"fRSPartnerAuthLevel": &FormElement{
-	},
-	"privilegeAttributes": &FormElement{
-	},
-	"partialAttributeSet": &FormElement{
-	},
-	"netbootLimitClients": &FormElement{
-	},
-	"mS-SQL-ConnectionURL": &FormElement{
-	},
-	"mS-SQL-AllowSnapshotFilesFTPDownloading": &FormElement{
-	},
-	"pKIExpirationPeriod": &FormElement{
-	},
-	"nonSecurityMemberBL": &FormElement{
-	},
-	"initialAuthOutgoing": &FormElement{
-	},
-	"msRADIUSFramedRoute": &FormElement{
-	},
-	"controlAccessRights": &FormElement{
-	},
+	"ownerBL":                                               &FormElement{},
+	"msCOM-PartitionSetLink":                                &FormElement{},
+	"msCOM-UserLink":                                        &FormElement{},
+	"msDS-Approx-Immed-Subordinates":                        &FormElement{},
+	"msDS-NCReplCursors":                                    &FormElement{},
+	"msDS-NCReplInboundNeighbors":                           &FormElement{},
+	"msDS-NCReplOutboundNeighbors":                          &FormElement{},
+	"msDS-ReplAttributeMetaData":                            &FormElement{},
+	"msDS-ReplValueMetaData":                                &FormElement{},
+	"msDS-NonMembers":                                       &FormElement{},
+	"msDS-NonMembersBL":                                     &FormElement{},
+	"msDS-MembersForAzRole":                                 &FormElement{},
+	"msDS-MembersForAzRoleBL":                               &FormElement{},
+	"msDS-OperationsForAzTask":                              &FormElement{},
+	"msDS-OperationsForAzTaskBL":                            &FormElement{},
+	"msDS-TasksForAzTask":                                   &FormElement{},
+	"msDS-TasksForAzTaskBL":                                 &FormElement{},
+	"msDS-OperationsForAzRole":                              &FormElement{},
+	"msDS-OperationsForAzRoleBL":                            &FormElement{},
+	"msDS-TasksForAzRole":                                   &FormElement{},
+	"msDS-TasksForAzRoleBL":                                 &FormElement{},
+	"msDs-masteredBy":                                       &FormElement{},
+	"msDS-ObjectReference":                                  &FormElement{},
+	"msDS-ObjectReferenceBL":                                &FormElement{},
+	"msDS-PrincipalName":                                    &FormElement{},
+	"msDS-RevealedDSAs":                                     &FormElement{},
+	"msDS-KrbTgtLinkBl":                                     &FormElement{},
+	"msDS-IsFullReplicaFor":                                 &FormElement{},
+	"msDS-IsDomainFor":                                      &FormElement{},
+	"msDS-IsPartialReplicaFor":                              &FormElement{},
+	"msDS-AuthenticatedToAccountlist":                       &FormElement{},
+	"msDS-AuthenticatedAtDC":                                &FormElement{},
+	"msDS-RevealedListBL":                                   &FormElement{},
+	"msDS-NC-RO-Replica-Locations-BL":                       &FormElement{},
+	"msDS-PSOApplied":                                       &FormElement{},
+	"msDS-NcType":                                           &FormElement{},
+	"msDS-OIDToGroupLinkBl":                                 &FormElement{},
+	"isRecycled":                                            &FormElement{},
+	"msDS-LocalEffectiveDeletionTime":                       &FormElement{},
+	"msDS-LocalEffectiveRecycleTime":                        &FormElement{},
+	"msDS-LastKnownRDN":                                     &FormElement{},
+	"msDS-EnabledFeatureBL":                                 &FormElement{},
+	"msDS-MembersOfResourcePropertyListBL":                  &FormElement{},
+	"msDS-ValueTypeReferenceBL":                             &FormElement{},
+	"msDS-TDOIngressBL":                                     &FormElement{},
+	"msDS-TDOEgressBL":                                      &FormElement{},
+	"msDS-parentdistname":                                   &FormElement{},
+	"msDS-ReplValueMetaDataExt":                             &FormElement{},
+	"msds-memberOfTransitive":                               &FormElement{},
+	"msds-memberTransitive":                                 &FormElement{},
+	"msSFU30PosixMemberOf":                                  &FormElement{},
+	"msDFSR-MemberReferenceBL":                              &FormElement{},
+	"msDFSR-ComputerReferenceBL":                            &FormElement{},
+	"msDS-AzLDAPQuery":                                      &FormElement{},
+	"msDS-AzBizRuleLanguage":                                &FormElement{},
+	"msDS-AzLastImportedBizRulePath":                        &FormElement{},
+	"msDS-AzApplicationData":                                &FormElement{},
+	"msDS-AzObjectGuid":                                     &FormElement{},
+	"msDS-AzGenericData":                                    &FormElement{},
+	"msDS-PrimaryComputer":                                  &FormElement{},
+	"msSFU30Name":                                           &FormElement{},
+	"msSFU30NisDomain":                                      &FormElement{},
+	"msSFU30PosixMember":                                    &FormElement{},
+	"msCOM-UserPartitionSetLink":                            &FormElement{},
+	"msDS-Cached-Membership":                                &FormElement{},
+	"msDS-Cached-Membership-Time-Stamp":                     &FormElement{},
+	"msDS-Site-Affinity":                                    &FormElement{},
+	"msDS-User-Account-Control-Computed":                    &FormElement{},
+	"lastLogonTimestamp":                                    &FormElement{},
+	"msIIS-FTPRoot":                                         &FormElement{},
+	"msIIS-FTPDir":                                          &FormElement{},
+	"msDRM-IdentityCertificate":                             &FormElement{},
+	"msDS-SourceObjectDN":                                   &FormElement{},
+	"msPKIRoamingTimeStamp":                                 &FormElement{},
+	"msPKIDPAPIMasterKeys":                                  &FormElement{},
+	"msPKIAccountCredentials":                               &FormElement{},
+	"msRADIUS-FramedInterfaceId":                            &FormElement{},
+	"msRADIUS-SavedFramedInterfaceId":                       &FormElement{},
+	"msRADIUS-FramedIpv6Prefix":                             &FormElement{},
+	"msRADIUS-SavedFramedIpv6Prefix":                        &FormElement{},
+	"msRADIUS-FramedIpv6Route":                              &FormElement{},
+	"msRADIUS-SavedFramedIpv6Route":                         &FormElement{},
+	"msDS-SecondaryKrbTgtNumber":                            &FormElement{},
+	"msDS-SupportedEncryptionTypes":                         &FormElement{},
+	"msDS-LastSuccessfulInteractiveLogonTime":               &FormElement{},
+	"msDS-LastFailedInteractiveLogonTime":                   &FormElement{},
+	"msDS-FailedInteractiveLogonCount":                      &FormElement{},
+	"msDS-FailedInteractiveLogonCountAtLastSuccessfulLogon": &FormElement{},
+	"msTSProfilePath":                                       &FormElement{},
+	"msTSHomeDirectory":                                     &FormElement{},
+	"msTSHomeDrive":                                         &FormElement{},
+	"msTSAllowLogon":                                        &FormElement{},
+	"msTSRemoteControl":                                     &FormElement{},
+	"msTSMaxDisconnectionTime":                              &FormElement{},
+	"msTSMaxConnectionTime":                                 &FormElement{},
+	"msTSMaxIdleTime":                                       &FormElement{},
+	"msTSReconnectionAction":                                &FormElement{},
+	"msTSBrokenConnectionAction":                            &FormElement{},
+	"msTSConnectClientDrives":                               &FormElement{},
+	"msTSConnectPrinterDrives":                              &FormElement{},
+	"msTSDefaultToMainPrinter":                              &FormElement{},
+	"msTSWorkDirectory":                                     &FormElement{},
+	"msTSInitialProgram":                                    &FormElement{},
+	"msTSProperty01":                                        &FormElement{},
+	"msTSProperty02":                                        &FormElement{},
+	"msTSExpireDate":                                        &FormElement{},
+	"msTSLicenseVersion":                                    &FormElement{},
+	"msTSManagingLS":                                        &FormElement{},
+	"msDS-UserPasswordExpiryTimeComputed":                   &FormElement{},
+	"msTSManagingLS4":                                       &FormElement{},
+	"msTSManagingLS3":                                       &FormElement{},
+	"msTSManagingLS2":                                       &FormElement{},
+	"msTSExpireDate4":                                       &FormElement{},
+	"msTSExpireDate3":                                       &FormElement{},
+	"msTSExpireDate2":                                       &FormElement{},
+	"msTSLicenseVersion3":                                   &FormElement{},
+	"msTSLicenseVersion2":                                   &FormElement{},
+	"msTSLicenseVersion4":                                   &FormElement{},
+	"msTSLSProperty01":                                      &FormElement{},
+	"msTSLSProperty02":                                      &FormElement{},
+	"msDS-ResultantPSO":                                     &FormElement{},
+	"msPKI-CredentialRoamingTokens":                         &FormElement{},
+	"msTSPrimaryDesktop":                                    &FormElement{},
+	"msTSSecondaryDesktops":                                 &FormElement{},
+	"msDS-SyncServerUrl":                                    &FormElement{},
+	"msDS-AssignedAuthNPolicySilo":                          &FormElement{},
+	"msDS-AuthNPolicySiloMembersBL":                         &FormElement{},
+	"msDS-AssignedAuthNPolicy":                              &FormElement{},
+	"msDS-Behavior-Version":                                 &FormElement{},
+	"msDS-PerUserTrustQuota":                                &FormElement{},
+	"msDS-AllUsersTrustQuota":                               &FormElement{},
+	"msDS-PerUserTrustTombstonesQuota":                      &FormElement{},
+	"msDS-AdditionalDnsHostName":                            &FormElement{},
+	"msDS-AdditionalSamAccountName":                         &FormElement{},
+	"msDS-ExecuteScriptPassword":                            &FormElement{},
+	"msDS-KrbTgtLink":                                       &FormElement{},
+	"msDS-RevealedUsers":                                    &FormElement{},
+	"msDS-NeverRevealGroup":                                 &FormElement{},
+	"msDS-RevealOnDemandGroup":                              &FormElement{},
+	"msDS-RevealedList":                                     &FormElement{},
+	"msDS-isGC":                                             &FormElement{},
+	"msDS-isRODC":                                           &FormElement{},
+	"msDS-SiteName":                                         &FormElement{},
+	"msDS-PromotionSettings":                                &FormElement{},
+	"msTPM-OwnerInformation":                                &FormElement{},
+	"msDS-IsUserCachableAtRodc":                             &FormElement{},
+	"msDS-HostServiceAccount":                               &FormElement{},
+	"msTSEndpointData":                                      &FormElement{},
+	"msTSEndpointType":                                      &FormElement{},
+	"msTSEndpointPlugin":                                    &FormElement{},
+	"msTSPrimaryDesktopBL":                                  &FormElement{},
+	"msTSSecondaryDesktopBL":                                &FormElement{},
+	"msTPM-TpmInformationForComputer":                       &FormElement{},
+	"msDS-GenerationId":                                     &FormElement{},
+	"msImaging-ThumbprintHash":                              &FormElement{},
+	"msImaging-HashAlgorithm":                               &FormElement{},
+	"netbootDUID":                                           &FormElement{},
+	"msSFU30Aliases":                                        &FormElement{},
+	"netbootNewMachineOU":                                   &FormElement{},
+	"builtinCreationTime":                                   &FormElement{},
+	"pKIEnrollmentAccess":                                   &FormElement{},
+	"pKIExtendedKeyUsage":                                   &FormElement{},
+	"msNPCalledStationID":                                   &FormElement{},
+	"initialAuthIncoming":                                   &FormElement{},
+	"objectClassCategory":                                   &FormElement{},
+	"generatedConnection":                                   &FormElement{},
+	"allowedChildClasses":                                   &FormElement{},
+	"machineArchitecture":                                   &FormElement{},
+	"aCSMaxPeakBandwidth":                                   &FormElement{},
+	"marshalledInterface":                                   &FormElement{},
+	"rIDManagerReference":                                   &FormElement{},
+	"aCSEnableACSService":                                   &FormElement{},
+	"mSMQRoutingService":                                    &FormElement{},
+	"mS-SQL-AllowQueuedUpdatingSubscription":                &FormElement{},
+	"primaryTelexNumber":                                    &FormElement{},
+	"userAccountControl":                                    &FormElement{},
+	"shellPropertyPages":                                    &FormElement{},
+	"replUpToDateVector":                                    &FormElement{},
+	"fRSDirectoryFilter":                                    &FormElement{},
+	"printSeparatorFile":                                    &FormElement{},
+	"pKIMaxIssuingDepth":                                    &FormElement{},
+	"accountNameHistory":                                    &FormElement{},
+	"mS-SQL-GPSLongitude":                                   &FormElement{},
+	"adminPropertyPages":                                    &FormElement{},
+	"securityIdentifier":                                    &FormElement{},
+	"groupMembershipSAM":                                    &FormElement{},
+	"serviceDNSNameType":                                    &FormElement{},
+	"meetingIsEncrypted":                                    &FormElement{},
+	"mS-SQL-Applications":                                   &FormElement{},
+	"lastUpdateSequence":                                    &FormElement{},
+	"lastContentIndexed":                                    &FormElement{},
+	"meetingDescription":                                    &FormElement{},
+	"fRSTimeLastCommand":                                    &FormElement{},
+	"monikerDisplayName":                                    &FormElement{},
+	"requiredCategories":                                    &FormElement{},
+	"upgradeProductCode":                                    &FormElement{},
+	"aCSMaxNoOfLogFiles":                                    &FormElement{},
+	"mS-SQL-CharacterSet":                                   &FormElement{},
+	"meetingContactInfo":                                    &FormElement{},
+	"mS-SQL-CreationDate":                                   &FormElement{},
+	"domainPolicyObject":                                    &FormElement{},
+	"dhcpObjDescription":                                    &FormElement{},
+	"meetingApplication":                                    &FormElement{},
+	"defaultHidingValue":                                    &FormElement{},
+	"fRSMemberReference":                                    &FormElement{},
+	"dhcpIdentification":                                    &FormElement{},
+	"trustAuthOutgoing":                                     &FormElement{},
+	"systemMustContain":                                     &FormElement{},
+	"primaryGroupToken":                                     &FormElement{},
+	"rpcNsProfileEntry":                                     &FormElement{},
+	"trustAuthIncoming":                                     &FormElement{},
+	"mSMQPrevSiteGates":                                     &FormElement{},
+	"queryPolicyObject":                                     &FormElement{},
+	"optionDescription":                                     &FormElement{},
+	"aCSMaximumSDUSize":                                     &FormElement{},
+	"nonSecurityMember":                                     &FormElement{},
+	"fRSReplicaSetType":                                     &FormElement{},
+	"aCSTotalNoOfFlows":                                     &FormElement{},
+	"possibleInferiors":                                     &FormElement{},
+	"netbootMaxClients":                                     &FormElement{},
+	"mS-SQL-GPSLatitude":                                    &FormElement{},
+	"aCSPermissionBits":                                     &FormElement{},
+	"mSMQTransactional":                                     &FormElement{},
+	"mS-SQL-Description":                                    &FormElement{},
+	"allowedAttributes":                                     &FormElement{},
+	"fRSFaultCondition":                                     &FormElement{},
+	"tombstoneLifetime":                                     &FormElement{},
+	"remoteStorageGUID":                                     &FormElement{},
+	"showInAddressBook":                                     &FormElement{},
+	"defaultClassStore":                                     &FormElement{},
+	"meetingOriginator":                                     &FormElement{},
+	"userPrincipalName":                                     &FormElement{},
+	"aCSMinimumLatency":                                     &FormElement{},
+	"isPrivilegeHolder":                                     &FormElement{},
+	"fRSReplicaSetGUID":                                     &FormElement{},
+	"rIDAllocationPool":                                     &FormElement{},
+	"pKIDefaultKeySpec":                                     &FormElement{},
+	"dynamicLDAPServer":                                     &FormElement{},
+	"serverReferenceBL":                                     &FormElement{},
+	"fRSServiceCommand":                                     &FormElement{},
+	"sDRightsEffective":                                     &FormElement{},
+	"proxiedObjectName":                                     &FormElement{},
+	"meetingRecurrence":                                     &FormElement{},
+	"cOMTreatAsClassId":                                     &FormElement{},
+	"globalAddressList":                                     &FormElement{},
+	"extendedClassInfo":                                     &FormElement{},
+	"machineWidePolicy":                                     &FormElement{},
+	"foreignIdentifier":                                     &FormElement{},
+	"dNReferenceUpdate":                                     &FormElement{},
+	"trustPosixOffset":                                      &FormElement{},
+	"enabledConnection":                                     &FormElement{},
+	"ipsecNFAReference":                                     &FormElement{},
+	"userWorkstations":                                      &FormElement{},
+	"garbageCollPeriod":                                     &FormElement{},
+	"mSMQComputerType":                                      &FormElement{},
+	"logonWorkstation":                                      &FormElement{},
+	"mSMQJournalQuota":                                      &FormElement{},
+	"remoteSourceType":                                      &FormElement{},
+	"pwdHistoryLength":                                      &FormElement{},
+	"mSMQBasePriority":                                      &FormElement{},
+	"systemMayContain":                                      &FormElement{},
+	"mS-SQL-ThirdParty":                                     &FormElement{},
+	"mSMQQueueNameExt":                                      &FormElement{},
+	"fRSUpdateTimeout":                                      &FormElement{},
+	"mSMQPrivacyLevel":                                      &FormElement{},
+	"shellContextMenu":                                      &FormElement{},
+	"wellKnownObjects":                                      &FormElement{},
+	"transportDLLName":                                      &FormElement{},
+	"qualityOfService":                                      &FormElement{},
+	"lockoutThreshold":                                      &FormElement{},
+	"remoteServerName":                                      &FormElement{},
+	"previousParentCA":                                      &FormElement{},
+	"dSUIShellMaximum":                                      &FormElement{},
+	"notificationList":                                      &FormElement{},
+	"addressBookRoots":                                      &FormElement{},
+	"fRSPrimaryMember":                                      &FormElement{},
+	"meetingStartTime":                                      &FormElement{},
+	"mSMQSiteGatesMig":                                      &FormElement{},
+	"dhcpReservations":                                      &FormElement{},
+	"adminContextMenu":                                      &FormElement{},
+	"pKIOverlapPeriod":                                      &FormElement{},
+	"winsockAddresses":                                      &FormElement{},
+	"mSMQAuthenticate":                                      &FormElement{},
+	"dSUIAdminMaximum":                                      &FormElement{},
+	"appSchemaVersion":                                      &FormElement{},
+	"serviceClassInfo":                                      &FormElement{},
+	"aCSEventLogLevel":                                      &FormElement{},
+	"userSharedFolder":                                      &FormElement{},
+	"domainWidePolicy":                                      &FormElement{},
+	"rIDSetReferences":                                      &FormElement{},
+	"canUpgradeScript":                                      &FormElement{},
+	"classDisplayName":                                      &FormElement{},
+	"adminDescription":                                      &FormElement{},
+	"lSAModifiedCount":                                      &FormElement{},
+	"serviceClassName":                                      &FormElement{},
+	"localPolicyFlags":                                      &FormElement{},
+	"rpcNsInterfaceID":                                      &FormElement{},
+	"adminDisplayName":                                      &FormElement{},
+	"nameServiceFlags":                                      &FormElement{},
+	"meetingBandwidth":                                      &FormElement{},
+	"domainIdentifier":                                      &FormElement{},
+	"rIDAvailablePool":                                      &FormElement{},
+	"legacyExchangeDN":                                      &FormElement{},
+	"trustAttributes":                                       &FormElement{},
+	"fRSRootSecurity":                                       &FormElement{},
+	"superiorDNSRoot":                                       &FormElement{},
+	"printMaxYExtent":                                       &FormElement{},
+	"printMaxXExtent":                                       &FormElement{},
+	"printMinYExtent":                                       &FormElement{},
+	"printMinXExtent":                                       &FormElement{},
+	"attributeSyntax":                                       &FormElement{},
+	"printAttributes":                                       &FormElement{},
+	"groupAttributes":                                       &FormElement{},
+	"fileExtPriority":                                       &FormElement{},
+	"mSMQServiceType":                                       &FormElement{},
+	"operatingSystem":                                       &FormElement{},
+	"mS-SQL-SortOrder":                                      &FormElement{},
+	"versionNumberLo":                                       &FormElement{},
+	"msRRASAttribute":                                       &FormElement{},
+	"lastKnownParent":                                       &FormElement{},
+	"shortServerName":                                       &FormElement{},
+	"lockoutDuration":                                       &FormElement{},
+	"defaultPriority":                                       &FormElement{},
+	"rpcNsEntryFlags":                                       &FormElement{},
+	"optionsLocation":                                       &FormElement{},
+	"versionNumberHi":                                       &FormElement{},
+	"rpcNsAnnotation":                                       &FormElement{},
+	"purportedSearch":                                       &FormElement{},
+	"aCSDSBMPriority":                                       &FormElement{},
+	"mSMQSiteForeign":                                       &FormElement{},
+	"currentLocation":                                       &FormElement{},
+	"meetingProtocol":                                       &FormElement{},
+	"publicKeyPolicy":                                       &FormElement{},
+	"mS-SQL-Publisher":                                      &FormElement{},
+	"createWizardExt":                                       &FormElement{},
+	"mS-SQL-Clustered":                                      &FormElement{},
+	"volTableIdxGUID":                                       &FormElement{},
+	"currentParentCA":                                       &FormElement{},
+	"seqNotification":                                       &FormElement{},
+	"serverReference":                                       &FormElement{},
+	"msNPAllowDialin":                                       &FormElement{},
+	"mS-SQL-GPSHeight":                                      &FormElement{},
+	"mS-SQL-AppleTalk":                                      &FormElement{},
+	"linkTrackSecret":                                       &FormElement{},
+	"dnsAllowDynamic":                                       &FormElement{},
+	"badPasswordTime":                                       &FormElement{},
+	"privilegeHolder":                                       &FormElement{},
+	"printMediaReady":                                       &FormElement{},
+	"printMACAddress":                                       &FormElement{},
+	"lSACreationTime":                                       &FormElement{},
+	"meetingLocation":                                       &FormElement{},
+	"aCSIdentityName":                                       &FormElement{},
+	"mS-DS-CreatorSID":                                      &FormElement{},
+	"mS-SQL-NamedPipe":                                      &FormElement{},
+	"lDAPAdminLimits":                                       &FormElement{},
+	"lDAPDisplayName":                                       &FormElement{},
+	"applicationName":                                       &FormElement{},
+	"pendingParentCA":                                       &FormElement{},
+	"aCSCacheTimeout":                                       &FormElement{},
+	"meetingLanguage":                                       &FormElement{},
+	"aCSDSBMDeadTime":                                       &FormElement{},
+	"cACertificateDN":                                       &FormElement{},
+	"userParameters":                                        &FormElement{},
+	"trustDirection":                                        &FormElement{},
+	"mSMQQueueQuota":                                        &FormElement{},
+	"mSMQEncryptKey":                                        &FormElement{},
+	"terminalServer":                                        &FormElement{},
+	"printStartTime":                                        &FormElement{},
+	"syncWithObject":                                        &FormElement{},
+	"groupsToIgnore":                                        &FormElement{},
+	"syncMembership":                                        &FormElement{},
+	"syncAttributes":                                        &FormElement{},
+	"nextLevelStore":                                        &FormElement{},
+	"sAMAccountType":                                        &FormElement{},
+	"mS-SQL-Keywords":                                       &FormElement{},
+	"proxyAddresses":                                        &FormElement{},
+	"bytesPerMinute":                                        &FormElement{},
+	"printMaxCopies":                                        &FormElement{},
+	"primaryGroupID":                                        &FormElement{},
+	"nTGroupMembers":                                        &FormElement{},
+	"mSMQDsServices":                                        &FormElement{},
+	"fRSVersionGUID":                                        &FormElement{},
+	"fRSWorkingPath":                                        &FormElement{},
+	"otherTelephone":                                        &FormElement{},
+	"otherHomePhone":                                        &FormElement{},
+	"oEMInformation":                                        &FormElement{},
+	"networkAddress":                                        &FormElement{},
+	"mSMQDigestsMig":                                        &FormElement{},
+	"meetingKeyword":                                        &FormElement{},
+	"lDAPIPDenyList":                                        &FormElement{},
+	"installUiLevel":                                        &FormElement{},
+	"gPCFileSysPath":                                        &FormElement{},
+	"fRSStagingPath":                                        &FormElement{},
+	"auxiliaryClass":                                        &FormElement{},
+	"accountExpires":                                        &FormElement{},
+	"dhcpProperties":                                        &FormElement{},
+	"desktopProfile":                                        &FormElement{},
+	"aCSServiceType":                                        &FormElement{},
+	"assocNTAccount":                                        &FormElement{},
+	"creationWizard":                                        &FormElement{},
+	"cOMOtherProgId":                                        &FormElement{},
+	"auditingPolicy":                                        &FormElement{},
+	"privilegeValue":                                        &FormElement{},
+	"mS-SQL-Location":                                       &FormElement{},
+	"pKIDefaultCSPs":                                        &FormElement{},
+	"printShareName":                                        &FormElement{},
+	"isSingleValued":                                        &FormElement{},
+	"domainCrossRef":                                        &FormElement{},
+	"netbootSIFFile":                                        &FormElement{},
+	"cOMUniqueLIBID":                                        &FormElement{},
+	"serviceDNSName":                                        &FormElement{},
+	"objectCategory":                                        &FormElement{},
+	"serviceClassID":                                        &FormElement{},
+	"dhcpUpdateTime":                                        &FormElement{},
+	"sAMAccountName":                                        &FormElement{},
+	"meetingEndTime":                                        &FormElement{},
+	"mS-SQL-Language":                                       &FormElement{},
+	"aCSDSBMRefresh":                                        &FormElement{},
+	"mS-SQL-Database":                                       &FormElement{},
+	"cOMInterfaceID":                                        &FormElement{},
+	"mS-SQL-AllowKnownPullSubscription":                     &FormElement{},
+	"mS-SQL-AllowAnonymousSubscription":                     &FormElement{},
+	"managedObjects":                                        &FormElement{},
+	"possSuperiors":                                         &FormElement{},
+	"transportType":                                         &FormElement{},
+	"groupPriority":                                         &FormElement{},
+	"rpcNsPriority":                                         &FormElement{},
+	"mSMQQueueType":                                         &FormElement{},
+	"versionNumber":                                         &FormElement{},
+	"uSNLastObjRem":                                         &FormElement{},
+	"templateRoots":                                         &FormElement{},
+	"pwdProperties":                                         &FormElement{},
+	"printNumberUp":                                         &FormElement{},
+	"fRSExtensions":                                         &FormElement{},
+	"printRateUnit":                                         &FormElement{},
+	"msiScriptSize":                                         &FormElement{},
+	"printSpooling":                                         &FormElement{},
+	"queryPolicyBL":                                         &FormElement{},
+	"proxyLifetime":                                         &FormElement{},
+	"operatorCount":                                         &FormElement{},
+	"netbootServer":                                         &FormElement{},
+	"fSMORoleOwner":                                         &FormElement{},
+	"driverVersion":                                         &FormElement{},
+	"mS-SQL-Version":                                        &FormElement{},
+	"mSMQNameStyle":                                         &FormElement{},
+	"schemaVersion":                                         &FormElement{},
+	"directReports":                                         &FormElement{},
+	"addressSyntax":                                         &FormElement{},
+	"printFormName":                                         &FormElement{},
+	"msiScriptPath":                                         &FormElement{},
+	"aCSServerList":                                         &FormElement{},
+	"moveTreeState":                                         &FormElement{},
+	"mSMQSiteGates":                                         &FormElement{},
+	"mSMQDsService":                                         &FormElement{},
+	"objectVersion":                                         &FormElement{},
+	"dNSTombstoned":                                         &FormElement{},
+	"mSMQLongLived":                                         &FormElement{},
+	"fRSLevelLimit":                                         &FormElement{},
+	"msiScriptName":                                         &FormElement{},
+	"dhcpUniqueKey":                                         &FormElement{},
+	"extensionName":                                         &FormElement{},
+	"rpcNsBindings":                                         &FormElement{},
+	"printBinNames":                                         &FormElement{},
+	"replicaSource":                                         &FormElement{},
+	"printLanguage":                                         &FormElement{},
+	"mS-SQL-Contact":                                        &FormElement{},
+	"nTMixedDomain":                                         &FormElement{},
+	"fRSFileFilter":                                         &FormElement{},
+	"birthLocation":                                         &FormElement{},
+	"friendlyNames":                                         &FormElement{},
+	"ipsecDataType":                                         &FormElement{},
+	"meetingRating":                                         &FormElement{},
+	"indexedScopes":                                         &FormElement{},
+	"rpcNsObjectID":                                         &FormElement{},
+	"modifiedCount":                                         &FormElement{},
+	"oMObjectClass":                                         &FormElement{},
+	"aCSPolicyName":                                         &FormElement{},
+	"timeVolChange":                                         &FormElement{},
+	"currMachineId":                                         &FormElement{},
+	"schemaFlagsEx":                                         &FormElement{},
+	"validAccesses":                                         &FormElement{},
+	"domainReplica":                                         &FormElement{},
+	"mSMQInterval2":                                         &FormElement{},
+	"mSMQInterval1":                                         &FormElement{},
+	"canonicalName":                                         &FormElement{},
+	"ntPwdHistory":                                          &FormElement{},
+	"trustPartner":                                          &FormElement{},
+	"lmPwdHistory":                                          &FormElement{},
+	"mS-SQL-Status":                                         &FormElement{},
+	"USNIntersite":                                          &FormElement{},
+	"netbootTools":                                          &FormElement{},
+	"priorSetTime":                                          &FormElement{},
+	"mS-SQL-Memory":                                         &FormElement{},
+	"mSMQServices":                                          &FormElement{},
+	"currentValue":                                          &FormElement{},
+	"siteLinkList":                                          &FormElement{},
+	"remoteSource":                                          &FormElement{},
+	"setupCommand":                                          &FormElement{},
+	"dSHeuristics":                                          &FormElement{},
+	"replInterval":                                          &FormElement{},
+	"printEndTime":                                          &FormElement{},
+	"instanceType":                                          &FormElement{},
+	"otherIpPhone":                                          &FormElement{},
+	"mSMQSiteName":                                          &FormElement{},
+	"meetingOwner":                                          &FormElement{},
+	"printCollate":                                          &FormElement{},
+	"defaultGroup":                                          &FormElement{},
+	"minPwdLength":                                          &FormElement{},
+	"netbootSCPBL":                                          &FormElement{},
+	"mhsORAddress":                                          &FormElement{},
+	"rpcNsCodeset":                                          &FormElement{},
+	"hasMasterNCs":                                          &FormElement{},
+	"mSMQMigrated":                                          &FormElement{},
+	"dSASignature":                                          &FormElement{},
+	"invocationId":                                          &FormElement{},
+	"cOMTypelibId":                                          &FormElement{},
+	"creationTime":                                          &FormElement{},
+	"meetingScope":                                          &FormElement{},
+	"volTableGUID":                                          &FormElement{},
+	"siteObjectBL":                                          &FormElement{},
+	"aCSTimeOfDay":                                          &FormElement{},
+	"aCSDirection":                                          &FormElement{},
+	"maxTicketAge":                                          &FormElement{},
+	"schemaUpdate":                                          &FormElement{},
+	"minTicketAge":                                          &FormElement{},
+	"ipsecNegotiationPolicyReference":                       &FormElement{},
+	"helpFileName":                                          &FormElement{},
+	"schemaIDGUID":                                          &FormElement{},
+	"createDialog":                                          &FormElement{},
+	"mSMQNt4Flags":                                          &FormElement{},
+	"packageFlags":                                          &FormElement{},
+	"wWWHomePage":                                           &FormElement{},
+	"volumeCount":                                           &FormElement{},
+	"printStatus":                                           &FormElement{},
+	"uPNSuffixes":                                           &FormElement{},
+	"trustParent":                                           &FormElement{},
+	"tokenGroups":                                           &FormElement{},
+	"systemFlags":                                           &FormElement{},
+	"syncWithSID":                                           &FormElement{},
+	"dNSProperty":                                           &FormElement{},
+	"superScopes":                                           &FormElement{},
+	"sPNMappings":                                           &FormElement{},
+	"printNotify":                                           &FormElement{},
+	"printMemory":                                           &FormElement{},
+	"serverState":                                           &FormElement{},
+	"mSMQVersion":                                           &FormElement{},
+	"rIDUsedPool":                                           &FormElement{},
+	"queryFilter":                                           &FormElement{},
+	"printerName":                                           &FormElement{},
+	"preferredOU":                                           &FormElement{},
+	"primaryInternationalISDNNumber":                        &FormElement{},
+	"oMTIndxGuid":                                           &FormElement{},
+	"mSMQUserSid":                                           &FormElement{},
+	"fRSRootPath":                                           &FormElement{},
+	"mSMQJournal":                                           &FormElement{},
+	"contextMenu":                                           &FormElement{},
+	"aCSPriority":                                           &FormElement{},
+	"mSMQSignKey":                                           &FormElement{},
+	"netbootGUID":                                           &FormElement{},
+	"mSMQOwnerID":                                           &FormElement{},
+	"mustContain":                                           &FormElement{},
+	"dnsAllowXFR":                                           &FormElement{},
+	"mS-SQL-Vines":                                          &FormElement{},
+	"mSMQDigests":                                           &FormElement{},
+	"lockoutTime":                                           &FormElement{},
+	"lastSetTime":                                           &FormElement{},
+	"countryCode":                                           &FormElement{},
+	"mS-SQL-TCPIP":                                          &FormElement{},
+	"mSMQForeign":                                           &FormElement{},
+	"meetingType":                                           &FormElement{},
+	"dhcpOptions":                                           &FormElement{},
+	"dhcpServers":                                           &FormElement{},
+	"assetNumber":                                           &FormElement{},
+	"addressType":                                           &FormElement{},
+	"mSMQCSPName":                                           &FormElement{},
+	"msiFileList":                                           &FormElement{},
+	"dNSHostName":                                           &FormElement{},
+	"dhcpSubnets":                                           &FormElement{},
+	"pKIKeyUsage":                                           &FormElement{},
+	"attributeID":                                           &FormElement{},
+	"objectCount":                                           &FormElement{},
+	"timeRefresh":                                           &FormElement{},
+	"profilePath":                                           &FormElement{},
+	"productCode":                                           &FormElement{},
+	"otherMobile":                                           &FormElement{},
+	"badPwdCount":                                           &FormElement{},
+	"mS-SQL-Build":                                          &FormElement{},
+	"nETBIOSName":                                           &FormElement{},
+	"mS-SQL-Alias":                                          &FormElement{},
+	"maxRenewAge":                                           &FormElement{},
+	"treatAsLeaf":                                           &FormElement{},
+	"mSMQNt4Stub":                                           &FormElement{},
+	"packageType":                                           &FormElement{},
+	"isEphemeral":                                           &FormElement{},
+	"dMDLocation":                                           &FormElement{},
+	"dhcpClasses":                                           &FormElement{},
+	"forceLogoff":                                           &FormElement{},
+	"whenCreated":                                           &FormElement{},
+	"meetingName":                                           &FormElement{},
+	"mailAddress":                                           &FormElement{},
+	"meetingBlob":                                           &FormElement{},
+	"machineRole":                                           &FormElement{},
+	"searchFlags":                                           &FormElement{},
+	"whenChanged":                                           &FormElement{},
+	"dhcpObjName":                                           &FormElement{},
+	"aCSMaxAggregatePeakRatePerUser":                        &FormElement{},
+	"packageName":                                           &FormElement{},
+	"systemOnly":                                            &FormElement{},
+	"mSMQOSType":                                            &FormElement{},
+	"queryPoint":                                            &FormElement{},
+	"printOwner":                                            &FormElement{},
+	"uSNCreated":                                            &FormElement{},
+	"siteServer":                                            &FormElement{},
+	"rpcNsGroup":                                            &FormElement{},
+	"sIDHistory":                                            &FormElement{},
+	"fRSVersion":                                            &FormElement{},
+	"logonHours":                                            &FormElement{},
+	"netbootAnswerOnlyValidClients":                         &FormElement{},
+	"pwdLastSet":                                            &FormElement{},
+	"printColor":                                            &FormElement{},
+	"mS-SQL-Type":                                           &FormElement{},
+	"fromServer":                                            &FormElement{},
+	"serverRole":                                            &FormElement{},
+	"priorValue":                                            &FormElement{},
+	"logonCount":                                            &FormElement{},
+	"unicodePwd":                                            &FormElement{},
+	"subClassOf":                                            &FormElement{},
+	"mS-SQL-Size":                                           &FormElement{},
+	"privateKey":                                            &FormElement{},
+	"siteObject":                                            &FormElement{},
+	"scriptPath":                                            &FormElement{},
+	"serverName":                                            &FormElement{},
+	"mSMQSiteID":                                            &FormElement{},
+	"rightsGuid":                                            &FormElement{},
+	"rIDNextRID":                                            &FormElement{},
+	"meetingURL":                                            &FormElement{},
+	"addressEntryDisplayTableMSDOS":                         &FormElement{},
+	"maxStorage":                                            &FormElement{},
+	"rangeUpper":                                            &FormElement{},
+	"rangeLower":                                            &FormElement{},
+	"otherPager":                                            &FormElement{},
+	"isMemberOfPartialAttributeSet":                         &FormElement{},
+	"parentGUID":                                            &FormElement{},
+	"department":                                            &FormElement{},
+	"mayContain":                                            &FormElement{},
+	"adminCount":                                            &FormElement{},
+	"lastLogoff":                                            &FormElement{},
+	"masteredBy":                                            &FormElement{},
+	"employeeID":                                            &FormElement{},
+	"dhcpMaxKey":                                            &FormElement{},
+	"driverName":                                            &FormElement{},
+	"mS-SQL-Name":                                           &FormElement{},
+	"categoryId":                                            &FormElement{},
+	"additionalTrustedServiceNames":                         &FormElement{},
+	"scopeFlags":                                            &FormElement{},
+	"categories":                                            &FormElement{},
+	"netbootNewMachineNamingPolicy":                         &FormElement{},
+	"cOMClassID":                                            &FormElement{},
+	"uSNChanged":                                            &FormElement{},
+	"objectGUID":                                            &FormElement{},
+	"dhcpRanges":                                            &FormElement{},
+	"schemaInfo":                                            &FormElement{},
+	"otherFacsimileTelephoneNumber":                         &FormElement{},
+	"machinePasswordChangeInterval":                         &FormElement{},
+	"rootTrust":                                             &FormElement{},
+	"trustType":                                             &FormElement{},
+	"groupType":                                             &FormElement{},
+	"uSNSource":                                             &FormElement{},
+	"mSMQQuota":                                             &FormElement{},
+	"mSMQSites":                                             &FormElement{},
+	"fromEntry":                                             &FormElement{},
+	"mS-SQL-SPX":                                            &FormElement{},
+	"gPOptions":                                             &FormElement{},
+	"msiScript":                                             &FormElement{},
+	"printRate":                                             &FormElement{},
+	"cRLPartitionedRevocationList":                          &FormElement{},
+	"assistant":                                             &FormElement{},
+	"fRSDSPoll":                                             &FormElement{},
+	"partialAttributeDeletionList":                          &FormElement{},
+	"lastLogon":                                             &FormElement{},
+	"governsID":                                             &FormElement{},
+	"appliesTo":                                             &FormElement{},
+	"eFSPolicy":                                             &FormElement{},
+	"uASCompat":                                             &FormElement{},
+	"prefixMap":                                             &FormElement{},
+	"isDefunct":                                             &FormElement{},
+	"dhcpSites":                                             &FormElement{},
+	"iPSECNegotiationPolicyAction":                          &FormElement{},
+	"dnsRecord":                                             &FormElement{},
+	"cOMProgID":                                             &FormElement{},
+	"homeDrive":                                             &FormElement{},
+	"meetingIP":                                             &FormElement{},
+	"aCSNonReservedMinPolicedSize":                          &FormElement{},
+	"dhcpState":                                             &FormElement{},
+	"mSMQLabel":                                             &FormElement{},
+	"maxPwdAge":                                             &FormElement{},
+	"minPwdAge":                                             &FormElement{},
+	"cRLObject":                                             &FormElement{},
+	"objectSid":                                             &FormElement{},
+	"meetingID":                                             &FormElement{},
+	"ipsecName":                                             &FormElement{},
+	"isDeleted":                                             &FormElement{},
+	"aCSAggregateTokenRatePerUser":                          &FormElement{},
+	"ipsecData":                                             &FormElement{},
+	"domainCAs":                                             &FormElement{},
+	"cAConnect":                                             &FormElement{},
+	"printMaxResolutionSupported":                           &FormElement{},
+	"dhcpFlags":                                             &FormElement{},
+	"helpData16":                                            &FormElement{},
+	"managedBy":                                             &FormElement{},
+	"helpData32":                                            &FormElement{},
+	"mSMQSite2":                                             &FormElement{},
+	"mSMQSite1":                                             &FormElement{},
+	"replTopologyStayOfExecution":                           &FormElement{},
+	"allowedChildClassesEffective":                          &FormElement{},
+	"oMSyntax":                                              &FormElement{},
+	"priority":                                              &FormElement{},
+	"keywords":                                              &FormElement{},
+	"mSMQCost":                                              &FormElement{},
+	"siteList":                                              &FormElement{},
+	"revision":                                              &FormElement{},
+	"repsFrom":                                              &FormElement{},
+	"userCert":                                              &FormElement{},
+	"mSMQQMID":                                              &FormElement{},
+	"portName":                                              &FormElement{},
+	"netbootLocallyInstalledOSes":                           &FormElement{},
+	"division":                                              &FormElement{},
+	"aCSMaxSizeOfRSVPAccountFile":                           &FormElement{},
+	"dhcpType":                                              &FormElement{},
+	"wbemPath":                                              &FormElement{},
+	"siteGUID":                                              &FormElement{},
+	"rDNAttID":                                              &FormElement{},
+	"aCSRSVPAccountFilesLocation":                           &FormElement{},
+	"mSMQDependentClientServices":                           &FormElement{},
+	"location":                                              &FormElement{},
+	"fRSFlags":                                              &FormElement{},
+	"iconPath":                                              &FormElement{},
+	"cAWEBURL":                                              &FormElement{},
+	"mscopeId":                                              &FormElement{},
+	"treeName":                                              &FormElement{},
+	"schedule":                                              &FormElement{},
+	"parentCA":                                              &FormElement{},
+	"cOMCLSID":                                              &FormElement{},
+	"catalogs":                                              &FormElement{},
+	"memberOf":                                              &FormElement{},
+	"cAUsages":                                              &FormElement{},
+	"dhcpMask":                                              &FormElement{},
+	"flatName":                                              &FormElement{},
+	"domainID":                                              &FormElement{},
+	"localeID":                                              &FormElement{},
+	"codePage":                                              &FormElement{},
+	"aCSEnableRSVPMessageLogging":                           &FormElement{},
+	"printOrientationsSupported":                            &FormElement{},
+	"msRRASVendorAttributeEntry":                            &FormElement{},
+	"interSiteTopologyGenerator":                            &FormElement{},
+	"options":                                               &FormElement{},
+	"dnsRoot":                                               &FormElement{},
+	"iPSECNegotiationPolicyType":                            &FormElement{},
+	"mS-SQL-InformationDirectory":                           &FormElement{},
+	"operatingSystemServicePack":                            &FormElement{},
+	"nextRid":                                               &FormElement{},
+	"pekList":                                               &FormElement{},
+	"subRefs":                                               &FormElement{},
+	"oMTGuid":                                               &FormElement{},
+	"pKTGuid":                                               &FormElement{},
+	"company":                                               &FormElement{},
+	"moniker":                                               &FormElement{},
+	"comment":                                               &FormElement{},
+	"ipPhone":                                               &FormElement{},
+	"mS-DS-ConsistencyChildCount":                           &FormElement{},
+	"creator":                                               &FormElement{},
+	"uNCName":                                               &FormElement{},
+	"dBCSPwd":                                               &FormElement{},
+	"mSMQDependentClientService":                            &FormElement{},
+	"certificateAuthorityObject":                            &FormElement{},
+	"ipsecID":                                               &FormElement{},
+	"allowedAttributesEffective":                            &FormElement{},
+	"aCSMaxPeakBandwidthPerFlow":                            &FormElement{},
+	"Enabled":                                               &FormElement{},
+	"perRecipDialogDisplayTable":                            &FormElement{},
+	"interSiteTopologyFailover":                             &FormElement{},
+	"transportAddressAttribute":                             &FormElement{},
+	"netbootCurrentClientCount":                             &FormElement{},
+	"rIDPreviousAllocationPool":                             &FormElement{},
+	"repsTo":                                                &FormElement{},
+	"defaultSecurityDescriptor":                             &FormElement{},
+	"lastBackupRestorationTime":                             &FormElement{},
+	"fRSControlOutboundBacklog":                             &FormElement{},
+	"vendor":                                                &FormElement{},
+	"gPLink":                                                &FormElement{},
+	"originalDisplayTableMSDOS":                             &FormElement{},
+	"linkID":                                                &FormElement{},
+	"msNPSavedCallingStationID":                             &FormElement{},
+	"mAPIID":                                                &FormElement{},
+	"serviceBindingInformation":                             &FormElement{},
+	"nCName":                                                &FormElement{},
+	"tokenGroupsNoGCAcceptable":                             &FormElement{},
+	"tokenGroupsGlobalAndUniversal":                         &FormElement{},
+	"msRASSavedFramedIPAddress":                             &FormElement{},
+	"aCSAllocableRSVPBandwidth":                             &FormElement{},
+	"lockOutObservationWindow":                              &FormElement{},
+	"netbootIntelliMirrorOSes":                              &FormElement{},
+	"aCSNonReservedMaxSDUSize":                              &FormElement{},
+	"notes":                                                 &FormElement{},
+	"retiredReplDSASignatures":                              &FormElement{},
+	"aCSMaxTokenBucketPerFlow":                              &FormElement{},
+	"addressEntryDisplayTable":                              &FormElement{},
+	"aCSMinimumDelayVariation":                              &FormElement{},
+	"fRSControlInboundBacklog":                              &FormElement{},
+	"flags":                                                 &FormElement{},
+	"mS-SQL-LastDiagnosticDate":                             &FormElement{},
+	"gPCMachineExtensionNames":                              &FormElement{},
+	"ms-DS-MachineAccountQuota":                             &FormElement{},
+	"perMsgDialogDisplayTable":                              &FormElement{},
+	"defaultLocalPolicyObject":                              &FormElement{},
+	"msRASSavedCallbackNumber":                              &FormElement{},
+	"parentCACertificateChain":                              &FormElement{},
+	"gPCFunctionalityVersion":                               &FormElement{},
+	"fRSServiceCommandStatus":                               &FormElement{},
+	"aCSNonReservedTokenSize":                               &FormElement{},
+	"aCSMaxSizeOfRSVPLogFile":                               &FormElement{},
+	"cost":                                                  &FormElement{},
+	"modifiedCountAtLastProm":                               &FormElement{},
+	"aCSRSVPLogFilesLocation":                               &FormElement{},
+	"supplementalCredentials":                               &FormElement{},
+	"bridgeheadTransportList":                               &FormElement{},
+	"mSMQSignCertificatesMig":                               &FormElement{},
+	"msRADIUSFramedIPAddress":                               &FormElement{},
+	"mS-DS-ReplicatesNCReason":                              &FormElement{},
+	"aCSEnableRSVPAccounting":                               &FormElement{},
+	"fRSTimeLastConfigChange":                               &FormElement{},
+	"printStaplingSupported":                                &FormElement{},
+	"interSiteTopologyRenew":                                &FormElement{},
+	"operatingSystemVersion":                                &FormElement{},
+	"otherLoginWorkstations":                                &FormElement{},
+	"netbootAllowNewClients":                                &FormElement{},
+	"mS-SQL-UnicodeSortOrder":                               &FormElement{},
+	"url":                                                   &FormElement{},
+	"pKT":                                                   &FormElement{},
+	"serviceInstanceVersion":                                &FormElement{},
+	"showInAdvancedViewOnly":                                &FormElement{},
+	"aCSMaxTokenRatePerFlow":                                &FormElement{},
+	"isCriticalSystemObject":                                &FormElement{},
+	"meetingMaxParticipants":                                &FormElement{},
+	"aNR":                                                   &FormElement{},
+	"rid":                                                   &FormElement{},
+	"proxyGenerationEnabled":                                &FormElement{},
+	"fRSControlDataCreation":                                &FormElement{},
+	"previousCACertificates":                                &FormElement{},
+	"contentIndexingAllowed":                                &FormElement{},
+	"policyReplicationFlags":                                &FormElement{},
+	"frsComputerReferenceBL":                                &FormElement{},
+	"aCSNonReservedPeakRate":                                &FormElement{},
+	"aCSMaxNoOfAccountFiles":                                &FormElement{},
+	"physicalLocationObject":                                &FormElement{},
+	"mSMQOutRoutingServers":                                 &FormElement{},
+	"bridgeheadServerListBL":                                &FormElement{},
+	"msRADIUSCallbackNumber":                                &FormElement{},
+	"netbootMachineFilePath":                                &FormElement{},
+	"mSMQQueueJournalQuota":                                 &FormElement{},
+	"netbootAnswerRequests":                                 &FormElement{},
+	"operatingSystemHotfix":                                 &FormElement{},
+	"attributeSecurityGUID":                                 &FormElement{},
+	"superScopeDescription":                                 &FormElement{},
+	"otherWellKnownObjects":                                 &FormElement{},
+	"aCSNonReservedTxLimit":                                 &FormElement{},
+	"authenticationOptions":                                 &FormElement{},
+	"altSecurityIdentities":                                 &FormElement{},
+	"gPCUserExtensionNames":                                 &FormElement{},
+	"netbootInitialization":                                 &FormElement{},
+	"mS-SQL-RegisteredOwner":                                &FormElement{},
+	"aCSMaxDurationPerFlow":                                 &FormElement{},
+	"pKICriticalExtensions":                                 &FormElement{},
+	"attributeDisplayNames":                                 &FormElement{},
+	"mS-SQL-AllowImmediateUpdatingSubscription": &FormElement{},
+	"msRASSavedFramedRoute":                     &FormElement{},
+	"userSharedFolderOther":                     &FormElement{},
+	"extendedAttributeInfo":                     &FormElement{},
+	"netbootMirrorDataFile":                     &FormElement{},
+	"aCSMinimumPolicedSize":                     &FormElement{},
+	"localizationDisplayId":                     &FormElement{},
+	"meetingAdvertiseScope":                     &FormElement{},
+	"dSUIAdminNotification":                     &FormElement{},
+	"mS-SQL-LastUpdatedDate":                    &FormElement{},
+	"dSCorePropagationData":                     &FormElement{},
+	"implementedCategories":                     &FormElement{},
+	"defaultObjectCategory":                     &FormElement{},
+	"domainPolicyReference":                     &FormElement{},
+	"mSMQInRoutingServers":                      &FormElement{},
+	"printDuplexSupported":                      &FormElement{},
+	"pendingCACertificates":                     &FormElement{},
+	"nTSecurityDescriptor":                      &FormElement{},
+	"systemAuxiliaryClass":                      &FormElement{},
+	"aCSNonReservedTxSize":                      &FormElement{},
+	"mS-SQL-InformationURL":                     &FormElement{},
+	"replPropertyMetaData":                      &FormElement{},
+	"mS-SQL-PublicationURL":                     &FormElement{},
+	"printKeepPrintedJobs":                      &FormElement{},
+	"uSNDSALastObjRemoved":                      &FormElement{},
+	"dnsNotifySecondaries":                      &FormElement{},
+	"mS-DS-ConsistencyGuid":                     &FormElement{},
+	"frsComputerReference":                      &FormElement{},
+	"mS-SQL-ServiceAccount":                     &FormElement{},
+	"msNPCallingStationID":                      &FormElement{},
+	"mSMQSignCertificates":                      &FormElement{},
+	"ipsecOwnersReference":                      &FormElement{},
+	"builtinModifiedCount":                      &FormElement{},
+	"privilegeDisplayName":                      &FormElement{},
+	"dnsSecureSecondaries":                      &FormElement{},
+	"localizedDescription":                      &FormElement{},
+	"systemPossSuperiors":                       &FormElement{},
+	"displayNamePrintable":                      &FormElement{},
+	"servicePrincipalName":                      &FormElement{},
+	"pekKeyChangeInterval":                      &FormElement{},
+	"originalDisplayTable":                      &FormElement{},
+	"mS-SQL-LastBackupDate":                     &FormElement{},
+	"ipsecPolicyReference":                      &FormElement{},
+	"certificateTemplates":                      &FormElement{},
+	"hasPartialReplicaNCs":                      &FormElement{},
+	"localPolicyReference":                      &FormElement{},
+	"extendedCharsAllowed":                      &FormElement{},
+	"ipsecFilterReference":                      &FormElement{},
+	"ipsecISAKMPReference":                      &FormElement{},
+	"fRSMemberReferenceBL":                      &FormElement{},
+	"rpcNsTransferSyntax":                       &FormElement{},
+	"mSMQRoutingServices":                       &FormElement{},
+	"mS-SQL-MultiProtocol":                      &FormElement{},
+	"enrollmentProviders":                       &FormElement{},
+	"printNetworkAddress":                       &FormElement{},
+	"msRADIUSServiceType":                       &FormElement{},
+	"printPagesPerMinute":                       &FormElement{},
+	"printMediaSupported":                       &FormElement{},
+	"signatureAlgorithms":                       &FormElement{},
+	"fRSPartnerAuthLevel":                       &FormElement{},
+	"privilegeAttributes":                       &FormElement{},
+	"partialAttributeSet":                       &FormElement{},
+	"netbootLimitClients":                       &FormElement{},
+	"mS-SQL-ConnectionURL":                      &FormElement{},
+	"mS-SQL-AllowSnapshotFilesFTPDownloading":   &FormElement{},
+	"pKIExpirationPeriod":                       &FormElement{},
+	"nonSecurityMemberBL":                       &FormElement{},
+	"initialAuthOutgoing":                       &FormElement{},
+	"msRADIUSFramedRoute":                       &FormElement{},
+	"controlAccessRights":                       &FormElement{},
 	//////////////////////////
 	// SCHEMA: nis.schema
 	"uidNumber": &FormElement{
 		Description: "An integer uniquely identifying a user in an administrative domain",
-		Order: 9,
+		Order:       9,
 	},
 	"gidNumber": &FormElement{
 		Description: "An integer uniquely identifying a group in an administrative domain",
-		Order: 9,
+		Order:       9,
 	},
 	"gecos": &FormElement{
 		Description: "The GECOS field; the common name",
 	},
 	"homeDirectory": &FormElement{
 		Description: "The absolute path to the home directory",
-		Order: 6,
+		Order:       6,
 		Datalist: []string{
 			"/home/",
 			"/home/{user}",
@@ -3914,42 +2980,29 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	},
 	"loginShell": &FormElement{
 		Description: "The path to the login shell",
-		Order: 6,
+		Order:       6,
 		Datalist: []string{
 			"/bin/bash",
 			"/bin/false",
 			"/bin/sh",
 		},
 	},
-	"shadowLastChange": &FormElement{
-	},
-	"shadowMin": &FormElement{
-	},
-	"shadowMax": &FormElement{
-	},
-	"shadowWarning": &FormElement{
-	},
-	"shadowInactive": &FormElement{
-	},
-	"shadowExpire": &FormElement{
-	},
-	"shadowFlag": &FormElement{
-	},
-	"memberUid": &FormElement{
-	},
-	"memberNisNetgroup": &FormElement{
-	},
+	"shadowLastChange":  &FormElement{},
+	"shadowMin":         &FormElement{},
+	"shadowMax":         &FormElement{},
+	"shadowWarning":     &FormElement{},
+	"shadowInactive":    &FormElement{},
+	"shadowExpire":      &FormElement{},
+	"shadowFlag":        &FormElement{},
+	"memberUid":         &FormElement{},
+	"memberNisNetgroup": &FormElement{},
 	"nisNetgroupTriple": &FormElement{
 		Description: "Netgroup triple",
 	},
-	"ipServicePort": &FormElement{
-	},
-	"ipServiceProtocol": &FormElement{
-	},
-	"ipProtocolNumber": &FormElement{
-	},
-	"oncRpcNumber": &FormElement{
-	},
+	"ipServicePort":     &FormElement{},
+	"ipServiceProtocol": &FormElement{},
+	"ipProtocolNumber":  &FormElement{},
+	"oncRpcNumber":      &FormElement{},
 	"ipHostNumber": &FormElement{
 		Description: "IP address",
 	},
@@ -3968,10 +3021,8 @@ var LDAPAttribute map[string]*FormElement = map[string]*FormElement{
 	"bootFile": &FormElement{
 		Description: "Boot image name",
 	},
-	"nisMapName": &FormElement{
-	},
-	"nisMapEntry": &FormElement{
-	},
+	"nisMapName":  &FormElement{},
+	"nisMapEntry": &FormElement{},
 	//////////////////////////
 	// SCHEMA: openldap.schema
 	//////////////////////////

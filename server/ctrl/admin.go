@@ -14,7 +14,7 @@ func AdminSessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendSuccessResult(res, true)
 		return
 	}
-	obfuscate := func() string{
+	obfuscate := func() string {
 		c, err := req.Cookie(COOKIE_NAME_ADMIN)
 		if err != nil {
 			return ""
@@ -22,7 +22,7 @@ func AdminSessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 		return c.Value
 	}()
 
-	str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, obfuscate);
+	str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, obfuscate)
 	if err != nil {
 		SendSuccessResult(res, false)
 		return
@@ -42,7 +42,7 @@ func AdminSessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func AdminSessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	// Step 1: Deliberatly make the request slower to make hacking attempt harder for the attacker
-	time.Sleep(1500*time.Millisecond)
+	time.Sleep(1500 * time.Millisecond)
 
 	// Step 2: Make sure current user has appropriate access
 	admin := Config.Get("auth.admin").String()
@@ -66,16 +66,16 @@ func AdminSessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Reques
 		return
 	}
 	http.SetCookie(res, &http.Cookie{
-		Name:   COOKIE_NAME_ADMIN,
-		Value:  obfuscate,
-		Path:   COOKIE_PATH_ADMIN,
-		MaxAge: 60*60, // valid for 1 hour
+		Name:     COOKIE_NAME_ADMIN,
+		Value:    obfuscate,
+		Path:     COOKIE_PATH_ADMIN,
+		MaxAge:   60 * 60, // valid for 1 hour
 		SameSite: http.SameSiteStrictMode,
 	})
 	SendSuccessResult(res, true)
 }
 
-func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {	
+func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	drivers := Backend.Drivers()
 	backends := make(map[string]Form, len(drivers))
 	for key := range drivers {

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func BodyParser (fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
+func BodyParser(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
 	extractBody := func(req *http.Request) (map[string]interface{}, error) {
 		var body map[string]interface{}
 		byt, err := ioutil.ReadAll(req.Body)

@@ -39,7 +39,7 @@ func scoreBoostForPath(p string) int {
 
 func scoreBoostForFilesInDirectory(f []os.FileInfo) int {
 	s := 0
-	for i:=0; i<len(f); i++ {
+	for i := 0; i < len(f); i++ {
 		name := f[i].Name()
 		if f[i].IsDir() == false {
 			if strings.HasSuffix(name, ".org") {
@@ -62,7 +62,7 @@ func scoreBoostForFilesInDirectory(f []os.FileInfo) int {
 }
 
 func scoreBoostOnDepth(p string) int {
-	return - strings.Count(p, "/")
+	return -strings.Count(p, "/")
 }
 
 func SearchStateLess(app *App, path string, keyword string) []File {
@@ -70,7 +70,7 @@ func SearchStateLess(app *App, path string, keyword string) []File {
 	toVisit := []PathQuandidate{PathQuandidate{path, 0}}
 	MAX_SEARCH_TIME := SEARCH_TIMEOUT()
 
-	for start := time.Now() ; time.Since(start) < MAX_SEARCH_TIME; {
+	for start := time.Now(); time.Since(start) < MAX_SEARCH_TIME; {
 		if len(toVisit) == 0 {
 			return files
 		}
@@ -88,11 +88,11 @@ func SearchStateLess(app *App, path string, keyword string) []File {
 		}
 
 		score1 := scoreBoostForFilesInDirectory(f)
-		for i:=0; i<len(f); i++ {
+		for i := 0; i < len(f); i++ {
 			name := f[i].Name()
 			// keyword matching
 			isAMatch := true
-			for _, key := range strings.Split(keyword, " "){
+			for _, key := range strings.Split(keyword, " ") {
 				if strings.Contains(strings.ToLower(name), strings.ToLower(key)) == false {
 					isAMatch = false
 				}
@@ -124,17 +124,17 @@ func SearchStateLess(app *App, path string, keyword string) []File {
 				score += score1
 				score += score2
 				score += currentPath.Score
-				t := make([]PathQuandidate, len(toVisit) + 1)
+				t := make([]PathQuandidate, len(toVisit)+1)
 				k := 0
-				for k=0; k<len(toVisit); k++{
+				for k = 0; k < len(toVisit); k++ {
 					if score > toVisit[k].Score {
 						break
 					}
 					t[k] = toVisit[k]
 				}
 				t[k] = PathQuandidate{fullpath, score}
-				for k=k+1; k<len(toVisit) + 1; k++ {
-					t[k] = toVisit[k - 1]
+				for k = k + 1; k < len(toVisit)+1; k++ {
+					t[k] = toVisit[k-1]
 				}
 				toVisit = t
 			}
