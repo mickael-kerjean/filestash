@@ -51,6 +51,7 @@ func init() {
 func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	if model.CanRead(&ctx) == false {
 		if model.CanUpload(&ctx) == false {
+			Log.Debug("ls::permission 'permission denied'")
 			SendErrorResult(res, ErrPermissionDenied)
 			return
 		}
@@ -59,12 +60,14 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
+		Log.Debug("ls::path '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
 
 	entries, err := ctx.Backend.Ls(path)
 	if err != nil {
+		Log.Debug("ls::backend '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -134,11 +137,13 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		Path:   "/",
 	})
 	if model.CanRead(&ctx) == false {
+		Log.Debug("cat::permission 'permission denied'")
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
+		Log.Debug("cat::path '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -164,6 +169,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	// perform the actual `cat` if needed
 	if file == nil {
 		if file, err = ctx.Backend.Cat(path); err != nil {
+			Log.Debug("cat::backend '%s'", err.Error())
 			SendErrorResult(res, err)
 			return
 		}
@@ -177,6 +183,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	// plugin hooks
 	for _, obj := range Hooks.Get.ProcessFileContentBeforeSend() {
 		if file, err = obj(file, &ctx, &res, req); err != nil {
+			Log.Debug("cat::hooks '%s'", err.Error())
 			SendErrorResult(res, err)
 			return
 		}
@@ -197,18 +204,21 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 			tmpPath := filepath.Join(GetCurrentDir(), TMP_PATH, "file_"+QuickString(20)+".dat")
 			f, err := os.OpenFile(tmpPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 			if err != nil {
+				Log.Debug("cat::range0 '%s'", err.Error())
 				SendErrorResult(res, err)
 				return
 			}
 			if _, err = io.Copy(f, file); err != nil {
 				f.Close()
 				file.Close()
+				Log.Debug("cat::range1 '%s'", err.Error())
 				SendErrorResult(res, err)
 				return
 			}
 			f.Close()
 			file.Close()
 			if f, err = os.OpenFile(tmpPath, os.O_RDONLY, os.ModePerm); err != nil {
+				Log.Debug("cat::range2 '%s'", err.Error())
 				SendErrorResult(res, err)
 				return
 			}
@@ -293,12 +303,14 @@ func FileAccess(ctx App, res http.ResponseWriter, req *http.Request) {
 func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
+		Log.Debug("save::path '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
 
 	if model.CanEdit(&ctx) == false {
 		if model.CanUpload(&ctx) == false {
+			Log.Debug("save::permission 'permission denied'")
 			SendErrorResult(res, ErrPermissionDenied)
 			return
 		}
@@ -307,11 +319,13 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 		root, filename := SplitPath(path)
 		entries, err := ctx.Backend.Ls(root)
 		if err != nil {
+			Log.Debug("ls::permission 'permission denied'")
 			SendErrorResult(res, ErrPermissionDenied)
 			return
 		}
 		for i := 0; i < len(entries); i++ {
 			if entries[i].Name() == filename {
+				Log.Debug("ls::permission 'conflict'")
 				SendErrorResult(res, ErrConflict)
 				return
 			}
@@ -321,12 +335,14 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 	maxMemory := int64(32 << 20) // 32MB
 	err = req.ParseMultipartForm(maxMemory)
 	if err != nil {
+		Log.Debug("save::multipart '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
 
 	file, _, err := req.FormFile("file")
 	if err != nil {
+		Log.Debug("save::form '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -335,6 +351,7 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 	err = ctx.Backend.Save(path, file)
 	file.Close()
 	if err != nil {
+		Log.Debug("save::backend '%s'", err.Error())
 		SendErrorResult(res, NewError(err.Error(), 403))
 		return
 	}
@@ -348,27 +365,32 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
 	if model.CanEdit(&ctx) == false {
+		Log.Debug("mv::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
 	}
 
 	from, err := PathBuilder(ctx, req.URL.Query().Get("from"))
 	if err != nil {
+		Log.Debug("mv::path::from '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
 	to, err := PathBuilder(ctx, req.URL.Query().Get("to"))
 	if err != nil {
+		Log.Debug("mv::path::to '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
 	if from == "" || to == "" {
+		Log.Debug("mv::params 'missing path parameter'")
 		SendErrorResult(res, NewError("missing path parameter", 400))
 		return
 	}
 
 	err = ctx.Backend.Mv(from, to)
 	if err != nil {
+		Log.Debug("mv::backend '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -380,17 +402,20 @@ func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func FileRm(ctx App, res http.ResponseWriter, req *http.Request) {
 	if model.CanEdit(&ctx) == false {
+		Log.Debug("rm::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
 	}
 
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
+		Log.Debug("rm::path '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
 	err = ctx.Backend.Rm(path)
 	if err != nil {
+		Log.Debug("rm::backend '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -400,18 +425,21 @@ func FileRm(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
 	if model.CanUpload(&ctx) == false {
+		Log.Debug("mkdir::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
 	}
 
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
+		Log.Debug("mkdir::path '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
 
 	err = ctx.Backend.Mkdir(path)
 	if err != nil {
+		Log.Debug("mkdir::backend '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -421,18 +449,21 @@ func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
 	if model.CanUpload(&ctx) == false {
+		Log.Debug("touch::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
 	}
 
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
+		Log.Debug("touch::path '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
 
 	err = ctx.Backend.Touch(path)
 	if err != nil {
+		Log.Debug("touch::backend '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -443,12 +474,14 @@ func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
 func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 	var err error
 	if model.CanRead(&ctx) == false {
+		Log.Debug("downloader::permission 'permission denied'")
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}
 	paths := req.URL.Query()["path"]
 	for i := 0; i < len(paths); i++ {
 		if paths[i], err = PathBuilder(ctx, paths[i]); err != nil {
+			Log.Debug("downloader::path '%s'", err.Error())
 			SendErrorResult(res, err)
 			return
 		}
