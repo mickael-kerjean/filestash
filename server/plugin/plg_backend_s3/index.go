@@ -284,27 +284,93 @@ func (s S3Backend) Mv(from string, to string) error {
 	t := s.path(to)
 	client := s3.New(s.createSession(f.bucket))
 
-	if f.path == "" || strings.HasSuffix(from, "/") {
+	if (f.path == "") {
+		// Rename bucket
 		return ErrNotImplemented
-	}
-
-	input := &s3.CopyObjectInput{
-		Bucket:     aws.String(t.bucket),
-		CopySource: aws.String(f.bucket + "/" + f.path),
-		Key:        aws.String(t.path),
-	}
-	if s.params["encryption_key"] != "" {
-		input.CopySourceSSECustomerAlgorithm = aws.String("AES256")
-		input.CopySourceSSECustomerKey = aws.String(s.params["encryption_key"])
-		input.SSECustomerAlgorithm = aws.String("AES256")
-		input.SSECustomerKey = aws.String(s.params["encryption_key"])
-	}
-
-	_, err := client.CopyObject(input)
-	if err != nil {
+	} else if (strings.HasSuffix(from, "/") == false) {
+		// Move Single file
+		input := &s3.CopyObjectInput{
+			Bucket:     aws.String(t.bucket),
+			CopySource: aws.String(f.bucket + "/" + f.path),
+			Key:        aws.String(t.path),
+		}
+		if s.params["encryption_key"] != "" {
+			input.CopySourceSSECustomerAlgorithm = aws.String("AES256")
+			input.CopySourceSSECustomerKey = aws.String(s.params["encryption_key"])
+			input.SSECustomerAlgorithm = aws.String("AES256")
+			input.SSECustomerKey = aws.String(s.params["encryption_key"])
+		}
+	
+		_, err := client.CopyObject(input)
+		if err != nil {
+			return err
+		}
+		_, err = client.DeleteObject(&s3.DeleteObjectInput{
+			Bucket: aws.String(f.bucket),
+			Key:    aws.String(f.path),
+		})
 		return err
 	}
-	return s.Rm(from)
+
+	// Move recursively files and subfolders
+	err := client.ListObjectsV2Pages(
+		&s3.ListObjectsV2Input{
+			Bucket:    aws.String(f.bucket),
+			Prefix:    aws.String(f.path),
+			Delimiter: aws.String("/"),
+		},
+		func(objs *s3.ListObjectsV2Output, lastPage bool) bool {
+			for _, obj := range objs.Contents {
+				from := f.bucket + "/" + *obj.Key
+				toKey := t.path + strings.TrimPrefix(*obj.Key, f.path)
+				input := &s3.CopyObjectInput{
+					CopySource: aws.String(from),
+					Bucket:     aws.String(t.bucket),
+					Key:        aws.String(toKey),
+				}
+				if s.params["encryption_key"] != "" {
+					input.CopySourceSSECustomerAlgorithm = aws.String("AES256")
+					input.CopySourceSSECustomerKey = aws.String(s.params["encryption_key"])
+					input.SSECustomerAlgorithm = aws.String("AES256")
+					input.SSECustomerKey = aws.String(s.params["encryption_key"])
+				}
+
+				Log.Debug("CopyObject(%s, %s):", from, f.bucket + "/" + toKey)
+				_, err := client.CopyObject(input)
+				if err != nil {
+					Log.Error("CopyObject from: %s to: %s",
+						f.bucket + "/" + *obj.Key,
+						t.bucket + "/" + t.path + *obj.Key,
+						err)
+					return false
+				}
+			
+				Log.Debug("DeleteObject(%s):", f.bucket + "/" + *obj.Key)
+				_, err = client.DeleteObject(&s3.DeleteObjectInput{
+					Bucket: aws.String(f.bucket),
+					Key:    obj.Key,
+				})
+				if err != nil {
+					Log.Error("DeleteObject failed: %s", *obj.Key, err)
+					return false
+				}
+			}
+			for _, pref := range objs.CommonPrefixes {
+				from := "/" + f.bucket + "/" + *pref.Prefix
+				to := "/" + t.bucket + "/" + t.path + "/" + strings.TrimPrefix(*pref.Prefix, f.path)
+				Log.Debug("Mv(%s, %s):", from, to)
+				err := s.Mv(from, to)
+				if err != nil {
+					Log.Error("Mv(%s, %s) failed:", from, to, err)
+					return false
+				}
+			}
+			return true
+		})
+	if err != nil {
+		Log.Error("ListObjectsV2Pages failed:", err)
+	}
+	return err
 }
 
 func (s S3Backend) Touch(path string) error {
