@@ -29,7 +29,7 @@ steps:
   - cp -R ./dist/data/public ./filestash/data/public
 
 - name: build_backend
-  image: golang:1.12-stretch
+  image: golang:1.14-stretch
   depends_on: [ build_prepare ]
   environment:
     CGO_LDFLAGS_ALLOW: "-fopenmp"
@@ -62,7 +62,7 @@ steps:
   - npm test
 
 - name: test_backend_unit
-  image: golang:1.12-alpine
+  image: golang:1.14-alpine
   depends_on: [ test_prepare, build_backend, build_frontend ]
   environment:
     GO111MODULE: "on"
