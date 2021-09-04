@@ -322,15 +322,47 @@ func (f *ftpFile) Sys() interface{} {
 }
 
 var lsRegex = regexp.MustCompile(`^\s*(\S)(\S{3})(\S{3})(\S{3})(?:\s+\S+){3}\s+(\d+)\s+(\w+\s+\d+)\s+([\d:]+)\s+(.+)$`)
+var lsRegexMS = regexp.MustCompile(`^(\d+-\d+-\d+)\s+(\d+:\d+[^ ]+)\s+([^ ]+)\s+(.*)$`)
 
 // total 404456
 // drwxr-xr-x   8 goftp    20            272 Jul 28 05:03 git-ignored
+// or
+// 07-23-21     05:03PM    <DIR>         git-dir-ignored
+// 07-23-21     05:03PM           272    git-ignored
 func parseLIST(entry string, loc *time.Location, skipSelfParent bool) (os.FileInfo, error) {
 	if strings.HasPrefix(entry, "total ") {
 		return nil, nil
 	}
 
 	matches := lsRegex.FindStringSubmatch(entry)
+
+	// on failure - try with MS format.
+	if len(matches) == 0 {
+		msmatches := lsRegexMS.FindStringSubmatch(entry)
+		if len(msmatches) > 0 {
+			// normalize MS to Unix based
+			matches = make([]string, 10)
+			matches[0] = entry
+			if strings.ToUpper(msmatches[3]) == "<DIR>" {
+				matches[1] = "d"
+				matches[5] = "0"
+			} else {
+				matches[1] = "-"
+				matches[5] = msmatches[3]
+			}
+			matches[2] = "rwx"
+			matches[3] = "rwx"
+			matches[4] = "rwx"
+			if d, e := time.Parse("01-02-06", msmatches[1]); e == nil {
+				matches[6] = d.Format("Jan _2")
+			}
+			if t, e := time.Parse("03:04pm", strings.ToLower(msmatches[2])); e == nil {
+				matches[7] = t.Format("15:04")
+			}
+			matches[8] = msmatches[4]
+		}
+	}
+
 	if len(matches) == 0 {
 		return nil, ftpError{err: fmt.Errorf(`failed parsing LIST entry: %s`, entry)}
 	}
