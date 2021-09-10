@@ -38,7 +38,7 @@
     }
     form{
         display: inline-block;
-        width: 100%;
+        width: calc(100% - 130px);
         input{
             width: 100%;
             font-size: 1em;
