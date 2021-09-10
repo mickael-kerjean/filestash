@@ -3,6 +3,7 @@ package plg_backend_s3
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -291,7 +292,7 @@ func (s S3Backend) Mv(from string, to string) error {
 		// Move Single file
 		input := &s3.CopyObjectInput{
 			Bucket:     aws.String(t.bucket),
-			CopySource: aws.String(f.bucket + "/" + f.path),
+			CopySource: aws.String(f.bucket + "/" + s.urlEncodedPath(f.path)),
 			Key:        aws.String(t.path),
 		}
 		if s.params["encryption_key"] != "" {
@@ -321,7 +322,7 @@ func (s S3Backend) Mv(from string, to string) error {
 		},
 		func(objs *s3.ListObjectsV2Output, lastPage bool) bool {
 			for _, obj := range objs.Contents {
-				from := f.bucket + "/" + *obj.Key
+				from := f.bucket + "/" + s.urlEncodedPath(*obj.Key)
 				toKey := t.path + strings.TrimPrefix(*obj.Key, f.path)
 				input := &s3.CopyObjectInput{
 					CopySource: aws.String(from),
@@ -461,4 +462,16 @@ func (s S3Backend) path(p string) S3Path {
 		bucket,
 		path,
 	}
+}
+
+func (s S3Backend) urlEncodedPath(path string) string {
+	sp := strings.Split(path, "/")
+	
+	var pathElements []string
+	for _, x := range sp {
+		pathElements = append(pathElements, url.QueryEscape(x))
+	}
+
+	encodedPath := strings.Join(pathElements, "/")
+	return encodedPath
 }
