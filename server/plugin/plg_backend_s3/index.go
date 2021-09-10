@@ -283,6 +283,9 @@ func (s S3Backend) Rm(path string) error {
 func (s S3Backend) Mv(from string, to string) error {
 	f := s.path(from)
 	t := s.path(to)
+	if from == to {
+		return nil
+	}
 	client := s3.New(s.createSession(f.bucket))
 
 	if (f.path == "") {
