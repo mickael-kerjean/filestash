@@ -101,6 +101,18 @@ type envConfig struct {
 	//  AWS_CA_BUNDLE=$HOME/my_custom_ca_bundle
 	CustomCABundle string
 
+	// Sets the TLC client certificate that should be used by the SDK's HTTP transport
+	// when making requests. The certificate must be paired with a TLS client key file.
+	//
+	//  AWS_SDK_GO_CLIENT_TLS_CERT=$HOME/my_client_cert
+	ClientTLSCert string
+
+	// Sets the TLC client key that should be used by the SDK's HTTP transport
+	// when making requests. The key must be paired with a TLS client certificate file.
+	//
+	//  AWS_SDK_GO_CLIENT_TLS_KEY=$HOME/my_client_key
+	ClientTLSKey string
+
 	csmEnabled  string
 	CSMEnabled  *bool
 	CSMPort     string
@@ -148,6 +160,16 @@ type envConfig struct {
 	//
 	// AWS_S3_USE_ARN_REGION=true
 	S3UseARNRegion bool
+
+	// Specifies the EC2 Instance Metadata Service endpoint to use. If specified it overrides EC2IMDSEndpointMode.
+	//
+	// AWS_EC2_METADATA_SERVICE_ENDPOINT=http://[::1]
+	EC2IMDSEndpoint string
+
+	// Specifies the EC2 Instance Metadata Service default endpoint selection mode (IPv4 or IPv6)
+	//
+	// AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE=IPv6
+	EC2IMDSEndpointMode endpoints.EC2IMDSEndpointModeState
 }
 
 var (
@@ -210,6 +232,21 @@ var (
 	}
 	s3UseARNRegionEnvKey = []string{
 		"AWS_S3_USE_ARN_REGION",
+	}
+	ec2IMDSEndpointEnvKey = []string{
+		"AWS_EC2_METADATA_SERVICE_ENDPOINT",
+	}
+	ec2IMDSEndpointModeEnvKey = []string{
+		"AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE",
+	}
+	useCABundleKey = []string{
+		"AWS_CA_BUNDLE",
+	}
+	useClientTLSCert = []string{
+		"AWS_SDK_GO_CLIENT_TLS_CERT",
+	}
+	useClientTLSKey = []string{
+		"AWS_SDK_GO_CLIENT_TLS_KEY",
 	}
 )
 
@@ -294,7 +331,9 @@ func envConfigLoad(enableSharedConfig bool) (envConfig, error) {
 		cfg.SharedConfigFile = defaults.SharedConfigFilename()
 	}
 
-	cfg.CustomCABundle = os.Getenv("AWS_CA_BUNDLE")
+	setFromEnvVal(&cfg.CustomCABundle, useCABundleKey)
+	setFromEnvVal(&cfg.ClientTLSCert, useClientTLSCert)
+	setFromEnvVal(&cfg.ClientTLSKey, useClientTLSKey)
 
 	var err error
 	// STS Regional Endpoint variable
@@ -332,6 +371,11 @@ func envConfigLoad(enableSharedConfig bool) (envConfig, error) {
 		}
 	}
 
+	setFromEnvVal(&cfg.EC2IMDSEndpoint, ec2IMDSEndpointEnvKey)
+	if err := setEC2IMDSEndpointMode(&cfg.EC2IMDSEndpointMode, ec2IMDSEndpointModeEnvKey); err != nil {
+		return envConfig{}, err
+	}
+
 	return cfg, nil
 }
 
@@ -342,4 +386,18 @@ func setFromEnvVal(dst *string, keys []string) {
 			break
 		}
 	}
+}
+
+func setEC2IMDSEndpointMode(mode *endpoints.EC2IMDSEndpointModeState, keys []string) error {
+	for _, k := range keys {
+		value := os.Getenv(k)
+		if len(value) == 0 {
+			continue
+		}
+		if err := mode.SetFromString(value); err != nil {
+			return fmt.Errorf("invalid value for environment variable, %s=%s, %v", k, value, err)
+		}
+		return nil
+	}
+	return nil
 }

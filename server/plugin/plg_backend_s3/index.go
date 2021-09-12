@@ -2,18 +2,19 @@ package plg_backend_s3
 
 import (
 	"fmt"
-	"io"
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 var S3Cache AppCache
@@ -38,13 +39,24 @@ func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 		params["region"] = "us-east-2"
 	}
 	config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials(params["access_key_id"], params["secret_access_key"], params["session_token"]),
+		Credentials: credentials.NewChainCredentials(
+			[]credentials.Provider{
+				&credentials.StaticProvider{Value: credentials.Value{
+					AccessKeyID:     params["access_key_id"],
+					SecretAccessKey: params["secret_access_key"],
+					SessionToken:    params["session_token"],
+				}},
+				&credentials.EnvProvider{},
+				&ec2rolecreds.EC2RoleProvider{Client: ec2metadata.New(session.Must(session.NewSession()))},
+			},
+		),
 		S3ForcePathStyle: aws.Bool(true),
 		Region:           aws.String(params["region"]),
 	}
 	if params["endpoint"] != "" {
 		config.Endpoint = aws.String(params["endpoint"])
 	}
+
 	backend := &S3Backend{
 		config: config,
 		params: params,
@@ -170,7 +182,6 @@ func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 			}
 			return true
 		})
-
 	return files, err
 }
 
@@ -284,10 +295,10 @@ func (s S3Backend) Mv(from string, to string) error {
 	t := s.path(to)
 	client := s3.New(s.createSession(f.bucket))
 
-	if (f.path == "") {
+	if f.path == "" {
 		// Rename bucket
 		return ErrNotImplemented
-	} else if (strings.HasSuffix(from, "/") == false) {
+	} else if strings.HasSuffix(from, "/") == false {
 		// Move Single file
 		input := &s3.CopyObjectInput{
 			Bucket:     aws.String(t.bucket),
@@ -300,7 +311,7 @@ func (s S3Backend) Mv(from string, to string) error {
 			input.SSECustomerAlgorithm = aws.String("AES256")
 			input.SSECustomerKey = aws.String(s.params["encryption_key"])
 		}
-	
+
 		_, err := client.CopyObject(input)
 		if err != nil {
 			return err
@@ -335,17 +346,17 @@ func (s S3Backend) Mv(from string, to string) error {
 					input.SSECustomerKey = aws.String(s.params["encryption_key"])
 				}
 
-				Log.Debug("CopyObject(%s, %s):", from, f.bucket + "/" + toKey)
+				Log.Debug("CopyObject(%s, %s):", from, f.bucket+"/"+toKey)
 				_, err := client.CopyObject(input)
 				if err != nil {
 					Log.Error("CopyObject from: %s to: %s",
-						f.bucket + "/" + *obj.Key,
-						t.bucket + "/" + t.path + *obj.Key,
+						f.bucket+"/"+*obj.Key,
+						t.bucket+"/"+t.path+*obj.Key,
 						err)
 					return false
 				}
-			
-				Log.Debug("DeleteObject(%s):", f.bucket + "/" + *obj.Key)
+
+				Log.Debug("DeleteObject(%s):", f.bucket+"/"+*obj.Key)
 				_, err = client.DeleteObject(&s3.DeleteObjectInput{
 					Bucket: aws.String(f.bucket),
 					Key:    obj.Key,

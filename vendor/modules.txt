@@ -1,6 +1,6 @@
 # cloud.google.com/go v0.38.0
 cloud.google.com/go/compute/metadata
-# github.com/aws/aws-sdk-go v1.28.0
+# github.com/aws/aws-sdk-go v1.40.41
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
 github.com/aws/aws-sdk-go/aws/awserr
@@ -12,6 +12,7 @@ github.com/aws/aws-sdk-go/aws/credentials
 github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds
 github.com/aws/aws-sdk-go/aws/credentials/endpointcreds
 github.com/aws/aws-sdk-go/aws/credentials/processcreds
+github.com/aws/aws-sdk-go/aws/credentials/ssocreds
 github.com/aws/aws-sdk-go/aws/credentials/stscreds
 github.com/aws/aws-sdk-go/aws/csm
 github.com/aws/aws-sdk-go/aws/defaults
@@ -20,27 +21,35 @@ github.com/aws/aws-sdk-go/aws/endpoints
 github.com/aws/aws-sdk-go/aws/request
 github.com/aws/aws-sdk-go/aws/session
 github.com/aws/aws-sdk-go/aws/signer/v4
+github.com/aws/aws-sdk-go/internal/context
 github.com/aws/aws-sdk-go/internal/ini
-github.com/aws/aws-sdk-go/internal/s3err
+github.com/aws/aws-sdk-go/internal/s3shared
+github.com/aws/aws-sdk-go/internal/s3shared/arn
+github.com/aws/aws-sdk-go/internal/s3shared/s3err
 github.com/aws/aws-sdk-go/internal/sdkio
 github.com/aws/aws-sdk-go/internal/sdkmath
 github.com/aws/aws-sdk-go/internal/sdkrand
 github.com/aws/aws-sdk-go/internal/sdkuri
 github.com/aws/aws-sdk-go/internal/shareddefaults
 github.com/aws/aws-sdk-go/internal/strings
+github.com/aws/aws-sdk-go/internal/sync/singleflight
+github.com/aws/aws-sdk-go/private/checksum
 github.com/aws/aws-sdk-go/private/protocol
 github.com/aws/aws-sdk-go/private/protocol/eventstream
 github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi
 github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
+github.com/aws/aws-sdk-go/private/protocol/jsonrpc
 github.com/aws/aws-sdk-go/private/protocol/query
 github.com/aws/aws-sdk-go/private/protocol/query/queryutil
 github.com/aws/aws-sdk-go/private/protocol/rest
+github.com/aws/aws-sdk-go/private/protocol/restjson
 github.com/aws/aws-sdk-go/private/protocol/restxml
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/s3
-github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/s3/s3iface
 github.com/aws/aws-sdk-go/service/s3/s3manager
+github.com/aws/aws-sdk-go/service/sso
+github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/creack/pty v1.1.7
@@ -91,7 +100,7 @@ github.com/hirochachacha/go-smb2/internal/spnego
 github.com/hirochachacha/go-smb2/internal/utf16le
 # github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
 github.com/jbenet/go-context/io
-# github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+# github.com/jmespath/go-jmespath v0.4.0
 github.com/jmespath/go-jmespath
 # github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd
 github.com/kevinburke/ssh_config
@@ -110,7 +119,7 @@ github.com/mitchellh/go-homedir
 github.com/mitchellh/hashstructure
 # github.com/patrickmn/go-cache v2.1.0+incompatible
 github.com/patrickmn/go-cache
-# github.com/pkg/errors v0.8.1
+# github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/pkg/sftp v1.11.0
 github.com/pkg/sftp
@@ -181,7 +190,7 @@ golang.org/x/crypto/ssh/knownhosts
 # golang.org/x/image v0.0.0-20210622092929-e6eecd499c2c
 golang.org/x/image/draw
 golang.org/x/image/math/f64
-# golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+# golang.org/x/net v0.0.0-20210614182718-04defd469f4e
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
@@ -200,8 +209,9 @@ golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20190726091711-fc99dfbffb4e
+# golang.org/x/sys v0.0.0-20210423082822-04245dca01da
 golang.org/x/sys/cpu
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.3.6
