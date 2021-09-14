@@ -50,8 +50,9 @@ func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 				&ec2rolecreds.EC2RoleProvider{Client: ec2metadata.New(session.Must(session.NewSession()))},
 			},
 		),
-		S3ForcePathStyle: aws.Bool(true),
-		Region:           aws.String(params["region"]),
+		CredentialsChainVerboseErrors: aws.Bool(true),
+		S3ForcePathStyle:              aws.Bool(true),
+		Region:                        aws.String(params["region"]),
 	}
 	if params["endpoint"] != "" {
 		config.Endpoint = aws.String(params["endpoint"])
