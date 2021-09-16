@@ -280,7 +280,7 @@ export class FilesPage extends React.Component {
                     <NgIf cond={this.state.loading === true}>
                       <Loader/>
                     </NgIf>
-                    <MobileFileUpload path={this.state.path} />
+                    <MobileFileUpload path={this.state.path} accessRight={this.state.metadata || {}} />
                   </div>
                 </div>
                 <div className="upload-footer">
