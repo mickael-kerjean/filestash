@@ -39,6 +39,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     Promise.all([Config.refresh(), setup_xdg_open(), translation()]).then(() => {
         const timeSinceBoot = new Date() - window.initTime;
+        if(window.CONFIG.name) document.title = window.CONFIG.name;
         if(timeSinceBoot >= 1500){
             const timeoutToAvoidFlickering = timeSinceBoot > 2500 ? 0 : 500;
             return waitFor(timeoutToAvoidFlickering)
