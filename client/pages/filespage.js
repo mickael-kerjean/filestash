@@ -36,10 +36,10 @@ export class FilesPage extends React.Component {
         }
         this.state = {
             path: (decodeURIComponent(location.pathname).replace("/files", "") || "/" ),
-            sort: settings_get("filespage_sort") || "type",
+            sort: settings_get("filespage_sort") || CONFIG["default_sort"] || "type",
             sort_reverse: true,
             show_hidden: settings_get("filespage_show_hidden") || CONFIG["display_hidden"],
-            view: settings_get("filespage_view") || "grid",
+            view: settings_get("filespage_view") || CONFIG["default_view"] || "grid",
             is_search: false,
             files: [],
             selected: [],
