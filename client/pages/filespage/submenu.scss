@@ -63,11 +63,12 @@
                     margin-top: -10px;
                 }
             }
-            &.search_focus form input{transition: 0.2s width ease-in;}
+            &.search_focus form input{transition: 0.2s width ease-in;opacity:1;}
             form{
                 float: right;
                 margin-top: -3px;
                 input{
+                    opacity: 0;
                     font-size: 1em;
                     margin-top: -3px;
                     border: none;

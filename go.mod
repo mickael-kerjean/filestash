@@ -3,7 +3,7 @@ module github.com/mickael-kerjean/filestash
 go 1.13
 
 require (
-	github.com/aws/aws-sdk-go v1.28.0
+	github.com/aws/aws-sdk-go v1.40.41
 	github.com/cretz/bine v0.1.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gorilla/mux v1.7.3
@@ -23,7 +23,7 @@ require (
 	github.com/tidwall/sjson v1.0.4
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 	golang.org/x/image v0.0.0-20210622092929-e6eecd499c2c
-	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	google.golang.org/api v0.15.0

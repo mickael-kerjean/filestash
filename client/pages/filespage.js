@@ -36,10 +36,10 @@ export class FilesPage extends React.Component {
         }
         this.state = {
             path: (decodeURIComponent(location.pathname).replace("/files", "") || "/" ),
-            sort: settings_get("filespage_sort") || "type",
+            sort: settings_get("filespage_sort") || CONFIG["default_sort"] || "type",
             sort_reverse: true,
             show_hidden: settings_get("filespage_show_hidden") || CONFIG["display_hidden"],
-            view: settings_get("filespage_view") || "grid",
+            view: settings_get("filespage_view") || CONFIG["default_view"] || "grid",
             is_search: false,
             files: [],
             selected: [],
@@ -266,7 +266,7 @@ export class FilesPage extends React.Component {
                     <InfiniteScroll pageStart={0} loader={$moreLoading} hasMore={this.state.files.length > 70}
                                     initialLoad={false} useWindow={false} loadMore={this.loadMore.bind(this)} threshold={100}>
                       <NgShow className="container" cond={!!this.state.is_search || !this.state.loading}>
-                        <NgIf cond={this.state.path === "/"}>
+                        <NgIf cond={this.state.path === "/" && window.self === window.top}>
                           <FrequentlyAccess files={this.state.frequents} />
                         </NgIf>
                         <Submenu path={this.state.path} sort={this.state.sort} view={this.state.view} onSearch={this.onSearch.bind(this)} onViewUpdate={(value) => this.onView(value)} onSortUpdate={(value) => this.onSort(value)} accessRight={this.state.metadata || {}} selected={this.state.selected}></Submenu>
@@ -280,7 +280,7 @@ export class FilesPage extends React.Component {
                     <NgIf cond={this.state.loading === true}>
                       <Loader/>
                     </NgIf>
-                    <MobileFileUpload path={this.state.path} />
+                    <MobileFileUpload path={this.state.path} accessRight={this.state.metadata || {}} />
                   </div>
                 </div>
                 <div className="upload-footer">

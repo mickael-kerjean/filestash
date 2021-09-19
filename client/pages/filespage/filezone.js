@@ -45,6 +45,8 @@ export class MobileFileUpload extends React.Component{
     render(){
         if(!window.CONFIG["upload_button"] && /(Android|iPad|iPhone)/.test(navigator.userAgent) === false){
             return null;
+        } else if(this.props.accessRight.can_create_file === false || this.props.accessRight.can_create_directory === false) {
+            return null;
         }
 
         return (

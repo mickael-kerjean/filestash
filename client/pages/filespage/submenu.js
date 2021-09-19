@@ -130,7 +130,7 @@ export class Submenu extends React.Component {
                       <span>{ t("Download") }</span>
                     </ReactCSSTransitionGroup>
                   </NgIf>
-                  <NgIf cond={this.props.selected.length > 0} type="inline" onMouseDown={this.onDelete.bind(this, this.props.selected)}>
+                  <NgIf cond={this.props.selected.length > 0 && this.props.accessRight.can_delete !== false} type="inline" onMouseDown={this.onDelete.bind(this, this.props.selected)}>
                     <ReactCSSTransitionGroup transitionName="submenuwithSelection" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={10000}>
                       <span>{ t("Remove") }</span>
                     </ReactCSSTransitionGroup>

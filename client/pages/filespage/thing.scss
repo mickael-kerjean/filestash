@@ -266,9 +266,6 @@
     .component_filename{
         color: var(--bg-color);
     }
-    &:hover .box .component_filename{
-        color: inherit;
-    }
     .box.highlight{
         background: var(--emphasis-primary);
     }

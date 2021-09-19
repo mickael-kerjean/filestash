@@ -2,7 +2,6 @@ package ctrl
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
@@ -41,6 +40,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	backend, err := model.NewBackend(&ctx, session)
 	if err != nil {
+		Log.Debug("session::auth 'NewBackend' %+v", err)
 		SendErrorResult(res, err)
 		return
 	}
@@ -50,12 +50,14 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	}); ok {
 		err := obj.OAuthToken(&ctx.Body)
 		if err != nil {
+			Log.Debug("session::auth 'OAuthToken' %+v", err)
 			SendErrorResult(res, NewError("Can't authenticate (OAuth error)", 401))
 			return
 		}
 		session = model.MapStringInterfaceToMapStringString(ctx.Body)
 		backend, err = model.NewBackend(&ctx, session)
 		if err != nil {
+			Log.Debug("session::auth 'OAuthToken::NewBackend' %+v", err)
 			SendErrorResult(res, NewError("Can't authenticate", 401))
 			return
 		}
@@ -63,17 +65,20 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	home, err := model.GetHome(backend, session["path"])
 	if err != nil {
+		Log.Debug("session::auth 'GetHome' %+v", err)
 		SendErrorResult(res, ErrAuthenticationFailed)
 		return
 	}
 
 	s, err := json.Marshal(session)
 	if err != nil {
+		Log.Debug("session::auth 'Marshal' %+v", err)
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
 	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_USER, string(s))
 	if err != nil {
+		Log.Debug("session::auth 'Encryption' %+v", err)
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
@@ -127,12 +132,14 @@ func SessionOAuthBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	b, err := model.NewBackend(&ctx, a)
 	if err != nil {
+		Log.Debug("session::oauth 'NewBackend' %+v", err)
 		SendErrorResult(res, err)
 		return
 	}
 	obj, ok := b.(interface{ OAuthURL() string })
 	if ok == false {
-		SendErrorResult(res, NewError(fmt.Sprintf("This backend doesn't support oauth: '%s'", a["type"]), 500))
+		Log.Debug("session::oauth 'Backend does not support oauth - \"%s\"'", a["type"])
+		SendErrorResult(res, ErrNotSupported)
 		return
 	}
 	SendSuccessResult(res, obj.OAuthURL())

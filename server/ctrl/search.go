@@ -14,6 +14,7 @@ func FileSearch(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	q := req.URL.Query().Get("q")
 	if model.CanRead(&ctx) == false {
+		Log.Debug("ctrl::search 'can not read \"%s\"'", path)
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}
