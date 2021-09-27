@@ -38,18 +38,21 @@ func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 	if params["region"] == "" {
 		params["region"] = "us-east-2"
 	}
+	creds := []credentials.Provider{}
+	if params["access_key_id"] != "" || params["secret_access_key"] != "" {
+		creds = append(creds, &credentials.StaticProvider{Value: credentials.Value{
+			AccessKeyID:     params["access_key_id"],
+			SecretAccessKey: params["secret_access_key"],
+			SessionToken:    params["session_token"],
+		}})
+	}
+	creds = append(
+		creds,
+		&ec2rolecreds.EC2RoleProvider{Client: ec2metadata.New(session.Must(session.NewSession()))},
+		&credentials.EnvProvider{},
+	)
 	config := &aws.Config{
-		Credentials: credentials.NewChainCredentials(
-			[]credentials.Provider{
-				&credentials.StaticProvider{Value: credentials.Value{
-					AccessKeyID:     params["access_key_id"],
-					SecretAccessKey: params["secret_access_key"],
-					SessionToken:    params["session_token"],
-				}},
-				&credentials.EnvProvider{},
-				&ec2rolecreds.EC2RoleProvider{Client: ec2metadata.New(session.Must(session.NewSession()))},
-			},
-		),
+		Credentials:                   credentials.NewChainCredentials(creds),
 		CredentialsChainVerboseErrors: aws.Bool(true),
 		S3ForcePathStyle:              aws.Bool(true),
 		Region:                        aws.String(params["region"]),
