@@ -264,16 +264,17 @@ func (b Sftp) Mv(from string, to string) error {
 }
 
 func (b Sftp) Touch(path string) error {
-	file, err := b.SFTPClient.Create(path)
+	file, err := b.SFTPClient.OpenFile(path, os.O_WRONLY|os.O_CREATE)
 	if err != nil {
 		return b.err(err)
 	}
 	_, err = file.ReadFrom(strings.NewReader(""))
+	file.Close()
 	return b.err(err)
 }
 
 func (b Sftp) Save(path string, file io.Reader) error {
-	remoteFile, err := b.SFTPClient.Create(path)
+	remoteFile, err := b.SFTPClient.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC)
 	if err != nil {
 		return b.err(err)
 	}
