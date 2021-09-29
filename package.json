@@ -32,7 +32,7 @@
     "react-selectable": "git+https://github.com/mickael-kerjean/react-selectable.git",
     "react-sticky": "^6.0.2",
     "rxjs": "^5.4.0",
-    "video.js": "^5.19.2",
+    "video.js": "^7.14.3",
     "videojs-contrib-hls": "^5.14.1",
     "videojs-sublime-skin": "^1.0.3",
     "wavesurfer.js": "^1.4.0"
