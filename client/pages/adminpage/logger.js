@@ -34,6 +34,8 @@ export function LogPage({ isSaving = nop }) {
             if($log.current.scrollTop === 0) {
                 $log.current.scrollTop = $log.current.scrollHeight;
             }
+        }).catch((err) => {
+            setLog(err && err.message || t("Oops"));
         });
     };
 

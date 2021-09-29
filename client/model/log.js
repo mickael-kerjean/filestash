@@ -12,7 +12,13 @@ class LogManager{
     }
 
     url(){
-        return "/admin/api/log";
+        return "/admin/api/logs";
+    }
+
+    send(msg) {
+        let url = "/report?";
+        url += "message="+encodeURIComponent(msg)
+        return http_post(url).catch();
     }
 
     report(msg, link, lineNo, columnNo, error){

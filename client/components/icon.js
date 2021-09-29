@@ -1,4 +1,5 @@
 import React from "react";
+import { Log } from "../model/";
 import "./icon.scss";
 
 import img_save from "../assets/img/save.svg";
@@ -139,6 +140,7 @@ export const Icon = (props) => {
 
     return (
         <img className="component_icon"
+             onError={() => Log.send(`cannot load icon ${props.name}`)}
              style={props.style}
              onClick={props.onClick}
              src={img}

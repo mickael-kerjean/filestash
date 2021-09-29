@@ -43,8 +43,8 @@ func Init(a *App) {
 	middlewares = []Middleware{ApiHeaders, AdminOnly, SecureAjax}
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigHandler, middlewares, *a)).Methods("GET")
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, *a)).Methods("POST")
-	middlewares = []Middleware{IndexHeaders, AdminOnly, SecureAjax}
-	admin.HandleFunc("/log", NewMiddlewareChain(FetchLogHandler, middlewares, *a)).Methods("GET")
+	middlewares = []Middleware{IndexHeaders, AdminOnly}
+	admin.HandleFunc("/logs", NewMiddlewareChain(FetchLogHandler, middlewares, *a)).Methods("GET")
 
 	// API for File management
 	files := r.PathPrefix("/api/files").Subrouter()
