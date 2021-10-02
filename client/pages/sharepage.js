@@ -81,9 +81,18 @@ export class SharePage extends React.Component {
                     );
                 }
                 notify.send(t("You can't do that :)"), "error");
-            }else if(filetype(this.state.path) === "directory"){
+            } else if (CONFIG["share_redirect"] !== "") {
+                requestAnimationFrame(() => {
+                    window.location.href = CONFIG["share_redirect"].replace("{{path}}", this.state.path);
+                });
+                return (
+                    <div style={marginTop()}>
+                        <Loader />
+                    </div>
+                );
+            } else if(filetype(this.state.path) === "directory"){
                 return ( <Redirect to={`/files/?share=${this.state.share}`} /> );
-            }else{
+            } else{
                 return ( <Redirect to={`/view/${basename(this.state.path)}?nav=false&share=${this.state.share}`} /> );
             }
         } else if (this.state.key === null){

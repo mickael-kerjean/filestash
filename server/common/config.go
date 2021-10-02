@@ -93,6 +93,8 @@ func NewConfiguration() Configuration {
 						Title: "share",
 						Elmnts: []FormElement{
 							FormElement{Name: "enable", Type: "boolean", Default: true, Description: "Enable/Disable the share feature"},
+							FormElement{Name: "default_access", Type: "select", Default: "editor", Opts: []string{"editor", "viewer", "uploader"}, Description: "Default access for shared links"},
+							FormElement{Name: "redirect", Type: "string", Placeholder: "redirection URL", Description: "When set, shared links will perform a redirection to another link. Example: https://example.com?full_path={{path}}"},
 						},
 					},
 				},
@@ -353,35 +355,39 @@ func (this Configuration) Save() Configuration {
 
 func (this Configuration) Export() interface{} {
 	return struct {
-		Editor              string            `json:"editor"`
-		ForkButton          bool              `json:"fork_button"`
-		DisplayHidden       bool              `json:"display_hidden"`
-		AutoConnect         bool              `json:"auto_connect"`
-		Name                string            `json:"name"`
-		UploadButton        bool              `json:"upload_button"`
-		Connections         interface{}       `json:"connections"`
-		EnableShare         bool              `json:"enable_share"`
-		Logout              string            `json:"logout"`
-		MimeTypes           map[string]string `json:"mime"`
-		UploadPoolSize      int               `json:"upload_pool_size"`
-		RefreshAfterUpload  bool              `json:"refresh_after_upload"`
-		FilePageDefaultSort string            `json:"default_sort"`
-		FilePageDefaultView string            `json:"default_view"`
+		Editor                  string            `json:"editor"`
+		ForkButton              bool              `json:"fork_button"`
+		DisplayHidden           bool              `json:"display_hidden"`
+		AutoConnect             bool              `json:"auto_connect"`
+		Name                    string            `json:"name"`
+		UploadButton            bool              `json:"upload_button"`
+		Connections             interface{}       `json:"connections"`
+		EnableShare             bool              `json:"enable_share"`
+		SharedLinkDefaultAccess string            `json:"share_default_access"`
+		SharedLinkRedirect      string            `json:"share_redirect"`
+		Logout                  string            `json:"logout"`
+		MimeTypes               map[string]string `json:"mime"`
+		UploadPoolSize          int               `json:"upload_pool_size"`
+		RefreshAfterUpload      bool              `json:"refresh_after_upload"`
+		FilePageDefaultSort     string            `json:"default_sort"`
+		FilePageDefaultView     string            `json:"default_view"`
 	}{
-		Editor:              this.Get("general.editor").String(),
-		ForkButton:          this.Get("general.fork_button").Bool(),
-		DisplayHidden:       this.Get("general.display_hidden").Bool(),
-		AutoConnect:         this.Get("general.auto_connect").Bool(),
-		Name:                this.Get("general.name").String(),
-		UploadButton:        this.Get("general.upload_button").Bool(),
-		Connections:         this.Conn,
-		EnableShare:         this.Get("features.share.enable").Bool(),
-		Logout:              this.Get("general.logout").String(),
-		MimeTypes:           AllMimeTypes(),
-		UploadPoolSize:      this.Get("general.upload_pool_size").Int(),
-		RefreshAfterUpload:  this.Get("general.refresh_after_upload").Bool(),
-		FilePageDefaultSort: this.Get("general.filepage_default_sort").String(),
-		FilePageDefaultView: this.Get("general.filepage_default_view").String(),
+		Editor:                  this.Get("general.editor").String(),
+		ForkButton:              this.Get("general.fork_button").Bool(),
+		DisplayHidden:           this.Get("general.display_hidden").Bool(),
+		AutoConnect:             this.Get("general.auto_connect").Bool(),
+		Name:                    this.Get("general.name").String(),
+		UploadButton:            this.Get("general.upload_button").Bool(),
+		Connections:             this.Conn,
+		EnableShare:             this.Get("features.share.enable").Bool(),
+		SharedLinkDefaultAccess: this.Get("features.share.default_access").String(),
+		SharedLinkRedirect:      this.Get("features.share.redirect").String(),
+		Logout:                  this.Get("general.logout").String(),
+		MimeTypes:               AllMimeTypes(),
+		UploadPoolSize:          this.Get("general.upload_pool_size").Int(),
+		RefreshAfterUpload:      this.Get("general.refresh_after_upload").Bool(),
+		FilePageDefaultSort:     this.Get("general.filepage_default_sort").String(),
+		FilePageDefaultView:     this.Get("general.filepage_default_view").String(),
 	}
 }
 
