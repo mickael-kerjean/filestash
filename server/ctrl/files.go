@@ -350,24 +350,8 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	maxMemory := int64(32 << 20) // 32MB
-	err = req.ParseMultipartForm(maxMemory)
-	if err != nil {
-		Log.Debug("save::multipart '%s'", err.Error())
-		SendErrorResult(res, err)
-		return
-	}
-
-	file, _, err := req.FormFile("file")
-	if err != nil {
-		Log.Debug("save::form '%s'", err.Error())
-		SendErrorResult(res, err)
-		return
-	}
-	defer file.Close()
-
-	err = ctx.Backend.Save(path, file)
-	file.Close()
+	err = ctx.Backend.Save(path, req.Body)
+	req.Body.Close()
 	if err != nil {
 		Log.Debug("save::backend '%s'", err.Error())
 		SendErrorResult(res, NewError(err.Error(), 403))
@@ -375,9 +359,6 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 	go model.SProc.HintLs(&ctx, filepath.Dir(path)+"/")
 	go model.SProc.HintFile(&ctx, path)
-	if remErr := req.MultipartForm.RemoveAll(); remErr != nil {
-		Log.Error("couldn't remove multipartform data: %s", err.Error())
-	}
 	SendSuccessResult(res, nil)
 }
 

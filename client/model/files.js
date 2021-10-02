@@ -189,10 +189,8 @@ class FileSystem{
 
     save(path, file){
         const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
-        let formData = new window.FormData();
-        formData.append('file', file, "test");
         return this._replace(path, 'loading')
-            .then(() => http_post(url, formData, 'multipart'))
+            .then(() => http_post(url, file, 'blob'))
             .then(() => {
                 return this._saveFileToCache(path, file)
                     .then(() => this._replace(path, null, 'loading'))
@@ -312,9 +310,7 @@ class FileSystem{
             function query(){
                 if(file){
                     const url = appendShareToUrl('/api/files/cat?path='+prepare(path));
-                    let formData = new window.FormData();
-                    formData.append('file', file);
-                    return http_post(url, formData, 'multipart', params);
+                    return http_post(url, file, 'blob', params);
                 }else{
                     const url = appendShareToUrl('/api/files/touch?path='+prepare(path));
                     return http_get(url);
