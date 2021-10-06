@@ -233,7 +233,7 @@ export class ShareComponent extends React.Component {
 
               <NgIf cond={this.state.role !== null}>
                 <h2>{ t("Restrictions") }</h2>
-                <div className="share--content advanced-settings no-select">
+                <div className="share--content restrictions no-select">
                   <SuperCheckbox value={this.state.users} label={ t("Only for users") } placeholder="name0@email.com,name1@email.com" onChange={this.updateState.bind(this, 'users')} inputType="text"/>
                   <SuperCheckbox value={this.state.password} label={ t("Password") } placeholder={ t("protect access with a password") } onChange={this.updateState.bind(this, 'password')} inputType="password"/>
                 </div>

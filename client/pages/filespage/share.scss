@@ -70,7 +70,7 @@
                 }
             }
         }
-        &.advanced-settings{
+        &.advanced-settings, &.restrictions{
             max-height: 115px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
