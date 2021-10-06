@@ -87,16 +87,11 @@ const Logout = (props) => {
     return (
         <div className="li component_logout">
             {
-                isRunningFromAnIframe ? null :
-                    CONFIG["logout"] ? (
-                        <a href={CONFIG["logout"]}>
-                            <Icon name="power"/>
-                        </a>
-                    ) : (
-                        <Link to="/logout">
-                            <Icon name="power"/>
-                        </Link>
-                    )
+                isRunningFromAnIframe ? null : (
+                    <Link to="/logout">
+                        <Icon name="power"/>
+                    </Link>
+                )
             }
         </div>
     );
