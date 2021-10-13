@@ -32,7 +32,7 @@ func Init(a *App) {
 	session.HandleFunc("", NewMiddlewareChain(SessionAuthenticate, middlewares, *a)).Methods("POST")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, SessionTry}
 	session.HandleFunc("", NewMiddlewareChain(SessionLogout, middlewares, *a)).Methods("DELETE")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders}
 	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, *a)).Methods("GET")
 
 	// API for admin

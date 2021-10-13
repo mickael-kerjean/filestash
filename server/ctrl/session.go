@@ -6,6 +6,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -140,6 +141,10 @@ func SessionOAuthBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	if ok == false {
 		Log.Debug("session::oauth 'Backend does not support oauth - \"%s\"'", a["type"])
 		SendErrorResult(res, ErrNotSupported)
+		return
+	}
+	if strings.Contains(req.Header.Get("Accept"), "text/html") {
+		http.Redirect(res, req, obj.OAuthURL(), http.StatusSeeOther)
 		return
 	}
 	SendSuccessResult(res, obj.OAuthURL())
