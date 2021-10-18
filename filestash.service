@@ -4,7 +4,7 @@ Documentation=https://www.filestash.app/docs/
 Requires=network.target
 After=network.target
 
-[Services]
+[Service]
 User=filestash
 Group=filestash
 Type=simple
