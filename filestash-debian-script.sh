@@ -86,10 +86,10 @@ ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex
 
 apt-get purge -y --auto-remove perl wget
 
-find /usr/share/ -print0 -name 'doc' | xargs rm -rf0
-find /usr/share/emacs -print0 -name '*.pbm' | xargs rm -f0
-find /usr/share/emacs -print0 -name '*.png' | xargs rm -f0
-find /usr/share/emacs -print0 -name '*.xpm' | xargs rm -f0
+find /usr/share/ -name 'doc' | xargs rm -rf
+find /usr/share/emacs -name '*.pbm' | xargs rm -f
+find /usr/share/emacs -name '*.png' | xargs rm -f
+find /usr/share/emacs -name '*.xpm' | xargs rm -f
 
 useradd filestash
 chown -R filestash:filestash /app/
