@@ -1,0 +1,14 @@
+[Unit]
+Description=Filestash, a modern web client for SFTP, S3, FTP, WebDAV...
+Documentation=https://www.filestash.app/docs/
+Requires=network.target
+After=network.target
+
+[Services]
+User=filestash
+Group=filestash
+Type=simple
+ExecStart=/app/filestash
+
+[Install]
+WantedBy=multi-user.target
