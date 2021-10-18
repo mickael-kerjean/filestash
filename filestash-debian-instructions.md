@@ -16,3 +16,8 @@ As filestash runs on port 8334, this port must be allowed by the firewall. There
 ```sh
 ufw allow 8334
 ```
+
+To start filestash run :
+```sh
+systemctl start filestash
+```
