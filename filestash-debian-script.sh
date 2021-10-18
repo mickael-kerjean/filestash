@@ -91,6 +91,9 @@ find /usr/share/emacs -name '*.pbm' | xargs rm -f
 find /usr/share/emacs -name '*.png' | xargs rm -f
 find /usr/share/emacs -name '*.xpm' | xargs rm -f
 
+curl -L https://raw.githubusercontent.com/sehnryr/filestash/master/filestash.service -o /app/filestash.service
+systemctl enable /app/filestash.service
+
 useradd filestash
 chown -R filestash:filestash /app/
 rm -rf /var/lib/apt/lists/*
