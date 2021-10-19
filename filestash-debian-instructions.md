@@ -2,7 +2,7 @@
 
 First, install go 1.13 to `/usr/local/`:
 ```sh
-curl --resolve golang.org -sL https://golang.org/dl/go1.13.15.src.tar.gz | tar xzf -C /usr/local
+curl --resolve golang.org -sL https://golang.org/dl/go1.13.15.src.tar.gz | tar xzf - && mv go /usr/local
 ```
 
 Once that done, you can run the script to install filestash :
