@@ -4,10 +4,35 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func init() {
 	Backend.Register("blackhole", BlackHole{})
+}
+
+type LargeFile struct {
+	Counter int
+}
+
+func (this *LargeFile) Read(p []byte) (n int, err error) {
+	if this.Counter <= 0 {
+		return 0, io.EOF
+	}
+	this.Counter = this.Counter - len(p)
+	lenp := len(p)
+	if lenp > 0 {
+		p[0] = '_'
+	}
+	for i := 0; i < lenp; i += 100 {
+		p[i] = '_'
+	}
+	return lenp, nil
+}
+
+func (this LargeFile) Close() error {
+	return nil
 }
 
 type BlackHole struct{}
@@ -33,7 +58,27 @@ func (this BlackHole) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (this BlackHole) Cat(path string) (io.ReadCloser, error) {
-	return nil, ErrNotImplemented
+	path = strings.TrimPrefix(path, "/")
+	if strings.HasSuffix(path, ".dat") == false {
+		return nil, ErrNotImplemented
+	}
+	path = strings.TrimSuffix(path, ".dat")
+	order := 1
+	if strings.HasSuffix(path, "K") {
+		path = strings.TrimSuffix(path, "K")
+		order = order * 1024
+	} else if strings.HasSuffix(path, "M") {
+		path = strings.TrimSuffix(path, "M")
+		order = order * 1024 * 1024
+	} else if strings.HasSuffix(path, "G") {
+		path = strings.TrimSuffix(path, "G")
+		order = order * 1024 * 1024 * 1024
+	}
+	i, err := strconv.Atoi(path)
+	if err != nil {
+		return nil, ErrNotImplemented
+	}
+	return &LargeFile{i * order}, nil
 }
 
 func (this BlackHole) Mkdir(path string) error {
