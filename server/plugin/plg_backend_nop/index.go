@@ -54,15 +54,23 @@ func (this BlackHole) LoginForm() Form {
 }
 
 func (this BlackHole) Ls(path string) ([]os.FileInfo, error) {
-	return []os.FileInfo{}, nil
+	files := make([]os.FileInfo, 0)
+	files = append(
+		files,
+		File{FName: "1M.bin", FType: "file", FSize: 1024 * 1024},
+		File{FName: "10M.bin", FType: "file", FSize: 1024 * 1024 * 10},
+		File{FName: "100M.bin", FType: "file", FSize: 1024 * 1024 * 100},
+		File{FName: "1G.bin", FType: "file", FSize: 1024 * 1024 * 1024},
+	)
+	return files, nil
 }
 
 func (this BlackHole) Cat(path string) (io.ReadCloser, error) {
 	path = strings.TrimPrefix(path, "/")
-	if strings.HasSuffix(path, ".dat") == false {
+	if strings.HasSuffix(path, ".bin") == false {
 		return nil, ErrNotImplemented
 	}
-	path = strings.TrimSuffix(path, ".dat")
+	path = strings.TrimSuffix(path, ".bin")
 	order := 1
 	if strings.HasSuffix(path, "K") {
 		path = strings.TrimSuffix(path, "K")
