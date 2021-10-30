@@ -86,7 +86,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	http.SetCookie(res, &http.Cookie{
 		Name:     COOKIE_NAME_AUTH,
 		Value:    obfuscate,
-		MaxAge:   60 * 60 * 24 * 30,
+		MaxAge:   60 * Config.Get("general.cookie_timeout").Int(),
 		Path:     COOKIE_PATH,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
