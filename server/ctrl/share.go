@@ -174,10 +174,16 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	SendSuccessResult(res, struct {
-		Id   string `json:"id"`
-		Path string `json:"path"`
+		Id        string `json:"id"`
+		Path      string `json:"path"`
+		CanRead   bool   `json:"can_read"`
+		CanWrite  bool   `json:"can_write"`
+		CanUpload bool   `json:"can_upload"`
 	}{
-		Id:   s.Id,
-		Path: s.Path,
+		Id:        s.Id,
+		Path:      s.Path,
+		CanRead:   s.CanRead,
+		CanWrite:  s.CanWrite,
+		CanUpload: s.CanUpload,
 	})
 }

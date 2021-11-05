@@ -16,7 +16,8 @@ export class SharePage extends React.Component {
             path: null,
             key: null,
             error: null,
-            loading: false
+            loading: false,
+            isUploader: false,
         };
     }
 
@@ -44,7 +45,8 @@ export class SharePage extends React.Component {
                 key: res.key,
                 path: res.path || null,
                 share: res.id,
-                loading: false
+                loading: false,
+                isUploader: res.can_read === false && res.can_write === false && res.can_upload === true,
             };
             if(res.message){
                 notify.send(res.message, "info");
@@ -81,7 +83,7 @@ export class SharePage extends React.Component {
                     );
                 }
                 notify.send(t("You can't do that :)"), "error");
-            } else if (CONFIG["share_redirect"] !== "") {
+            } else if (CONFIG["share_redirect"] !== "" && this.state.isUploader === false) {
                 requestAnimationFrame(() => {
                     window.location.href = CONFIG["share_redirect"].replace("{{path}}", this.state.path);
                 });
