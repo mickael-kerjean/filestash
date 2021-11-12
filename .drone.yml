@@ -20,7 +20,7 @@ steps:
   - cp config/config.json ./filestash/data/state/config/
 
 - name: build_frontend
-  image: node:12-alpine
+  image: node:13-alpine
   depends_on: [ build_prepare ]
   commands:
   - apk add make git > /dev/null
