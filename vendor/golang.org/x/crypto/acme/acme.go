@@ -4,7 +4,7 @@
 
 // Package acme provides an implementation of the
 // Automatic Certificate Management Environment (ACME) spec.
-// The intial implementation was based on ACME draft-02 and
+// The initial implementation was based on ACME draft-02 and
 // is now being extended to comply with RFC 8555.
 // See https://tools.ietf.org/html/draft-ietf-acme-acme-02
 // and https://tools.ietf.org/html/rfc8555 for details.
@@ -363,6 +363,10 @@ func AcceptTOS(tosURL string) bool { return true }
 // Also see Error's Instance field for when a CA requires already registered accounts to agree
 // to an updated Terms of Service.
 func (c *Client) Register(ctx context.Context, acct *Account, prompt func(tosURL string) bool) (*Account, error) {
+	if c.Key == nil {
+		return nil, errors.New("acme: client.Key must be set to Register")
+	}
+
 	dir, err := c.Discover(ctx)
 	if err != nil {
 		return nil, err

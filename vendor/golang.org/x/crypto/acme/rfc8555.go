@@ -37,22 +37,32 @@ func (c *Client) DeactivateReg(ctx context.Context) error {
 	return nil
 }
 
-// registerRFC is quivalent to c.Register but for CAs implementing RFC 8555.
+// registerRFC is equivalent to c.Register but for CAs implementing RFC 8555.
 // It expects c.Discover to have already been called.
-// TODO: Implement externalAccountBinding.
 func (c *Client) registerRFC(ctx context.Context, acct *Account, prompt func(tosURL string) bool) (*Account, error) {
 	c.cacheMu.Lock() // guard c.kid access
 	defer c.cacheMu.Unlock()
 
 	req := struct {
-		TermsAgreed bool     `json:"termsOfServiceAgreed,omitempty"`
-		Contact     []string `json:"contact,omitempty"`
+		TermsAgreed            bool              `json:"termsOfServiceAgreed,omitempty"`
+		Contact                []string          `json:"contact,omitempty"`
+		ExternalAccountBinding *jsonWebSignature `json:"externalAccountBinding,omitempty"`
 	}{
 		Contact: acct.Contact,
 	}
 	if c.dir.Terms != "" {
 		req.TermsAgreed = prompt(c.dir.Terms)
 	}
+
+	// set 'externalAccountBinding' field if requested
+	if acct.ExternalAccountBinding != nil {
+		eabJWS, err := c.encodeExternalAccountBinding(acct.ExternalAccountBinding)
+		if err != nil {
+			return nil, fmt.Errorf("acme: failed to encode external account binding: %v", err)
+		}
+		req.ExternalAccountBinding = eabJWS
+	}
+
 	res, err := c.post(ctx, c.Key, c.dir.RegURL, req, wantStatus(
 		http.StatusOK,      // account with this key already registered
 		http.StatusCreated, // new account created
@@ -75,7 +85,17 @@ func (c *Client) registerRFC(ctx context.Context, acct *Account, prompt func(tos
 	return a, nil
 }
 
-// updateGegRFC is equivalent to c.UpdateReg but for CAs implementing RFC 8555.
+// encodeExternalAccountBinding will encode an external account binding stanza
+// as described in https://tools.ietf.org/html/rfc8555#section-7.3.4.
+func (c *Client) encodeExternalAccountBinding(eab *ExternalAccountBinding) (*jsonWebSignature, error) {
+	jwk, err := jwkEncode(c.Key.Public())
+	if err != nil {
+		return nil, err
+	}
+	return jwsWithMAC(eab.Key, eab.KID, c.dir.RegURL, []byte(jwk))
+}
+
+// updateRegRFC is equivalent to c.UpdateReg but for CAs implementing RFC 8555.
 // It expects c.Discover to have already been called.
 func (c *Client) updateRegRFC(ctx context.Context, a *Account) (*Account, error) {
 	url := string(c.accountKID(ctx))
@@ -389,4 +409,30 @@ func (c *Client) revokeCertRFC(ctx context.Context, key crypto.Signer, cert []by
 func isAlreadyRevoked(err error) bool {
 	e, ok := err.(*Error)
 	return ok && e.ProblemType == "urn:ietf:params:acme:error:alreadyRevoked"
+}
+
+// ListCertAlternates retrieves any alternate certificate chain URLs for the
+// given certificate chain URL. These alternate URLs can be passed to FetchCert
+// in order to retrieve the alternate certificate chains.
+//
+// If there are no alternate issuer certificate chains, a nil slice will be
+// returned.
+func (c *Client) ListCertAlternates(ctx context.Context, url string) ([]string, error) {
+	if _, err := c.Discover(ctx); err != nil { // required by c.accountKID
+		return nil, err
+	}
+
+	res, err := c.postAsGet(ctx, url, wantStatus(http.StatusOK))
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	// We don't need the body but we need to discard it so we don't end up
+	// preventing keep-alive
+	if _, err := io.Copy(ioutil.Discard, res.Body); err != nil {
+		return nil, fmt.Errorf("acme: cert alternates response stream: %v", err)
+	}
+	alts := linkHeader(res.Header, "alternate")
+	return alts, nil
 }
