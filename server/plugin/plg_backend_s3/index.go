@@ -12,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
