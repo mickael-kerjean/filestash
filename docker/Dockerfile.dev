@@ -1,0 +1,169 @@
+#
+# Stage 1: Define base image
+#
+
+FROM debian:unstable-slim AS base
+
+#
+# Stage 2: Build base image
+#
+
+FROM base AS build-image
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update && apt-get install -y \
+    golang npm curl libglib2.0-dev libpangoft2-1.0-0 make git \
+    curl make gcc g++ xz-utils pkg-config python3-pip autoconf libtool unzip python-setuptools cmake git \
+    libraw-dev libjpeg-dev libgcc-11-dev libvips-dev liblcms2-dev
+
+#
+# Stage 3: Build libtranscode
+#
+
+FROM build-image AS build-libtranscode
+
+COPY server/plugin/plg_image_light/deps/src/libtranscode* /deps/src/
+WORKDIR /deps
+RUN gcc -shared -fPIC -Wall -o libtranscode.so src/libtranscode.c -llcms2 -lraw
+RUN ldd /deps/libtranscode.so
+
+#
+# Stage 4: Build libresize
+#
+
+FROM build-image AS build-libresize
+
+COPY server/plugin/plg_image_light/deps/src/libresize* /deps/src/
+WORKDIR /deps
+RUN gcc -shared -fPIC -Wall -o libresize.so src/libresize.c -lvips $(pkg-config --cflags glib-2.0)
+RUN ldd /deps/libresize.so
+
+#
+# Stage 5: Build filestash frontend
+#
+
+FROM build-image AS build-frontend
+
+COPY package.json Makefile /src/
+WORKDIR /src
+
+# <https://stackoverflow.com/questions/67241196/error-no-template-named-remove-cv-t-in-namespace-std-did-you-mean-remove>
+RUN CXXFLAGS="--std=c++17" npm install --include=dev --force
+
+COPY client/ ./client/
+COPY config/ ./config/
+COPY *.js .babelrc .eslintrc.json .
+
+RUN make build_frontend
+
+RUN \
+    mkdir -p ./dist/data/state/config && \
+    cp config/config.json ./dist/data/state/config/ && \
+    mkdir -p ./filestash/data/state/config && \
+    cp config/config.json ./filestash/data/state/config/
+RUN chmod -R o+r+w+x ./dist/data
+
+#
+# Stage 6: Build filestash backend
+#
+
+FROM build-image AS build-backend
+
+COPY --from=build-libtranscode /deps/libtranscode.so /usr/local/lib/libtranscode.so
+COPY --from=build-libresize /deps/libresize.so /usr/local/lib/libresize.so
+
+WORKDIR /src
+COPY Makefile go.* ./
+COPY config/ ./config/
+COPY server/ ./server/
+COPY vendor/ ./vendor/
+COPY .git/ ./.git/
+
+#
+# Build backend
+#
+
+RUN go generate -x ./server/...
+
+# When the GNU linker sees a library (-l), it discards all symbols that it
+# doesn't need. In case a .o or .a file is after a -l flag, the symbols from
+# the library are discarded before the object file is considered.
+RUN mkdir /deps && ar r /deps/libresize_linux_amd64.a && ar r /deps/libtranscode_linux_amd64.a
+RUN make GOFLAGS="" CGO_LDFLAGS="-L/deps -lresize -ltranscode" build_backend
+ENV LD_LIBRARY_PATH /usr/local/lib
+RUN ldd dist/filestash
+
+#
+# Stage 7: Build final Docker Image
+#
+
+FROM base
+MAINTAINER mickael@kerjean.me
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV LD_LIBRARY_PATH /usr/local/lib
+
+RUN mkdir -p /app
+WORKDIR /app
+
+# org-mode: html export
+COPY server/.assets/emacs/htmlize.el /usr/share/emacs/site-lisp/htmlize.el
+
+# org-mode: markdown export
+COPY server/.assets/emacs/ox-gfm.el  /usr/share/emacs/site-lisp/ox-gfm.el
+
+RUN apt-get update > /dev/null && \
+    #################
+    # Optional dependencies
+    apt-get install -y curl tor emacs-nox ffmpeg zip poppler-utils > /dev/null && \
+    # org-mode: pdf export (with a light latex distribution)
+    cd && apt-get install -y wget perl > /dev/null && \
+    export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
+    curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh && \
+    mv ~/.TinyTeX /usr/share/tinytex && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasy && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install ulem && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install marvosym && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasysym && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install xcolor && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install listings && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install parskip && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install float && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install wrapfig && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install sectsty && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install capt-of && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install epstopdf-pkg && \
+    /usr/share/tinytex/bin/x86_64-linux/tlmgr install cm-super && \
+    ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex && \
+    apt-get purge -y --auto-remove perl wget && \
+    # Cleanup
+    find /usr/share/ -name 'doc' | xargs rm -rf && \
+    find /usr/share/emacs -name '*.pbm' | xargs rm -f && \
+    find /usr/share/emacs -name '*.png' | xargs rm -f && \
+    find /usr/share/emacs -name '*.xpm' | xargs rm -f && \
+    #################
+    # Finalise the image
+    useradd filestash && \
+    chown -R filestash:filestash /app/ && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/*
+
+RUN apt-get update && \
+    apt-get install -y libvips libraw20 libglib2.0-0 && \
+    apt-get purge -y --auto-remove && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/*
+
+COPY --from=build-libtranscode /deps/libtranscode.so /usr/local/lib/libtranscode.so
+COPY --from=build-libresize /deps/libresize.so /usr/local/lib/libresize.so
+COPY --from=build-frontend /src/dist/data /app/data
+COPY --from=build-backend /src/dist/filestash /app/filestash
+
+RUN \
+    ldd /app/filestash && \
+    mkdir -p /app/data/state/log && \
+    ln -s /app/filestash /bin/filestash
+
+USER filestash
+EXPOSE 8334
+VOLUME ["/app/data/state/"]
+CMD ["/app/filestash"]
