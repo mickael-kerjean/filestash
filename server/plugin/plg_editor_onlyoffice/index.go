@@ -39,7 +39,7 @@ func init() {
 			}
 			f.Name = "enable"
 			f.Type = "enable"
-			f.Target = []string{"onlyoffice_server", "onlyoffice_can_download"}
+			f.Target = []string{"onlyoffice_server", "onlyoffice_can_download", "onlyoffice_callback_url"}
 			f.Description = "Enable/Disable the office suite to manage word, excel and powerpoint documents. This setting requires a restart to comes into effect"
 			f.Default = false
 			if u := os.Getenv("ONLYOFFICE_URL"); u != "" {
@@ -73,6 +73,22 @@ func init() {
 		f.Type = "boolean"
 		f.Description = "Display Download button in onlyoffice"
 		f.Default = true
+		return f
+	})
+	Config.Get("features.office.onlyoffice_callback_url").Schema(func(f *FormElement) *FormElement {
+		if f == nil {
+			f = &FormElement{}
+		}
+		f.Id = "onlyoffice_callback_url"
+		f.Name = "onlyoffice_callback_url"
+		f.Type = "text"
+		f.Description = "URL where OnlyOffice cann call back filestash"
+		f.Default = ""
+		f.Placeholder = "Eg: http://filestash:80"
+		if u := os.Getenv("ONLYOFFICE_CALLBACK_URL"); u != "" {
+			f.Default = u
+			f.Placeholder = fmt.Sprintf("Default: '%s'", u)
+		}
 		return f
 	})
 
@@ -233,48 +249,51 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		username = "Anonymous"
 		userId = RandomString(10)
 	}
-	localip = func() string { // https://stackoverflow.com/questions/23558425/how-do-i-get-the-local-ip-address-in-go#23558495
-		addrs, err := net.InterfaceAddrs()
-		if err != nil {
-			return ""
-		}
+	filestashServerLocation = Config.Get("features.office.onlyoffice_callback_url").String()
+	if filestashServerLocation == "" {
+		localip = func() string { // https://stackoverflow.com/questions/23558425/how-do-i-get-the-local-ip-address-in-go#23558495
+			addrs, err := net.InterfaceAddrs()
+			if err != nil {
+				return ""
+			}
 
-		maybeips := []string{}
-		for _, address := range addrs {
-			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-				if ipnet.IP.To4() != nil {
-					maybeips = append(maybeips, ipnet.IP.String())
+			maybeips := []string{}
+			for _, address := range addrs {
+				if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+					if ipnet.IP.To4() != nil {
+						maybeips = append(maybeips, ipnet.IP.String())
+					}
 				}
 			}
-		}
 
-		// if there is just one interface, we can just pick that one
-		if len(maybeips) == 1 {
-			return maybeips[0]
-		}
-
-		// if not, fallback to capturing our outgoing local ip
-		conn, err := net.Dial("udp", "8.8.8.8:80")
-		if err != nil {
-			return ""
-		}
-		defer conn.Close()
-
-		localAddr := conn.LocalAddr().(*net.UDPAddr)
-
-		return localAddr.IP.String()
-	}()
-	filestashServerLocation = fmt.Sprintf(
-		"%s://%s:%d",
-		func() string { // proto
-			if req.TLS == nil {
-				return "http"
+			// if there is just one interface, we can just pick that one
+			if len(maybeips) == 1 {
+				return maybeips[0]
 			}
-			return "https"
-		}(),
-		localip,
-		Config.Get("general.port").Int(),
-	)
+
+			// if not, fallback to capturing our outgoing local ip
+			conn, err := net.Dial("udp", "8.8.8.8:80")
+			if err != nil {
+				return ""
+			}
+			defer conn.Close()
+
+			localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+			return localAddr.IP.String()
+		}()
+		filestashServerLocation = fmt.Sprintf(
+			"%s://%s:%d",
+			func() string { // proto
+				if req.TLS == nil {
+					return "http"
+				}
+				return "https"
+			}(),
+			localip,
+			Config.Get("general.port").Int(),
+		)
+	}
 	contentType = func(p string) string {
 		var (
 			word       string = "text"
