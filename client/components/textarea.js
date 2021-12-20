@@ -20,7 +20,7 @@ export function Textarea({ ...props }) {
     const disabledEnter = (e) => {
         if(e.key === "Enter" && e.shiftKey === false){
             e.preventDefault();
-            const $form = getForm($el.current.ref);
+            const $form = getForm($el.current);
             if($form){
                 $form.dispatchEvent(new Event("submit", { cancelable: true }));
             }
