@@ -8,37 +8,40 @@ import { t } from "../locales/";
 import "./alert.scss";
 
 export class ModalAlert extends Popup {
-    constructor(props){
+    constructor(props) {
         super(props);
     }
 
-    componentDidMount(){
+    componentDidMount() {
         alert.subscribe((Component, okCallback) => {
             this.setState({
                 appear: true,
                 value: Component,
-                fn: okCallback
+                fn: okCallback,
             });
         });
     }
 
-    onSubmit(){
-        this.setState({appear: false}, () => {
+    onSubmit() {
+        this.setState({ appear: false }, () => {
             requestAnimationFrame(() => this.state.fn && this.state.fn());
         });
     }
 
-    modalContentBody(){
+    modalContentBody() {
         return (
             <div className="modal-message">
-              {this.state.value}
+                {this.state.value}
             </div>
         );
     }
 
-    modalContentFooter(){
+    modalContentFooter() {
         return (
-            <Button type="submit" theme="emphasis" onClick={this.onSubmit.bind(this)}>{ t("OK") }</Button>
+            <Button type="submit" theme="emphasis"
+                onClick={this.onSubmit.bind(this)}>
+                { t("OK") }
+            </Button>
         );
     }
 }
@@ -46,7 +49,7 @@ export class ModalAlert extends Popup {
 export function Alert({ children = null, className = null }) {
     return (
         <div className={"alert" + (className ? ` ${className}`: "")}>
-          { children }
+            { children }
         </div>
     );
 }

@@ -4,21 +4,38 @@
         "es2021": true
     },
     "extends": [
-        "eslint:recommended",
-        "plugin:react/recommended"
+        "plugin:react/recommended",
+        "google"
     ],
     "parserOptions": {
+        "ecmaVersion": 12,
+        "sourceType": "module",
         "ecmaFeatures": {
             "jsx": true
-        },
-        "ecmaVersion": 12,
-        "sourceType": "module"
+        }
     },
     "plugins": [
         "react"
     ],
     "rules": {
-        "semi": ["error", "always"],
-        "quotes": ["error", "double"]
+        "indent": [2, 4],
+        "quotes": [2, "double"],
+        "object-curly-spacing": [2, "always"],
+        "require-jsdoc": [0],
+        "camelcase": [0],
+        "max-len": ["error", 100],
+        "prefer-promise-reject-errors": [0],
+        "guard-for-in": [0],
+        "react/prop-types": [0],
+        "new-cap": [0],
+        "prefer-spread": [0],
+
+        "no-throw-literal": [1],
+        "react/no-find-dom-node": [1],
+        "no-invalid-this": [1],
+        "react/no-string-refs": [1],
+        "react/display-name": [1],
+        "prefer-rest-params": [1],
+        "react/no-deprecated": [1]
     }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { Redirect } from "react-router";
 
 import { Session } from "../model/";
@@ -9,15 +9,15 @@ export function HomePage() {
 
     useEffect(() => {
         Session.currentUser().then((res) => {
-            if(res && res.is_authenticated === true){
+            if (res && res.is_authenticated === true) {
                 setRedirection(res.home ? "/files" + res.home : "/files");
-            }else{
+            } else {
                 setRedirection("/login");
             }
         }).catch((err) => setRedirection("/login"));
     }, []);
 
-    if(!redirection) {
+    if (!redirection) {
         return ( <div> <Loader /> </div> );
     }
     return ( <Redirect to={redirection} /> );

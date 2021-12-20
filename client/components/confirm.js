@@ -5,47 +5,49 @@ import { confirm } from "../helpers/";
 import { Popup } from "./popup";
 import { t } from "../locales/";
 
-export class ModalConfirm extends Popup{
-    constructor(props){
+export class ModalConfirm extends Popup {
+    constructor(props) {
         super(props);
     }
 
-    componentDidMount(){
+    componentDidMount() {
         confirm.subscribe((Component, yesCallback, noCallback) => {
             this.setState({
                 appear: true,
                 value: Component,
-                fns: {yes: yesCallback, no: noCallback}
+                fns: { yes: yesCallback, no: noCallback },
             });
         });
     }
 
-    modalContentBody(){
+    modalContentBody() {
         return (
             <div className="modal-message">
-              {this.state.value}
+                {this.state.value}
             </div>
         );
     }
 
-    yes(){
-        if(this.state.fns && typeof this.state.fns.yes === "function"){
+    yes() {
+        if (this.state.fns && typeof this.state.fns.yes === "function") {
             this.state.fns.yes();
         }
-        this.setState({appear: false});
+        this.setState({ appear: false });
     }
-    no(){
-        if(this.state.fns && typeof this.state.fns.no === "function"){
+    no() {
+        if (this.state.fns && typeof this.state.fns.no === "function") {
             this.state.fns.no();
         }
-        this.setState({appear: false});
+        this.setState({ appear: false });
     }
 
-    modalContentFooter(){
+    modalContentFooter() {
         return (
             <div>
-              <Button type="button" onClick={this.no.bind(this)}>{ t("NO") } </Button>
-              <Button type="submit" theme="emphasis" onClick={this.yes.bind(this)}>{ t("YES") }</Button>
+                <Button type="button" onClick={this.no.bind(this)}>{ t("NO") } </Button>
+                <Button type="submit" theme="emphasis" onClick={this.yes.bind(this)}>
+                    { t("YES") }
+                </Button>
             </div>
         );
     }

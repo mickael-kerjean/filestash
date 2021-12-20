@@ -44,89 +44,89 @@ import img_copy from "../assets/img/copy.svg";
 export const img_placeholder = "/assets/icons/placeholder.png";
 
 export const Icon = (props) => {
-    if(props.name === null) return null;
+    if (props.name === null) return null;
     let img;
-    if(props.name === "directory"){
+    if (props.name === "directory") {
         img = "/assets/icons/folder.svg";
-    }else if(props.name === "file"){
+    } else if (props.name === "file") {
         img = "/assets/icons/file.svg";
-    }else if(props.name === "save"){
+    } else if (props.name === "save") {
         img = img_save;
-    }else if(props.name === "power"){
+    } else if (props.name === "power") {
         img = img_power;
-    }else if(props.name === "edit"){
+    } else if (props.name === "edit") {
         img = "/assets/icons/edit.svg";
-    }else if(props.name === "delete"){
+    } else if (props.name === "delete") {
         img = "/assets/icons/delete.svg";
-    }else if(props.name === "share"){
+    } else if (props.name === "share") {
         img = "/assets/icons/share.svg";
-    }else if(props.name === "bucket"){
+    } else if (props.name === "bucket") {
         img = img_bucket;
-    }else if(props.name === "download_white"){
+    } else if (props.name === "download_white") {
         img = img_download_white;
-    }else if(props.name === "upload_white"){
+    } else if (props.name === "upload_white") {
         img = img_upload_white;
-    }else if(props.name === "play"){
+    } else if (props.name === "play") {
         img = img_play;
-    }else if(props.name === "pause"){
+    } else if (props.name === "pause") {
         img = img_pause;
-    }else if(props.name === "error"){
+    } else if (props.name === "error") {
         img = img_error;
-    }else if(props.name === "loading_white"){
+    } else if (props.name === "loading_white") {
         img = img_loading_white;
-    }else if(props.name === "loading"){
+    } else if (props.name === "loading") {
         img = img_loading;
-    }else if(props.name === "calendar_white"){
+    } else if (props.name === "calendar_white") {
         img = img_calendar_white;
-    }else if(props.name === "schedule"){
+    } else if (props.name === "schedule") {
         img = img_calendar;
-    }else if(props.name === "deadline"){
+    } else if (props.name === "deadline") {
         img = img_alarm;
-    }else if(props.name === "todo_white"){
+    } else if (props.name === "todo_white") {
         img = img_todo_white;
-    }else if(props.name === "arrow_bottom"){
+    } else if (props.name === "arrow_bottom") {
         img = img_arrow_bottom;
-    }else if(props.name === "arrow_top"){
+    } else if (props.name === "arrow_top") {
         img = img_arrow_top;
-    }else if(props.name === "arrow_right"){
+    } else if (props.name === "arrow_right") {
         img = img_arrow_right;
-    }else if(props.name === "arrow_right_white"){
+    } else if (props.name === "arrow_right_white") {
         img = img_arrow_right_white;
-    }else if(props.name === "arrow_left_white"){
+    } else if (props.name === "arrow_left_white") {
         img = img_arrow_left_white;
-    }else if(props.name === "arrow_left"){
+    } else if (props.name === "arrow_left") {
         img = img_arrow_left;
-    }else if(props.name === "more"){
+    } else if (props.name === "more") {
         img = img_more;
-    }else if(props.name === "close"){
+    } else if (props.name === "close") {
         img = img_close;
-    }else if(props.name === "close_dark"){
+    } else if (props.name === "close_dark") {
         img = img_close_dark;
-    }else if(props.name === "arrow_up_double"){
+    } else if (props.name === "arrow_up_double") {
         img = img_arrow_up_double;
-    }else if(props.name === "arrow_down_double"){
+    } else if (props.name === "arrow_down_double") {
         img = img_arrow_down_double;
-    }else if(props.name === "arrow_down"){
+    } else if (props.name === "arrow_down") {
         img = img_arrow_down;
-    }else if(props.name === "search"){
+    } else if (props.name === "search") {
         img = img_search;
-    }else if(props.name === "search_dark"){
+    } else if (props.name === "search_dark") {
         img = img_search_dark;
-    }else if(props.name === "grid"){
+    } else if (props.name === "grid") {
         img = img_grid;
-    }else if(props.name === "list"){
+    } else if (props.name === "list") {
         img = img_list;
-    }else if(props.name === "sort"){
+    } else if (props.name === "sort") {
         img = img_sort;
-    }else if(props.name === "check"){
+    } else if (props.name === "check") {
         img = img_check;
-    }else if(props.name === "info"){
+    } else if (props.name === "info") {
         img = img_info;
-    }else if(props.name === "fullscreen"){
+    } else if (props.name === "fullscreen") {
         img = img_fullscreen;
-    }else if(props.name === "camera"){
+    } else if (props.name === "camera") {
         img = img_camera;
-    }else if(props.name === "location"){
+    } else if (props.name === "location") {
         img = img_location;
     } else if (props.name === "stop") {
         img = img_stop;
@@ -134,16 +134,16 @@ export const Icon = (props) => {
         img = img_refresh;
     } else if (props.name === "copy") {
         img = img_copy;
-    } else{
-        throw(`unknown icon: "${props.name}"`);
+    } else {
+        throw (`unknown icon: "${props.name}"`);
     }
 
     return (
         <img className="component_icon"
-             onError={() => Log.send(`cannot load icon ${props.name}`)}
-             style={props.style}
-             onClick={props.onClick}
-             src={img}
-             alt={props.name}/>
+            onError={() => Log.send(`cannot load icon ${props.name}`)}
+            style={props.style}
+            onClick={props.onClick}
+            src={img}
+            alt={props.name}/>
     );
 };

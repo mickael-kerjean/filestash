@@ -2,27 +2,27 @@ import React from "react";
 import "./card.scss";
 
 export class Card extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.state = {
-            dragging: false
+            dragging: false,
         };
     }
 
-    onClick(){
-        if(this.props.onClick){
+    onClick() {
+        if (this.props.onClick) {
             this.props.onClick();
         }
     }
 
-    onMouseEnter(){
-        if(this.props.onMouseEnter){
+    onMouseEnter() {
+        if (this.props.onMouseEnter) {
             this.props.onMouseEnter();
         }
     }
 
-    onMouseLeave(){
-        if(this.props.onMouseLeave){
+    onMouseLeave() {
+        if (this.props.onMouseLeave) {
             this.props.onMouseLeave();
         }
     }
@@ -31,7 +31,7 @@ export class Card extends React.Component {
         const _className = this.props.className ? this.props.className+" box" : "box";
         return (
             <div {...this.props} className={_className}>
-              {this.props.children}
+                { this.props.children }
             </div>
         );
     }

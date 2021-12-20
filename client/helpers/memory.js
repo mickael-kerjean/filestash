@@ -1,18 +1,18 @@
-function Memory(){
-    let data = {};
+function Memory() {
+    const data = {};
 
     return {
-        get: function(key){
-            if(data[key] === undefined) return null;
+        get: function(key) {
+            if (data[key] === undefined) return null;
             return data[key];
         },
-        set: function(key, value){
+        set: function(key, value) {
             data[key] = value;
         },
-        all: function(){
+        all: function() {
             return data;
-        }
-    }
+        },
+    };
 }
 
 

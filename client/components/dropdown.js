@@ -10,17 +10,17 @@ import { Icon, NgIf } from "./";
 import "./dropdown.scss";
 
 export class Dropdown extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.state = {
-            button: false
+            button: false,
         };
         this.$dropdown = null;
         this.closeDropdown = this.closeDropdown.bind(this);
         this.toggleDropdown = this.toggleDropdown.bind(this);
     }
 
-    componentDidMount(){
+    componentDidMount() {
         this.$dropdown = ReactDOM.findDOMNode(this).querySelector(".dropdown_button");
         // This is not really the "react" way of doing things but we needed to use both a
         // click on the button and on the body (to exit the dropdown). we had issues
@@ -29,27 +29,27 @@ export class Dropdown extends React.Component {
         this.$dropdown.addEventListener("click", this.toggleDropdown);
     }
 
-    componentWillUnmount(){
+    componentWillUnmount() {
         this.$dropdown.removeEventListener("click", this.toggleDropdown);
         document.body.removeEventListener("click", this.closeDropdown);
     }
 
-    onSelect(name){
+    onSelect(name) {
         this.props.onChange(name);
     }
 
-    closeDropdown(){
+    closeDropdown() {
         document.body.removeEventListener("click", this.closeDropdown);
-        this.setState({button: false});
+        this.setState({ button: false });
     }
 
-    toggleDropdown(){
-        if(this.props.enable === false){
+    toggleDropdown() {
+        if (this.props.enable === false) {
             return;
         }
         document.body.removeEventListener("click", this.closeDropdown);
-        this.setState({button: !this.state.button}, () => {
-            if(this.state.button === true){
+        this.setState({ button: !this.state.button }, () => {
+            if (this.state.button === true) {
                 requestAnimationFrame(() => {
                     document.body.addEventListener("click", this.closeDropdown);
                 });
@@ -57,17 +57,19 @@ export class Dropdown extends React.Component {
         });
     }
 
-    render(){
+    render() {
         const button = this.props.children[0];
 
-        const dropdown = React.cloneElement(this.props.children[1], {onSelect: this.onSelect.bind(this)});
+        const dropdown = React.cloneElement(this.props.children[1], {
+            onSelect: this.onSelect.bind(this),
+        });
         let className = "component_dropdown ";
         className += this.props.className ? this.props.className+" " : "";
         className += this.state.button ? " active" : "";
         return (
             <div className={className}>
-              { button }
-              { dropdown }
+                { button }
+                { dropdown }
             </div>
         );
     }
@@ -77,7 +79,7 @@ export class Dropdown extends React.Component {
 export const DropdownButton = (props) => {
     return (
         <div className="dropdown_button">
-          { props.children }
+            { props.children }
         </div>
     );
 };
@@ -87,16 +89,16 @@ export const DropdownList = (props) => {
     const childrens = Array.isArray(props.children) ? props.children : [props.children];
     return (
         <div className="dropdown_container">
-          <ul>
-            {
-                childrens.map((children, index) => {
-                    const child = React.cloneElement(children, {onSelect: props.onSelect });
-                    return (
-                        <li key={index}>{child}</li>
-                    );
-                })
-            }
-          </ul>
+            <ul>
+                {
+                    childrens.map((children, index) => {
+                        const child = React.cloneElement(children, { onSelect: props.onSelect });
+                        return (
+                            <li key={index}>{child}</li>
+                        );
+                    })
+                }
+            </ul>
         </div>
     );
 };
@@ -104,12 +106,12 @@ export const DropdownList = (props) => {
 export const DropdownItem = (props) => {
     return (
         <div onClick={props.onSelect.bind(null, props.name)}>
-          {props.children}
-          <NgIf cond={!!props.icon} type="inline">
-            <span style={{float: "right"}}>
-              <Icon name={props.icon} />
-            </span>
-          </NgIf>
+            {props.children}
+            <NgIf cond={!!props.icon} type="inline">
+                <span style={{ float: "right" }}>
+                    <Icon name={props.icon} />
+                </span>
+            </NgIf>
         </div>
     );
 };
