@@ -29,7 +29,7 @@ steps:
   - cp -R ./dist/data/public ./filestash/data/public
 
 - name: build_backend
-  image: golang:1.14-stretch
+  image: golang:1.16-stretch
   depends_on: [ build_prepare ]
   environment:
     CGO_LDFLAGS_ALLOW: "-fopenmp"
