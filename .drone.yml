@@ -62,7 +62,7 @@ steps:
   - npm test
 
 - name: test_backend_unit
-  image: golang:1.14-alpine
+  image: golang:1.16-alpine
   depends_on: [ test_prepare, build_backend, build_frontend ]
   environment:
     GO111MODULE: "on"
