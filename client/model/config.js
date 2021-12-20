@@ -40,14 +40,6 @@ class ConfigModel {
     }
 }
 
-class PluginModel {
-    constructor(){}
-
-    all(){
-        return http_get("/admin/api/plugin").then((r) => r.results);
-    }
-}
-
 class BackendModel {
     constructor(){}
 
@@ -56,6 +48,5 @@ class BackendModel {
     }
 }
 
-export const Plugin = new PluginModel();
 export const Config = new ConfigModel();
 export const Backend = new BackendModel();
