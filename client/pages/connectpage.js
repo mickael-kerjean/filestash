@@ -44,14 +44,19 @@ function ConnectPageComponent({ error, history }) {
     };
 
     const onFormChangeLoadingState = (onOrOff) => {
-        if (_GET["state"]) return; // Don't do anything when using oauth2
+        // we might not want to update the UI when:
+        // 1. user came from oauth2/oidc request
+        // 2. user came from a form pointing to this page
+        if (_GET["state"]) return;
+        else if (_GET["type"]) return;
         setIsLoading(onOrOff);
     };
 
     useEffect(() => {
-        if (_GET["state"]) {
-            authenticate({ ..._GET, type: _GET["state"] })
-                .catch((err) => error(err));
+        if (_GET["state"]) { // oauth2/oidc
+            authenticate({ ..._GET, type: _GET["state"] }).catch((err) => error(err));
+        } else if (_GET["type"]) { // form using get
+            authenticate(_GET).catch((err) => error(err));
         }
     }, []);
 

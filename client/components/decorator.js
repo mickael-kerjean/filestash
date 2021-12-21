@@ -55,6 +55,9 @@ export function ErrorPage(WrappedComponent) {
                 error: null,
                 has_back_button: false,
             };
+        }
+
+        componentDidMount() {
             this.unlisten = this.props.history.listen(() => {
                 this.setState({ has_back_button: false });
                 this.unlisten();
