@@ -1,111 +1,74 @@
-import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import React, { useState, useEffect } from "react";
 
-import './connectpage.scss';
-import { Session } from '../model/';
-import { Container, NgIf, NgShow, Loader, Notification, ErrorPage } from '../components/';
-import { ForkMe, PoweredByFilestash, Form } from './connectpage/';
-import { cache, notify, urlParams } from '../helpers/';
+import "./connectpage.scss";
+import { Session } from "../model/";
+import { Container, NgShow, Loader, ErrorPage } from "../components/";
+import { ForkMe, PoweredByFilestash, Form } from "./connectpage/";
+import { cache, notify, urlParams } from "../helpers/";
 
-import { Alert } from '../components/';
+function ConnectPageComponent({ error, history }) {
+    const [isLoading, setIsLoading] = useState(true);
+    const _GET = urlParams();
 
-@ErrorPage
-export class ConnectPage extends React.Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            loading: true,
-            doing_a_third_party_login: false
-        };
-    }
-
-    componentDidMount(){
-        const urlData = urlParams();
-        const get_params = Object.keys(urlData);
-        if(get_params.length === 0){
-            return;
-        }else if(get_params.length === 1 && !!urlData["next"]){
-            return;
-        }
-
-        if(!urlData.type){
-            urlData.type = urlData.state;
-        }
-        this.setState({
-            doing_a_third_party_login: true,
-            loading: true
-        }, () => this.authenticate(urlData));
-    }
-
-    authenticate(params){
-        Session.authenticate(params)
+    const authenticate = (formData) => {
+        return Session.authenticate(formData)
             .then(Session.currentUser)
             .then((user) => {
-                if(location.search.indexOf("?next=") === 0){
-                    location = urlParams()["next"];
+                if (formData["next"]) {
+                    location = formData["next"];
+                    return;
                 }
                 let url = "/files/";
-                let path = user.home;
-                if(path){
-                    path = path.replace(/^\/?(.*?)\/?$/, "$1");
-                    if(path !== ""){
-                        url += path + "/";
-                    }
+                if (user["home"]) {
+                    user["home"] = user["home"].replace(/^\/?(.*?)\/?$/, "$1").trim();
+                    if (user["home"] !== "") url = `${url}${user["home"]}/`;
                 }
                 cache.destroy();
-                this.props.history.push(url);
-            })
-            .catch((err) => {
-                this.setState({loading: false});
-                notify.send(err, "error");
+                history.push(url);
             });
-    }
+    };
 
-    onFormSubmit(data){
-        if("oauth2" in data){
-            this.setState({loading: true});
-            Session.oauth2(data.oauth2).then((url) => {
+    const onFormSubmit = (formData) => {
+        if ("oauth2" in formData) {
+            setIsLoading(true);
+            Session.oauth2(formData["oauth2"]).then((url) => {
                 window.location.href = url;
             });
             return;
         }
-        this.setState({
-            loading: true
-        }, () => this.authenticate(data));
-    }
+        setIsLoading(true);
+        authenticate({ ..._GET, ...formData }).catch((err) => {
+            setIsLoading(false);
+            notify.send(err, "error");
+        });
+    };
 
-    setLoading(value){
-        if(this.state.doing_a_third_party_login !== true){
-            this.setState({loading: value});
+    const onFormChangeLoadingState = (onOrOff) => {
+        if (_GET["state"]) return; // Don't do anything when using oauth2
+        setIsLoading(onOrOff);
+    };
+
+    useEffect(() => {
+        if (_GET["state"]) {
+            authenticate({ ..._GET, type: _GET["state"] })
+                .catch((err) => error(err));
         }
-    }
+    }, []);
 
-    onError(err){
-        this.props.error(err);
-    }
-
-    render() {
-        return (
-            <div className="component_page_connect">
-              <NgIf cond={window.CONFIG["fork_button"]}>
-                <ForkMe repo="https://github.com/mickael-kerjean/filestash" />
-              </NgIf>
-              <Container maxWidth="565px">
-                <NgIf cond={this.state.loading === true}>
-                  <Loader/>
-                </NgIf>
-                <NgShow cond={this.state.loading === false}>
-                  <ReactCSSTransitionGroup transitionName="form" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={500}>
-                    <Form onLoadingChange={this.setLoading.bind(this)}
-                          onError={this.onError.bind(this)}
-                          onSubmit={this.onFormSubmit.bind(this)} />
-                  </ReactCSSTransitionGroup>
-                  <ReactCSSTransitionGroup transitionName="remember" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={5000}>
-                    <PoweredByFilestash />
-                  </ReactCSSTransitionGroup>
+    return (
+        <div className="component_page_connect">
+            { window.CONFIG["fork_button"] && <ForkMe /> }
+            <Container maxWidth="565px">
+                { isLoading && <Loader /> }
+                <NgShow cond={!isLoading}>
+                    <Form onLoadingChange={onFormChangeLoadingState}
+                        onError={error}
+                        onSubmit={onFormSubmit} />
+                    { window.CONFIG["fork_button"] && <PoweredByFilestash /> }
                 </NgShow>
-              </Container>
-            </div>
-        );
-    }
+            </Container>
+        </div>
+    );
 }
+
+export const ConnectPage = ErrorPage(ConnectPageComponent);

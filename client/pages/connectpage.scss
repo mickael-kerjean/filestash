@@ -5,3 +5,19 @@
 .dark-mode .component_page_connect{
     background: var(--dark-mode-bg-color);
 }
+
+/* PAGE ANIMATION */
+@keyframes PageConnectionPoweredBy {
+    from { transform: translateY(2px); opacity: 0;}
+    to {transform: translateY(0); opacity: 1; }
+}
+@keyframes PageConnectionForm {
+    from { transform: scale(0.99); }
+    to {transform: scale(1); }
+}
+.component_poweredbyfilestash, .component_page_connect .component_page_connection_form {
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+}
+.component_poweredbyfilestash { animation-name: PageConnectionPoweredBy; animation-delay: 0.2s; opacity: 0; }
+.component_page_connect .component_page_connection_form { animation-name: PageConnectionForm; }
