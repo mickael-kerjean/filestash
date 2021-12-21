@@ -28,8 +28,12 @@ export class BackendPage extends React.Component {
             this.setState({
                 backend_available: backend,
                 backend_enabled: window.CONFIG["connections"].filter((b) => b).map((conn) => {
-                    return createFormBackend(backend, conn);
-                }),
+                    const f = createFormBackend(backend, conn);
+                    if (Object.keys(f).length === 0) {
+                        return null
+                    }
+                    return f;
+                }).filter((a) => a !== null),
                 config: config,
             });
         });
