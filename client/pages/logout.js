@@ -4,24 +4,19 @@ import { Session } from "../model/";
 import { Loader, ErrorPage } from "../components/";
 import { cache } from "../helpers/";
 
-@ErrorPage
-export class LogoutPage extends React.Component {
-    constructor(props){
-        super(props);
-    }
-
-    componentDidMount(){
+function LogoutPageComponent({ error, history }) {
+    useEffect(() => {
         Session.logout().then((res) => {
             cache.destroy();
-            CONFIG["logout"] ?
+            window.CONFIG["logout"] ?
                 location.href = CONFIG["logout"] :
-                this.props.history.push("/");
-        }).catch((err) => this.props.error(err));
-    }
+                history.push("/");
+        }).catch((err) => error(err));
+    }, []);
 
-    render() {
-        return (
-            <div> <Loader /> </div>
-        );
-    }
+    return (
+        <div> <Loader /> </div>
+    );
 }
+
+export const LogoutPage = ErrorPage(LogoutPageComponent);

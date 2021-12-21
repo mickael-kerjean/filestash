@@ -10,10 +10,10 @@ export function HomePage() {
     useEffect(() => {
         Session.currentUser().then((res) => {
             if (res && res.is_authenticated === true) {
-                setRedirection(res.home ? "/files" + res.home : "/files");
-            } else {
-                setRedirection("/login");
+                setRedirection(res.home ? `/files${res.home}` : "/files");
+                return;
             }
+            setRedirection("/login");
         }).catch((err) => setRedirection("/login"));
     }, []);
 
