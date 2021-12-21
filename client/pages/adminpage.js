@@ -13,7 +13,7 @@ import { t } from "../locales/";
 
 function AdminOnly(WrappedComponent) {
     let initIsAdmin = null;
-    return function(props) {
+    return function AdminOnlyComponent(props) {
         const [isAdmin, setIsAdmin] = useState(initIsAdmin);
 
         const refresh = () => {
