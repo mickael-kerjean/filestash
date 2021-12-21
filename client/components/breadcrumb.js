@@ -133,8 +133,7 @@ const Separator = (props) => {
     );
 };
 
-@EventEmitter
-export class PathElementWrapper extends React.Component {
+class PathElementWrapperComponent extends React.Component {
     constructor(props) {
         super(props);
     }
@@ -162,7 +161,7 @@ export class PathElementWrapper extends React.Component {
         let href = "/files" + (this.props.path.full || "");
         href = href
             .replace(/\%/g, "%2525") // Hack to get the Link Component to work
-                                     // See ExistingThing in 'thing-existing.js'
+            // See ExistingThing in 'thing-existing.js'
             .replace(/#/g, "%23")
             .replace(/\?/g, "%3F");
         href = href || "/";
@@ -192,6 +191,7 @@ export class PathElementWrapper extends React.Component {
         );
     }
 }
+export const PathElementWrapper = EventEmitter(PathElementWrapperComponent);
 
 
 // just a hack to make it play nicely with react-dnd as it refuses to use our

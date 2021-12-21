@@ -11,7 +11,7 @@ import "../pages/error.scss";
 export function LoggedInOnly(WrappedComponent) {
     memory.set("user::authenticated", false);
 
-    return class extends React.Component {
+    return class DecoratedLoggedInOnly extends React.Component {
         constructor(props) {
             super(props);
             this.state = {
@@ -48,7 +48,7 @@ export function LoggedInOnly(WrappedComponent) {
 }
 
 export function ErrorPage(WrappedComponent) {
-    return class extends React.Component {
+    return class DecoratedErrorPage extends React.Component {
         constructor(props) {
             super(props);
             this.state = {

@@ -8,14 +8,13 @@ import { t } from "../locales/";
 import "./upload_queue.scss";
 
 function humanFileSize(bytes, si) {
-    var thresh = si ? 1000 : 1024;
+    const thresh = si ? 1000 : 1024;
     if (Math.abs(bytes) < thresh) {
         return bytes.toFixed(1) + " B";
     }
-    var units = si
-        ? ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
-        : ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
-    var u = -1;
+    const units = si ? ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"] :
+        ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+    let u = -1;
     do {
         bytes /= thresh;
         ++u;
@@ -33,8 +32,7 @@ function waitABit() {
     });
 }
 
-@EventEmitter
-export class UploadQueue extends React.Component {
+class UploadQueueComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -56,7 +54,7 @@ export class UploadQueue extends React.Component {
             this.setState({
                 timeout: window.setTimeout(() => {
                     this.componentDidMount();
-                }, Math.random() * 1000 + 200)
+                }, Math.random() * 1000 + 200),
             });
         }
         upload.subscribe((path, files) => this.addFiles(path, files));
@@ -81,10 +79,10 @@ export class UploadQueue extends React.Component {
     }
 
     emphasis(path) {
-        if(!path) return;
-        else if(path[0] === "/") path = path.slice(1);
+        if (!path) return;
+        else if (path[0] === "/") path = path.slice(1);
 
-        if(navigator && navigator.clipboard){
+        if (navigator && navigator.clipboard) {
             navigator.clipboard.writeText(path);
             notify.send(t("Copied to clipboard"), "info");
         }
@@ -92,12 +90,12 @@ export class UploadQueue extends React.Component {
 
     runner(id) {
         let current_process = null;
-        let processes = [...this.state.processes];
+        const processes = [...this.state.processes];
         if (processes.length === 0 || !this.state.running) {
             return Promise.resolve();
         }
 
-        var i;
+        let i;
         for (i = 0; i < processes.length; i++) {
             if (
                 // init: getting started with creation of files/folders
@@ -109,7 +107,7 @@ export class UploadQueue extends React.Component {
                 processes.splice(i, 1);
                 this.setState({
                     processes,
-                    currents: [...this.state.currents, current_process]
+                    currents: [...this.state.currents, current_process],
                 });
                 break;
             }
@@ -122,17 +120,17 @@ export class UploadQueue extends React.Component {
                         this.setState({
                             prior_status: {
                                 ...this.state.prior_status,
-                                [current_process.id]: true
-                            }
+                                [current_process.id]: true,
+                            },
                         });
                     }
-                    if(window.CONFIG["refresh_after_upload"]) {
+                    if (window.CONFIG["refresh_after_upload"]) {
                         this.props.emit("file.refresh");
                     }
                     this.setState({
                         currents: this.state.currents.filter((c) => c.path != current_process.path),
                         finished: [...this.state.finished, current_process],
-                        error: null
+                        error: null,
                     });
                     return this.runner(id);
                 })
@@ -142,7 +140,7 @@ export class UploadQueue extends React.Component {
                         failed: [...this.state.failed, current_process],
                         currents: this.state.currents.filter((c) => c.path != current_process.path),
                     });
-                    let { message } = err;
+                    const { message } = err;
                     if (message !== "aborted") {
                         this.setState({ error: err && err.message });
                     }
@@ -155,7 +153,7 @@ export class UploadQueue extends React.Component {
 
     updateProgress(path, e) {
         if (e.lengthComputable) {
-            let prev = this.state.progress[path];
+            const prev = this.state.progress[path];
             this.setState({
                 progress: {
                     ...this.state.progress,
@@ -165,8 +163,8 @@ export class UploadQueue extends React.Component {
                         loaded: e.loaded,
                         time: Date.now(),
                         prev: prev ? prev : null,
-                    }
-                }
+                    },
+                },
             });
         }
     }
@@ -179,13 +177,13 @@ export class UploadQueue extends React.Component {
                     ...this.state.progress[path],
                     abort,
                 },
-            }
+            },
         });
     }
 
     addFiles(path, files) {
         const processes = files.map((file) => {
-            let original_path = file.path;
+            const original_path = file.path;
             file.path = Path.join(path, file.path);
             if (file.type === "file") {
                 if (files.length < 150) Files.touch(file.path, file.file, "prepare_only");
@@ -197,8 +195,8 @@ export class UploadQueue extends React.Component {
                         {
                             progress: (e) => this.updateProgress(original_path, e),
                             abort: (x) => this.updateAbort(original_path, x),
-                        }
-                    )
+                        },
+                    ),
                 };
             } else {
                 Files.mkdir(file.path, "prepare_only");
@@ -206,7 +204,7 @@ export class UploadQueue extends React.Component {
                     id: file._id || null,
                     path: original_path,
                     parent: file._prior || null,
-                    fn: Files.mkdir.bind(Files, file.path, "execute_only")
+                    fn: Files.mkdir.bind(Files, file.path, "execute_only"),
                 };
             }
         });
@@ -232,7 +230,7 @@ export class UploadQueue extends React.Component {
             window.setTimeout(() => this.calcSpeed(), 500);
             this.setState({
                 running: true,
-                error: null
+                error: null,
             });
             Promise.all(Array.apply(null, Array(window.CONFIG["upload_pool_size"])).map(() => {
                 return this.runner();
@@ -246,33 +244,35 @@ export class UploadQueue extends React.Component {
     }
 
     abort(p) {
-        let info = this.state.progress[p.path];
+        const info = this.state.progress[p.path];
         if (info && info.abort) {
             info.abort();
         }
     }
 
     getCurrentPercent(path) {
-        let info = this.state.progress[path];
+        const info = this.state.progress[path];
         if (info && info.percent) {
-            return this.state.progress[path].percent + "%";
+            return `${this.state.progress[path].percent}%`;
         }
         return "0%";
     }
 
     calcSpeed() {
-        let now = Date.now();
-        let curSpeed = [];
+        const now = Date.now();
+        const curSpeed = [];
         for (const [, value] of Object.entries(this.state.progress)) {
             if (value.prev && now - value.time < 5 * 1000) {
-                let bytes = value.loaded - value.prev.loaded;
-                let timeMs = value.time - value.prev.time;
+                const bytes = value.loaded - value.prev.loaded;
+                const timeMs = value.time - value.prev.time;
                 curSpeed.push(1000 * bytes / timeMs);
             }
         }
-        let avgSpeed = curSpeed.reduce(function (p, c, i) { return p + (c - p) / (i + 1); }, 0);
+        const avgSpeed = curSpeed.reduce(function(p, c, i) {
+            return p + (c - p) / (i + 1);
+        }, 0);
         this.setState({
-            speed: [...this.state.speed, avgSpeed].slice(-5)
+            speed: [...this.state.speed, avgSpeed].slice(-5),
         });
         if (this.state.running) {
             window.setTimeout(() => this.calcSpeed(), 500);
@@ -280,47 +280,47 @@ export class UploadQueue extends React.Component {
     }
 
     getState() {
-        let avgSpeed = this.state.speed.reduce(function (p, c, i) { return p + (c - p) / (i + 1); }, 0);
+        const avgSpeed = this.state.speed.reduce(function(p, c, i) {
+            return p + (c - p) / (i + 1);
+        }, 0);
         let speedStr = "";
         if (avgSpeed > 0) {
             speedStr = " ~ " + humanFileSize(avgSpeed) + "/s";
         }
         if (this.state.running) {
-            return t("Running")+"..." + speedStr;
+            return `${t("Running")}...${speedStr}`;
         }
-        return t("Done") + speedStr;
+        return `${t("Done")}${speedStr}`;
     }
 
     onClose() {
-        if(this.state.running) {
-            confirm.now(
-                t("Abort current uploads?"),
-                () => {
-                    this.setState({
-                        running: false,
-                    });
-                    this.state.currents.map(p => this.abort(p));
-                    window.requestAnimationFrame(() => this.reset(), 30);
-                },
-                () => {}
-            );
-        } else  {
+        if (!this.state.running) {
             this.reset();
+            return;
         }
+        confirm.now(
+            t("Abort current uploads?"),
+            () => {
+                this.setState({
+                    running: false,
+                });
+                this.state.currents.map((p) => this.abort(p));
+                window.requestAnimationFrame(() => this.reset(), 30);
+            },
+            () => {},
+        );
     }
 
     renderRows(arr, state, col_state, action) {
-        let row_class = state + "_color";
+        const row_class = `${state}_color`;
         return arr.slice(0, 1000).map((process, i) => {
             return (
-                <div className={"file_row " + row_class} key={i}>
-                    <div
-                        className="file_path"
-                        onClick={() => this.emphasis(process.path)}
-                    >
-                        {process.path.replace(/\//, "")}
+                <div className={`file_row ${row_class}`} key={i}>
+                    <div onClick={() => this.emphasis(process.path)}
+                        className="file_path">
+                        { process.path.replace(/\//, "") }
                     </div>
-                    {col_state(process)}
+                    { col_state(process) }
                     <div className="file_control">
                         {action ? action(process): (<span></span>)}
                     </div>
@@ -330,8 +330,8 @@ export class UploadQueue extends React.Component {
     }
 
     render() {
-        let { finished, files, processes, currents, failed } = this.state;
-        let totalFiles = files.length;
+        const { finished, files, processes, currents, failed } = this.state;
+        const totalFiles = files.length;
         return (
             <NgIf cond={totalFiles > 0}>
                 <div className="component_upload_queue">
@@ -360,28 +360,30 @@ export class UploadQueue extends React.Component {
                             ),
                             (p) => (
                                 <Icon name="stop" onClick={() => this.abort(p)} ></Icon>
-                            )
+                            ),
                         )}
                         {this.renderRows(
                             processes,
                             "todo",
                             () => (
                                 <div className="file_state file_state_todo">{ t("Waiting") }</div>
-                            )
+                            ),
                         )}
                         {this.renderRows(
                             failed,
                             "error",
                             (p) => (
-                                (p.err && p.err.message == "aborted")
-                                ?
-                                    <div className="file_state file_state_error">{ t("Aborted") }</div>
-                                :
-                                <div className="file_state file_state_error">{ t("Error") }</div>
+                                (p.err && p.err.message == "aborted") ?
+                                    <div className="file_state file_state_error">
+                                        { t("Aborted") }
+                                    </div> :
+                                    <div className="file_state file_state_error">
+                                        { t("Error") }
+                                    </div>
                             ),
                             (p) => (
-                                <Icon name="refresh" onClick={() => this.retryFiles(p)} ></Icon>
-                            )
+                                <Icon name="refresh" onClick={() => this.retryFiles(p)}></Icon>
+                            ),
                         )}
                     </div>
                 </div>
@@ -389,3 +391,4 @@ export class UploadQueue extends React.Component {
         );
     }
 }
+export const UploadQueue = EventEmitter(UploadQueueComponent);

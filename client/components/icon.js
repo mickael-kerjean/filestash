@@ -135,7 +135,7 @@ export const Icon = (props) => {
     } else if (props.name === "copy") {
         img = img_copy;
     } else {
-        throw (`unknown icon: "${props.name}"`);
+        throw (new Error(`unknown icon: "${props.name}"`));
     }
 
     return (
