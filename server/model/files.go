@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
-	_ "github.com/mickael-kerjean/filestash/server/model/backend"
 	"strings"
 )
 

@@ -2,14 +2,24 @@ package plg_backend_local
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 	"os"
 )
 
-type Local struct {
+func init() {
+	Backend.Register("local", Local{})
 }
 
+type Local struct{}
+
 func (this Local) Init(params map[string]string, app *App) (IBackend, error) {
+	if err := bcrypt.CompareHashAndPassword(
+		[]byte(Config.Get("auth.admin").String()),
+		[]byte(params["password"]),
+	); err != nil {
+		return nil, ErrAuthenticationFailed
+	}
 	return Local{}, nil
 }
 
@@ -21,8 +31,17 @@ func (this Local) LoginForm() Form {
 				Type:  "hidden",
 				Value: "local",
 			},
+			{
+				Name:        "password",
+				Type:        "password",
+				Placeholder: "Admin Password",
+			},
 		},
 	}
+}
+
+func (this Local) Home() (string, error) {
+	return os.UserHomeDir()
 }
 
 func (this Local) Ls(path string) ([]os.FileInfo, error) {
