@@ -1,4 +1,4 @@
-package backend
+package plg_backend_sftp
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"

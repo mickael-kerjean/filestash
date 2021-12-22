@@ -1,4 +1,4 @@
-package backend
+package plg_backend_gdrive
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"

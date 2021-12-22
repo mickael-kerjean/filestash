@@ -1,4 +1,4 @@
-package backend
+package plg_backend_git
 
 import (
 	"fmt"
