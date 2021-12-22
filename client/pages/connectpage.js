@@ -33,7 +33,7 @@ function ConnectPageComponent({ error, history }) {
             setIsLoading(true);
             Session.oauth2(formData["oauth2"]).then((url) => {
                 window.location.href = url;
-            });
+            }).catch((err) => error(err));
             return;
         }
         setIsLoading(true);
@@ -63,6 +63,7 @@ function ConnectPageComponent({ error, history }) {
     return (
         <div className="component_page_connect">
             { window.CONFIG["fork_button"] && <ForkMe /> }
+            <div style={{ paddingTop: `${_centerThis()}px` }} />
             <Container maxWidth="565px">
                 { isLoading && <Loader /> }
                 <NgShow cond={!isLoading}>
@@ -75,5 +76,16 @@ function ConnectPageComponent({ error, history }) {
         </div>
     );
 }
+
+const _centerThis = () => {
+    let size = 300;
+    const $screen = document.querySelector(".login-form");
+    if ($screen) size = $screen.offsetHeight;
+
+    size = Math.round((document.body.offsetHeight - size) / 2);
+    if (size < 0) return 0;
+    if (size > 150) return 150;
+    return size;
+};
 
 export const ConnectPage = ErrorPage(ConnectPageComponent);

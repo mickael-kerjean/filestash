@@ -100,16 +100,15 @@ export function Form({
     };
 
     return (
-        <Card style={{ marginTop: `${_centerThis()}px` }}
-            className="no-select component_page_connection_form">
+        <div className="no-select component_page_connection_form">
             {
                 enabledBackends.length > 1 && (
-                    <div role="navigation"
+                    <Card role="navigation"
                         className={`buttons ${((window.innerWidth < 600) ? "scroll-x" : "")}`}>
                         {
                             enabledBackends.map((backend, i) => {
                                 const key = Object.keys(backend)[0];
-                                if (!backend[key]) return null; // TODO: this shouldn't be needed
+                                if (!backend[key]) return null;
                                 return (
                                     <Button
                                         key={`menu-${i}`}
@@ -121,10 +120,10 @@ export function Form({
                                 );
                             })
                         }
-                    </div>
+                    </Card>
                 )
             }
-            <div>
+            <Card className="formBody">
                 <form onSubmit={(e) => onSubmitForm(e)} autoComplete="off" autoCapitalize="off"
                     spellCheck="false" autoCorrect="off">
                     {
@@ -140,18 +139,7 @@ export function Form({
                     }
                     <Button theme="emphasis">{ t("CONNECT") }</Button>
                 </form>
-            </div>
-        </Card>
+            </Card>
+        </div>
     );
 }
-
-const _centerThis = () => {
-    let size = 300;
-    const $screen = document.querySelector(".login-form");
-    if ($screen) size = $screen.offsetHeight;
-
-    size = Math.round((document.body.offsetHeight - size) / 2);
-    if (size < 0) return 0;
-    if (size > 150) return 150;
-    return size;
-};

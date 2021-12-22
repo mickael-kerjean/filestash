@@ -79,7 +79,7 @@
 
 body.touch-no{
     .component_path-element-wrapper a.label:hover{
-        background: var(--super-light);
+        background: rgba(0,0,0,0.05);
         span.title{
             opacity: 1;
             transform: translateY(0px);
