@@ -12,6 +12,10 @@ class SessionManager {
             .then((data) => data.result);
     }
 
+    middleware(formData) {
+        return Promise.resolve("/api/session/auth/?action=redirect&label=" + (formData["label"] || ""));
+    }
+
     authenticate(params) {
         const url = "/api/session";
         return http_post(url, params)

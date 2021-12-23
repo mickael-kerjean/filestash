@@ -29,7 +29,13 @@ function ConnectPageComponent({ error, history }) {
     };
 
     const onFormSubmit = (formData) => {
-        if ("oauth2" in formData) {
+        if ("middleware" in formData) {
+            setIsLoading(true);
+            Session.middleware(formData).then((url) => {
+                window.location.href = url;
+            }).catch((err) => error(err));
+            return;
+        } else if ("oauth2" in formData) {
             setIsLoading(true);
             Session.oauth2(formData["oauth2"]).then((url) => {
                 window.location.href = url;

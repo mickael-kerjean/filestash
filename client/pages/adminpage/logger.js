@@ -46,7 +46,11 @@ export function LogPage({ isSaving = nop }) {
         });
         fetchLogs();
         const id = setInterval(fetchLogs, 5000);
-        return () => clearInterval(id);
+        return () => {
+            clearInterval(id);
+            Config.clear();
+            isSaving(false);
+        }
     }, []);
 
     return (

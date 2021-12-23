@@ -39,6 +39,10 @@ class ConfigModel {
             window.CONFIG = config.result;
         });
     }
+
+    clear() {
+        this.debounced_post = null;
+    }
 }
 
 class BackendModel {
@@ -50,5 +54,15 @@ class BackendModel {
     }
 }
 
+class MiddlewareModel {
+    constructor() {
+    }
+
+    getAllAuthentication() {
+        return http_get("/api/middlewares/authentication").then((r) => r.result);
+    }
+}
+
 export const Config = new ConfigModel();
 export const Backend = new BackendModel();
+export const Middleware = new MiddlewareModel();

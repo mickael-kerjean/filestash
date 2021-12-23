@@ -1,5 +1,4 @@
 .component_dashboard{
-    .alert { margin-top: -15px; }
     .box-container {
         display: flex;
         flex-wrap: wrap;
@@ -40,7 +39,8 @@
                     text-shadow: none;
                     background: var(--emphasis-primary);
                     padding: 18px 0;
-                    @media (max-width: 750px){ padding: 8px 0; }
+                    @media (max-width: 900px){ padding: 12px 0; }
+                    @media (max-width: 750px){ padding: 7px 0; }
                     margin: 6px;
                     opacity: 0.95;
                     .icon{
@@ -80,15 +80,17 @@
                 position: absolute;
                 border-radius: 50%;
                 padding: 10px;
-                background: var(--emphasis-primary);
+                border: 3px solid var(--bg-color);
+                background: var(--primary);
                 cursor: pointer;
                 right: -15px;
                 top: -5px;
-                box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
                 .component_icon{
                     height: 20px;
                 }
             }
         }
     }
+
+    .authentication-middleware .formbuilder label span > input[type="checkbox"] { display: none; }
 }

@@ -102,6 +102,9 @@ func Page(stuff string) string {
       body { text-align: center; padding-top: 50px; text-align: center; margin: 0; }
       h1 { font-weight: 200; line-height: 1em; font-size: 40px; }
       p { opacity: 0.8; font-size: 1.05em; }
+      form { max-width: 500px; margin: 0 auto; padding: 0 10px; text-align: left; }
+      button { padding: 7px 0px; width: 100%; margin-top: 5px; cursor: pointer; }
+      input, textarea { display: block; margin: 5px 0; border-radius: 3px; border: 2px solid rgba(0,0,0,0.1); outline: none; padding: 8px 10px; min-width: 100%; max-width: 100%; max-height: 80px; box-sizing: border-box; }
     </style>
   </head>
   <body>

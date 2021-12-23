@@ -106,7 +106,7 @@ export class FormBuilder extends React.Component {
             <FormElement render={this.props.render}
                 onChange={onChange.bind(this)} {...id}
                 params={struct} target={target} name={ format(struct.label) }
-                autoComplete={ this.props.autoComplete || "off" } />
+                autoComplete="off" />
         );
     }
 
@@ -119,7 +119,6 @@ export class FormBuilder extends React.Component {
 const FormElement = (props) => {
     const id = props.id !== undefined ? { id: props.id } : {};
     const struct = props.params;
-    const autoCompleteProp = props.autoComplete || "off";
     let $input = (
         <Input onChange={(e) => props.onChange(e.target.value)} {...id} name={struct.label}
             type="text" defaultValue={struct.value} placeholder={ t(struct.placeholder) } />
@@ -138,7 +137,7 @@ const FormElement = (props) => {
             <Input list={list_id} onChange={(e) => onTextChange(e.target.value)} {...id}
                 name={struct.label} type="text" value={struct.value || ""}
                 placeholder={ t(struct.placeholder) } readOnly={struct.readonly}
-                autoComplete={autoCompleteProp} autoCorrect="off" autoCapitalize="off"
+                autoComplete="off" autoCorrect="off" autoCapitalize="off"
                 spellCheck="false" />
         );
         if (list_id != null) {
@@ -190,7 +189,7 @@ const FormElement = (props) => {
         $input = (
             <Input onChange={(e) => onPasswordChange(e.target.value)} {...id} name={struct.label}
                 type="password" value={struct.value || ""} placeholder={ t(struct.placeholder) }
-                autoComplete={autoCompleteProp} autoCorrect="off" autoCapitalize="off"
+                autoComplete="off" autoCorrect="off" autoCapitalize="off"
                 spellCheck="false"/>
         );
         break;
@@ -206,7 +205,7 @@ const FormElement = (props) => {
             <Textarea {...id} disabledEnter={true} value={struct.value || ""}
                 onChange={(e) => onLongPasswordChange(e.target.value)} type="text" rows="1"
                 name={struct.label} placeholder={ t(struct.placeholder) }
-                autoComplete={autoCompleteProp} autoCorrect="off" autoCapitalize="off"
+                autoComplete="off" autoCorrect="off" autoCapitalize="off"
                 spellCheck="false" />
         );
         break;
@@ -216,7 +215,7 @@ const FormElement = (props) => {
             <Textarea {...id} disabledEnter={true} value={struct.value || ""}
                 onChange={(e) => props.onChange(e.target.value)}
                 type="text" rows="3" name={struct.label} placeholder={ t(struct.placeholder) }
-                autoComplete={autoCompleteProp} autoCorrect="off" autoCapitalize="off"
+                autoComplete="off" autoCorrect="off" autoCapitalize="off"
                 spellCheck="false" />
         );
         break;

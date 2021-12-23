@@ -30,10 +30,11 @@ func Init(a *App) {
 	session.HandleFunc("", NewMiddlewareChain(SessionGet, middlewares, *a)).Methods("GET")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, BodyParser}
 	session.HandleFunc("", NewMiddlewareChain(SessionAuthenticate, middlewares, *a)).Methods("POST")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, SessionTry}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax}
 	session.HandleFunc("", NewMiddlewareChain(SessionLogout, middlewares, *a)).Methods("DELETE")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders}
 	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, *a)).Methods("GET")
+	session.HandleFunc("/auth/", NewMiddlewareChain(SessionAuthMiddleware, middlewares, *a)).Methods("GET", "POST")
 
 	// API for admin
 	middlewares = []Middleware{ApiHeaders, SecureAjax}
@@ -87,6 +88,7 @@ func Init(a *App) {
 	middlewares = []Middleware{ApiHeaders}
 	r.HandleFunc("/api/config", NewMiddlewareChain(PublicConfigHandler, middlewares, *a)).Methods("GET")
 	r.HandleFunc("/api/backend", NewMiddlewareChain(AdminBackend, middlewares, *a)).Methods("GET")
+	r.HandleFunc("/api/middlewares/authentication", NewMiddlewareChain(AdminAuthenticationMiddleware, middlewares, *a)).Methods("GET")
 	middlewares = []Middleware{StaticHeaders}
 	r.PathPrefix("/assets").Handler(http.HandlerFunc(NewMiddlewareChain(StaticHandler(FILE_ASSETS), middlewares, *a))).Methods("GET")
 	r.HandleFunc("/favicon.ico", NewMiddlewareChain(StaticHandler(FILE_ASSETS+"/assets/logo/"), middlewares, *a)).Methods("GET")
@@ -110,7 +112,7 @@ func Init(a *App) {
 	initPluginsRoutes(r, a)
 
 	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a))).Methods("GET")
-	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a))).Methods("GET")
+	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a))).Methods("GET", "POST")
 
 	// Routes are served via plugins to avoid getting stuck with plain HTTP. The idea is to
 	// support many more protocols in the future: HTTPS, HTTP2, TOR or whatever that sounds

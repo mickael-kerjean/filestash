@@ -24,7 +24,16 @@ export function format(str = "") {
     return str.split("_")
         .map((word, index) => {
             if (index != 0) return word;
-            return word[0].toUpperCase() + word.substring(1);
+            return (word[0] || "").toUpperCase() + word.substring(1);
         })
         .join(" ");
+}
+
+export function objectGet(obj, paths) {
+    let value = obj;
+    for (let i=0; i<paths.length; i++) {
+        if (typeof value !== "object" || value === null) return null;
+        value = value[paths[i]];
+    }
+    return value;
 }

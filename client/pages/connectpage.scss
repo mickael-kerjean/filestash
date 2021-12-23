@@ -8,7 +8,7 @@
 
 /* PAGE ANIMATION */
 @keyframes PageConnectionPoweredBy {
-    from { transform: translateY(2px); opacity: 0;}
+    from { transform: translateX(3px); opacity: 0;}
     to {transform: translateY(0); opacity: 1; }
 }
 @keyframes PageConnectionForm {

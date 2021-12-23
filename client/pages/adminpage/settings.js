@@ -39,8 +39,13 @@ export function SettingsPage({ isSaving = nop }) {
             // The constant key contains read only global variable that are
             // application wide truth => not editable from the admin area
             delete c.constant;
+            delete c.middleware;
             setForm(c);
         });
+        return () => {
+            Config.clear();
+            isSaving(false);
+        }
     }, []);
 
     const renderForm = ($input, props, struct, onChange) => (

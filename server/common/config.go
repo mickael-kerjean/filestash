@@ -372,6 +372,7 @@ func (this Configuration) Export() interface{} {
 		RefreshAfterUpload      bool              `json:"refresh_after_upload"`
 		FilePageDefaultSort     string            `json:"default_sort"`
 		FilePageDefaultView     string            `json:"default_view"`
+		AuthMiddleware          interface{}       `json:"auth"`
 	}{
 		Editor:                  this.Get("general.editor").String(),
 		ForkButton:              this.Get("general.fork_button").Bool(),
@@ -389,6 +390,12 @@ func (this Configuration) Export() interface{} {
 		RefreshAfterUpload:      this.Get("general.refresh_after_upload").Bool(),
 		FilePageDefaultSort:     this.Get("general.filepage_default_sort").String(),
 		FilePageDefaultView:     this.Get("general.filepage_default_view").String(),
+		AuthMiddleware: func() string {
+			if this.Get("middleware.identity_provider.type").String() == "" {
+				return ""
+			}
+			return this.Get("middleware.attribute_mapping.related_backend").String()
+		}(),
 	}
 }
 

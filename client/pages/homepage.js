@@ -2,12 +2,19 @@ import React, { useState, useEffect } from "react";
 import { Redirect } from "react-router";
 
 import { Session } from "../model/";
-import { Loader } from "../components/";
+import { Loader, ErrorPage } from "../components/";
+import { t } from "../locales/";
 
-export function HomePage() {
+export function HomePageComponent({ error }) {
     const [redirection, setRedirection] = useState(null);
 
     useEffect(() => {
+        const p = new URLSearchParams(location.search);
+        if(p.get("error")) {
+            error(new Error(t(p.get("error"))));
+            return;
+        }
+
         Session.currentUser().then((res) => {
             if (res && res.is_authenticated === true) {
                 setRedirection(res.home ? `/files${res.home}` : "/files");
@@ -22,3 +29,5 @@ export function HomePage() {
     }
     return ( <Redirect to={redirection} /> );
 }
+
+export const HomePage = ErrorPage(HomePageComponent);

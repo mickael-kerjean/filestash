@@ -5,7 +5,8 @@
     flex-direction: column;
 
     h1{margin: 5px 0; font-size: 3.1em;}
-    h2{margin: 10px 0; font-weight: normal; opacity: 0.9; font-weight: 100;}
+    h2{margin: 10px 0; font-weight: normal; opacity: 0.9; font-weight: 100; }
+    code{margin-top: 20px; display: block; background:rgba(255,255,255,0.3);padding: 10px; border: 2px dashed rgba(0,0,0,0.1);}
     p{font-style: italic;}
     a{border-bottom: 1px dashed;}
 }

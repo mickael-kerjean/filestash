@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/middleware"
 	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
 	"strings"
@@ -19,7 +20,6 @@ func SessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 	r := Session{
 		IsAuth: false,
 	}
-
 	if ctx.Backend == nil {
 		SendSuccessResult(res, r)
 		return
@@ -100,11 +100,21 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
-	if ctx.Backend != nil {
-		if obj, ok := ctx.Backend.(interface{ Close() error }); ok {
-			go obj.Close()
-		}
-	}
+	go func() {
+		// user typically expect the logout to feel instant but in our case we still need to make sure
+		// the connection is closed as lot of backend requires to hold an active session which we cache.
+		// Whenever somebody logout after say 30 minutes idle, the logout would first create a connection
+		// then close which can take a few seconds and make for a bad user experience.
+		// By pushing that connection close in a goroutine, we make sure the logout is much faster for
+		// the user while still retaining that functionality.
+		SessionTry(func(c App, _res http.ResponseWriter, _req *http.Request) {
+			if c.Backend != nil {
+				if obj, ok := c.Backend.(interface{ Close() error }); ok {
+					go obj.Close()
+				}
+			}
+		})(ctx, res, req)
+	}()
 	http.SetCookie(res, &http.Cookie{
 		Name:   COOKIE_NAME_AUTH,
 		Value:  "",
@@ -148,4 +158,166 @@ func SessionOAuthBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, obj.OAuthURL())
+}
+
+func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) {
+	SSOCookieName := "ssoref"
+
+	// Step0: Initialisation
+	_get := req.URL.Query()
+	plugin := func() IAuth {
+		selectedPluginId := Config.Get("middleware.identity_provider.type").String()
+		if selectedPluginId == "" {
+			return nil
+		}
+		for key, plugin := range Hooks.All.AuthenticationMiddleware() {
+			if key == selectedPluginId {
+				return plugin
+			}
+		}
+		return nil
+	}()
+	if plugin == nil {
+		http.Redirect(
+			res, req,
+			"/?error=Not%20Found&trace=middleware not found",
+			http.StatusTemporaryRedirect,
+		)
+		return
+	}
+	formData := map[string]string{}
+	switch req.Method {
+	case "GET":
+		for key, element := range _get {
+			if len(element) == 0 {
+				continue
+			}
+			formData[key] = element[0]
+		}
+	case "POST":
+		if err := req.ParseForm(); err != nil {
+			http.Redirect(
+				res, req,
+				"/?error=Not%20Valid&trace=parsing body - "+err.Error(),
+				http.StatusTemporaryRedirect,
+			)
+			return
+		}
+		for key, values := range req.Form {
+			if len(values) == 0 {
+				continue
+			}
+			formData[key] = values[0]
+		}
+	}
+
+	// Step1: Entrypoint of the authentication process is handled by the plugin
+	if req.Method == "GET" && _get.Get("action") == "redirect" {
+		if label := _get.Get("label"); label != "" {
+			http.SetCookie(res, &http.Cookie{
+				Name:     SSOCookieName,
+				Value:    label,
+				MaxAge:   60 * 10,
+				Path:     COOKIE_PATH,
+				HttpOnly: true,
+				SameSite: http.SameSiteStrictMode,
+			})
+		}
+		plugin.EntryPoint(req, res)
+		return
+	}
+
+	// Step2: End of the authentication process. Could come from:
+	// - target of a html form. eg: ldap, mysql, ...
+	// - identity provider redirection uri. eg: oauth2, openid, ...
+	idpParams := map[string]string{}
+	if err := json.Unmarshal(
+		[]byte(Config.Get("middleware.identity_provider.params").String()),
+		&idpParams,
+	); err != nil {
+		http.Redirect(
+			res, req,
+			"/?error=Not%20Valid&trace=unpacking idp - "+err.Error(),
+			http.StatusTemporaryRedirect,
+		)
+		return
+	}
+
+	templateBind, err := plugin.Callback(formData, idpParams, res)
+	if err != nil {
+		Log.Debug("session::authMiddleware 'callback error - %s'", err.Error())
+		http.Redirect(res, req, req.URL.Path+"?action=redirect", http.StatusSeeOther)
+		return
+	}
+	Log.Debug("session::authMiddleware 'template bind - \"%+v\"'", templateBind)
+
+	// Step3: create a backend connection object
+	session, err := func(tb map[string]string) (map[string]string, error) {
+		refCookie, err := req.Cookie(SSOCookieName)
+		if err != nil {
+			return map[string]string{}, err
+		}
+		globalMapping := map[string]map[string]interface{}{}
+		if err = json.Unmarshal(
+			[]byte(Config.Get("middleware.attribute_mapping.params").String()),
+			&globalMapping,
+		); err != nil {
+			return map[string]string{}, err
+		}
+		mappingToUse := map[string]string{}
+		for k, v := range globalMapping[refCookie.Value] {
+			mappingToUse[k] = NewStringFromInterface(v)
+		}
+		mappingToUse["timestamp"] = time.Now().String()
+		return mappingToUse, nil
+	}(templateBind)
+	if err != nil {
+		Log.Debug("session::authMiddleware 'auth mapping failed %s'", err.Error())
+		http.Redirect(
+			res, req,
+			"/?error=Not%20Valid&trace=mapping_error - "+err.Error(),
+			http.StatusTemporaryRedirect,
+		)
+		return
+	}
+	if _, err := model.NewBackend(&ctx, session); err != nil {
+		Log.Debug("session::authMiddleware 'backend connection failed %+v - %s'", session, err.Error())
+		http.Redirect(
+			res, req,
+			"/?error=Not%20Valid&trace=backend error - "+err.Error(),
+			http.StatusTemporaryRedirect,
+		)
+		return
+	}
+
+	// Step4: persist connection with a cookie
+	s, err := json.Marshal(session)
+	if err != nil {
+		Log.Debug("session::authMiddleware 'session marshal error %+v'", session)
+		SendErrorResult(res, ErrNotValid)
+		return
+	}
+	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_USER, string(s))
+	if err != nil {
+		Log.Debug("session::authMiddleware 'encryption error - %s", err.Error())
+		SendErrorResult(res, ErrNotValid)
+		return
+	}
+	http.SetCookie(res, &http.Cookie{
+		Name:     COOKIE_NAME_AUTH,
+		Value:    obfuscate,
+		MaxAge:   60 * Config.Get("general.cookie_timeout").Int(),
+		Path:     COOKIE_PATH,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+	http.SetCookie(res, &http.Cookie{
+		Name:     SSOCookieName,
+		Value:    "",
+		MaxAge:   -1,
+		Path:     COOKIE_PATH,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+	http.Redirect(res, req, "/", http.StatusTemporaryRedirect)
 }

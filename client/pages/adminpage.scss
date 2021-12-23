@@ -1,5 +1,6 @@
 .component_page_admin{
     display: flex;
+    .adminpage { max-width: 1400px; }
     .page_container{
         width: 100%;
         background: var(--super-light);

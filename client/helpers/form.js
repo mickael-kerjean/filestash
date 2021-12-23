@@ -1,5 +1,5 @@
 export const FormObjToJSON = function(o, fn, i = 0) {
-    if (i === 0) delete o["constants"];
+    if (i === 0 && o !== null) delete o["constants"];
     const obj = Object.assign({}, o);
     Object.keys(obj).map((key) => {
         const t = obj[key];

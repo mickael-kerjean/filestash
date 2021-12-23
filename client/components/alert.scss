@@ -14,6 +14,10 @@
     &.success{
         background: var(--success);
     }
+    &.error{
+        background: var(--error);
+        color: var(--bg-color);
+    }
 
     img{
         max-width: 100%;

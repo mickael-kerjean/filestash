@@ -4,7 +4,7 @@ import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
 import { Input, Button, Icon, NgIf, Loader } from "../../components/";
 import { Config, Admin } from "../../model/";
-import { notify, FormObjToJSON, alert } from "../../helpers";
+import { notify, FormObjToJSON, alert, objectGet } from "../../helpers";
 import { bcrypt_password } from "../../helpers/bcrypt";
 
 import "./setup.scss";
@@ -245,12 +245,3 @@ const FormStage = (props) => {
         </h4>
     );
 };
-
-function objectGet(obj, paths) {
-    let value = obj;
-    for (let i=0; i<paths.length; i++) {
-        if (typeof value !== "object") return null;
-        value = value[paths[i]];
-    }
-    return value;
-}

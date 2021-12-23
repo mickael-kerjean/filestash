@@ -16,7 +16,7 @@ export { invalidate, http_get, http_post, http_delete, http_options } from "./aj
 export { prompt, alert, confirm } from "./popup";
 export { notify } from "./notify";
 export { gid, randomString } from "./random";
-export { leftPad, format, copyToClipboard } from "./common";
+export { leftPad, format, copyToClipboard, objectGet } from "./common";
 export { getMimeType } from "./mimetype";
 export { settings_get, settings_put } from "./settings";
 export { FormObjToJSON, createFormBackend, autocomplete } from "./form";

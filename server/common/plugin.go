@@ -6,11 +6,6 @@ import (
 	"net/http"
 )
 
-const (
-	PluginTypeBackend    = "backend"
-	PluginTypeMiddleware = "middleware"
-)
-
 type Plugin struct {
 	Type   string
 	Enable bool
@@ -18,13 +13,16 @@ type Plugin struct {
 
 type Register struct{}
 type Get struct{}
+type All struct{}
 
 var Hooks = struct {
 	Get      Get
 	Register Register
+	All      All
 }{
 	Get:      Get{},
 	Register: Register{},
+	All:      All{},
 }
 
 var process_file_content_before_send []func(io.ReadCloser, *App, *http.ResponseWriter, *http.Request) (io.ReadCloser, error)
@@ -52,6 +50,16 @@ func (this Register) Starter(fn func(*mux.Router)) {
 }
 func (this Get) Starter() []func(*mux.Router) {
 	return starter_process
+}
+
+var authentication_middleware map[string]IAuth = make(map[string]IAuth, 0)
+
+func (this Register) AuthenticationMiddleware(id string, am IAuth) {
+	authentication_middleware[id] = am
+}
+
+func (this All) AuthenticationMiddleware() map[string]IAuth {
+	return authentication_middleware
 }
 
 /*

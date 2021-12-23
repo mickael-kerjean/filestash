@@ -53,6 +53,8 @@ export function ErrorPage(WrappedComponent) {
             super(props);
             this.state = {
                 error: null,
+                trace: null,
+                showTrace: false,
                 has_back_button: false,
             };
         }
@@ -69,7 +71,10 @@ export function ErrorPage(WrappedComponent) {
         }
 
         update(obj) {
-            this.setState({ error: obj });
+            this.setState({
+                error: obj,
+                trace: new URLSearchParams(location.search).get("trace") || null,
+            });
         }
 
         navigate(e) {
@@ -84,17 +89,19 @@ export function ErrorPage(WrappedComponent) {
                 const message = this.state.error.message || t("There is nothing in here");
                 return (
                     <div>
-                        <Link to={`/${window.location.search}`}
+                        <a href="/"
                             className="backnav" onClick={this.navigate.bind(this)}
                         >
                             <Icon name="arrow_left" />{
                                 this.state.has_back_button ? "back" : "home"
                             }
-                        </Link>
+                        </a>
                         <Container>
-                            <div className="error-page">
+                            <div className="error-page" onClick={() => this.setState({showTrace: true})}>
                                 <h1>{ t("Oops!") }</h1>
                                 <h2>{ message }</h2>
+                                { this.state.showTrace && this.state.trace &&
+                                  <code> { this.state.trace }</code> }
                             </div>
                         </Container>
                     </div>
