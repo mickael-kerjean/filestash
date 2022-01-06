@@ -9,8 +9,7 @@ import (
 )
 
 func ReportHandler(ctx App, res http.ResponseWriter, req *http.Request) {
-	// This function is quite dumb but that's only because the reporting logic is called before
-	// this function is called.
+	// This function is quite dumb indeed, the goal is to show a report trace in the logs
 	SendSuccessResult(res, nil)
 }
 

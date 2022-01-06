@@ -110,7 +110,7 @@ func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
 		SessionTry(func(c App, _res http.ResponseWriter, _req *http.Request) {
 			if c.Backend != nil {
 				if obj, ok := c.Backend.(interface{ Close() error }); ok {
-					go obj.Close()
+					obj.Close()
 				}
 			}
 		})(ctx, res, req)
