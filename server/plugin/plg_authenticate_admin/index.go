@@ -2,7 +2,6 @@ package plg_authenticate_admin
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
@@ -10,7 +9,6 @@ import (
 
 func init() {
 	Hooks.Register.AuthenticationMiddleware("admin", Admin{})
-	Hooks.Register.HttpEndpoint(LoginPage())
 }
 
 type Admin struct{}
@@ -34,39 +32,26 @@ func (this Admin) Setup() Form {
 }
 
 func (this Admin) EntryPoint(req *http.Request, res http.ResponseWriter) {
-	http.Redirect(
-		res, req,
-		"/admin/plugin/authenticate_admin",
-		http.StatusTemporaryRedirect,
-	)
-}
-
-func LoginPage() func(r *mux.Router, _ *App) error {
-	return func(r *mux.Router, _ *App) error {
-		r.HandleFunc("/admin/plugin/authenticate_admin", func(w http.ResponseWriter, r *http.Request) {
-			getFlash := func() string {
-				c, err := r.Cookie("flash")
-				if err != nil {
-					return ""
-				}
-				http.SetCookie(w, &http.Cookie{
-					Name:   "flash",
-					MaxAge: -1,
-					Path:   "/",
-				})
-				return fmt.Sprintf("<strong>%s</strong>", c.Value)
-			}
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(Page(`
-              <form action="/api/session/auth/" method="post">
-               <label> ` + getFlash() + `
-                 <input type="password" name="password" value="" placeholder="Admin Password" />
-              </label>
-            </form>`)))
+	getFlash := func() string {
+		c, err := req.Cookie("flash")
+		if err != nil {
+			return ""
+		}
+		http.SetCookie(res, &http.Cookie{
+			Name:   "flash",
+			MaxAge: -1,
+			Path:   "/",
 		})
-		return nil
+		return fmt.Sprintf("<strong>%s</strong>", c.Value)
 	}
+	res.Header().Set("Content-Type", "text/html; charset=utf-8")
+	res.WriteHeader(http.StatusOK)
+	res.Write([]byte(Page(`
+      <form action="/api/session/auth/" method="post">
+        <label> ` + getFlash() + `
+          <input type="password" name="password" value="" placeholder="Admin Password" />
+        </label>
+      </form>`)))
 }
 
 func (this Admin) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
