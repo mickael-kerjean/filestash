@@ -486,7 +486,9 @@ func (s S3Backend) urlEncodedPath(path string) string {
 
 	var pathElements []string
 	for _, x := range sp {
-		pathElements = append(pathElements, url.QueryEscape(x))
+		// Compatible with RFC 3986.
+		endoded := strings.Replace(url.QueryEscape(x), "+", "%20", -1)
+		pathElements = append(pathElements, endoded)
 	}
 
 	encodedPath := strings.Join(pathElements, "/")
