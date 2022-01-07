@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -307,7 +308,7 @@ func (s S3Backend) Mv(from string, to string) error {
 	} else if strings.HasSuffix(from, "/") == false { // Move Single file
 		input := &s3.CopyObjectInput{
 			Bucket:     aws.String(t.bucket),
-			CopySource: aws.String(fmt.Sprintf("%s/%s", f.bucket, f.path)),
+			CopySource: aws.String(fmt.Sprintf("%s/%s", f.bucket, s.urlEncodedPath(f.path))),
 			Key:        aws.String(t.path),
 		}
 		if s.params["encryption_key"] != "" {
@@ -336,7 +337,7 @@ func (s S3Backend) Mv(from string, to string) error {
 		},
 		func(objs *s3.ListObjectsV2Output, lastPage bool) bool {
 			for _, obj := range objs.Contents {
-				from := fmt.Sprintf("%s/%s", f.bucket, *obj.Key)
+				from := fmt.Sprintf("%s/%s", f.bucket, s.urlEncodedPath(*obj.Key))
 				toKey := t.path + strings.TrimPrefix(*obj.Key, f.path)
 				input := &s3.CopyObjectInput{
 					CopySource: aws.String(from),
@@ -477,4 +478,17 @@ func (s S3Backend) path(p string) S3Path {
 		bucket,
 		path,
 	}
+}
+
+
+func (s S3Backend) urlEncodedPath(path string) string {
+	sp := strings.Split(path, "/")
+
+	var pathElements []string
+	for _, x := range sp {
+		pathElements = append(pathElements, url.QueryEscape(x))
+	}
+
+	encodedPath := strings.Join(pathElements, "/")
+	return encodedPath
 }
