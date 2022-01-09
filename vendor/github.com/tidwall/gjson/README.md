@@ -123,11 +123,12 @@ nil, for JSON null
 To directly access the value:
 
 ```go
-result.Type    // can be String, Number, True, False, Null, or JSON
-result.Str     // holds the string
-result.Num     // holds the float64 number
-result.Raw     // holds the raw json
-result.Index   // index of raw value in original json, zero means index unknown
+result.Type           // can be String, Number, True, False, Null, or JSON
+result.Str            // holds the string
+result.Num            // holds the float64 number
+result.Raw            // holds the raw json
+result.Index          // index of raw value in original json, zero means index unknown
+result.Indexes        // indexes of all the elements that match on a path containing the '#' query character.
 ```
 
 There are a variety of handy functions that work on a result:
@@ -150,10 +151,6 @@ result.Less(token Result, caseSensitive bool) bool
 
 The `result.Value()` function returns an `interface{}` which requires type assertion and is one of the following Go types:
 
-The `result.Array()` function returns back an array of values.
-If the result represents a non-existent value, then an empty array will be returned.
-If the result is not a JSON array, the return value will be an array containing one result.
-
 ```go
 boolean >> bool
 number  >> float64
@@ -162,6 +159,10 @@ null    >> nil
 array   >> []interface{}
 object  >> map[string]interface{}
 ```
+
+The `result.Array()` function returns back an array of values.
+If the result represents a non-existent value, then an empty array will be returned.
+If the result is not a JSON array, the return value will be an array containing one result.
 
 ### 64-bit integers
 
@@ -482,11 +483,3 @@ widget.text.onMouseUp
 ```
 
 *These benchmarks were run on a MacBook Pro 15" 2.8 GHz Intel Core i7 using Go 1.8 and can be found [here](https://github.com/tidwall/gjson-benchmarks).*
-
-
-## Contact
-Josh Baker [@tidwall](http://twitter.com/tidwall)
-
-## License
-
-GJSON source code is available under the MIT [License](/LICENSE).
