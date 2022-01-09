@@ -19,15 +19,15 @@
 
         &.info{
             background: var(--color);
-            color: white;
+            color: rgba(255,255,255,0.8);
         }
         &.error{
             background: var(--error);
-            color: var(--emphasis);
+            color: rgba(0,0,0,0.5);
         }
         &.success{
             background: var(--success);
-            color: var(--emphasis);
+            color: rgba(0,0,0,0.5);
         }
 
         .message{
