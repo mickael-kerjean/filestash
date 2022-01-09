@@ -112,3 +112,18 @@ func Page(stuff string) string {
   </body>
 </html>`
 }
+
+func RedirectPage(url string) string {
+	return `<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Refresh" content="0; url=` + url + `" />
+  </head>
+<body>
+  <script>
+    location.href = "` + url + `"
+  </script>
+</body>
+</html>
+`
+}

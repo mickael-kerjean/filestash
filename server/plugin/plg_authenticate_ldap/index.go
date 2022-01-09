@@ -58,12 +58,13 @@ func (this Ldap) Setup() Form {
 	}
 }
 
-func (this Ldap) EntryPoint(req *http.Request, res http.ResponseWriter) {
+func (this Ldap) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
 	http.Redirect(
 		res, req,
 		"/?error=ldap is available for enterprise customer, see https://www.filestash.app/pricing/?modal=enterprise",
 		http.StatusTemporaryRedirect,
 	)
+	return nil
 }
 
 func (this Ldap) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {

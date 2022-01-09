@@ -29,10 +29,11 @@ func (this Admin) Setup() Form {
 	}
 }
 
-func (this Admin) EntryPoint(req *http.Request, res http.ResponseWriter) {
+func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte(Page(`<h2 style="display:none;">PASSTHROUGH</h2><script>location.href = "/api/session/auth/"</script>`)))
+	return nil
 }
 
 func (this Admin) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {

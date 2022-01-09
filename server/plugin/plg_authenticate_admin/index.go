@@ -31,7 +31,7 @@ func (this Admin) Setup() Form {
 	}
 }
 
-func (this Admin) EntryPoint(req *http.Request, res http.ResponseWriter) {
+func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
 	getFlash := func() string {
 		c, err := req.Cookie("flash")
 		if err != nil {
@@ -52,6 +52,7 @@ func (this Admin) EntryPoint(req *http.Request, res http.ResponseWriter) {
           <input type="password" name="password" value="" placeholder="Admin Password" />
         </label>
       </form>`)))
+	return nil
 }
 
 func (this Admin) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
