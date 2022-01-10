@@ -37,12 +37,13 @@ func (this Saml) Setup() Form {
 	}
 }
 
-func (this Saml) EntryPoint(req *http.Request, res http.ResponseWriter) {
+func (this Saml) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
 	http.Redirect(
 		res, req,
 		"/?error=saml is available for enterprise customer, see https://www.filestash.app/pricing/?modal=enterprise",
 		http.StatusTemporaryRedirect,
 	)
+	return nil
 }
 
 func (this Saml) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
