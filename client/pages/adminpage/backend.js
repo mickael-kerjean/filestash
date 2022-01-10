@@ -415,6 +415,7 @@ function AuthenticationMiddleware({ authentication_available, authentication_ena
         return auth_key === objectGet(authentication_enabled, ["identity_provider", "type", "value"]);
     };
 
+    if (Object.keys(authentication_available).length === 0) return null;
     return (
         <div className="component_authenticationmiddleware" style={{minHeight: "400px"}}>
             <h2>Authentication Middleware</h2>
