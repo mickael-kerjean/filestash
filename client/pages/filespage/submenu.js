@@ -119,18 +119,18 @@ export class Submenu extends React.Component {
             <div className="component_submenu">
               <Container>
                 <div className={"menubar no-select "+(this.state.search_input_visible ? "search_focus" : "")}>
-                  <NgIf cond={this.props.accessRight.can_create_file !== false && this.props.selected.length === 0} onClick={this.onNew.bind(this, 'file')} type="inline">
+                  <NgIf className="button-new-file" cond={this.props.accessRight.can_create_file !== false && this.props.selected.length === 0} onClick={this.onNew.bind(this, 'file')} type="inline">
                     { window.innerWidth < 410 && t("New File").length > 10 ? t("New File", null, "NEW_FILE::SHORT") : t("New File") }
                   </NgIf>
-                  <NgIf cond={this.props.accessRight.can_create_directory !== false && this.props.selected.length === 0} onClick={this.onNew.bind(this, 'directory')} type="inline">
+                  <NgIf className="button-new-folder" cond={this.props.accessRight.can_create_directory !== false && this.props.selected.length === 0} onClick={this.onNew.bind(this, 'directory')} type="inline">
                     { window.innerWidth < 410 && t("New Directory").length > 10 ? t("New Directory", null, "NEW_DIRECTORY::SHORT") : t("New Directory") }
                   </NgIf>
-                  <NgIf cond={this.props.selected.length > 0} type="inline" onMouseDown={this.onDownload.bind(this, this.props.selected)}>
+                  <NgIf className="button-download" cond={this.props.selected.length > 0} type="inline" onMouseDown={this.onDownload.bind(this, this.props.selected)}>
                     <ReactCSSTransitionGroup transitionName="submenuwithSelection" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={10000}>
                       <span>{ t("Download") }</span>
                     </ReactCSSTransitionGroup>
                   </NgIf>
-                  <NgIf cond={this.props.selected.length > 0 && this.props.accessRight.can_delete !== false} type="inline" onMouseDown={this.onDelete.bind(this, this.props.selected)}>
+                  <NgIf className="button-remove" cond={this.props.selected.length > 0 && this.props.accessRight.can_delete !== false} type="inline" onMouseDown={this.onDelete.bind(this, this.props.selected)}>
                     <ReactCSSTransitionGroup transitionName="submenuwithSelection" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={10000}>
                       <span>{ t("Remove") }</span>
                     </ReactCSSTransitionGroup>
