@@ -19,19 +19,35 @@ func FileSearch(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var searchResults []File
-	if Config.Get("features.search.enable").Bool() {
-		searchResults = model.SearchStateful(&ctx, path, q)
-	} else {
-		searchResults = model.SearchStateLess(&ctx, path, q)
+	var searchResults []IFile
+	searchEngine := Hooks.Get.SearchEngine()
+	if searchEngine == nil {
+		SendErrorResult(res, ErrMissingDependency)
+		return
+	}
+	searchResults, err = searchEngine.Query(ctx, path, q)
+	if err != nil {
+		SendErrorResult(res, err)
+		return
 	}
 
+	// overwrite the path of a file according to chroot
 	if ctx.Session["path"] != "" {
 		for i := 0; i < len(searchResults); i++ {
-			searchResults[i].FPath = "/" + strings.TrimPrefix(
-				searchResults[i].FPath,
-				ctx.Session["path"],
-			)
+			searchResults[i] = File{
+				FName: searchResults[i].Name(),
+				FSize: searchResults[i].Size(),
+				FType: func() string {
+					if searchResults[i].IsDir() {
+						return "directory"
+					}
+					return "file"
+				}(),
+				FPath: "/" + strings.TrimPrefix(
+					searchResults[i].Path(),
+					ctx.Session["path"],
+				),
+			}
 		}
 	}
 	SendSuccessResults(res, searchResults)

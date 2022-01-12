@@ -170,7 +170,7 @@ func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) 
 		if selectedPluginId == "" {
 			return nil
 		}
-		for key, plugin := range Hooks.All.AuthenticationMiddleware() {
+		for key, plugin := range Hooks.Get.AuthenticationMiddleware() {
 			if key == selectedPluginId {
 				return plugin
 			}

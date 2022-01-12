@@ -64,6 +64,13 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+		if err = auth.Ls(ctx, path); err != nil {
+			Log.Info("ls::auth '%s'", err.Error())
+			SendErrorResult(res, ErrNotAuthorized)
+			return
+		}
+	}
 
 	entries, err := ctx.Backend.Ls(path)
 	if err != nil {
@@ -71,7 +78,6 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
-	go model.SProc.HintLs(&ctx, path)
 
 	files := make([]FileInfo, len(entries))
 	etagger := fnv.New32()
@@ -148,6 +154,14 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+		if err = auth.Cat(ctx, path); err != nil {
+			Log.Info("cat::auth '%s'", err.Error())
+			SendErrorResult(res, ErrNotAuthorized)
+			return
+		}
+	}
+
 	var file io.ReadCloser
 	var contentLength int64 = -1
 	var needToCreateCache bool = false
@@ -177,7 +191,6 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		if req.Header.Get("range") != "" {
 			needToCreateCache = true
 		}
-		go model.SProc.HintLs(&ctx, filepath.Dir(path)+"/")
 	}
 
 	// plugin hooks
@@ -350,6 +363,14 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+		if err = auth.Save(ctx, path); err != nil {
+			Log.Info("save::auth '%s'", err.Error())
+			SendErrorResult(res, ErrNotAuthorized)
+			return
+		}
+	}
+
 	err = ctx.Backend.Save(path, req.Body)
 	req.Body.Close()
 	if err != nil {
@@ -357,8 +378,6 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, NewError(err.Error(), 403))
 		return
 	}
-	go model.SProc.HintLs(&ctx, filepath.Dir(path)+"/")
-	go model.SProc.HintFile(&ctx, path)
 	SendSuccessResult(res, nil)
 }
 
@@ -387,15 +406,20 @@ func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+		if err = auth.Mv(ctx, from, to); err != nil {
+			Log.Info("mv::auth '%s'", err.Error())
+			SendErrorResult(res, ErrNotAuthorized)
+			return
+		}
+	}
+
 	err = ctx.Backend.Mv(from, to)
 	if err != nil {
 		Log.Debug("mv::backend '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
-
-	go model.SProc.HintRm(&ctx, filepath.Dir(from)+"/")
-	go model.SProc.HintLs(&ctx, filepath.Dir(to)+"/")
 	SendSuccessResult(res, nil)
 }
 
@@ -412,13 +436,21 @@ func FileRm(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+
+	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+		if err = auth.Rm(ctx, path); err != nil {
+			Log.Info("rm::auth '%s'", err.Error())
+			SendErrorResult(res, ErrNotAuthorized)
+			return
+		}
+	}
+
 	err = ctx.Backend.Rm(path)
 	if err != nil {
 		Log.Debug("rm::backend '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
-	model.SProc.HintRm(&ctx, path)
 	SendSuccessResult(res, nil)
 }
 
@@ -436,13 +468,20 @@ func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+		if err = auth.Mkdir(ctx, path); err != nil {
+			Log.Info("mkdir::auth '%s'", err.Error())
+			SendErrorResult(res, ErrNotAuthorized)
+			return
+		}
+	}
+
 	err = ctx.Backend.Mkdir(path)
 	if err != nil {
 		Log.Debug("mkdir::backend '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
-	go model.SProc.HintLs(&ctx, filepath.Dir(path)+"/")
 	SendSuccessResult(res, nil)
 }
 
@@ -460,13 +499,20 @@ func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+		if err = auth.Touch(ctx, path); err != nil {
+			Log.Info("touch::auth '%s'", err.Error())
+			SendErrorResult(res, ErrNotAuthorized)
+			return
+		}
+	}
+
 	err = ctx.Backend.Touch(path)
 	if err != nil {
 		Log.Debug("touch::backend '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
-	go model.SProc.HintLs(&ctx, filepath.Dir(path)+"/")
 	SendSuccessResult(res, nil)
 }
 
@@ -544,6 +590,19 @@ func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 			zipRoot = strings.TrimSuffix(paths[i], filepath.Base(paths[i])+"/")
 		} else {
 			zipRoot = strings.TrimSuffix(paths[i], filepath.Base(paths[i]))
+		}
+
+		for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+			if err = auth.Ls(ctx, paths[i]); err != nil {
+				Log.Info("downloader::ls::auth path['%s'] => '%s'", paths[i], err.Error())
+				SendErrorResult(res, ErrNotAuthorized)
+				return
+			}
+			if err = auth.Cat(ctx, paths[i]); err != nil {
+				Log.Info("downloader::cat::auth path['%s'] => '%s'", paths[i], err.Error())
+				SendErrorResult(res, ErrNotAuthorized)
+				return
+			}
 		}
 		addToZipRecursive(ctx, zipWriter, paths[i], zipRoot)
 	}

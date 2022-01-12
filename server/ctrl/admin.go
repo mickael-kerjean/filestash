@@ -86,7 +86,7 @@ func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 }
 
 func AdminAuthenticationMiddleware(ctx App, res http.ResponseWriter, req *http.Request) {
-	drivers := Hooks.All.AuthenticationMiddleware()
+	drivers := Hooks.Get.AuthenticationMiddleware()
 	middlewares := make(map[string]Form, len(drivers))
 	for id, driver := range drivers {
 		middlewares[id] = driver.Setup()
