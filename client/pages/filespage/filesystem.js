@@ -38,10 +38,10 @@ export class FileSystem extends React.PureComponent {
                   </ReactCSSTransitionGroup>
                 </NgIf>
                 <NgIf className="error" cond={this.props.files.length === 0}>
-                  <p className="empty_image">
-                    <Icon name={this.props.isSearch ? "search" : "file"}/>
-                  </p>
-                  <p>{ t("There is nothing here") }</p>
+                    <p className="empty_image">
+                        <Icon name={this.props.isSearch ? "empty_search" : "empty_folder"}/>
+                    </p>
+                    <p className="label">{ t("There is nothing here") }</p>
                 </NgIf>
               </Container>
             </div>

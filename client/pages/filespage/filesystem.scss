@@ -20,24 +20,20 @@
             text-align: center;
             font-weight: 100;
 
-            background: #ffffffaa;
-            border-radius: 50%;
-            max-width: 250px;
             margin: 0 auto;
             opacity: 0.9;
             font-size: 20px;
             color: var(--light);
-            margin-top: 50px;
             height: 100%;
             opacity: 0.8;
-            border: 1px solid rgba(0,0,0,0.1);
             font-family: sans-serif;
 
             .component_icon{
-                height: 100px;
+                height: 200px;
             }
+            .label{ margin-top: -40px; }
 
-            padding: 50px;
+            padding: 50px 0;
             @media screen and (max-width: 420px) {
                 padding: 30px;
             }

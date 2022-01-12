@@ -134,6 +134,10 @@ export const Icon = (props) => {
         img = img_refresh;
     } else if (props.name === "copy") {
         img = img_copy;
+    } else if (props.name === "empty_folder") {
+        img = "/assets/icons/empty_folder.svg";
+    } else if (props.name === "empty_search") {
+        img = "/assets/icons/empty_search.svg";
     } else {
         throw (new Error(`unknown icon: "${props.name}"`));
     }
