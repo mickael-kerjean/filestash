@@ -35,7 +35,7 @@ func (w WebDav) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 	backend := WebDav{
 		params: &WebDavParams{
-			params["url"],
+			strings.ReplaceAll(params["url"], "%{username}", url.PathEscape(params["username"])),
 			params["username"],
 			params["password"],
 			params["path"],

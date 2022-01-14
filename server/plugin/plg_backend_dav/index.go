@@ -41,7 +41,7 @@ func (this Dav) Init(params map[string]string, app *App) (IBackend, error) {
 		return backend, nil
 	}
 	backend := Dav{
-		url:    params["url"],
+		url:    strings.ReplaceAll(params["url"], "%{username}", url.PathEscape(params["username"])),
 		which:  params["type"],
 		params: params,
 	}
