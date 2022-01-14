@@ -42,14 +42,11 @@ func (this StatelessSearch) Query(app App, path string, keyword string) ([]IFile
 		score1 := scoreBoostForFilesInDirectory(f)
 		for i := 0; i < len(f); i++ {
 			name := f[i].Name()
-			// keyword matching
-			isAMatch := true
-			for _, key := range strings.Split(keyword, " ") {
-				if strings.Contains(strings.ToLower(name), strings.ToLower(key)) == false {
-					isAMatch = false
-				}
-			}
-			if isAMatch {
+			if isAMatch := IsSearchQueryMatchingFilename(
+				[]rune(strings.ToLower(name)),
+				[]rune(strings.ToLower(keyword)),
+			); isAMatch {
+				Log.Stdout("match %s %s", name, keyword)
 				files = append(files, File{
 					FName: name,
 					FType: func() string {

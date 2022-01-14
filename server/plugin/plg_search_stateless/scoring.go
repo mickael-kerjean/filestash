@@ -57,3 +57,49 @@ func scoreBoostForFilesInDirectory(f []os.FileInfo) int {
 func scoreBoostOnDepth(p string) int {
 	return -strings.Count(p, "/")
 }
+
+func IsSearchQueryMatchingFilename(strRune []rune, patternRune []rune) bool {
+	patternRune = []rune(strings.TrimLeft(
+		string(patternRune),
+		"*",
+	))
+	if len(patternRune) == 0 {
+		return true
+	}
+
+	dumbMatch := func(s []rune, p []rune) bool {
+		currPattern := 0
+		moveCursor := false
+		for i := 0; i < len(s); i++ {
+			if moveCursor {
+				currPattern += 1
+				if currPattern >= len(p) {
+					break
+				}
+			}
+
+			if p[currPattern] == '*' {
+				return IsSearchQueryMatchingFilename(s[i:], p[currPattern:])
+			}
+
+			if s[i] == p[currPattern] {
+				moveCursor = true
+			} else {
+				return false
+			}
+		}
+		if currPattern < len(p)-1 {
+			return false
+		}
+		return true
+	}
+
+	for i := 0; i < len(strRune); i++ {
+		if strRune[i] == patternRune[0] {
+			if dumbMatch(strRune[i:], patternRune) == true {
+				return true
+			}
+		}
+	}
+	return false
+}
