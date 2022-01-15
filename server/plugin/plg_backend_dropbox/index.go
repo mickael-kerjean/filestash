@@ -70,7 +70,6 @@ func (d Dropbox) OAuthURL() string {
 	url += "client_id=" + d.ClientId
 	url += "&redirect_uri=https://" + d.Hostname + "/login"
 	url += "&response_type=token"
-	url += "&state=dropbox"
 	return url
 }
 

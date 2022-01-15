@@ -37,7 +37,7 @@ function ConnectPageComponent({ error, history }) {
             return;
         } else if ("oauth2" in formData) {
             setIsLoading(true);
-            Session.oauth2(formData["oauth2"]).then((url) => {
+            Session.oauth2(formData["oauth2"], _GET["next"]).then((url) => {
                 window.location.href = url;
             }).catch((err) => error(err));
             return;
@@ -60,7 +60,12 @@ function ConnectPageComponent({ error, history }) {
 
     useEffect(() => {
         if (_GET["state"]) { // oauth2/oidc
-            authenticate({ ..._GET, type: _GET["state"] }).catch((err) => error(err));
+            const [type, next] = _GET["state"].split("::")
+            authenticate({
+                ..._GET,
+                next: next,
+                type: type,
+            }).catch((err) => error(err));
         } else if (_GET["type"]) { // form using get
             authenticate(_GET).catch((err) => error(err));
         }

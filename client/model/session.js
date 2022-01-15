@@ -7,8 +7,11 @@ class SessionManager {
             .then((data) => data.result);
     }
 
-    oauth2(url) {
-        return http_get(url)
+    oauth2(url, next) {
+        const u = new URL(document.location);
+        u.pathname = url;
+        if (next) u.searchParams.set("next", next);
+        return http_get(u.toString())
             .then((data) => data.result);
     }
 
