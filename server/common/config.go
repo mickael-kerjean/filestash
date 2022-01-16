@@ -52,7 +52,6 @@ type FormElement struct {
 }
 
 func init() {
-	//PerformMigration()
 	Config = NewConfiguration()
 	Config.Load()
 	Config.Save()
@@ -416,8 +415,8 @@ func (this *Configuration) Get(key string) *Configuration {
 							return &(*forms)[i].Elmnts[j]
 						}
 					}
-					// 2) `formElement` does not exist, let's create it
-					(*forms)[i].Elmnts = append(currentForm.Elmnts, FormElement{Name: path[1], Type: "text"})
+					// 2) `formElement` does not exist, let's create it.
+					(*forms)[i].Elmnts = append(currentForm.Elmnts, FormElement{Name: path[1], Type: "hidden"})
 					return &(*forms)[i].Elmnts[len(currentForm.Elmnts)]
 				} else {
 					// we are NOT on a leaf, let's continue our tree transversal
@@ -588,64 +587,4 @@ func (this *Configuration) UnlistenForChange(c ChangeListener) {
 type ChangeListener struct {
 	Id       string
 	Listener chan interface{}
-}
-
-func PerformMigration() (err error) {
-	Log.SetVisibility("DEBUG")
-	loadConfig := func() (string, error) {
-		file, err := os.OpenFile(configPath, os.O_RDONLY, os.ModePerm)
-		if err != nil {
-			Log.Stdout("BOOT Can't read config file")
-			return "", ErrFilesystemError
-		}
-		defer file.Close()
-		cFile, err := ioutil.ReadAll(file)
-		if err != nil {
-			Log.Stdout("BOOT Can't parse config file")
-			return "", ErrFilesystemError
-		}
-		return string(cFile), nil
-	}
-	saveConfig := func(version int, content string) (err error) {
-		content, err = sjson.Set(content, "constant.schema", version)
-		if err != nil {
-			Log.Stdout("BOOT Migration failed on schema key")
-			return err
-		}
-		file, err := os.Create(configPath)
-		if err != nil {
-			Log.Stdout("BOOT Can't create config file")
-			return ErrFilesystemError
-		}
-		file.Write(PrettyPrint([]byte(content)))
-		file.Close()
-		return nil
-	}
-
-	jsonStr, err := loadConfig()
-	if err != nil {
-		return err
-	}
-	schemaVersion := int(gjson.Get(jsonStr, "constant.schema").Int())
-	if schemaVersion == 0 {
-		Log.Stdout("BOOT Migrate config v%d -> v%d", schemaVersion, schemaVersion+1)
-		if jsonStr, err = sjson.Delete(jsonStr, "general.remember_me"); err != nil {
-			Log.Stdout("BOOT Migration error: remember_me")
-			return err
-		}
-		if jsonStr, err = sjson.Delete(jsonStr, "general.hide_menubar"); err != nil {
-			Log.Stdout("BOOT Migration error: hide_menubar")
-			return err
-		}
-		if jsonStr, err = sjson.Delete(jsonStr, "features.protection.iframe"); err != nil {
-			Log.Stdout("BOOT Migration error: features.protection.iframe")
-			return err
-		}
-		if err = saveConfig(schemaVersion+1, jsonStr); err != nil {
-			Log.Stdout("BOOT Couldn't save config")
-			return err
-		}
-		return PerformMigration()
-	}
-	return nil
 }
