@@ -70,7 +70,8 @@ func IsSearchQueryMatchingFilename(strRune []rune, patternRune []rune) bool {
 	dumbMatch := func(s []rune, p []rune) bool {
 		currPattern := 0
 		moveCursor := false
-		for i := 0; i < len(s); i++ {
+		i := 0
+		for i = 0; i < len(s); i++ {
 			if moveCursor {
 				currPattern += 1
 				if currPattern >= len(p) {
@@ -88,7 +89,11 @@ func IsSearchQueryMatchingFilename(strRune []rune, patternRune []rune) bool {
 				return false
 			}
 		}
-		if currPattern < len(p)-1 {
+		currPattern += 1
+		if currPattern <= len(p)-1 {
+			if p[currPattern] == '$' && i == len(s) {
+				return true
+			}
 			return false
 		}
 		return true

@@ -46,7 +46,6 @@ func (this StatelessSearch) Query(app App, path string, keyword string) ([]IFile
 				[]rune(strings.ToLower(name)),
 				[]rune(strings.ToLower(keyword)),
 			); isAMatch {
-				Log.Stdout("match %s %s", name, keyword)
 				files = append(files, File{
 					FName: name,
 					FType: func() string {
