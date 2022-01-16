@@ -59,12 +59,10 @@ func scoreBoostOnDepth(p string) int {
 }
 
 func IsSearchQueryMatchingFilename(strRune []rune, patternRune []rune) bool {
-	patternRune = []rune(strings.TrimLeft(
-		string(patternRune),
-		"*",
-	))
 	if len(patternRune) == 0 {
 		return true
+	} else if patternRune[0] == '*' {
+		return IsSearchQueryMatchingFilename(strRune, patternRune[1:])
 	}
 
 	dumbMatch := func(s []rune, p []rune) bool {
@@ -81,9 +79,7 @@ func IsSearchQueryMatchingFilename(strRune []rune, patternRune []rune) bool {
 
 			if p[currPattern] == '*' {
 				return IsSearchQueryMatchingFilename(s[i:], p[currPattern:])
-			}
-
-			if s[i] == p[currPattern] {
+			} else if s[i] == p[currPattern] {
 				moveCursor = true
 			} else {
 				return false
