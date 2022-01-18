@@ -38,7 +38,7 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	}{
 		params["hostname"],
 		params["port"],
-		params["username"],
+		strings.ToLower(params["username"]),
 		params["password"],
 		params["passphrase"],
 	}
