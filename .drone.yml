@@ -75,7 +75,7 @@ steps:
   commands:
   - apk add git gcc libc-dev poppler-utils > /dev/null
   - cp ./test/assets/* /tmp/
-  - go test -mod=vendor -v --tags "fts5" ./test/unit_go/...
+  - go test -mod=vendor -bench=. -v --tags "fts5" ./test/unit_go/...
 
 - name: test_e2e
   image: machines/puppeteer
