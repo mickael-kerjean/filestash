@@ -18,7 +18,6 @@ type All struct{}
 var Hooks = struct {
 	Get      Get
 	Register Register
-	All      All
 }{
 	Get:      Get{},
 	Register: Register{},
