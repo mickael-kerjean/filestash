@@ -26,7 +26,7 @@ type FileInfo struct {
 
 var (
 	FileCache  AppCache
-	ZipTimeout int
+	ZipTimeout func() int
 )
 
 func init() {
@@ -35,17 +35,20 @@ func init() {
 	FileCache.OnEvict(func(key string, value interface{}) {
 		os.RemoveAll(filepath.Join(cachePath, key))
 	})
-	ZipTimeout = Config.Get("features.protection.zip_timeout").Schema(func(f *FormElement) *FormElement {
-		if f == nil {
-			f = &FormElement{}
-		}
-		f.Default = 60
-		f.Name = "zip_timeout"
-		f.Type = "number"
-		f.Description = "Timeout when user wants to download archive as a zip"
-		f.Placeholder = "Default: 60seconds"
-		return f
-	}).Int()
+	ZipTimeout = func() int {
+		return Config.Get("features.protection.zip_timeout").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Default = 60
+			f.Name = "zip_timeout"
+			f.Type = "number"
+			f.Description = "Timeout when user wants to download archive as a zip"
+			f.Placeholder = "Default: 60seconds"
+			return f
+		}).Int()
+	}
+	ZipTimeout()
 }
 
 func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -543,7 +546,8 @@ func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 	var addToZipRecursive func(App, *zip.Writer, string, string) error
 	addToZipRecursive = func(c App, zw *zip.Writer, backendPath string, zipRoot string) (err error) {
-		if time.Now().Sub(start) > time.Duration(ZipTimeout)*time.Second {
+		defer zw.Close()
+		if time.Now().Sub(start) > time.Duration(ZipTimeout())*time.Second {
 			Log.Debug("downloader::timeout zip not completed due to timeout")
 			return ErrTimeout
 		}
@@ -562,7 +566,7 @@ func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 				return err
 			}
 			if _, err = io.Copy(zipFile, file); err != nil {
-				Log.Debug("downloader::copy backendPath['%s'] zipPath['%s'] error['%s']", backendPath, err.Error())
+				Log.Debug("downloader::copy backendPath['%s'] zipPath['%s'] error['%s']", backendPath, zipPath, err.Error())
 				io.Copy(zipFile, strings.NewReader(""))
 				return err
 			}
