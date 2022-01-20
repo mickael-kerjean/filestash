@@ -17,24 +17,6 @@ export function Textarea({ ...props }) {
         }
     }, []);
 
-    const disabledEnter = (e) => {
-        if (e.key === "Enter" && e.shiftKey === false) {
-            e.preventDefault();
-            const $form = getForm($el.current);
-            if ($form) {
-                $form.dispatchEvent(new Event("submit", { cancelable: true }));
-            }
-        }
-
-        function getForm($el) {
-            console.log("GET FORM $el", $el);
-            if (!$el.parentElement) return $el;
-            if ($el.parentElement.nodeName == "FORM") {
-                return $el.parentElement;
-            }
-            return getForm($el.parentElement);
-        }
-    };
     const inputProps = (p) => {
         return Object.keys(p).reduce((acc, key) => {
             if (key === "disabledEnter") return acc;
@@ -45,7 +27,6 @@ export function Textarea({ ...props }) {
 
     return (
         <textarea
-            onKeyPress={disabledEnter}
             {...inputProps(props)}
             className={className}
             ref={$el}>
