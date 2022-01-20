@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	_ "embed"
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
@@ -8,9 +9,13 @@ import (
 	URL "net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 )
+
+//go:embed static/404.html
+var HtmlPage404 []byte
 
 func StaticHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -65,20 +70,40 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 
 func NotFoundHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusNotFound)
-	res.Write([]byte(Page(`<img style="max-width:800px" src="/assets/icons/404.svg" />`)))
+	res.Write(HtmlPage404)
+}
+
+var listOfPlugins map[string][]string = map[string][]string{
+	"oss":        []string{},
+	"enterprise": []string{},
+	"custom":     []string{},
 }
 
 func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	t, _ := template.New("about").Parse(Page(`
 	  <h1> {{index .App 0}} </h1>
 	  <table>
-		<tr> <td> Commit hash </td> <td> {{ index .App 1}} </td> </tr>
+		<tr> <td style="width:150px;"> Commit hash </td> <td> <a href="https://github.com/mickael-kerjean/filestash/tree/{{ index .App 1}}">{{ index .App 1}}</a> </td> </tr>
 		<tr> <td> Binary hash </td> <td> {{ index .App 2}} </td> </tr>
 		<tr> <td> Config hash </td> <td> {{ index .App 3}} </td> </tr>
+		<tr>
+          <td> Plugins </td>
+          <td>
+            {{ $oss := (index .App 4) }}
+            {{ $enterprise := (index .App 5) }}
+            {{ $custom := (index .App 6) }}
+            STANDARD[<span class="small">{{ if eq $oss "" }}N/A{{ else }}{{ $oss }}{{ end }}</span>]<br/>
+            EXTENDED[<span class="small">{{ if eq $enterprise "" }}N/A{{ else }}{{ $enterprise }}{{ end }}</span>]<br/>
+            CUSTOM[<span class="small">{{ if eq $custom "" }}N/A{{ else }}{{ $custom }}{{ end }}</span>]
+          </td>
+        </tr>
 	  </table>
+
 	  <style>
-		table { margin: 0 auto; font-family: monospace; opacity: 0.8; }
-		td { text-align: right; padding-left: 10px; }
+		table { margin: 0 auto; font-family: monospace; opacity: 0.8; max-width: 1000px; width: 95%;}
+		table td { text-align: right; padding-left: 10px; vertical-align: top; }
+        table td span.small { font-size:0.8rem; }
+        table a { color: inherit; text-decoration: none; }
 	  </style>
 	`))
 	t.Execute(res, struct {
@@ -88,7 +113,41 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 		BUILD_REF,
 		hashFileContent(filepath.Join(GetCurrentDir(), "/filestash"), 0),
 		hashFileContent(filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"), 0),
+		strings.Join(listOfPlugins["oss"], " "),
+		strings.Join(listOfPlugins["enterprise"], " "),
+		strings.Join(listOfPlugins["custom"], " "),
 	}})
+}
+
+func InitPluginList(code []byte) {
+	listOfPackages := regexp.MustCompile(`github.com/mickael-kerjean/([^\"]+)`).FindAllString(string(code), -1)
+	for _, packageName := range listOfPackages {
+		if packageName == "github.com/mickael-kerjean/filestash/server/common" {
+			continue
+		}
+
+		if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/server/plugin/") {
+			listOfPlugins["oss"] = append(
+				listOfPlugins["oss"],
+				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/server/plugin/"),
+			)
+		} else if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/plugins/") {
+			listOfPlugins["enterprise"] = append(
+				listOfPlugins["enterprise"],
+				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/plugins/"),
+			)
+		} else if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/customers/") {
+			listOfPlugins["custom"] = append(
+				listOfPlugins["custom"],
+				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/customers/"),
+			)
+		} else {
+			listOfPlugins["custom"] = append(
+				listOfPlugins["custom"],
+				packageName,
+			)
+		}
+	}
 }
 
 func CustomCssHandler(ctx App, res http.ResponseWriter, req *http.Request) {

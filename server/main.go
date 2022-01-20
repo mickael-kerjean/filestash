@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -14,6 +15,9 @@ import (
 	"runtime/debug"
 	"strconv"
 )
+
+//go:embed plugin/index.go
+var EmbedPluginList []byte
 
 func main() {
 	app := App{}
@@ -125,6 +129,10 @@ func Init(a *App) {
 		Log.Warning("No starter plugin available")
 		return
 	}
+
+	go func() {
+		InitPluginList(EmbedPluginList)
+	}()
 	select {}
 }
 

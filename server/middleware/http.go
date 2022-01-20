@@ -39,7 +39,8 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 		cspHeader += "style-src 'self' 'unsafe-inline'; "
 		cspHeader += "font-src 'self' data:; "
 		cspHeader += "manifest-src 'self'; "
-		cspHeader += "script-src 'self' 'sha256-JNAde5CZQqXtYRLUk8CGgyJXo6C7Zs1lXPPClLM1YM4=' 'sha256-9/gQeQaAmVkFStl6tfCbHXn8mr6PgtxlH+hEp685lzY=' 'sha256-ER9LZCe8unYk8AJJ2qopE+rFh7OUv8QG5q3h6jZeoSk='; "
+		cspHeader += "script-src 'self' 'sha256-JNAde5CZQqXtYRLUk8CGgyJXo6C7Zs1lXPPClLM1YM4=' 'sha256-9/gQeQaAmVkFStl6tfCbHXn8mr6PgtxlH+hEp685lzY=' 'sha256-ER9LZCe8unYk8AJJ2qopE+rFh7OUv8QG5q3h6jZeoSk='"
+		cspHeader += " 'sha256-a4rv66tC4bqKBcGxkR+KAqedm+64tAs13VGNGmN3B6g=' 'sha256-H+2cw33TxgqSZEshY66vGwg6/W03IB9JKTmFV36CKz0=';" // animated 404 static page
 		cspHeader += "img-src 'self' blob: data: https://maps.wikimedia.org; "
 		cspHeader += "connect-src 'self'; "
 		cspHeader += "object-src 'self'; "
