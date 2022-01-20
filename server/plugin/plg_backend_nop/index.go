@@ -61,6 +61,8 @@ func (this BlackHole) Ls(path string) ([]os.FileInfo, error) {
 		File{FName: "10M.bin", FType: "file", FSize: 1024 * 1024 * 10},
 		File{FName: "100M.bin", FType: "file", FSize: 1024 * 1024 * 100},
 		File{FName: "1G.bin", FType: "file", FSize: 1024 * 1024 * 1024},
+		File{FName: "10G.bin", FType: "file", FSize: 1024 * 1024 * 1024 * 1024},
+		File{FName: "100G.bin", FType: "file", FSize: 1024 * 1024 * 1024 * 1024 * 1024},
 	)
 	return files, nil
 }
