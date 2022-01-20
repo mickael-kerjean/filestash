@@ -16,3 +16,4 @@ package-lock.json
 *.swo
 .tern-port
 .tern-project.js
+*_test.go
