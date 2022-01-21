@@ -256,7 +256,7 @@ func (this Dav) Touch(path string) error {
 			if len(name) == 2 {
 				content += fmt.Sprintf("N:%s;%s;;;\n", name[0], strings.Join(name[1:], " "))
 			} else {
-				content += fmt.Sprintf("N:%s\n")
+				content += fmt.Sprintf("N:%s\n", name[0])
 			}
 		}
 		content += "END:VCARD"

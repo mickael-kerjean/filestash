@@ -14,6 +14,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/common/ssl"
 	"golang.org/x/crypto/acme/autocert"
 	"net/http"
+	"os"
 	"path/filepath"
 	"time"
 )
