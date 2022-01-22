@@ -60,7 +60,7 @@ function ConnectPageComponent({ error, history }) {
 
     useEffect(() => {
         if (_GET["state"]) { // oauth2/oidc
-            const [type, next] = _GET["state"].split("::")
+            const [type, next] = _GET["state"].split("::");
             authenticate({
                 ..._GET,
                 next: next,

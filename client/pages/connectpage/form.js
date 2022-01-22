@@ -133,22 +133,36 @@ export function Form({
                     const auth = window.CONFIG["auth"].split(/\s*,\s*/);
                     if (auth.indexOf(key) !== -1 || auth.indexOf(form[key].label.value) !== -1) {
                         return hasUserInteracted === false && enabledBackends.length > 1 ? (
-                            <Button onClick={() => onSubmit({ middleware: true, label: form[key].label.value })} theme="emphasis"
-                                style={{padding: "8px"}} key={`sso-${i}`}>
+                            <Button
+                                onClick={() => onSubmit({
+                                    middleware: true,
+                                    label: form[key].label.value,
+                                })}
+                                theme="emphasis"
+                                style={{ padding: "8px" }}
+                                key={`sso-${i}`}>
                                 { t("CONNECT") }
                             </Button>
                         ) : (
-                            <LoaderWithTimeout key={`loading-${i}`} timeout={100}
-                                callback={() => onSubmit({ middleware: true, label: form[key].label.value })} />
-                        )
+                            <LoaderWithTimeout
+                                key={`loading-${i}`}
+                                timeout={100}
+                                callback={() => onSubmit({
+                                    middleware: true,
+                                    label: form[key].label.value,
+                                })} />
+                        );
                     }
 
                     return (
                         <Card className="formBody" key={`form${i}`}>
-                            <form onSubmit={(e) => onSubmitForm(e)} autoComplete="off" autoCapitalize="off"
-                                  spellCheck="false" autoCorrect="off">
-                                <FormBuilder form={form[key]} onChange={onFormChange}
-                                             render={renderForm} />
+                            <form onSubmit={(e) => onSubmitForm(e)}
+                                autoComplete="off" autoCapitalize="off"
+                                spellCheck="false" autoCorrect="off">
+                                <FormBuilder
+                                    form={form[key]}
+                                    onChange={onFormChange}
+                                    render={renderForm} />
                                 <Button theme="emphasis">{ t("CONNECT") }</Button>
                             </form>
                         </Card>
@@ -165,9 +179,9 @@ function LoaderWithTimeout({ callback = nop, timeout = 0 }) {
         const t = setTimeout(() => callback(), timeout);
         return () => {
             clearTimeout(t);
-        }
+        };
     });
     return (
         <Loader />
-    )
+    );
 }
