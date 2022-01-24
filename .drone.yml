@@ -75,7 +75,11 @@ steps:
   commands:
   - apk add git gcc libc-dev poppler-utils > /dev/null
   - cp ./test/assets/* /tmp/
-  - go test -mod=vendor -bench=. -v --tags "fts5" ./test/unit_go/...
+  - go generate ./test/unit_go/...
+  - echo "==== UNIT TEST ====="
+  - go test -mod=vendor -count=1 $(go list ./server/... | grep -v "server/plugin")
+  - echo "==== BENCHMARK ====="
+  - go test -mod=vendor -bench=. -run=^a -count=1 -v $(go list ./server/... | grep -v "server/plugin")
 
 - name: test_e2e
   image: machines/puppeteer
