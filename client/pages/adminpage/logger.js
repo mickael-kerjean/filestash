@@ -50,7 +50,7 @@ export function LogPage({ isSaving = nop }) {
             clearInterval(id);
             Config.clear();
             isSaving(false);
-        }
+        };
     }, []);
 
     return (

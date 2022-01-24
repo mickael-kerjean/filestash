@@ -45,7 +45,7 @@ export function SettingsPage({ isSaving = nop }) {
         return () => {
             Config.clear();
             isSaving(false);
-        }
+        };
     }, []);
 
     const renderForm = ($input, props, struct, onChange) => (

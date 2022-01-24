@@ -16,7 +16,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     function render() {
         ReactDOM.render(
-            <React.StrictMode><Router/></React.StrictMode>,
+            <Router/>,
             document.querySelector("div[role='main']"),
         );
         return Promise.resolve();

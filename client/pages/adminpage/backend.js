@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, { useState, useEffect } from "react";
-import { FormBuilder, Icon, Input, Alert, Textarea, Select, Loader } from "../../components/";
+import { FormBuilder, Icon, Input, Alert, Loader } from "../../components/";
 import { Backend, Config, Middleware } from "../../model/";
 import { FormObjToJSON, notify, format, createFormBackend, objectGet } from "../../helpers/";
 import { t } from "../../locales/";
@@ -395,21 +395,21 @@ function AuthenticationMiddleware({ authentication_available, authentication_ena
         };
         formChange(FormObjToJSON(d))
         setFormSpec(d)
-    }, [ formSpec["attribute_mapping"]["related_backend"]["value"], !formSpec["identity_provider"] ])
+    }, [ formSpec["attribute_mapping"]["related_backend"]["value"], !formSpec["identity_provider"] ]);
 
     useEffect(() => { // autocompletion of the related_backend field
-        const f = { ...formSpec }
+        const f = { ...formSpec };
         f.attribute_mapping.related_backend.datalist = backend_enabled
             .map((r) => r[Object.keys(r)[0]].label.value);
 
-        const enabledBackendLabel = backend_enabled.map((b) => b[Object.keys(b)[0]].label.value)
+        const enabledBackendLabel = backend_enabled.map((b) => b[Object.keys(b)[0]].label.value);
         f.attribute_mapping.related_backend.value = (f.attribute_mapping.related_backend.value || "")
             .split(/, ?/)
             .filter((value) => enabledBackendLabel.indexOf(value) !== -1)
-            .join(", ")
+            .join(", ");
 
         setFormSpec(f);
-    }, [ backend_enabled ])
+    }, [backend_enabled]);
 
     const isActiveAuth = (auth_key) => {
         return auth_key === objectGet(authentication_enabled, ["identity_provider", "type", "value"]);
@@ -417,7 +417,7 @@ function AuthenticationMiddleware({ authentication_available, authentication_ena
 
     if (Object.keys(authentication_available).length === 0) return null;
     return (
-        <div className="component_authenticationmiddleware" style={{minHeight: "400px"}}>
+        <div className="component_authenticationmiddleware" style={{ minHeight: "400px" }}>
             <h2>Authentication Middleware</h2>
 
             <div className="box-container">
@@ -425,14 +425,17 @@ function AuthenticationMiddleware({ authentication_available, authentication_ena
                     Object.keys(authentication_available)
                         .map((auth_current) => (
                             <div key={auth_current}
-                                 onClick={() => authentication_update(isActiveAuth(auth_current) ? null : auth_current)}
-                                 className={"box-item pointer no-select" + (isActiveAuth(auth_current) ? " active": "")}>
+                                onClick={() => authentication_update(isActiveAuth(auth_current) ? null : auth_current)}
+                                className={"box-item pointer no-select" + (isActiveAuth(auth_current) ? " active": "")}>
                                 <div>
                                     { auth_current }
                                     <span className="no-select">
                                         <span className="icon">
-                                            { isActiveAuth(auth_current) === false ? "+" :
-                                              <Icon name="delete" /> }
+                                            {
+                                                isActiveAuth(auth_current) === false ?
+                                                    "+" :
+                                                    <Icon name="delete" />
+                                            }
                                         </span>
                                     </span>
                                 </div>
@@ -452,5 +455,5 @@ function AuthenticationMiddleware({ authentication_available, authentication_ena
                 )
             }
         </div>
-    )
+    );
 }
