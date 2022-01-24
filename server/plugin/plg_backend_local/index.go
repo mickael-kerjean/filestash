@@ -36,6 +36,11 @@ func (this Local) LoginForm() Form {
 				Type:        "password",
 				Placeholder: "Admin Password",
 			},
+			{
+				Name:        "path",
+				Type:        "text",
+				Placeholder: "Path",
+			},
 		},
 	}
 }
