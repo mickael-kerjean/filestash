@@ -53,6 +53,8 @@ github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/beevik/etree v1.1.0
+github.com/beevik/etree
 # github.com/creack/pty v1.1.9
 github.com/creack/pty
 # github.com/cretz/bine v0.1.0
@@ -63,8 +65,14 @@ github.com/cretz/bine/tor
 github.com/cretz/bine/torutil
 github.com/cretz/bine/torutil/ed25519
 github.com/cretz/bine/torutil/ed25519/internal/edwards25519
+# github.com/crewjam/httperr v0.2.0
+github.com/crewjam/httperr
 # github.com/crewjam/saml v0.4.6
 ## explicit
+github.com/crewjam/saml
+github.com/crewjam/saml/logger
+github.com/crewjam/saml/samlsp
+github.com/crewjam/saml/xmlenc
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/emirpasic/gods v1.12.0
@@ -77,6 +85,8 @@ github.com/emirpasic/gods/utils
 # github.com/go-sql-driver/mysql v1.5.0
 ## explicit
 github.com/go-sql-driver/mysql
+# github.com/golang-jwt/jwt/v4 v4.1.0
+github.com/golang-jwt/jwt/v4
 # github.com/golang/protobuf v1.3.1
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
@@ -111,6 +121,8 @@ github.com/hirochachacha/go-smb2/internal/utf16le
 github.com/jbenet/go-context/io
 # github.com/jmespath/go-jmespath v0.4.0
 github.com/jmespath/go-jmespath
+# github.com/jonboulle/clockwork v0.2.2
+github.com/jonboulle/clockwork
 # github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd
 github.com/kevinburke/ssh_config
 # github.com/kr/fs v0.1.0
@@ -118,6 +130,8 @@ github.com/kr/fs
 # github.com/kr/pty v1.1.8
 ## explicit
 github.com/kr/pty
+# github.com/mattermost/xml-roundtrip-validator v0.1.0
+github.com/mattermost/xml-roundtrip-validator
 # github.com/mattn/go-sqlite3 v2.0.2+incompatible
 ## explicit
 github.com/mattn/go-sqlite3
@@ -143,6 +157,10 @@ github.com/pmezard/go-difflib/difflib
 # github.com/prasad83/goftp v0.0.0-20210325080443-f57aaed46a32
 ## explicit
 github.com/prasad83/goftp
+# github.com/russellhaering/goxmldsig v1.1.1
+github.com/russellhaering/goxmldsig
+github.com/russellhaering/goxmldsig/etreeutils
+github.com/russellhaering/goxmldsig/types
 # github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4
 ## explicit
 # github.com/sergi/go-diff v1.0.0
@@ -205,6 +223,7 @@ golang.org/x/crypto/openpgp/elgamal
 golang.org/x/crypto/openpgp/errors
 golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
+golang.org/x/crypto/ripemd160
 golang.org/x/crypto/sha3
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
@@ -313,6 +332,7 @@ gopkg.in/asn1-ber.v1
 gopkg.in/gomail.v2
 # gopkg.in/ldap.v2 v2.5.1
 ## explicit
+gopkg.in/ldap.v2
 # gopkg.in/ldap.v3 v3.1.0
 ## explicit
 gopkg.in/ldap.v3
