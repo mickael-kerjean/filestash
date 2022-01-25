@@ -21,7 +21,6 @@ func init() {
 	ChrootCache = NewAppCache(60 * 24 * 30)
 	ChrootCache.OnEvict(func(key string, value interface{}) {
 		chroot := value.(string)
-		Log.Stdout("===== EVICTION %s %v", key, value.(string))
 		if strings.HasPrefix(chroot, FILESTASH_DIRECTORY) {
 			os.RemoveAll(chroot)
 		}
@@ -71,7 +70,10 @@ func (this TmpStorage) Ls(path string) ([]os.FileInfo, error) {
 
 func (this TmpStorage) Cat(path string) (io.ReadCloser, error) {
 	reader, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
-	if err != nil && os.IsExist(err) {
+	if err == nil {
+		return reader, nil
+	}
+	if os.IsExist(err) {
 		return reader, err
 	}
 	if strings.HasSuffix(path, ".doc") || strings.HasSuffix(path, ".docx") {
@@ -81,7 +83,7 @@ func (this TmpStorage) Cat(path string) (io.ReadCloser, error) {
 		}
 		return NewReadCloserFromBytes(docx), nil
 	}
-	return nil, ErrNotFound
+	return NewReadCloserFromBytes([]byte("")), nil
 
 }
 
