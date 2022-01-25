@@ -246,7 +246,7 @@ func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) 
 				MaxAge:   60 * 10,
 				Path:     COOKIE_PATH,
 				HttpOnly: true,
-				SameSite: http.SameSiteStrictMode,
+				SameSite: http.SameSiteLaxMode,
 			})
 		}
 		if err := plugin.EntryPoint(idpParams, req, res); err != nil {
@@ -264,7 +264,12 @@ func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) 
 	templateBind, err := plugin.Callback(formData, idpParams, res)
 	if err != nil {
 		Log.Error("session::authMiddleware 'callback error - %s'", err.Error())
-		http.Redirect(res, req, req.URL.Path+"?action=redirect", http.StatusSeeOther)
+		http.Redirect(
+			res,
+			req,
+			"/?error="+ErrNotAllowed.Error()+"&trace=redirect request failed - "+err.Error(),
+			http.StatusSeeOther,
+		)
 		return
 	}
 
@@ -297,6 +302,7 @@ func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) 
 		)
 		return
 	}
+
 	if _, err := model.NewBackend(&ctx, session); err != nil {
 		Log.Debug("session::authMiddleware 'backend connection failed %+v - %s'", session, err.Error())
 		http.Redirect(
@@ -334,7 +340,7 @@ func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) 
 		MaxAge:   -1,
 		Path:     COOKIE_PATH,
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	})
 	http.Redirect(res, req, "/", http.StatusTemporaryRedirect)
 }
