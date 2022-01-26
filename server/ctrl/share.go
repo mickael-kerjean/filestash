@@ -53,11 +53,6 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 					str += cookie.Value
 				}
 				return str
-				//a, err := req.Cookie(COOKIE_NAME_AUTH)
-				//if err != nil {
-				//	return ""
-				//}
-				//return a.Value
 			}
 			return ctx.Share.Auth
 		}(),
