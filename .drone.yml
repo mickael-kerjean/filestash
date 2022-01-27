@@ -79,9 +79,9 @@ steps:
   - sed -i '/plg_image_light/d' server/plugin/index.go
   - go generate ./test/unit_go/...
   - echo "==== UNIT TEST ====="
-  - go test -mod=vendor -count=1 $(go list ./server/... | grep -v "server/plugin")
+  - go test -mod=vendor --tags "fts5" -count=1 $(go list ./server/... | grep -v "server/plugin")
   - echo "==== BENCHMARK ====="
-  - go test -mod=vendor -bench=. -run=^a -count=1 -v $(go list ./server/... | grep -v "server/plugin")
+  - go test -mod=vendor --tags "fts5" -bench=. -run=^a -count=1 -v $(go list ./server/... | grep -v "server/plugin")
 
 - name: test_e2e
   image: machines/puppeteer
