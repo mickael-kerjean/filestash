@@ -8,6 +8,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -84,15 +85,31 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
-	http.SetCookie(res, &http.Cookie{
-		Name:     COOKIE_NAME_AUTH,
-		Value:    obfuscate,
-		MaxAge:   60 * Config.Get("general.cookie_timeout").Int(),
-		Path:     COOKIE_PATH,
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	})
-
+	// split session cookie if greater than 3800 bytes
+	value_limit := 3800
+	index := 0
+	end := 0
+	for {
+		if len(obfuscate) >= (index+1)*value_limit {
+			end = (index + 1) * value_limit
+		} else {
+			end = len(obfuscate)
+		}
+		http.SetCookie(res, &http.Cookie{
+			Name:     COOKIE_NAME_AUTH + strconv.Itoa(index),
+			Value:    obfuscate[index*value_limit : end],
+			MaxAge:   60 * Config.Get("general.cookie_timeout").Int(),
+			Path:     COOKIE_PATH,
+			HttpOnly: true,
+			SameSite: http.SameSiteStrictMode,
+		})
+		if end == len(obfuscate) {
+			break
+		} else {
+			Log.Debug("session::auth obfuscate index: %d length: %d total: %d", index, len(obfuscate[index*value_limit:end]), len(obfuscate))
+			index++
+		}
+	}
 	if home != "" {
 		SendSuccessResult(res, home)
 		return
@@ -116,12 +133,20 @@ func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
 			}
 		})(ctx, res, req)
 	}()
-	http.SetCookie(res, &http.Cookie{
-		Name:   COOKIE_NAME_AUTH,
-		Value:  "",
-		MaxAge: -1,
-		Path:   COOKIE_PATH,
-	})
+	index := 0
+	for {
+		_, err := req.Cookie(COOKIE_NAME_AUTH + strconv.Itoa(index))
+		if err != nil {
+			break
+		}
+		http.SetCookie(res, &http.Cookie{
+			Name:   COOKIE_NAME_AUTH + strconv.Itoa(index),
+			Value:  "",
+			MaxAge: -1,
+			Path:   COOKIE_PATH,
+		})
+		index++
+	}
 	http.SetCookie(res, &http.Cookie{
 		Name:   COOKIE_NAME_ADMIN,
 		Value:  "",
