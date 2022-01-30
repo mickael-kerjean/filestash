@@ -1,3 +1,3 @@
-import 'codemirror/mode/clojure/clojure';
-CodeMirror.__mode = 'clojure';
+import "codemirror/mode/clojure/clojure";
+CodeMirror.__mode = "clojure";
 export default CodeMirror;

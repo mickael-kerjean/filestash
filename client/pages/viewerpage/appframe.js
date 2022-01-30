@@ -1,30 +1,24 @@
-import React from 'react';
+import React from "react";
+import { currentShare } from "../../helpers/";
+import "./appframe.scss";
 
-import { MenuBar } from './menubar';
-import { currentShare } from '../../helpers/';
-import './appframe.scss';
-
-export class AppFrame extends React.Component{
-    constructor(props){
-        super(props);
+export function AppFrame({ args, data }) {
+    let error = null;
+    if (!args) {
+        error = "Missing configuration. Contact your administrator";
+    } else if (!args.endpoint) {
+        error = "Missing endpoint configuration. Contact your administrator";
     }
-
-    render(){
-        let error = null;
-        if(!this.props.args) {
-            error = "Missing configuration. Contact your administrator";
-        } else if(!this.props.args.endpoint) {
-            error = "Missing endpoint configuration. Contact your administrator";
-        }
-        if(error !== null) return (
-            <div className="component_appframe">
-              <div className="error">{error}</div>
-            </div>
-        );
+    if (error !== null) {
         return (
             <div className="component_appframe">
-              <iframe src={this.props.args.endpoint + "?path=" + this.props.data + "&share=" + currentShare()} />
+                <div className="error">{error}</div>
             </div>
         );
     }
+    return (
+        <div className="component_appframe">
+            <iframe src={args.endpoint + "?path=" + data + "&share=" + currentShare()} />
+        </div>
+    );
 }

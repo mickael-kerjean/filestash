@@ -1,1 +1,1 @@
-import 'codemirror/keymap/sublime.js';
+import "codemirror/keymap/sublime.js";

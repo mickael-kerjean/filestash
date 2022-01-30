@@ -16,7 +16,9 @@ class SessionManager {
     }
 
     middleware(formData) {
-        return Promise.resolve("/api/session/auth/?action=redirect&label=" + (formData["label"] || ""));
+        return Promise.resolve(
+            "/api/session/auth/?action=redirect&label=" + (formData["label"] || ""),
+        );
     }
 
     authenticate(params) {

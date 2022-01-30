@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 
 import { Session } from "../model/";
 import { Container, Loader, Icon } from "../components/";
@@ -97,7 +96,9 @@ export function ErrorPage(WrappedComponent) {
                             }
                         </a>
                         <Container>
-                            <div className="error-page" onClick={() => this.setState({showTrace: true})}>
+                            <div
+                                className="error-page"
+                                onClick={() => this.setState({ showTrace: true })}>
                                 <h1>{ t("Oops!") }</h1>
                                 <h2>{ message }</h2>
                                 { this.state.showTrace && this.state.trace &&

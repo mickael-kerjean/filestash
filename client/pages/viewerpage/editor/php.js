@@ -1,3 +1,3 @@
-import 'codemirror/mode/php/php';
-CodeMirror.__mode = 'php';
+import "codemirror/mode/php/php";
+CodeMirror.__mode = "php";
 export default CodeMirror;

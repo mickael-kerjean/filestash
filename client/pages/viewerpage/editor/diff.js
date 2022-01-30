@@ -1,3 +1,3 @@
-import 'codemirror/mode/diff/diff';
-CodeMirror.__mode = 'diff';
+import "codemirror/mode/diff/diff";
+CodeMirror.__mode = "diff";
 export default CodeMirror;

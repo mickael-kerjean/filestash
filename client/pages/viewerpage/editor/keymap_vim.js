@@ -1,1 +1,1 @@
-import 'codemirror/keymap/vim.js';
+import "codemirror/keymap/vim.js";
