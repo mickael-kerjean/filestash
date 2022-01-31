@@ -4,8 +4,8 @@ package plg_backend_ldap
  * Introduction
  * ============
  * To get a sample of what this backend can do:
- * - example.com: http://127.0.0.1:8334/login#type=ldap&hostname=ldap://ldap.forumsys.com&bind_cn=uid%3Dtesla,dc%3Dexample,dc%3Dcom&bind_password=password&base_dn=dc%3Dexample,dc%3Dcom
- * - freeipa:     http://127.0.0.1:8334/login#type=ldap&hostname=ldap://ipa.demo1.freeipa.org&bind_cn=uid%3Dadmin,cn%3Dusers,cn%3Daccounts,dc%3Ddemo1,dc%3Dfreeipa,dc%3Dorg&bind_password=Secret123&base_dn=dc%3Ddemo1,dc%3Dfreeipa,dc%3Dorg
+ * - example.com: http://127.0.0.1:8334/login#type=ldap&hostname=ldap://ldap.forumsys.com&bind_dn=uid%3Dtesla,dc%3Dexample,dc%3Dcom&bind_password=password&base_dn=dc%3Dexample,dc%3Dcom
+ * - freeipa:     http://127.0.0.1:8334/login#type=ldap&hostname=ldap://ipa.demo1.freeipa.org&bind_dn=uid%3Dadmin,cn%3Dusers,cn%3Daccounts,dc%3Ddemo1,dc%3Dfreeipa,dc%3Dorg&bind_password=Secret123&base_dn=dc%3Ddemo1,dc%3Dfreeipa,dc%3Dorg
  */
 
 import (
@@ -53,7 +53,7 @@ func (this LDAP) Init(params map[string]string, app *App) (IBackend, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = l.Bind(params["bind_cn"], params["bind_password"]); err != nil {
+	if err = l.Bind(params["bind_dn"], params["bind_password"]); err != nil {
 		return nil, err
 	}
 
@@ -76,14 +76,14 @@ func (this LDAP) LoginForm() Form {
 				Placeholder: "Hostname",
 			},
 			FormElement{
-				Name:        "bind_cn",
+				Name:        "bind_dn",
 				Type:        "text",
-				Placeholder: "bind CN",
+				Placeholder: "bind DN",
 			},
 			FormElement{
 				Name:        "bind_password",
 				Type:        "password",
-				Placeholder: "Bind CN password",
+				Placeholder: "Bind DN password",
 			},
 			FormElement{
 				Name:        "base_dn",
