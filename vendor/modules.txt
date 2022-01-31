@@ -1,5 +1,8 @@
 # cloud.google.com/go v0.38.0
 cloud.google.com/go/compute/metadata
+# github.com/NYTimes/gziphandler v1.1.1
+## explicit
+github.com/NYTimes/gziphandler
 # github.com/aws/aws-sdk-go v1.40.41
 ## explicit
 github.com/aws/aws-sdk-go/aws

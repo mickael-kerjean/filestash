@@ -3,6 +3,7 @@ module github.com/mickael-kerjean/filestash
 go 1.16
 
 require (
+	github.com/NYTimes/gziphandler v1.1.1
 	github.com/aws/aws-sdk-go v1.40.41
 	github.com/cretz/bine v0.1.0
 	github.com/crewjam/saml v0.4.6
