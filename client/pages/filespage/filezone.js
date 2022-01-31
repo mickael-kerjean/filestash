@@ -44,7 +44,7 @@ function MobileFileUploadComponent({ emit, path, accessRight }) {
         <ReactCSSTransitionGroup
             transitionName="mobilefileupload" transitionLeave={false} transitionEnter={false}
             transitionAppear={true} transitionAppearTimeout={550}>
-            <div className="component_mobilefileupload">
+            <div className="component_mobilefileupload no-select">
                 <form>
                     <input onChange={onUpload} type="file" name="file" id="mobilefileupload" multiple/>
                     <label htmlFor="mobilefileupload">

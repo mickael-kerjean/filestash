@@ -308,9 +308,6 @@ export class FilesPageComponent extends React.Component {
                             <MobileFileUpload path={this.state.path} accessRight={this.state.metadata || {}} />
                         </div>
                     </div>
-                    <div className="upload-footer">
-                        <div className="bar"></div>
-                    </div>
                 </SelectableGroup>
             </div>
         );
