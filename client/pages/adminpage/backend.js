@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import React, { useState, useEffect } from "react";
 import { FormBuilder, Icon, Input, Alert, Loader } from "../../components/";
 import { Backend, Config, Middleware } from "../../model/";
@@ -365,6 +364,7 @@ function AuthenticationMiddleware({ authentication_available, authentication_ena
             .map((a) => a.trim());
         const { identity_provider, attribute_mapping } = formSpec;
         const selected = backend_enabled.map((b) => {
+            const type = Object.keys(b)[0];
             return {
                 label: b[type].label.value,
                 type: Object.keys(b)[0],

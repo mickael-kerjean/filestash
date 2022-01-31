@@ -1,27 +1,25 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import { Card, NgIf, Icon, EventEmitter, EventReceiver } from '../../components/';
-import { pathBuilder } from '../../helpers/';
+import { Card, NgIf, Icon, EventEmitter, EventReceiver } from "../../components/";
+import { pathBuilder } from "../../helpers/";
 import "./thing.scss";
 
-@EventEmitter
-@EventReceiver
-export class NewThing extends React.Component {
-    constructor(props){
+class NewThingComponent extends React.Component {
+    constructor(props) {
         super(props);
         this.state = {
             name: null,
             type: null,
-            icon: null
+            icon: null,
         };
 
         this._onEscapeKeyPress = (e) => {
-            if(e.keyCode === 27) this.onDelete();
+            if (e.keyCode === 27) this.onDelete();
         };
     }
 
-    componentDidMount(){
+    componentDidMount() {
         window.addEventListener("keydown", this._onEscapeKeyPress);
         this.props.subscribe("new::file", () => {
             this.onNew("file");
@@ -30,58 +28,78 @@ export class NewThing extends React.Component {
             this.onNew("directory");
         });
     }
-    componentWillUnmount(){
+    componentWillUnmount() {
         window.removeEventListener("keydown", this._onEscapeKeyPress);
         this.props.unsubscribe("new::file");
         this.props.unsubscribe("new::directory");
     }
 
-    onNew(type){
-        if(this.state.type === type){
+    onNew(type) {
+        if (this.state.type === type) {
             this.onDelete();
-        }else{
-            this.setState({type: type, name: "", icon: type});
+        } else {
+            this.setState({
+                type: type,
+                name: "",
+                icon: type,
+            });
         }
     }
 
-    onDelete(){
-        this.setState({type: null, name: null, icon: null});
+    onDelete() {
+        this.setState({
+            type: null,
+            name: null,
+            icon: null,
+        });
     }
 
-    onSave(e){
+    onSave(e) {
         e.preventDefault();
-        if(this.state.name !== null){
-            this.props.emit("file.create", pathBuilder(this.props.path, this.state.name, this.state.type), this.state.type);
+        if (this.state.name !== null) {
+            this.props.emit(
+                "file.create",
+                pathBuilder(this.props.path, this.state.name, this.state.type),
+                this.state.type,
+            );
             this.onDelete();
         }
     }
 
-    render(){
+    render() {
         return (
             <div>
-              <NgIf cond={this.state.type !== null} className="component_thing">
-                <Card className="mouse-is-hover highlight">
-                  <Icon className="component_updater--icon" name={this.state.icon} />
-                  <span className="file-details">
-                    <form onSubmit={this.onSave.bind(this)}>
-                      <input onChange={(e) => this.setState({name: e.target.value})} value={this.state.name} type="text" autoFocus/>
-                    </form>
-                  </span>
-                  <span className="component_action">
-                    <div className="action">
-                      <div>
-                        <Icon className="component_updater--icon" name="delete" onClick={this.onDelete.bind(this)} />
-                      </div>
-                    </div>
-                  </span>
-                </Card>
-              </NgIf>
+                <NgIf cond={this.state.type !== null} className="component_thing">
+                    <Card className="mouse-is-hover highlight">
+                        <Icon className="component_updater--icon" name={this.state.icon} />
+                        <span className="file-details">
+                            <form onSubmit={this.onSave.bind(this)}>
+                                <input
+                                    onChange={(e) => this.setState({ name: e.target.value })}
+                                    value={this.state.name}
+                                    type="text" autoFocus />
+                            </form>
+                        </span>
+                        <span className="component_action">
+                            <div className="action">
+                                <div>
+                                    <Icon
+                                        className="component_updater--icon"
+                                        name="delete"
+                                        onClick={this.onDelete.bind(this)} />
+                                </div>
+                            </div>
+                        </span>
+                    </Card>
+                </NgIf>
             </div>
         );
     };
 }
 
-NewThing.propTypes = {
+NewThingComponent.propTypes = {
     accessRight: PropTypes.object.isRequired,
-    sort: PropTypes.string.isRequired
+    sort: PropTypes.string.isRequired,
 };
+
+export const NewThing = EventEmitter(EventReceiver(NewThingComponent));

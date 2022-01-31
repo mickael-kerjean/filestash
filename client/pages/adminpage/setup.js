@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import React, { createRef } from "react";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 

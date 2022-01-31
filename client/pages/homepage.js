@@ -10,7 +10,7 @@ export function HomePageComponent({ error }) {
 
     useEffect(() => {
         const p = new URLSearchParams(location.search);
-        if(p.get("error")) {
+        if (p.get("error")) {
             error(new Error(t(p.get("error"))));
             return;
         }

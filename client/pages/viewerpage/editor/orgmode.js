@@ -1,4 +1,3 @@
-/* eslint-disable max-len, no-invalid-this */
 import "codemirror/addon/mode/simple";
 import {
     org_cycle, org_shifttab, org_metaleft, org_metaright, org_meta_return, org_metaup,

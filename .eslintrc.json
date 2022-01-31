@@ -29,13 +29,15 @@
         "react/prop-types": [0],
         "new-cap": [0],
         "prefer-spread": [0],
+        "max-len": [0],
+        "no-invalid-this": [0],
+        "react/display-name": [0],
+        "prefer-rest-params": [0],
+        "react/no-direct-mutation-state": [0],
 
         "no-throw-literal": [1],
         "react/no-find-dom-node": [1],
-        "no-invalid-this": [1],
         "react/no-string-refs": [1],
-        "react/display-name": [1],
-        "prefer-rest-params": [1],
         "react/no-deprecated": [1]
     }
 }

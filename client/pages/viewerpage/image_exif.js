@@ -1,4 +1,3 @@
-/* eslint-disable max-len, no-invalid-this */
 import React from "react";
 import EXIF from "exif-js";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
@@ -209,7 +208,7 @@ class LargeExifClass extends Exif {
     componentDidMount() {
         this.refresh_handler(this.props);
     }
-    componentWillReceiveProps(props) {
+    UNSAFE_componentWillReceiveProps(props) {
         this.refresh_handler(props);
     }
 

@@ -21,6 +21,8 @@ export class Dropdown extends React.Component {
     }
 
     componentDidMount() {
+        // TODO: soon to be deprecated, we need to refactor that component
+        /* eslint-disable-next-line react/no-find-dom-node */
         this.$dropdown = ReactDOM.findDOMNode(this).querySelector(".dropdown_button");
         // This is not really the "react" way of doing things but we needed to use both a
         // click on the button and on the body (to exit the dropdown). we had issues

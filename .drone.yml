@@ -53,12 +53,6 @@ steps:
   - git clone https://mickael-kerjean:$PASSWORD@github.com/mickael-kerjean/filestash-test test
   - chmod -R 777 ./test/
 
-# - name: lint_frontend
-#   image: node:8-alpine
-#   depends_on: [ test_prepare, build_frontend ]
-#   commands:
-#   - npx eslint ./client/
-
 - name: test_frontend
   image: node:8-alpine
   depends_on: [ test_prepare, build_frontend ]

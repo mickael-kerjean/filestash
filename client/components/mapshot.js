@@ -1,4 +1,4 @@
-import React from "react";
+import React, { createRef } from "react";
 import { Icon, Loader } from "./";
 import { t } from "../locales/";
 import "./mapshot.scss";
@@ -12,11 +12,12 @@ export class MapShot extends React.Component {
             error: false,
         };
         this.onRefresh = this.onRefresh.bind(this);
+        this.$wrapper = createRef();
     }
 
     onRefresh() {
         requestAnimationFrame(() => {
-            if (this.refs.$wrapper) {
+            if (this.$wrapper.current) {
                 this.setState({
                     tile_size: this.calculateSize(),
                 });
@@ -25,8 +26,8 @@ export class MapShot extends React.Component {
     }
 
     calculateSize() {
-        if (!this.refs.$wrapper) return 0;
-        return parseInt(this.refs.$wrapper.clientWidth / 3 * 100) / 100;
+        if (!this.$wrapper.current) return 0;
+        return parseInt(this.$wrapper.current.clientWidth / 3 * 100) / 100;
     }
 
 
@@ -94,7 +95,7 @@ export class MapShot extends React.Component {
         const link = "https://www.google.com/maps/search/?api=1&query=" +
             this.props.lat + "," + this.props.lng;
         return (
-            <div ref="$wrapper"
+            <div ref={this.$wrapper}
                 className={"component_mapshot" + (this.state.tile_loaded === 9 ? " loaded" : "") +
                           (this.state.error === true ? " error": "")}
                 style={{ height: (this.state.tile_size*3)+"px" }}
@@ -117,7 +118,6 @@ export class MapShot extends React.Component {
                                 <img onLoad={this.onLoad.bind(this)}
                                     onError={this.onError.bind(this)}
                                     src={mapper.tile(tile_server, -1, -1)}
-                                    ref="$tile"
                                     style={{ height: this.state.tile_size+"px" }}
                                     className="btl" />
                                 <img onLoad={this.onLoad.bind(this)}

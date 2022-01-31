@@ -311,11 +311,5 @@ DataFromMemory.prototype.destroy = function() {
     return Promise.resolve();
 };
 
-export let cache = new DataFromMemory();
-if ("indexedDB" in window && window.indexedDB !== null) {
-    const request = indexedDB.open("_indexedDB", 1);
-    request.onsuccess = (e) => {
-        cache = new DataFromIndexedDB();
-        indexedDB.deleteDatabase("_indexedDB");
-    };
-}
+export const cache = "indexedDB" in window && window.indexedDB !== null ?
+    new DataFromIndexedDB() : new DataFromMemory();
