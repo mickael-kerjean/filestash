@@ -38,7 +38,7 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	}{
 		params["hostname"],
 		params["port"],
-		strings.ToLower(params["username"]),
+		params["username"],
 		params["password"],
 		params["passphrase"],
 	}
@@ -126,7 +126,11 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 
 	client, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
-		return &s, ErrAuthenticationFailed
+		config.User = strings.ToLower(p.username)
+		client, err = ssh.Dial("tcp", addr, config)
+		if err != nil {
+			return &s, ErrAuthenticationFailed
+		}
 	}
 	s.SSHClient = client
 
