@@ -8,7 +8,6 @@ import (
 	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -96,7 +95,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 			end = len(obfuscate)
 		}
 		http.SetCookie(res, &http.Cookie{
-			Name:     COOKIE_NAME_AUTH + strconv.Itoa(index),
+			Name:     CookieName(index),
 			Value:    obfuscate[index*value_limit : end],
 			MaxAge:   60 * Config.Get("general.cookie_timeout").Int(),
 			Path:     COOKIE_PATH,
@@ -135,12 +134,12 @@ func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
 	}()
 	index := 0
 	for {
-		_, err := req.Cookie(COOKIE_NAME_AUTH + strconv.Itoa(index))
+		_, err := req.Cookie(CookieName(index))
 		if err != nil {
 			break
 		}
 		http.SetCookie(res, &http.Cookie{
-			Name:   COOKIE_NAME_AUTH + strconv.Itoa(index),
+			Name:   CookieName(index),
 			Value:  "",
 			MaxAge: -1,
 			Path:   COOKIE_PATH,

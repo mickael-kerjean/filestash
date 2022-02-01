@@ -10,7 +10,6 @@ import (
 	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -260,7 +259,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		str := ""
 		index := 0
 		for {
-			cookie, err := req.Cookie(COOKIE_NAME_AUTH + strconv.Itoa(index))
+			cookie, err := req.Cookie(CookieName(index))
 			if err != nil {
 				break
 			}
