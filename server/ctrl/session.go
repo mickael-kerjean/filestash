@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"text/template"
 	"time"
 )
 
@@ -312,7 +314,20 @@ func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) 
 		}
 		mappingToUse := map[string]string{}
 		for k, v := range globalMapping[refCookie.Value] {
-			mappingToUse[k] = NewStringFromInterface(v)
+			str := NewStringFromInterface(v)
+			if str == "" {
+				continue
+			}
+			tmpl, err := template.New("ctrl::session::auth_middleware").Parse(str)
+			mappingToUse[k] = str
+			if err != nil {
+				continue
+			}
+			var b bytes.Buffer
+			if err = tmpl.Execute(&b, tb); err != nil {
+				continue
+			}
+			mappingToUse[k] = b.String()
 		}
 		mappingToUse["timestamp"] = time.Now().String()
 		return mappingToUse, nil

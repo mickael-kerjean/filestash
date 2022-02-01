@@ -68,5 +68,7 @@ func (this Admin) Callback(formData map[string]string, idpParams map[string]stri
 		})
 		return nil, ErrAuthenticationFailed
 	}
-	return map[string]string{}, nil
+	return map[string]string{
+		"username": "admin",
+	}, nil
 }
