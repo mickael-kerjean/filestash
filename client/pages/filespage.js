@@ -12,7 +12,7 @@ import {
 } from "./filespage.helper";
 import { NgIf, NgShow, Loader, EventReceiver, LoggedInOnly, ErrorPage } from "../components/";
 import { notify, settings_get, settings_put } from "../helpers/";
-import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu } from "./filespage/";
+import { BreadCrumb, FileSystem, FrequentlyAccess, Submenu, Sidebar } from "./filespage/";
 import { MobileFileUpload } from "./filespage/filezone";
 import InfiniteScroll from "react-infinite-scroller";
 import { t } from "../locales/";
@@ -275,6 +275,7 @@ export class FilesPageComponent extends React.Component {
                                 hasMore={this.state.files.length > 70}
                                 initialLoad={false} useWindow={false}
                                 loadMore={this.loadMore.bind(this)} threshold={100}>
+                                {/* <Sidebar path={this.state.path}/> */}
                                 <NgShow
                                     className="container"
                                     cond={!!this.state.is_search || !this.state.loading}>

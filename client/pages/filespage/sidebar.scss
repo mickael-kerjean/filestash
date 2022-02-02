@@ -1,0 +1,59 @@
+.component_sidebar {
+    position: absolute;
+    margin-top: 47px;
+    font-size: 0.9rem;
+    padding: 10px 20px 10px 0;
+    z-index: 3;
+    width: 180px;
+    min-height: 250px;
+
+    transform: translateX(-170px);
+    transition: transform 0.2s;
+    &.active {
+        transform: translateX(0);
+        transition: transform 0.5s;
+
+        .icon{
+            transform: rotate(180deg);
+        }
+    }
+
+    .icon {
+        transition: transform 0.3s;
+        position: absolute;
+        right: 0px;
+        top: 0;
+        cursor: pointer;
+
+        box-shadow: rgba(158, 163, 172, 0.3) 5px 5px 20px;
+        border-radius: 50%;
+        img {
+            width: 30px;
+            height: 30px;
+        }
+    }
+
+    ul {
+        margin: 0;
+        padding: 0 0 0 20px;
+        list-style-type: none;
+
+        li {
+            margin: 5px 0;
+            &.active {
+                margin: 5px 0;
+                background: var(--emphasis-primary);
+                padding: 1px 4px;
+                border-radius: 2px;
+                border: 1px solid var(--primary);
+            }
+
+            img {
+                padding-right: 5px;
+                height: 16px;
+                width: 16px;
+                float: left;
+            }
+        }
+    }
+}
