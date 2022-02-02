@@ -136,7 +136,7 @@ class SubmenuComponent extends React.Component {
                             cond={this.props.accessRight.can_create_directory !== false && this.props.selected.length === 0}
                             onClick={this.onNew.bind(this, "directory")}
                             type="inline">
-                            { window.innerWidth < 410 && t("New Directory").length > 10 ? t("New Directory", null, "NEW_DIRECTORY::SHORT") : t("New Directory") }
+                            { window.innerWidth < 410 && t("New Folder").length > 10 ? t("New Folder", null, "NEW_FOLDER::SHORT") : t("New Folder") }
                         </NgIf>
                         <NgIf
                             className="button-download"
