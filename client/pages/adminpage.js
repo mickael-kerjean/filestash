@@ -9,7 +9,6 @@ import { notify } from "../helpers/";
 import {
     HomePage, BackendPage, SettingsPage, LogPage, SetupPage, LoginPage,
 } from "./adminpage/";
-import { t } from "../locales/";
 
 function AdminOnly(WrappedComponent) {
     let initIsAdmin = null;
@@ -87,21 +86,21 @@ function SideMenu(props) {
                     </NavLink>
                 )
             }
-            <h2>{ t("Admin console") }</h2>
+            <h2>Admin console</h2>
             <ul>
                 <li>
                     <NavLink activeClassName="active" to={props.url + "/backend"}>
-                        { t("Backend") }
+                        Backend
                     </NavLink>
                 </li>
                 <li>
                     <NavLink activeClassName="active" to={props.url + "/settings"}>
-                        { t("Settings") }
+                        Settings
                     </NavLink>
                 </li>
                 <li>
                     <NavLink activeClassName="active" to={props.url + "/logs"}>
-                        { t("Logs") }
+                        Logs
                     </NavLink>
                 </li>
             </ul>

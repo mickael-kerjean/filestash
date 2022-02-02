@@ -88,7 +88,7 @@ export function LogPage({ isSaving = nop }) {
             </pre>
             <div>
                 <a href={Log.url()} download={filename()}>
-                    <Button className="primary">{ t("Download") }</Button>
+                    <Button className="primary">Download</Button>
                 </a>
             </div>
         </div>
