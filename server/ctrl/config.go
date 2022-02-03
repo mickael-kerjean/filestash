@@ -53,18 +53,10 @@ func PrivateConfigHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 
 func PrivateConfigUpdateHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	b, _ := ioutil.ReadAll(req.Body)
-	b = PrettyPrint(b)
-	file, err := os.Create(configpath)
-	if err != nil {
+	if err := SaveConfig(b); err != nil {
 		SendErrorResult(res, err)
 		return
 	}
-	defer file.Close()
-	if _, err := file.Write(b); err != nil {
-		SendErrorResult(res, err)
-		return
-	}
-	file.Close()
 	Config.Load()
 	SendSuccessResult(res, nil)
 }
