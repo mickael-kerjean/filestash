@@ -109,7 +109,7 @@
 
     // GRID VIEW
     > .component_thing.view-grid{
-        width: 25%; .box{ height: 160px;}
+        width: auto; .box{ height: 160px;}
         @media (max-width: 699px){width: 33.33%; .box{height: 200px} }
         @media (max-width: 670px){.box{height: 170px}}
         @media (max-width: 550px){width: 50%; .box{height: 200px} }
