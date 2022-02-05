@@ -527,7 +527,7 @@ class Image extends React.Component {
                 <Icon name={this.props.icon} />
                 <NgIf
                     className="info_extension"
-                    cond={!!ext && this.props.view === "grid" && this.props.icon === "file" && this.props.hide_extension !== true}>
+                    cond={!!ext && this.props.icon === "file" && this.props.hide_extension !== true}>
                     <span>{ext}</span>
                 </NgIf>
             </span>
