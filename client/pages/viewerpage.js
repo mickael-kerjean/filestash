@@ -95,6 +95,9 @@ export class ViewerPageComponent extends React.Component {
                     if (err && err.code === "BINARY_FILE") {
                         this.setState({ opener: "download", loading: false });
                     } else {
+                        if (err.code === "Unauthorized") {
+                            location = "/login?next="+location.pathname;
+                        }
                         this.props.error(err);
                     }
                 });
