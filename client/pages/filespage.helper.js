@@ -140,6 +140,17 @@ export const onMultiDelete = function(arrOfPath) {
         .catch((err) => notify.send(err, "error"));
 };
 
+export const onDownload = function(path, filename) {
+    return Files.url(path).then(
+        url => {const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = filename;
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);}
+    ).catch((err) => notify.send(err, "error"));
+};
+
 export const onMultiDownload = function(arr) {
     return Files.zip(arr)
         .catch((err) => notify.send(err, "error"));

@@ -10,6 +10,7 @@ import img_play from "../assets/img/play.svg";
 import img_pause from "../assets/img/pause.svg";
 import img_error from "../assets/img/error.svg";
 import img_loading_white from "../assets/img/loader_white.svg";
+import img_download from "../assets/img/download.svg";
 import img_download_white from "../assets/img/download_white.svg";
 import img_upload_white from "../assets/img/upload_white.svg";
 import img_todo_white from "../assets/img/todo_white.svg";
@@ -64,6 +65,8 @@ export const Icon = (props) => {
         img = img_bucket;
     } else if (props.name === "download_white") {
         img = img_download_white;
+    } else if (props.name === "download") {
+        img = img_download;
     } else if (props.name === "upload_white") {
         img = img_upload_white;
     } else if (props.name === "play") {

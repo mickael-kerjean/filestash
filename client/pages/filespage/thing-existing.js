@@ -173,6 +173,19 @@ class ExistingThingComponent extends React.Component {
         }
     }
 
+    onDownloadRequest(filename){
+        if (this.props.file.type === "directory") {
+            this.props.emit("file.download.multiple", [pathBuilder(this.props.path, this.props.file.name, this.props.file.type)]);
+        }
+        else {
+            this.props.emit(
+                "file.download",
+                pathBuilder(this.props.path, this.props.file.name, this.props.file.type),
+                this.props.file.name
+            );
+        }
+    }
+
     onRename(newFilename) {
         if (typeof newFilename === "string") {
             this.props.emit(
@@ -303,6 +316,7 @@ class ExistingThingComponent extends React.Component {
                             show={this.state.icon !== "loading"}
                             timestamp={this.props.file.time} />
                         <ActionButton
+                            onClickDownload={this.onDownloadRequest.bind(this)}
                             onClickRename={this.onRenameRequest.bind(this)}
                             onClickDelete={this.onDeleteRequest.bind(this)}
                             onClickShare={this.onShareRequest.bind(this)}
@@ -415,6 +429,11 @@ class Filename extends React.Component {
 }
 
 const ActionButton = (props) => {
+    const onDownload = (e) => {
+        e.preventDefault();
+        props.onClickDownload();
+    };
+
     const onRename = (e) => {
         e.preventDefault();
         props.onClickRename();
@@ -432,6 +451,10 @@ const ActionButton = (props) => {
 
     return (
         <div className="component_action">
+            <Icon
+                name="download"
+                onClick={onDownload}
+                className="component_updater--icon" />
             <NgIf
                 type="inline"
                 cond={props.can_rename !== false && props.is_renaming === false}>
