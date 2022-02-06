@@ -27,13 +27,19 @@
         line-height: 22px;
         white-space: nowrap;
         > span{
-            display: inline-block;
-            width: calc(100% - 130px);
-            white-space: nowrap;
+            display: inline-flex;
+            flex-flow:row nowrap;
+            width: calc(100% - 140px);
+            white-space: pre;
             overflow: hidden;
-            text-overflow: ellipsis;
             vertical-align: bottom;
             color: inherit;
+        }
+
+        .filename {
+            white-space:pre;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
     form{

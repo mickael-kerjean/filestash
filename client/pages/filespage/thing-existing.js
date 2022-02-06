@@ -387,7 +387,7 @@ class Filename extends React.Component {
                 <span className="file-details">
                     <NgIf cond={this.props.is_renaming === false} type="inline">
                         {
-                            fileWithoutExtension
+                            <span className="filename">{fileWithoutExtension}</span>
                         }{
                             this.props.hide_extension ? null :
                                 <span className="extension">{fileExtension}</span>
