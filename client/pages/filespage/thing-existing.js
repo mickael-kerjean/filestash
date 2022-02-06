@@ -320,6 +320,7 @@ class ExistingThingComponent extends React.Component {
                             onClickRename={this.onRenameRequest.bind(this)}
                             onClickDelete={this.onDeleteRequest.bind(this)}
                             onClickShare={this.onShareRequest.bind(this)}
+                            can_download={window.CONFIG.enable_inline_download === true}
                             is_renaming={this.state.is_renaming}
                             can_rename={this.props.metadata.can_rename !== false}
                             can_delete={this.props.metadata.can_delete !== false}
@@ -451,10 +452,14 @@ const ActionButton = (props) => {
 
     return (
         <div className="component_action">
-            <Icon
-                name="download"
-                onClick={onDownload}
-                className="component_updater--icon" />
+            <NgIf
+                type="inline"
+                cond={props.can_download !== false}>
+                <Icon
+                    name="download"
+                    onClick={onDownload}
+                    className="component_updater--icon" />
+            </NgIf>
             <NgIf
                 type="inline"
                 cond={props.can_rename !== false && props.is_renaming === false}>
