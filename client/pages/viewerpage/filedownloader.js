@@ -1,46 +1,38 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import { NgIf, Icon } from "../../components/";
 import "./filedownloader.scss";
 import { t } from "../../locales/";
 
-export class FileDownloader extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = { loading: false, id: null };
-    }
-
-    onClick() {
+export function FileDownloader({ filename, data }) {
+    const [isDownloading, setIsDownloading] = useState(false);
+    const onClick = () => {
         document.cookie = "download=yes; path=/; max-age=60;";
-        this.setState({
-            loading: true,
-            id: window.setInterval(function() {
-                if (/download=yes/.test(document.cookie) === false) {
-                    this.setState({ loading: false });
-                    window.clearInterval(this.state.id);
-                }
-            }.bind(this), 80),
-        });
-    }
+        setIsDownloading(true);
+    };
 
-    componentWillUnmount() {
-        window.clearInterval(this.state.id);
-    }
+    useEffect(() => {
+        if(!isDownloading) return;
+        const t = setInterval(() => {
+            if (/download=yes/.test(document.cookie) === false) {
+                setIsDownloading(false);
+            }
+        }, 250);
+        return () => clearInterval(t);
+    }, [isDownloading]);
 
-    render() {
-        return (
-            <div className="component_filedownloader">
-                <div className="download_button">
-                    <a download={this.props.filename} href={this.props.data}>
-                        <NgIf onClick={this.onClick.bind(this)} cond={!this.state.loading}>
-                            { t("DOWNLOAD") }
-                        </NgIf>
-                    </a>
-                    <NgIf cond={this.state.loading}>
-                        <Icon name="loading"/>
+    return (
+        <div className="component_filedownloader">
+            <div className="download_button">
+                <a download={filename} href={data}>
+                    <NgIf onClick={onClick} cond={!isDownloading}>
+                        { t("DOWNLOAD") }
                     </NgIf>
-                </div>
+                </a>
+                <NgIf cond={isDownloading}>
+                    <Icon name="loading"/>
+                </NgIf>
             </div>
-        );
-    }
+        </div>
+    );
 }

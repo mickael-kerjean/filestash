@@ -1,25 +1,18 @@
-import React from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import WaveSurfer from "wavesurfer.js";
 
 import { MenuBar } from "./menubar";
 import { NgIf, Icon } from "../../components/";
 import "./audioplayer.scss";
 
-export class AudioPlayer extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            wafesurfer: null,
-            loading: true,
-            isPlaying: true,
-            error: null,
-        };
-        this.toggle = this.toggle.bind(this);
-        window.addEventListener("keypress", this.toggle);
-    }
+export function AudioPlayer({ filename, data }) {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [wavesurfer, setWavesurfer] = useState(null);
+    const [error, setError] = useState(null);
 
-    componentDidMount() {
-        const wavesurfer = WaveSurfer.create({
+    useLayoutEffect(() => {
+        const _ws = WaveSurfer.create({
             container: "#waveform",
             waveColor: "#323639",
             progressColor: "#6f6f6f",
@@ -28,81 +21,75 @@ export class AudioPlayer extends React.Component {
             height: 250,
             barWidth: 1,
         });
-        this.setState({ wavesurfer: wavesurfer });
-        wavesurfer.on("ready", () => {
-            this.setState({ loading: false });
-            if (this.state.isPlaying === true) {
-                wavesurfer.play();
-            }
+
+        _ws.on("ready", () => {
+            setIsLoading(false);
         });
-        wavesurfer.on("error", (err) => {
-            this.setState({ error: err, loading: false });
+        _ws.on("error", (err) => {
+            setIsLoading(false);
+            setError(err)
         });
-        wavesurfer.load(this.props.data);
-    }
+        _ws.load(data);
+        setWavesurfer(_ws);
+        return () => _ws.destroy();
+    }, []);
 
-    componentWillUnmount() {
-        if (this.state.wavesurfer) {
-            this.state.wavesurfer.destroy();
+    useEffect(() => {
+        if(wavesurfer === null) return;
+        window.addEventListener("keypress", onKeyPressHandler);
+        return () => window.removeEventListener("keypress", onKeyPressHandler);
+    }, [wavesurfer, isPlaying])
+
+    const onKeyPressHandler = (e) => {
+        if(e.code !== "Space") {
+            return
         }
-        window.removeEventListener("keypress", this.toggle);
-    }
+        isPlaying ? onPause(e) : onPlay(e);
+    };
 
-    toggle() {
-        if (this.state.isPlaying === true) {
-            this.setState({ isPlaying: false });
-            this.state.wavesurfer.pause();
-        } else {
-            this.setState({ isPlaying: true });
-            this.state.wavesurfer.play();
-        }
-    }
-
-    onPlay(e) {
+    const onPlay = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        this.setState({ isPlaying: true });
-        this.state.wavesurfer.play();
+        wavesurfer.play();
+        setIsPlaying(true);
     }
 
-    onPause(e) {
+    const onPause = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        this.setState({ isPlaying: false });
-        this.state.wavesurfer.pause();
+        wavesurfer.pause();
+        setIsPlaying(false);
     }
 
-    render() {
-        return (
-            <div className="component_audioplayer">
-                <MenuBar title={this.props.filename} download={this.props.data} />
-                <div className="audioplayer_container">
-                    <NgIf cond={this.state.error !== null} className="audioplayer_error">
-                        {this.state.error}
+    return (
+        <div className="component_audioplayer">
+            <MenuBar title={filename} download={data} />
+            <div className="audioplayer_container">
+                <NgIf cond={error !== null} className="audioplayer_error">
+                    {error}
+                </NgIf>
+                <NgIf cond={error === null}>
+                    <NgIf cond={isLoading === true}>
+                        <Icon name="loading" />
                     </NgIf>
-                    <NgIf cond={this.state.error === null}>
-                        <NgIf cond={this.state.loading === true}>
-                            <Icon name="loading" />
-                        </NgIf>
-                        <div className="audioplayer_box"
-                            style={{ opacity: this.state.loading? "0" : "1" }}>
-                            <div className="audioplayer_control">
-                                <NgIf cond={this.state.isPlaying === false}>
-                                    <span onClick={this.onPlay.bind(this)}>
-                                        <Icon name="play"/>
-                                    </span>
-                                </NgIf>
-                                <NgIf cond={this.state.isPlaying === true}>
-                                    <span onClick={this.onPause.bind(this)}>
-                                        <Icon name="pause"/>
-                                    </span>
-                                </NgIf>
-                            </div>
-                            <div id="waveform"></div>
+                    <div className="audioplayer_box"
+                         style={{ opacity: isLoading? "0" : "1" }}>
+                        <div className="audioplayer_control">
+                            <NgIf cond={isPlaying === false}>
+                                <span onClick={onPlay}>
+                                    <Icon name="play"/>
+                                </span>
+                            </NgIf>
+                            <NgIf cond={isPlaying === true}>
+                                <span onClick={onPause}>
+                                    <Icon name="pause"/>
+                                </span>
+                            </NgIf>
                         </div>
-                    </NgIf>
-                </div>
+                        <div id="waveform"></div>
+                    </div>
+                </NgIf>
             </div>
-        );
-    }
+        </div>
+    )
 }
