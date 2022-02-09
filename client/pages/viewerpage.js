@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useReducer, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import Path from "path";
 
 import "./viewerpage.scss";
@@ -39,175 +40,155 @@ const Appframe = (props) => (
     </Bundle>
 );
 
-export class ViewerPageComponent extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            path: props.match.url.replace("/view", "").replace(/%23/g, "#") + (location.hash || ""),
-            url: null,
-            filename: Path.basename(props.match.url.replace("/view", "")) || "untitled.dat",
-            opener: null,
-            content: null,
-            needSaving: false,
-            isSaving: false,
-            loading: true,
-            application_arguments: null,
-        };
-        this.props.subscribe("file.select", this.onPathUpdate.bind(this));
-    }
 
-    UNSAFE_componentWillReceiveProps(props) {
-        this.setState({
-            path: props.match.url.replace("/view", "").replace(/%23/g, "#") + (location.hash || ""),
-            filename: Path.basename(props.match.url.replace("/view", "")) || "untitled.dat",
-        }, () => this.componentDidMount());
-    }
+export function ViewerPageComponent({ error, subscribe, unsubscribe, match, location }) {
+    const history = useHistory();
+    const currentUrl = history.location.pathname;
 
-    componentDidMount() {
-        const metadata = () => {
-            return new Promise((done, err) => {
-                const [app_opener, app_args] = opener(this.state.path);
-                Files.url(this.state.path).then((url) => {
-                    this.setState({
-                        url: url,
-                        opener: app_opener,
-                        application_arguments: app_args,
-                    }, () => done(app_opener));
-                }).catch((error) => {
-                    this.props.error(error);
-                    err(error);
-                });
-            });
-        };
-        const data_fetch = (app) => {
-            if (app === "editor" || app === "form") {
-                return Promise.all([
-                    Files.cat(this.state.path),
-                    Files.options(this.state.path),
-                ]).then((d) => {
-                    const [content, options] = d;
-                    this.setState({
-                        content: content,
-                        loading: false,
-                        acl: options["allow"],
-                    });
-                }).catch((err) => {
-                    if (err && err.code === "BINARY_FILE") {
-                        this.setState({ opener: "download", loading: false });
-                    } else {
-                        this.props.error(err);
-                    }
-                });
-            }
-            this.setState({ loading: false });
-        };
-        return metadata().then(data_fetch);
-    }
+    const [state, setState] = useReducer((s, a) => {
+        return { ...s, ...a };
+    }, {
+        url: null,
+        opener: null,
+        content: null,
+        needSaving: false,
+        isSaving: false,
+        loading: false,
+        application_arguments: null,
+    });
+    const path = currentUrl.replace("/view", "").replace(/%23/g, "#") + (location.hash || "");
+    const filename = Path.basename(currentUrl.replace("/view", "")) || "untitled.dat";
 
-    componentWillUnmount() {
-        this.props.unsubscribe("file.select");
-    }
-
-    save(file) {
-        this.setState({ isSaving: true });
-        return Files.save(this.state.path, file)
-            .then(() => {
-                this.setState({ isSaving: false, needSaving: false });
-                return Promise.resolve();
-            })
-            .then(() => {
-                return new Promise((done, err) => {
+    const save = (file) => {
+        return Files.save(path, file)
+            .then(() => setState({ isSaving: false, needSaving: false }))
+            .then(() => (new Promise((done, err) => {
                     const reader = new FileReader();
                     reader.onload = () => {
-                        this.setState({ content: reader.result });
+                        setState({ content: reader.result });
                         done();
                     };
                     reader.onerror = (e) => {
-                        err({ message: "Internal error 500" });
+                        err(new Error("Internal error 500"));
                     };
                     reader.readAsText(file);
-                });
-            })
+            })))
             .catch((err) => {
                 if (err && err.code === "CANCELLED") return;
-                this.setState({ isSaving: false });
+                setState({ isSaving: false });
                 notify.send(err, "error");
-                return Promise.reject(err);
             });
     }
 
-    onPathUpdate(path) {
-        this.props.history.push("/files"+path);
-    }
+    const needSaving = (bool) => {
+        setState({ needSaving: bool });
+    };
 
-    needSaving(bool) {
-        return new Promise((done) => {
-            this.setState({ needSaving: bool }, done);
-        });
-    }
+    useEffect(() => {
+        const metadata = () => {
+            const [app_opener, app_args] = opener(path);
+            setState({ loading: true, isSaving: true, needSaving: false, url: null, opener: null, application_arguments: null });
+            return Files.url(path).then((url) => {
+                setState({
+                    url: url,
+                    opener: app_opener,
+                    application_arguments: app_args,
+                });
+                return app_opener;
+            }).catch((_err) => error(_err));
+        };
 
-    render() {
-        return (
-            <div className="component_page_viewerpage">
-                <BreadCrumb needSaving={this.state.needSaving} className="breadcrumb" path={this.state.path} />
-                <div className="page_container">
-                    <NgIf cond={this.state.loading === false}>
-                        <NgIf cond={this.state.opener === "editor"}>
-                            <IDE
-                                needSavingUpdate={this.needSaving.bind(this)}
-                                needSaving={this.state.needSaving}
-                                isSaving={this.state.isSaving}
-                                onSave={this.save.bind(this)}
-                                content={this.state.content || ""}
-                                url={this.state.url}
-                                path={this.state.path}
-                                acl={this.state.acl}
-                                filename={this.state.filename} />
-                        </NgIf>
-                        <NgIf cond={this.state.opener === "image"}>
-                            <ImageViewer
-                                data={this.state.url}
-                                filename={this.state.filename}
-                                path={this.state.path} />
-                        </NgIf>
-                        <NgIf cond={this.state.opener === "pdf"}>
-                            <PDFViewer
-                                data={this.state.url}
-                                filename={this.state.filename} />
-                        </NgIf>
-                        <NgIf cond={this.state.opener === "video"}>
-                            <VideoPlayer
-                                data={this.state.url}
-                                filename={this.state.filename}
-                                path={this.state.path} />
-                        </NgIf>
-                        <NgIf cond={this.state.opener === "form"}>
-                            <FormViewer
-                                needSavingUpdate={this.needSaving.bind(this)}
-                                needSaving={this.state.needSaving}
-                                isSaving={this.state.isSaving}
-                                onSave={this.save.bind(this)}
-                                content={this.state.content || ""}
-                                data={this.state.url}
-                                filename={this.state.filename} />
-                        </NgIf>
-                        <NgIf cond={this.state.opener === "audio"}>
-                            <AudioPlayer data={this.state.url} filename={this.state.filename} />
-                        </NgIf>
-                        <NgIf cond={this.state.opener === "download"}>
-                            <FileDownloader data={this.state.url} filename={this.state.filename} />
-                        </NgIf>
-                        <NgIf cond={this.state.opener === "appframe"}>
-                            <Appframe data={this.state.path} filename={this.state.filename} args={this.state.application_arguments} />
-                        </NgIf>
+        const data_fetch = (app) => {
+            if (app !== "editor" && app !== "form") {
+                setState({ loading: false });
+                return null;
+            }
+            return Promise.all([
+                Files.cat(path),
+                Files.options(path),
+            ]).then((d) => {
+                const [content, options] = d;
+                setState({
+                    content: content,
+                    loading: false,
+                    acl: options["allow"],
+                });
+            }).catch((err) => {
+                if (err.code !== "BINARY_FILE") {
+                    error(err);
+                    return;
+                }
+                setState({
+                    loading: false,
+                    opener: "download",
+                });
+            });
+        };
+
+        metadata().then(data_fetch);
+        return history.listen(() => {})
+    }, [path]);
+
+    return (
+        <div className="component_page_viewerpage">
+            <BreadCrumb needSaving={state.needSaving} className="breadcrumb" path={path} />
+            <div className="page_container">
+                <NgIf cond={state.loading === true}>
+                    <Loader/>
+                </NgIf>
+                <NgIf cond={state.loading === false}>
+                    <NgIf cond={state.opener === "editor"}>
+                        <IDE
+                            needSavingUpdate={needSaving}
+                            needSaving={state.needSaving}
+                            isSaving={state.isSaving}
+                            onSave={save}
+                            content={state.content || ""}
+                            url={state.url}
+                            path={path}
+                            acl={state.acl}
+                            filename={filename} />
                     </NgIf>
-                    <NgIf cond={this.state.loading === true}>
-                        <Loader/>
+                    <NgIf cond={state.opener === "image"}>
+                        <ImageViewer
+                            data={state.url}
+                            filename={filename}
+                            path={path} />
                     </NgIf>
-                </div>
+                    <NgIf cond={state.opener === "pdf"}>
+                        <PDFViewer
+                            data={state.url}
+                            filename={filename} />
+                    </NgIf>
+                    <NgIf cond={state.opener === "video"}>
+                        <VideoPlayer
+                            data={state.url}
+                            filename={filename}
+                            path={path} />
+                    </NgIf>
+                    <NgIf cond={state.opener === "form"}>
+                        <FormViewer
+                            needSavingUpdate={needSaving}
+                            needSaving={state.needSaving}
+                            isSaving={state.isSaving}
+                            onSave={save}
+                            content={state.content || ""}
+                            data={state.url}
+                            filename={filename} />
+                    </NgIf>
+                    <NgIf cond={state.opener === "audio"}>
+                        <AudioPlayer data={state.url} filename={filename} />
+                    </NgIf>
+                    <NgIf cond={state.opener === "download"}>
+                        <FileDownloader data={state.url} filename={filename} />
+                    </NgIf>
+                    <NgIf cond={state.opener === "appframe"}>
+                        <Appframe data={path} filename={filename} args={state.application_arguments} />
+                    </NgIf>
+                </NgIf>
             </div>
-        );
-    }
+        </div>
+    );
 }
 
 export const ViewerPage = ErrorPage(LoggedInOnly(EventReceiver(ViewerPageComponent)));

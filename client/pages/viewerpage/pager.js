@@ -55,7 +55,7 @@ class PagerComponent extends React.Component {
             ) ? this.calculateNextPageNumber(n) : this.calculatePrevPageNumber(n);
             Files.url(this.state.files[preload_index].path)
                 .then((url) => this.props.emit("media::preload", url))
-                .then(() => this.props.history.push(url))
+                .then(() => setTimeout(() => this.props.history.push(url), 0))
                 .catch(() => {});
         }
     }

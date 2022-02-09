@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import WaveSurfer from "wavesurfer.js";
 
 import { MenuBar } from "./menubar";
@@ -7,12 +7,12 @@ import "./audioplayer.scss";
 
 export function AudioPlayer({ filename, data }) {
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [wavesurfer, setWavesurfer] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const wavesurfer = useRef(null);
 
-    useLayoutEffect(() => {
-        const _ws = WaveSurfer.create({
+    useEffect(() => {
+        wavesurfer.current = WaveSurfer.create({
             container: "#waveform",
             waveColor: "#323639",
             progressColor: "#6f6f6f",
@@ -21,24 +21,22 @@ export function AudioPlayer({ filename, data }) {
             height: 250,
             barWidth: 1,
         });
-
-        _ws.on("ready", () => {
+        wavesurfer.current.load(data);
+        wavesurfer.current.on("ready", () => {
             setIsLoading(false);
         });
-        _ws.on("error", (err) => {
+        wavesurfer.current.on("error", (err) => {
             setIsLoading(false);
             setError(err)
         });
-        _ws.load(data);
-        setWavesurfer(_ws);
-        return () => _ws.destroy();
+        return () => wavesurfer.current.destroy();
     }, []);
 
     useEffect(() => {
-        if(wavesurfer === null) return;
+        if(wavesurfer.current === null) return;
         window.addEventListener("keypress", onKeyPressHandler);
         return () => window.removeEventListener("keypress", onKeyPressHandler);
-    }, [wavesurfer, isPlaying])
+    }, [isPlaying])
 
     const onKeyPressHandler = (e) => {
         if(e.code !== "Space") {
@@ -50,14 +48,14 @@ export function AudioPlayer({ filename, data }) {
     const onPlay = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        wavesurfer.play();
+        wavesurfer.current.play();
         setIsPlaying(true);
     }
 
     const onPause = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        wavesurfer.pause();
+        wavesurfer.current.pause();
         setIsPlaying(false);
     }
 
@@ -72,8 +70,9 @@ export function AudioPlayer({ filename, data }) {
                     <NgIf cond={isLoading === true}>
                         <Icon name="loading" />
                     </NgIf>
-                    <div className="audioplayer_box"
-                         style={{ opacity: isLoading? "0" : "1" }}>
+                    <div
+                        className="audioplayer_box"
+                        style={{ opacity: isLoading? "0" : "1" }}>
                         <div className="audioplayer_control">
                             <NgIf cond={isPlaying === false}>
                                 <span onClick={onPlay}>
