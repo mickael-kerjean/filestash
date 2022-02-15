@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"strconv"
+	"sync"
 )
 
 //go:embed plugin/index.go
@@ -122,18 +123,23 @@ func Init(a *App) {
 	// support many more protocols in the future: HTTPS, HTTP2, TOR or whatever that sounds
 	// fancy I don't know much when this got written: IPFS, solid, ...
 	Log.Info("Filestash %s starting", APP_VERSION)
-	for _, obj := range Hooks.Get.Starter() {
-		go obj(r)
-	}
 	if len(Hooks.Get.Starter()) == 0 {
 		Log.Warning("No starter plugin available")
+		os.Exit(1)
 		return
 	}
-
+	var wg sync.WaitGroup
+	for _, obj := range Hooks.Get.Starter() {
+		wg.Add(1)
+		go func() {
+			obj(r)
+			wg.Done()
+		}()
+	}
 	go func() {
 		InitPluginList(EmbedPluginList)
 	}()
-	select {}
+	wg.Wait()
 }
 
 func initDebugRoutes(r *mux.Router) {
