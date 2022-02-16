@@ -57,27 +57,25 @@ func init() {
 				return
 			}
 		}()
-		go func() {
-			srv := http.Server{
-				Addr:         fmt.Sprintf(":http"),
-				ReadTimeout:  5 * time.Second,
-				WriteTimeout: 5 * time.Second,
-				Handler: http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					res.Header().Set("Connection", "close")
-					http.Redirect(
-						res,
-						req,
-						"https://"+req.Host+req.URL.String(),
-						http.StatusMovedPermanently,
-					)
-				}),
-			}
-			if err := srv.ListenAndServe(); err != nil {
-				Log.Error("[https]: http_redirect %v", err)
-				return
-			}
-		}()
 		go ensureAppHasBooted("https://127.0.0.1/about", fmt.Sprintf("[https] started"))
+		srv := http.Server{
+			Addr:         fmt.Sprintf(":http"),
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 5 * time.Second,
+			Handler: http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+				res.Header().Set("Connection", "close")
+				http.Redirect(
+					res,
+					req,
+					"https://"+req.Host+req.URL.String(),
+					http.StatusMovedPermanently,
+				)
+			}),
+		}
+		if err := srv.ListenAndServe(); err != nil {
+			Log.Error("[https]: http_redirect %v", err)
+			return
+		}
 	})
 }
 

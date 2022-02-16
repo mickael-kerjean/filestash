@@ -18,12 +18,10 @@ func init() {
 			Handler: r,
 		}
 		go ensureAppHasBooted(fmt.Sprintf("http://127.0.0.1:%d/about", port), fmt.Sprintf("[http] listening on :%d", port))
-		go func() {
-			if err := srv.ListenAndServe(); err != nil {
-				Log.Error("error: %v", err)
-				return
-			}
-		}()
+		if err := srv.ListenAndServe(); err != nil {
+			Log.Error("error: %v", err)
+			return
+		}
 	})
 }
 

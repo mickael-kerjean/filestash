@@ -56,33 +56,31 @@ func init() {
 			srv.TLSConfig.GetCertificate = mngr.GetCertificate
 		}
 
+		go ensureAppHasBooted("https://127.0.0.1/about", fmt.Sprintf("[https] started"))
 		go func() {
 			if err := srv.ListenAndServeTLS("", ""); err != nil {
 				Log.Error("[https]: listen_serve %v", err)
 				return
 			}
 		}()
-		go func() {
-			srv := http.Server{
-				Addr:         fmt.Sprintf(":http"),
-				ReadTimeout:  5 * time.Second,
-				WriteTimeout: 5 * time.Second,
-				Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-					w.Header().Set("Connection", "close")
-					http.Redirect(
-						w,
-						req,
-						"https://"+req.Host+req.URL.String(),
-						http.StatusMovedPermanently,
-					)
-				}),
-			}
-			if err := srv.ListenAndServe(); err != nil {
-				Log.Error("[https]: http_redirect %v", err)
-				return
-			}
-		}()
-		go ensureAppHasBooted("https://127.0.0.1/about", fmt.Sprintf("[https] started"))
+		srv := http.Server{
+			Addr:         fmt.Sprintf(":http"),
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 5 * time.Second,
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				w.Header().Set("Connection", "close")
+				http.Redirect(
+					w,
+					req,
+					"https://"+req.Host+req.URL.String(),
+					http.StatusMovedPermanently,
+				)
+			}),
+		}
+		if err := srv.ListenAndServe(); err != nil {
+			Log.Error("[https]: http_redirect %v", err)
+			return
+		}
 	})
 }
 

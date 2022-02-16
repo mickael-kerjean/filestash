@@ -21,6 +21,7 @@ func WellKnownSecurityHandler(ctx App, res http.ResponseWriter, req *http.Reques
 }
 
 func HealthHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Access-Control-Allow-Origin", "*")
 	// CHECK 1: open the config file
 	file, err := os.OpenFile(
 		filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"),
@@ -52,16 +53,13 @@ func HealthHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 		"http://127.0.0.1:%d/about",
 		Config.Get("general.port").Int(),
 	))
-	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		res.Write([]byte(`{"status": "error", "reason": "endpoint error"}`))
-		return
-	}
-	r.Body.Close()
-	if r.StatusCode != http.StatusOK {
-		res.WriteHeader(http.StatusInternalServerError)
-		res.Write([]byte(`{"status": "error", "reason": "endpoint error"}`))
-		return
+	if err == nil {
+		r.Body.Close()
+		if r.StatusCode != http.StatusOK {
+			res.WriteHeader(http.StatusInternalServerError)
+			res.Write([]byte(`{"status": "error", "reason": "endpoint error"}`))
+			return
+		}
 	}
 
 	// SUCCESS!!
