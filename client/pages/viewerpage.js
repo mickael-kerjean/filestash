@@ -87,7 +87,7 @@ export function ViewerPageComponent({ error, subscribe, unsubscribe, match, loca
     useEffect(() => {
         const metadata = () => {
             const [app_opener, app_args] = opener(path);
-            setState({ loading: true, isSaving: true, needSaving: false, url: null, opener: null, application_arguments: null });
+            setState({ loading: true, needSaving: false, url: null, opener: null, application_arguments: null });
             return Files.url(path).then((url) => {
                 setState({
                     url: url,
