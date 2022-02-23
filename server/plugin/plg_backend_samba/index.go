@@ -41,15 +41,18 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	if c != nil {
 		return c.(*Samba), nil
 	}
-	if params["port"] == "" {
-		params["port"] = "445"
-	}
-	if params["username"] == "" {
-		params["username"] = "Guest"
-	}
 	conn, err := net.DialTimeout(
 		"tcp",
-		fmt.Sprintf("%s:%s", params["host"], params["port"]),
+		fmt.Sprintf(
+			"%s:%s",
+			params["host"],
+			func() string {
+				if params["port"] == "" {
+					return "445"
+				}
+				return params["port"]
+			}(),
+		),
 		10*time.Second,
 	)
 	if err != nil {
@@ -59,7 +62,12 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	s := &Samba{nil, make(map[string]*smb2.Share, 0)}
 	s.session, err = (&smb2.Dialer{
 		Initiator: &smb2.NTLMInitiator{
-			User:     params["username"],
+			User: func() string {
+				if params["username"] == "" {
+					return "Guest"
+				}
+				return params["username"]
+			}(),
 			Password: params["password"],
 			Domain:   params["domain"],
 		},

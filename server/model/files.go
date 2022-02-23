@@ -51,6 +51,9 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 }
 
 func GetHome(b IBackend, base string) (string, error) {
+	if strings.TrimSpace(base) == "" {
+		base = "/"
+	}
 	home := "/"
 	if obj, ok := b.(interface{ Home() (string, error) }); ok {
 		tmp, err := obj.Home()
