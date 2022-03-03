@@ -29,9 +29,7 @@ class FileSystem {
                             if (keep_pulling_from_http === false) return Promise.resolve();
                             return fetch_from_http(_path);
                         }).catch((err) => {
-                            if (cache === null) {
-                                this.obs && this.obs.error({ message: "Unknown Path" });
-                            }
+                            this.obs && this.obs.error(err);
                         });
                 };
                 fetch_from_http(path);

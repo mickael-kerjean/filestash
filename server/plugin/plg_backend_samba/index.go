@@ -254,6 +254,8 @@ func fromSambaErr(err error) error {
 	switch {
 	case os.IsPermission(err):
 		return ErrPermissionDenied
+	case os.IsNotExist(err):
+		return ErrNotFound
 	default:
 		return err
 	}
