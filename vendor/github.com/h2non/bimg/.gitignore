@@ -1,9 +1,0 @@
-/bimg
-/bundle
-bin
-/*.jpg
-/*.png
-/*.webp
-/testdata/*_out.*
-/.idea/
-testdata/test_vertical_*.jpg

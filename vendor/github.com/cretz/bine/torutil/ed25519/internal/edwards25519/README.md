@@ -1,1 +1,0 @@
-This is taken from https://github.com/golang/crypto/tree/1a580b3eff7814fc9b40602fd35256c63b50f491/ed25519/internal/edwards25519
