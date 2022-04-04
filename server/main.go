@@ -26,8 +26,10 @@ func main() {
 }
 
 func Init(a *App) {
-	var middlewares []Middleware
-	r := mux.NewRouter()
+	var (
+		r           *mux.Router = mux.NewRouter()
+		middlewares []Middleware
+	)
 
 	// API for Session
 	session := r.PathPrefix("/api/session").Subrouter()
@@ -41,7 +43,7 @@ func Init(a *App) {
 	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, *a)).Methods("GET")
 	session.HandleFunc("/auth/", NewMiddlewareChain(SessionAuthMiddleware, middlewares, *a)).Methods("GET", "POST")
 
-	// API for admin
+	// API for Admin Console
 	middlewares = []Middleware{ApiHeaders, SecureAjax}
 	admin := r.PathPrefix("/admin/api").Subrouter()
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionGet, middlewares, *a)).Methods("GET")
@@ -68,10 +70,6 @@ func Init(a *App) {
 	middlewares = []Middleware{ApiHeaders, SessionStart, LoggedInOnly}
 	files.HandleFunc("/search", NewMiddlewareChain(FileSearch, middlewares, *a)).Methods("GET")
 
-	// API for exporter
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, RedirectSharedLoginIfNeeded, SessionStart, LoggedInOnly}
-	r.PathPrefix("/api/export/{share}/{mtype0}/{mtype1}").Handler(NewMiddlewareChain(FileExport, middlewares, *a))
-
 	// API for Shared link
 	share := r.PathPrefix("/api/share").Subrouter()
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, SessionStart, LoggedInOnly}
@@ -88,6 +86,8 @@ func Init(a *App) {
 	r.HandleFunc("/s/{share}", NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, *a)).Methods("GET")
 	middlewares = []Middleware{WebdavBlacklist, SessionStart}
 	r.PathPrefix("/s/{share}").Handler(NewMiddlewareChain(WebdavHandler, middlewares, *a))
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, RedirectSharedLoginIfNeeded, SessionStart, LoggedInOnly}
+	r.PathPrefix("/api/export/{share}/{mtype0}/{mtype1}").Handler(NewMiddlewareChain(FileExport, middlewares, *a))
 
 	// Application Resources
 	middlewares = []Middleware{ApiHeaders}
@@ -174,7 +174,7 @@ func initDebugRoutes(r *mux.Router) {
 }
 
 func initPluginsRoutes(r *mux.Router, a *App) {
-	// Endpoints hanle by plugins
+	// Endpoints handle by plugins
 	for _, obj := range Hooks.Get.HttpEndpoint() {
 		obj(r, a)
 	}
@@ -185,7 +185,7 @@ func initPluginsRoutes(r *mux.Router, a *App) {
 			res.Write([]byte(fmt.Sprintf("/* Default '%s' */", obj)))
 		})
 	}
-	// map which file can be open with what application
+	// map file types to application handler
 	r.HandleFunc("/overrides/xdg-open.js", func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
 		res.Write([]byte(`window.overrides["xdg-open"] = function(mime){`))
