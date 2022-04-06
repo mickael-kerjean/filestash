@@ -7,9 +7,9 @@ package plg_handler_console
 import (
 	"encoding/base64"
 	"encoding/json"
+	"github.com/creack/pty"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-	"github.com/kr/pty"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"golang.org/x/crypto/bcrypt"
 	"io"
@@ -30,7 +30,7 @@ var console_enable = func() bool {
 		f.Default = false
 		f.Name = "console_enable"
 		f.Type = "boolean"
-		f.Description = "Enable/Disable the interactive web console on your instance. It will be available under `/tty/` where username is 'admin' and password is your admin console"
+		f.Description = "Enable/Disable the interactive web console on your instance. It will be available under `/admin/tty/` where username is 'admin' and password is your admin console"
 		f.Placeholder = "Default: false"
 		return f
 	}).Bool()
@@ -188,6 +188,7 @@ EOF
 
 	tty, err := pty.Start(cmd)
 	if err != nil {
+		Log.Debug("plugin::plg_handler_console pty.Start error '%s'", err)
 		conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		return
 	}
@@ -336,11 +337,11 @@ func AppScript(pathPrefix string) string {
         websocket.onmessage = function(e) {
             if (e.data instanceof ArrayBuffer) {
                 term.write(String.fromCharCode.apply(null, new Uint8Array(e.data)));
-            } else {
-                websocket.close()
-                term.destroy();
-                Boot();
+                return;
             }
+            websocket.close()
+            term.destroy();
+            alert("Something went wrong");
         }
 
         websocket.onclose = function(){
