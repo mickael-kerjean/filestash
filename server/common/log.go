@@ -32,7 +32,7 @@ type log struct {
 
 func (l *log) Info(format string, v ...interface{}) {
 	if l.info && l.enable {
-		message := fmt.Sprintf("%s INFO ", l.now())
+		message := fmt.Sprintf("%s SYST INFO ", l.now())
 		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
@@ -42,7 +42,7 @@ func (l *log) Info(format string, v ...interface{}) {
 
 func (l *log) Warning(format string, v ...interface{}) {
 	if l.warn && l.enable {
-		message := fmt.Sprintf("%s WARN ", l.now())
+		message := fmt.Sprintf("%s SYST WARN ", l.now())
 		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
@@ -52,7 +52,7 @@ func (l *log) Warning(format string, v ...interface{}) {
 
 func (l *log) Error(format string, v ...interface{}) {
 	if l.error && l.enable {
-		message := fmt.Sprintf("%s ERROR ", l.now())
+		message := fmt.Sprintf("%s SYST ERROR ", l.now())
 		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
@@ -62,7 +62,7 @@ func (l *log) Error(format string, v ...interface{}) {
 
 func (l *log) Debug(format string, v ...interface{}) {
 	if l.debug && l.enable {
-		message := fmt.Sprintf("%s DEBUG ", l.now())
+		message := fmt.Sprintf("%s SYST DEBUG ", l.now())
 		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)

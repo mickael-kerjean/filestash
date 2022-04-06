@@ -87,7 +87,7 @@ func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
 			telemetry.Record(point)
 		}
 		if Config.Get("log.enable").Bool() {
-			Log.Info("HTTP %3d %3s %6.1fms %s", point.Status, point.Method, point.Duration, point.RequestURI)
+			Log.Stdout("HTTP %3d %3s %6.1fms %s", point.Status, point.Method, point.Duration, point.RequestURI)
 		}
 	}
 }
