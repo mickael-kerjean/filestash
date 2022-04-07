@@ -53,7 +53,8 @@ RUN apt-get update > /dev/null && \
     rm -rf /tmp/*
 
 USER filestash
-RUN timeout 1 /app/filestash | grep -q start
+RUN timeout 1 /app/filestash | grep -q start && \
+    rm /app/data/state/config/config.json
 
 EXPOSE 8334
 VOLUME ["/app/data/state/"]
