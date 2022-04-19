@@ -102,7 +102,13 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 			MaxAge:   60 * Config.Get("general.cookie_timeout").Int(),
 			Path:     COOKIE_PATH,
 			HttpOnly: true,
-			SameSite: http.SameSiteStrictMode,
+			Secure:   true,
+			SameSite: func() http.SameSite {
+				if Config.Get("features.protection.iframe").String() != "" {
+					return http.SameSiteNoneMode
+				}
+				return http.SameSiteStrictMode
+			}(),
 		})
 		if end == len(obfuscate) {
 			break

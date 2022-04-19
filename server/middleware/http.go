@@ -48,6 +48,12 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 		cspHeader += "worker-src 'self' blob:; "
 		cspHeader += "form-action 'self'; base-uri 'self'; "
 		cspHeader += "frame-src 'self'; "
+		if ori := Config.Get("features.protection.iframe").String(); ori == "" {
+			cspHeader += "frame-ancestors 'none';"
+			header.Set("X-Frame-Options", "DENY")
+		} else {
+			cspHeader += fmt.Sprintf("frame-ancestors %s;", ori)
+		}
 		header.Set("Content-Security-Policy", cspHeader)
 		fn(ctx, res, req)
 	}

@@ -92,6 +92,12 @@ func NewConfiguration() Configuration {
 							FormElement{Name: "redirect", Type: "string", Placeholder: "redirection URL", Description: "When set, shared links will perform a redirection to another link. Example: https://example.com?full_path={{path}}"},
 						},
 					},
+					Form{
+						Title: "protection",
+						Elmnts: []FormElement{
+							FormElement{Name: "iframe", Type: "text", Default: "", Description: "list of domains who can use the application from an iframe. eg: https://www.filestash.app http://example.com"},
+						},
+					},
 				},
 			},
 			Form{
