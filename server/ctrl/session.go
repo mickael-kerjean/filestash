@@ -107,6 +107,9 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 		if Config.Get("features.protection.iframe").String() != "" {
 			c.Secure = true
 			c.SameSite = http.SameSiteNoneMode
+			if f := req.Header.Get("Referer"); f != "" && strings.HasPrefix(f, "https://") == false {
+				Log.Warning("iframe from non secure origin isn't supported '%s'", f)
+			}
 		}
 		http.SetCookie(res, c)
 		if end == len(obfuscate) {
