@@ -152,6 +152,7 @@ func InitPluginList(code []byte) {
 
 func CustomCssHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "text/css")
+	io.WriteString(res, Hooks.Get.CSS())
 	io.WriteString(res, Config.Get("general.custom_css").String())
 }
 

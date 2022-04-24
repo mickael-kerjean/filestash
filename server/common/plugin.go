@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"io"
 	"net/http"
+	"strings"
 )
 
 type Plugin struct {
@@ -141,6 +142,16 @@ func (this Register) XDGOpen(jsString string) {
 }
 func (this Get) XDGOpen() []string {
 	return xdg_open
+}
+
+var cssOverride []string
+
+func (this Register) CSS(stylesheet string) {
+	cssOverride = append(cssOverride, stylesheet)
+}
+
+func (this Get) CSS() string {
+	return strings.Join(cssOverride, "\n")
 }
 
 const OverrideVideoSourceMapper = "/overrides/video-transcoder.js"
