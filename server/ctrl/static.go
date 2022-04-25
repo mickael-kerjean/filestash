@@ -86,12 +86,13 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 		<tr> <td style="width:150px;"> Commit hash </td> <td> <a href="https://github.com/mickael-kerjean/filestash/tree/{{ index .App 1}}">{{ index .App 1}}</a> </td> </tr>
 		<tr> <td> Binary hash </td> <td> {{ index .App 2}} </td> </tr>
 		<tr> <td> Config hash </td> <td> {{ index .App 3}} </td> </tr>
+		<tr> <td> License </td> <td> {{ index .App 4}} </td> </tr>
 		<tr>
           <td> Plugins </td>
           <td>
-            {{ $oss := (index .App 4) }}
-            {{ $enterprise := (index .App 5) }}
-            {{ $custom := (index .App 6) }}
+            {{ $oss := (index .App 5) }}
+            {{ $enterprise := (index .App 6) }}
+            {{ $custom := (index .App 7) }}
             STANDARD[<span class="small">{{ if eq $oss "" }}N/A{{ else }}{{ $oss }}{{ end }}</span>]<br/>
             EXTENDED[<span class="small">{{ if eq $enterprise "" }}N/A{{ else }}{{ $enterprise }}{{ end }}</span>]<br/>
             CUSTOM[<span class="small">{{ if eq $custom "" }}N/A{{ else }}{{ $custom }}{{ end }}</span>]
@@ -113,6 +114,7 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 		BUILD_REF,
 		hashFileContent(filepath.Join(GetCurrentDir(), "/filestash"), 0),
 		hashFileContent(filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"), 0),
+		strings.ToUpper(LICENSE),
 		strings.Join(listOfPlugins["oss"], " "),
 		strings.Join(listOfPlugins["enterprise"], " "),
 		strings.Join(listOfPlugins["custom"], " "),

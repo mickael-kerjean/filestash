@@ -34,6 +34,7 @@ func init() {
 var (
 	BUILD_REF                     string
 	BUILD_DATE                    string
+	LICENSE                       string = "agpl"
 	SECRET_KEY                    string
 	SECRET_KEY_DERIVATE_FOR_PROOF string
 	SECRET_KEY_DERIVATE_FOR_ADMIN string
