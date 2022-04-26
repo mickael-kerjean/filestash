@@ -5,7 +5,7 @@ import { Session } from "../model/";
 import { Loader, ErrorPage } from "../components/";
 import { t } from "../locales/";
 
-export function HomePageComponent({ error }) {
+function HomePageComponent({ error }) {
     const [redirection, setRedirection] = useState(null);
 
     useEffect(() => {
