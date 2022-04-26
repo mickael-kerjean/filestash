@@ -73,6 +73,8 @@ func (l *log) Debug(format string, v ...interface{}) {
 func (l *log) Stdout(format string, v ...interface{}) {
 	message := fmt.Sprintf("%s ", l.now())
 	message = fmt.Sprintf(message+format+"\n", v...)
+
+	logfile.WriteString(message)
 	fmt.Printf(strings.Replace(message, "%", "%%", -1))
 }
 
