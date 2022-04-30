@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/common/ssl"
-	"golang.org/x/crypto/acme/autocert"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,62 +17,33 @@ var SSL_PATH string = filepath.Join(GetCurrentDir(), CERT_PATH, "ssl")
 func init() {
 	os.MkdirAll(SSL_PATH, os.ModePerm)
 	domain := Config.Get("general.host").String()
+	port := Config.Get("general.port").Int()
 
 	Hooks.Register.Starter(func(r *mux.Router) {
 		Log.Info("[https] starting ...%s", domain)
 		srv := &http.Server{
-			Addr:         fmt.Sprintf(":https"),
+			Addr:         fmt.Sprintf(":%d", port),
 			Handler:      r,
 			TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
 			TLSConfig:    &DefaultTLSConfig,
 			ErrorLog:     NewNilLogger(),
 		}
 
-		switch domain {
-		case "":
-			TLSCert, roots, err := ssl.GenerateSelfSigned()
-			if err != nil {
-				return
-			}
-			srv.TLSConfig.Certificates = []tls.Certificate{TLSCert}
-			HTTPClient.Transport.(*TransformedTransport).Orig.(*http.Transport).TLSClientConfig = &tls.Config{
-				RootCAs: roots,
-			}
-			HTTP.Transport.(*TransformedTransport).Orig.(*http.Transport).TLSClientConfig = &tls.Config{
-				RootCAs: roots,
-			}
-		default:
-			mngr := autocert.Manager{
-				Prompt:     autocert.AcceptTOS,
-				HostPolicy: autocert.HostWhitelist(domain),
-				Cache:      autocert.DirCache(SSL_PATH),
-			}
-			srv.TLSConfig.GetCertificate = mngr.GetCertificate
+		TLSCert, roots, err := ssl.GenerateSelfSigned()
+		if err != nil {
+			return
+		}
+		srv.TLSConfig.Certificates = []tls.Certificate{TLSCert}
+		HTTPClient.Transport.(*TransformedTransport).Orig.(*http.Transport).TLSClientConfig = &tls.Config{
+			RootCAs: roots,
+		}
+		HTTP.Transport.(*TransformedTransport).Orig.(*http.Transport).TLSClientConfig = &tls.Config{
+			RootCAs: roots,
 		}
 
-		go func() {
-			if err := srv.ListenAndServeTLS("", ""); err != nil {
-				Log.Error("[https]: listen_serve %v", err)
-				return
-			}
-		}()
-		go ensureAppHasBooted("https://127.0.0.1/about", fmt.Sprintf("[https] started"))
-		srv := http.Server{
-			Addr:         fmt.Sprintf(":http"),
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 5 * time.Second,
-			Handler: http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-				res.Header().Set("Connection", "close")
-				http.Redirect(
-					res,
-					req,
-					"https://"+req.Host+req.URL.String(),
-					http.StatusMovedPermanently,
-				)
-			}),
-		}
-		if err := srv.ListenAndServe(); err != nil {
-			Log.Error("[https]: http_redirect %v", err)
+		go ensureAppHasBooted(fmt.Sprintf("https://127.0.0.1:%d/about", port), fmt.Sprintf("[https] listening on :%d", port))
+		if err := srv.ListenAndServeTLS("", ""); err != nil {
+			Log.Error("[https]: listen_serve %v", err)
 			return
 		}
 	})
@@ -83,7 +53,7 @@ func ensureAppHasBooted(address string, message string) {
 	i := 0
 	for {
 		if i > 10 {
-			Log.Warning("[https] no boot")
+			Log.Warning("[http] didn't boot")
 			break
 		}
 		time.Sleep(250 * time.Millisecond)
