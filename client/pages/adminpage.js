@@ -30,12 +30,11 @@ function AdminOnly(WrappedComponent) {
             return () => clearInterval(timeout);
         }, []);
 
-        if (isAdmin === true) {
+        if (isAdmin === true || /\/admin\/setup$/.test(location.pathname)) {
             return ( <WrappedComponent {...props} /> );
         } else if (isAdmin === false) {
             return ( <LoginPage reload={refresh} /> );
         }
-
         return ( <LoadingPage /> );
     };
 }
@@ -60,7 +59,7 @@ export default AdminOnly((props) => {
                         />
                         <Route
                             path={match.url + "/logs"}
-                            render={() =><LogPage isSaving={setIsSaving}/>} />
+                            render={() => <LogPage isSaving={setIsSaving}/>} />
                         <Route path={match.url + "/setup"} component={SetupPage} />
                         <Route path={match.url} component={HomePage} />
                     </Switch>
