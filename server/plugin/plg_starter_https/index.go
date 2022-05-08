@@ -7,8 +7,6 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/common/ssl"
 	"net/http"
-	"os"
-	"path/filepath"
 	"time"
 )
 
