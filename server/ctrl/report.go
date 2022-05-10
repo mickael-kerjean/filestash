@@ -50,7 +50,13 @@ func HealthHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	// CHECK4: about page
 	r, err := http.Get(fmt.Sprintf(
-		"http://127.0.0.1:%d/about",
+		"%s://127.0.0.1:%d/about",
+		func() string {
+			if req.TLS == nil {
+				return "http"
+			}
+			return "https"
+		}(),
 		Config.Get("general.port").Int(),
 	))
 	if err == nil {
