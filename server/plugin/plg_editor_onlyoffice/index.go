@@ -239,32 +239,42 @@ func IframeContentHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 			return ""
 		}
 
-        maybeips := []string{}
+		maybeips := []string{}
 		for _, address := range addrs {
 			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 				if ipnet.IP.To4() != nil {
-                    maybeips = append(maybeips, ipnet.IP.String())
+					maybeips = append(maybeips, ipnet.IP.String())
 				}
 			}
 		}
 
-        // if there is just one interface, we can just pick that one
-        if len(maybeips) == 1 {
-            return maybeips[0]
-        }
+		// if there is just one interface, we can just pick that one
+		if len(maybeips) == 1 {
+			return maybeips[0]
+		}
 
-        // if not, fallback to capturing our outgoing local ip
-        conn, err := net.Dial("udp", "8.8.8.8:80")
-        if err != nil {
-            return ""
-        }
-        defer conn.Close()
+		// if not, fallback to capturing our outgoing local ip
+		conn, err := net.Dial("udp", "8.8.8.8:80")
+		if err != nil {
+			return ""
+		}
+		defer conn.Close()
 
-        localAddr := conn.LocalAddr().(*net.UDPAddr)
+		localAddr := conn.LocalAddr().(*net.UDPAddr)
 
-        return localAddr.IP.String()
- 	}()
-	filestashServerLocation = fmt.Sprintf("http://%s:%d", localip, Config.Get("general.port").Int())
+		return localAddr.IP.String()
+	}()
+	filestashServerLocation = fmt.Sprintf(
+		"%s://%s:%d",
+		func() string { // proto
+			if req.TLS == nil {
+				return "http"
+			}
+			return "https"
+		}(),
+		localip,
+		Config.Get("general.port").Int(),
+	)
 	contentType = func(p string) string {
 		var (
 			word       string = "text"
