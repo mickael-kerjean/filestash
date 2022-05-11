@@ -378,7 +378,7 @@ function AuthenticationMiddleware({ authentication_available, authentication_ena
             if (attribute_mapping[selected[i].label]) continue;
             for (let j=0; j<existingValues.length; j++) {
                 if (selected[i].label === existingValues[j]) {
-                    attribute_mapping[selected[i].label] = backend_available[selected[i].type];
+                    attribute_mapping[selected[i].label] = JSON.parse(JSON.stringify(backend_available[selected[i].type]));
                     needToSave = true;
                 }
             }
