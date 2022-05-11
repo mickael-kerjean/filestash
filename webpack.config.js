@@ -67,7 +67,6 @@ const config = {
         }),
         new CopyWebpackPlugin([
             { from: "locales/*.json", to: "assets/" },
-            { from: "manifest.json", to: "assets/" },
             { from: "worker/*.js", to: "assets/" },
             { from: "assets/logo/*" },
             { from: "assets/icons/*" },

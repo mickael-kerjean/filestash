@@ -121,6 +121,35 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	}})
 }
 
+func ManifestHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+	res.WriteHeader(http.StatusFound)
+	res.Write([]byte(fmt.Sprintf(`{
+    "name": "%s",
+    "short_name": "%s",
+    "icons": [
+        {
+            "src": "/assets/logo/android-chrome-192x192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "/assets/logo/android-chrome-512x512.png",
+             "type": "image/png",
+             "sizes": "512x512"
+        }
+    ],
+    "theme_color": "#f2f3f5",
+    "background_color": "#f2f3f5",
+    "orientation": "any",
+    "display": "standalone",
+    "start_url": "/"
+}`, Config.Get("general.name"), Config.Get("general.name"))))
+}
+
+func RobotsHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+	res.Write([]byte(""))
+}
+
 func InitPluginList(code []byte) {
 	listOfPackages := regexp.MustCompile(`github.com/mickael-kerjean/([^\"]+)`).FindAllString(string(code), -1)
 	for _, packageName := range listOfPackages {
