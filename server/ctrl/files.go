@@ -278,7 +278,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		header.Set("Content-Length", fmt.Sprintf("%d", contentLength))
 	}
 	if header.Get("Content-Security-Policy") == "" {
-		header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; font-src data:")
+		header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; font-src data:; script-src-elem 'self'")
 	}
 	header.Set("Accept-Ranges", "bytes")
 
