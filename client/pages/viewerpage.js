@@ -82,6 +82,7 @@ export function ViewerPageComponent({ error, subscribe, unsubscribe, match, loca
 
     const needSaving = (bool) => {
         setState({ needSaving: bool });
+        return Promise.resolve();
     };
 
     useEffect(() => {
