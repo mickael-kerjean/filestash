@@ -40,6 +40,8 @@ func (this LDAP) Init(params map[string]string, app *App) (IBackend, error) {
 	if obj := LDAPCache.Get(params); obj != nil {
 		return obj.(*LDAP), nil
 	}
+	params["hostname"] = strings.TrimPrefix("ldap://", params["hostname"])
+	params["hostname"] = strings.TrimPrefix("ldaps://", params["hostname"])
 
 	dialURL := func() string {
 		if params["port"] == "" {
