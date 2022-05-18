@@ -86,8 +86,8 @@ func NewKeyValueStore() KeyValueStore {
 
 func (this *KeyValueStore) Get(key string) interface{} {
 	this.RLock()
+	defer this.RUnlock()
 	val := this.cache[key]
-	this.RUnlock()
 	return val
 }
 
