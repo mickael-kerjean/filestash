@@ -105,7 +105,7 @@
             clear: both;
         }
     }
-    &[mode="orgmode"] .CodeMirror-code, &[mode="yaml-frontmatter"] .CodeMirror-code{
+    &[mode="orgmode"] .CodeMirror-code{
         line-height: 1.5em;
     }
     .CodeMirror-line{
