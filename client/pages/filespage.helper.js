@@ -239,7 +239,9 @@ export const onUpload = function(path, e) {
         return Promise.all(
             Array.prototype.slice.call(items).map((item) => {
                 if (typeof item.webkitGetAsEntry === "function") {
-                    return traverseDirectory(item.webkitGetAsEntry(), files.slice(0));
+                    const entry = item.webkitGetAsEntry();
+                    if(entry === null) return Promise.resolve([]);
+                    return traverseDirectory(entry, files.slice(0));
                 }
             }).filter((e) => e),
         ).then((res) => Promise.resolve([].concat.apply([], res)));
