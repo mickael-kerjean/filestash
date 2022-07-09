@@ -74,7 +74,10 @@ export class SharePageComponent extends React.Component {
                 const url = findParams("next");
                 if (url[0] === "/") {
                     requestAnimationFrame(() => {
-                        window.location.pathname = url;
+                        window.location.href = new URL(
+                            `${url}?share=${this.props.match.params.id}`,
+                            location,
+                        ).toString();
                     });
                     return (
                         <div style={marginTop()}>
