@@ -106,6 +106,7 @@ func CanManageShare(fn func(App, http.ResponseWriter, *http.Request)) func(ctx A
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		share_id := mux.Vars(req)["share"]
 		if share_id == "" {
+			Log.Debug("middleware::session::share 'invalid share id'")
 			SendErrorResult(res, ErrNotValid)
 			return
 		}
@@ -117,6 +118,7 @@ func CanManageShare(fn func(App, http.ResponseWriter, *http.Request)) func(ctx A
 				SessionStart(fn)(ctx, res, req)
 				return
 			}
+			Log.Debug("middleware::session::share 'cannot get share - %s'", err.Error())
 			SendErrorResult(res, err)
 			return
 		}
@@ -126,6 +128,7 @@ func CanManageShare(fn func(App, http.ResponseWriter, *http.Request)) func(ctx A
 		// 1) scenario 1: the user is the very same one that generated the shared link in the first place
 		ctx.Share = Share{}
 		if ctx.Session, err = _extractSession(req, &ctx); err != nil {
+			Log.Debug("middleware::session::share 'cannot extract session - %s'", err.Error())
 			SendErrorResult(res, err)
 			return
 		}
@@ -136,20 +139,24 @@ func CanManageShare(fn func(App, http.ResponseWriter, *http.Request)) func(ctx A
 		// 2) scenario 2: the user is different than the one that has generated the shared link
 		// in this scenario, the link owner might have granted for user the right to reshare links
 		if ctx.Share, err = _extractShare(req); err != nil {
+			Log.Debug("middleware::session::share 'cannot extract share - %s'", err.Error())
 			SendErrorResult(res, err)
 			return
 		}
 		if ctx.Session, err = _extractSession(req, &ctx); err != nil {
+			Log.Debug("middleware::session::share 'cannot extract session 2 - %s'", err.Error())
 			SendErrorResult(res, err)
 			return
 		}
 
-		if s.Backend == GenerateID(&ctx) {
+		id := GenerateID(&ctx)
+		if s.Backend == id {
 			if s.CanShare == true {
 				fn(ctx, res, req)
 				return
 			}
 		}
+		Log.Debug("middleware::session::share 'permission denied - s.CanShare[%+v] s.Backend[%s] GenerateID[%s]'", s.CanShare, s.Backend, id)
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}

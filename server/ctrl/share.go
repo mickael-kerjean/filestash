@@ -21,6 +21,7 @@ func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
 		path,
 	)
 	if err != nil {
+		Log.Debug("share::list '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -34,6 +35,7 @@ func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
 func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 	share_id := mux.Vars(req)["share"]
 	if share_id == "private" {
+		Log.Debug("share::upsert 'private'")
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
@@ -85,6 +87,7 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 		CanUpload:    NewBoolFromInterface(ctx.Body["can_upload"]),
 	}
 	if err := model.ShareUpsert(&s); err != nil {
+		Log.Debug("share::upsert '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -94,6 +97,7 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 func ShareDelete(ctx App, res http.ResponseWriter, req *http.Request) {
 	share_target := mux.Vars(req)["share"]
 	if err := model.ShareDelete(share_target); err != nil {
+		Log.Debug("share::delete '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -112,6 +116,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	share_id := mux.Vars(req)["share"]
 	s, err = model.ShareGet(share_id)
 	if err != nil {
+		Log.Debug("share::verify::init '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -130,10 +135,12 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 			MaxAge: -1,
 			Path:   COOKIE_PATH,
 		})
+		Log.Debug("share::verify::validate 'proof issue'")
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
 	if err := s.IsValid(); err != nil {
+		Log.Debug("share::verify::validate '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
@@ -141,6 +148,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 	// 3) process the proof sent by the user
 	submittedProof, err = model.ShareProofVerifier(s, submittedProof)
 	if err != nil {
+		Log.Debug("share::verify::process '%s'", err.Error())
 		submittedProof.Error = NewString(err.Error())
 		SendSuccessResult(res, submittedProof)
 		return
