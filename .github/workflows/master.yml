@@ -1,0 +1,35 @@
+name: master
+on:
+  push:
+    branches:
+      - 'master'
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up git
+        uses: actions/checkout@v2
+
+      - name: Tag relese
+        run:  |
+          git config --global user.email "fli@shapeshifter.se"
+          git config --global user.name "Fredrik Lindberg"
+          make tag_release
+
+      - name: Build image 
+        run:  |
+          registry=fredriklindberg/ make build_image
+
+      - name: Log in to hub.docker.com
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+      - name: Publish image
+        run: |
+          registry=fredriklindberg/ make publish_image

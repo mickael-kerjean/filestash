@@ -12,8 +12,10 @@ FROM base AS build-image
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get install -y \
     golang npm curl libglib2.0-dev libpangoft2-1.0-0 make git \
-    curl make gcc g++ xz-utils pkg-config python3-pip autoconf libtool unzip python-setuptools cmake git \
-    libraw-dev libjpeg-dev libgcc-11-dev libvips-dev liblcms2-dev
+    curl make gcc-10 g++10 xz-utils pkg-config python3-pip autoconf libtool unzip python-setuptools cmake git \
+    libraw-dev libjpeg-dev libgcc-10-dev libvips-dev liblcms2-dev
+
+ARG version
 
 #
 # Stage 3: Build libtranscode
@@ -51,7 +53,7 @@ RUN CXXFLAGS="--std=c++17" npm install --include=dev --force
 
 COPY client/ ./client/
 COPY config/ ./config/
-COPY *.js .babelrc .eslintrc.json .
+COPY *.js .babelrc .eslintrc.json ./
 
 RUN make build_frontend
 
@@ -88,16 +90,15 @@ RUN go generate -x ./server/...
 # doesn't need. In case a .o or .a file is after a -l flag, the symbols from
 # the library are discarded before the object file is considered.
 RUN mkdir /deps && ar r /deps/libresize_linux_amd64.a && ar r /deps/libtranscode_linux_amd64.a
-RUN make GOFLAGS="" CGO_LDFLAGS="-L/deps -lresize -ltranscode" build_backend
+RUN export CC=gcc-10; make GOFLAGS="" CGO_LDFLAGS="-L/deps -lresize -ltranscode" build_backend
 ENV LD_LIBRARY_PATH /usr/local/lib
-RUN ldd dist/filestash
+RUN export CC=gcc-10; ldd dist/filestash
 
 #
 # Stage 7: Build final Docker Image
 #
 
 FROM base
-MAINTAINER mickael@kerjean.me
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV LD_LIBRARY_PATH /usr/local/lib
@@ -165,5 +166,6 @@ RUN \
 
 USER filestash
 EXPOSE 8334
+LABEL version ${VERSION}
 VOLUME ["/app/data/state/"]
 CMD ["/app/filestash"]
