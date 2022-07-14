@@ -467,11 +467,11 @@ func (s S3Backend) path(p string) S3Path {
 	sp := strings.Split(p, "/")
 	bucket := ""
 	if len(sp) > 1 {
-		bucket = sp[1]
+		bucket = sp[0]
 	}
 	path := ""
 	if len(sp) > 2 {
-		path = strings.Join(sp[2:], "/")
+		path = strings.Join(sp[1:], "/")
 	}
 
 	return S3Path{
