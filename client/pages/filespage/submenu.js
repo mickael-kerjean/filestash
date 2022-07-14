@@ -6,9 +6,10 @@ import {
     NgIf, Icon, EventEmitter, Dropdown, DropdownButton, DropdownList,
     DropdownItem, Container,
 } from "../../components/";
-import { debounce, prompt } from "../../helpers/";
+import { alert, debounce, prompt } from "../../helpers/";
 import { t } from "../../locales/";
 import "./submenu.scss";
+import { ShareComponent } from "./share";
 
 class SubmenuComponent extends React.Component {
     constructor(props) {
@@ -119,6 +120,13 @@ class SubmenuComponent extends React.Component {
         }
     }
 
+    shareFolder(e) {
+        alert.now(
+            <ShareComponent path={this.props.path} type="directory" />
+            ,(ok) => {},
+        );
+    }
+
     render() {
         return (
             <div className="component_submenu">
@@ -156,6 +164,12 @@ class SubmenuComponent extends React.Component {
                                 <span>{ t("Remove") }</span>
                             </ReactCSSTransitionGroup>
                         </NgIf>
+
+                        <div
+                            className="view list-grid"
+                            onClick={this.shareFolder.bind(this)}>
+                            <Icon name="share"/>
+                        </div>
 
                         <Dropdown
                             className="view sort"
