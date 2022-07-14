@@ -9,15 +9,20 @@ package http
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
+	"net"
 	"net/http"
+	"time"
 
 	"go.opencensus.io/plugin/ochttp"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/googleapi/transport"
 	"google.golang.org/api/internal"
 	"google.golang.org/api/option"
+	"google.golang.org/api/transport/cert"
 	"google.golang.org/api/transport/http/internal/propagation"
+	"google.golang.org/api/transport/internal/dca"
 )
 
 // NewClient returns an HTTP client for use communicating with a Google cloud
@@ -28,15 +33,19 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*http.Client, 
 	if err != nil {
 		return nil, "", err
 	}
-	// TODO(cbro): consider injecting the User-Agent even if an explicit HTTP client is provided?
-	if settings.HTTPClient != nil {
-		return settings.HTTPClient, settings.Endpoint, nil
-	}
-	trans, err := newTransport(ctx, defaultBaseTransport(ctx), settings)
+	clientCertSource, endpoint, err := dca.GetClientCertificateSourceAndEndpoint(settings)
 	if err != nil {
 		return nil, "", err
 	}
-	return &http.Client{Transport: trans}, settings.Endpoint, nil
+	// TODO(cbro): consider injecting the User-Agent even if an explicit HTTP client is provided?
+	if settings.HTTPClient != nil {
+		return settings.HTTPClient, endpoint, nil
+	}
+	trans, err := newTransport(ctx, defaultBaseTransport(ctx, clientCertSource), settings)
+	if err != nil {
+		return nil, "", err
+	}
+	return &http.Client{Transport: trans}, endpoint, nil
 }
 
 // NewTransport creates an http.RoundTripper for use communicating with a Google
@@ -53,13 +62,13 @@ func NewTransport(ctx context.Context, base http.RoundTripper, opts ...option.Cl
 }
 
 func newTransport(ctx context.Context, base http.RoundTripper, settings *internal.DialSettings) (http.RoundTripper, error) {
-	trans := base
-	trans = parameterTransport{
-		base:          trans,
+	paramTransport := &parameterTransport{
+		base:          base,
 		userAgent:     settings.UserAgent,
 		quotaProject:  settings.QuotaProject,
 		requestReason: settings.RequestReason,
 	}
+	var trans http.RoundTripper = paramTransport
 	trans = addOCTransport(trans, settings)
 	switch {
 	case settings.NoAuth:
@@ -74,9 +83,17 @@ func newTransport(ctx context.Context, base http.RoundTripper, settings *interna
 		if err != nil {
 			return nil, err
 		}
+		if paramTransport.quotaProject == "" {
+			paramTransport.quotaProject = internal.QuotaProjectFromCreds(creds)
+		}
+
+		ts := creds.TokenSource
+		if settings.ImpersonationConfig == nil && settings.TokenSource != nil {
+			ts = settings.TokenSource
+		}
 		trans = &oauth2.Transport{
 			Base:   trans,
-			Source: creds.TokenSource,
+			Source: ts,
 		}
 	}
 	return trans, nil
@@ -104,7 +121,7 @@ type parameterTransport struct {
 	base http.RoundTripper
 }
 
-func (t parameterTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+func (t *parameterTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	rt := t.base
 	if rt == nil {
 		return nil, errors.New("transport: no Transport specified")
@@ -134,12 +151,54 @@ func (t parameterTransport) RoundTrip(req *http.Request) (*http.Response, error)
 var appengineUrlfetchHook func(context.Context) http.RoundTripper
 
 // defaultBaseTransport returns the base HTTP transport.
-// On App Engine, this is urlfetch.Transport, otherwise it's http.DefaultTransport.
-func defaultBaseTransport(ctx context.Context) http.RoundTripper {
+// On App Engine, this is urlfetch.Transport.
+// Otherwise, use a default transport, taking most defaults from
+// http.DefaultTransport.
+// If TLSCertificate is available, set TLSClientConfig as well.
+func defaultBaseTransport(ctx context.Context, clientCertSource cert.Source) http.RoundTripper {
 	if appengineUrlfetchHook != nil {
 		return appengineUrlfetchHook(ctx)
 	}
-	return http.DefaultTransport
+
+	// Copy http.DefaultTransport except for MaxIdleConnsPerHost setting,
+	// which is increased due to reported performance issues under load in the GCS
+	// client. Transport.Clone is only available in Go 1.13 and up.
+	trans := clonedTransport(http.DefaultTransport)
+	if trans == nil {
+		trans = fallbackBaseTransport()
+	}
+	trans.MaxIdleConnsPerHost = 100
+
+	if clientCertSource != nil {
+		trans.TLSClientConfig = &tls.Config{
+			GetClientCertificate: clientCertSource,
+		}
+	}
+
+	// If possible, configure http2 transport in order to use ReadIdleTimeout
+	// setting. This can only be done in Go 1.16 and up.
+	configureHTTP2(trans)
+
+	return trans
+}
+
+// fallbackBaseTransport is used in <go1.13 as well as in the rare case if
+// http.DefaultTransport has been reassigned something that's not a
+// *http.Transport.
+func fallbackBaseTransport() *http.Transport {
+	return &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		MaxIdleConns:          100,
+		MaxIdleConnsPerHost:   100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
 }
 
 func addOCTransport(trans http.RoundTripper, settings *internal.DialSettings) http.RoundTripper {
@@ -150,4 +209,15 @@ func addOCTransport(trans http.RoundTripper, settings *internal.DialSettings) ht
 		Base:        trans,
 		Propagation: &propagation.HTTPFormat{},
 	}
+}
+
+// clonedTransport returns the given RoundTripper as a cloned *http.Transport.
+// It returns nil if the RoundTripper can't be cloned or coerced to
+// *http.Transport.
+func clonedTransport(rt http.RoundTripper) *http.Transport {
+	t, ok := rt.(*http.Transport)
+	if !ok {
+		return nil
+	}
+	return t.Clone()
 }

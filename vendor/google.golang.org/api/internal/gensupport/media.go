@@ -15,6 +15,7 @@ import (
 	"net/textproto"
 	"strings"
 	"sync"
+	"time"
 
 	"google.golang.org/api/googleapi"
 )
@@ -55,7 +56,7 @@ func (cs *contentSniffer) Read(p []byte) (n int, err error) {
 	return cs.r.Read(p)
 }
 
-// ContentType returns the sniffed content type, and whether the content type was succesfully sniffed.
+// ContentType returns the sniffed content type, and whether the content type was successfully sniffed.
 func (cs *contentSniffer) ContentType() (string, bool) {
 	if cs.sniffed {
 		return cs.ctype, cs.ctype != ""
@@ -88,7 +89,7 @@ func DetermineContentType(media io.Reader, ctype string) (io.Reader, string) {
 		return media, ctype
 	}
 
-	// For backwards compatability, allow clients to set content
+	// For backwards compatibility, allow clients to set content
 	// type by providing a ContentTyper for media.
 	if typer, ok := media.(googleapi.ContentTyper); ok {
 		return media, typer.ContentType()
@@ -217,12 +218,13 @@ func PrepareUpload(media io.Reader, chunkSize int) (r io.Reader, mb *MediaBuffer
 // code only.
 type MediaInfo struct {
 	// At most one of Media and MediaBuffer will be set.
-	media           io.Reader
-	buffer          *MediaBuffer
-	singleChunk     bool
-	mType           string
-	size            int64 // mediaSize, if known.  Used only for calls to progressUpdater_.
-	progressUpdater googleapi.ProgressUpdater
+	media              io.Reader
+	buffer             *MediaBuffer
+	singleChunk        bool
+	mType              string
+	size               int64 // mediaSize, if known.  Used only for calls to progressUpdater_.
+	progressUpdater    googleapi.ProgressUpdater
+	chunkRetryDeadline time.Duration
 }
 
 // NewInfoFromMedia should be invoked from the Media method of a call. It returns a
@@ -234,6 +236,7 @@ func NewInfoFromMedia(r io.Reader, options []googleapi.MediaOption) *MediaInfo {
 	if !opts.ForceEmptyContentType {
 		r, mi.mType = DetermineContentType(r, opts.ContentType)
 	}
+	mi.chunkRetryDeadline = opts.ChunkRetryDeadline
 	mi.media, mi.buffer, mi.singleChunk = PrepareUpload(r, opts.ChunkSize)
 	return mi
 }
@@ -356,6 +359,7 @@ func (mi *MediaInfo) ResumableUpload(locURI string) *ResumableUpload {
 				mi.progressUpdater(curr, mi.size)
 			}
 		},
+		ChunkRetryDeadline: mi.chunkRetryDeadline,
 	}
 }
 
