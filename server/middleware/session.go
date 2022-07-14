@@ -53,7 +53,7 @@ func SessionStart(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 	return func(ctx App, res http.ResponseWriter, req *http.Request) {
 		var err error
 		if ctx.Share, err = _extractShare(req); err != nil {
-			SendErrorResult(res, err)
+			SendErrorResultWithHeaders(res, err, map[string]string{"WWW-Authenticate": "Basic realm=share"})
 			return
 		}
 		if ctx.Session, err = _extractSession(req, &ctx); err != nil {
@@ -229,7 +229,7 @@ func _extractShare(req *http.Request) (Share, error) {
 	var requiredProof []model.Proof = model.ShareProofGetRequired(s)
 	var remainingProof []model.Proof = model.ShareProofCalculateRemainings(requiredProof, verifiedProof)
 	if len(remainingProof) != 0 {
-		return Share{}, NewError("Unauthorized Shared space", 400)
+		return Share{}, NewError("Unauthorized Shared space", 401)
 	}
 	return s, nil
 }

@@ -90,6 +90,14 @@ func SendErrorResult(res http.ResponseWriter, err error) {
 	encoder.Encode(APIErrorMessage{"error", m})
 }
 
+func SendErrorResultWithHeaders(res http.ResponseWriter, err error, headers map[string]string) {
+	header := res.Header()
+	for k, v := range headers {
+		header.Set(k, v)
+	}
+	SendErrorResult(res, err)
+}
+
 func Page(stuff string) string {
 	return `<!DOCTYPE html>
 <html>
