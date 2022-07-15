@@ -161,8 +161,10 @@ COPY --from=build-backend /src/dist/filestash /app/filestash
 
 RUN \
     ldd /app/filestash && \
-    mkdir -p /app/data/state/log && \
     ln -s /app/filestash /bin/filestash
+
+RUN mkdir -p /app/data/state/log && chown filestash:filestash /app/data/state/log
+RUN mkdir -p /app/data/cache && chown filestash:filestash /app/data/cache
 
 USER filestash
 EXPOSE 8334
