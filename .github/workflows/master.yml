@@ -18,6 +18,7 @@ jobs:
         run:  |
           git config --global user.email "fli@shapeshifter.se"
           git config --global user.name "Fredrik Lindberg"
+          git fetch --all --tags
           make tag_release
 
       - name: Build image 
