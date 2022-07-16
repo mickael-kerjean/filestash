@@ -6,7 +6,6 @@ import (
 )
 
 const (
-	APP_VERSION       = "v0.5"
 	LOG_PATH          = "data/state/log/"
 	CONFIG_PATH       = "data/state/config/"
 	DB_PATH           = "data/state/db/"
@@ -32,6 +31,7 @@ func init() {
 }
 
 var (
+	APP_VERSION                   string = "v0.5"
 	BUILD_REF                     string
 	BUILD_DATE                    string
 	LICENSE                       string = "agpl"

@@ -1,3 +1,5 @@
+version=$(shell git describe --tags --always --dirty 2> /dev/null || git rev-parse --short HEAD)
+
 all:
 	make build_backend
 
@@ -9,9 +11,8 @@ build_frontend:
 	NODE_ENV=production npm run build
 
 build_backend:
-	PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/ CGO_CFLAGS_ALLOW='-fopenmp' go build $(GOFLAGS) -mod=vendor --tags "fts5" -ldflags "-X github.com/mickael-kerjean/filestash/server/common.BUILD_DATE=`date -u +%Y%m%d` -X github.com/mickael-kerjean/filestash/server/common.BUILD_REF=`git rev-parse HEAD`" -o dist/filestash server/main.go
+	PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/ CGO_CFLAGS_ALLOW='-fopenmp' go build $(GOFLAGS) -mod=vendor --tags "fts5" -ldflags " -X github.com/mickael-kerjean/filestash/server/common.APP_VERSION=${version} -X github.com/mickael-kerjean/filestash/server/common.BUILD_DATE=`date -u +%Y%m%d` -X github.com/mickael-kerjean/filestash/server/common.BUILD_REF=`git rev-parse HEAD`" -o dist/filestash server/main.go
 
-version=$(shell git describe --tags --always --dirty 2> /dev/null || git rev-parse --short HEAD)
 registry?=
 project=filestash
 build_image:

@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"net/http"
 	"path/filepath"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func ApiHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -33,7 +34,7 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 		header.Set("Referrer-Policy", "same-origin")
 		header.Set("X-Content-Type-Options", "nosniff")
 		header.Set("X-XSS-Protection", "1; mode=block")
-		header.Set("X-Powered-By", fmt.Sprintf("Filestash/%s.%s <https://filestash.app>", APP_VERSION, BUILD_DATE))
+		header.Set("X-Powered-By", fmt.Sprintf("Filestash/%s <Custom build>", APP_VERSION))
 
 		cspHeader := "default-src 'none'; "
 		cspHeader += "style-src 'self' 'unsafe-inline'; "
