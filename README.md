@@ -1,3 +1,23 @@
+# Custom filestash build
+This is a custom build of filestash aimed for multi-user environment with shared storage.
+
+## Main differences
+* OpenID connect support ([Configuration guide](OIDC_GUIDE.md)) 
+* Improved WebDAV shares (Finder-friendly authentication, Ability to create share whole drive from UI)
+
+## Versioning
+The upstream project follows a date-based versioning strategy. This build follows the same strategy, each
+merge to master is tagged and follows the pattern `v0.5-<date>-<build-number>`. Each master build is published to Docker Hub.
+
+## Containers
+Containers can be found at https://hub.docker.com/r/fredriklindberg/filestash or built with `make build_image`.
+
+Quick start
+
+    docker run --rm -ti -p 8334:8334 fredriklindberg/filestash:latest
+
+# Filestash
+
 ![screenshot](https://raw.githubusercontent.com/mickael-kerjean/filestash_images/master/.assets/photo.jpg)
 
 <p align="center">
