@@ -179,7 +179,8 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 		Path:     COOKIE_PATH,
 		MaxAge:   60 * 60 * 24 * 30,
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 	}
 	http.SetCookie(res, &cookie)
 
