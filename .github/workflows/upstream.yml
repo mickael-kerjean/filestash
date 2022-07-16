@@ -1,0 +1,44 @@
+name: upstream
+on:
+  schedule:
+    - cron:  '12 8 * * *'
+
+  workflow_dispatch:
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  track_upstream:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up git
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get upstream
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git remote add -f upstream https://github.com/mickael-kerjean/filestash.git
+
+      - name: Get master build status
+        run:  |
+          upstream_master=$(git rev-parse upstream/master)
+          upstream_status=$(gh api -H "Accept: application/vnd.github+json" /repos/mickael-kerjean/filestash/commits/${upstream_master}/status | jq -r .state)
+          echo upstream_status=${upstream_status} >> $GITHUB_ENV
+          echo "${upstream_master} build status is ${upstream_status}"
+
+      - name: Merge upstream
+        if: ${{ env.upstream_status == 'success' }}
+        run: |
+          upstream_master=$(git rev-parse upstream/master)
+          branch_name=upstream-merge-$(date -u +%Y%m%d%H%M)
+          git checkout -b ${branch_name} origin/master
+          git merge -m "Automatic upstream merge ${upstream_master}" upstream/master
+          git show
+          git push origin --set-upstream ${branch_name}
+          gh pr create --repo fredriklindberg/filestash --base master --title "Automatic merge of upstream $(date -u +%Y%m%d)" --body "Automatic upstream merge" -a fredriklindberg
+
