@@ -1,9 +1,7 @@
-name: upstream
+name: 'Upstream tracker'
 on:
   schedule:
-    - cron:  '12 8 * * *'
-
-  workflow_dispatch:
+    - cron:  '12 17 * * *'
 
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,7 +35,7 @@ jobs:
           upstream_master=$(git rev-parse upstream/master)
           branch_name=upstream-merge-$(date -u +%Y%m%d%H%M)
           git checkout -b ${branch_name} origin/master
-          git merge -m "Automatic upstream merge ${upstream_master}" upstream/master
+          git merge -m "Automatic upstream merge (${upstream_master})" upstream/master
           git show
           git push origin --set-upstream ${branch_name}
           gh pr create --repo fredriklindberg/filestash --base master --title "Automatic merge of upstream $(date -u +%Y%m%d)" --body "Automatic upstream merge" -a fredriklindberg
