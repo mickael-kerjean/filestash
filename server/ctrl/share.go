@@ -135,7 +135,7 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 			MaxAge: -1,
 			Path:   COOKIE_PATH,
 		})
-		Log.Debug("share::verify::validate 'proof issue'")
+		Log.Debug("share::verify::validate 'proof issue' len(verifiedProof)[%d] len(requiredProof)[%d]", len(verifiedProof), len(requiredProof))
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
