@@ -46,7 +46,6 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 				str := ""
 				index := 0
 				for {
-
 					cookie, err := req.Cookie(CookieName(index))
 					if err != nil {
 						break
@@ -162,7 +161,16 @@ func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	if submittedProof.Key != "" {
 		submittedProof.Id = Hash(submittedProof.Key+"::"+submittedProof.Value, 20)
-		verifiedProof = append(verifiedProof, submittedProof)
+		alreadyExist := false
+		for i := 0; i < len(verifiedProof); i++ {
+			if verifiedProof[i].Id == submittedProof.Id {
+				alreadyExist = true
+				break
+			}
+		}
+		if alreadyExist == false {
+			verifiedProof = append(verifiedProof, submittedProof)
+		}
 	}
 
 	// 4) Find remaining proofs: requiredProof - verifiedProof
