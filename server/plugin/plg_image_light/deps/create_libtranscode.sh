@@ -24,7 +24,7 @@ INITIAL_PATH=`pwd`
 apt install -y libraw-dev
 cd /tmp/
 # libgomp and libstdc++
-apt-get install -y libgcc-6-dev
+# apt-get install -y libgcc-6-dev
 # libjpeg
 apt-get install -y libjpeg-dev
 # liblcms2
@@ -52,8 +52,8 @@ libpath=$(
 ar x /usr/lib/$libpath/libraw.a
 ar x /usr/lib/$libpath/libjpeg.a
 ar x /usr/local/lib/liblcms2.a
-ar x /usr/lib/gcc/$libpath/6/libstdc++.a
-ar x /usr/lib/gcc/$libpath/6/libgomp.a
+ar x /usr/lib/gcc/$libpath/9/libstdc++.a
+ar x /usr/lib/gcc/$libpath/9/libgomp.a
 ar x /usr/lib/$libpath/libpthread.a
 
 ar rcs libtranscode.a *.o
