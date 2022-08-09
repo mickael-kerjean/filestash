@@ -151,7 +151,7 @@ func (w WebDav) Cat(path string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	if res.StatusCode >= 400 {
-		return nil, NewError(HTTPFriendlyStatus(res.StatusCode)+": can't create "+filepath.Base(path), res.StatusCode)
+		return nil, NewError(HTTPFriendlyStatus(res.StatusCode)+": can't fetch "+filepath.Base(path), res.StatusCode)
 	}
 	return res.Body, nil
 }
@@ -216,9 +216,15 @@ func (w WebDav) request(method string, url string, body io.Reader, fn func(req *
 	if w.params.username != "" {
 		req.SetBasicAuth(w.params.username, w.params.password)
 	}
+
 	req.Header.Add("Content-Type", "text/xml;charset=UTF-8")
-	req.Header.Add("Accept", "application/xml,text/xml")
 	req.Header.Add("Accept-Charset", "utf-8")
+	switch method {
+	case "GET":
+		req.Header.Add("Accept", "*/*")
+	default:
+		req.Header.Add("Accept", "application/xml,text/xml")
+	}
 
 	if req.Body != nil {
 		defer req.Body.Close()
