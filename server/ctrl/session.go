@@ -3,12 +3,14 @@ package ctrl
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/middleware"
 	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"text/template"
 	"time"
@@ -306,6 +308,12 @@ func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) 
 		)
 		return
 	}
+	for _, value := range os.Environ() {
+		pair := strings.SplitN(value, "=", 2)
+		if len(pair) == 2 {
+			templateBind[fmt.Sprintf("ENV_%s", pair[0])] = pair[1]
+		}
+	}
 
 	// Step3: create a backend connection object
 	session, err := func(tb map[string]string) (map[string]string, error) {
@@ -318,6 +326,7 @@ func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) 
 			[]byte(Config.Get("middleware.attribute_mapping.params").String()),
 			&globalMapping,
 		); err != nil {
+			Log.Warning("session::authMiddlware 'attribute mapping error' %s", err.Error())
 			return map[string]string{}, err
 		}
 		mappingToUse := map[string]string{}
