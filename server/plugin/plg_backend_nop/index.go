@@ -38,6 +38,7 @@ func (this LargeFile) Close() error {
 type BlackHole struct{}
 
 func (this BlackHole) Init(params map[string]string, app *App) (IBackend, error) {
+	Log.Debug("plg_backend_nop::init params[%s]", params)
 	return BlackHole{}, nil
 }
 
