@@ -1,10 +1,11 @@
 package plg_backend_local
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"golang.org/x/crypto/bcrypt"
 	"io"
 	"os"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func init() {
@@ -66,7 +67,7 @@ func (this Local) Mkdir(path string) error {
 }
 
 func (this Local) Rm(path string) error {
-	return os.Remove(path)
+	return os.RemoveAll(path)
 }
 
 func (this Local) Mv(from, to string) error {
