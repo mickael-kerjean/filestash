@@ -6,6 +6,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -34,7 +35,13 @@ func (this TmpStorage) Init(params map[string]string, app *App) (IBackend, error
 	if params["userID"] == "" {
 		return nil, ErrAuthenticationFailed
 	}
-	p := fmt.Sprintf("%s%s/", FILESTASH_DIRECTORY, params["userID"])
+	p := filepath.Join(FILESTASH_DIRECTORY, params["userID"])
+	if strings.HasSuffix(p, "/") == false {
+		p = fmt.Sprintf("%s/", p)
+	}
+	if err := this.VerifyPath(p); err != nil {
+		return nil, ErrAuthenticationFailed
+	}
 	if c := ChrootCache.Get(params); c == nil {
 		ChrootCache.Set(params, p)
 	}
@@ -61,6 +68,9 @@ func (this TmpStorage) LoginForm() Form {
 }
 
 func (this TmpStorage) Ls(path string) ([]os.FileInfo, error) {
+	if err := this.VerifyPath(path); err != nil {
+		return nil, err
+	}
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -69,37 +79,54 @@ func (this TmpStorage) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (this TmpStorage) Cat(path string) (io.ReadCloser, error) {
+	if err := this.VerifyPath(path); err != nil {
+		return nil, err
+	}
 	reader, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err == nil {
 		return reader, nil
 	}
-	if os.IsExist(err) {
-		return reader, err
-	}
-	if strings.HasSuffix(path, ".doc") || strings.HasSuffix(path, ".docx") {
-		docx, err := base64.StdEncoding.DecodeString(EMPTY_DOCX)
-		if err != nil {
-			return nil, err
-		}
-		return NewReadCloserFromBytes(docx), nil
-	}
-	return NewReadCloserFromBytes([]byte("")), nil
 
+	if os.IsExist(err) == false {
+		if strings.HasSuffix(path, ".doc") || strings.HasSuffix(path, ".docx") {
+			docx, err := base64.StdEncoding.DecodeString(EMPTY_DOCX)
+			if err != nil {
+				return nil, err
+			}
+			return NewReadCloserFromBytes(docx), nil
+		}
+		return NewReadCloserFromBytes([]byte("")), nil
+	}
+	return reader, err
 }
 
 func (this TmpStorage) Mkdir(path string) error {
+	if err := this.VerifyPath(path); err != nil {
+		return err
+	}
 	return os.Mkdir(path, 0664)
 }
 
 func (this TmpStorage) Rm(path string) error {
+	if err := this.VerifyPath(path); err != nil {
+		return err
+	}
 	return os.Remove(path)
 }
 
 func (this TmpStorage) Mv(from, to string) error {
+	if err := this.VerifyPath(from); err != nil {
+		return err
+	} else if err = this.VerifyPath(to); err != nil {
+		return err
+	}
 	return os.Rename(from, to)
 }
 
 func (this TmpStorage) Save(path string, content io.Reader) error {
+	if err := this.VerifyPath(path); err != nil {
+		return err
+	}
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
@@ -109,6 +136,10 @@ func (this TmpStorage) Save(path string, content io.Reader) error {
 }
 
 func (this TmpStorage) Touch(path string) error {
+	if err := this.VerifyPath(path); err != nil {
+		return err
+	}
+
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return err
@@ -118,4 +149,12 @@ func (this TmpStorage) Touch(path string) error {
 		return err
 	}
 	return f.Close()
+}
+
+func (this TmpStorage) VerifyPath(path string) error {
+	if strings.HasPrefix(path, FILESTASH_DIRECTORY) == false {
+		Log.Warning("plg_backend_tmp::chroot attempt to circumvent chroot via path[%s]", path)
+		return ErrPermissionDenied
+	}
+	return nil
 }
