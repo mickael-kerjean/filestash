@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -32,7 +33,7 @@ func init() {
 type TmpStorage struct{}
 
 func (this TmpStorage) Init(params map[string]string, app *App) (IBackend, error) {
-	if params["userID"] == "" {
+	if regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(params["userID"]) == false {
 		return nil, ErrAuthenticationFailed
 	}
 	p := filepath.Join(FILESTASH_DIRECTORY, params["userID"])
