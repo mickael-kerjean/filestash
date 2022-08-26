@@ -18,6 +18,7 @@ var FtpCache AppCache
 
 type Ftp struct {
 	client *goftp.Client
+	p      map[string]string
 }
 
 func init() {
@@ -75,7 +76,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		if _, err := client.ReadDir("/"); err != nil {
 			client.Close()
 		} else {
-			backend = &Ftp{client}
+			backend = &Ftp{client, params}
 		}
 	}
 
@@ -89,7 +90,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 			client.Close()
 			return backend, ErrAuthenticationFailed
 		}
-		backend = &Ftp{client}
+		backend = &Ftp{client, params}
 	}
 
 	FtpCache.Set(params, backend)
@@ -156,6 +157,8 @@ func (f Ftp) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (f Ftp) Cat(path string) (io.ReadCloser, error) {
+	c := f.preventCacheDeletion()
+	defer c()
 	pr, pw := io.Pipe()
 	go func() {
 		if err := f.client.Retrieve(path, pw); err != nil {
@@ -172,6 +175,8 @@ func (f Ftp) Mkdir(path string) error {
 }
 
 func (f Ftp) Rm(path string) error {
+	c := f.preventCacheDeletion()
+	defer c()
 	isDirectory := func(p string) bool {
 		return regexp.MustCompile(`\/$`).MatchString(p)
 	}
@@ -222,9 +227,29 @@ func (f Ftp) Touch(path string) error {
 }
 
 func (f Ftp) Save(path string, file io.Reader) error {
+	c := f.preventCacheDeletion()
+	defer c()
 	return f.client.Store(path, file)
 }
 
 func (f Ftp) Close() error {
 	return f.client.Close()
+}
+
+func (f Ftp) preventCacheDeletion() func() {
+	c := make(chan string)
+	go func() {
+		for {
+			select {
+			case <-c:
+				return
+			case <-time.After(30 * time.Second):
+				FtpCache.Set(f.p, &f)
+				continue
+			}
+		}
+	}()
+	return func() {
+		close(c)
+	}
 }

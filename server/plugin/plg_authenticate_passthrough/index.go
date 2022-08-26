@@ -37,5 +37,7 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 }
 
 func (this Admin) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
-	return map[string]string{}, nil
+	return map[string]string{
+		"user": "anonymous",
+	}, nil
 }
