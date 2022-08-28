@@ -314,6 +314,7 @@ func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) 
 			templateBind[fmt.Sprintf("ENV_%s", pair[0])] = pair[1]
 		}
 	}
+	templateBind["machine_id"] = GenerateMachineID()
 
 	// Step3: create a backend connection object
 	session, err := func(tb map[string]string) (map[string]string, error) {
