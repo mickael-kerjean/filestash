@@ -51,7 +51,7 @@ func (this Local) Home() (string, error) {
 }
 
 func (this Local) Ls(path string) ([]os.FileInfo, error) {
-	f, err := os.Open(path)
+	f, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (this Local) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (this Local) Cat(path string) (io.ReadCloser, error) {
-	return os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	return SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
 }
 
 func (this Local) Mkdir(path string) error {
@@ -75,7 +75,7 @@ func (this Local) Mv(from, to string) error {
 }
 
 func (this Local) Save(path string, content io.Reader) error {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	f, err := SafeOsOpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (this Local) Save(path string, content io.Reader) error {
 }
 
 func (this Local) Touch(path string) error {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	f, err := SafeOsOpenFile(path, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return err
 	}
