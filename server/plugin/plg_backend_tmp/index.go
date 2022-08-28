@@ -72,7 +72,7 @@ func (this TmpStorage) Ls(path string) ([]os.FileInfo, error) {
 	if err := this.VerifyPath(path); err != nil {
 		return nil, err
 	}
-	f, err := os.Open(path)
+	f, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (this TmpStorage) Cat(path string) (io.ReadCloser, error) {
 	if err := this.VerifyPath(path); err != nil {
 		return nil, err
 	}
-	reader, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	reader, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err == nil {
 		return reader, nil
 	}
@@ -128,7 +128,7 @@ func (this TmpStorage) Save(path string, content io.Reader) error {
 	if err := this.VerifyPath(path); err != nil {
 		return err
 	}
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	f, err := SafeOsOpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -140,8 +140,7 @@ func (this TmpStorage) Touch(path string) error {
 	if err := this.VerifyPath(path); err != nil {
 		return err
 	}
-
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	f, err := SafeOsOpenFile(path, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return err
 	}
