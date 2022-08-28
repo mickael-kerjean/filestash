@@ -68,6 +68,11 @@ func SplitPath(path string) (root string, filename string) {
 }
 
 func SafeOsOpenFile(path string, flag int, perm os.FileMode) (*os.File, error) {
+	flag = flag | syscall.O_NOFOLLOW
+	if flag&os.O_CREATE != 0 {
+		return os.OpenFile(path, flag, perm)
+	}
+
 	fi, err := os.Lstat(filepath.Clean(path))
 	if err != nil {
 		Log.Warning("common::files os.Open err[%s] path[%s]", err.Error(), path)
@@ -83,5 +88,5 @@ func SafeOsOpenFile(path string, flag int, perm os.FileMode) (*os.File, error) {
 		Log.Warning("common::files mode[%b] path[%s]", mode, path)
 		return nil, ErrFilesystemError
 	}
-	return os.OpenFile(path, flag|syscall.O_NOFOLLOW, perm)
+	return os.OpenFile(path, flag, perm)
 }
