@@ -1,6 +1,7 @@
 package common
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -69,24 +70,20 @@ func SplitPath(path string) (root string, filename string) {
 
 func SafeOsOpenFile(path string, flag int, perm os.FileMode) (*os.File, error) {
 	flag = flag | syscall.O_NOFOLLOW
-	if flag&os.O_CREATE != 0 {
-		return os.OpenFile(path, flag, perm)
+
+	p, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) && flag&os.O_CREATE != 0 {
+			return os.OpenFile(path, flag, perm)
+		}
+		Log.Warning("common::files SafeOsOpenFile err[%s] path[%s]", err.Error(), path)
+		return nil, ErrFilesystemError
 	}
 
-	fi, err := os.Lstat(filepath.Clean(path))
-	if err != nil {
-		Log.Warning("common::files os.Open err[%s] path[%s]", err.Error(), path)
+	if p != filepath.Clean(path) {
+		Log.Warning("common::files SafeOsOpenFile clean(path)[%s] p[%s]", filepath.Clean(path), p)
 		return nil, ErrFilesystemError
 	}
-	switch mode := fi.Mode(); {
-	case mode.IsRegular():
-	case mode.IsDir():
-	case mode&os.ModeSymlink != 0:
-		Log.Warning("common::files blocked symlink path[%s]", path)
-		return nil, ErrFilesystemError
-	default:
-		Log.Warning("common::files mode[%b] path[%s]", mode, path)
-		return nil, ErrFilesystemError
-	}
+
 	return os.OpenFile(path, flag, perm)
 }
