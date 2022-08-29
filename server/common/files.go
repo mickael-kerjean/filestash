@@ -69,21 +69,60 @@ func SplitPath(path string) (root string, filename string) {
 }
 
 func SafeOsOpenFile(path string, flag int, perm os.FileMode) (*os.File, error) {
-	flag = flag | syscall.O_NOFOLLOW
+	if err := safePath(path); err != nil {
+		Log.Debug("common::files safeOsOpenFile err[%s] path[%s]", err.Error(), path)
+		return nil, ErrFilesystemError
+	}
+	return os.OpenFile(path, flag|syscall.O_NOFOLLOW, perm)
+}
 
+func SafeOsMkdir(path string, mode os.FileMode) error {
+	if err := safePath(path); err != nil {
+		Log.Debug("common::files safeOsMkdir err[%s] path[%s]", err.Error(), path)
+		return ErrFilesystemError
+	}
+	return os.Mkdir(path, mode)
+}
+
+func SafeOsRemove(path string) error {
+	if err := safePath(path); err != nil {
+		Log.Debug("common::files safeOsRemove err[%s] path[%s]", err.Error(), path)
+		return ErrFilesystemError
+	}
+	return os.Remove(path)
+}
+
+func SafeOsRemoveAll(path string) error {
+	if err := safePath(path); err != nil {
+		Log.Debug("common::files safeOsRemoveAll err[%s] path[%s]", err.Error(), path)
+		return ErrFilesystemError
+	}
+	return os.RemoveAll(path)
+}
+
+func SafeOsRename(from string, to string) error {
+	if err := safePath(from); err != nil {
+		Log.Debug("common::files safeOsRename err[%s] from[%s]", err.Error(), from)
+		return ErrFilesystemError
+	} else if err := safePath(to); err != nil {
+		Log.Debug("common::files safeOsRemove err[%s] to[%s]", err.Error(), to)
+		return ErrFilesystemError
+	}
+	return os.Rename(from, to)
+}
+
+func safePath(path string) error {
 	p, err := filepath.EvalSymlinks(path)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) && flag&os.O_CREATE != 0 {
-			return os.OpenFile(path, flag, perm)
+		if errors.Is(err, os.ErrNotExist) == false {
+			return err
 		}
-		Log.Warning("common::files SafeOsOpenFile err[%s] path[%s]", err.Error(), path)
-		return nil, ErrFilesystemError
+		parentPath := filepath.Join(path, "../")
+		return safePath(parentPath)
 	}
-
 	if p != filepath.Clean(path) {
-		Log.Warning("common::files SafeOsOpenFile clean(path)[%s] p[%s]", filepath.Clean(path), p)
-		return nil, ErrFilesystemError
+		Log.Debug("common::files safePath path[%s] p[%s]", path, p)
+		return ErrFilesystemError
 	}
-
-	return os.OpenFile(path, flag, perm)
+	return nil
 }

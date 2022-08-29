@@ -62,15 +62,15 @@ func (this Local) Cat(path string) (io.ReadCloser, error) {
 }
 
 func (this Local) Mkdir(path string) error {
-	return os.Mkdir(path, 0755)
+	return SafeOsMkdir(path, 0755)
 }
 
 func (this Local) Rm(path string) error {
-	return os.Remove(path)
+	return SafeOsRemove(path)
 }
 
 func (this Local) Mv(from, to string) error {
-	return os.Rename(from, to)
+	return SafeOsRename(from, to)
 }
 
 func (this Local) Save(path string, content io.Reader) error {
