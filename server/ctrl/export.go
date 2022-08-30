@@ -17,7 +17,7 @@ import (
 //go:generate sh -c "go run ../generator/emacs-el.go > export_generated.go && go fmt export_generated.go"
 var EmacsElConfig string = ""
 
-func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
+func FileExport(ctx *App, res http.ResponseWriter, req *http.Request) {
 	http.SetCookie(res, &http.Cookie{
 		Name:   "download",
 		Value:  "",
@@ -32,7 +32,7 @@ func FileExport(ctx App, res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		SendErrorResult(res, err)
 		return
-	} else if model.CanRead(&ctx) == false {
+	} else if model.CanRead(ctx) == false {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}

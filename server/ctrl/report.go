@@ -8,19 +8,19 @@ import (
 	"path/filepath"
 )
 
-func ReportHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func ReportHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	// This function is quite dumb indeed, the goal is to show a report trace in the logs
 	SendSuccessResult(res, nil)
 }
 
-func WellKnownSecurityHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func WellKnownSecurityHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte("# If you would like to report a security issue\n"))
 	res.Write([]byte("# you may report it to me via email\n"))
 	res.Write([]byte("Contact: mickael@kerjean.me"))
 }
 
-func HealthHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func HealthHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Access-Control-Allow-Origin", "*")
 	// CHECK 1: open the config file
 	file, err := os.OpenFile(

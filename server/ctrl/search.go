@@ -7,13 +7,13 @@ import (
 	"strings"
 )
 
-func FileSearch(ctx App, res http.ResponseWriter, req *http.Request) {
+func FileSearch(ctx *App, res http.ResponseWriter, req *http.Request) {
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		path = "/"
 	}
 	q := req.URL.Query().Get("q")
-	if model.CanRead(&ctx) == false {
+	if model.CanRead(ctx) == false {
 		Log.Debug("ctrl::search 'can not read \"%s\"'", path)
 		SendErrorResult(res, ErrPermissionDenied)
 		return
@@ -25,7 +25,7 @@ func FileSearch(ctx App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, ErrMissingDependency)
 		return
 	}
-	searchResults, err = searchEngine.Query(ctx, path, q)
+	searchResults, err = searchEngine.Query(*ctx, path, q)
 	if err != nil {
 		SendErrorResult(res, err)
 		return

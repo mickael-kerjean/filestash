@@ -15,7 +15,7 @@ var (
 	configpath = filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json")
 )
 
-func FetchLogHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func FetchLogHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	file, err := os.OpenFile(logpath, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		SendErrorResult(res, err)
@@ -47,11 +47,11 @@ func FetchLogHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	io.Copy(res, file)
 }
 
-func PrivateConfigHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func PrivateConfigHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, Config)
 }
 
-func PrivateConfigUpdateHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func PrivateConfigUpdateHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	b, _ := ioutil.ReadAll(req.Body)
 	if err := SaveConfig(b); err != nil {
 		SendErrorResult(res, err)
@@ -61,7 +61,7 @@ func PrivateConfigUpdateHandler(ctx App, res http.ResponseWriter, req *http.Requ
 	SendSuccessResult(res, nil)
 }
 
-func PublicConfigHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func PublicConfigHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	cfg := Config.Export()
 	SendSuccessResultWithEtagAndGzip(res, req, cfg)
 }

@@ -216,7 +216,7 @@ func (g Git) Mkdir(path string) error {
 	if err != nil {
 		return NewError(err.Error(), 403)
 	}
-	return os.Mkdir(p, os.ModePerm)
+	return SafeOsMkdir(p, os.ModePerm)
 }
 
 func (g Git) Rm(path string) error {
@@ -224,7 +224,7 @@ func (g Git) Rm(path string) error {
 	if err != nil {
 		return NewError(err.Error(), 403)
 	}
-	if err = os.RemoveAll(p); err != nil {
+	if err = SafeOsRemoveAll(p); err != nil {
 		return NewError(err.Error(), 403)
 	}
 	message := g.git.message("delete", path)
@@ -244,7 +244,7 @@ func (g Git) Mv(from string, to string) error {
 		return NewError(err.Error(), 403)
 	}
 
-	if err = os.Rename(fpath, tpath); err != nil {
+	if err = SafeOsRename(fpath, tpath); err != nil {
 		return NewError(err.Error(), 403)
 	}
 	message := g.git.message("move", from)
@@ -259,7 +259,7 @@ func (g Git) Touch(path string) error {
 	if err != nil {
 		return NewError(err.Error(), 403)
 	}
-	file, err := os.Create(p)
+	file, err := SafeOsOpenFile(p, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return NewError(err.Error(), 403)
 	}
@@ -278,7 +278,7 @@ func (g Git) Save(path string, file io.Reader) error {
 		return NewError(err.Error(), 403)
 	}
 
-	fo, err := os.Create(p)
+	fo, err := SafeOsOpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
 	}

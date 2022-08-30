@@ -119,6 +119,11 @@
             a.active, a:hover{
                 color: white;
             }
+            &.version {
+                position: absolute;
+                bottom:0;
+                opacity: 0.25;
+            }
         }
     }
     .header{
@@ -150,6 +155,7 @@
             font-size: 1.25em;
             padding: 0;
         }
+        .version { display: none; }
     }
     @media screen and (max-width: 650px) {
         width: inherit;

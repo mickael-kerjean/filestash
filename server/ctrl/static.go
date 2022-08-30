@@ -17,8 +17,8 @@ import (
 //go:embed static/404.html
 var HtmlPage404 []byte
 
-func StaticHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
-	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+func StaticHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		var base string = GetAbsolutePath(_path)
 		var srcPath string
 		if srcPath = JoinPath(base, req.URL.Path); srcPath == base {
@@ -29,8 +29,8 @@ func StaticHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 	}
 }
 
-func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
-	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+func IndexHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		urlObj, err := URL.Parse(req.URL.String())
 		if err != nil {
 			NotFoundHandler(ctx, res, req)
@@ -68,7 +68,7 @@ func IndexHandler(_path string) func(App, http.ResponseWriter, *http.Request) {
 	}
 }
 
-func NotFoundHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusNotFound)
 	res.Write(HtmlPage404)
 }
@@ -79,7 +79,7 @@ var listOfPlugins map[string][]string = map[string][]string{
 	"custom":     []string{},
 }
 
-func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	t, _ := template.New("about").Parse(Page(`
 	  <h1> {{index .App 0}} </h1>
 	  <table>
@@ -121,7 +121,7 @@ func AboutHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 	}})
 }
 
-func ManifestHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func ManifestHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusFound)
 	res.Write([]byte(fmt.Sprintf(`{
     "name": "%s",
@@ -146,7 +146,7 @@ func ManifestHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 }`, Config.Get("general.name"), Config.Get("general.name"))))
 }
 
-func RobotsHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func RobotsHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte(""))
 }
 
@@ -181,7 +181,7 @@ func InitPluginList(code []byte) {
 	}
 }
 
-func CustomCssHandler(ctx App, res http.ResponseWriter, req *http.Request) {
+func CustomCssHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "text/css")
 	io.WriteString(res, Hooks.Get.CSS())
 	io.WriteString(res, Config.Get("general.custom_css").String())
