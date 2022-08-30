@@ -105,7 +105,7 @@ func (this TmpStorage) Mkdir(path string) error {
 	if err := this.VerifyPath(path); err != nil {
 		return err
 	}
-	return SafeOsMkdir(path, 0664)
+	return SafeOsMkdir(path, 0755)
 }
 
 func (this TmpStorage) Rm(path string) error {
