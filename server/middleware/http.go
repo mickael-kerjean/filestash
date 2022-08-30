@@ -8,8 +8,8 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
-func ApiHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+func ApiHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Set("Content-Type", "application/json")
 		header.Set("Cache-Control", "no-cache")
@@ -17,8 +17,8 @@ func ApiHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, 
 	}
 }
 
-func StaticHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+func StaticHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Set("Content-Type", GetMimeType(filepath.Ext(req.URL.Path)))
 		header.Set("Cache-Control", "max-age=2592000")
@@ -26,8 +26,8 @@ func StaticHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx Ap
 	}
 }
 
-func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+func IndexHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Set("Content-Type", "text/html")
 		header.Set("Cache-Control", "no-cache")
@@ -60,8 +60,8 @@ func IndexHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App
 	}
 }
 
-func SecureHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+func SecureHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if host := Config.Get("general.host").String(); host != "" {
 			if req.Host != host && req.Host != fmt.Sprintf("%s:443", host) {
 				Log.Error("Request coming from \"%s\" was blocked, only traffic from \"%s\" is allowed. You can change this from the admin console under configure -> host", req.Host, host)
@@ -79,8 +79,8 @@ func SecureHeaders(fn func(App, http.ResponseWriter, *http.Request)) func(ctx Ap
 	}
 }
 
-func SecureAjax(fn func(App, http.ResponseWriter, *http.Request)) func(ctx App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx App, res http.ResponseWriter, req *http.Request) {
+func SecureAjax(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if req.Header.Get("X-Requested-With") != "XmlHttpRequest" {
 			Log.Warning("Intrusion detection: %s - %s", req.RemoteAddr, req.URL.String())
 			SendErrorResult(res, ErrNotAllowed)

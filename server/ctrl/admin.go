@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func AdminSessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
+func AdminSessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if admin := Config.Get("auth.admin").String(); admin == "" {
 		SendSuccessResult(res, true)
 		return
@@ -40,7 +40,7 @@ func AdminSessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, true)
 }
 
-func AdminSessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
+func AdminSessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	// Step 1: Deliberatly make the request slower to make hacking attempt harder for the attacker
 	time.Sleep(1500 * time.Millisecond)
 
@@ -75,7 +75,7 @@ func AdminSessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Reques
 	SendSuccessResult(res, true)
 }
 
-func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {
+func AdminBackend(ctx *App, res http.ResponseWriter, req *http.Request) {
 	drivers := Backend.Drivers()
 	backends := make(map[string]Form, len(drivers))
 	for key := range drivers {
@@ -85,7 +85,7 @@ func AdminBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	return
 }
 
-func AdminAuthenticationMiddleware(ctx App, res http.ResponseWriter, req *http.Request) {
+func AdminAuthenticationMiddleware(ctx *App, res http.ResponseWriter, req *http.Request) {
 	drivers := Hooks.Get.AuthenticationMiddleware()
 	middlewares := make(map[string]Form, len(drivers))
 	for id, driver := range drivers {

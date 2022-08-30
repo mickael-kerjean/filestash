@@ -105,14 +105,14 @@ func (this TmpStorage) Mkdir(path string) error {
 	if err := this.VerifyPath(path); err != nil {
 		return err
 	}
-	return os.Mkdir(path, 0664)
+	return SafeOsMkdir(path, 0755)
 }
 
 func (this TmpStorage) Rm(path string) error {
 	if err := this.VerifyPath(path); err != nil {
 		return err
 	}
-	return os.Remove(path)
+	return SafeOsRemove(path)
 }
 
 func (this TmpStorage) Mv(from, to string) error {
@@ -121,7 +121,7 @@ func (this TmpStorage) Mv(from, to string) error {
 	} else if err = this.VerifyPath(to); err != nil {
 		return err
 	}
-	return os.Rename(from, to)
+	return SafeOsRename(from, to)
 }
 
 func (this TmpStorage) Save(path string, content io.Reader) error {
