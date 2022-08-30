@@ -51,9 +51,9 @@ func init() {
 	ZipTimeout()
 }
 
-func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
-	if model.CanRead(&ctx) == false {
-		if model.CanUpload(&ctx) == false {
+func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if model.CanRead(ctx) == false {
+		if model.CanUpload(ctx) == false {
 			Log.Debug("ls::permission 'permission denied'")
 			SendErrorResult(res, ErrPermissionDenied)
 			return
@@ -111,20 +111,20 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 		perms = obj.Meta(path)
 	}
 
-	if model.CanEdit(&ctx) == false {
+	if model.CanEdit(ctx) == false {
 		perms.CanCreateFile = NewBool(false)
 		perms.CanCreateDirectory = NewBool(false)
 		perms.CanRename = NewBool(false)
 		perms.CanMove = NewBool(false)
 		perms.CanDelete = NewBool(false)
 	}
-	if model.CanUpload(&ctx) == false {
+	if model.CanUpload(ctx) == false {
 		perms.CanCreateDirectory = NewBool(false)
 		perms.CanRename = NewBool(false)
 		perms.CanMove = NewBool(false)
 		perms.CanDelete = NewBool(false)
 	}
-	if model.CanShare(&ctx) == false {
+	if model.CanShare(ctx) == false {
 		perms.CanShare = NewBool(false)
 	}
 
@@ -137,7 +137,7 @@ func FileLs(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResultsWithMetadata(res, files, perms)
 }
 
-func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
+func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	header := res.Header()
 	http.SetCookie(res, &http.Cookie{
 		Name:   "download",
@@ -145,7 +145,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 		MaxAge: -1,
 		Path:   "/",
 	})
-	if model.CanRead(&ctx) == false {
+	if model.CanRead(ctx) == false {
 		Log.Debug("cat::permission 'permission denied'")
 		SendErrorResult(res, ErrPermissionDenied)
 		return
@@ -198,7 +198,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	// plugin hooks
 	for _, obj := range Hooks.Get.ProcessFileContentBeforeSend() {
-		if file, err = obj(file, &ctx, &res, req); err != nil {
+		if file, err = obj(file, ctx, &res, req); err != nil {
 			Log.Debug("cat::hooks '%s'", err.Error())
 			SendErrorResult(res, err)
 			return
@@ -300,7 +300,7 @@ func FileCat(ctx App, res http.ResponseWriter, req *http.Request) {
 	file.Close()
 }
 
-func FileAccess(ctx App, res http.ResponseWriter, req *http.Request) {
+func FileAccess(ctx *App, res http.ResponseWriter, req *http.Request) {
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		Log.Debug("access::path '%s'", err.Error())
@@ -313,18 +313,18 @@ func FileAccess(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	allowed := []string{}
-	if model.CanRead(&ctx) {
+	if model.CanRead(ctx) {
 		if perms.CanSee == nil || *perms.CanSee == true {
 			allowed = append(allowed, "GET")
 		}
 	}
-	if model.CanEdit(&ctx) {
+	if model.CanEdit(ctx) {
 		if (perms.CanCreateFile == nil || *perms.CanCreateFile == true) &&
 			(perms.CanCreateDirectory == nil || *perms.CanCreateDirectory == true) {
 			allowed = append(allowed, "PUT")
 		}
 	}
-	if model.CanUpload(&ctx) {
+	if model.CanUpload(ctx) {
 		if perms.CanUpload == nil || *perms.CanUpload == true {
 			allowed = append(allowed, "POST")
 		}
@@ -334,7 +334,7 @@ func FileAccess(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
+func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		Log.Debug("save::path '%s'", err.Error())
@@ -342,8 +342,8 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if model.CanEdit(&ctx) == false {
-		if model.CanUpload(&ctx) == false {
+	if model.CanEdit(ctx) == false {
+		if model.CanUpload(ctx) == false {
 			Log.Debug("save::permission 'permission denied'")
 			SendErrorResult(res, ErrPermissionDenied)
 			return
@@ -384,8 +384,8 @@ func FileSave(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
-	if model.CanEdit(&ctx) == false {
+func FileMv(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if model.CanEdit(ctx) == false {
 		Log.Debug("mv::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
@@ -426,8 +426,8 @@ func FileMv(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func FileRm(ctx App, res http.ResponseWriter, req *http.Request) {
-	if model.CanEdit(&ctx) == false {
+func FileRm(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if model.CanEdit(ctx) == false {
 		Log.Debug("rm::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
@@ -457,8 +457,8 @@ func FileRm(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
-	if model.CanUpload(&ctx) == false {
+func FileMkdir(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if model.CanUpload(ctx) == false {
 		Log.Debug("mkdir::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
@@ -488,8 +488,8 @@ func FileMkdir(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
-	if model.CanUpload(&ctx) == false {
+func FileTouch(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if model.CanUpload(ctx) == false {
 		Log.Debug("touch::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
@@ -519,9 +519,9 @@ func FileTouch(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
+func FileDownloader(ctx *App, res http.ResponseWriter, req *http.Request) {
 	var err error
-	if model.CanRead(&ctx) == false {
+	if model.CanRead(ctx) == false {
 		Log.Debug("downloader::permission 'permission denied'")
 		SendErrorResult(res, ErrPermissionDenied)
 		return
@@ -544,8 +544,8 @@ func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 	resHeader.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", filename))
 
 	start := time.Now()
-	var addToZipRecursive func(App, *zip.Writer, string, string, *[]string) error
-	addToZipRecursive = func(c App, zw *zip.Writer, backendPath string, zipRoot string, errList *[]string) (err error) {
+	var addToZipRecursive func(*App, *zip.Writer, string, string, *[]string) error
+	addToZipRecursive = func(c *App, zw *zip.Writer, backendPath string, zipRoot string, errList *[]string) (err error) {
 		if time.Now().Sub(start) > time.Duration(ZipTimeout())*time.Second {
 			Log.Debug("downloader::timeout zip not completed due to timeout")
 			return ErrTimeout
@@ -630,7 +630,7 @@ func FileDownloader(ctx App, res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func PathBuilder(ctx App, path string) (string, error) {
+func PathBuilder(ctx *App, path string) (string, error) {
 	if path == "" {
 		return "", NewError("No path available", 400)
 	}

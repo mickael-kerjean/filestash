@@ -21,7 +21,7 @@ type Session struct {
 	IsAuth bool    `json:"is_authenticated"`
 }
 
-func SessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
+func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 	r := Session{
 		IsAuth: false,
 	}
@@ -39,12 +39,12 @@ func SessionGet(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, r)
 }
 
-func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
+func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	ctx.Body["timestamp"] = time.Now().String()
 	session := model.MapStringInterfaceToMapStringString(ctx.Body)
 	session["path"] = EnforceDirectory(session["path"])
 
-	backend, err := model.NewBackend(&ctx, session)
+	backend, err := model.NewBackend(ctx, session)
 	if err != nil {
 		Log.Debug("session::auth 'NewBackend' %+v", err)
 		SendErrorResult(res, err)
@@ -61,7 +61,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 			return
 		}
 		session = model.MapStringInterfaceToMapStringString(ctx.Body)
-		backend, err = model.NewBackend(&ctx, session)
+		backend, err = model.NewBackend(ctx, session)
 		if err != nil {
 			Log.Debug("session::auth 'OAuthToken::NewBackend' %+v", err)
 			SendErrorResult(res, NewError("Can't authenticate", 401))
@@ -128,7 +128,7 @@ func SessionAuthenticate(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
+func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 	go func() {
 		// user typically expect the logout to feel instant but in our case we still need to make sure
 		// the connection is closed as lot of backend requires to hold an active session which we cache.
@@ -136,7 +136,7 @@ func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
 		// then close which can take a few seconds and make for a bad user experience.
 		// By pushing that connection close in a goroutine, we make sure the logout is much faster for
 		// the user while still retaining that functionality.
-		SessionTry(func(c App, _res http.ResponseWriter, _req *http.Request) {
+		SessionTry(func(c *App, _res http.ResponseWriter, _req *http.Request) {
 			if c.Backend != nil {
 				if obj, ok := c.Backend.(interface{ Close() error }); ok {
 					obj.Close()
@@ -173,12 +173,12 @@ func SessionLogout(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func SessionOAuthBackend(ctx App, res http.ResponseWriter, req *http.Request) {
+func SessionOAuthBackend(ctx *App, res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	a := map[string]string{
 		"type": vars["service"],
 	}
-	b, err := model.NewBackend(&ctx, a)
+	b, err := model.NewBackend(ctx, a)
 	if err != nil {
 		Log.Debug("session::oauth 'NewBackend' %+v", err)
 		SendErrorResult(res, err)
@@ -210,7 +210,7 @@ func SessionOAuthBackend(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, redirectUrl.String())
 }
 
-func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) {
+func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request) {
 	SSOCookieName := "ssoref"
 
 	// Step0: Initialisation
@@ -360,7 +360,7 @@ func SessionAuthMiddleware(ctx App, res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	if _, err := model.NewBackend(&ctx, session); err != nil {
+	if _, err := model.NewBackend(ctx, session); err != nil {
 		Log.Debug("session::authMiddleware 'backend connection failed %+v - %s'", session, err.Error())
 		http.Redirect(
 			res, req,

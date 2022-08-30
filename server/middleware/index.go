@@ -9,17 +9,17 @@ import (
 	"time"
 )
 
-type Middleware func(func(App, http.ResponseWriter, *http.Request)) func(App, http.ResponseWriter, *http.Request)
+type Middleware func(func(*App, http.ResponseWriter, *http.Request)) func(*App, http.ResponseWriter, *http.Request)
 
-func NewMiddlewareChain(fn func(App, http.ResponseWriter, *http.Request), m []Middleware, app App) http.HandlerFunc {
+func NewMiddlewareChain(fn func(*App, http.ResponseWriter, *http.Request), m []Middleware, app App) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		var resw ResponseWriter = NewResponseWriter(res)
-		var f func(App, http.ResponseWriter, *http.Request) = fn
+		var f func(*App, http.ResponseWriter, *http.Request) = fn
 
 		for i := len(m) - 1; i >= 0; i-- {
 			f = m[i](f)
 		}
-		f(app, &resw, req)
+		f(&app, &resw, req)
 		if req.Body != nil {
 			req.Body.Close()
 		}
@@ -65,12 +65,16 @@ type LogEntry struct {
 	Duration   float64 `json:"responseTime"`
 	Version    string  `json:"version"`
 	Backend    string  `json:"backend"`
+	Share      string  `json:"share"`
+	License    string  `json:"license"`
+	Session    string  `json:"session"`
 }
 
 func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
 	if obj, ok := res.(*ResponseWriter); ok && req.RequestURI != "/about" {
 		point := LogEntry{
-			Version:    APP_VERSION,
+			Version:    APP_VERSION + "." + BUILD_DATE,
+			License:    LICENSE,
 			Scheme:     req.URL.Scheme,
 			Host:       req.Host,
 			Method:     req.Method,
@@ -81,7 +85,24 @@ func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
 			Ip:         req.RemoteAddr,
 			Referer:    req.Referer(),
 			Duration:   float64(time.Now().Sub(obj.start)) / (1000 * 1000),
-			Backend:    ctx.Session["type"],
+			Backend: func() string {
+				if ctx.Session["type"] == "" {
+					return "null"
+				}
+				return ctx.Session["type"]
+			}(),
+			Share: func() string {
+				if ctx.Share.Id == "" {
+					return "null"
+				}
+				return ctx.Share.Id
+			}(),
+			Session: func() string {
+				if ctx.Session["type"] == "" {
+					return "null"
+				}
+				return GenerateID(&ctx)
+			}(),
 		}
 		if Config.Get("log.telemetry").Bool() {
 			telemetry.Record(point)

@@ -10,14 +10,14 @@ import (
 	"strings"
 )
 
-func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
+func ShareList(ctx *App, res http.ResponseWriter, req *http.Request) {
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
 	listOfSharedLinks, err := model.ShareList(
-		GenerateID(&ctx),
+		GenerateID(ctx),
 		path,
 	)
 	if err != nil {
@@ -32,7 +32,7 @@ func ShareList(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResults(res, listOfSharedLinks)
 }
 
-func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
+func ShareUpsert(ctx *App, res http.ResponseWriter, req *http.Request) {
 	share_id := mux.Vars(req)["share"]
 	if share_id == "private" {
 		Log.Debug("share::upsert 'private'")
@@ -59,7 +59,7 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 		}(),
 		Backend: func() string {
 			if ctx.Share.Id == "" {
-				return GenerateID(&ctx)
+				return GenerateID(ctx)
 			}
 			return ctx.Share.Backend
 		}(),
@@ -93,7 +93,7 @@ func ShareUpsert(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func ShareDelete(ctx App, res http.ResponseWriter, req *http.Request) {
+func ShareDelete(ctx *App, res http.ResponseWriter, req *http.Request) {
 	share_target := mux.Vars(req)["share"]
 	if err := model.ShareDelete(share_target); err != nil {
 		Log.Debug("share::delete '%s'", err.Error())
@@ -103,7 +103,7 @@ func ShareDelete(ctx App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func ShareVerifyProof(ctx App, res http.ResponseWriter, req *http.Request) {
+func ShareVerifyProof(ctx *App, res http.ResponseWriter, req *http.Request) {
 	var submittedProof model.Proof
 	var verifiedProof []model.Proof
 	var requiredProof []model.Proof

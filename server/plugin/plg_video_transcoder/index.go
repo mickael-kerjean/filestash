@@ -164,7 +164,7 @@ func hls_playlist(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req 
 	return NewReadCloserFromBytes([]byte(response)), nil
 }
 
-func hls_transcode(ctx App, res http.ResponseWriter, req *http.Request) {
+func hls_transcode(ctx *App, res http.ResponseWriter, req *http.Request) {
 	segmentNumber, err := strconv.Atoi(mux.Vars(req)["segment"])
 	if err != nil {
 		Log.Info("[plugin hls] invalid segment request '%s'", mux.Vars(req)["segment"])

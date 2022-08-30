@@ -157,8 +157,8 @@ func StaticHandler(res http.ResponseWriter, req *http.Request) {
 	reverseProxy.ServeHTTP(res, req)
 }
 
-func IframeContentHandler(ctx App, res http.ResponseWriter, req *http.Request) {
-	if model.CanRead(&ctx) == false {
+func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if model.CanRead(ctx) == false {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	} else if oodsLocation := Config.Get("features.office.onlyoffice_server").String(); oodsLocation == "" {
@@ -188,7 +188,7 @@ func IframeContentHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	userId = GenerateID(&ctx)
+	userId = GenerateID(ctx)
 	f, err := ctx.Backend.Cat(path)
 	if err != nil {
 		SendErrorResult(res, err)
@@ -199,7 +199,7 @@ func IframeContentHandler(ctx App, res http.ResponseWriter, req *http.Request) {
 
 	filename = filepath.Base(path)
 	oodsMode = func() string {
-		if model.CanEdit(&ctx) == false {
+		if model.CanEdit(ctx) == false {
 			return "view"
 		}
 		return "edit"
