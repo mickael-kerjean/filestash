@@ -51,6 +51,7 @@ func Init(a App) {
 	middlewares = []Middleware{ApiHeaders, AdminOnly, SecureAjax}
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigHandler, middlewares, a)).Methods("GET")
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, a)).Methods("POST")
+	admin.HandleFunc("/audit", NewMiddlewareChain(FetchAuditHandler, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{IndexHeaders, AdminOnly}
 	admin.HandleFunc("/logs", NewMiddlewareChain(FetchLogHandler, middlewares, a)).Methods("GET")
 

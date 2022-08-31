@@ -45,6 +45,14 @@ type ISearch interface {
 	Query(ctx App, basePath string, term string) ([]IFile, error)
 }
 
+type IAuditPlugin interface {
+	Query(searchParams map[string]string) (AuditQueryResult, error)
+}
+type AuditQueryResult struct {
+	Form       *Form  `json:"form"`
+	RenderHTML string `json:"render"`
+}
+
 type File struct {
 	FName     string `json:"name"`
 	FType     string `json:"type"`
