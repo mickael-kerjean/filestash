@@ -43,7 +43,7 @@ func IndexHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
 			return
 		} else if url != "/" && strings.HasPrefix(url, "/s/") == false &&
 			strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
-			url != "/login" && url != "/logout" && strings.HasPrefix(url, "/admin") == false {
+			url != "/login" && url != "/logout" && strings.HasPrefix(url, "/meter") == false && strings.HasPrefix(url, "/admin") == false {
 			NotFoundHandler(ctx, res, req)
 			return
 		}

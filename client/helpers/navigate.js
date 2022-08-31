@@ -23,6 +23,12 @@ export function goToLogin(history) {
     return Promise.resolve("ok");
 }
 
+export const URL_METER = "/meter";
+export function goToMeter(history) {
+    history.push(URL_EDIT);
+    return Promise.resolve("ok");
+}
+
 export const URL_LOGOUT = "/logout";
 export function goToLogout(history) {
     history.push(URL_LOGOUT);

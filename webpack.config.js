@@ -50,6 +50,16 @@ const config = {
             },
         ],
     },
+    node: {
+        fs: 'empty',
+        net: 'empty',
+        tls: 'empty',
+        fs: 'empty',
+        child_process: 'empty',
+        net: 'empty',
+        dns: 'empty',
+        tls: 'empty',
+    },
     plugins: [
         new webpack.DefinePlugin({
             "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),

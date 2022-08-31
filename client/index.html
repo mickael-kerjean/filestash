@@ -41,7 +41,7 @@
         noscript div{ text-align:center;font-family:monospace;margin-top:5%;font-size:15px; }
       </style>
       <script>
-        if(location.pathname == "/" || location.pathname == "/login"){
+        if(location.pathname == "/" || location.pathname == "/login" || location.pathname.include("/meter")){
             $style = document.querySelector("div[role='main'] style");
             $style.innerText = $style.innerText.replace(/f2f3f5/g, "9AD1ED")
         }
