@@ -214,7 +214,7 @@ const FormElement = (props) => {
         $input = (
             <Textarea {...id} disabledEnter={true} value={struct.value || ""}
                 onChange={(e) => props.onChange(e.target.value)}
-                type="text" rows="3" name={struct.label} placeholder={ t(struct.placeholder) }
+                type="text" rows="8" name={struct.label} placeholder={ t(struct.placeholder) }
                 autoComplete="new-password" autoCorrect="off" autoCapitalize="off"
                 spellCheck="false" />
         );
