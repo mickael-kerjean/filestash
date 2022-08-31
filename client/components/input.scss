@@ -1,4 +1,4 @@
-.component_input{
+.component_input, .component_select{
     background: inherit;
     border: none;
     border-radius: 0;
@@ -28,14 +28,4 @@ input.component_input[readonly], textarea.component_textarea[readonly]{
     cursor: pointer;
     font-style: italic;
     opacity: 0.8;
-}
-
-.component_select{
-    background: inherit;
-    border-radius: 0;
-    border: none;
-    border-bottom: 2px solid rgba(70, 99, 114, 0.1);
-    color: inherit;
-    width: 100%;
-    font-size: 1em;
 }
