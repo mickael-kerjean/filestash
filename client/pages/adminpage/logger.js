@@ -13,7 +13,7 @@ export function LogPage({ isSaving = nop }) {
             <h2>Logging</h2>
             <LogComponent isSaving={isSaving} />
 
-            <h2>Auditing</h2>
+            <h2>Activity Report</h2>
             <AuditComponent />
         </div>
     );
@@ -167,7 +167,7 @@ function AuditComponent() {
                     loading ? (
                         <div className="center"><Icon name="loading" /></div>
                     ) : (
-                        <div style={{overflowX:"auto"}} dangerouslySetInnerHTML={{ __html: render }}></div>
+                        <div dangerouslySetInnerHTML={{ __html: render }}></div>
                     )
                 }
             </div>

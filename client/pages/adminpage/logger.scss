@@ -19,6 +19,9 @@
             padding: 10px 0 10px 10px;
         }
         th { opacity: 0.6; }
+
+        tbody { font-size: 0.95rem; }
+        thead { text-transform: capitalize; }
     }
 
     .component_icon { height: 50px; margin-top: 20px; }
