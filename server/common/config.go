@@ -461,11 +461,11 @@ func (this *Configuration) Default(value interface{}) *Configuration {
 }
 
 func (this *Configuration) Set(value interface{}) *Configuration {
+	this.mu.Lock()
 	if this.currentElement == nil {
 		return this
 	}
 
-	this.mu.Lock()
 	this.cache.Clear()
 	if this.currentElement.Value != value {
 		this.currentElement.Value = value

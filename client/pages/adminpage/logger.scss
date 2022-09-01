@@ -7,3 +7,28 @@
         padding-right: 20px;
     }
 }
+
+.component_audit {
+    table {
+        width: 100%;
+        text-align: left;
+        border-collapse: collapse;
+
+        th, td {
+            border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+            padding: 10px 0 10px 10px;
+        }
+        th { opacity: 0.6; }
+
+        tbody { font-size: 0.95rem; }
+        thead { text-transform: capitalize; }
+    }
+
+    .component_icon { height: 50px; margin-top: 20px; }
+
+    .flex {
+        display: flex;
+        justify-content: space-between;
+        .alert { margin: 5px 0 15px 0; }
+    }
+}

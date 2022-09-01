@@ -122,6 +122,19 @@ func (this Get) SearchEngine() ISearch {
 }
 
 /*
+ * Pluggable Audit interface
+ */
+var audit IAuditPlugin
+
+func (this Register) AuditEngine(a IAuditPlugin) {
+	audit = a
+}
+
+func (this Get) AuditEngine() IAuditPlugin {
+	return audit
+}
+
+/*
  * UI Overrides
  * They are the means by which server plugin change the frontend behaviors.
  */
