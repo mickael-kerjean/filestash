@@ -141,14 +141,17 @@ function AuditComponent() {
 
     useEffect(() => {
         setLoading(true);
-        Audit.get(searchParams).then(([form, html]) => {
+        const ctrl = new AbortController();
+        Audit.get(searchParams, ctrl).then(([form, html]) => {
             setLoading(false);
             if(formSpec === null) setFormSpec({ "": form });
             setRender(html);
         }).catch((err) => {
+            if(err.code === "ABORTED") return;
             setLoading(false);
             setRender(err.message);
         });
+        return () => ctrl.abort();
     }, [debouncedSearchParams]);
 
     return (
