@@ -1,13 +1,14 @@
 import { http_get } from "../helpers/";
 
 class AuditManager {
-    get(searchParams) {
+    get(searchParams, abort) {
         const p = new URLSearchParams();
         Object.keys(searchParams).map((key) => {
             p.set(key, searchParams[key]);
         });
-        return http_get("/admin/api/audit?" + p.toString())
-            .then((res) => [res.result.form, res.result.render]);
+        const res = http_get("/admin/api/audit?" + p.toString(), "json", { abort })
+              .then((res) => [res.result.form, res.result.render]);
+        return res;
     }
 }
 
