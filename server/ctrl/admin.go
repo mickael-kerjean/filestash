@@ -147,7 +147,7 @@ func FetchAuditHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 		searchParams[key] = element[0]
 	}
-	result, err := plg.Query(searchParams)
+	result, err := plg.Query(ctx, searchParams)
 	if err != nil {
 		SendErrorResult(res, err)
 		return

@@ -12,13 +12,14 @@ import (
 type Middleware func(func(*App, http.ResponseWriter, *http.Request)) func(*App, http.ResponseWriter, *http.Request)
 
 func NewMiddlewareChain(fn func(*App, http.ResponseWriter, *http.Request), m []Middleware, app App) http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
 		var resw ResponseWriter = NewResponseWriter(res)
 		var f func(*App, http.ResponseWriter, *http.Request) = fn
-
 		for i := len(m) - 1; i >= 0; i-- {
 			f = m[i](f)
 		}
+		app.Context = req.Context()
 		f(&app, &resw, req)
 		if req.Body != nil {
 			req.Body.Close()

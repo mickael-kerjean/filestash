@@ -57,7 +57,7 @@ var AuditForm Form = Form{
 
 type SimpleAudit struct{}
 
-func (this SimpleAudit) Query(searchParams map[string]string) (AuditQueryResult, error) {
+func (this SimpleAudit) Query(ctx *App, searchParams map[string]string) (AuditQueryResult, error) {
 	return AuditQueryResult{
 		Form: &AuditForm,
 		RenderHTML: `<style>
