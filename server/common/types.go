@@ -46,7 +46,7 @@ type ISearch interface {
 }
 
 type IAuditPlugin interface {
-	Query(searchParams map[string]string) (AuditQueryResult, error)
+	Query(ctx *App, searchParams map[string]string) (AuditQueryResult, error)
 }
 type AuditQueryResult struct {
 	Form       *Form  `json:"form"`

@@ -1,4 +1,4 @@
-export function http_get(url, type = "json") {
+export function http_get(url, type = "json", params) {
     return new Promise((done, err) => {
         const xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
@@ -30,6 +30,12 @@ export function http_get(url, type = "json") {
         xhr.onerror = function() {
             handle_error_response(xhr, err);
         };
+        if (params && params.abort) {
+            params.abort.signal.onabort = () => {
+                xhr.abort();
+                handle_error_response(xhr, err);
+            };
+        }
     });
 }
 
@@ -152,10 +158,17 @@ function handle_error_response(xhr, err) {
     if (navigator.onLine === false) {
         err({ message: "Connection Lost", code: "NO_INTERNET" });
     } else if (xhr.status === 0 && xhr.responseText === "") {
-        err({
-            message: "Service unavailable, if the problem persist, contact your administrator",
-            code: "INTERNAL_SERVER_ERROR",
-        });
+        switch(xhr.readyState) {
+        case XMLHttpRequest.DONE:
+        case XMLHttpRequest.UNSENT:
+            err({ message: "aborted", code: "ABORTED" });
+            break
+        default:
+            err({
+                message: "Service unavailable, if the problem persist, contact your administrator",
+                code: "INTERNAL_SERVER_ERROR",
+            });
+        }
     } else if (xhr.status === 500) {
         err({
             message: message || "Oups something went wrong with our servers",
