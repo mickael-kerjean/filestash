@@ -42,6 +42,8 @@ func Init(a App) {
 	middlewares = []Middleware{ApiHeaders, SecureHeaders}
 	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, a)).Methods("GET")
 	session.HandleFunc("/auth/", NewMiddlewareChain(SessionAuthMiddleware, middlewares, a)).Methods("GET", "POST")
+	middlewares = []Middleware{ApiHeaders, BodyParser}
+	r.HandleFunc("/api/token", NewMiddlewareChain(SessionAuthenticateExternal, middlewares, a)).Methods("POST")
 
 	// API for Admin Console
 	middlewares = []Middleware{ApiHeaders, SecureAjax}
@@ -62,7 +64,7 @@ func Init(a App) {
 	files.HandleFunc("/zip", NewMiddlewareChain(FileDownloader, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, SessionStart, LoggedInOnly}
 	files.HandleFunc("/cat", NewMiddlewareChain(FileAccess, middlewares, a)).Methods("OPTIONS")
-	files.HandleFunc("/cat", NewMiddlewareChain(FileSave, middlewares, a)).Methods("POST")
+	files.HandleFunc("/cat", NewMiddlewareChain(FileSave, middlewares, a)).Methods("POST", "PUT")
 	files.HandleFunc("/ls", NewMiddlewareChain(FileLs, middlewares, a)).Methods("GET")
 	files.HandleFunc("/mv", NewMiddlewareChain(FileMv, middlewares, a)).Methods("GET")
 	files.HandleFunc("/rm", NewMiddlewareChain(FileRm, middlewares, a)).Methods("GET")

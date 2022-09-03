@@ -80,11 +80,14 @@ func SecureHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *
 
 func SecureAjax(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		if req.Header.Get("X-Requested-With") != "XmlHttpRequest" {
-			Log.Warning("Intrusion detection: %s - %s", req.RemoteAddr, req.URL.String())
-			SendErrorResult(res, ErrNotAllowed)
+		if req.Header.Get("Authorization") != "" {
+			fn(ctx, res, req)
+			return
+		} else if req.Header.Get("X-Requested-With") == "XmlHttpRequest" {
+			fn(ctx, res, req)
 			return
 		}
-		fn(ctx, res, req)
+		Log.Warning("Intrusion detection: %s - %s", req.RemoteAddr, req.URL.String())
+		SendErrorResult(res, ErrNotAllowed)
 	}
 }

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func LoggedInOnly(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -239,7 +240,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	var err error
 	var session map[string]string = make(map[string]string)
 
-	if ctx.Share.Id != "" {
+	if ctx.Share.Id != "" { // Shared link
 		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Share.Auth)
 		if err != nil {
 			// This typically happen when changing the secret key
@@ -262,28 +263,51 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 			session["path"] = strings.TrimSuffix(ctx.Share.Path, path) + "/"
 		}
 		return session, err
-	} else {
-		str := ""
-		index := 0
-		for {
-			cookie, err := req.Cookie(CookieName(index))
-			if err != nil {
-				break
-			}
-			index++
-			str += cookie.Value
-		}
-		if str == "" {
-			return session, nil
-		}
-		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, str)
-		if err != nil {
-			// This typically happen when changing the secret key
-			return session, nil
-		}
-		err = json.Unmarshal([]byte(str), &session)
-		return session, err
 	}
+
+	authHeader := req.Header.Get("Authorization")
+	if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") { // API request
+		bearer := strings.TrimPrefix(req.Header.Get("Authorization"), "Bearer ")
+		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, bearer)
+		if err != nil {
+			return session, nil
+		}
+		if err = json.Unmarshal([]byte(str), &session); err != nil {
+			return session, err
+		}
+		t, err := time.Parse(time.RFC3339, session["timestamp"])
+		if err != nil {
+			return session, err
+		}
+		if IsApiKeyValid(session["api_key"]) == false {
+			Log.Warning("attempt to use a non valid api key %s", session["api_key"])
+			return session, ErrNotValid
+		} else if t.Add(EXPIRATION_API_TOKEN * time.Second).Before(time.Now()) {
+			return session, NewError("Access Token has expired", 401)
+		}
+		return session, nil
+	}
+
+	str = ""
+	index := 0
+	for {
+		cookie, err := req.Cookie(CookieName(index))
+		if err != nil {
+			break
+		}
+		index++
+		str += cookie.Value
+	}
+	if str == "" {
+		return session, nil
+	}
+	str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, str)
+	if err != nil {
+		// This typically happen when changing the secret key
+		return session, nil
+	}
+	err = json.Unmarshal([]byte(str), &session)
+	return session, err
 }
 
 func _extractBackend(req *http.Request, ctx *App) (IBackend, error) {

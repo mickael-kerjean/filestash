@@ -90,6 +90,12 @@ func SendErrorResult(res http.ResponseWriter, err error) {
 	encoder.Encode(APIErrorMessage{"error", m})
 }
 
+func SendRaw(res http.ResponseWriter, data interface{}) {
+	encoder := json.NewEncoder(res)
+	encoder.SetEscapeHTML(false)
+	encoder.Encode(data)
+}
+
 func Page(stuff string) string {
 	return `<!DOCTYPE html>
 <html>

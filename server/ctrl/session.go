@@ -128,6 +128,58 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
+func SessionAuthenticateExternal(ctx *App, res http.ResponseWriter, req *http.Request) {
+	api_key := string(req.URL.Query().Get("key"))
+	if api_key == "" {
+		SendErrorResult(res, NewError(fmt.Sprintf(
+			"You need to provide your API key in the request URL (e.g.: '%s?key=foobar'). See https://www.filestash.app/docs/api/#authentication for details, or we can help at support@filestash.app",
+			req.URL.Path,
+		), 403))
+		return
+	} else if IsApiKeyValid(api_key) == false {
+		SendErrorResult(res, NewError(fmt.Sprintf(
+			"Invalid API Key provided: %s",
+			api_key,
+		), 401))
+		return
+	}
+
+	ctx.Body["timestamp"] = time.Now().Format(time.RFC3339)
+	ctx.Body["api_key"] = api_key
+	session := model.MapStringInterfaceToMapStringString(ctx.Body)
+	session["path"] = EnforceDirectory(session["path"])
+	if _, err := model.NewBackend(ctx, session); err != nil {
+		Log.Debug("session::auth_external 'NewBackend' %+v", err)
+		SendErrorResult(res, err)
+		return
+	}
+	s, err := json.Marshal(session)
+	if err != nil {
+		Log.Debug("session::auth_external 'Marshal' %+v", err)
+		SendErrorResult(res, NewError(err.Error(), 500))
+		return
+	}
+	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_USER, string(s))
+	if err != nil {
+		Log.Debug("session::auth_external 'Encryption' %+v", err)
+		SendErrorResult(res, NewError(err.Error(), 500))
+		return
+	}
+
+	SendRaw(res, struct {
+		AccessToken string `json:"access_token"`
+		TokenType   string `json:"token_type"`
+		ExpiresIn   int    `json:"expires_in"`
+		Version     string `json:"version"`
+		License     string `json:"license"`
+		ApiDoc      string `json:"doc"`
+	}{
+		obfuscate, "bearer",
+		EXPIRATION_API_TOKEN, "Filestash " + APP_VERSION + "." + BUILD_DATE,
+		LICENSE, "https://www.filestash.app/docs/api/",
+	})
+}
+
 func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 	go func() {
 		// user typically expect the logout to feel instant but in our case we still need to make sure
