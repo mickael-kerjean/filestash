@@ -8,6 +8,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"strings"
 )
 
 var (
@@ -196,82 +197,64 @@ func init() {
 func WelcomePackHandle(res http.ResponseWriter, req *http.Request) {
 	Log.Info("Attack attempt %s %s %s", req.RemoteAddr, req.URL.String(), req.Header.Get("User-Agent"))
 	r := rand.Intn(100)
+
 	if r < 5 {
-		HandleWrongContentSmall(res, req)
+		res.Header().Set("Content-Length", "1000")
+		res.Write([]byte(""))
+	} else if r < 10 {
+		res.Header().Set("Content-Length", "10000000000000")
+		io.Copy(res, billionsOfLol)
 	} else if r < 15 {
-		HandleWrongContentLarge(res, req)
+		res.Header().Set("Content-Encoding", "gzip")
+		res.Header().Set("Content-Type", "text/html")
+		res.Write([]byte("WAZAAAA"))
 	} else if r < 20 {
-		HandleWrongGzipSmall(res, req)
+		res.Header().Set("Content-Encoding", "gzip")
+		res.Header().Set("Content-Type", "text/html")
+		io.Copy(res, billionsOfLol)
+	} else if r < 25 {
+		res.Header().Set("Content-Language", "en-US\u000bContent‑Encoding: gzip")
+		io.Copy(res, gzipBomb)
 	} else if r < 30 {
-		HandleWrongGzipLarge(res, req)
+		res.Header().Set("Content‑Encoding", "gzip")
+		io.Copy(res, gzipBomb)
+	} else if r < 35 {
+		res.Header().Set("Content-Type", "application/json")
+		res.Write([]byte(strings.Repeat("[", 10000) + `"WAZAAAAA"` + strings.Repeat("]", 10000)))
 	} else if r < 40 {
-		HandleRedirectLocalhost(res, req)
+		res.Header().Set("Content-Type", "application/json")
+		res.Write([]byte(`{"response"꞉ "success"}`)) // not an ASCII colon -> not valid json
+	} else if r < 45 {
+		req.URL.Host = "127.0.0.1"
+		if req.URL.Scheme == "" {
+			req.URL.Scheme = "http"
+		}
+		http.Redirect(res, req, req.URL.String(), 301)
 	} else if r < 50 {
-		HandleRedirectOwnIP(res, req)
+		req.URL.Host = req.RemoteAddr
+		if req.URL.Scheme == "" {
+			req.URL.Scheme = "http"
+		}
+		http.Redirect(res, req, req.URL.String(), 301)
 	} else if r < 55 {
-		HandleRedirectGeo(res, req)
-	} else if r < 70 {
-		HandleXMLBomb(res, req)
+		http.Redirect(res, req, "geo:37.786971,-122.399677", 301)
+	} else if r < 60 {
+		res.Header().Set("Content-Type", "text/html")
+		res.Write([]byte(`<html><sript>alert("WAZAAAA");</script></html>`))
+	} else if r < 65 {
+		res.Header().Set("Content-Type", "text/html")
+		res.Write([]byte(`<html><head><script>do { console.log("WAZAAAA"); } while(true);</script></head><body></body></html>`))
+	} else if r < 85 { // xml bomb
+		// https://en.wikipedia.org/wiki/Billion_laughs_attack
+		if rand.Intn(100) < 50 {
+			res.Header().Set("Content-Type", "text/xml")
+		} else {
+			res.Header().Set("Content-Type", "application/xml")
+		}
+		io.Copy(res, billionsOfLol)
 	} else {
-		HandleGzipBomb(res, req)
+		res.Header().Set("Content-Encoding", "gzip")
+		res.Header().Set("Content-Type", "text/html")
+		io.Copy(res, gzipBomb)
 	}
-}
-
-func HandleWrongContentSmall(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("Content-Length", "1000")
-	res.Write([]byte(""))
-}
-
-func HandleWrongContentLarge(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("Content-Length", "10000000000000")
-	io.Copy(res, billionsOfLol)
-}
-
-func HandleWrongGzipSmall(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("Content-Encoding", "gzip")
-	res.Header().Set("Content-Type", "text/html")
-	res.Write([]byte("WAZAAAA"))
-}
-
-func HandleWrongGzipLarge(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("Content-Encoding", "gzip")
-	res.Header().Set("Content-Type", "text/html")
-	io.Copy(res, billionsOfLol)
-}
-
-func HandleRedirectLocalhost(res http.ResponseWriter, req *http.Request) {
-	req.URL.Host = "127.0.0.1"
-	if req.URL.Scheme == "" {
-		req.URL.Scheme = "http"
-	}
-	http.Redirect(res, req, req.URL.String(), 301)
-}
-
-func HandleRedirectOwnIP(res http.ResponseWriter, req *http.Request) {
-	req.URL.Host = req.RemoteAddr
-	if req.URL.Scheme == "" {
-		req.URL.Scheme = "http"
-	}
-	http.Redirect(res, req, req.URL.String(), 301)
-}
-
-func HandleRedirectGeo(res http.ResponseWriter, req *http.Request) {
-	http.Redirect(res, req, "geo:37.786971,-122.399677", 301)
-}
-
-func HandleXMLBomb(res http.ResponseWriter, req *http.Request) {
-	// https://en.wikipedia.org/wiki/Billion_laughs_attack
-	if rand.Intn(100) < 50 {
-		res.Header().Set("Content-Type", "text/xml")
-	} else {
-		res.Header().Set("Content-Type", "application/xml")
-	}
-	io.Copy(res, billionsOfLol)
-}
-
-func HandleGzipBomb(res http.ResponseWriter, req *http.Request) {
-	// https://rehmann.co/blog/10-gb-27-kb-gzip-file-present-http-scanners/
-	res.Header().Set("Content-Encoding", "gzip")
-	res.Header().Set("Content-Type", "text/html")
-	io.Copy(res, gzipBomb)
 }
