@@ -40,7 +40,7 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
-	ctx.Body["timestamp"] = time.Now().String()
+	ctx.Body["timestamp"] = time.Now().Format(time.RFC3339)
 	session := model.MapStringInterfaceToMapStringString(ctx.Body)
 	session["path"] = EnforceDirectory(session["path"])
 
@@ -129,6 +129,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionAuthenticateExternal(ctx *App, res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("X-Request-ID", GenerateRequestID("API"))
 	api_key := string(req.URL.Query().Get("key"))
 	if api_key == "" {
 		SendErrorResult(res, NewError(fmt.Sprintf(
@@ -159,7 +160,7 @@ func SessionAuthenticateExternal(ctx *App, res http.ResponseWriter, req *http.Re
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
-	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_USER, string(s))
+	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_API, string(s))
 	if err != nil {
 		Log.Debug("session::auth_external 'Encryption' %+v", err)
 		SendErrorResult(res, NewError(err.Error(), 500))
@@ -171,12 +172,12 @@ func SessionAuthenticateExternal(ctx *App, res http.ResponseWriter, req *http.Re
 		TokenType   string `json:"token_type"`
 		ExpiresIn   int    `json:"expires_in"`
 		Version     string `json:"version"`
-		License     string `json:"license"`
 		ApiDoc      string `json:"doc"`
 	}{
 		obfuscate, "bearer",
-		EXPIRATION_API_TOKEN, "Filestash " + APP_VERSION + "." + BUILD_DATE,
-		LICENSE, "https://www.filestash.app/docs/api/",
+		EXPIRATION_API_TOKEN,
+		fmt.Sprintf("Filestash %s.%s", APP_VERSION, BUILD_DATE),
+		"https://www.filestash.app/docs/api/",
 	})
 }
 

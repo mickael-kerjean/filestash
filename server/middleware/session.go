@@ -268,7 +268,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	authHeader := req.Header.Get("Authorization")
 	if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") { // API request
 		bearer := strings.TrimPrefix(req.Header.Get("Authorization"), "Bearer ")
-		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, bearer)
+		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_API, bearer)
 		if err != nil {
 			return session, nil
 		}
@@ -306,7 +306,17 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		// This typically happen when changing the secret key
 		return session, nil
 	}
-	err = json.Unmarshal([]byte(str), &session)
+	if err = json.Unmarshal([]byte(str), &session); err != nil {
+		return session, err
+	}
+	t, err := time.Parse(time.RFC3339, session["timestamp"])
+	if err != nil {
+		Log.Warning("middleware::session 'cannot parse time - %s'", err.Error())
+		return session, ErrNotAuthorized
+	} else if t.Add(24 * 365 * time.Hour).Before(time.Now()) {
+		Log.Warning("middleware::session 'cookie too old - %s'", t.Format(time.RFC3339))
+		return session, ErrNotAuthorized
+	}
 	return session, err
 }
 

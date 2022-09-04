@@ -6,6 +6,7 @@ import (
 	"golang.org/x/time/rate"
 	"net/http"
 	"path/filepath"
+	"strings"
 )
 
 func ApiHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -13,6 +14,10 @@ func ApiHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App
 		header := res.Header()
 		header.Set("Content-Type", "application/json")
 		header.Set("Cache-Control", "no-cache")
+		authHeader := req.Header.Get("Authorization")
+		if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+			header.Set("X-Request-ID", GenerateRequestID("API"))
+		}
 		fn(ctx, res, req)
 	}
 }
@@ -93,7 +98,7 @@ func SecureAjax(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App
 	}
 }
 
-var limiter = rate.NewLimiter(5, 500)
+var limiter = rate.NewLimiter(5, 1000)
 
 func RateLimiter(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {

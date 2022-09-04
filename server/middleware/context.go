@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 func BodyParser(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -28,4 +30,8 @@ func BodyParser(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App
 		}
 		fn(ctx, res, req)
 	}
+}
+
+func GenerateRequestID(prefix string) string {
+	return fmt.Sprintf("%s::%s", prefix, strings.ToUpper(QuickString(15)))
 }
