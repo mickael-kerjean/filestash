@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"golang.org/x/time/rate"
 	"net/http"
 	"path/filepath"
 )
@@ -89,5 +90,20 @@ func SecureAjax(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App
 		}
 		Log.Warning("Intrusion detection: %s - %s", req.RemoteAddr, req.URL.String())
 		SendErrorResult(res, ErrNotAllowed)
+	}
+}
+
+var limiter = rate.NewLimiter(5, 500)
+
+func RateLimiter(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+		if limiter.Allow() == false {
+			SendErrorResult(
+				res,
+				NewError(http.StatusText(429), http.StatusTooManyRequests),
+			)
+			return
+		}
+		fn(ctx, res, req)
 	}
 }

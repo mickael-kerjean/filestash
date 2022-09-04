@@ -35,20 +35,21 @@ func Init(a App) {
 	session := r.PathPrefix("/api/session").Subrouter()
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, SessionStart}
 	session.HandleFunc("", NewMiddlewareChain(SessionGet, middlewares, a)).Methods("GET")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, BodyParser}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, RateLimiter, BodyParser}
 	session.HandleFunc("", NewMiddlewareChain(SessionAuthenticate, middlewares, a)).Methods("POST")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax}
 	session.HandleFunc("", NewMiddlewareChain(SessionLogout, middlewares, a)).Methods("DELETE")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders}
 	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, a)).Methods("GET")
 	session.HandleFunc("/auth/", NewMiddlewareChain(SessionAuthMiddleware, middlewares, a)).Methods("GET", "POST")
-	middlewares = []Middleware{ApiHeaders, BodyParser}
+	middlewares = []Middleware{ApiHeaders, RateLimiter, BodyParser}
 	r.HandleFunc("/api/token", NewMiddlewareChain(SessionAuthenticateExternal, middlewares, a)).Methods("POST")
 
 	// API for Admin Console
-	middlewares = []Middleware{ApiHeaders, SecureAjax}
 	admin := r.PathPrefix("/admin/api").Subrouter()
+	middlewares = []Middleware{ApiHeaders, SecureAjax}
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionGet, middlewares, a)).Methods("GET")
+	middlewares = []Middleware{ApiHeaders, SecureAjax, RateLimiter}
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionAuthenticate, middlewares, a)).Methods("POST")
 	middlewares = []Middleware{ApiHeaders, AdminOnly, SecureAjax}
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigHandler, middlewares, a)).Methods("GET")
