@@ -23,7 +23,6 @@ import (
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_webdav"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_editor_onlyoffice"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_console"
-	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_syncthing"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_image_ascii"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_image_light"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_search_stateless"
