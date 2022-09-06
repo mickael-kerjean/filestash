@@ -279,9 +279,13 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		if err != nil {
 			return session, err
 		}
-		if IsApiKeyValid(session["api_key"]) == false {
+		if _, err := VerifyApiKey(session["api_key"]); err != nil {
 			Log.Warning("attempt to use a non valid api key %s", session["api_key"])
-			return session, ErrNotValid
+			if err == ErrNotValid {
+				return session, NewError("Your API key is not valid", 401)
+			} else {
+				return session, err
+			}
 		} else if t.Add(EXPIRATION_API_TOKEN * time.Second).Before(time.Now()) {
 			return session, NewError("Access Token has expired", 401)
 		}

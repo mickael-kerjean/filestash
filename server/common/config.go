@@ -23,6 +23,7 @@ type Configuration struct {
 	cache          KeyValueStore
 	form           []Form
 	Conn           []map[string]interface{}
+	Event          chan string
 }
 
 type Form struct {
@@ -52,6 +53,7 @@ func init() {
 	Config = NewConfiguration()
 	Config.Load()
 	Config.Initialise()
+	Config.Event <- "init"
 }
 
 func NewConfiguration() Configuration {
@@ -84,6 +86,10 @@ func NewConfiguration() Configuration {
 			Form{
 				Title: "features",
 				Form: []Form{
+					Form{
+						Title:  "api",
+						Elmnts: []FormElement{},
+					},
 					Form{
 						Title: "share",
 						Elmnts: []FormElement{
@@ -125,7 +131,8 @@ func NewConfiguration() Configuration {
 				},
 			},
 		},
-		Conn: make([]map[string]interface{}, 0),
+		Conn:  make([]map[string]interface{}, 0),
+		Event: make(chan string),
 	}
 }
 
