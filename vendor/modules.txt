@@ -53,6 +53,9 @@ github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59
+## explicit
+github.com/aybabtme/rgbterm
 # github.com/creack/pty v1.1.18
 ## explicit
 github.com/creack/pty
@@ -118,6 +121,9 @@ github.com/kevinburke/ssh_config
 github.com/kr/fs
 # github.com/kr/pretty v0.3.0
 ## explicit
+# github.com/mattn/go-isatty v0.0.16
+## explicit
+github.com/mattn/go-isatty
 # github.com/mattn/go-sqlite3 v2.0.2+incompatible
 ## explicit
 github.com/mattn/go-sqlite3
@@ -130,6 +136,9 @@ github.com/mitchellh/go-homedir
 # github.com/mitchellh/hashstructure v1.0.0
 ## explicit
 github.com/mitchellh/hashstructure
+# github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+## explicit
+github.com/nfnt/resize
 # github.com/patrickmn/go-cache v2.1.0+incompatible
 ## explicit
 github.com/patrickmn/go-cache
@@ -143,6 +152,12 @@ github.com/pmezard/go-difflib/difflib
 # github.com/prasad83/goftp v0.0.0-20210325080443-f57aaed46a32
 ## explicit
 github.com/prasad83/goftp
+# github.com/qeesung/image2ascii v1.0.1
+## explicit
+github.com/qeesung/image2ascii
+github.com/qeesung/image2ascii/ascii
+github.com/qeesung/image2ascii/convert
+github.com/qeesung/image2ascii/terminal
 # github.com/rogpeppe/go-internal v1.8.0
 ## explicit
 # github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4
@@ -167,6 +182,9 @@ github.com/tidwall/pretty
 # github.com/tidwall/sjson v1.0.4
 ## explicit
 github.com/tidwall/sjson
+# github.com/wayneashleyberry/terminal-dimensions v1.1.0
+## explicit
+github.com/wayneashleyberry/terminal-dimensions
 # github.com/xanzy/ssh-agent v0.2.1
 github.com/xanzy/ssh-agent
 # go.opencensus.io v0.21.0
@@ -238,7 +256,7 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 ## explicit
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1
+# golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
