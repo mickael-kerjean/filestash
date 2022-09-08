@@ -27,6 +27,7 @@ func init() {
 		opt.FixedWidth = 80
 		opt.FixedHeight = 40
 		out := convert.NewImageConverter().Image2ASCIIString(img, &opt)
+		(*res).Header().Set("Content-Type", "application/octet-stream")
 		return NewReadCloserFromBytes([]byte(out)), nil
 	})
 }
