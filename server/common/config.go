@@ -21,7 +21,7 @@ type Configuration struct {
 	mu             sync.Mutex
 	currentElement *FormElement
 	cache          KeyValueStore
-	form           []Form
+	Form           []Form
 	Conn           []map[string]interface{}
 	Event          chan string
 }
@@ -61,7 +61,7 @@ func NewConfiguration() Configuration {
 		onChange: make([]ChangeListener, 0),
 		mu:       sync.Mutex{},
 		cache:    NewKeyValueStore(),
-		form: []Form{
+		Form: []Form{
 			Form{
 				Title: "general",
 				Elmnts: []FormElement{
@@ -137,7 +137,7 @@ func NewConfiguration() Configuration {
 }
 
 func (this Form) MarshalJSON() ([]byte, error) {
-	return []byte(this.toJSON(func(el FormElement) string {
+	return []byte(this.ToJSON(func(el FormElement) string {
 		a, e := json.Marshal(el)
 		if e != nil {
 			return ""
@@ -146,7 +146,7 @@ func (this Form) MarshalJSON() ([]byte, error) {
 	})), nil
 }
 
-func (this Form) toJSON(fn func(el FormElement) string) string {
+func (this Form) ToJSON(fn func(el FormElement) string) string {
 	formatKey := func(str string) string {
 		return strings.Replace(str, " ", "_", -1)
 	}
@@ -171,7 +171,7 @@ func (this Form) toJSON(fn func(el FormElement) string) string {
 		if i == 0 && len(this.Elmnts) == 0 {
 			ret = fmt.Sprintf("%s{", ret)
 		}
-		ret = ret + this.Form[i].toJSON(fn)
+		ret = ret + this.Form[i].ToJSON(fn)
 		if i == len(this.Form)-1 {
 			ret = fmt.Sprintf("%s}", ret)
 		}
@@ -340,8 +340,8 @@ func (this *Configuration) Initialise() {
 
 func (this Configuration) Save() Configuration {
 	// convert config data to an appropriate json struct
-	form := append(this.form, Form{Title: "connections"})
-	v := Form{Form: form}.toJSON(func(el FormElement) string {
+	form := append(this.Form, Form{Title: "connections"})
+	v := Form{Form: form}.ToJSON(func(el FormElement) string {
 		a, e := json.Marshal(el.Value)
 		if e != nil {
 			return "null"
@@ -434,7 +434,7 @@ func (this *Configuration) Get(key string) *Configuration {
 	this.mu.Lock()
 	tmp := this.cache.Get(key)
 	if tmp == nil {
-		this.currentElement = traverse(&this.form, strings.Split(key, "."))
+		this.currentElement = traverse(&this.Form, strings.Split(key, "."))
 		this.cache.Set(key, this.currentElement)
 	} else {
 		this.currentElement = tmp.(*FormElement)
@@ -527,7 +527,7 @@ func (this Configuration) Interface() interface{} {
 }
 
 func (this Configuration) MarshalJSON() ([]byte, error) {
-	form := this.form
+	form := this.Form
 	form = append(form, Form{
 		Title: "constant",
 		Elmnts: []FormElement{
