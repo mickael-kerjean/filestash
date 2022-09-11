@@ -11,12 +11,15 @@ import (
 
 func BodyParser(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	extractBody := func(req *http.Request) (map[string]interface{}, error) {
-		var body map[string]interface{}
+		body := map[string]interface{}{}
 		byt, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			return body, err
 		}
 		if err := json.Unmarshal(byt, &body); err != nil {
+			if len(byt) == 0 {
+				err = nil
+			}
 			return body, err
 		}
 		return body, nil
