@@ -5,6 +5,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"golang.org/x/time/rate"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"strings"
 )
@@ -111,4 +112,41 @@ func RateLimiter(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *Ap
 		}
 		fn(ctx, res, req)
 	}
+}
+
+func EnableCors(req *http.Request, res http.ResponseWriter, host string) error {
+	if host == "" {
+		return nil
+	}
+	h := res.Header()
+	if host == "*" {
+		h.Set("Access-Control-Allow-Origin", "*")
+	} else {
+		origin := req.Header.Get("Origin")
+		if origin == "" {
+			origin = req.Header.Get("Referer")
+		}
+		if origin == "" {
+			return nil
+		}
+		u, err := url.Parse(origin)
+		if err != nil {
+			return ErrNotAllowed
+		}
+		if u.Host != host {
+			Log.Debug("middleware::http host missmatch for host[%s] origin[%s]", host, u.Host)
+			return NewError("Invalid host for the selected key", 401)
+		}
+		if u.Scheme == "http" && strings.HasPrefix(u.Host, "localhost:") == false {
+			return NewError("API access can only be done using https", 401)
+		}
+		h.Set("Access-Control-Allow-Origin", fmt.Sprintf("%s://%s", u.Scheme, host))
+	}
+	method := req.Header.Get("Access-Control-Request-Method")
+	if method == "" {
+		method = "GET"
+	}
+	h.Set("Access-Control-Allow-Methods", method)
+	h.Set("Access-Control-Allow-Headers", "Authorization")
+	return nil
 }
