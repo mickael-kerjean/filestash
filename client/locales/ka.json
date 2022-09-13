@@ -46,6 +46,7 @@
     "HOSTNAME*": "მასპინძლის სახელი",
     "INCORRECT_PASSWORD": "არასწორი პაროლი",
     "INFO": "ინფორმაცია",
+    "INTERNAL_ERROR": "შიდა შეცდომა",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "შიდა შეცდომა: ვერ შექმნით {{VALUE}",
     "INVALID_PASSWORD": "არასწორი პაროლი",
     "INVALID_ACCOUNT": "არასწორი ანგარიში",

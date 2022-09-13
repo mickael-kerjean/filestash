@@ -46,6 +46,7 @@
     "HOSTNAME*": "nume de gazdă",
     "INCORRECT_PASSWORD": "parola incorecta",
     "INFO": "info",
+    "INTERNAL_ERROR": "Eroare interna",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "eroare internă: nu se poate crea o {{VALUE}}",
     "INVALID_PASSWORD": "Parolă Invalidă",
     "INVALID_ACCOUNT": "cont invalid",

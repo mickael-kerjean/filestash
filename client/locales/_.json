@@ -46,6 +46,7 @@
     "HOSTNAME*": "",
     "INCORRECT_PASSWORD": "",
     "INFO": "",
+    "INTERNAL_ERROR": "",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "",
     "INVALID_PASSWORD": "",
     "INVALID_ACCOUNT": "",

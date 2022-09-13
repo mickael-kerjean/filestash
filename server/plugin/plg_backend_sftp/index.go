@@ -63,10 +63,10 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 		d := c.(*Sftp)
 		if d == nil {
 			Log.Warning("plg_backend_sftp::sftp is nil on get")
-			return nil, ErrNotReachable
+			return nil, ErrInternal
 		} else if d.wg == nil {
 			Log.Warning("plg_backend_sftp::wg is nil on get")
-			return nil, ErrNotReachable
+			return nil, ErrInternal
 		}
 		d.wg.Add(1)
 		go func() {

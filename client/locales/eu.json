@@ -46,6 +46,7 @@
     "HOSTNAME*": "hostname",
     "INCORRECT_PASSWORD": "Pasahitz okerra",
     "INFO": "info",
+    "INTERNAL_ERROR": "Barne-errorea",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "barne errorea: ezin da {{VALUE}} sortu",
     "INVALID_PASSWORD": "pasahitz okerra",
     "INVALID_ACCOUNT": "kontua baliogabea",

@@ -46,6 +46,7 @@
     "HOSTNAME*": "název hostitele",
     "INCORRECT_PASSWORD": "nesprávné heslo",
     "INFO": "informace",
+    "INTERNAL_ERROR": "Vnitřní chyba",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "interní chyba: nelze vytvořit {{VALUE}}",
     "INVALID_PASSWORD": "neplatné heslo",
     "INVALID_ACCOUNT": "neplatný účet",

@@ -46,6 +46,7 @@
     "HOSTNAME*": "хостын нэр",
     "INCORRECT_PASSWORD": "нууц үг буруу",
     "INFO": "мэдээлэл",
+    "INTERNAL_ERROR": "Дотоод алдаа",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "дотоод алдаа: {{VALUE}} үүсгэх боломжгүй",
     "INVALID_PASSWORD": "Нууц үг буруу байна",
     "INVALID_ACCOUNT": "хүчингүй данс",

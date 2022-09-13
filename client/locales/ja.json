@@ -46,6 +46,7 @@
     "HOSTNAME*": "ホスト名",
     "INCORRECT_PASSWORD": "間違ったパスワード",
     "INFO": "情報",
+    "INTERNAL_ERROR": "内部エラー",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "内部エラー：{{VALUE}}を作成できません",
     "INVALID_PASSWORD": "無効なパスワード",
     "INVALID_ACCOUNT": "無効なアカウント",

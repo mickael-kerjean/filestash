@@ -46,6 +46,7 @@
     "HOSTNAME*": "hostnaam",
     "INCORRECT_PASSWORD": "Incorrect wachtwoord",
     "INFO": "info",
+    "INTERNAL_ERROR": "Interne fout",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "interne fout: kan geen {{VALUE}} maken",
     "INVALID_PASSWORD": "ongeldig wachtwoord",
     "INVALID_ACCOUNT": "ongeldig account",

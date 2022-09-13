@@ -46,6 +46,7 @@
     "HOSTNAME*": "όνομα κεντρικού υπολογιστή",
     "INCORRECT_PASSWORD": "Λάθος κωδικός",
     "INFO": "πληροφορίες",
+    "INTERNAL_ERROR": "Εσωτερικό σφάλμα",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "εσωτερικό σφάλμα: δεν είναι δυνατή η δημιουργία {{VALUE}}",
     "INVALID_PASSWORD": "Λανθασμένος κωδικός",
     "INVALID_ACCOUNT": "μη έγκυρος λογαριασμός",
