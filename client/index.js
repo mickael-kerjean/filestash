@@ -104,7 +104,7 @@ function setup_xdg_open() {
 function translation() {
     let selectedLanguage = "en";
     switch(navigator.language) {
-    case "zh_tw":
+    case "zh-TW":
         selectedLanguage = "zh_tw";
         break;
     default:
