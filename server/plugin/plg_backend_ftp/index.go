@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -19,6 +20,7 @@ var FtpCache AppCache
 type Ftp struct {
 	client *goftp.Client
 	p      map[string]string
+	wg     *sync.WaitGroup
 }
 
 func init() {
@@ -27,6 +29,15 @@ func init() {
 	FtpCache = NewAppCache(2, 1)
 	FtpCache.OnEvict(func(key string, value interface{}) {
 		c := value.(*Ftp)
+		if c == nil {
+			Log.Warning("plg_backend_ftp::ftp is nil on close")
+			return
+		} else if c.wg == nil {
+			Log.Warning("plg_backend_ftp::wg is nil on close")
+			c.Close()
+			return
+		}
+		c.wg.Wait()
 		c.Close()
 	})
 }
@@ -34,6 +45,18 @@ func init() {
 func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	if c := FtpCache.Get(params); c != nil {
 		d := c.(*Ftp)
+		if d == nil {
+			Log.Warning("plg_backend_ftp::sftp is nil on get")
+			return nil, ErrNotReachable
+		} else if d.wg == nil {
+			Log.Warning("plg_backend_ftp::wg is nil on get")
+			return nil, ErrNotReachable
+		}
+		d.wg.Add(1)
+		go func() {
+			<-app.Context.Done()
+			d.wg.Done()
+		}()
 		return d, nil
 	}
 	if params["hostname"] == "" {
@@ -76,7 +99,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		if _, err := client.ReadDir("/"); err != nil {
 			client.Close()
 		} else {
-			backend = &Ftp{client, params}
+			backend = &Ftp{client, params, nil}
 		}
 	}
 
@@ -90,9 +113,15 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 			client.Close()
 			return backend, ErrAuthenticationFailed
 		}
-		backend = &Ftp{client, params}
+		backend = &Ftp{client, params, nil}
 	}
 
+	backend.wg = new(sync.WaitGroup)
+	backend.wg.Add(1)
+	go func() {
+		<-app.Context.Done()
+		backend.wg.Done()
+	}()
 	FtpCache.Set(params, backend)
 	return backend, nil
 }
@@ -157,8 +186,6 @@ func (f Ftp) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (f Ftp) Cat(path string) (io.ReadCloser, error) {
-	c := f.preventCacheDeletion()
-	defer c()
 	pr, pw := io.Pipe()
 	go func() {
 		if err := f.client.Retrieve(path, pw); err != nil {
@@ -175,8 +202,6 @@ func (f Ftp) Mkdir(path string) error {
 }
 
 func (f Ftp) Rm(path string) error {
-	c := f.preventCacheDeletion()
-	defer c()
 	isDirectory := func(p string) bool {
 		return regexp.MustCompile(`\/$`).MatchString(p)
 	}
@@ -227,29 +252,9 @@ func (f Ftp) Touch(path string) error {
 }
 
 func (f Ftp) Save(path string, file io.Reader) error {
-	c := f.preventCacheDeletion()
-	defer c()
 	return f.client.Store(path, file)
 }
 
 func (f Ftp) Close() error {
 	return f.client.Close()
-}
-
-func (f Ftp) preventCacheDeletion() func() {
-	c := make(chan string)
-	go func() {
-		for {
-			select {
-			case <-c:
-				return
-			case <-time.After(30 * time.Second):
-				FtpCache.Set(f.p, &f)
-				continue
-			}
-		}
-	}()
-	return func() {
-		close(c)
-	}
 }
