@@ -73,6 +73,7 @@ func Init(a App) {
 	files.HandleFunc("/touch", NewMiddlewareChain(FileTouch, middlewares, a)).Methods("POST")
 	middlewares = []Middleware{ApiHeaders, SessionStart, LoggedInOnly}
 	files.HandleFunc("/search", NewMiddlewareChain(FileSearch, middlewares, a)).Methods("GET")
+	r.PathPrefix("/api/files").Handler(NewMiddlewareChain(PreflightCorsOK, []Middleware{}, a)).Methods("OPTIONS")
 
 	// API for Shared link
 	share := r.PathPrefix("/api/share").Subrouter()

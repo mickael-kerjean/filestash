@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/middleware"
 	"io"
 	"net/http"
 	URL "net/url"
@@ -71,6 +72,14 @@ func IndexHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
 func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusNotFound)
 	res.Write(HtmlPage404)
+}
+
+func PreflightCorsOK(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if err := middleware.EnableCors(req, res, "*"); err != nil {
+		SendErrorResult(res, err)
+		return
+	}
+	SendSuccessResult(res, nil)
 }
 
 var listOfPlugins map[string][]string = map[string][]string{

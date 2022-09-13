@@ -118,26 +118,24 @@ func EnableCors(req *http.Request, res http.ResponseWriter, host string) error {
 	if host == "" {
 		return nil
 	}
+	origin := req.Header.Get("Origin")
+	if origin == "" { // cors is only for browser client
+		return nil
+	}
 	h := res.Header()
 	if host == "*" {
 		h.Set("Access-Control-Allow-Origin", "*")
 	} else {
-		origin := req.Header.Get("Origin")
-		if origin == "" {
-			origin = req.Header.Get("Referer")
-		}
-		if origin == "" {
-			return nil
-		}
 		u, err := url.Parse(origin)
 		if err != nil {
+			Log.Debug("middleware::http origin isn't valid - '%s'", origin)
 			return ErrNotAllowed
 		}
 		if u.Host != host {
 			Log.Debug("middleware::http host missmatch for host[%s] origin[%s]", host, u.Host)
 			return NewError("Invalid host for the selected key", 401)
 		}
-		if u.Scheme == "http" && strings.HasPrefix(u.Host, "localhost:") == false {
+		if u.Scheme != "https" && strings.HasPrefix(u.Host, "localhost:") == false {
 			return NewError("API access can only be done using https", 401)
 		}
 		h.Set("Access-Control-Allow-Origin", fmt.Sprintf("%s://%s", u.Scheme, host))
