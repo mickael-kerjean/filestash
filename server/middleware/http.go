@@ -99,7 +99,7 @@ func SecureAjax(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App
 	}
 }
 
-var limiter = rate.NewLimiter(5, 1000)
+var limiter = rate.NewLimiter(10, 1000)
 
 func RateLimiter(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
