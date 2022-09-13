@@ -129,22 +129,32 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionAuthenticateExternal(ctx *App, res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("X-Request-ID", GenerateRequestID("API"))
+	h := res.Header()
+	h.Set("X-Request-ID", middleware.GenerateRequestID("API"))
+
 	api_key := string(req.URL.Query().Get("key"))
 	if api_key == "" {
+		middleware.EnableCors(req, res, "*")
 		SendErrorResult(res, NewError(fmt.Sprintf(
 			"You need to provide your API key in the request URL (e.g.: '%s?key=foobar'). See https://www.filestash.app/docs/api/#authentication for details, or we can help at support@filestash.app",
 			req.URL.Path,
 		), 403))
 		return
-	} else if IsApiKeyValid(api_key) == false {
+	}
+	host, err := VerifyApiKey(api_key)
+	if err != nil {
+		middleware.EnableCors(req, res, "*")
 		SendErrorResult(res, NewError(fmt.Sprintf(
-			"Invalid API Key provided: %s",
+			"Invalid API Key provided: '%s'",
 			api_key,
 		), 401))
 		return
 	}
-
+	if err = middleware.EnableCors(req, res, host); err != nil {
+		middleware.EnableCors(req, res, "*")
+		SendErrorResult(res, err)
+		return
+	}
 	ctx.Body["timestamp"] = time.Now().Format(time.RFC3339)
 	ctx.Body["api_key"] = api_key
 	session := model.MapStringInterfaceToMapStringString(ctx.Body)
@@ -166,7 +176,6 @@ func SessionAuthenticateExternal(ctx *App, res http.ResponseWriter, req *http.Re
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
-
 	SendRaw(res, struct {
 		AccessToken string `json:"access_token"`
 		TokenType   string `json:"token_type"`
@@ -189,7 +198,7 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 		// then close which can take a few seconds and make for a bad user experience.
 		// By pushing that connection close in a goroutine, we make sure the logout is much faster for
 		// the user while still retaining that functionality.
-		SessionTry(func(c *App, _res http.ResponseWriter, _req *http.Request) {
+		middleware.SessionTry(func(c *App, _res http.ResponseWriter, _req *http.Request) {
 			if c.Backend != nil {
 				if obj, ok := c.Backend.(interface{ Close() error }); ok {
 					obj.Close()

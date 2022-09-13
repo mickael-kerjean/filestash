@@ -57,7 +57,7 @@ func SessionStart(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 			SendErrorResult(res, err)
 			return
 		}
-		if ctx.Session, err = _extractSession(req, ctx); err != nil {
+		if ctx.Session, err = _extractSession(req, res, ctx); err != nil {
 			SendErrorResult(res, err)
 			return
 		}
@@ -76,7 +76,7 @@ func SessionStart(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 func SessionTry(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		ctx.Share, _ = _extractShare(req)
-		ctx.Session, _ = _extractSession(req, ctx)
+		ctx.Session, _ = _extractSession(req, res, ctx)
 		ctx.Backend, _ = _extractBackend(req, ctx)
 		fn(ctx, res, req)
 	}
@@ -128,7 +128,7 @@ func CanManageShare(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx 
 		// the user that's currently logged in can manage the link. 2 scenarios here:
 		// 1) scenario 1: the user is the very same one that generated the shared link in the first place
 		ctx.Share = Share{}
-		if ctx.Session, err = _extractSession(req, ctx); err != nil {
+		if ctx.Session, err = _extractSession(req, res, ctx); err != nil {
 			Log.Debug("middleware::session::share 'cannot extract session - %s'", err.Error())
 			SendErrorResult(res, err)
 			return
@@ -144,7 +144,7 @@ func CanManageShare(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx 
 			SendErrorResult(res, err)
 			return
 		}
-		if ctx.Session, err = _extractSession(req, ctx); err != nil {
+		if ctx.Session, err = _extractSession(req, res, ctx); err != nil {
 			Log.Debug("middleware::session::share 'cannot extract session 2 - %s'", err.Error())
 			SendErrorResult(res, err)
 			return
@@ -235,7 +235,7 @@ func _extractShare(req *http.Request) (Share, error) {
 	return s, nil
 }
 
-func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
+func _extractSession(req *http.Request, res http.ResponseWriter, ctx *App) (map[string]string, error) {
 	var str string
 	var err error
 	var session map[string]string = make(map[string]string)
@@ -279,7 +279,8 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		if err != nil {
 			return session, err
 		}
-		if _, err := VerifyApiKey(session["api_key"]); err != nil {
+		host, err := VerifyApiKey(session["api_key"])
+		if err != nil {
 			Log.Warning("attempt to use a non valid api key %s", session["api_key"])
 			if err == ErrNotValid {
 				return session, NewError("Your API key is not valid", 401)
@@ -288,6 +289,8 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 			}
 		} else if t.Add(EXPIRATION_API_TOKEN * time.Second).Before(time.Now()) {
 			return session, NewError("Access Token has expired", 401)
+		} else if err = EnableCors(req, res, host); err != nil {
+			return session, err
 		}
 		return session, nil
 	}

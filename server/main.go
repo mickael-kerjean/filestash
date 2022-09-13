@@ -42,8 +42,10 @@ func Init(a App) {
 	middlewares = []Middleware{ApiHeaders, SecureHeaders}
 	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, a)).Methods("GET")
 	session.HandleFunc("/auth/", NewMiddlewareChain(SessionAuthMiddleware, middlewares, a)).Methods("GET", "POST")
+	token := r.PathPrefix("/api/token").Subrouter()
 	middlewares = []Middleware{ApiHeaders, RateLimiter, BodyParser}
-	r.HandleFunc("/api/token", NewMiddlewareChain(SessionAuthenticateExternal, middlewares, a)).Methods("POST")
+	token.HandleFunc("", NewMiddlewareChain(SessionAuthenticateExternal, middlewares, a)).Methods("POST")
+	token.HandleFunc("", NewMiddlewareChain(PreflightCorsOK, []Middleware{}, a)).Methods("OPTIONS")
 
 	// API for Admin Console
 	admin := r.PathPrefix("/admin/api").Subrouter()
