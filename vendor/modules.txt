@@ -53,6 +53,9 @@ github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59
+## explicit
+github.com/aybabtme/rgbterm
 # github.com/coreos/go-oidc/v3 v3.2.0
 ## explicit
 github.com/coreos/go-oidc/v3/oidc
@@ -68,6 +71,7 @@ github.com/cretz/bine/torutil
 github.com/cretz/bine/torutil/ed25519
 github.com/cretz/bine/torutil/ed25519/internal/edwards25519
 # github.com/emirpasic/gods v1.12.0
+## explicit
 github.com/emirpasic/gods/containers
 github.com/emirpasic/gods/lists
 github.com/emirpasic/gods/lists/arraylist
@@ -80,6 +84,7 @@ github.com/go-sql-driver/mysql
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.5.2
+## explicit
 github.com/golang/protobuf/jsonpb
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
@@ -87,9 +92,11 @@ github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/googleapis/enterprise-certificate-proxy v0.0.0-20220520183353-fd19c99a87aa
+## explicit
 github.com/googleapis/enterprise-certificate-proxy/client
 github.com/googleapis/enterprise-certificate-proxy/client/util
 # github.com/googleapis/gax-go/v2 v2.4.0
+## explicit
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gax-go/v2/apierror
 github.com/googleapis/gax-go/v2/apierror/internal/proto
@@ -117,6 +124,7 @@ github.com/hirochachacha/go-smb2/internal/utf16le
 # github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
 github.com/jbenet/go-context/io
 # github.com/jmespath/go-jmespath v0.4.0
+## explicit
 github.com/jmespath/go-jmespath
 # github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd
 github.com/kevinburke/ssh_config
@@ -124,6 +132,9 @@ github.com/kevinburke/ssh_config
 github.com/kr/fs
 # github.com/kr/pretty v0.3.0
 ## explicit
+# github.com/mattn/go-isatty v0.0.16
+## explicit
+github.com/mattn/go-isatty
 # github.com/mattn/go-sqlite3 v2.0.2+incompatible
 ## explicit
 github.com/mattn/go-sqlite3
@@ -136,6 +147,9 @@ github.com/mitchellh/go-homedir
 # github.com/mitchellh/hashstructure v1.0.0
 ## explicit
 github.com/mitchellh/hashstructure
+# github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+## explicit
+github.com/nfnt/resize
 # github.com/patrickmn/go-cache v2.1.0+incompatible
 ## explicit
 github.com/patrickmn/go-cache
@@ -147,6 +161,11 @@ github.com/pkg/sftp
 # github.com/prasad83/goftp v0.0.0-20210325080443-f57aaed46a32
 ## explicit
 github.com/prasad83/goftp
+# github.com/qeesung/image2ascii v1.0.1
+## explicit
+github.com/qeesung/image2ascii/ascii
+github.com/qeesung/image2ascii/convert
+github.com/qeesung/image2ascii/terminal
 # github.com/rogpeppe/go-internal v1.8.0
 ## explicit
 # github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4
@@ -154,12 +173,11 @@ github.com/prasad83/goftp
 # github.com/sergi/go-diff v1.0.0
 github.com/sergi/go-diff/diffmatchpatch
 # github.com/src-d/gcfg v1.4.0
+## explicit
 github.com/src-d/gcfg
 github.com/src-d/gcfg/scanner
 github.com/src-d/gcfg/token
 github.com/src-d/gcfg/types
-# github.com/stretchr/testify v1.7.0
-## explicit
 # github.com/tidwall/gjson v1.13.0
 ## explicit
 github.com/tidwall/gjson
@@ -170,6 +188,9 @@ github.com/tidwall/pretty
 # github.com/tidwall/sjson v1.0.4
 ## explicit
 github.com/tidwall/sjson
+# github.com/wayneashleyberry/terminal-dimensions v1.1.0
+## explicit
+github.com/wayneashleyberry/terminal-dimensions
 # github.com/xanzy/ssh-agent v0.2.1
 github.com/xanzy/ssh-agent
 # go.opencensus.io v0.23.0
@@ -245,16 +266,21 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 ## explicit
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20220610221304-9f5ed59c137d
+# golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
+## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.3.7
+## explicit
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
+# golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9
+## explicit
+golang.org/x/time/rate
 # google.golang.org/api v0.84.0
 ## explicit
 google.golang.org/api/drive/v3
@@ -271,6 +297,7 @@ google.golang.org/api/transport/http
 google.golang.org/api/transport/http/internal/propagation
 google.golang.org/api/transport/internal/dca
 # google.golang.org/appengine v1.6.7
+## explicit
 google.golang.org/appengine
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/app_identity
@@ -286,6 +313,7 @@ google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.47.0
+## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
@@ -335,6 +363,7 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 # google.golang.org/protobuf v1.28.0
+## explicit
 google.golang.org/protobuf/encoding/protojson
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
@@ -381,6 +410,7 @@ gopkg.in/gomail.v2
 ## explicit
 gopkg.in/ldap.v3
 # gopkg.in/square/go-jose.v2 v2.5.1
+## explicit
 gopkg.in/square/go-jose.v2
 gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
@@ -434,6 +464,7 @@ gopkg.in/src-d/go-git.v4/utils/merkletrie/index
 gopkg.in/src-d/go-git.v4/utils/merkletrie/internal/frame
 gopkg.in/src-d/go-git.v4/utils/merkletrie/noder
 # gopkg.in/warnings.v0 v0.1.2
+## explicit
 gopkg.in/warnings.v0
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 ## explicit

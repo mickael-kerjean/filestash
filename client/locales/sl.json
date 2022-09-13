@@ -46,6 +46,7 @@
     "HOSTNAME*": "ime gostitelja",
     "INCORRECT_PASSWORD": "napačno geslo",
     "INFO": "info",
+    "INTERNAL_ERROR": "Notranja napaka",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "notranja napaka: ni mogoče ustvariti {{VALUE}}",
     "INVALID_PASSWORD": "Neveljavno geslo",
     "INVALID_ACCOUNT": "neveljaven račun",

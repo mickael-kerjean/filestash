@@ -46,6 +46,7 @@
     "HOSTNAME*": "hostname",
     "INCORRECT_PASSWORD": "väärä salasana",
     "INFO": "tiedot",
+    "INTERNAL_ERROR": "sisäinen virhe",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "sisäinen virhe: ei voi luoda {{VALUE}}",
     "INVALID_PASSWORD": "väärä salasana",
     "INVALID_ACCOUNT": "virheellinen tili",

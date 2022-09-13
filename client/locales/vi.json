@@ -46,6 +46,7 @@
     "HOSTNAME*": "tên máy chủ",
     "INCORRECT_PASSWORD": "mật khẩu không đúng",
     "INFO": "thông tin",
+    "INTERNAL_ERROR": "Lỗi cục bộ",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "lỗi nội bộ: không thể tạo {{VALUE}}",
     "INVALID_PASSWORD": "mật khẩu không hợp lệ",
     "INVALID_ACCOUNT": "tài khoản không hợp lệ",

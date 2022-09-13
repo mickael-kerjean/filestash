@@ -46,6 +46,7 @@
     "HOSTNAME*": "име домаћина",
     "INCORRECT_PASSWORD": "Погрешна лозинка",
     "INFO": "инфо",
+    "INTERNAL_ERROR": "Интeрна грeшка",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "интерна грешка: не може да се креира {{ВАЛУЕ}}",
     "INVALID_PASSWORD": "неважећа лозинка",
     "INVALID_ACCOUNT": "Неважећи рачун",

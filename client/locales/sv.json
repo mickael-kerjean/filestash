@@ -46,6 +46,7 @@
     "HOSTNAME*": "hostname",
     "INCORRECT_PASSWORD": "fel lösenord",
     "INFO": "info",
+    "INTERNAL_ERROR": "Internt fel",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "internt fel: kan inte skapa ett {{VALUE}}",
     "INVALID_PASSWORD": "felaktigt lösenord",
     "INVALID_ACCOUNT": "ogiltigt konto",

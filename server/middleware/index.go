@@ -69,6 +69,7 @@ type LogEntry struct {
 	Share      string  `json:"share"`
 	License    string  `json:"license"`
 	Session    string  `json:"session"`
+	RequestID  string  `json:"requestID"`
 }
 
 func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
@@ -104,6 +105,7 @@ func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
 				}
 				return GenerateID(&ctx)
 			}(),
+			RequestID: res.Header().Get("X-Request-ID"),
 		}
 		if Config.Get("log.telemetry").Bool() {
 			telemetry.Record(point)

@@ -46,6 +46,7 @@
     "HOSTNAME*": "pagrindinio kompiuterio vardas",
     "INCORRECT_PASSWORD": "Neteisingas slaptažodis",
     "INFO": "informacija",
+    "INTERNAL_ERROR": "Vidinė klaida",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "vidinė klaida: negalima sukurti {{VALUE}}",
     "INVALID_PASSWORD": "Neteisingas slaptažodis",
     "INVALID_ACCOUNT": "neteisinga sąskaita",

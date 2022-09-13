@@ -46,6 +46,7 @@
     "HOSTNAME*": "主机名",
     "INCORRECT_PASSWORD": "密码错误",
     "INFO": "信息",
+    "INTERNAL_ERROR": "内部错误",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "内部错误：无法创建 {{VALUE}}",
     "INVALID_PASSWORD": "无效密码",
     "INVALID_ACCOUNT": "无效账户",

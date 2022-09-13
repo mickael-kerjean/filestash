@@ -134,7 +134,7 @@ class FileSystem {
         return this._replace(path, "loading")
             .then((res) => this.current_path === dirname(path) ?
                 this._ls_from_cache(dirname(path)) : Promise.resolve(res))
-            .then(() => http_get(url))
+            .then(() => http_post(url))
             .then((res) => {
                 return cache.remove(cache.FILE_CONTENT, [currentShare(), path])
                     .then(cache.remove(cache.FILE_CONTENT, [currentShare(), path], false))
@@ -228,7 +228,7 @@ class FileSystem {
 
         const action_execute = (part_of_a_batch_operation = false) => {
             if (part_of_a_batch_operation === true) {
-                return http_get(url)
+                return http_post(url)
                     .then(() => {
                         return this._replace(destination_path, null, "loading")
                             .then(() => this._refresh(destination_path));
@@ -240,7 +240,7 @@ class FileSystem {
                     });
             }
 
-            return http_get(url)
+            return http_post(url)
                 .then(() => {
                     return this._replace(destination_path, null, "loading")
                         .then(() => origin_path !== destination_path ?
@@ -325,7 +325,7 @@ class FileSystem {
                     return http_post(url, file, "blob", params);
                 } else {
                     const url = appendShareToUrl("/api/files/touch?path=" + prepare(path));
-                    return http_get(url);
+                    return http_post(url);
                 }
             }
         };
@@ -347,7 +347,7 @@ class FileSystem {
         return this._replace(origin_path, "loading")
             .then(this._add(destination_path, "loading"))
             .then(() => this._refresh(origin_path, destination_path))
-            .then(() => http_get(url))
+            .then(() => http_post(url))
             .then((res) => {
                 return this._remove(origin_path, "loading")
                     .then(() => this._replace(destination_path, null, "loading"))
