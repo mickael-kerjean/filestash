@@ -291,7 +291,7 @@ func (this *Configuration) Initialise() {
 	}
 	if env := os.Getenv("APPLICATION_URL"); env != "" {
 		shouldSave = true
-		this.Get("general.host").Set(env).String()
+		_ = this.Get("general.host").Set(env).String()
 	}
 	if this.Get("general.secret_key").String() == "" {
 		shouldSave = true
@@ -338,7 +338,7 @@ func (this *Configuration) Initialise() {
 	InitSecretDerivate(this.Get("general.secret_key").String())
 }
 
-func (this Configuration) Save() Configuration {
+func (this *Configuration) Save() {
 	// convert config data to an appropriate json struct
 	form := append(this.Form, Form{Title: "connections"})
 	v := Form{Form: form}.ToJSON(func(el FormElement) string {
@@ -353,10 +353,9 @@ func (this Configuration) Save() Configuration {
 	if err := SaveConfig(PrettyPrint([]byte(v))); err != nil {
 		Log.Error("config::save %s", err.Error())
 	}
-	return this
 }
 
-func (this Configuration) Export() interface{} {
+func (this *Configuration) Export() interface{} {
 	return struct {
 		Editor                  string            `json:"editor"`
 		ForkButton              bool              `json:"fork_button"`
@@ -482,7 +481,7 @@ func (this *Configuration) Set(value interface{}) *Configuration {
 	return this
 }
 
-func (this Configuration) String() string {
+func (this *Configuration) String() string {
 	val := this.Interface()
 	switch val.(type) {
 	case string:
@@ -493,7 +492,7 @@ func (this Configuration) String() string {
 	return ""
 }
 
-func (this Configuration) Int() int {
+func (this *Configuration) Int() int {
 	val := this.Interface()
 	switch val.(type) {
 	case float64:
@@ -506,7 +505,7 @@ func (this Configuration) Int() int {
 	return 0
 }
 
-func (this Configuration) Bool() bool {
+func (this *Configuration) Bool() bool {
 	val := this.Interface()
 	switch val.(type) {
 	case bool:
@@ -515,7 +514,7 @@ func (this Configuration) Bool() bool {
 	return false
 }
 
-func (this Configuration) Interface() interface{} {
+func (this *Configuration) Interface() interface{} {
 	if this.currentElement == nil {
 		return nil
 	}
@@ -526,7 +525,7 @@ func (this Configuration) Interface() interface{} {
 	return val
 }
 
-func (this Configuration) MarshalJSON() ([]byte, error) {
+func (this *Configuration) MarshalJSON() ([]byte, error) {
 	form := this.Form
 	form = append(form, Form{
 		Title: "constant",

@@ -10,7 +10,7 @@ import (
 var configpath = filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json")
 
 func PrivateConfigHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
-	SendSuccessResult(res, Config)
+	SendSuccessResult(res, &Config)
 }
 
 func PrivateConfigUpdateHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
