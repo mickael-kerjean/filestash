@@ -102,13 +102,23 @@ function setup_xdg_open() {
 }
 
 function translation() {
-    const userLanguage = navigator.language.split("-")[0];
-    const selectedLanguage = [
-        "az", "be", "bg", "ca", "cs", "da", "de", "el", "es", "et",
-        "eu", "fi", "fr", "gl", "hr", "hu", "id", "is", "it", "ja",
-        "ka", "ko", "lt", "lv", "mn", "nb", "nl", "pl", "pt", "ro",
-        "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi", "zh",
-    ].indexOf(userLanguage) === -1 ? "en" : userLanguage;
+    let selectedLanguage = "en";
+    switch(navigator.language) {
+    case "zh_tw":
+        selectedLanguage = "zh_tw";
+        break;
+    default:
+        const userLanguage = navigator.language.split("-")[0];
+        const idx = [
+            "az", "be", "bg", "ca", "cs", "da", "de", "el", "es", "et",
+            "eu", "fi", "fr", "gl", "hr", "hu", "id", "is", "it", "ja",
+            "ka", "ko", "lt", "lv", "mn", "nb", "nl", "pl", "pt", "ro",
+            "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi", "zh",
+        ].indexOf(navigator.language.split("-")[0]);
+        if(idx !== -1) {
+            selectedLanguage = userLanguage;
+        }
+    }
 
     if (selectedLanguage === "en") {
         return Promise.resolve();
