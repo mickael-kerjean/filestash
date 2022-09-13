@@ -43,7 +43,7 @@ func FileSearch(ctx *App, res http.ResponseWriter, req *http.Request) {
 					}
 					return "file"
 				}(),
-				FPath: "/" + strings.TrimPrefix(
+				FPath: Config.Get("general.sub_folder").String() + "/" + strings.TrimPrefix(
 					searchResults[i].Path(),
 					ctx.Session["path"],
 				),

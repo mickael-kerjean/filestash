@@ -22,7 +22,7 @@ func FileExport(ctx *App, res http.ResponseWriter, req *http.Request) {
 		Name:   "download",
 		Value:  "",
 		MaxAge: -1,
-		Path:   "/",
+		Path:   Config.Get("general.sub_folder").String() + "/",
 	})
 	header := res.Header()
 	query := req.URL.Query()

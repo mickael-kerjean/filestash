@@ -92,6 +92,8 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	value_limit := 3800
 	index := 0
 	end := 0
+	sub_folder := Config.Get("general.sub_folder").String();
+
 	for {
 		if len(obfuscate) >= (index+1)*value_limit {
 			end = (index + 1) * value_limit
@@ -102,7 +104,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 			Name:     CookieName(index),
 			Value:    obfuscate[index*value_limit : end],
 			MaxAge:   60 * Config.Get("general.cookie_timeout").Int(),
-			Path:     COOKIE_PATH,
+			Path:     sub_folder + COOKIE_PATH,
 			HttpOnly: true,
 			SameSite: http.SameSiteStrictMode,
 		}
@@ -145,6 +147,8 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 		})(ctx, res, req)
 	}()
 	index := 0
+	sub_folder := Config.Get("general.sub_folder").String()
+
 	for {
 		_, err := req.Cookie(CookieName(index))
 		if err != nil {
@@ -154,7 +158,7 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 			Name:   CookieName(index),
 			Value:  "",
 			MaxAge: -1,
-			Path:   COOKIE_PATH,
+			Path:   sub_folder + COOKIE_PATH,
 		})
 		index++
 	}
@@ -162,13 +166,13 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 		Name:   COOKIE_NAME_ADMIN,
 		Value:  "",
 		MaxAge: -1,
-		Path:   COOKIE_PATH_ADMIN,
+		Path:   sub_folder + COOKIE_PATH_ADMIN,
 	})
 	http.SetCookie(res, &http.Cookie{
 		Name:   COOKIE_NAME_PROOF,
 		Value:  "",
 		MaxAge: -1,
-		Path:   COOKIE_PATH,
+		Path:   sub_folder + COOKIE_PATH,
 	})
 	SendSuccessResult(res, nil)
 }
@@ -204,7 +208,7 @@ func SessionOAuthBackend(ctx *App, res http.ResponseWriter, req *http.Request) {
 	q.Set("state", stateValue)
 	redirectUrl.RawQuery = q.Encode()
 	if strings.Contains(req.Header.Get("Accept"), "text/html") {
-		http.Redirect(res, req, redirectUrl.String(), http.StatusSeeOther)
+		http.Redirect(res, req, Config.Get("general.sub_folder").String() + redirectUrl.String(), http.StatusSeeOther)
 		return
 	}
 	SendSuccessResult(res, redirectUrl.String())
@@ -227,10 +231,12 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		}
 		return nil
 	}()
+	sub_folder := Config.Get("general.sub_folder").String()
+
 	if plugin == nil {
 		http.Redirect(
 			res, req,
-			"/?error=Not%20Found&trace=middleware not found",
+			sub_folder + "/?error=Not%20Found&trace=middleware not found",
 			http.StatusTemporaryRedirect,
 		)
 		return
@@ -248,7 +254,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		if err := req.ParseForm(); err != nil {
 			http.Redirect(
 				res, req,
-				"/?error=Not%20Valid&trace=parsing body - "+err.Error(),
+				sub_folder + "/?error=Not%20Valid&trace=parsing body - "+err.Error(),
 				http.StatusTemporaryRedirect,
 			)
 			return
@@ -267,7 +273,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	); err != nil {
 		http.Redirect(
 			res, req,
-			"/?error=Not%20Valid&trace=unpacking idp - "+err.Error(),
+			sub_folder + "/?error=Not%20Valid&trace=unpacking idp - "+err.Error(),
 			http.StatusTemporaryRedirect,
 		)
 		return
@@ -280,7 +286,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 				Name:     SSOCookieName,
 				Value:    label,
 				MaxAge:   60 * 10,
-				Path:     COOKIE_PATH,
+				Path:     sub_folder + COOKIE_PATH,
 				HttpOnly: true,
 				SameSite: http.SameSiteLaxMode,
 			})
@@ -303,7 +309,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		http.Redirect(
 			res,
 			req,
-			"/?error="+ErrNotAllowed.Error()+"&trace=redirect request failed - "+err.Error(),
+			sub_folder + "/?error="+ErrNotAllowed.Error()+"&trace=redirect request failed - "+err.Error(),
 			http.StatusSeeOther,
 		)
 		return
@@ -354,7 +360,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		Log.Debug("session::authMiddleware 'auth mapping failed %s'", err.Error())
 		http.Redirect(
 			res, req,
-			"/?error=Not%20Valid&trace=mapping_error - "+err.Error(),
+			sub_folder + "/?error=Not%20Valid&trace=mapping_error - "+err.Error(),
 			http.StatusTemporaryRedirect,
 		)
 		return
@@ -364,7 +370,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		Log.Debug("session::authMiddleware 'backend connection failed %+v - %s'", session, err.Error())
 		http.Redirect(
 			res, req,
-			"/?error=Not%20Valid&trace=backend error - "+err.Error(),
+			sub_folder + "/?error=Not%20Valid&trace=backend error - "+err.Error(),
 			http.StatusTemporaryRedirect,
 		)
 		return
@@ -383,11 +389,12 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
+
 	http.SetCookie(res, &http.Cookie{
 		Name:     COOKIE_NAME_AUTH,
 		Value:    obfuscate,
 		MaxAge:   60 * Config.Get("general.cookie_timeout").Int(),
-		Path:     COOKIE_PATH,
+		Path:     sub_folder + COOKIE_PATH,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	})
@@ -395,9 +402,9 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		Name:     SSOCookieName,
 		Value:    "",
 		MaxAge:   -1,
-		Path:     COOKIE_PATH,
+		Path:     sub_folder + COOKIE_PATH,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	})
-	http.Redirect(res, req, "/", http.StatusTemporaryRedirect)
+	http.Redirect(res, req, sub_folder, http.StatusTemporaryRedirect)
 }

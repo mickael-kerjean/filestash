@@ -1,4 +1,4 @@
 package plg_image_light
 
-// #cgo LDFLAGS: -lm -lpthread -L./deps -l:libtranscode_linux_amd64.a
+// #cgo LDFLAGS: -L./deps -l:libtranscode_linux_amd64.a -lm -lpthread
 import "C"

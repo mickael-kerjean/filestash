@@ -61,7 +61,7 @@ func (this Ldap) Setup() Form {
 func (this Ldap) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
 	http.Redirect(
 		res, req,
-		"/?error=ldap is available for enterprise customer, see https://www.filestash.app/pricing/?modal=enterprise",
+		Config.Get("general.sub_folder").String() + "/?error=ldap is available for enterprise customer, see https://www.filestash.app/pricing/?modal=enterprise",
 		http.StatusTemporaryRedirect,
 	)
 	return nil

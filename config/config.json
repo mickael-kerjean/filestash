@@ -1,5 +1,7 @@
 {
     "general": {
+        "name": "FileStash",
+        "sub_folder": "/filestash"
     },
     "features": {
     },

@@ -31,6 +31,7 @@ func AdminSessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 	str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, obfuscate)
 	if err != nil {
 		SendSuccessResult(res, false)
+		Log.Info("[AdminSessionGet]: DecryptString fail, obfuscate: %s", obfuscate)
 		return
 	}
 	token := AdminToken{}
@@ -38,9 +39,11 @@ func AdminSessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	if token.IsValid() == false {
 		SendSuccessResult(res, false)
+		Log.Info("[AdminSessionGet]: token IsValid")
 		return
 	} else if token.IsAdmin() == false {
 		SendSuccessResult(res, false)
+		Log.Info("[AdminSessionGet]: token IsAdmin")
 		return
 	}
 	SendSuccessResult(res, true)
@@ -71,10 +74,11 @@ func AdminSessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Reque
 		SendErrorResult(res, err)
 		return
 	}
+	sub_folder := Config.Get("general.sub_folder").String();
 	http.SetCookie(res, &http.Cookie{
 		Name:     COOKIE_NAME_ADMIN,
 		Value:    obfuscate,
-		Path:     COOKIE_PATH_ADMIN,
+		Path:     sub_folder + COOKIE_PATH_ADMIN,
 		MaxAge:   60 * 60, // valid for 1 hour
 		SameSite: http.SameSiteStrictMode,
 	})

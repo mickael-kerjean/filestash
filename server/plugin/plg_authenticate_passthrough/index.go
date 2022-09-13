@@ -32,7 +32,8 @@ func (this Admin) Setup() Form {
 func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
 	res.WriteHeader(http.StatusOK)
-	res.Write([]byte(Page(`<h2 style="display:none;">PASSTHROUGH</h2><script>location.href = "/api/session/auth/"</script>`)))
+	sub_folder := Config.Get("general.sub_folder").String()
+	res.Write([]byte(Page(`<h2 style="display:none;">PASSTHROUGH</h2><script>location.href = "` + sub_folder + `/api/session/auth/"</script>`)))
 	return nil
 }
 

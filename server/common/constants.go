@@ -15,7 +15,7 @@ const (
 	TMP_PATH          = "data/cache/tmp/"
 	COOKIE_NAME_AUTH  = "auth"
 	COOKIE_NAME_PROOF = "proof"
-	COOKIE_NAME_ADMIN = "admin"
+	COOKIE_NAME_ADMIN = "filestash_admin"
 	COOKIE_PATH_ADMIN = "/admin/api/"
 	COOKIE_PATH       = "/api/"
 	FILE_INDEX        = "./data/public/index.html"

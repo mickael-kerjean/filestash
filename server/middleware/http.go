@@ -54,7 +54,7 @@ func IndexHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 		} else {
 			cspHeader += fmt.Sprintf("frame-ancestors %s;", ori)
 		}
-		header.Set("Content-Security-Policy", cspHeader)
+		//header.Set("Content-Security-Policy", cspHeader)
 		fn(ctx, res, req)
 	}
 }
