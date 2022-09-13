@@ -67,10 +67,10 @@ func Init(a App) {
 	files.HandleFunc("/cat", NewMiddlewareChain(FileAccess, middlewares, a)).Methods("OPTIONS")
 	files.HandleFunc("/cat", NewMiddlewareChain(FileSave, middlewares, a)).Methods("POST")
 	files.HandleFunc("/ls", NewMiddlewareChain(FileLs, middlewares, a)).Methods("GET")
-	files.HandleFunc("/mv", NewMiddlewareChain(FileMv, middlewares, a)).Methods("GET")
-	files.HandleFunc("/rm", NewMiddlewareChain(FileRm, middlewares, a)).Methods("GET")
-	files.HandleFunc("/mkdir", NewMiddlewareChain(FileMkdir, middlewares, a)).Methods("GET")
-	files.HandleFunc("/touch", NewMiddlewareChain(FileTouch, middlewares, a)).Methods("GET")
+	files.HandleFunc("/mv", NewMiddlewareChain(FileMv, middlewares, a)).Methods("POST")
+	files.HandleFunc("/rm", NewMiddlewareChain(FileRm, middlewares, a)).Methods("POST")
+	files.HandleFunc("/mkdir", NewMiddlewareChain(FileMkdir, middlewares, a)).Methods("POST")
+	files.HandleFunc("/touch", NewMiddlewareChain(FileTouch, middlewares, a)).Methods("POST")
 	middlewares = []Middleware{ApiHeaders, SessionStart, LoggedInOnly}
 	files.HandleFunc("/search", NewMiddlewareChain(FileSearch, middlewares, a)).Methods("GET")
 
