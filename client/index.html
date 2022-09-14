@@ -6,12 +6,11 @@
     <meta name="author" content="Mickael Kerjean <mickael@kerjean.me>">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <base href="/filestash">
-    <link rel="manifest" href="/filestash/manifest.json">
-    <link rel="apple-touch-icon" href="/filestash/assets/logo/apple-touch-icon.png">
-    <link rel="stylesheet" href="/filestash/custom.css">
-    <link rel="preload" href="/filestash/api/config" as="script">
-    <link rel="preload" href="/filestash/overrides/xdg-open.js" as="script">
+    <link rel="manifest" href="<%= process.env.BASE_URL %>/manifest.json">
+    <link rel="apple-touch-icon" href="<%= process.env.BASE_URL %>/assets/logo/apple-touch-icon.png">
+    <link rel="stylesheet" href="<%= process.env.BASE_URL %>/custom.css">
+    <link rel="preload" href="<%= process.env.BASE_URL %>/api/config" as="script">
+    <link rel="preload" href="<%= process.env.BASE_URL %>/overrides/xdg-open.js" as="script">
 
     <meta content="yes" name="apple-mobile-web-app-capable">
     <meta content="Filestash" name="apple-mobile-web-app-title">
@@ -20,12 +19,12 @@
     <meta name="theme-color" content="#f2f3f5">
     <meta name="description" content="Manage your data in your cloud">
     <meta property="og:title" content="Filestash" />
-    <meta property="og:image" content="/filestash/assets/logo/og-image.png" />
+    <meta property="og:image" content="<%= process.env.BASE_URL %>/assets/logo/og-image.png" />
     <meta property="og:description" content="Manage your data in your cloud" />
   </head>
   <body>
     <script>
-      window.sub_folder = "/filestash";
+      window.sub_folder = "<%= process.env.BASE_URL %>";
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
           document.body.classList.add("dark-mode");
       }
