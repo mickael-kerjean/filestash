@@ -46,6 +46,7 @@
     "HOSTNAME*": "værtsnavn",
     "INCORRECT_PASSWORD": "forkert kodeord",
     "INFO": "info",
+    "INTERNAL_ERROR": "Intern fejl",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "intern fejl: kan ikke oprette en {{VALUE}}",
     "INVALID_PASSWORD": "forkert kodeord",
     "INVALID_ACCOUNT": "ugyldig konto",

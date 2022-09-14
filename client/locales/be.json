@@ -46,6 +46,7 @@
     "HOSTNAME*": "імя хаста",
     "INCORRECT_PASSWORD": "няправільны пароль",
     "INFO": "інфармацыя",
+    "INTERNAL_ERROR": "Унутраная памылка",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "унутраная памылка: немагчыма стварыць {{VALUE}}",
     "INVALID_PASSWORD": "няправільны пароль",
     "INVALID_ACCOUNT": "несапраўдны ўліковы запіс",

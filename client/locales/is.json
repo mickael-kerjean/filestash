@@ -46,6 +46,7 @@
     "HOSTNAME*": "gestgjafanafn",
     "INCORRECT_PASSWORD": "Rangt lykilorð",
     "INFO": "upplýsingar",
+    "INTERNAL_ERROR": "Innri villa",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "innri villa: getur ekki búið til {{VALUE}}",
     "INVALID_PASSWORD": "ógilt lykilorð",
     "INVALID_ACCOUNT": "ógildur reikningur",

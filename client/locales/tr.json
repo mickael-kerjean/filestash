@@ -46,6 +46,7 @@
     "HOSTNAME*": "Ana makine adı",
     "INCORRECT_PASSWORD": "yanlış parola",
     "INFO": "Bilgi",
+    "INTERNAL_ERROR": "İç hata",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "Dahili hata: {{VALUE}} oluşturulamıyor",
     "INVALID_PASSWORD": "Geçersiz şifre",
     "INVALID_ACCOUNT": "Geçersiz hesap",

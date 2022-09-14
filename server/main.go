@@ -35,18 +35,23 @@ func Init(a App) {
 	session := r.PathPrefix("/api/session").Subrouter()
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, SessionStart}
 	session.HandleFunc("", NewMiddlewareChain(SessionGet, middlewares, a)).Methods("GET")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, BodyParser}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax, RateLimiter, BodyParser}
 	session.HandleFunc("", NewMiddlewareChain(SessionAuthenticate, middlewares, a)).Methods("POST")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureAjax}
 	session.HandleFunc("", NewMiddlewareChain(SessionLogout, middlewares, a)).Methods("DELETE")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders}
 	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, a)).Methods("GET")
 	session.HandleFunc("/auth/", NewMiddlewareChain(SessionAuthMiddleware, middlewares, a)).Methods("GET", "POST")
+	token := r.PathPrefix("/api/token").Subrouter()
+	middlewares = []Middleware{ApiHeaders, RateLimiter, BodyParser}
+	token.HandleFunc("", NewMiddlewareChain(SessionAuthenticateExternal, middlewares, a)).Methods("POST")
+	token.HandleFunc("", NewMiddlewareChain(PreflightCorsOK, []Middleware{}, a)).Methods("OPTIONS")
 
 	// API for Admin Console
-	middlewares = []Middleware{ApiHeaders, SecureAjax}
 	admin := r.PathPrefix("/admin/api").Subrouter()
+	middlewares = []Middleware{ApiHeaders, SecureAjax}
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionGet, middlewares, a)).Methods("GET")
+	middlewares = []Middleware{ApiHeaders, SecureAjax, RateLimiter}
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionAuthenticate, middlewares, a)).Methods("POST")
 	middlewares = []Middleware{ApiHeaders, AdminOnly, SecureAjax}
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigHandler, middlewares, a)).Methods("GET")
@@ -64,12 +69,13 @@ func Init(a App) {
 	files.HandleFunc("/cat", NewMiddlewareChain(FileAccess, middlewares, a)).Methods("OPTIONS")
 	files.HandleFunc("/cat", NewMiddlewareChain(FileSave, middlewares, a)).Methods("POST")
 	files.HandleFunc("/ls", NewMiddlewareChain(FileLs, middlewares, a)).Methods("GET")
-	files.HandleFunc("/mv", NewMiddlewareChain(FileMv, middlewares, a)).Methods("GET")
-	files.HandleFunc("/rm", NewMiddlewareChain(FileRm, middlewares, a)).Methods("GET")
-	files.HandleFunc("/mkdir", NewMiddlewareChain(FileMkdir, middlewares, a)).Methods("GET")
-	files.HandleFunc("/touch", NewMiddlewareChain(FileTouch, middlewares, a)).Methods("GET")
+	files.HandleFunc("/mv", NewMiddlewareChain(FileMv, middlewares, a)).Methods("POST")
+	files.HandleFunc("/rm", NewMiddlewareChain(FileRm, middlewares, a)).Methods("POST")
+	files.HandleFunc("/mkdir", NewMiddlewareChain(FileMkdir, middlewares, a)).Methods("POST")
+	files.HandleFunc("/touch", NewMiddlewareChain(FileTouch, middlewares, a)).Methods("POST")
 	middlewares = []Middleware{ApiHeaders, SessionStart, LoggedInOnly}
 	files.HandleFunc("/search", NewMiddlewareChain(FileSearch, middlewares, a)).Methods("GET")
+	r.PathPrefix("/api/files").Handler(NewMiddlewareChain(PreflightCorsOK, []Middleware{}, a)).Methods("OPTIONS")
 
 	// API for Shared link
 	share := r.PathPrefix("/api/share").Subrouter()
@@ -110,6 +116,7 @@ func Init(a App) {
 	r.HandleFunc("/.well-known/security.txt", NewMiddlewareChain(WellKnownSecurityHandler, []Middleware{}, a)).Methods("GET")
 	r.HandleFunc("/healthz", NewMiddlewareChain(HealthHandler, []Middleware{}, a)).Methods("GET")
 	r.HandleFunc("/custom.css", NewMiddlewareChain(CustomCssHandler, []Middleware{}, a)).Methods("GET")
+	r.PathPrefix("/doc").Handler(NewMiddlewareChain(DocPage, []Middleware{}, a)).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 
 	if os.Getenv("DEBUG") == "true" {
 		initDebugRoutes(r)

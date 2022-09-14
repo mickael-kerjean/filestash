@@ -1,14 +1,16 @@
 package plg_backend_sftp
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/pkg/sftp"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"net"
 	"os"
 	"regexp"
 	"strings"
+	"sync"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
 )
 
 var SftpCache AppCache
@@ -16,6 +18,7 @@ var SftpCache AppCache
 type Sftp struct {
 	SSHClient  *ssh.Client
 	SFTPClient *sftp.Client
+	wg         *sync.WaitGroup
 }
 
 func init() {
@@ -24,9 +27,16 @@ func init() {
 	SftpCache = NewAppCache()
 	SftpCache.OnEvict(func(key string, value interface{}) {
 		c := value.(*Sftp)
-		if c != nil {
+		if c == nil {
+			Log.Warning("plg_backend_sftp::sftp is nil on close")
+			return
+		} else if c.wg == nil {
 			c.Close()
+			Log.Warning("plg_backend_sftp::wg is nil on close")
+			return
 		}
+		c.wg.Wait()
+		c.Close()
 	})
 }
 
@@ -51,6 +61,18 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	c := SftpCache.Get(params)
 	if c != nil {
 		d := c.(*Sftp)
+		if d == nil {
+			Log.Warning("plg_backend_sftp::sftp is nil on get")
+			return nil, ErrInternal
+		} else if d.wg == nil {
+			Log.Warning("plg_backend_sftp::wg is nil on get")
+			return nil, ErrInternal
+		}
+		d.wg.Add(1)
+		go func() {
+			<-app.Context.Done()
+			d.wg.Done()
+		}()
 		return d, nil
 	}
 
@@ -146,6 +168,12 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 		return &s, err
 	}
 	s.SFTPClient = session
+	s.wg = new(sync.WaitGroup)
+	s.wg.Add(1)
+	go func() {
+		<-app.Context.Done()
+		s.wg.Done()
+	}()
 	SftpCache.Set(params, &s)
 	return &s, nil
 }

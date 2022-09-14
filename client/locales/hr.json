@@ -46,6 +46,7 @@
     "HOSTNAME*": "hostname",
     "INCORRECT_PASSWORD": "Netočna lozinka",
     "INFO": "Informacije",
+    "INTERNAL_ERROR": "Interna greška",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "unutarnja pogreška: ne mogu stvoriti {{VALUE}}",
     "INVALID_PASSWORD": "Netočna zaporka",
     "INVALID_ACCOUNT": "nevažeći račun",

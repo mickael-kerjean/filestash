@@ -6,20 +6,21 @@ import (
 )
 
 const (
-	LOG_PATH          = "data/state/log/"
-	CONFIG_PATH       = "data/state/config/"
-	DB_PATH           = "data/state/db/"
-	FTS_PATH          = "data/state/search/"
-	CERT_PATH         = "data/state/certs/"
-	TMP_PATH          = "data/cache/tmp/"
-	COOKIE_NAME_AUTH  = "auth"
-	COOKIE_NAME_PROOF = "proof"
-	COOKIE_NAME_ADMIN = "admin"
-	COOKIE_PATH_ADMIN = "/admin/api/"
-	COOKIE_PATH       = "/api/"
-	FILE_INDEX        = "./data/public/index.html"
-	FILE_ASSETS       = "./data/public/"
-	URL_SETUP         = "/admin/setup"
+	LOG_PATH             = "data/state/log/"
+	CONFIG_PATH          = "data/state/config/"
+	DB_PATH              = "data/state/db/"
+	FTS_PATH             = "data/state/search/"
+	CERT_PATH            = "data/state/certs/"
+	TMP_PATH             = "data/cache/tmp/"
+	COOKIE_NAME_AUTH     = "auth"
+	COOKIE_NAME_PROOF    = "proof"
+	COOKIE_NAME_ADMIN    = "admin"
+	COOKIE_PATH_ADMIN    = "/admin/api/"
+	COOKIE_PATH          = "/api/"
+	FILE_INDEX           = "./data/public/index.html"
+	FILE_ASSETS          = "./data/public/"
+	URL_SETUP            = "/admin/setup"
+	EXPIRATION_API_TOKEN = 3600 * 24 * 365 // 1 year
 )
 
 func init() {
@@ -39,6 +40,7 @@ var (
 	SECRET_KEY_DERIVATE_FOR_PROOF string
 	SECRET_KEY_DERIVATE_FOR_ADMIN string
 	SECRET_KEY_DERIVATE_FOR_USER  string
+	SECRET_KEY_DERIVATE_FOR_API   string
 	SECRET_KEY_DERIVATE_FOR_HASH  string
 )
 
@@ -51,5 +53,6 @@ func InitSecretDerivate(secret string) {
 	SECRET_KEY_DERIVATE_FOR_PROOF = Hash("PROOF_"+SECRET_KEY, len(SECRET_KEY))
 	SECRET_KEY_DERIVATE_FOR_ADMIN = Hash("ADMIN_"+SECRET_KEY, len(SECRET_KEY))
 	SECRET_KEY_DERIVATE_FOR_USER = Hash("USER_"+SECRET_KEY, len(SECRET_KEY))
+	SECRET_KEY_DERIVATE_FOR_API = Hash("API_"+SECRET_KEY, len(SECRET_KEY))
 	SECRET_KEY_DERIVATE_FOR_HASH = Hash("HASH_"+SECRET_KEY, len(SECRET_KEY))
 }

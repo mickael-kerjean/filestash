@@ -12,7 +12,7 @@ var USER_AGENT = fmt.Sprintf("Filestash/%s (Custom build)", APP_VERSION)
 
 var HTTPClient = http.Client{
 	Timeout: 5 * time.Hour,
-	Transport: NewTransormedTransport(http.Transport{
+	Transport: NewTransformedTransport(&http.Transport{
 		Dial: (&net.Dialer{
 			Timeout:   10 * time.Second,
 			KeepAlive: 10 * time.Second,
@@ -25,7 +25,7 @@ var HTTPClient = http.Client{
 
 var HTTP = http.Client{
 	Timeout: 10000 * time.Millisecond,
-	Transport: NewTransormedTransport(http.Transport{
+	Transport: NewTransformedTransport(&http.Transport{
 		Dial: (&net.Dialer{
 			Timeout:   5000 * time.Millisecond,
 			KeepAlive: 5000 * time.Millisecond,
@@ -53,8 +53,8 @@ var DefaultTLSConfig = tls.Config{
 	},
 }
 
-func NewTransormedTransport(transport http.Transport) http.RoundTripper {
-	return &TransformedTransport{&transport}
+func NewTransformedTransport(transport *http.Transport) http.RoundTripper {
+	return &TransformedTransport{transport}
 }
 
 type TransformedTransport struct {

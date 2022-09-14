@@ -46,6 +46,7 @@
     "HOSTNAME*": "host adı",
     "INCORRECT_PASSWORD": "səhv parol",
     "INFO": "məlumat",
+    "INTERNAL_ERROR": "daxili səhv",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "daxili səhv: {{VALUE}} yarada bilməz",
     "INVALID_PASSWORD": "etibarsız Şifrə",
     "INVALID_ACCOUNT": "etibarsız hesab",
