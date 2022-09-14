@@ -46,6 +46,7 @@
     "HOSTNAME*": "호스트 이름",
     "INCORRECT_PASSWORD": "잘못된 비밀번호",
     "INFO": "정보",
+    "INTERNAL_ERROR": "내부 에러",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "내부 오류 : {{VALUE}}을 (를) 만들 수 없습니다",
     "INVALID_PASSWORD": "유효하지 않은 비밀번호",
     "INVALID_ACCOUNT": "잘못된 계정",

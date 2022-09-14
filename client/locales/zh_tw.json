@@ -46,6 +46,7 @@
     "HOSTNAME*": "主機名",
     "INCORRECT_PASSWORD": "密碼錯誤",
     "INFO": "資訊",
+    "INTERNAL_ERROR": "內部錯誤",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "內部錯誤：無法建立{{VALUE}}",
     "INVALID_PASSWORD": "無效的密碼",
     "INVALID_ACCOUNT": "無效賬戶",

@@ -46,6 +46,7 @@
     "HOSTNAME*": "nombre de servidor*",
     "INCORRECT_PASSWORD": "la contraseña no es correcta",
     "INFO": "información",
+    "INTERNAL_ERROR": "Error interno",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "error interno: no se puede crear un {{VALOR}}",
     "INVALID_PASSWORD": "contraseña inválida",
     "INVALID_ACCOUNT": "cuenta no válida",

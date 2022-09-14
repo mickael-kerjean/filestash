@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const IndentSize = "    "
+
 type APISuccessResult struct {
 	Status string      `json:"status"`
 	Result interface{} `json:"result,omitempty"`
@@ -32,11 +34,26 @@ type APIErrorMessage struct {
 func SendSuccessResult(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
+	if shouldIndentResponse(res) {
+		encoder.SetIndent("", IndentSize)
+	}
 	encoder.Encode(APISuccessResult{"ok", data})
 }
 
 func SendSuccessResultWithEtagAndGzip(res http.ResponseWriter, req *http.Request, data interface{}) {
-	dataToSend, _ := json.Marshal(APISuccessResult{"ok", data})
+	var dataToSend []byte
+	var err error
+	if shouldIndentResponse(res) {
+		if dataToSend, err = json.MarshalIndent(APISuccessResult{"ok", data}, "", IndentSize); err != nil {
+			Log.Warning("common::response Marshal %s", err.Error())
+			dataToSend = []byte("{}")
+		}
+	} else {
+		if dataToSend, err = json.Marshal(APISuccessResult{"ok", data}); err != nil {
+			Log.Warning("common::response Marshal %s", err.Error())
+			dataToSend = []byte("{}")
+		}
+	}
 	mode := "normal"
 	if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") == true {
 		mode = "gzip"
@@ -63,18 +80,27 @@ func SendSuccessResultWithEtagAndGzip(res http.ResponseWriter, req *http.Request
 func SendSuccessResults(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
+	if shouldIndentResponse(res) {
+		encoder.SetIndent("", IndentSize)
+	}
 	encoder.Encode(APISuccessResults{"ok", data})
 }
 
 func SendSuccessResultsWithMetadata(res http.ResponseWriter, data interface{}, p interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
+	if shouldIndentResponse(res) {
+		encoder.SetIndent("", IndentSize)
+	}
 	encoder.Encode(APISuccessResultsWithMetadata{"ok", data, p})
 }
 
 func SendErrorResult(res http.ResponseWriter, err error) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
+	if shouldIndentResponse(res) {
+		encoder.SetIndent("", IndentSize)
+	}
 	obj, ok := err.(interface{ Status() int })
 	if ok == true {
 		res.WriteHeader(obj.Status())
@@ -88,6 +114,15 @@ func SendErrorResult(res http.ResponseWriter, err error) {
 		return strings.ToUpper(string(r[0])) + string(r[1:])
 	}(err.Error())
 	encoder.Encode(APIErrorMessage{"error", m})
+}
+
+func SendRaw(res http.ResponseWriter, data interface{}) {
+	encoder := json.NewEncoder(res)
+	encoder.SetEscapeHTML(false)
+	if shouldIndentResponse(res) {
+		encoder.SetIndent("", IndentSize)
+	}
+	encoder.Encode(data)
 }
 
 func Page(stuff string) string {
@@ -126,4 +161,14 @@ func RedirectPage(url string) string {
 </body>
 </html>
 `
+}
+
+func shouldIndentResponse(res http.ResponseWriter) bool {
+	reqID := res.Header().Get("X-Request-Id")
+	if reqID == "" {
+		return false
+	} else if strings.HasPrefix(reqID, "API") == false {
+		return false
+	}
+	return true
 }

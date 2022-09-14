@@ -46,6 +46,7 @@
     "HOSTNAME*": "nom d'amfitrió",
     "INCORRECT_PASSWORD": "contrasenya incorrecta",
     "INFO": "info",
+    "INTERNAL_ERROR": "Error intern",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "error intern: no es pot crear un {{VALUE}}",
     "INVALID_PASSWORD": "contrasenya invàlida",
     "INVALID_ACCOUNT": "compte no vàlid",

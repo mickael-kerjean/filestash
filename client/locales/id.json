@@ -46,6 +46,7 @@
     "HOSTNAME*": "nama host",
     "INCORRECT_PASSWORD": "kata kunci Salah",
     "INFO": "info",
+    "INTERNAL_ERROR": "Internal error",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "kesalahan internal: tidak dapat membuat {{VALUE}}",
     "INVALID_PASSWORD": "kata sandi salah",
     "INVALID_ACCOUNT": "akun tidak berlaku",

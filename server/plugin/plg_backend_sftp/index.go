@@ -27,14 +27,16 @@ func init() {
 	SftpCache = NewAppCache()
 	SftpCache.OnEvict(func(key string, value interface{}) {
 		c := value.(*Sftp)
-		if c.wg != nil {
-			c.wg.Wait()
-		} else {
-			Log.Warning("plg_backend_sftp::wg is nil on close")
-		}
-		if c != nil {
+		if c == nil {
+			Log.Warning("plg_backend_sftp::sftp is nil on close")
+			return
+		} else if c.wg == nil {
 			c.Close()
+			Log.Warning("plg_backend_sftp::wg is nil on close")
+			return
 		}
+		c.wg.Wait()
+		c.Close()
 	})
 }
 
@@ -59,15 +61,18 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	c := SftpCache.Get(params)
 	if c != nil {
 		d := c.(*Sftp)
-		if d.wg != nil {
-			d.wg.Add(1)
-			go func() {
-				<-app.Context.Done()
-				d.wg.Done()
-			}()
-		} else {
+		if d == nil {
+			Log.Warning("plg_backend_sftp::sftp is nil on get")
+			return nil, ErrInternal
+		} else if d.wg == nil {
 			Log.Warning("plg_backend_sftp::wg is nil on get")
+			return nil, ErrInternal
 		}
+		d.wg.Add(1)
+		go func() {
+			<-app.Context.Done()
+			d.wg.Done()
+		}()
 		return d, nil
 	}
 

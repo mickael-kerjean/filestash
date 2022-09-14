@@ -46,6 +46,7 @@
     "HOSTNAME*": "hostinimi",
     "INCORRECT_PASSWORD": "vale salasõna",
     "INFO": "info",
+    "INTERNAL_ERROR": "Sisemine viga",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "sisemine viga: {{VALUE}} ei saa luua",
     "INVALID_PASSWORD": "vale parool",
     "INVALID_ACCOUNT": "kehtetu konto",

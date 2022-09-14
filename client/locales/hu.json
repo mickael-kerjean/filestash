@@ -46,6 +46,7 @@
     "HOSTNAME*": "hostname",
     "INCORRECT_PASSWORD": "hibás jelszó",
     "INFO": "info",
+    "INTERNAL_ERROR": "Belső hiba",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "belső hiba: nem lehet létrehozni a (z) {{VALUE}}",
     "INVALID_PASSWORD": "Érvénytelen jelszó",
     "INVALID_ACCOUNT": "Érvénytelen fiók",

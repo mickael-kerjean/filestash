@@ -3,8 +3,11 @@ package middleware
 import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"golang.org/x/time/rate"
 	"net/http"
+	"net/url"
 	"path/filepath"
+	"strings"
 )
 
 func ApiHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -12,6 +15,10 @@ func ApiHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App
 		header := res.Header()
 		header.Set("Content-Type", "application/json")
 		header.Set("Cache-Control", "no-cache")
+		authHeader := req.Header.Get("Authorization")
+		if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+			header.Set("X-Request-ID", GenerateRequestID("API"))
+		}
 		fn(ctx, res, req)
 	}
 }
@@ -80,11 +87,64 @@ func SecureHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *
 
 func SecureAjax(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		if req.Header.Get("X-Requested-With") != "XmlHttpRequest" {
-			Log.Warning("Intrusion detection: %s - %s", req.RemoteAddr, req.URL.String())
-			SendErrorResult(res, ErrNotAllowed)
+		if req.Header.Get("Authorization") != "" {
+			fn(ctx, res, req)
+			return
+		} else if req.Header.Get("X-Requested-With") == "XmlHttpRequest" {
+			fn(ctx, res, req)
+			return
+		}
+		Log.Warning("Intrusion detection: %s - %s", req.RemoteAddr, req.URL.String())
+		SendErrorResult(res, ErrNotAllowed)
+	}
+}
+
+var limiter = rate.NewLimiter(10, 1000)
+
+func RateLimiter(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+		if limiter.Allow() == false {
+			SendErrorResult(
+				res,
+				NewError(http.StatusText(429), http.StatusTooManyRequests),
+			)
 			return
 		}
 		fn(ctx, res, req)
 	}
+}
+
+func EnableCors(req *http.Request, res http.ResponseWriter, host string) error {
+	if host == "" {
+		return nil
+	}
+	origin := req.Header.Get("Origin")
+	if origin == "" { // cors is only for browser client
+		return nil
+	}
+	h := res.Header()
+	if host == "*" {
+		h.Set("Access-Control-Allow-Origin", "*")
+	} else {
+		u, err := url.Parse(origin)
+		if err != nil {
+			Log.Debug("middleware::http origin isn't valid - '%s'", origin)
+			return ErrNotAllowed
+		}
+		if u.Host != host {
+			Log.Debug("middleware::http host missmatch for host[%s] origin[%s]", host, u.Host)
+			return NewError("Invalid host for the selected key", 401)
+		}
+		if u.Scheme != "https" && strings.HasPrefix(u.Host, "localhost:") == false {
+			return NewError("API access can only be done using https", 401)
+		}
+		h.Set("Access-Control-Allow-Origin", fmt.Sprintf("%s://%s", u.Scheme, host))
+	}
+	method := req.Header.Get("Access-Control-Request-Method")
+	if method == "" {
+		method = "GET"
+	}
+	h.Set("Access-Control-Allow-Methods", method)
+	h.Set("Access-Control-Allow-Headers", "Authorization")
+	return nil
 }

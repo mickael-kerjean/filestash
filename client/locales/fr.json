@@ -46,6 +46,7 @@
     "HOSTNAME*": "nom d'hôte*",
     "INCORRECT_PASSWORD": "mot de passe incorrect",
     "INFO": "Information",
+    "INTERNAL_ERROR": "Erreur interne",
     "INTERNAL_ERROR_CANT_CREATE_A_{{VALUE}}": "erreur interne: vous ne pouvez pas créer un {{VALUE}}",
     "INVALID_PASSWORD": "mot de passe incorrect",
     "INVALID_ACCOUNT": "compte invalide",
