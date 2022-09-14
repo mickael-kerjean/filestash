@@ -409,7 +409,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			}
 			mappingToUse[k] = b.String()
 		}
-		mappingToUse["timestamp"] = time.Now().String()
+		mappingToUse["timestamp"] = time.Now().Format(time.RFC3339)
 		return mappingToUse, nil
 	}(templateBind)
 	if err != nil {
