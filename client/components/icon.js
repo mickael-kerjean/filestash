@@ -47,19 +47,19 @@ export const Icon = (props) => {
     if (props.name === null) return null;
     let img;
     if (props.name === "directory") {
-        img = "/assets/icons/folder.svg";
+        img = window.sub_folder + "/assets/icons/folder.svg";
     } else if (props.name === "file") {
-        img = "/assets/icons/file.svg";
+        img = window.sub_folder + "/assets/icons/file.svg";
     } else if (props.name === "save") {
         img = img_save;
     } else if (props.name === "power") {
         img = img_power;
     } else if (props.name === "edit") {
-        img = "/assets/icons/edit.svg";
+        img = window.sub_folder + "/assets/icons/edit.svg";
     } else if (props.name === "delete") {
-        img = "/assets/icons/delete.svg";
+        img = window.sub_folder + "/assets/icons/delete.svg";
     } else if (props.name === "share") {
-        img = "/assets/icons/share.svg";
+        img = window.sub_folder + "/assets/icons/share.svg";
     } else if (props.name === "bucket") {
         img = img_bucket;
     } else if (props.name === "download_white") {
@@ -135,9 +135,9 @@ export const Icon = (props) => {
     } else if (props.name === "copy") {
         img = img_copy;
     } else if (props.name === "empty_folder") {
-        img = "/assets/icons/empty_folder.svg";
+        img = window.sub_folder + "/assets/icons/empty_folder.svg";
     } else if (props.name === "empty_search") {
-        img = "/assets/icons/empty_search.svg";
+        img = window.sub_folder + "/assets/icons/empty_search.svg";
     } else {
         throw (new Error(`unknown icon: "${props.name}"`));
     }

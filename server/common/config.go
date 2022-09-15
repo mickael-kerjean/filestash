@@ -68,6 +68,7 @@ func NewConfiguration() Configuration {
 					FormElement{Name: "name", Type: "text", Default: "Filestash", Description: "Name has shown in the UI", Placeholder: "Default: \"Filestash\""},
 					FormElement{Name: "port", Type: "number", Default: 8334, Description: "Port on which the application is available.", Placeholder: "Default: 8334"},
 					FormElement{Name: "host", Type: "text", Description: "The host people need to use to access this server", Placeholder: "Eg: \"demo.filestash.app\""},
+					FormElement{Name: "sub_folder", Type: "text", Default: "", Description: "A subdirectory under domain.", Placeholder: "Eg: set /filestash for \"www.examples.com/filestash\""},
 					FormElement{Name: "secret_key", Type: "password", Description: "The key that's used to encrypt and decrypt content. Update this settings will invalidate existing user sessions and shared links, use with caution!"},
 					FormElement{Name: "force_ssl", Type: "boolean", Description: "Enable the web security mechanism called 'Strict Transport Security'"},
 					FormElement{Name: "editor", Type: "select", Default: "emacs", Opts: []string{"base", "emacs", "vim"}, Description: "Keybinding to be use in the editor. Default: \"emacs\""},

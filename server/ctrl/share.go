@@ -126,13 +126,15 @@ func ShareVerifyProof(ctx *App, res http.ResponseWriter, req *http.Request) {
 	verifiedProof = model.ShareProofGetAlreadyVerified(req)
 	requiredProof = model.ShareProofGetRequired(s)
 
+	sub_folder := Config.Get("general.sub_folder").String()
+
 	// 2) validate the current context
 	if len(verifiedProof) > 20 || len(requiredProof) > 20 {
 		http.SetCookie(res, &http.Cookie{
 			Name:   COOKIE_NAME_PROOF,
 			Value:  "",
 			MaxAge: -1,
-			Path:   COOKIE_PATH,
+			Path:   sub_folder + COOKIE_PATH,
 		})
 		Log.Debug("share::verify::validate 'proof issue' len(verifiedProof)[%d] len(requiredProof)[%d]", len(verifiedProof), len(requiredProof))
 		SendErrorResult(res, ErrNotValid)
@@ -184,7 +186,7 @@ func ShareVerifyProof(ctx *App, res http.ResponseWriter, req *http.Request) {
 			str, _ := EncryptString(SECRET_KEY_DERIVATE_FOR_PROOF, string(j))
 			return str
 		}(verifiedProof),
-		Path:     COOKIE_PATH,
+		Path:     sub_folder + COOKIE_PATH,
 		MaxAge:   60 * 60 * 24 * 30,
 		HttpOnly: true,
 		SameSite: http.SameSiteNoneMode,

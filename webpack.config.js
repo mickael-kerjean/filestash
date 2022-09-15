@@ -12,7 +12,7 @@ const config = {
     },
     output: {
         path: path.join(__dirname, "dist", "data", "public"),
-        publicPath: "/",
+        publicPath: process.env.BASE_URL + "/",
         filename: "assets/js/[name]_[chunkhash].js",
         chunkFilename: "assets/js/chunk_[name]_[id]_[chunkhash].js",
     },
@@ -25,7 +25,11 @@ const config = {
             },
             {
                 test: /\.html$/,
-                loader: "html-loader",
+                loader: "ejs-loader",
+                options: {
+                    esModule: false,
+                    variable: "data",
+                },
             },
             {
                 test: /\.woff2$/,
@@ -53,6 +57,7 @@ const config = {
     plugins: [
         new webpack.DefinePlugin({
             "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+            "process.env.BASE_URL": JSON.stringify(process.env.BASE_URL),
         }),
         new webpack.optimize.OccurrenceOrderPlugin(),
         new HtmlWebpackPlugin({
@@ -104,3 +109,4 @@ if (process.env.NODE_ENV === "production") {
 }
 
 module.exports = config;
+

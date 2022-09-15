@@ -32,6 +32,7 @@ func (this Admin) Setup() Form {
 }
 
 func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
+	sub_folder := Config.Get("general.sub_folder").String()
 	getFlash := func() string {
 		c, err := req.Cookie("flash")
 		if err != nil {
@@ -40,14 +41,14 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 		http.SetCookie(res, &http.Cookie{
 			Name:   "flash",
 			MaxAge: -1,
-			Path:   "/",
+			Path:   sub_folder + "/",
 		})
 		return fmt.Sprintf("<strong>%s</strong>", c.Value)
 	}
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte(Page(`
-      <form action="/api/session/auth/" method="post">
+      <form action="` + sub_folder + `/api/session/auth/" method="post">
         <label> ` + getFlash() + `
           <input type="password" name="password" value="" placeholder="Admin Password" />
         </label>
@@ -60,11 +61,13 @@ func (this Admin) Callback(formData map[string]string, idpParams map[string]stri
 		[]byte(Config.Get("auth.admin").String()),
 		[]byte(formData["password"]),
 	); err != nil {
+		sub_folder := Config.Get("general.sub_folder").String()
+
 		http.SetCookie(res, &http.Cookie{
 			Name:   "flash",
 			Value:  "Invalid password",
 			MaxAge: 1,
-			Path:   "/",
+			Path:   sub_folder + "/",
 		})
 		return nil, ErrAuthenticationFailed
 	}

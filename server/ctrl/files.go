@@ -143,7 +143,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		Name:   "download",
 		Value:  "",
 		MaxAge: -1,
-		Path:   "/",
+		Path:   Config.Get("general.sub_folder").String() + "/",
 	})
 	if model.CanRead(ctx) == false {
 		Log.Debug("cat::permission 'permission denied'")

@@ -38,9 +38,10 @@ func IndexHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
 			return
 		}
 		url := urlObj.Path
+		sub_folder := Config.Get("general.sub_folder").String()
 
 		if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
-			http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
+			http.Redirect(res, req, sub_folder + URL_SETUP, http.StatusTemporaryRedirect)
 			return
 		} else if url != "/" && strings.HasPrefix(url, "/s/") == false &&
 			strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
@@ -136,17 +137,18 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 func ManifestHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusFound)
+	sub_folder := Config.Get("general.sub_folder").String()
 	res.Write([]byte(fmt.Sprintf(`{
     "name": "%s",
     "short_name": "%s",
     "icons": [
         {
-            "src": "/assets/logo/android-chrome-192x192.png",
+            "src": "%s/assets/logo/android-chrome-192x192.png",
             "type": "image/png",
             "sizes": "192x192"
         },
         {
-            "src": "/assets/logo/android-chrome-512x512.png",
+            "src": "%s/assets/logo/android-chrome-512x512.png",
              "type": "image/png",
              "sizes": "512x512"
         }
@@ -155,8 +157,8 @@ func ManifestHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
     "background_color": "#f2f3f5",
     "orientation": "any",
     "display": "standalone",
-    "start_url": "/"
-}`, Config.Get("general.name"), Config.Get("general.name"))))
+    "start_url": "%s/"
+}`, Config.Get("general.name"), Config.Get("general.name"), sub_folder, sub_folder, sub_folder)))
 }
 
 func RobotsHandler(ctx *App, res http.ResponseWriter, req *http.Request) {

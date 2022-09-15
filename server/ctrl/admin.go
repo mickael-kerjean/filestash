@@ -71,10 +71,11 @@ func AdminSessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Reque
 		SendErrorResult(res, err)
 		return
 	}
+	sub_folder := Config.Get("general.sub_folder").String();
 	http.SetCookie(res, &http.Cookie{
 		Name:     COOKIE_NAME_ADMIN,
 		Value:    obfuscate,
-		Path:     COOKIE_PATH_ADMIN,
+		Path:     sub_folder + COOKIE_PATH_ADMIN,
 		MaxAge:   60 * 60, // valid for 1 hour
 		SameSite: http.SameSiteStrictMode,
 	})

@@ -7,7 +7,7 @@ export function AboutPage() {
     const [version, setVersion] = useState("Filestash/vxxxx");
     useEffect(() => {
         const controller = new AbortController();
-        fetch("/about", { signal: controller.signal })
+        fetch(window.sub_folder + "/about", { signal: controller.signal })
             .then((r) => r.text())
             .then((r) => {
                 const a = document.createElement("html")

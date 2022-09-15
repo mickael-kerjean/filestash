@@ -84,7 +84,7 @@ if ("serviceWorker" in navigator) {
             // see: https://github.com/mickael-kerjean/filestash/issues/255
             return;
         }
-        navigator.serviceWorker.register("/sw_cache.js").catch(function(err) {
+        navigator.serviceWorker.register(window.sub_folder + "/sw_cache.js").catch(function(err) {
             console.error("ServiceWorker registration failed:", err);
         });
     });
@@ -94,7 +94,7 @@ if ("serviceWorker" in navigator) {
 window.overrides = {};
 function setup_xdg_open() {
     return new Promise((done, err) => {
-        load("/overrides/xdg-open.js", function(error) {
+        load(window.sub_folder + "/overrides/xdg-open.js", function(error) {
             if (error) return err(error);
             done();
         });

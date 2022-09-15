@@ -1,7 +1,7 @@
 export function http_get(url, type = "json", params) {
     return new Promise((done, err) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("GET", url, true);
+        xhr.open("GET", window.sub_folder + url, true);
         xhr.withCredentials = true;
         xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
         xhr.onerror = function() {
@@ -46,7 +46,7 @@ export function http_get(url, type = "json", params) {
 export function http_post(url, data, type = "json", params) {
     return new Promise((done, err) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", url, true);
+        xhr.open("POST", window.sub_folder + url, true);
         xhr.withCredentials = true;
         xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
         if (data && type === "json") {
@@ -93,7 +93,7 @@ export function http_post(url, data, type = "json", params) {
 export function http_delete(url) {
     return new Promise((done, err) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("DELETE", url, true);
+        xhr.open("DELETE", window.sub_folder + url, true);
         xhr.withCredentials = true;
         xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
         xhr.onerror = function() {
@@ -124,7 +124,7 @@ export function http_delete(url) {
 export function http_options(url) {
     return new Promise((done, err) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("OPTIONS", url, true);
+        xhr.open("OPTIONS", window.sub_folder + url, true);
         xhr.withCredentials = true;
         xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
         xhr.onerror = function() {

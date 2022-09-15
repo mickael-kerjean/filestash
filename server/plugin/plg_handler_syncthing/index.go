@@ -56,7 +56,7 @@ func init() {
 			return nil
 		}
 		r.HandleFunc(SYNCTHING_URI, func(res http.ResponseWriter, req *http.Request) {
-			http.Redirect(res, req, SYNCTHING_URI+"/", http.StatusTemporaryRedirect)
+			http.Redirect(res, req, Config.Get("general.sub_folder").String() + SYNCTHING_URI+"/", http.StatusTemporaryRedirect)
 		})
 		r.Handle(SYNCTHING_URI+"/", AuthBasic(
 			func() (string, string) { return "admin", Config.Get("auth.admin").String() },

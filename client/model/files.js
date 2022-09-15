@@ -177,7 +177,7 @@ class FileSystem {
 
     zip(paths) {
         const url = appendShareToUrl(
-            "/api/files/zip?" + paths.map((p) => "path=" + prepare(p)).join("&"),
+            window.sub_folder + "/api/files/zip?" + paths.map((p) => "path=" + prepare(p)).join("&"),
         );
         window.open(url);
         return Promise.resolve();
@@ -190,7 +190,7 @@ class FileSystem {
 
     url(path) {
         const url = appendShareToUrl("/api/files/cat?path=" + prepare(path));
-        return Promise.resolve(url);
+        return Promise.resolve(window.sub_folder + url);
     }
 
     save(path, file) {

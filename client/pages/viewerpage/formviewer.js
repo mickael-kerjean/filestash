@@ -30,7 +30,7 @@ export function FormViewer({
             .replace(regLink, function(str) {
                 const label = str.replace(regLink, "$1");
                 const link = str.replace(regLink, "$2");
-                return "["+label+"]("+appendShareToUrl(link)+")";
+                return "["+label+"]("+ window.sub_folder + appendShareToUrl(link)+")";
             })
             .replace(regLink, "<a href=\"$2\">$1</a>")
             .replace(/\n/g, "<br>");
