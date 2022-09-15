@@ -105,7 +105,15 @@ func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
 				}
 				return GenerateID(&ctx)
 			}(),
-			RequestID: res.Header().Get("X-Request-ID"),
+			RequestID: func() string {
+				defer func() string {
+					if r := recover(); r != nil {
+						Log.Debug("middleware::index get header '%s'", r)
+					}
+					return "null"
+				}()
+				return res.Header().Get("X-Request-ID")
+			}(),
 		}
 		if Config.Get("log.telemetry").Bool() {
 			telemetry.Record(point)

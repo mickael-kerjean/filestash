@@ -36,11 +36,14 @@ func GenerateSelfSigned() (tls.Certificate, *x509.CertPool, error) {
 		return TLSCert, nil, err
 	}
 
-	roots := x509.NewCertPool()
-	if ok := roots.AppendCertsFromPEM([]byte(certPEM)); ok == false {
+	rootCAs, _ := x509.SystemCertPool()
+	if rootCAs == nil {
+		rootCAs = x509.NewCertPool()
+	}
+	if ok := rootCAs.AppendCertsFromPEM([]byte(certPEM)); ok == false {
 		Log.Error("[https] tls_client")
 		Clear()
-		return TLSCert, nil, err
+		return TLSCert, rootCAs, err
 	}
-	return TLSCert, roots, nil
+	return TLSCert, rootCAs, nil
 }

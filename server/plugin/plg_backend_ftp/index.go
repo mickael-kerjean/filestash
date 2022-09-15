@@ -38,6 +38,7 @@ func init() {
 			return
 		}
 		c.wg.Wait()
+		Log.Debug("plg_backend_ftp::vacuum")
 		c.Close()
 	})
 }
