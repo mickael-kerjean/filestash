@@ -36,6 +36,7 @@ func init() {
 			return
 		}
 		c.wg.Wait()
+		Log.Debug("plg_backend_sftp::vacuum")
 		c.Close()
 	})
 }

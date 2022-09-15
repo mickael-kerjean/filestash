@@ -70,8 +70,12 @@ func IndexHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
 }
 
 func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
-	res.WriteHeader(http.StatusNotFound)
-	res.Write(HtmlPage404)
+	if strings.Contains(req.Header.Get("accept"), "text/html") {
+		res.WriteHeader(http.StatusNotFound)
+		res.Write(HtmlPage404)
+		return
+	}
+	SendErrorResult(res, ErrNotFound)
 }
 
 func PreflightCorsOK(ctx *App, res http.ResponseWriter, req *http.Request) {
