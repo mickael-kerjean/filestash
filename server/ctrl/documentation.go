@@ -27,67 +27,69 @@ func DocPage(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 func indexPage(ctx *App, res http.ResponseWriter, req *http.Request) {
 	mType := detectMime(res, req)
+	sub_folder := Config.Get("general.sub_folder").String();
 	t := bold("DOCUMENTATION\n", mType)
 	t += "       The Filestash API make it easy to interact with a remote storage. Before you can\n"
-	t += "       do anything interesting, you will have to generate a token using the /api/token\n"
+	t += "       do anything interesting, you will have to generate a token using the " + sub_folder + "/api/token\n"
 	t += "       endpoint. Once this is done you can either directly interact with the filesystem\n"
-	t += "       (see " + link("/api/files/*", "/docs/api/files", mType) + ") or create some abstraction to provide read only access or\n"
-	t += "       similar restricted environment (see " + link("/api/share", "/docs/api/share", mType) + ")\n"
+	t += "       (see " + link(sub_folder + "/api/files/*", sub_folder + "/docs/api/files", mType) + ") or create some abstraction to provide read only access or\n"
+	t += "       similar restricted environment (see " + link(sub_folder + "/api/share", sub_folder + "/docs/api/share", mType) + ")\n"
 	t += "\n"
 	t += bold("EXAMPLES\n", mType)
 	t += "       # generate a token to access a FTP server:\n"
-	t += "       curl $HOST/api/token?key=foo \\\n"
+	t += "       curl $HOST" + sub_folder + "/api/token?key=foo \\\n"
 	t += "         --data '{\"type\":\"ftp\",\"hostname\":\"ftp.gnu.org\",\"username\":\"anonymous\",\"password\":\"\"}'\n"
 	t += "       # list files in the server:\n"
-	t += "       curl -H \"Authorization: Bearer $TOKEN\" $HOST/api/files/ls?path=/\n"
+	t += "       curl -H \"Authorization: Bearer $TOKEN\" $HOST" + sub_folder +  "/api/files/ls?path=/\n"
 	t += "\n"
 	t += bold("AVAILABLE RESSOURCE\n", mType)
-	t += "       Token: " + link("/api/token", "/docs/api/token", mType) + "\n"
-	t += "       Files: " + link("/api/files", "/docs/api/files", mType) + "\n"
+	t += "       Token: " + link(sub_folder + "/api/token", sub_folder + "/docs/api/token", mType) + "\n"
+	t += "       Files: " + link(sub_folder + "/api/files", sub_folder + "/docs/api/files", mType) + "\n"
 	t += "\n"
 	render(res, t, mType)
 }
 func indexFile(ctx *App, res http.ResponseWriter, req *http.Request) {
 	mType := detectMime(res, req)
+	sub_folder := Config.Get("general.sub_folder").String();
 	t := bold("SYNOPSIS\n", mType)
-	t += "       HTTP " + underline("VERB", mType) + " /api/files/" + underline("operation", mType) + "?[path=" + underline("path", mType) + "][&options...]\n"
+	t += "       HTTP " + underline("VERB", mType) + sub_folder + " /api/files/" + underline("operation", mType) + "?[path=" + underline("path", mType) + "][&options...]\n"
 	t += "       Authorization: Bearer " + underline("$TOKEN", mType) + "\n"
 	t += "       [Host: " + underline("OPTIONAL HOSTNAME", mType) + "]\n"
 	t += "\n"
 	t += bold("EXAMPLES\n", mType)
 	t += "       # list files in a directory:\n"
-	t += "       curl -H \"Authorization: Bearer $TOKEN\" $HOST/api/files/ls?path=/ \n"
+	t += "       curl -H \"Authorization: Bearer $TOKEN\" $HOST" + sub_folder + "/api/files/ls?path=/ \n"
 	t += "       # upload a file:\n"
-	t += "       curl -d @foo.txt -H \"Authorization: Bearer $TOKEN\" $HOST/api/files/cat?path=/foo.txt \n"
+	t += "       curl -d @foo.txt -H \"Authorization: Bearer $TOKEN\" $HOST" + sub_folder + "/api/files/cat?path=/foo.txt \n"
 	t += "       # download a file:\n"
-	t += "       curl -H \"Authorization: Bearer $TOKEN\" $HOST/api/files/cat?path=/foo.txt \n"
-	t += "       curl -H \"Authorization: Bearer $TOKEN\" $HOST/api/files/cat?path=/rick.jpg&ascii \n"
+	t += "       curl -H \"Authorization: Bearer $TOKEN\" $HOST" + sub_folder + "/api/files/cat?path=/foo.txt \n"
+	t += "       curl -H \"Authorization: Bearer $TOKEN\" $HOST" + sub_folder + "/api/files/cat?path=/rick.jpg&ascii \n"
 	t += "\n"
 	t += bold("AVAILABLE OPERATIONS\n", mType)
 	t += "       List files in a directory: " + italic("<HTTP GET>", mType) + "\n"
-	t += "       /api/files/ls?path=" + underline("/", mType) + "\n"
+	t += "       " + sub_folder + "/api/files/ls?path=" + underline("/", mType) + "\n"
 	t += "\n"
 	t += "       Search for something: " + italic("<HTTP GET>", mType) + "\n"
-	t += "       /api/files/search?path=" + underline("/", mType) + "\n"
+	t += "       " + sub_folder + "/api/files/search?path=" + underline("/", mType) + "\n"
 	t += "\n"
 	t += "       Downloading: <HTTP GET>\n"
-	t += "       /api/files/cat?path=" + underline("/file.txt", mType) + "\n"
-	t += "       /api/files/cat?path=" + underline("/image.jpeg", mType) + "[&size=int&ascii=bool]\n"
-	t += "       /api/files/zip?path=" + underline("/folder/", mType) + "\n"
+	t += "       " + sub_folder + "/api/files/cat?path=" + underline("/file.txt", mType) + "\n"
+	t += "       " + sub_folder + "/api/files/cat?path=" + underline("/image.jpeg", mType) + "[&size=int&ascii=bool]\n"
+	t += "       " + sub_folder + "/api/files/zip?path=" + underline("/folder/", mType) + "\n"
 	t += "\n"
 	t += "       Upload a file: " + italic("<HTTP POST>", mType) + "\n"
-	t += "       /api/files/cat?path=" + underline("/README.md", mType) + "\n"
+	t += "       " + sub_folder + "/api/files/cat?path=" + underline("/README.md", mType) + "\n"
 	t += "\n"
 	t += "       Creation: " + italic("<HTTP POST>", mType) + "\n"
-	t += "       /api/files/touch?path=" + underline("/file.txt", mType) + "\n"
-	t += "       /api/files/mkdir?path=" + underline("/folder/", mType) + "\n"
+	t += "       " + sub_folder + "/api/files/touch?path=" + underline("/file.txt", mType) + "\n"
+	t += "       " + sub_folder + "/api/files/mkdir?path=" + underline("/folder/", mType) + "\n"
 	t += "\n"
 	t += "       Removal: " + italic("<HTTP DELETE>", mType) + "\n"
-	t += "       /api/files/rm?path=" + underline("/file.txt", mType) + "\n"
-	t += "       /api/files/rm?path=" + underline("/folder/", mType) + "\n"
+	t += "       " + sub_folder + "/api/files/rm?path=" + underline("/file.txt", mType) + "\n"
+	t += "       " + sub_folder + "/api/files/rm?path=" + underline("/folder/", mType) + "\n"
 	t += "\n"
 	t += "       Renaming: " + italic("<HTTP POST>", mType) + "\n"
-	t += "       /api/files/mv?from=" + underline("/file.txt", mType) + "&to=" + underline("/renamed.txt", mType) + "\n"
+	t += "       " + sub_folder + "/api/files/mv?from=" + underline("/file.txt", mType) + "&to=" + underline("/renamed.txt", mType) + "\n"
 	t += "\n"
 	t += bold("OPTIONS\n", mType)
 	t += "       Host: " + underline("*.example.com", mType) + "\n"
@@ -101,13 +103,14 @@ func indexFile(ctx *App, res http.ResponseWriter, req *http.Request) {
 	t += "           ------------------------------------------\n"
 	t += "\n"
 	t += bold("SEE ALSO\n", mType)
-	t += "       Token: " + link("/api/token", "/docs/api/token", mType) + "\n"
-	t += "       Share: " + link("/api/share", "/docs/api/share", mType) + "\n"
+	t += "       Token: " + link(sub_folder + "/api/token", sub_folder + "/docs/api/token", mType) + "\n"
+	t += "       Share: " + link(sub_folder + "/api/share", sub_folder + "/docs/api/share", mType) + "\n"
 	render(res, t, mType)
 }
 
 func indexToken(ctx *App, res http.ResponseWriter, req *http.Request) {
 	mType := detectMime(res, req)
+	sub_folder := Config.Get("general.sub_folder").String();
 	t := bold("SYNOPSIS\n", mType)
 	t += "       HTTP POST /api/token?key=" + underline("api_key", mType) + "\n"
 	t += "          --data {\"type\":\"" + underline("backend", mType) + "\", [OPTIONS]}\n"
@@ -163,15 +166,15 @@ func indexToken(ctx *App, res http.ResponseWriter, req *http.Request) {
 	t += "\n"
 	t += bold("EXAMPLES\n", mType)
 	t += "       # FTP server\n"
-	t += "       curl $HOST/api/token?key=" + underline("api_key", mType) + " --data '{\"type\":\"" + underline("ftp", mType) + "\"," + "\"hostname\":\"ftp.gnu.org\"}'\n"
+	t += "       curl $HOST" + sub_folder + "/api/token?key=" + underline("api_key", mType) + " --data '{\"type\":\"" + underline("ftp", mType) + "\"," + "\"hostname\":\"ftp.gnu.org\"}'\n"
 	t += "       # WEBDAV server\n"
-	t += "       curl $HOST/api/token?key=" + underline("api_key", mType) + " \\\n"
+	t += "       curl $HOST" + sub_folder + "/api/token?key=" + underline("api_key", mType) + " \\\n"
 	t += "             --data {\"type\":\"" + underline("webdav", mType) + "\"," + "\"url\":\"https://webdav.filestash.app\"}\n"
 	t += "\n"
 	t += bold("SEE ALSO\n", mType)
-	t += "       " + link("Home", "/docs/api/", mType) + "\n"
-	t += "       Files: " + link("/api/files", "/docs/api/files", mType) + "\n"
-	t += "       Share" + link("/api/share", "/docs/api/share", mType) + "\n"
+	t += "       " + link("Home", sub_folder + "/docs/api/", mType) + "\n"
+	t += "       Files: " + link(sub_folder + "/api/files", sub_folder + "/docs/api/files", mType) + "\n"
+	t += "       Share" + link(sub_folder + "/api/share", sub_folder + "/docs/api/share", mType) + "\n"
 	render(res, t, mType)
 }
 

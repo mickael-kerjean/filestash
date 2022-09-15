@@ -230,12 +230,12 @@ export class ShareComponent extends React.Component {
                                 return (
                                     <div className="link-details" key={i}>
                                         <span
-                                            onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)}
+                                            onClick={this.copyLinkInClipboard.bind(this, window.location.origin + window.sub_folder + "/s/"+link.id)}
                                             className="copy role">
                                             { t(link.role) }
                                         </span>
                                         <span
-                                            onClick={this.copyLinkInClipboard.bind(this, window.location.origin+"/s/"+link.id)}
+                                            onClick={this.copyLinkInClipboard.bind(this, window.location.origin + window.sub_folder + "/s/"+link.id)}
                                             className="copy path">
                                             { beautifulPath(this.props.path, link.path) }
                                         </span>
@@ -308,7 +308,7 @@ export class ShareComponent extends React.Component {
                             ref={this.$input}
                             className="copy"
                             type="text"
-                            value={window.location.origin+"/s/"+(this.state.url || this.state.id)}
+                            value={window.location.origin + window.sub_folder +"/s/"+(this.state.url || this.state.id)}
                             readOnly />
                         <div>
                             <button title={t("Copy URL")}>
