@@ -23,7 +23,7 @@ type APISuccessResults struct {
 type APISuccessResultsWithMetadata struct {
 	Status   string      `json:"status"`
 	Results  interface{} `json:"results"`
-	Metadata interface{} `json:"metadata,omitempty"`
+	Metadata interface{} `json:"permissions,omitempty"`
 }
 
 type APIErrorMessage struct {

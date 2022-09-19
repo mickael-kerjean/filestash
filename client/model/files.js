@@ -55,7 +55,7 @@ class FileSystem {
                     access_count: 0,
                     metadata: null,
                 }, _files);
-                store.metadata = response.metadata;
+                store.metadata = response.permissions;
                 store.results = response.results;
 
                 if (_files && _files.results) {
