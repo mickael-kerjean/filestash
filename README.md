@@ -89,21 +89,40 @@ Quick start
     </a>
 </p>
 
-# Support
-- For companies -> [support contract](https://www.filestash.app/pricing/)
-- For individuals -> [#filestash](https://kiwiirc.com/nextclient/#irc://irc.libera.chat/#filestash?nick=guest??) on IRC (libera.chat). To financially contribute to the project:
-  - Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
-  - [Open Collective](https://opencollective.com/filestash)
-
 # Documentation
 - [Getting started](https://www.filestash.app/docs/)
 - [Installation](https://www.filestash.app/docs/install-and-upgrade/)
 - [FAQ](https://www.filestash.app/docs/faq/)
 
 # The core idea
-Filestash aims to solve the Dropbox problem by abstracting the storage aspect. This makes it possible to bring your own backend or create your own by implementing a simple interface. The power of that model makes it possible for non nerds to easily interact with complex systems without prior training (assuming they are familiar with Dropbox). As an example of that superpower, see our [LDAP backend](https://www.filestash.app/ldap-browser.html) and the Mysql one that emulate a file system where first level folder are the databases, tables are represented as subfolders and each row is represented as a file:
 
-![infographic](https://www.filestash.app/img/illustration/filestash-framework.png)
+Filestash started as an attempt to solve the Dropbox problem by abstracting the storage aspect so you can "bring your own backend" by implementing this interface:
+```
+type IBackend interface {
+	Init(params map[string]string, app *App) (IBackend, error) // constructor
+	Ls(path string) ([]os.FileInfo, error)           // list files in a folder
+	Cat(path string) (io.ReadCloser, error)          // download a file
+	Mkdir(path string) error                         // create a folder
+	Rm(path string) error                            // remove something
+	Mv(from string, to string) error                 // rename something
+	Save(path string, file io.Reader) error          // save a file
+	Touch(path string) error                         // create a file
+	LoginForm() Form                                 // dynamic form generation for the login
+}
+```
+It has evolved with plugins which are the lego bricks you can assemble together to form a solution that works for you. You can bring your own identity provider, your own authorisation, your own search and more. If there's something you want, plugin will likely make it possible.
+
+Some outside the box example of this "filesystem as a framework" ideas we've done for the sake of science:
+- mysql plugin which shows databases as folders, tables as subfolder and rows as individual files. When opening a file (= a row), the user is presented with a form that is dynamically rendered from the DB schema and can be edit and saved back to mysql by people who have no knowledge of SQL.
+- ldap backend from which you can browse through a LDAP directory and also view / edit record it contains. eg: [this public ldap](https://demo.filestash.app/login?type=ldap&hostname=ldap%3A%2F%2Fipa.demo1.freeipa.org&bind_dn=uid%3Dadmin%2Ccn%3Dusers%2Ccn%3Daccounts%2Cdc%3Ddemo1%2Cdc%3Dfreeipa%2Cdc%3Dorg&bind_password=Secret123&base_dn=cn%3Daccounts%2Cdc%3Ddemo1%2Cdc%3Dfreeipa%2Cdc%3Dorg)
+
+<!-- if you feel curious, we wrote a more in depth article about the [interesting ideas in Filestash]() -->
+
+# Support
+- For companies -> [support contract](https://www.filestash.app/pricing/)
+- For individuals -> [#filestash](https://kiwiirc.com/nextclient/#irc://irc.libera.chat/#filestash?nick=guest??) on IRC (libera.chat). To financially contribute to the project:
+  - Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
+  - [Open Collective](https://opencollective.com/filestash)
 
 # Credits
 - [Contributors](https://github.com/mickael-kerjean/filestash/graphs/contributors) and folks developing [awesome libraries](https://github.com/mickael-kerjean/filestash/blob/master/go.mod)

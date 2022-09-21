@@ -46,8 +46,7 @@ func IndexHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 		cspHeader += "style-src 'self' 'unsafe-inline'; "
 		cspHeader += "font-src 'self' data:; "
 		cspHeader += "manifest-src 'self'; "
-		cspHeader += "script-src 'self' 'sha256-JNAde5CZQqXtYRLUk8CGgyJXo6C7Zs1lXPPClLM1YM4=' 'sha256-9/gQeQaAmVkFStl6tfCbHXn8mr6PgtxlH+hEp685lzY=' 'sha256-ER9LZCe8unYk8AJJ2qopE+rFh7OUv8QG5q3h6jZeoSk='"
-		cspHeader += " 'sha256-a4rv66tC4bqKBcGxkR+KAqedm+64tAs13VGNGmN3B6g=' 'sha256-H+2cw33TxgqSZEshY66vGwg6/W03IB9JKTmFV36CKz0=';" // animated 404 static page
+		cspHeader += "script-src 'self' 'sha256-JNAde5CZQqXtYRLUk8CGgyJXo6C7Zs1lXPPClLM1YM4=' 'sha256-9/gQeQaAmVkFStl6tfCbHXn8mr6PgtxlH+hEp685lzY=' 'sha256-ER9LZCe8unYk8AJJ2qopE+rFh7OUv8QG5q3h6jZeoSk='; "
 		cspHeader += "img-src 'self' blob: data: https://maps.wikimedia.org; "
 		cspHeader += "connect-src 'self'; "
 		cspHeader += "object-src 'self'; "
@@ -68,13 +67,6 @@ func IndexHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 
 func SecureHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		if host := Config.Get("general.host").String(); host != "" {
-			if req.Host != host && req.Host != fmt.Sprintf("%s:443", host) {
-				Log.Error("Request coming from \"%s\" was blocked, only traffic from \"%s\" is allowed. You can change this from the admin console under configure -> host", req.Host, host)
-				SendErrorResult(res, ErrNotAllowed)
-				return
-			}
-		}
 		header := res.Header()
 		if Config.Get("general.force_ssl").Bool() {
 			header.Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
@@ -85,17 +77,52 @@ func SecureHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *
 	}
 }
 
-func SecureAjax(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func SecureOrigin(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		if req.Header.Get("Authorization") != "" {
+		if host := Config.Get("general.host").String(); host != "" {
+			if req.Host != host && req.Host != fmt.Sprintf("%s:443", host) {
+				Log.Error("Request coming from \"%s\" was blocked, only traffic from \"%s\" is allowed. You can change this from the admin console under configure -> host", req.Host, host)
+				SendErrorResult(res, ErrNotAllowed)
+				return
+			}
+		}
+		if req.Header.Get("X-Requested-With") == "XmlHttpRequest" { // Browser XHR Access
 			fn(ctx, res, req)
 			return
-		} else if req.Header.Get("X-Requested-With") == "XmlHttpRequest" {
+		} else if apiKey := req.URL.Query().Get("key"); apiKey != "" { // API Access
 			fn(ctx, res, req)
 			return
 		}
+
 		Log.Warning("Intrusion detection: %s - %s", req.RemoteAddr, req.URL.String())
 		SendErrorResult(res, ErrNotAllowed)
+	}
+}
+
+func WithPublicAPI(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+		apiKey := req.URL.Query().Get("key")
+		if apiKey == "" {
+			fn(ctx, res, req)
+			return
+		}
+		res.Header().Set("X-Request-ID", GenerateRequestID("API"))
+		host, err := VerifyApiKey(apiKey)
+		if err != nil {
+			Log.Debug("middleware::http api verification error '%s'", err.Error())
+			EnableCors(req, res, "*")
+			SendErrorResult(res, NewError(fmt.Sprintf(
+				"Invalid API Key provided: '%s'",
+				apiKey,
+			), 401))
+			return
+		}
+		if err = EnableCors(req, res, host); err != nil {
+			EnableCors(req, res, "*")
+			SendErrorResult(res, err)
+			return
+		}
+		fn(ctx, res, req)
 	}
 }
 
