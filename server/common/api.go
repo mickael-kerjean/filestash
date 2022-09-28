@@ -37,11 +37,8 @@ func init() {
 		}).String()
 	}
 	go func() {
-		select {
-		case <-Config.Event:
-			isApiEnabled()
-			getApiKey()
-		}
+		isApiEnabled()
+		getApiKey()
 	}()
 }
 
