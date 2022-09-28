@@ -1,0 +1,8 @@
+html{ height: 100%; }
+body{ margin: 0; height: 100%; padding: 10px 0 0px 10px; box-sizing: border-box; }
+#terminal{ height: 100%; }
+#error-message{
+    text-align: center;
+    font-size: 1.5em;
+    color: #333;
+}
