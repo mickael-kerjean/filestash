@@ -110,7 +110,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 			c.Secure = true
 			c.SameSite = http.SameSiteNoneMode
 			if f := req.Header.Get("Referer"); f != "" && strings.HasPrefix(f, "https://") == false {
-				Log.Warning("iframe from non secure origin isn't supported '%s'", f)
+				Log.Warning("you are trying to access Filestash from a non secure origin ('%s') and with iframe enabled. Either use SSL or disable iframe from the admin console.", f)
 			}
 		}
 		http.SetCookie(res, c)

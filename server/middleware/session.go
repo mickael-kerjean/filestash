@@ -287,6 +287,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, str)
 	if err != nil {
 		// This typically happen when changing the secret key
+		Log.Debug("middleware::session decrypt error '%s'", err.Error())
 		return session, nil
 	}
 	if err = json.Unmarshal([]byte(str), &session); err != nil {
