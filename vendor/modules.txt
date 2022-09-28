@@ -87,6 +87,8 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/google/go-cmp v0.5.6
 ## explicit
+# github.com/google/uuid v1.3.0
+github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
 # github.com/gorilla/mux v1.7.3
@@ -115,6 +117,8 @@ github.com/hirochachacha/go-smb2/internal/utf16le
 github.com/jbenet/go-context/io
 # github.com/jmespath/go-jmespath v0.4.0
 github.com/jmespath/go-jmespath
+# github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
+github.com/kballard/go-shellquote
 # github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd
 github.com/kevinburke/ssh_config
 # github.com/kr/fs v0.1.0
@@ -122,7 +126,6 @@ github.com/kr/fs
 # github.com/kr/pretty v0.3.0
 ## explicit
 # github.com/mattn/go-isatty v0.0.16
-## explicit
 github.com/mattn/go-isatty
 # github.com/mattn/go-sqlite3 v2.0.2+incompatible
 ## explicit
@@ -154,10 +157,11 @@ github.com/pmezard/go-difflib/difflib
 github.com/prasad83/goftp
 # github.com/qeesung/image2ascii v1.0.1
 ## explicit
-github.com/qeesung/image2ascii
 github.com/qeesung/image2ascii/ascii
 github.com/qeesung/image2ascii/convert
 github.com/qeesung/image2ascii/terminal
+# github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0
+github.com/remyoudompheng/bigfft
 # github.com/rogpeppe/go-internal v1.8.0
 ## explicit
 # github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4
@@ -234,6 +238,8 @@ golang.org/x/crypto/ssh/knownhosts
 ## explicit
 golang.org/x/image/draw
 golang.org/x/image/math/f64
+# golang.org/x/mod v0.3.0
+golang.org/x/mod/semver
 # golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2
 ## explicit
 golang.org/x/net/context
@@ -253,7 +259,7 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+# golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
 ## explicit
 golang.org/x/sync/semaphore
 # golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
@@ -269,8 +275,21 @@ golang.org/x/text/unicode/norm
 # golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9
 ## explicit
 golang.org/x/time/rate
+# golang.org/x/tools v0.0.0-20201124115921-2c860bdd6e78
+golang.org/x/tools/go/gcexportdata
+golang.org/x/tools/go/internal/gcimporter
+golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/go/packages
+golang.org/x/tools/internal/event
+golang.org/x/tools/internal/event/core
+golang.org/x/tools/internal/event/keys
+golang.org/x/tools/internal/event/label
+golang.org/x/tools/internal/gocommand
+golang.org/x/tools/internal/packagesinternal
+golang.org/x/tools/internal/typesinternal
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
-## explicit
+golang.org/x/xerrors
+golang.org/x/xerrors/internal
 # google.golang.org/api v0.15.0
 ## explicit
 google.golang.org/api/drive/v3
@@ -395,3 +414,50 @@ gopkg.in/warnings.v0
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 ## explicit
 gopkg.in/yaml.v3
+# lukechampine.com/uint128 v1.1.1
+lukechampine.com/uint128
+# modernc.org/cc/v3 v3.38.1
+modernc.org/cc/v3
+# modernc.org/ccgo/v3 v3.16.9
+modernc.org/ccgo/v3/lib
+# modernc.org/libc v1.19.0
+modernc.org/libc
+modernc.org/libc/errno
+modernc.org/libc/fcntl
+modernc.org/libc/fts
+modernc.org/libc/grp
+modernc.org/libc/honnef.co/go/netdb
+modernc.org/libc/langinfo
+modernc.org/libc/limits
+modernc.org/libc/netdb
+modernc.org/libc/netinet/in
+modernc.org/libc/poll
+modernc.org/libc/pthread
+modernc.org/libc/pwd
+modernc.org/libc/signal
+modernc.org/libc/stdio
+modernc.org/libc/stdlib
+modernc.org/libc/sys/socket
+modernc.org/libc/sys/stat
+modernc.org/libc/sys/types
+modernc.org/libc/termios
+modernc.org/libc/time
+modernc.org/libc/unistd
+modernc.org/libc/utime
+modernc.org/libc/uuid
+modernc.org/libc/uuid/uuid
+modernc.org/libc/wctype
+# modernc.org/mathutil v1.5.0
+modernc.org/mathutil
+# modernc.org/memory v1.4.0
+modernc.org/memory
+# modernc.org/opt v0.1.3
+modernc.org/opt
+# modernc.org/sqlite v1.19.1
+## explicit
+modernc.org/sqlite
+modernc.org/sqlite/lib
+# modernc.org/strutil v1.1.3
+modernc.org/strutil
+# modernc.org/token v1.0.1
+modernc.org/token

@@ -2,8 +2,8 @@ package model
 
 import (
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	_ "modernc.org/sqlite"
 	"os"
 	"path/filepath"
 	"time"
@@ -15,7 +15,8 @@ func init() {
 	cachePath := filepath.Join(GetCurrentDir(), DB_PATH)
 	os.MkdirAll(cachePath, os.ModePerm)
 	var err error
-	if DB, err = sql.Open("sqlite3", cachePath+"/share.sql?_fk=true"); err != nil {
+	if DB, err = sql.Open("sqlite", cachePath+"/share.sql?_fk=true"); err != nil {
+		Log.Error("model::index sqlite open error '%s'", err.Error())
 		return
 	}
 

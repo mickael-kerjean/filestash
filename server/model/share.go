@@ -5,11 +5,11 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"encoding/json"
-	"github.com/mattn/go-sqlite3"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
 	"html/template"
+	sqlite "modernc.org/sqlite"
 	"net/http"
 	"strings"
 	"time"
@@ -82,7 +82,8 @@ func ShareUpsert(p *Share) error {
 	_, err = stmt.Exec(p.Backend, p.Path)
 	if err != nil {
 		throw := true
-		if ferr, ok := err.(sqlite3.Error); ok == true && ferr.ExtendedCode == sqlite3.ErrConstraintPrimaryKey {
+		errConstraintPrimaryKey := 1555
+		if ferr, ok := err.(*sqlite.Error); ok == true && ferr.Code() == errConstraintPrimaryKey {
 			throw = false
 		}
 		if throw == true {
