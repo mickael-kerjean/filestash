@@ -190,7 +190,11 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 			SendErrorResult(res, err)
 			return
 		}
-		header.Set("Content-Type", GetMimeType(req.URL.Query().Get("path")))
+		mType := GetMimeType(req.URL.Query().Get("path"))
+		if mType == "application/javascript" {
+			mType = "text/plain"
+		}
+		header.Set("Content-Type", mType)
 		if req.Header.Get("range") != "" {
 			needToCreateCache = true
 		}
