@@ -9,8 +9,6 @@ import (
 	"os/exec"
 )
 
-//go:generate make png
-
 func createThumbnailForPng(reader io.ReadCloser) (io.ReadCloser, error) {
 	name := "thumbnail_webp.bin"
 	err := setupProgram(name, binaryThumbnailPng)

@@ -8,8 +8,6 @@ import (
 	"os/exec"
 )
 
-//go:generate make jpeg
-
 func createThumbnailForJpeg(reader io.ReadCloser) (io.ReadCloser, error) {
 	name := "thumbnail_web.bin"
 	err := setupProgram(name, binaryThumbnailJpeg)
