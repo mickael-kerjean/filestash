@@ -4,5 +4,5 @@ import (
 	_ "embed"
 )
 
-//go:embed dist/jpeg_Linux_x86_64.bin
+//go:embed dist/jpeg_linux_amd64.bin
 var binaryThumbnailJpeg []byte
