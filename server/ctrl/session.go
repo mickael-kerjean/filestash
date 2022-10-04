@@ -336,7 +336,12 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			if str == "" {
 				continue
 			}
-			tmpl, err := template.New("ctrl::session::auth_middleware").Parse(str)
+			tmpl, err := template.
+				New("ctrl::session::auth_middleware").
+				Funcs(map[string]interface{}{
+					"contains": strings.Contains,
+				}).
+				Parse(str)
 			mappingToUse[k] = str
 			if err != nil {
 				continue
