@@ -120,8 +120,8 @@ func (l *log) Enable(val bool) {
 	l.enable = val
 }
 
-var Log = func() log {
+var Log = func() ILogger {
 	l := log{}
 	l.Enable(true)
-	return l
+	return &l
 }()
