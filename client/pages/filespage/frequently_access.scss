@@ -1,6 +1,6 @@
 .component_frequently-access{
-    min-height: 110px;
-    margin-top: 5px;
+    min-height: 145px;
+    padding: 0 0 7px 0;
     .component_container{
         padding: 0;
     }
@@ -8,6 +8,7 @@
         height: 25px;
     }
     .caption{
+        margin-top: 15px;
         letter-spacing: 0.06em;
         display: inline-block;
         text-transform: uppercase;
@@ -46,19 +47,21 @@
         @media (max-width: 450px){ a:nth-child(3){display: none;} }
     }
     .nothing_placeholder{
-        padding: 15px;
+        padding: 20px;
         text-align: center;
         background: var(--super-light);
         border: 1px dashed rgba(0,0,0,0.1);
         border-radius: 2px;
         color: var(--light);
         font-weight: 100;
-        svg{
+        svg {
             display: block;
             width: 45px;
             margin: 0 auto;
             padding-bottom: 5px;
         }
+        position: relative;
+        top: 25px;
     }
 }
 

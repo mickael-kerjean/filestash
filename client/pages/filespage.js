@@ -5,7 +5,7 @@ import { SelectableGroup } from "react-selectable";
 
 import "./filespage.scss";
 import "./error.scss";
-import { Files } from "../model/";
+import { Files, Tags } from "../model/";
 import {
     sort, onCreate, onRename, onMultiRename, onDelete, onMultiDelete,
     onMultiDownload, onUpload, onSearch,
@@ -44,6 +44,7 @@ export class FilesPageComponent extends React.Component {
             selected: [],
             metadata: null,
             frequents: null,
+            tags: null,
             page_number: PAGE_NUMBER_INIT,
             loading: true,
         };
@@ -149,7 +150,10 @@ export class FilesPageComponent extends React.Component {
         }, (error) => this.props.error(error));
         this.observers.push(observer);
         if (path === "/") {
-            Files.frequents().then((s) => this.setState({ frequents: s }));
+            Promise.all([Files.frequents(), Tags.getAll()])
+                .then(([s, t]) => {
+                    this.setState({ frequents: s, tags: t });
+                });
         }
     }
 
@@ -279,7 +283,7 @@ export class FilesPageComponent extends React.Component {
                                     className="container"
                                     cond={!!this.state.is_search || !this.state.loading}>
                                     <NgIf cond={this.state.path === "/" && window.self === window.top}>
-                                        <FrequentlyAccess files={this.state.frequents} />
+                                        <FrequentlyAccess tags={this.state.tags} files={this.state.frequents} />
                                     </NgIf>
                                     <Submenu
                                         path={this.state.path}

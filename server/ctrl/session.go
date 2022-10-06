@@ -17,8 +17,9 @@ import (
 )
 
 type Session struct {
-	Home   *string `json:"home,omitempty"`
-	IsAuth bool    `json:"is_authenticated"`
+	Home    *string `json:"home,omitempty"`
+	IsAuth  bool    `json:"is_authenticated"`
+	Backend string  `json:"backendID"`
 }
 
 func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -36,6 +37,7 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 	r.IsAuth = true
 	r.Home = NewString(home)
+	r.Backend = GenerateID(ctx)
 	SendSuccessResult(res, r)
 }
 

@@ -29,6 +29,8 @@ export function goToLogout(history) {
     return Promise.resolve("ok");
 }
 
+export const URL_TAGS = "/tags";
+
 export const URL_ADMIN = "/admin";
 
 export const URL_SHARE = "/s";

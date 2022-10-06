@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
+import { URL_FILES } from "../helpers/";
 import { NgIf, Icon, EventEmitter } from "./";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
@@ -65,6 +66,7 @@ export class BreadCrumb extends React.Component {
                             this.state.path.map((path, index) => {
                                 return (
                                     <Path key={"breadcrumb_"+index}
+                                        baseURL={index === 0 ? URL_FILES : this.props.baseURL || URL_FILES}
                                         currentSelection={this.props.currentSelection} path={path}
                                         isLast={this.state.path.length === index + 1}
                                         needSaving={this.props.needSaving} />
@@ -157,7 +159,7 @@ class PathElementWrapperComponent extends React.Component {
             className += " highlight";
         }
 
-        let href = "/files" + (this.props.path.full || "");
+        let href = this.props.baseURL + (this.props.path.full || "");
         href = href
             .replace(/\%/g, "%2525") // Hack to get the Link Component to work
             // See ExistingThing in 'thing-existing.js'

@@ -5,3 +5,4 @@ export { Config, Backend, Middleware } from "./config";
 export { Log } from "./log";
 export { Admin } from "./admin";
 export { Audit } from "./audit";
+export { Tags } from "./tags";
