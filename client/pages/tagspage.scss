@@ -1,0 +1,43 @@
+.component_page_tag {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    .page_container {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+    }
+
+    .scroll-y{
+        flex: 1;
+        overflow-y: scroll!important;
+        overflow-x: hidden!important;
+        -webkit-overflow-scrolling: touch;
+        .component_submenu {
+            margin: 10px;
+            .view {
+                border-left: 5px solid var(--bg-color);
+                border-radius: 3px;
+                background: rgba(0,0,0,0.3);
+                border-radius: 3px;
+            }
+        }
+        & > .component_container {
+            padding-bottom: 50px;
+            .component_thing.view-list {
+                padding-left: 2px;
+                padding-right: 2px;
+                .file-details > i {
+                    font-size: 0.9rem;
+                    color: var(--light);
+                }
+            }
+            .error {
+                text-align: center;
+                img { height: 200px; }
+                .label { margin-top: -40px; font-size: 1.2rem; color: var(--light); }
+            }
+        }
+    }
+
+}

@@ -150,7 +150,7 @@ export class FilesPageComponent extends React.Component {
         }, (error) => this.props.error(error));
         this.observers.push(observer);
         if (path === "/") {
-            Promise.all([Files.frequents(), Tags.getAll()])
+            Promise.all([Files.frequents(), Tags.all()])
                 .then(([s, t]) => {
                     this.setState({ frequents: s, tags: t });
                 });
