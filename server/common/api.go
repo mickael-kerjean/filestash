@@ -6,55 +6,22 @@ import (
 	"strings"
 )
 
-var (
-	isApiEnabled func() bool
-	getApiKey    func() string
-)
-
-func init() {
-	isApiEnabled = func() bool {
-		return Config.Get("features.api.enabled").Schema(func(f *FormElement) *FormElement {
-			if f == nil {
-				f = &FormElement{}
-			}
-			f.Name = "enabled"
-			f.Type = "boolean"
-			f.Description = "Enable/Disable the API"
-			f.Default = true
-			return f
-		}).Bool()
-	}
-	getApiKey = func() string {
-		return Config.Get("features.api.api_key").Schema(func(f *FormElement) *FormElement {
-			if f == nil {
-				f = &FormElement{}
-			}
-			f.Name = "api_key"
-			f.Type = "long_text"
-			f.Description = "Format: '[mandatory:key] [optional:hostname]'. The hostname is used to enabled CORS for your application."
-			f.Placeholder = "foobar *.filestash.app"
-			return f
-		}).String()
-	}
-	go func() {
-		isApiEnabled()
-		getApiKey()
-	}()
-}
-
 func VerifyApiKey(api_key string) (host string, err error) {
-	if isApiEnabled() == false {
+	isApiEnabled := Config.Get("features.api.enable").Bool()
+	apiKey := Config.Get("feature.api.api_key").String()
+
+	if isApiEnabled == false {
 		return "", NewError("Api is not enabled", 503)
-	} else if api_key == os.Getenv("API_KEY") {
+	} else if apiKey == os.Getenv("API_KEY") {
 		return "*", nil
 	}
-	lines := strings.Split(getApiKey(), "\n")
+	lines := strings.Split(apiKey, "\n")
 	for _, line := range lines {
 		line = regexp.MustCompile(` #.*`).ReplaceAllString(line, "") // remove comment
 		chunks := strings.SplitN(line, " ", 2)
 		if len(chunks) == 0 {
 			continue
-		} else if chunks[0] != api_key {
+		} else if chunks[0] != apiKey {
 			continue
 		}
 		if len(chunks) == 1 {
