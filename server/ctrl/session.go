@@ -34,6 +34,8 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		SendSuccessResult(res, r)
 		return
+	} else if ctx.Share.Id != "" {
+		home = "/"
 	}
 	r.IsAuth = true
 	r.Home = NewString(home)

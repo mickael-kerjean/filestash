@@ -1,9 +1,9 @@
-import { http_get, http_post, http_delete } from "../helpers/";
+import { http_get, http_post, http_delete, currentShare } from "../helpers/";
 
 class SessionManager {
     currentUser() {
-        const url = "/api/session";
-        return http_get(url)
+        const shareID = currentShare();
+        return http_get("/api/session" + (shareID && `?share=${shareID}`))
             .then((data) => data.result);
     }
 
