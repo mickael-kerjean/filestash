@@ -13,18 +13,14 @@ export function Sidebar({ path }) {
     const [isDisplayed, setIsDisplayed] = useState(document.body.clientWidth > 1250)
 
     const onToggleHandler = () => {
-        settings_put("filespage_show_tree", !isOn);
         setIsOn(!isOn);
+        requestAnimationFrame(() => settings_put("filespage_show_tree", !isOn));
     };
 
     useEffect(() => {
-        const onResizeHandler = () => {
-            setIsDisplayed(document.body.clientWidth > 1250);
-        };
+        const onResizeHandler = () => setIsDisplayed(document.body.clientWidth > 1250);
         window.addEventListener("resize", onResizeHandler);
-        return () => {
-            window.removeEventListener("resize", onResizeHandler);
-        }
+        return () => window.removeEventListener("resize", onResizeHandler);
     }, []);
 
     return isDisplayed && (
