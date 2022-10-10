@@ -8,12 +8,28 @@ import load from "little-loader";
 
 import "./assets/css/reset.scss";
 
-window.addEventListener("DOMContentLoaded", () => {
-    const className = "ontouchstart" in window ? "touch-yes" : "touch-no";
-    document.body.classList.add(className);
+(function() {
+    Promise.all([
+        setup_dom(), setup_translation(), setup_xdg_open(), setup_cache(), Config.refresh(),
+    ]).then(() => {
+        const timeSinceBoot = new Date() - window.initTime;
+        if (window.CONFIG.name) document.title = window.CONFIG.name;
+        if (timeSinceBoot >= 1500) {
+            const timeoutToAvoidFlickering = timeSinceBoot > 2500 ? 0 : 500;
+            return waitFor(timeoutToAvoidFlickering)
+                .then(removeLoaderWithAnimation)
+                .then(render);
+        }
+        return removeLoader().then(render);
+    }).catch((e) => {
+        const msg = navigator.onLine === false ? "OFFLINE" : "CAN'T LOAD FILESTASH";
+        Log.report(msg + " - " + (e && e.message), location.href);
+        return removeLoaderWithAnimation().then(() => {
+            $error(msg);
+        });
+    });
 
     const $loader = document.querySelector("#n-lder");
-
     function render() {
         ReactDOM.render(
             <Router/>,
@@ -39,24 +55,11 @@ window.addEventListener("DOMContentLoaded", () => {
         if ($loader) $loader.remove();
         return Promise.resolve();
     }
+}());
 
-    Promise.all([Config.refresh(), setup_xdg_open(), translation(), setup_cache()]).then(() => {
-        const timeSinceBoot = new Date() - window.initTime;
-        if (window.CONFIG.name) document.title = window.CONFIG.name;
-        if (timeSinceBoot >= 1500) {
-            const timeoutToAvoidFlickering = timeSinceBoot > 2500 ? 0 : 500;
-            return waitFor(timeoutToAvoidFlickering)
-                .then(removeLoaderWithAnimation)
-                .then(render);
-        }
-        return removeLoader().then(render);
-    }).catch((e) => {
-        const msg = navigator.onLine === false ? "OFFLINE" : "CAN'T LOAD FILESTASH";
-        Log.report(msg + " - " + (e && e.message), location.href);
-        return removeLoaderWithAnimation().then(() => {
-            $error(msg);
-        });
-    });
+window.addEventListener("DOMContentLoaded", () => {
+    const className = "ontouchstart" in window ? "touch-yes" : "touch-no";
+    document.body.classList.add(className);
 });
 
 window.onerror = function(msg, url, lineNo, colNo, error) {
@@ -101,7 +104,13 @@ function setup_xdg_open() {
     });
 }
 
-function translation() {
+function setup_dom() {
+    return new Promise((done) => {
+        window.addEventListener("DOMContentLoaded", () => done())
+    });
+}
+
+function setup_translation() {
     let selectedLanguage = "en";
     switch(navigator.language) {
     case "zh-TW":
