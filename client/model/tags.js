@@ -38,11 +38,8 @@ class TagManager {
             }
             return Promise.resolve(tags);
         }
-        // const path = this._tagPathStringToArray(tagPath);
-        // Object.keys(DB.tags);
-        // console.log(path);
         return Promise.resolve([
-            "Bookmark", "wiki", "B", "C", "D", "E", "F"
+            // "Bookmark", "wiki", "B", "C", "D", "E", "F"
         ]);
     }
 
@@ -68,7 +65,7 @@ class TagManager {
             .filter((r) => r !== "" && (removeFirst ? r !== "All" : true));
     }
 
-    add(tag, path) {
+    addTagToFile(tag, path) {
         if(Object.keys(DB.tags).indexOf(tag) === -1) {
             DB.tags[tag] = [];
         }
@@ -77,8 +74,19 @@ class TagManager {
         }
     }
 
+    removeTagFromFile(tag, path) {
+        if(!DB.tags[tag]) return;
+        const idx = DB.tags[tag].indexOf(path);
+        DB.tags[tag].splice(idx, 1);
+    }
+
     import(_DB) {
         DB = _DB;
+        return new Promise((done) => {
+            setTimeout(() => {
+                done();
+            }, 5000);
+        })
     }
 
     export() {

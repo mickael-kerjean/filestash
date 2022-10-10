@@ -15,11 +15,12 @@
         -webkit-overflow-scrolling: touch;
         .component_submenu {
             margin: 10px;
-            .view {
-                border-left: 5px solid var(--bg-color);
-                border-radius: 3px;
-                background: rgba(0,0,0,0.3);
-                border-radius: 3px;
+            h1 {
+                font-weight: 100;
+                text-transform: uppercase;
+                margin: -7px 0 0 0;
+                float: left;
+                line-height: 30px;
             }
         }
         & > .component_container {
