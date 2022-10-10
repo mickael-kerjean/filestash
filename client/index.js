@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import Router from "./router";
 
 import { Config, Log } from "./model/";
-import { http_get } from "./helpers/ajax";
+import { http_get, setup_cache } from "./helpers/";
 import load from "little-loader";
 
 import "./assets/css/reset.scss";
@@ -40,7 +40,7 @@ window.addEventListener("DOMContentLoaded", () => {
         return Promise.resolve();
     }
 
-    Promise.all([Config.refresh(), setup_xdg_open(), translation()]).then(() => {
+    Promise.all([Config.refresh(), setup_xdg_open(), translation(), setup_cache()]).then(() => {
         const timeSinceBoot = new Date() - window.initTime;
         if (window.CONFIG.name) document.title = window.CONFIG.name;
         if (timeSinceBoot >= 1500) {

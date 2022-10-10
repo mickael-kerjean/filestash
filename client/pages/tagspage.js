@@ -81,7 +81,6 @@ export function TagsPageComponent({ match }) {
                         setRefresh(refresh + 1);
                     }).catch((err) => {
                         setLoading(false);
-                        notify.send(err, "error")
                     });
                 };
                 reader.readAsText($input.files[0]);

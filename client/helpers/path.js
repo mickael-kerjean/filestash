@@ -40,6 +40,11 @@ export function currentShare() {
     return findParams("share");
 }
 
+export function currentBackend() {
+    return "";
+}
+
+
 export function findParams(p) {
     return new window.URL(location.href).searchParams.get(p) || "";
 }

@@ -1,62 +1,52 @@
-let DB = {
-    tags: {
-        "Bookmark": ["/home/user/Documents/", "/home/user/Documents/projects/"],
-        "Customer": ["/home/user/Documents/projects/customers/"],
-        "wiki": ["/home/user/Documents/test.txt"],
-        "mit": ["/home/user/Documents/projects/customers/mit/"],
-        "dhl": ["/home/user/Documents/projects/customers/dhl/"],
-        "powerstone": ["/home/user/Documents/projects/customers/powerstone/"],
-        "accounting": [
-            "/home/user/Documents/projects/customers/mit/accounting/",
-            "/home/user/Documents/projects/customers/dhl/accounting/",
-            "/home/user/Documents/projects/customers/powerstone/accounting/",
-        ]
-    },
-    weight: { // for sorting
-        "Bookmark": 2,
-    },
-    share: null,
-    backend: "__hash__",
-};
+import { cache, currentShare, currentBackend } from "../helpers/";
 
 class TagManager {
     all(tagPath = "/", maxSize = -1) {
-        return Promise.resolve([]); // TODO: Remove this when ready
+        // return Promise.resolve([]); // TODO: Remove this when ready
 
-        if (tagPath == "/") {
-            const scoreFn = (acc, el) => (acc + el.replace(/[^\/]/g, "").length);
-            const tags = Object.keys(DB.tags).sort((a, b) => {
-                if (DB.tags[a].length === DB.tags[b].length) {
-                    return DB.tags[a].reduce(scoreFn, 0) - DB.tags[b].reduce(scoreFn, 0);
-                }
-                return DB.tags[a].length < DB.tags[b].length ? 1 : -1;
-            });
-            if(tags.length === 0) {
-                return Promise.resolve(["Bookmark"]);
-            } else if(tags.length >= 5) {
-                return Promise.resolve(["All"].concat(tags.slice(0, 5)));
+        return cache.get(cache.FILE_TAG, [currentBackend(), currentShare()]).then((DB) => {
+            if (DB === null) {
+                return [];
             }
-            return Promise.resolve(tags);
-        }
-        return Promise.resolve([
-            // "Bookmark", "wiki", "B", "C", "D", "E", "F"
-        ]);
+
+            if (tagPath == "/") {
+                const scoreFn = (acc, el) => (acc + el.replace(/[^\/]/g, "").length);
+                const tags = Object.keys(DB.tags).sort((a, b) => {
+                    if (DB.tags[a].length === DB.tags[b].length) {
+                        return DB.tags[a].reduce(scoreFn, 0) - DB.tags[b].reduce(scoreFn, 0);
+                    }
+                    return DB.tags[a].length < DB.tags[b].length ? 1 : -1;
+                });
+                if(tags.length === 0) {
+                    return ["Bookmark"];
+                } else if(tags.length >= 5) {
+                    return ["All"].concat(tags.slice(0, 5));
+                }
+                return tags;
+            }
+            return [
+                "Bookmark", "wiki", "B", "C", "D", "E", "F"
+            ];
+        });
     }
 
     files(tagPath) {
         const tags = this._tagPathStringToArray(tagPath, false);
         if (tags.length === 0) return Promise.resolve([]);
-        else if(tags.length > 1) return Promise.resolve([]); // TODO
+        else if (tags.length > 1) return Promise.resolve([]); // TODO
 
-        switch(tags[0]) {
-        case "All":
-            return this.all()
-                .then((tags) => (tags.reduce((acc, el) => {
-                    return DB.tags[el] ? acc.concat(DB.tags[el]) : acc;
-                }, [])));
-        default:
-            return Promise.resolve(DB.tags[tags[0]] || []);
-        }
+        return cache.get(cache.FILE_TAG, [currentBackend(), currentShare()]).then((DB) => {
+            if(!DB) return [];
+            switch(tags[0]) {
+            case "All":
+                return this.all()
+                    .then((tags) => (tags.reduce((acc, el) => {
+                        return DB.tags[el] ? acc.concat(DB.tags[el]) : acc;
+                    }, [])));
+            default:
+                return Promise.resolve(DB.tags[tags[0]] || []);
+            }
+        });
     }
 
     _tagPathStringToArray(tagPathString, removeFirst = true) {
@@ -66,31 +56,45 @@ class TagManager {
     }
 
     addTagToFile(tag, path) {
-        if(Object.keys(DB.tags).indexOf(tag) === -1) {
-            DB.tags[tag] = [];
-        }
-        if(!DB.tags[tag].indexOf(path) === -1) {
-            DB.tags[tag].push(path);
-        }
+        return cache.upsert(cache.FILE_TAG, [currentBackend(), currentShare()], (DB) => {
+            if(Object.keys(DB.tags).indexOf(tag) === -1) {
+                DB.tags[tag] = [];
+            }
+            if(!DB.tags[tag].indexOf(path) === -1) {
+                DB.tags[tag].push(path);
+            }
+            return DB;
+        });
     }
 
     removeTagFromFile(tag, path) {
-        if(!DB.tags[tag]) return;
-        const idx = DB.tags[tag].indexOf(path);
-        DB.tags[tag].splice(idx, 1);
+        return cache.upsert(cache.FILE_TAG, [currentBackend(), currentShare()], (DB) => {
+            if(!DB.tags[tag]) return;
+            const idx = DB.tags[tag].indexOf(path);
+            DB.tags[tag].splice(idx, 1);
+            if (DB.tags[tag].length === 0) {
+                delete DB.tags[tag];
+                delete DB.weight[tag];
+            }
+            return DB;
+        });
     }
 
-    import(_DB) {
-        DB = _DB;
-        return new Promise((done) => {
-            setTimeout(() => {
-                done();
-            }, 5000);
-        })
+    import(DB) {
+        return cache.upsert(cache.FILE_TAG, [currentBackend(), currentShare()], () => {
+            return DB;
+        });
     }
 
     export() {
-        return Promise.resolve(DB);
+        const key = [currentBackend(), currentShare()];
+        return cache.get(cache.FILE_TAG, key)
+            .then((a) => {
+                if (a === null) {
+                    return {tags: {}, weight: {}, share: key[1], backend: key[0]}
+                }
+                return a;
+            });
     }
 }
 

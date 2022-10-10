@@ -2,7 +2,7 @@
 
 import {
     http_get, http_post, http_options, prepare, basename, dirname, pathBuilder,
-    currentShare, appendShareToUrl,
+    currentShare, currentBackend, appendShareToUrl,
 } from "../helpers/";
 
 import { Observable } from "rxjs/Observable";
@@ -46,8 +46,9 @@ class FileSystem {
         return http_get(url).then((response) => {
             response = fileMiddleware(response, path, show_hidden);
 
-            return cache.upsert(cache.FILE_PATH, [currentShare(), path], (_files) => {
+            return cache.upsert(cache.FILE_PATH, [currentBackend(), currentShare(), path], (_files) => {
                 const store = Object.assign({
+                    backend: currentBackend(),
                     share: currentShare(),
                     status: "ok",
                     path: path,
@@ -97,7 +98,7 @@ class FileSystem {
     }
 
     _ls_from_cache(path, _record_access = false) {
-        return cache.get(cache.FILE_PATH, [currentShare(), path]).then((response) => {
+        return cache.get(cache.FILE_PATH, [currentBackend(), currentShare(), path]).then((response) => {
             if (!response || !response.results) return null;
             if (this.current_path === path) {
                 this.obs && this.obs.next({
@@ -110,7 +111,7 @@ class FileSystem {
         }).then((e) => {
             requestAnimationFrame(() => {
                 if (_record_access === true) {
-                    cache.upsert(cache.FILE_PATH, [currentShare(), path], (response) => {
+                    cache.upsert(cache.FILE_PATH, [currentBackend(), currentShare(), path], (response) => {
                         if (!response || !response.results) return null;
                         if (this.current_path === path) {
                             this.obs && this.obs.next({
@@ -136,9 +137,9 @@ class FileSystem {
                 this._ls_from_cache(dirname(path)) : Promise.resolve(res))
             .then(() => http_post(url))
             .then((res) => {
-                return cache.remove(cache.FILE_CONTENT, [currentShare(), path])
-                    .then(cache.remove(cache.FILE_CONTENT, [currentShare(), path], false))
-                    .then(cache.remove(cache.FILE_PATH, [currentShare(), dirname(path)], false))
+                return cache.remove(cache.FILE_CONTENT, [currentBackend(), currentShare(), path])
+                    .then(cache.remove(cache.FILE_CONTENT, [currentBackend(), currentShare(), path], false))
+                    .then(cache.remove(cache.FILE_PATH, [currentBackend(), currentShare(), dirname(path)], false))
                     .then(this._remove(path, "loading"))
                     .then((res) => this.current_path === dirname(path) ?
                         this._ls_from_cache(dirname(path)) : Promise.resolve(res));
@@ -158,8 +159,9 @@ class FileSystem {
                 if (this.is_binary(res) === true) {
                     return Promise.reject({ code: "BINARY_FILE" });
                 }
-                return cache.upsert(cache.FILE_CONTENT, [currentShare(), path], (response) => {
+                return cache.upsert(cache.FILE_CONTENT, [currentBackend(), currentShare(), path], (response) => {
                     const file = response ? response : {
+                        backend: currentBackend(),
                         share: currentShare(),
                         path: path,
                         last_update: null,
@@ -245,8 +247,9 @@ class FileSystem {
                     return this._replace(destination_path, null, "loading")
                         .then(() => origin_path !== destination_path ?
                             this._remove(origin_path, "loading") : Promise.resolve())
-                        .then(() => cache.add(cache.FILE_PATH, [currentShare(), destination_path], {
+                        .then(() => cache.add(cache.FILE_PATH, [currentBackend(), currentShare(), destination_path], {
                             path: destination_path,
+                            backend: currentBackend(),
                             share: currentShare(),
                             results: [],
                             access_count: 0,
@@ -353,11 +356,11 @@ class FileSystem {
                     .then(() => this._replace(destination_path, null, "loading"))
                     .then(() => this._refresh(origin_path, destination_path))
                     .then(() => {
-                        cache.update(cache.FILE_PATH, [currentShare(), origin_path], (data) => {
+                        cache.update(cache.FILE_PATH, [currentBackend(), currentShare(), origin_path], (data) => {
                             data.path = data.path.replace(origin_path, destination_path);
                             return data;
                         }, false);
-                        cache.update(cache.FILE_CONTENT, [currentShare(), origin_path], (data) => {
+                        cache.update(cache.FILE_CONTENT, [currentBackend(), currentShare(), origin_path], (data) => {
                             data.path = data.path.replace(origin_path, destination_path);
                             return data;
                         }, false);
@@ -389,7 +392,7 @@ class FileSystem {
             if (value.access_count >= 1 && value.path !== "/") {
                 data.push(value);
             }
-        }, cache.FILE_PATH, [currentShare(), "/"]).then(() => {
+        }, cache.FILE_PATH, [currentBackend(), currentShare(), "/"]).then(() => {
             return Promise.resolve(
                 data
                     .sort((a, b) => a.access_count > b.access_count? -1 : 1)
@@ -410,9 +413,10 @@ class FileSystem {
         });
 
         function update_cache(result) {
-            return cache.upsert(cache.FILE_CONTENT, [currentShare(), path], (response) => {
+            return cache.upsert(cache.FILE_CONTENT, [currentBackend(), currentShare(), path], (response) => {
                 if (!response) {
                     response = {
+                        backend: currentBackend(),
                         share: currentShare(),
                         path: path,
                         last_access: null,
@@ -437,7 +441,7 @@ class FileSystem {
     }
 
     _replace(path, icon, icon_previous) {
-        return cache.update(cache.FILE_PATH, [currentShare(), dirname(path)], function(res) {
+        return cache.update(cache.FILE_PATH, [currentBackend(), currentShare(), dirname(path)], function(res) {
             res.results = res.results.map((file) => {
                 if (file.name === basename(path) && file.icon == icon_previous) {
                     if (!icon) {
@@ -453,10 +457,11 @@ class FileSystem {
         });
     }
     _add(path, icon) {
-        return cache.upsert(cache.FILE_PATH, [currentShare(), dirname(path)], (res) => {
+        return cache.upsert(cache.FILE_PATH, [currentBackend(), currentShare(), dirname(path)], (res) => {
             if (!res || !res.results) {
                 res = {
                     path: path,
+                    backend: currentBackend(),
                     share: currentShare(),
                     results: [],
                     access_count: 0,
@@ -475,7 +480,7 @@ class FileSystem {
         });
     }
     _remove(path, previous_icon) {
-        return cache.update(cache.FILE_PATH, [currentShare(), dirname(path)], function(res) {
+        return cache.update(cache.FILE_PATH, [currentBackend(), currentShare(), dirname(path)], function(res) {
             if (!res) return null;
             res.results = res.results.filter((file) => {
                 return file.name === basename(path) && file.icon == previous_icon ? false : true;
