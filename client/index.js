@@ -22,7 +22,7 @@ import "./assets/css/reset.scss";
         }
         return removeLoader().then(render);
     }).catch((e) => {
-        const msg = navigator.onLine === false ? "OFFLINE" : "CAN'T LOAD FILESTASH";
+        const msg = navigator.onLine === false ? "OFFLINE" : e.message || "CAN'T LOAD";
         Log.report(msg + " - " + (e && e.message), location.href);
         return removeLoaderWithAnimation().then(() => {
             $error(msg);
