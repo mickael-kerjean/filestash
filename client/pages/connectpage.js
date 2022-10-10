@@ -4,7 +4,7 @@ import "./connectpage.scss";
 import { Session } from "../model/";
 import { Container, NgShow, Loader, ErrorPage } from "../components/";
 import { ForkMe, PoweredByFilestash, Form } from "./connectpage/";
-import { cache, notify, urlParams } from "../helpers/";
+import { cache, notify, urlParams, setup_cache_state } from "../helpers/";
 
 function ConnectPageComponent({ error, history }) {
     const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +23,7 @@ function ConnectPageComponent({ error, history }) {
                     user["home"] = user["home"].replace(/^\/?(.*?)\/?$/, "$1").trim();
                     if (user["home"] !== "") url = `${url}${user["home"]}/`;
                 }
-                cache.destroy();
+                cache.destroy().then(() => setup_cache_state(user["backendID"]));
                 history.push(url);
             });
     };

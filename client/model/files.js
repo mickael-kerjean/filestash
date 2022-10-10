@@ -54,9 +54,9 @@ class FileSystem {
                     path: path,
                     results: null,
                     access_count: 0,
-                    metadata: null,
+                    permissions: null,
                 }, _files);
-                store.metadata = response.permissions;
+                store.permissions = response.permissions;
                 store.results = response.results;
 
                 if (_files && _files.results) {
@@ -104,7 +104,7 @@ class FileSystem {
                 this.obs && this.obs.next({
                     status: "ok",
                     results: response.results,
-                    metadata: response.metadata,
+                    permissions: response.permissions,
                 });
             }
             return response;
@@ -117,7 +117,7 @@ class FileSystem {
                             this.obs && this.obs.next({
                                 status: "ok",
                                 results: response.results,
-                                metadata: response.metadata,
+                                permissions: response.permissions,
                             });
                         }
                         response.last_access = new Date();

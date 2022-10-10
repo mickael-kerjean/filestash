@@ -6,9 +6,9 @@ export { opener } from "./mimetype";
 export { debounce, throttle } from "./backpressure";
 export { event } from "./events";
 export { cache, setup_cache } from "./cache";
+export { currentShare, currentBackend, findParams, setup_cache_state } from "./cache_state";
 export {
-    pathBuilder, basename, dirname, absoluteToRelative, filetype,
-    currentShare, currentBackend, findParams, appendShareToUrl,
+    pathBuilder, basename, dirname, absoluteToRelative, filetype, appendShareToUrl,
 } from "./path";
 export { memory } from "./memory";
 export { prepare } from "./navigate";

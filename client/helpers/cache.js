@@ -1,4 +1,4 @@
-"use strict";
+import { setup_cache_state } from ".";
 
 const DB_VERSION = 4;
 const FILE_PATH = "file_path";
@@ -308,6 +308,7 @@ DataFromIndexedDB.prototype.destroy = function() {
             purgeAll(db, FILE_CONTENT);
             // We keep FILE_TAG as this was user generated and potentially frustrating
             // for users if they were to lose this
+            setup_cache_state("");
         });
         done();
 
@@ -330,9 +331,7 @@ export function setup_cache() {
     cache = new DataFromMemory();
     if ("indexedDB" in window && window.indexedDB !== null) {
         cache = new DataFromIndexedDB();
-        return new Promise((done) => {
-            cache.db.then(() => done());
-        });
+        return Promise.all([cache.db, setup_cache_state()])
     }
-    return Promise.resolve();
+    return setup_cache_state();
 }

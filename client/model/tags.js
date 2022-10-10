@@ -2,8 +2,6 @@ import { cache, currentShare, currentBackend } from "../helpers/";
 
 class TagManager {
     all(tagPath = "/", maxSize = -1) {
-        // return Promise.resolve([]); // TODO: Remove this when ready
-
         return cache.get(cache.FILE_TAG, [currentBackend(), currentShare()]).then((DB) => {
             if (DB === null) {
                 return [];
