@@ -41,7 +41,10 @@ export function TagsPageComponent({ match }) {
     const onClickRemoveFile = (file) => {
         prompt.now(
             t("Confirm by typing") + ": remove",
-            () => {
+            (answer) => {
+                if (answer !== "remove") {
+                    return Promise.resolve();
+                }
                 Tags.removeTagFromFile(
                     path.split("/").filter((r) => !!r).slice(-1)[0],
                     file,
