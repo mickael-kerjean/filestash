@@ -215,8 +215,8 @@ DataFromIndexedDB.prototype.remove = function(type, key, exact = true) {
             });
         } else {
             const request = store.openCursor(IDBKeyRange.bound(
-                [key[0], key[1]],
-                [key[0], key[1]+"\uFFFF"],
+                [key[0], key[1], key[2]],
+                [key[0], key[1], key[2]+"\uFFFF"],
                 true, true,
             ));
             return new Promise((done, err) => {
@@ -260,8 +260,8 @@ DataFromIndexedDB.prototype.fetchAll = function(fn, type = FILE_PATH, key) {
         const store = tx.objectStore(type);
         const index = store.index("idx_path");
         const request = index.openCursor(IDBKeyRange.bound(
-            [key[0], key[1]],
-            [key[0], key[1]+("z".repeat(5000))],
+            [key[0], key[1], key[2]],
+            [key[0], key[1], key[2]+("z".repeat(5000))],
         ));
 
         return new Promise((done, error) => {

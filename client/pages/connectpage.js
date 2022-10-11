@@ -23,8 +23,10 @@ function ConnectPageComponent({ error, history }) {
                     user["home"] = user["home"].replace(/^\/?(.*?)\/?$/, "$1").trim();
                     if (user["home"] !== "") url = `${url}${user["home"]}/`;
                 }
-                cache.destroy().then(() => setup_cache_state(user["backendID"]));
-                history.push(url);
+                cache.destroy().then(() => {
+                    setup_cache_state(user["backendID"])
+                    history.push(url);
+                }).catch((err) => error(err));
             });
     };
 
