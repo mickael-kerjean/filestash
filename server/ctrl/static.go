@@ -84,22 +84,41 @@ var listOfPlugins map[string][]string = map[string][]string{
 }
 
 func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
-	t, _ := template.New("about").Parse(Page(`
-	  <h1> {{index .App 0}} </h1>
+	t, _ := template.
+		New("about").
+		Funcs(map[string]interface{}{
+			"renderPlugin": func(lstr string, commit string) string {
+				if len(lstr) == 0 {
+					return "N/A"
+				} else if commit == "" {
+					return lstr
+				}
+				list := strings.Split(lstr, " ")
+				for i, _ := range list {
+					list[i] = `<a href="https://github.com/mickael-kerjean/filestash/tree/` + commit +
+						`/server/plugin/` + list[i] + `" target="_blank">` + list[i] + `</a>`
+				}
+				return strings.Join(list, " ")
+			},
+		}).
+		Parse(Page(`
+	  <h1> {{ .Version }} </h1>
 	  <table>
-		<tr> <td style="width:150px;"> Commit hash </td> <td> <a href="https://github.com/mickael-kerjean/filestash/tree/{{ index .App 1}}">{{ index .App 1}}</a> </td> </tr>
-		<tr> <td> Binary hash </td> <td> {{ index .App 2}} </td> </tr>
-		<tr> <td> Config hash </td> <td> {{ index .App 3}} </td> </tr>
-		<tr> <td> License </td> <td> {{ index .App 4}} </td> </tr>
+		<tr> <td style="width:150px;"> Commit hash </td> <td> <a href="https://github.com/mickael-kerjean/filestash/tree/{{ .CommitHash }}">{{ .CommitHash }}</a> </td> </tr>
+		<tr> <td> Binary hash </td> <td> {{ index .Checksum 0}} </td> </tr>
+		<tr> <td> Config hash </td> <td> {{ index .Checksum 1}} </td> </tr>
+		<tr> <td> License </td> <td> {{ .License }} </td> </tr>
 		<tr>
           <td> Plugins </td>
           <td>
-            {{ $oss := (index .App 5) }}
-            {{ $enterprise := (index .App 6) }}
-            {{ $custom := (index .App 7) }}
-            STANDARD[<span class="small">{{ if eq $oss "" }}N/A{{ else }}{{ $oss }}{{ end }}</span>]<br/>
-            EXTENDED[<span class="small">{{ if eq $enterprise "" }}N/A{{ else }}{{ $enterprise }}{{ end }}</span>]<br/>
-            CUSTOM[<span class="small">{{ if eq $custom "" }}N/A{{ else }}{{ $custom }}{{ end }}</span>]
+            {{ $oss := (index .Plugins 0) }}
+            {{ $enterprise := (index .Plugins 1) }}
+            {{ $custom := (index .Plugins 2) }}
+            STANDARD[<span class="small">{{ renderPlugin (index .Plugins 0) .CommitHash }}</span>]
+            <br/>
+            EXTENDED[<span class="small">{{ renderPlugin (index .Plugins 1) "" }}</span>]
+            <br/>
+            CUSTOM[<span class="small">{{ renderPlugin (index .Plugins 2) "" }}</span>]
           </td>
         </tr>
 	  </table>
@@ -112,17 +131,25 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	  </style>
 	`))
 	t.Execute(res, struct {
-		App []string
-	}{[]string{
-		"Filestash " + APP_VERSION + "." + BUILD_DATE,
-		BUILD_REF,
-		hashFileContent(filepath.Join(GetCurrentDir(), "/filestash"), 0),
-		hashFileContent(filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"), 0),
-		strings.ToUpper(LICENSE),
-		strings.Join(listOfPlugins["oss"], " "),
-		strings.Join(listOfPlugins["enterprise"], " "),
-		strings.Join(listOfPlugins["custom"], " "),
-	}})
+		Version    string
+		CommitHash string
+		Checksum   []string
+		License    string
+		Plugins    []string
+	}{
+		Version:    fmt.Sprintf("Filestash %s.%s", APP_VERSION, BUILD_DATE),
+		CommitHash: BUILD_REF,
+		Checksum: []string{
+			hashFileContent(filepath.Join(GetCurrentDir(), "/filestash"), 0),
+			hashFileContent(filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"), 0),
+		},
+		License: strings.ToUpper(LICENSE),
+		Plugins: []string{
+			strings.Join(listOfPlugins["oss"], " "),
+			strings.Join(listOfPlugins["enterprise"], " "),
+			strings.Join(listOfPlugins["custom"], " "),
+		},
+	})
 }
 
 func ManifestHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
