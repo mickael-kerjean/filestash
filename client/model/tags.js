@@ -23,7 +23,7 @@ class TagManager {
                 return tags;
             }
             return [
-                "Bookmark", "wiki", "B", "C", "D", "E", "F"
+                // "Bookmark", "wiki", "B", "C", "D", "E", "F"
             ];
         });
     }
