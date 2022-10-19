@@ -41,7 +41,7 @@ func init() {
 			f.Name = "enable_transcoder"
 			f.Type = "enable"
 			f.Target = []string{"transcoding_blacklist_format"}
-			f.Description = "Enable/Disable on demand video transcoding. The transcoder"
+			f.Description = "Enable/Disable on demand video transcoding. The transcoder will allow you to watch certain video formats in your browser."
 			f.Default = true
 			if ffmpegIsInstalled == false || ffprobeIsInstalled == false {
 				f.Default = false

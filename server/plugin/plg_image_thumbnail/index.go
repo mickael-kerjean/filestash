@@ -40,6 +40,26 @@ func thumbnailHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, 
 		h.Set("Content-Type", "image/webp")
 		h.Set("Cache-Control", fmt.Sprintf("max-age=%d", 3600*12))
 		return r, nil
+	case "image/gif":
+		h := (*res).Header()
+		r, err := createThumbnailForGif(reader)
+		if err != nil {
+			h.Set("Content-Type", "image/png")
+			return NewReadCloserFromBytes(placeholder), nil
+		}
+		h.Set("Content-Type", "image/webp")
+		h.Set("Cache-Control", fmt.Sprintf("max-age=%d", 3600*12))
+		return r, nil
+	case "image/webp":
+		h := (*res).Header()
+		r, err := createThumbnailForWebp(reader)
+		if err != nil {
+			h.Set("Content-Type", "image/png")
+			return NewReadCloserFromBytes(placeholder), nil
+		}
+		h.Set("Content-Type", "image/webp")
+		h.Set("Cache-Control", fmt.Sprintf("max-age=%d", 3600*12))
+		return r, nil
 	case "image/jpeg":
 		h := (*res).Header()
 		r, err := createThumbnailForJpeg(reader)

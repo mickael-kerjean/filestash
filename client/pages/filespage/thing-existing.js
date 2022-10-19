@@ -165,7 +165,7 @@ class ExistingThingComponent extends React.Component {
     updateThumbnail(props) {
         if (props.view === "grid" && props.icon !== "loading") {
             const type = getMimeType(props.file.path).split("/")[0];
-            if (type === "image") {
+            if (type === "image" || type === "video") {
                 Files.url(props.file.path).then((url) => {
                     this.setState({ preview: url+"&thumbnail=true" });
                 });
