@@ -15,5 +15,5 @@ services:
 
   onlyoffice:
     container_name: filestash_oods
-    image: onlyoffice/documentserver
+    image: onlyoffice/documentserver:6.4.2
     restart: always
