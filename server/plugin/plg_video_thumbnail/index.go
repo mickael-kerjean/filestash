@@ -1,7 +1,5 @@
 package plg_video_thumbnail
 
-//weird caching is still going on, so the new thumbnail doesnt load until the cache is cleared / they go back to the folder from another folder for some reason
-
 import (
 	"bytes"
 	"fmt"
@@ -14,6 +12,7 @@ import (
 	"strings"
 	"path/filepath"
 	"time"
+	"strconv"
 )
 
 //go:embed dist/placeholder.png
@@ -26,6 +25,7 @@ const (
 var (
 	CLEAR_CACHE_AFTER = 12
 	CONCURRENT_TASKS  = 5
+	UPDATE_CONFIG_FUNC = func() {}
 )
 
 func init() {
@@ -82,6 +82,12 @@ func init() {
 	CLEAR_CACHE_AFTER = plugin_thumbnail_cache_time()
 	CONCURRENT_TASKS = plugin_concurrent_tasks()
 
+	//update the config function so that we can update the global variables when the config is updated
+	UPDATE_CONFIG_FUNC = func() {
+		CLEAR_CACHE_AFTER = plugin_thumbnail_cache_time()
+		CONCURRENT_TASKS = plugin_concurrent_tasks()
+	}
+
 	if plugin_enable() == false {
 		return
 	} else if ffmpegIsInstalled == false {
@@ -110,8 +116,12 @@ func videothumbnailHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWri
 		return reader, nil
 	}
 
+	//update the config if it has changed
+	UPDATE_CONFIG_FUNC()
+
 	h := (*res).Header()
-	r, err, size := getThumbnailOfVideo(reader, path, ctx)
+	defer reader.Close()
+	r, err := getThumbnailOfVideo(reader, path, ctx, req)
 
 	if err != nil {
 		h.Set("Content-Type", "image/png")
@@ -120,21 +130,13 @@ func videothumbnailHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWri
 	}
 	h.Set("Content-Type", "image/webp")
 	h.Set("Cache-Control", fmt.Sprintf("max-age=%d", 3600*CLEAR_CACHE_AFTER))
-	h.Set("Content-Length", fmt.Sprintf("%d", size)) //this is needed for the browser to refresh the image once the thumbnail is generated
 	return r, nil
 }
 
-func getThumbnailOfVideo(reader io.ReadCloser, path string, ctx *App) (io.ReadCloser, error, int) {
+func getThumbnailOfVideo(reader io.ReadCloser, path string, ctx *App, req *http.Request) (io.ReadCloser, error) {
 	//create the appropriate file references for caching purposes
-	videoCacheName := "vid_" + GenerateID(ctx) + "_" + QuickHash(path, 10) + ".dat"
-	cachedVideoPath := filepath.Join(GetCurrentDir(), VideoCachePath, videoCacheName)
 	thumbnailCacheName := "thumb_" + GenerateID(ctx) + "_" + QuickHash(path, 10) + ".png"
 	cachedThumbnailPath := filepath.Join(GetCurrentDir(), VideoCachePath, thumbnailCacheName)
-
-	//check if the video is already being worked on
-	if _, err := os.Stat(cachedVideoPath); err == nil {
-		return reader, nil, 0
-	}
 
 	//check if the there is a thumbnail for the video already
 	if _, err := os.Stat(cachedThumbnailPath); err == nil {
@@ -142,69 +144,57 @@ func getThumbnailOfVideo(reader io.ReadCloser, path string, ctx *App) (io.ReadCl
 		thumbnail, err := os.ReadFile(cachedThumbnailPath)
 		if err != nil {
 			Log.Error("[plugin video thumbnail] error reading thumbnail for %s", path)
-			return nil, err, 0
+			return nil, err
 		}
-		return NewReadCloserFromBytes(thumbnail), nil, len(thumbnail)
+		return NewReadCloserFromBytes(thumbnail), nil
 	}
 
-	//check how many videos are currently being worked on, and if it is higher than the concurrent tasks, then wait
+	//check how many FFMPEG instances are running using the ps command
 	for {
-		files, err := os.ReadDir(filepath.Join(GetCurrentDir(), VideoCachePath))
-		if err != nil {
-			Log.Error("[plugin video thumbnail] error reading video cache directory")
-			return reader, err, 0
-		}
-		count := 0
-		for _, file := range files {
-			if strings.HasPrefix(file.Name(), "vid_") {
-				count++
-			}
-		}
-		if count < CONCURRENT_TASKS {
+		//check how many FFMPEG instances are running using the ps command
+		cmd := exec.Command("ps", "-C", "ffmpeg")
+		var out bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Run() //annoyingly, err isnt useful because if there is no ffmpeg process running, it will return an error anyway for some reason
+		cmd.Wait()
+		//count the number of lines in the output
+		instances := len(strings.Split(out.String(), "\n")) - 2 //the first line is the header, the last line is empty
+		//print the number of instances vs the max number of instances
+		//Log.Debug("[plugin video thumbnail] %d/%d ffmpeg instances running", instances, CONCURRENT_TASKS)
+		if instances < CONCURRENT_TASKS {
 			break
 		}
-		time.Sleep(20 * time.Second)
+		//time.Sleep(1 * time.Second) //this sleep cant be here, or else golang errors with too many processes sleeping
 	}
-
-	//download and cache the video
-	f, err := os.OpenFile(cachedVideoPath, os.O_CREATE|os.O_RDWR, os.ModePerm)
-	if err != nil {
-		Log.Stdout("ERR %+v", err)
-		return reader, err, 0
-	}
-	io.Copy(f, reader)
-	f.Close()
-	time.AfterFunc(time.Duration(CLEAR_CACHE_AFTER) * time.Hour, func() { os.Remove(cachedThumbnailPath) })
 
 	var buf bytes.Buffer
 	var errBuff bytes.Buffer
-	cmd := exec.Command("ffmpeg", "-i", cachedVideoPath, "-vf", "thumbnail, scale=320:320: force_original_aspect_ratio=decrease", "-vframes", "1", "-c:v", "webp", "-f", "image2pipe", "pipe:1")
+	//setup for HTTP request
+	var FullURL string
+	var port = Config.Get("general.port").Int()
+	FullURL = "http://localhost:" + strconv.Itoa(port) + req.URL.Path + "?" + req.URL.RawQuery
+	//remove thumbnail from the query string
+	FullURL = strings.Replace(FullURL, "&thumbnail=true", "", 1)
+	//get the cookie
+	cookie := req.Header.Get("Cookie")
+	cmd := exec.Command("ffmpeg", "-headers", "cookie: " + cookie, "-i", FullURL, "-vf", "thumbnail, scale=320:320: force_original_aspect_ratio=decrease", "-vsync", "vfr", "-frames:v", "1", "-c:v", "webp", "-f", "image2pipe", "pipe:1")
 	cmd.Stdout = &buf
 	cmd.Stderr = &errBuff
 	if err := cmd.Run(); err != nil {
 		Log.Error("[plugin video thumbnail] ffmpeg error: %s", errBuff.String())
-		return nil, err, 0
+		return nil, err
 	}
 	cmd.Wait()
 
-	//cleanup the cached video file
-	if cleanuperr := os.Remove(cachedVideoPath); cleanuperr != nil {
-		Log.Error("[plugin video thumbnail] error removing video cache for %s", path)
-	}
-
 	//cache the thumbnail
-	f, err = os.OpenFile(cachedThumbnailPath, os.O_CREATE|os.O_RDWR, os.ModePerm)
+	f, err := os.OpenFile(cachedThumbnailPath, os.O_CREATE|os.O_RDWR, os.ModePerm)
+	defer f.Close()
 	if err != nil {
 		Log.Stdout("ERR %+v", err)
-		return reader, err, 0
+		return reader, err
 	}
-	io.Copy(f, &buf)
-	fstat, err := f.Stat()
-	if err != nil {
-		Log.Stdout("ERR %+v", err)
-		return reader, err, 0
-	}
-	f.Close()
+	f.Write(buf.Bytes())
+	time.AfterFunc(time.Duration(CLEAR_CACHE_AFTER) * time.Hour, func() { os.Remove(cachedThumbnailPath) })
 
-	return NewReadCloserFromBytes(buf.Bytes()), nil, int(fstat.Size())
+	return NewReadCloserFromBytes(buf.Bytes()), nil
 }
