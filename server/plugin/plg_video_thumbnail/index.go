@@ -167,7 +167,6 @@ func getThumbnailOfVideo(reader io.ReadCloser, path string, ctx *App, req *http.
 		//time.Sleep(1 * time.Second) //this sleep cant be here, or else golang errors with too many processes sleeping
 	}
 
-	var buf bytes.Buffer
 	var errBuff bytes.Buffer
 	//setup for HTTP request
 	var FullURL string
@@ -177,8 +176,7 @@ func getThumbnailOfVideo(reader io.ReadCloser, path string, ctx *App, req *http.
 	FullURL = strings.Replace(FullURL, "&thumbnail=true", "", 1)
 	//get the cookie
 	cookie := req.Header.Get("Cookie")
-	cmd := exec.Command("ffmpeg", "-headers", "cookie: " + cookie, "-i", FullURL, "-vf", "thumbnail, scale=320:320: force_original_aspect_ratio=decrease", "-vsync", "vfr", "-frames:v", "1", "-c:v", "webp", "-f", "image2pipe", "pipe:1")
-	cmd.Stdout = &buf
+	cmd := exec.Command("ffmpeg", "-headers", "cookie: " + cookie, "-i", FullURL, "-vf", "thumbnail, scale=320:320: force_original_aspect_ratio=decrease", "-vsync", "vfr", "-frames:v", "1", "-c:v", "webp", cachedThumbnailPath)
 	cmd.Stderr = &errBuff
 	if err := cmd.Run(); err != nil {
 		Log.Error("[plugin video thumbnail] ffmpeg error: %s", errBuff.String())
@@ -186,15 +184,12 @@ func getThumbnailOfVideo(reader io.ReadCloser, path string, ctx *App, req *http.
 	}
 	cmd.Wait()
 
-	//cache the thumbnail
-	f, err := os.OpenFile(cachedThumbnailPath, os.O_CREATE|os.O_RDWR, os.ModePerm)
-	defer f.Close()
+	//get the thumbnail as a byte array
+	thumbnail, err := os.ReadFile(cachedThumbnailPath)
 	if err != nil {
-		Log.Stdout("ERR %+v", err)
-		return reader, err
+		Log.Error("[plugin video thumbnail] error reading thumbnail for %s", path)
+		return nil, err
 	}
-	f.Write(buf.Bytes())
 	time.AfterFunc(time.Duration(CLEAR_CACHE_AFTER) * time.Hour, func() { os.Remove(cachedThumbnailPath) })
-
-	return NewReadCloserFromBytes(buf.Bytes()), nil
+	return NewReadCloserFromBytes(thumbnail), nil
 }
