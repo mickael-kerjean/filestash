@@ -117,7 +117,7 @@ func videothumbnailHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWri
 	}
 
 	//update the config if it has changed
-	UPDATE_CONFIG_FUNC()
+	//UPDATE_CONFIG_FUNC() //removed due to race condition
 
 	h := (*res).Header()
 	defer reader.Close()
@@ -134,6 +134,14 @@ func videothumbnailHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWri
 }
 
 func getThumbnailOfVideo(reader io.ReadCloser, path string, ctx *App, req *http.Request) (io.ReadCloser, error) {
+	//add this panic handling, as it seems there is a random panic that is very intermittent
+	defer func() {
+		if err := recover(); err != nil {
+			Log.Error("[plugin video thumbnail] panic while generating thumbnail for %s", path)
+			Log.Error("[plugin video thumbnail] panic: %v", err)
+		}
+	}()
+
 	//create the appropriate file references for caching purposes
 	thumbnailCacheName := "thumb_" + GenerateID(ctx) + "_" + QuickHash(path, 10) + ".png"
 	cachedThumbnailPath := filepath.Join(GetCurrentDir(), VideoCachePath, thumbnailCacheName)
@@ -164,7 +172,7 @@ func getThumbnailOfVideo(reader io.ReadCloser, path string, ctx *App, req *http.
 		if instances < CONCURRENT_TASKS {
 			break
 		}
-		//time.Sleep(1 * time.Second) //this sleep cant be here, or else golang errors with too many processes sleeping
+		//time.Sleep(1 * time.Second)
 	}
 
 	var errBuff bytes.Buffer
@@ -179,7 +187,7 @@ func getThumbnailOfVideo(reader io.ReadCloser, path string, ctx *App, req *http.
 	cmd := exec.Command("ffmpeg", "-headers", "cookie: " + cookie, "-i", FullURL, "-vf", "thumbnail, scale=320:320: force_original_aspect_ratio=decrease", "-vsync", "vfr", "-frames:v", "1", "-c:v", "webp", cachedThumbnailPath)
 	cmd.Stderr = &errBuff
 	if err := cmd.Run(); err != nil {
-		Log.Error("[plugin video thumbnail] ffmpeg error: %s", errBuff.String())
+		//Log.Error("[plugin video thumbnail] ffmpeg error: %s", errBuff.String())
 		return nil, err
 	}
 	cmd.Wait()

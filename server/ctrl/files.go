@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"math/rand"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
@@ -171,7 +172,9 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	// use our cache if necessary (range request) when possible
 	if req.Header.Get("range") != "" {
-		ctx.Session["_path"] = path
+		//hacky solution but sleep for a random super small millisecond of time to avoid a race condition i cant fix
+		time.Sleep(time.Duration(rand.Intn(10)) * time.Millisecond)
+		ctx.Session["_path"] = path //seems to cause a concurrent map write error
 		if p := FileCache.Get(ctx.Session); p != nil {
 			f, err := os.OpenFile(p.(string), os.O_RDONLY, os.ModePerm)
 			if err == nil {
