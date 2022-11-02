@@ -114,7 +114,7 @@ func (this TmpStorage) Rm(path string) error {
 	if err := this.VerifyPath(path); err != nil {
 		return err
 	}
-	return SafeOsRemove(path)
+	return SafeOsRemoveAll(path)
 }
 
 func (this TmpStorage) Mv(from, to string) error {

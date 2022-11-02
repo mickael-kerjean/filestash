@@ -66,7 +66,7 @@ func (this Local) Mkdir(path string) error {
 }
 
 func (this Local) Rm(path string) error {
-	return SafeOsRemove(path)
+	return SafeOsRemoveAll(path)
 }
 
 func (this Local) Mv(from, to string) error {
