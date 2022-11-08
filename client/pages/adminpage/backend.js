@@ -192,38 +192,18 @@ export class BackendPage extends React.Component {
 
     render() {
         const formRender = ($input, props, struct, onChange) => {
-            const enable = (struct) => {
-                if (typeof struct.value === "string") {
-                    struct.enabled = true;
-                    return true;
-                }
-                return !!struct.enabled;
-            };
-            const update = (value, struct) => {
-                struct.enabled = value;
-                this.refresh();
-                if (value === false) {
-                    struct.value = null;
-                }
-                return;
-            };
-
-            let $checkbox = (
-                <Input
-                    type="checkbox" checked={enable(struct)}
-                    style={{ width: "inherit", marginRight: "6px", top: "6px" }}
-                    onChange={(e) => onChange(update.bind(this, e.target.checked))} />
-            );
-            if (struct.label === "label") {
-                $checkbox = null;
-            } else if (struct.readonly === true) {
-                $checkbox = null;
+            if (struct.type === "enable") {
+                // toggle buttons is to hide info from the login page
+                // in this screen, we don't want users to have to click through too many things
+                return null;
+            }
+            if (struct.type === "password" && CONFIG.is_debug_mode === true) {
+                struct.type = "text";
             }
             return (
                 <label className={"no-select input_type_" + props.params["type"]}>
                     <div>
                         <span>
-                            { $checkbox }
                             { format(struct.label) }:
                         </span>
                         <div style={{ width: "100%" }}>

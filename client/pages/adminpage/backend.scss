@@ -92,5 +92,9 @@
         }
     }
 
-    .authentication-middleware .formbuilder label span > input[type="checkbox"] { display: none; }
+
+    /* TODO in 2024: deprecate the underlying code */
+    .component_storagebackend fieldset > div:not(:nth-child(2)) {
+        display: none;
+    }
 }
