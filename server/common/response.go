@@ -133,17 +133,22 @@ func Page(stuff string) string {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <style>
-      html { background: #f4f4f4; color: #455164; font-size: 16px; font-family: -apple-system,system-ui,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif; }
+      html { background: #f4f4f4; font-size: 16px; font-family: -apple-system,system-ui,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif; }
       body { text-align: center; padding-top: 50px; text-align: center; margin: 0; }
       h1 { font-weight: 200; line-height: 1em; font-size: 40px; }
       p { opacity: 0.8; font-size: 1.05em; }
-      form { max-width: 500px; margin: 0 auto; padding: 0 10px; text-align: left; }
-      button { padding: 7px 0px; width: 100%; margin-top: 5px; cursor: pointer; }
+      form { max-width: 450px; margin: 0 auto; padding: 0 10px; text-align: left; }
+      button { padding: 7px 0px; width: 100%; margin-top: 5px; cursor: pointer; font-weight: bold; background: rgba(0,0,0,0.2); border-color: rgba(0,0,0,0.2); border-radius: 3px; }
       input, textarea { display: block; margin: 5px 0; border-radius: 3px; border: 2px solid rgba(0,0,0,0.1); outline: none; padding: 8px 10px; min-width: 100%; max-width: 100%; max-height: 80px; box-sizing: border-box; }
+      input, textarea, body, button { color: #313538; }
     </style>
   </head>
-  <body>
+  <body class="common_response_page">
     ` + stuff + `
+    <style>
+      ` + Hooks.Get.CSS() + `
+      ` + Config.Get("general.custom_css").String() + `
+    </style>
   </body>
 </html>`
 }

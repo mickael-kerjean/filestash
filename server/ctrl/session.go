@@ -302,11 +302,17 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	// - target of a html form. eg: ldap, mysql, ...
 	// - identity provider redirection uri. eg: oauth2, openid, ...
 	templateBind, err := plugin.Callback(formData, idpParams, res)
-	if err != nil {
+	if err == ErrAuthenticationFailed {
+		http.Redirect(
+			res, req,
+			req.URL.Path+"?action=redirect",
+			http.StatusSeeOther,
+		)
+		return
+	} else if err != nil {
 		Log.Error("session::authMiddleware 'callback error - %s'", err.Error())
 		http.Redirect(
-			res,
-			req,
+			res, req,
 			"/?error="+ErrNotAllowed.Error()+"&trace=redirect request failed - "+err.Error(),
 			http.StatusSeeOther,
 		)
