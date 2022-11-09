@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 
 import { Input, Textarea, Select, Enabler } from "./";
-import { FormObjToJSON, format, autocomplete, notify } from "../helpers/";
+import { FormObjToJSON, format, autocomplete, notify, gid } from "../helpers/";
 import { t } from "../locales/";
 
 import "./formbuilder.scss";
@@ -132,7 +132,7 @@ const FormElement = (props) => {
             props.onChange(value);
         };
 
-        const list_id = struct.datalist ? "list_"+Math.random() : null;
+        const list_id = struct.datalist ? gid("list_") : null;
         $input = (
             <Input list={list_id} onChange={(e) => onTextChange(e.target.value)} {...id}
                 name={struct.label} type="text" value={struct.value || ""}
