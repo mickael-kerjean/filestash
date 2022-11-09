@@ -17,10 +17,17 @@ button{
     }
     &.emphasis{
         background: var(--emphasis);
-        color: white
+        color: white;
     }
     &.dark{
         background: var(--dark);
         color: white;
+    }
+}
+
+.touch-no button {
+    &.dark:hover, &.emphasis:hover, &.primary:hover {
+        filter: brightness(95%);
+        transition: 0.2s ease all;
     }
 }
