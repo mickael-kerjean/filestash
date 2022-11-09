@@ -1,3 +1,5 @@
+export function nop() {}
+
 export function leftPad(str, length, pad = "0") {
     if (typeof str !== "string" || typeof pad !== "string" || str.length >= length ||
        !pad.length > 0) {
