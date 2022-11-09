@@ -103,6 +103,10 @@
             background: rgba(0,0,0,0.05); border-bottom: 0;
             border-radius: 3px;
             padding-left: 5px;
+            &[readonly]{
+                background: var(--dark);
+                color: var(--light);
+            }
         }
     }
 }

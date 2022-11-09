@@ -25,9 +25,10 @@ func (this Htpasswd) Setup() Form {
 			{
 				Name:        "users",
 				Type:        "long_text",
-				Placeholder: "eg:\nbob123:$apr1$FaPCZHMe$jYiw5.9UevKx25pBH4AsT/\nnancy456:$apr1$mrCHcVhc$oNdJeRcWKPk2z8dlzQI0x/",
+				Placeholder: "test:$apr1$nEDlyMK/$4jL0BUAuEifz2VajdjVnE.\ntest:{SHA}qUqP5cyxm6YcTAhz05Hph5gvu9M=",
 				Default:     "",
-				Description: "The list of users that will be granted access using the htpasswd file format. This plugin exposes the following variables which you can use from the attribute mapping: {{ .user }}, {{ .password }}",
+				Description: `The list of users who are granted access using the htpasswd file format.
+This plugin exposes {{ .user }} and {{ .password }} for the attribute mapping section`,
 			},
 		},
 	}
@@ -64,12 +65,11 @@ func (this Htpasswd) EntryPoint(idpParams map[string]string, req *http.Request, 
 }
 
 func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
-	lines := strings.Split(idpParams["users"], "\n")
-	if len(lines) == 0 {
+	if idpParams["users"] == "" {
 		Log.Error("plg_authenticate_htpasswd::callback there is no user configured")
-		return nil, ErrAuthenticationFailed
+		return nil, NewError("You haven't configured any users", 500)
 	}
-
+	lines := strings.Split(idpParams["users"], "\n")
 	for _, line := range lines {
 		pair := strings.SplitN(line, ":", 2)
 		if len(pair) != 2 {

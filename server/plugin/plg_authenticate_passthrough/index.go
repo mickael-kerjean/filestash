@@ -21,12 +21,15 @@ func (this Admin) Setup() Form {
 				Value: "passthrough",
 			},
 			{
-				Name:        "strategy",
-				Type:        "select",
-				Default:     "direct",
-				Opts:        []string{"direct", "password_only", "username_and_password"},
-				Id:          "strategy",
-				Description: "This plugin has 3 base strategy for authentication. The 'username_and_password' strategy will redirect the user to a page asking for a username and password whose value can be used in the attribute mapping section of the selected storage. The 'password_only' strategy will do the same but instead of asking for both a username and password will only ask for a password and the remaining 'direct' strategy will be a transparent redirect where the user won't be ask for any information\n\nThis plugin will enable 2 variable which can be used in the attribute mapping section, namely {{ .user }} and {{ .password }}",
+				Name:    "strategy",
+				Type:    "select",
+				Default: "direct",
+				Opts:    []string{"direct", "password_only", "username_and_password"},
+				Id:      "strategy",
+				Description: `This plugin has 3 base strategies:
+1. The 'direct' strategy will redirect the user to your storage without asking for anything and use whatever is configured in the attribute mapping section.
+2. The 'password_only' strategy will redirect the user to a page asking for a password which you can map to a field in the attribute mapping section like this: {{ .password }}
+3. The 'username_and_password' strategy is similar to the 'password_only' strategy but you will see in the login page both a username and password field which can be used fom the attribute mapping section like this: {{ .user }} {{ .password }}`,
 			},
 		},
 	}

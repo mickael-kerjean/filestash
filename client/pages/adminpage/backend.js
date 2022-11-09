@@ -214,7 +214,16 @@ export class BackendPage extends React.Component {
                         <span className="nothing"></span>
                         <div style={{ width: "100%" }}>
                             {
-                                struct.description ? (<div className="description">{struct.description}</div>) : null
+                                struct.description ? (
+                                    <div className="description" dangerouslySetInnerHTML={{
+                                        __html: function() {
+                                            const regLink = /\[([^\]]*)\]\(([^\)]+)\)/g;
+                                            return struct.description
+                                                .replace(regLink, "<a target=\"_blank\" href=\"$2\">$1</a>")
+                                                .replaceAll("\n", "<br>");
+                                        }()
+                                    }}></div>
+                                ) : null
                             }
                         </div>
                     </div>

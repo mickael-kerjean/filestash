@@ -20,18 +20,21 @@ func (this Saml) Setup() Form {
 				Value: "saml",
 			},
 			{
-				Name:        "SP Metadata",
-				Type:        "text",
-				ReadOnly:    true,
-				Value:       "",
-				Placeholder: "<VISIT https://www.filestash.app/pricing>",
+				Name:     "SP Metadata",
+				Type:     "text",
+				ReadOnly: true,
+				Value:    "plugin available in the enterprise release",
 			},
 			{
-				Name:        "IDP Metadata",
-				Type:        "text",
-				ReadOnly:    true,
-				Value:       "",
-				Placeholder: "<VISIT https://www.filestash.app/pricing>",
+				Name:     "IDP Metadata",
+				Type:     "text",
+				ReadOnly: true,
+				Value:    "plugin available in the enterprise release",
+				Description: `This plugin is to integrate with your IDP using SAML Single Sign-On. After having authenticated to your IDP, all the information about the user sent by your IDP will be available in the attribute mapping section either by:
+&nbsp;&nbsp;1. copying those attributes in any field: {{ .mail }}, {{ .uid }}, {{ .givenName }}
+&nbsp;&nbsp;2. create custom rules based on some attributes like this: {{ if eq .role "admin" }}adminuser{{ else }}regularuser{{ end }}
+
+[Purchase the enterprise edition](https://www.filestash.app/purchase-enterprise-selfhosted.html)`,
 			},
 		},
 	}

@@ -22,10 +22,13 @@ func (this Admin) Setup() Form {
 				Value: "admin",
 			},
 			{
-				Name:     "hint",
+				Name:     "password",
 				Type:     "text",
 				ReadOnly: true,
-				Value:    "You will be ask for your Filestash admin password",
+				Value:    Config.Get("auth.admin").String(),
+				Description: `This plugin will redirect the user to a page asking for a password. Only the admin password will be considered valid.
+This plugin exposes {{ .user }} (which is 'admin') and {{ .password }} for the attribute mapping section
+`,
 			},
 		},
 	}
@@ -42,15 +45,18 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 			MaxAge: -1,
 			Path:   "/",
 		})
-		return fmt.Sprintf("<strong>%s</strong>", c.Value)
+		return fmt.Sprintf(`<p class="flash">%s</p>`, c.Value)
 	}
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte(Page(`
       <form action="/api/session/auth/" method="post">
-        <label> ` + getFlash() + `
+        <label>
           <input type="password" name="password" value="" placeholder="Admin Password" />
         </label>
+        <button>CONNECT</button>
+        ` + getFlash() + `
+        <style>.flash{ color: #f26d6d; font-weight: bold; }</style>
       </form>`)))
 	return nil
 }
@@ -69,6 +75,7 @@ func (this Admin) Callback(formData map[string]string, idpParams map[string]stri
 		return nil, ErrAuthenticationFailed
 	}
 	return map[string]string{
-		"username": "admin",
+		"user":     "admin",
+		"password": formData["password"],
 	}, nil
 }
