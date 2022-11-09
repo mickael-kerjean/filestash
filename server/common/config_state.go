@@ -34,6 +34,13 @@ func LoadConfig() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if s := os.Getenv("CONFIG_SECRET"); s != "" {
+		t, err := DecryptString(Hash(s, 16), string(cFile))
+		if err != nil {
+			return cFile, nil
+		}
+		return []byte(t), err
+	}
 	return cFile, nil
 }
 
@@ -46,6 +53,17 @@ func SaveConfig(v []byte) error {
 			configPath,
 		)
 	}
-	file.Write(PrettyPrint([]byte(v)))
+	cFile := PrettyPrint([]byte(v))
+	if s := os.Getenv("CONFIG_SECRET"); s != "" {
+		t, err := EncryptString(Hash(s, 16), string(cFile))
+		if err != nil {
+			Log.Error("common::config_state SaveConfig '%s'", err.Error())
+			file.Close()
+			return err
+		}
+		cFile = []byte(t)
+	}
+
+	file.Write(cFile)
 	return file.Close()
 }
