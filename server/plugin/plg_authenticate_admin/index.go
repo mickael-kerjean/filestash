@@ -56,7 +56,10 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
         </label>
         <button>CONNECT</button>
         ` + getFlash() + `
-        <style>.flash{ color: #f26d6d; font-weight: bold; }</style>
+        <style>
+          .flash{ color: #f26d6d; font-weight: bold; }
+          form { padding-top: 10vh; }
+        </style>
       </form>`)))
 	return nil
 }

@@ -1,9 +1,16 @@
-package plg_authenticate_passthrough
+package plg_authenticate_htpasswd
 
 import (
+	"crypto/sha1"
+	"crypto/subtle"
+	"encoding/base64"
 	"fmt"
-	auth "github.com/abbot/go-http-auth"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/tredoe/osutil/user/crypt"
+	"github.com/tredoe/osutil/user/crypt/apr1_crypt"
+	"github.com/tredoe/osutil/user/crypt/md5_crypt"
+	"github.com/tredoe/osutil/user/crypt/sha256_crypt"
+	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	"net/http"
 	"strings"
 )
@@ -23,11 +30,18 @@ func (this Htpasswd) Setup() Form {
 				Value: "htpasswd",
 			},
 			{
-				Name:        "users",
-				Type:        "long_text",
-				Placeholder: "test:$apr1$nEDlyMK/$4jL0BUAuEifz2VajdjVnE.\ntest:{SHA}qUqP5cyxm6YcTAhz05Hph5gvu9M=",
-				Default:     "",
-				Description: `The list of users who are granted access using the htpasswd file format.
+				Name: "users",
+				Type: "long_text",
+				Placeholder: `test1:$apr1$ZiAIyyhS$ovyMo9eJRgDF/luvmAigP0
+test2:{SHA}EJ9LPFDXsN9ynSmbxvjp75Bmlx8=
+test3:$6$ME6DxvSEUjW4Kx/j$vQ5Yh1utmNEr4EZnWH0ZQa6hrG5yu2siybFW10aAax4u611W9awI5V90YWqGs4NjTSHkCrhpdbJoNErW9/Pbh1:19306:0:99999:7:::
+test4:$6$wTy86P73X/DsCiQy$El3JVUjepBUO.e.1OTuDt4yL9w2CnzY4jHaIbg1P7p508n8vjzCC8ZNsWa1IlbhciBM8.0LqqXWi3OuhGfPmP.
+test5:$5$RkdUxGLHGhmrO0yj$K6bCqmB.OPR7KM4i5eiAG.mxFyhElLNdthSL.dreqN5
+test6:$1$vuUKD.37$R6eCPFBa6lKIVfnkABveB1`,
+				Default: "",
+				Description: `The list of users who are granted access using either or both the htpasswd file format or the /etc/shadow file format. To generate a password:
+'openssl passwd -6' or 'mkpasswd -m SHA-512' or the htpasswd cli tool.
+
 This plugin exposes {{ .user }} and {{ .password }} for the attribute mapping section`,
 			},
 		},
@@ -59,7 +73,10 @@ func (this Htpasswd) EntryPoint(idpParams map[string]string, req *http.Request, 
         </label>
         <button>CONNECT</button>
         ` + getFlash() + `
-        <style>.flash{ color: #f26d6d; font-weight: bold; }</style>
+        <style>
+          .flash{ color: #f26d6d; font-weight: bold; }
+          form { padding-top: 10vh; }
+        </style>
       </form>`)))
 	return nil
 }
@@ -76,7 +93,10 @@ func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]s
 			continue
 		} else if formData["user"] != pair[0] {
 			continue
-		} else if auth.CheckSecret(formData["password"], pair[1]) == false {
+		} else if verifyPassword(
+			formData["password"],
+			strings.SplitN(pair[1], ":", 2)[0], // filter out unwanted fields from hash
+		) == false {
 			continue
 		}
 		return map[string]string{
@@ -91,4 +111,47 @@ func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]s
 		Path:   "/",
 	})
 	return nil, ErrAuthenticationFailed
+}
+
+func verifyPassword(password string, hash string) bool {
+	if strings.HasPrefix(hash, "{SHA}") {
+		d := sha1.New()
+		d.Write([]byte(password))
+		return subtle.ConstantTimeCompare(
+			[]byte(strings.TrimPrefix(hash, "{SHA}")),
+			[]byte(base64.StdEncoding.EncodeToString(d.Sum(nil))),
+		) == 1
+	}
+	var c crypt.Crypter
+	parts := strings.SplitN(hash, "$", 4)
+	if len(parts) != 4 {
+		return false
+	}
+	if strings.HasPrefix(hash, "$apr1$") {
+		c = apr1_crypt.New()
+		parts[2] = "$apr1$" + parts[2]
+	} else if strings.HasPrefix(hash, "$6$") {
+		c = sha512_crypt.New()
+		parts[2] = "$6$" + parts[2]
+	} else if strings.HasPrefix(hash, "$5$") {
+		c = sha256_crypt.New()
+		parts[2] = "$5$" + parts[2]
+	} else if strings.HasPrefix(hash, "$1$") {
+		c = md5_crypt.New()
+		parts[2] = "$1$" + parts[2]
+	} else {
+		// TODO: there are other algorithm available but that's another job
+		// for another day
+		return false
+	}
+	shadow, err := c.Generate(
+		[]byte(password),
+		[]byte(parts[2]),
+	)
+	if err != nil {
+		return false
+	} else if shadow != hash {
+		return false
+	}
+	return true
 }

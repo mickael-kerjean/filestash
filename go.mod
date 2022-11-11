@@ -3,7 +3,6 @@ module github.com/mickael-kerjean/filestash
 go 1.16
 
 require (
-	github.com/abbot/go-http-auth v0.4.1-0.20220112235402-e1cee1c72f2f
 	github.com/aws/aws-sdk-go v1.40.41
 	github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59 // indirect
 	github.com/creack/pty v1.1.18
@@ -28,6 +27,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/gjson v1.13.0
 	github.com/tidwall/sjson v1.0.4
+	github.com/tredoe/osutil v1.0.6
 	github.com/wayneashleyberry/terminal-dimensions v1.1.0 // indirect
 	golang.org/x/crypto v0.0.0-20220128200615-198e4374d7ed
 	golang.org/x/image v0.0.0-20210622092929-e6eecd499c2c
