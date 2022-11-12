@@ -133,15 +133,15 @@ func Page(stuff string) string {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <style>
-      html { background: #fcfbfd; font-size: 16px; font-family: -apple-system,system-ui,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif; }
+      html { background: #f2f3f5; font-size: 16px; font-family: "San Francisco","Roboto","Arial",sans-serif; }
       body { text-align: center; padding-top: 50px; text-align: center; margin: 0; }
       h1 { font-weight: 200; line-height: 1em; font-size: 40px; }
       p { opacity: 0.8; font-size: 1.05em; }
       form { max-width: 450px; margin: 0 auto; padding: 0 10px; text-align: left; }
-      button { padding: 7px 0px; width: 100%; margin-top: 5px; cursor: pointer; font-weight: bold; background: rgba(0,0,0,0.2); border-color: rgba(0,0,0,0.2); border-radius: 3px; box-shadow: 2px 2px 2px rgb(0 0 0 / 10%); }
-      input, textarea { display: block; margin: 5px 0; border-radius: 3px; border: 2px solid rgba(0,0,0,0.1); outline: none; padding: 8px 10px; min-width: 100%; max-width: 100%; max-height: 80px; box-sizing: border-box; }
-      input, textarea, body, button { color: #313538; }
-      input, textarea, button { font-size: 0.95rem; }
+      button { padding: 11px 0px; width: 100%; background: #466372; color: white; margin-top: 10px; cursor: pointer; font-weight: bold; border: none; border-radius: 2px; box-shadow: 2px 2px 2px rgb(0 0 0 / 15%); }
+      input, textarea { display: block; margin: 8px 0; border: none; outline: none; padding: 13px 15px; box-shadow: 2px 2px 2px rgb(0 0 0 / 5%); min-width: 100%; max-width: 100%; max-height: 80px; box-sizing: border-box; border-radius: 2px; }
+      input, textarea, body { color: #313538; }
+      input, textarea, button { font-size: inherit; }
     </style>
   </head>
   <body class="common_response_page">
