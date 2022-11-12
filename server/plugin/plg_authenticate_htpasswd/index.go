@@ -12,6 +12,7 @@ import (
 	"github.com/tredoe/osutil/user/crypt/sha256_crypt"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -114,7 +115,12 @@ func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]s
 }
 
 func verifyPassword(password string, hash string) bool {
-	if strings.HasPrefix(hash, "{SHA}") {
+	if password == hash {
+		if s := os.Getenv("CONFIG_SECRET"); s == "" {
+			Log.Warning("plg_authenticate_htpasswd your password shouldn't be stored in clear text!")
+		}
+		return true
+	} else if strings.HasPrefix(hash, "{SHA}") {
 		d := sha1.New()
 		d.Write([]byte(password))
 		return subtle.ConstantTimeCompare(
