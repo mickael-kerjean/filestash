@@ -219,7 +219,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 
 	// Step0: Initialisation
 	_get := req.URL.Query()
-	plugin := func() IAuth {
+	plugin := func() IAuthentication {
 		selectedPluginId := Config.Get("middleware.identity_provider.type").String()
 		if selectedPluginId == "" {
 			return nil
