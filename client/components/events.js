@@ -1,5 +1,6 @@
 // cheap event system that handle subscription, unsubscriptions and event emitions
 import React from "react";
+import { randomString } from "../helpers/";
 const emitters = {};
 
 function subscribe(key, event, fn) {
@@ -37,7 +38,7 @@ function emit(event, payload) {
 }
 
 export function EventReceiver(WrappedComponent) {
-    const id = Math.random().toString();
+    const id = randomString();
 
     return class extends React.Component {
         subscribe(event, callback) {

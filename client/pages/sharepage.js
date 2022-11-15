@@ -2,7 +2,7 @@ import React, { createRef } from "react";
 import { Redirect } from "react-router";
 
 import { Share } from "../model/";
-import { notify, basename, filetype, findParams } from "../helpers/";
+import { notify, basename, filetype, findParams, randomString } from "../helpers/";
 import { Loader, Input, Button, Container, ErrorPage, Icon } from "../components/";
 import { t } from "../locales/";
 import "./error.scss";
@@ -67,7 +67,7 @@ export class SharePageComponent extends React.Component {
             };
         };
 
-        const className = this.state.error ? `error rand-${Math.random().toString()}` : "";
+        const className = this.state.error ? `error rand-${randomString()}` : "";
 
         if (this.state.path !== null) {
             if (!!findParams("next")) {

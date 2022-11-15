@@ -4,7 +4,7 @@ import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
 import { MenuBar } from "./menubar";
 import { Bundle, Icon, NgIf, Loader, EventEmitter, EventReceiver } from "../../components/";
-import { alert } from "../../helpers/";
+import { alert, randomString } from "../../helpers/";
 import { Pager } from "./pager";
 import { t } from "../../locales/";
 import "./imageviewer.scss";
@@ -36,7 +36,7 @@ export class ImageViewerComponent extends React.Component {
             if (e.keyCode === 27) this.setState({ show_exif: false });
             else if (e.keyCode === 73) this.setState({ show_exif: !this.state.show_exif });
         };
-        this.refresh = () => this.setState({ "_": Math.random() });
+        this.refresh = () => this.setState({ "_": randomString() });
         this.$container = createRef();
     }
 

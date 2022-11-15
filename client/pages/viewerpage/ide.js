@@ -97,11 +97,11 @@ class IDEComponent extends React.Component {
     download() {
         document.cookie = "download=yes; path=/; max-age=120;";
         this.setState({
-            random: Math.random(),
+            refresh: Date.now(),
             id: window.setInterval(() => {
                 if (/download=yes/.test(document.cookie) === false) {
                     window.clearInterval(this.state.id);
-                    this.setState({ random: Math.random() });
+                    this.setState({ refresh: Date.now() });
                 }
             }, 100),
         });

@@ -4,7 +4,7 @@ import { StickyContainer, Sticky } from "react-sticky";
 import { Modal, NgIf, Icon, Dropdown, DropdownButton, DropdownList, DropdownItem } from "../../components/";
 import { extractEvents, extractTodos } from "../../helpers/org";
 import { leftPad } from "../../helpers/common";
-import { debounce } from "../../helpers/";
+import { debounce, randomString } from "../../helpers/";
 import { t } from "../../locales/";
 import "./org_viewer.scss";
 
@@ -53,9 +53,7 @@ class OrgViewer extends React.Component {
             search: "",
             _: null,
         };
-        this.rerender = () => {
-            this.setState({ _: Math.random() });
-        };
+        this.rerender = () => this.setState({ _: randomString() });
         this.findResults = debounce(this.findResults.bind(this), 150);
     }
 

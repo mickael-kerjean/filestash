@@ -23,7 +23,7 @@ export function SettingsPage({ isSaving = nop }) {
     const onChange = (_form) => {
         _form.connections = window.CONFIG.connections;
         delete _form.constant;
-        refresh(Math.random());
+        refresh(Date.now());
         isSaving(true);
         Config.save(_form, true, () => {
             isSaving(false);
