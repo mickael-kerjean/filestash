@@ -137,7 +137,7 @@ const FormElement = (props) => {
             <Input list={list_id} onChange={(e) => onTextChange(e.target.value)} {...id}
                 name={struct.label} type="text" value={struct.value || ""}
                 placeholder={ t(struct.placeholder) } readOnly={struct.readonly}
-                autoComplete="new-password" autoCorrect="off" autoCapitalize="off"
+                autoComplete="off" autoCorrect="off" autoCapitalize="off"
                 spellCheck="false" />
         );
         if (list_id != null) {
