@@ -29,3 +29,11 @@ input.component_input[readonly], textarea.component_textarea[readonly]{
     font-style: italic;
     opacity: 0.8;
 }
+
+.component_input:-webkit-autofill,
+.component_input:-webkit-autofill:focus {
+    transition: background-color 600000s 0s, color 600000s 0s;
+}
+.component_input[data-autocompleted] {
+    background-color: transparent !important;
+}

@@ -156,13 +156,12 @@ export function Form({
 
                     return (
                         <Card className="formBody" key={`form${i}`}>
-                            <form onSubmit={(e) => onSubmitForm(e)}
-                                autoComplete="off" autoCapitalize="off"
-                                spellCheck="false" autoCorrect="off">
+                            <form onSubmit={(e) => onSubmitForm(e)}>
                                 <FormBuilder
                                     form={form[key]}
                                     onChange={onFormChange}
-                                    render={renderForm} />
+                                    render={renderForm}
+                                    autoComplete />
                                 <Button theme="emphasis">{ t("CONNECT") }</Button>
                             </form>
                         </Card>
