@@ -167,7 +167,19 @@ export class BackendPage extends React.Component {
             backend_enabled: this.state.backend_enabled.concat(
                 createFormBackend(this.state.backend_available, {
                     type: backend_id,
-                    label: backend_id.toUpperCase(),
+                    label: function() {
+                        const existingLabels = this.state.backend_enabled
+                              .filter((b) => !!b[backend_id])
+                              .map((b) => b[backend_id]["label"]["value"]);
+
+                        for (let i=1; i<=existingLabels.length; i++) {
+                            const desiredLabel = backend_id.toUpperCase() + i;
+                            if (existingLabels.indexOf(desiredLabel) === -1) {
+                                return desiredLabel;
+                            }
+                        }
+                        return backend_id.toUpperCase();
+                    }.bind(this)(),
                 }),
             ),
         }, this.onUpdateStorageBackend.bind(this));
