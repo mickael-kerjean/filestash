@@ -1,6 +1,6 @@
 import React, { createRef } from "react";
 
-import { NgIf, Icon } from "../../components/";
+import { NgIf, Icon, Input } from "../../components/";
 import { Share } from "../../model/";
 import {
     randomString, notify, absoluteToRelative, copyToClipboard, filetype,
@@ -343,7 +343,7 @@ const SuperCheckbox = (props) => {
                 {props.label}
             </label>
             <NgIf cond={_is_expended && props.inputType !== undefined}>
-                <input
+                <Input
                     type={props.inputType}
                     placeholder={props.placeholder}
                     value={props.value || ""}

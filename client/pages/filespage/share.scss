@@ -26,8 +26,9 @@
                 padding: 15px 0;
                 width: 100%;
                 border-radius: 3px;
+                color: rgba(0, 0, 0, 0.3);
+                text-shadow: 0px 0px 1px var(--color);
                 background: var(--bg-color);
-                color: var(--emphasis);
                 &.active{
                     background: var(--primary);
                 }
@@ -83,7 +84,6 @@
             width: 100%;
             font-size: 0.9em;
             background: var(--bg-color);
-            color: var(--emphasis);
             box-sizing: border-box;
             padding: 4px 5px;
             border-radius: 3px;
@@ -91,6 +91,7 @@
             border-bottom-right-radius: 0;
             border: 2px solid var(--primary);
             border-right: none;
+            color: var(--dark);
         }
         > div {
             border-radius: 5px;
@@ -126,10 +127,13 @@
         width: calc(100% - 10px);
         box-sizing: border-box;
         margin-bottom: 5px;
-        border: 1px solid var(--light);
-        border-radius: 2px;
+        border: none;
+        border-radius: 3px;
         font-size: 0.9em;
-        padding: 2px 5px;
-        color: var(--emphasis-secondary);
+        padding: 3px 5px;
+        color: var(--color);
+
+        background: var(--bg-color);
+        border-bottom: 0;
     }
 }
