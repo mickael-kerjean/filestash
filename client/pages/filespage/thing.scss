@@ -256,7 +256,7 @@
 
 .dark-mode .component_thing {
     &:hover .box{
-        background: var(--emphasis-primary);
+        background: rgba(255,255,255,0.05);
         border-radius: 2px;
     }
     .box{
@@ -267,6 +267,11 @@
         color: var(--bg-color);
     }
     .box.highlight{
-        background: var(--emphasis-primary);
+        background: rgba(255,255,255,0.05);
+    }
+
+    form input {
+        border-color: var(--light);
+        color: var(--light);
     }
 }
