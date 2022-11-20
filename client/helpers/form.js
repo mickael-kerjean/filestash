@@ -99,3 +99,28 @@ export function autocomplete(values, list) {
             .replace(/\,\s?$/, "");
     });
 }
+
+export function JSONStringify(data) {
+    return JSON.stringify(data, (key, value) => {
+        if (value === null) return;
+        else if (value === undefined) return;
+        else if (value === "") return;
+        else if (Array.isArray(value)) return value;
+        else if (typeof(value) === "string") return value;
+        else if (typeof(value) === "number") return value;
+        else if (typeof(value) === "boolean") return value;
+        else if (typeof(value) === "object") {
+            const tmp = Object.values(value);
+            if (tmp.length === 0) return;
+            if (tmp.filter((n) => {
+                if(JSON.stringify(n) === "{}") return false;
+                else if(n === null) return false;
+                return true;
+            }).length === 0) return;
+            return value;
+        }
+        const msg = `[BUG] unknown stringify value (helpers/form.js): ${value}`;
+        console.error(msg);
+        throw new Error(msg);
+    });
+}

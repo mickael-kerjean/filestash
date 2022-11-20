@@ -19,5 +19,5 @@ export { gid, randomString } from "./random";
 export { leftPad, format, copyToClipboard, objectGet, nop } from "./common";
 export { getMimeType } from "./mimetype";
 export { settings_get, settings_put } from "./settings";
-export { FormObjToJSON, createFormBackend, autocomplete } from "./form";
+export { FormObjToJSON, createFormBackend, autocomplete, JSONStringify } from "./form";
 export { upload } from "./upload";

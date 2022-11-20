@@ -1,3 +1,5 @@
+import { JSONStringify } from "./form";
+
 export function http_get(url, type = "json", params) {
     return new Promise((done, err) => {
         const xhr = new XMLHttpRequest();
@@ -50,7 +52,7 @@ export function http_post(url, data, type = "json", params) {
         xhr.withCredentials = true;
         xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
         if (data && type === "json") {
-            data = JSON.stringify(data);
+            data = JSONStringify(data);
             xhr.setRequestHeader("Content-Type", "application/json");
         }
         if (params && params.progress) {

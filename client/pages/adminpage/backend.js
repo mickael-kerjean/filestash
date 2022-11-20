@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FormBuilder, Icon, Input, Alert, Loader } from "../../components/";
 import { Backend, Config, Middleware } from "../../model/";
-import { FormObjToJSON, notify, format, createFormBackend, objectGet } from "../../helpers/";
+import { FormObjToJSON, notify, format, createFormBackend, objectGet, JSONStringify } from "../../helpers/";
 import { t } from "../../locales/";
 
 import "./backend.scss";
@@ -136,7 +136,7 @@ export class BackendPage extends React.Component {
                 const { type, ...other } = objectGet(middlewareData, ["identity_provider"]) || {};
                 return {
                     "type": type || null,
-                    "params": JSON.stringify(other),
+                    "params": JSONStringify(other),
                 };
             })(),
             "attribute_mapping": (function() {
@@ -145,9 +145,7 @@ export class BackendPage extends React.Component {
                     "related_backend": related_backend || "N/A"
                 };
                 if(Object.keys(params).length > 0) {
-                    obj.params = JSON.stringify(params, (key, value) => {
-                        if (value !== null) return value
-                    });
+                    obj.params = JSONStringify(params);
                 }
                 return obj;
             })(),
