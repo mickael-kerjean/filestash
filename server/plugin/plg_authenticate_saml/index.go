@@ -20,16 +20,16 @@ func (this Saml) Setup() Form {
 				Value: "saml",
 			},
 			{
-				Name:     "SP Metadata",
-				Type:     "text",
-				ReadOnly: true,
-				Value:    "plugin available in the enterprise release",
+				Name:        "SP Metadata",
+				Type:        "text",
+				ReadOnly:    true,
+				Placeholder: "plugin available in the enterprise release",
 			},
 			{
-				Name:     "IDP Metadata",
-				Type:     "text",
-				ReadOnly: true,
-				Value:    "plugin available in the enterprise release",
+				Name:        "IDP Metadata",
+				Type:        "text",
+				ReadOnly:    true,
+				Placeholder: "plugin available in the enterprise release",
 				Description: `This plugin is to integrate with your IDP using SAML Single Sign-On. After having authenticated to your IDP, all the information about the user sent by your IDP will be available in the attribute mapping section either by:
 &nbsp;&nbsp;1. copying those attributes in any field: {{ .mail }}, {{ .uid }}, {{ .givenName }}
 &nbsp;&nbsp;2. create custom rules based on some attributes like this: {{ if eq .role "admin" }}adminuser{{ else }}regularuser{{ end }}
