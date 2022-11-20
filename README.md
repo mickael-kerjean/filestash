@@ -36,7 +36,6 @@
 
 # Features
 - Manage your files from a browser
-- Full org mode client ([documentation](https://www.filestash.app/2018/05/31/release-note-v0.1/))
 - Flexible Share mechanism
 - Video player
 - Video transcoding (mov, mkv, avi, mpeg, and more)
@@ -44,18 +43,21 @@
 - Image transcoding (raw images from Nikon, Canon, and more)
 - Photo management
 - Audio player
-- Full Text Search
 - Shared links are full fledge network drive
 - Office documents (docx, xlsx and more)
+- Full org mode client ([documentation](https://www.filestash.app/2018/05/31/release-note-v0.1/))
 - User friendly
 - Mobile friendly
 - Customisable
+- Plugins
 - Super fast
 - Upload files and folders
+- Download as zip
 - Multiple cloud providers and protocols, easily extensible
 - Nyan cat loader
 - Quick access: frequently access folders are pin to the homepage
 - Emacs, VIM or Sublime keybindings `;)`
+- Full Text Search
 
 # Screenshots
 <p align="center">
