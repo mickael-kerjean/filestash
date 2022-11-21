@@ -17,3 +17,4 @@ package-lock.json
 .tern-port
 .tern-project.js
 *_test.go
+cover.*

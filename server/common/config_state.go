@@ -15,13 +15,19 @@ package common
 
 import (
 	"fmt"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 )
 
 var (
-	configPath string = filepath.Join(GetCurrentDir(), CONFIG_PATH+"config.json")
+	configPath          string   = filepath.Join(GetCurrentDir(), CONFIG_PATH+"config.json")
+	configKeysToEncrypt []string = []string{
+		"middleware.identity_provider.params",
+		"middleware.attribute_mapping.params",
+	}
 )
 
 func LoadConfig() ([]byte, error) {
@@ -34,14 +40,28 @@ func LoadConfig() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if s := os.Getenv("CONFIG_SECRET"); s != "" {
-		t, err := DecryptString(Hash(s, 16), string(cFile))
-		if err != nil {
-			return cFile, nil
+	configStr := string(cFile)
+	for _, jsonPathWithEncryptedData := range configKeysToEncrypt {
+		p := gjson.Get(configStr, jsonPathWithEncryptedData).String()
+		if p == "" {
+			continue
 		}
-		return []byte(t), err
+		key := os.Getenv("CONFIG_SECRET")
+		if key == "" {
+			InitSecretDerivate(gjson.Get(configStr, "general.secret_key").String())
+			key = SECRET_KEY_DERIVATE_FOR_PROOF
+		}
+		t, err := DecryptString(Hash(key, 16), p)
+		if err != nil {
+			continue
+		}
+		val, err := sjson.Set(configStr, jsonPathWithEncryptedData, t)
+		if err != nil {
+			continue
+		}
+		configStr = val
 	}
-	return cFile, nil
+	return []byte(configStr), nil
 }
 
 func SaveConfig(v []byte) error {
@@ -53,17 +73,29 @@ func SaveConfig(v []byte) error {
 			configPath,
 		)
 	}
-	cFile := PrettyPrint([]byte(v))
-	if s := os.Getenv("CONFIG_SECRET"); s != "" {
-		t, err := EncryptString(Hash(s, 16), string(cFile))
-		if err != nil {
-			Log.Error("common::config_state SaveConfig '%s'", err.Error())
-			file.Close()
-			return err
-		}
-		cFile = []byte(t)
-	}
 
-	file.Write(cFile)
+	configStr := string(v)
+	for _, jsonPath := range configKeysToEncrypt {
+		key := os.Getenv("CONFIG_SECRET")
+		if key == "" {
+			key = SECRET_KEY_DERIVATE_FOR_PROOF
+		}
+		p := gjson.Get(configStr, jsonPath).String()
+		if p == "" {
+			continue
+		}
+		t, err := EncryptString(Hash(key, 16), p)
+		if err != nil {
+			Log.Warning("common::config_state cannot encrypt config path '%s'", jsonPath)
+			continue
+		}
+		val, err := sjson.Set(configStr, jsonPath, t)
+		if err != nil {
+			Log.Warning("common::config_state cannot put json value in config '%s'", jsonPath)
+			continue
+		}
+		configStr = val
+	}
+	file.Write(PrettyPrint([]byte(configStr)))
 	return file.Close()
 }
