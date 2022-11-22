@@ -1,7 +1,7 @@
 package ctrl
 
 import (
-	_ "embed"
+	"embed"
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
@@ -14,46 +14,49 @@ import (
 	"text/template"
 )
 
-//go:embed static/404.html
-var HtmlPage404 []byte
+var (
+	//go:embed static/www
+	WWWEmbed embed.FS
+
+	//go:embed static/404.html
+	HtmlPage404 []byte
+)
 
 func StaticHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		var base string = GetAbsolutePath(_path)
-		var srcPath string
-		if srcPath = JoinPath(base, req.URL.Path); srcPath == base {
+		var chroot string = GetAbsolutePath(_path)
+		if srcPath := JoinPath(chroot, req.URL.Path); strings.HasPrefix(srcPath, chroot) == false {
 			http.NotFound(res, req)
 			return
 		}
-		ServeFile(res, req, srcPath)
+		ServeFile(res, req, JoinPath(_path, req.URL.Path))
 	}
 }
 
-func IndexHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		urlObj, err := URL.Parse(req.URL.String())
-		if err != nil {
-			NotFoundHandler(ctx, res, req)
-			return
-		}
-		url := urlObj.Path
+func IndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	urlObj, err := URL.Parse(req.URL.String())
+	if err != nil {
+		NotFoundHandler(ctx, res, req)
+		return
+	}
+	url := urlObj.Path
 
-		if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
-			http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
-			return
-		} else if url != "/" && strings.HasPrefix(url, "/s/") == false &&
-			strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
-			url != "/login" && url != "/logout" && strings.HasPrefix(url, "/admin") == false && strings.HasPrefix(url, "/tags") == false {
-			NotFoundHandler(ctx, res, req)
-			return
-		}
-		ua := req.Header.Get("User-Agent")
-		if strings.Contains(ua, "MSIE ") || strings.Contains(ua, "Trident/") || strings.Contains(ua, "Edge/") {
-			// Microsoft is behaving on many occasion differently than Firefox / Chrome.
-			// I have neither the time / motivation for it to work properly
-			res.WriteHeader(http.StatusBadRequest)
-			res.Write([]byte(
-				Page(`
+	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
+		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
+		return
+	} else if url != "/" && strings.HasPrefix(url, "/s/") == false &&
+		strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
+		url != "/login" && url != "/logout" && strings.HasPrefix(url, "/admin") == false && strings.HasPrefix(url, "/tags") == false {
+		NotFoundHandler(ctx, res, req)
+		return
+	}
+	ua := req.Header.Get("User-Agent")
+	if strings.Contains(ua, "MSIE ") || strings.Contains(ua, "Trident/") || strings.Contains(ua, "Edge/") {
+		// Microsoft is behaving on many occasion differently than Firefox / Chrome.
+		// I have neither the time / motivation for it to work properly
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(
+			Page(`
                   <h1>Internet explorer is not supported</h1>
                   <p>
                     We don't support IE / Edge at this time
@@ -61,11 +64,9 @@ func IndexHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
                     Please use either Chromium, Firefox or Chrome
                   </p>
                 `)))
-			return
-		}
-		srcPath := GetAbsolutePath(_path)
-		ServeFile(res, req, srcPath)
+		return
 	}
+	ServeFile(res, req, "/index.html")
 }
 
 func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -130,6 +131,14 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
         table a { color: inherit; text-decoration: none; }
 	  </style>
 	`))
+	hashFileContent := func(path string, n int) string {
+		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+		if err != nil {
+			return ""
+		}
+		defer f.Close()
+		return HashStream(f, n)
+	}
 	t.Execute(res, struct {
 		Version    string
 		CommitHash string
@@ -219,75 +228,43 @@ func CustomCssHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
-	zFilePath := filePath + ".gz"
-	bFilePath := filePath + ".br"
-
-	etagNormal := hashFile(filePath, 10)
-	etagGzip := hashFile(zFilePath, 10)
-	etagBr := hashFile(bFilePath, 10)
-
-	if req.Header.Get("If-None-Match") != "" {
-		browserTag := req.Header.Get("If-None-Match")
-		if browserTag == etagNormal {
-			res.WriteHeader(http.StatusNotModified)
-			return
-		} else if browserTag == etagBr {
-			res.WriteHeader(http.StatusNotModified)
-			return
-		} else if browserTag == etagGzip {
-			res.WriteHeader(http.StatusNotModified)
-			return
-		}
+	staticConfig := []struct {
+		ContentType string
+		FileExt     string
+	}{
+		{"br", ".br"},
+		{"gzip", ".gz"},
+		{"", ""},
 	}
+
 	head := res.Header()
 	acceptEncoding := req.Header.Get("Accept-Encoding")
-	if strings.Contains(acceptEncoding, "br") {
-		if file, err := os.OpenFile(bFilePath, os.O_RDONLY, os.ModePerm); err == nil {
-			head.Set("Content-Encoding", "br")
-			head.Set("Etag", etagBr)
-			io.Copy(res, file)
-			file.Close()
-			return
+	for _, cfg := range staticConfig {
+		if strings.Contains(acceptEncoding, cfg.ContentType) == false {
+			continue
 		}
-	} else if strings.Contains(acceptEncoding, "gzip") {
-		if file, err := os.OpenFile(zFilePath, os.O_RDONLY, os.ModePerm); err == nil {
-			head.Set("Content-Encoding", "gzip")
-			head.Set("Etag", etagGzip)
-			io.Copy(res, file)
-			file.Close()
-			return
+		curPath := filePath + cfg.FileExt
+		file, err := WWWEmbed.Open("static/www" + curPath)
+		if err != nil {
+			continue
 		}
-	}
-
-	file, err := os.OpenFile(filePath, os.O_RDONLY, os.ModePerm)
-	if err != nil {
-		http.NotFound(res, req)
+		if stat, err := file.Stat(); err == nil {
+			etag := QuickHash(fmt.Sprintf(
+				"%s %d %d %s",
+				curPath, stat.Size(), stat.Mode(), stat.ModTime()), 10,
+			)
+			if etag == req.Header.Get("If-None-Match") {
+				res.WriteHeader(http.StatusNotModified)
+				return
+			}
+			head.Set("Etag", etag)
+		}
+		if cfg.ContentType != "" {
+			head.Set("Content-Encoding", cfg.ContentType)
+		}
+		io.Copy(res, file)
+		file.Close()
 		return
 	}
-	head.Set("Etag", etagNormal)
-	io.Copy(res, file)
-	file.Close()
-}
-
-func hashFile(path string, n int) string {
-	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
-	if err != nil {
-		return ""
-	}
-	defer f.Close()
-
-	stat, err := f.Stat()
-	if err != nil {
-		return ""
-	}
-	return QuickHash(fmt.Sprintf("%s %d %d %s", path, stat.Size(), stat.Mode(), stat.ModTime()), n)
-}
-
-func hashFileContent(path string, n int) string {
-	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
-	if err != nil {
-		return ""
-	}
-	defer f.Close()
-	return HashStream(f, n)
+	http.NotFound(res, req)
 }

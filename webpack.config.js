@@ -11,7 +11,7 @@ const config = {
         app: path.join(__dirname, "client", "index.js"),
     },
     output: {
-        path: path.join(__dirname, "dist", "data", "public"),
+        path: path.join(__dirname, "server", "ctrl", "static", "www"),
         publicPath: "/",
         filename: "assets/js/[name]_[chunkhash].js",
         chunkFilename: "assets/js/chunk_[name]_[id]_[chunkhash].js",

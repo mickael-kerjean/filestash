@@ -19,8 +19,6 @@ const (
 	COOKIE_NAME_ADMIN = "admin"
 	COOKIE_PATH_ADMIN = "/admin/api/"
 	COOKIE_PATH       = "/api/"
-	FILE_INDEX        = "./data/public/index.html"
-	FILE_ASSETS       = "./data/public/"
 	URL_SETUP         = "/admin/setup"
 )
 

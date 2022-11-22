@@ -5,7 +5,7 @@
   "repository": "https://github.com/mickael-kerjean/filestash",
   "main": "server/index.js",
   "scripts": {
-    "dev": "webpack --watch",
+    "start": "webpack --watch",
     "build": "webpack",
     "test": "jest ./client/",
     "lint": "eslint ./client/"

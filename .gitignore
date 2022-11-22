@@ -18,3 +18,4 @@ package-lock.json
 .tern-project.js
 *_test.go
 cover.*
+www

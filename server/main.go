@@ -85,7 +85,7 @@ func Init(a App) {
 
 	// Webdav server / Shared Link
 	middlewares = []Middleware{IndexHeaders, SecureHeaders}
-	r.HandleFunc("/s/{share}", NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, a)).Methods("GET")
+	r.HandleFunc("/s/{share}", NewMiddlewareChain(IndexHandler, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{WebdavBlacklist, SessionStart}
 	r.PathPrefix("/s/{share}").Handler(NewMiddlewareChain(WebdavHandler, middlewares, a))
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, RedirectSharedLoginIfNeeded, SessionStart, LoggedInOnly}
@@ -97,9 +97,9 @@ func Init(a App) {
 	r.HandleFunc("/api/backend", NewMiddlewareChain(AdminBackend, middlewares, a)).Methods("GET")
 	r.HandleFunc("/api/middlewares/authentication", NewMiddlewareChain(AdminAuthenticationMiddleware, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{StaticHeaders, SecureHeaders}
-	r.PathPrefix("/assets").Handler(http.HandlerFunc(NewMiddlewareChain(StaticHandler(FILE_ASSETS), middlewares, a))).Methods("GET")
-	r.HandleFunc("/favicon.ico", NewMiddlewareChain(StaticHandler(FILE_ASSETS+"/assets/logo/"), middlewares, a)).Methods("GET")
-	r.HandleFunc("/sw_cache.js", NewMiddlewareChain(StaticHandler(FILE_ASSETS+"/assets/worker/"), middlewares, a)).Methods("GET")
+	r.PathPrefix("/assets").Handler(http.HandlerFunc(NewMiddlewareChain(StaticHandler("/"), middlewares, a))).Methods("GET")
+	r.HandleFunc("/favicon.ico", NewMiddlewareChain(StaticHandler("/assets/logo/"), middlewares, a)).Methods("GET")
+	r.HandleFunc("/sw_cache.js", NewMiddlewareChain(StaticHandler("/assets/worker/"), middlewares, a)).Methods("GET")
 
 	// Other endpoints
 	middlewares = []Middleware{ApiHeaders}
@@ -118,8 +118,8 @@ func Init(a App) {
 	}
 	initPluginsRoutes(r, &a)
 
-	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, a))).Methods("GET")
-	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler(FILE_INDEX), middlewares, a))).Methods("GET", "POST")
+	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler, middlewares, a))).Methods("GET")
+	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler, middlewares, a))).Methods("GET", "POST")
 
 	// Routes are served via plugins to avoid getting stuck with plain HTTP. The idea is to
 	// support many more protocols in the future: HTTPS, HTTP2, TOR or whatever that sounds
