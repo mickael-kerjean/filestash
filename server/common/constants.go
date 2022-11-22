@@ -25,7 +25,6 @@ const (
 func init() {
 	os.MkdirAll(filepath.Join(GetCurrentDir(), LOG_PATH), os.ModePerm)
 	os.MkdirAll(filepath.Join(GetCurrentDir(), FTS_PATH), os.ModePerm)
-	os.MkdirAll(filepath.Join(GetCurrentDir(), CONFIG_PATH), os.ModePerm)
 	os.RemoveAll(filepath.Join(GetCurrentDir(), TMP_PATH))
 	os.MkdirAll(filepath.Join(GetCurrentDir(), TMP_PATH), os.ModePerm)
 }

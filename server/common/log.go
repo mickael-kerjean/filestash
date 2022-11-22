@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+var Log = func() ILogger {
+	l := log{}
+	l.Enable(true)
+	return &l
+}()
 var logfile *os.File
 
 func init() {
@@ -119,9 +124,3 @@ func (l *log) SetVisibility(str string) {
 func (l *log) Enable(val bool) {
 	l.enable = val
 }
-
-var Log = func() ILogger {
-	l := log{}
-	l.Enable(true)
-	return &l
-}()

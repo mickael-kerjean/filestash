@@ -73,7 +73,8 @@ const config = {
             { from: "assets/fonts/*" },
         ], { context: path.join(__dirname, "client") }),
         new CopyWebpackPlugin([
-            { from: "node_modules/pdfjs-dist/", to: "assets/vendor/pdfjs/2.6.347/" },
+            { from: "node_modules/pdfjs-dist/build/*.js", to: "assets/vendor/pdfjs/2.6.347/build/" },
+            { from: "node_modules/pdfjs-dist/cmaps/", to: "assets/vendor/pdfjs/2.6.347/cmaps/" },
         ]),
         // new BundleAnalyzerPlugin()
     ],

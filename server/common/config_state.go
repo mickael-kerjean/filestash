@@ -33,6 +33,10 @@ var (
 func LoadConfig() ([]byte, error) {
 	file, err := os.OpenFile(configPath, os.O_RDONLY, os.ModePerm)
 	if err != nil {
+		if os.IsNotExist(err) {
+			os.MkdirAll(filepath.Join(GetCurrentDir(), CONFIG_PATH), os.ModePerm)
+			return []byte(""), nil
+		}
 		return nil, err
 	}
 	cFile, err := ioutil.ReadAll(file)
