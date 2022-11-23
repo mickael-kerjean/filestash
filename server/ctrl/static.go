@@ -5,6 +5,7 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
+	"io/fs"
 	"net/http"
 	URL "net/url"
 	"os"
@@ -15,12 +16,17 @@ import (
 )
 
 var (
+	WWWDir fs.FS
 	//go:embed static/www
 	WWWEmbed embed.FS
 
 	//go:embed static/404.html
 	HtmlPage404 []byte
 )
+
+func init() {
+	WWWDir = os.DirFS(GetAbsolutePath("../"))
+}
 
 func StaticHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -245,6 +251,9 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 		}
 		curPath := filePath + cfg.FileExt
 		file, err := WWWEmbed.Open("static/www" + curPath)
+		if os.Getenv("NODE_ENV") != "" {
+			file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
+		}
 		if err != nil {
 			continue
 		}
