@@ -85,7 +85,7 @@ func (s S3Backend) LoginForm() Form {
 			},
 			FormElement{
 				Name:        "secret_access_key",
-				Type:        "text",
+				Type:        "password",
 				Placeholder: "Secret Access Key*",
 			},
 			FormElement{
@@ -479,7 +479,6 @@ func (s S3Backend) path(p string) S3Path {
 		path,
 	}
 }
-
 
 func (s S3Backend) urlEncodedPath(path string) string {
 	sp := strings.Split(path, "/")
