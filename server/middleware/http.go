@@ -88,7 +88,7 @@ func SecureOrigin(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 					SendErrorResult(res, ErrNotAllowed)
 					return
 				} else {
-					Log.Warning("Access from incorrect hostname. From the admin console under configure -> host, you need to use the following hostname: '%s' current value is '%s' |> URL[%s]", req.Host, host, req.URL.Path)
+					Log.Warning("Access from incorrect hostname. From the admin console under configure -> host, you need to use the following hostname: '%s' current value is '%s'", req.Host, host)
 				}
 			}
 		}
