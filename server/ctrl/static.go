@@ -251,13 +251,12 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 		}
 		curPath := filePath + cfg.FileExt
 		file, err := WWWEmbed.Open("static/www" + curPath)
-		if os.Getenv("NODE_ENV") != "" {
+		if env := os.Getenv("NODE_ENV"); env == "development" {
 			file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
 		}
 		if err != nil {
 			continue
-		}
-		if stat, err := file.Stat(); err == nil {
+		} else if stat, err := file.Stat(); err == nil {
 			etag := QuickHash(fmt.Sprintf(
 				"%s %d %d %s",
 				curPath, stat.Size(), stat.Mode(), stat.ModTime()), 10,
