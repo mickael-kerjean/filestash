@@ -47,6 +47,7 @@
                 @media screen and (max-width: 550px) {
                     display: block;
                     .nothing{ display: none; }
+                    input[type="checkbox"] { top: -7px; }
                 }
                 > span{
                     white-space: nowrap;
