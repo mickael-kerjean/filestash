@@ -4,7 +4,8 @@
     border-radius: 0;
     width: 100%;
     &[type="checkbox"] {
-        width: initial;
+        width: 1rem;
+        height: 1rem;
     }
     &:not([type="checkbox"]) {
         height: 32px;
