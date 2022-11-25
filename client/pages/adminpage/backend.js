@@ -135,14 +135,14 @@ export class BackendPage extends React.Component {
             "identity_provider": (function() {
                 const { type, ...other } = objectGet(middlewareData, ["identity_provider"]) || {};
                 return {
-                    "type": type || null,
+                    "type": type || "nop",
                     "params": JSONStringify(other),
                 };
             })(),
             "attribute_mapping": (function() {
                 let { related_backend = null, ...params } = objectGet(middlewareData, ["attribute_mapping"]) || {};
                 const obj = {
-                    "related_backend": related_backend || "N/A"
+                    "related_backend": related_backend || "nop"
                 };
                 if(Object.keys(params).length > 0) {
                     obj.params = JSONStringify(params);

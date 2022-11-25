@@ -21,11 +21,11 @@ func (this Admin) Setup() Form {
 				Value: "passthrough",
 			},
 			{
-				Name:    "strategy",
-				Type:    "select",
-				Default: "direct",
-				Opts:    []string{"direct", "password_only", "username_and_password"},
-				Id:      "strategy",
+				Name:  "strategy",
+				Type:  "select",
+				Value: "direct",
+				Opts:  []string{"direct", "password_only", "username_and_password"},
+				Id:    "strategy",
 				Description: `This plugin has 3 base strategies:
 1. The 'direct' strategy will redirect the user to your storage without asking for anything and use whatever is configured in the attribute mapping section.
 2. The 'password_only' strategy will redirect the user to a page asking for a password which you can map to a field in the attribute mapping section like this: {{ .password }}
