@@ -464,6 +464,10 @@ const DateTime = (props) => {
     function displayTime(timestamp) {
         if (timestamp) {
             const t = new Date(timestamp);
+            if("DateTimeFormat" in Intl) {
+                const str = new Intl.DateTimeFormat({ dateStyle: "short" }).format(t);
+                if (str.length <= 10) return str;
+            }
             return t.getFullYear() + "-" + leftPad((t.getMonth() + 1).toString(), 2) + "-" + leftPad(t.getDate().toString(), 2);
         } else {
             return "";
