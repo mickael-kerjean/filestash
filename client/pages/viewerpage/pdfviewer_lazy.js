@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-pdfjs.GlobalWorkerOptions.workerSrc = "/assets/vendor/pdfjs/2.6.347/build/pdf.worker.js";
+pdfjs.GlobalWorkerOptions.workerSrc = "/assets/vendor/node_modules/pdfjs-dist/build/pdf.worker.js";
 
 export function PDFJSViewer({ src }) {
     const [numPages, setNumPages] = useState(0);
@@ -12,7 +12,7 @@ export function PDFJSViewer({ src }) {
             file={src}
             onLoadSuccess={(d) => setNumPages(d["numPages"])}
             options={{
-                cMapUrl: "/assets/vendor/pdfjs/cmaps/",
+                cMapUrl: "/assets/vendor/node_modules/pdfjs-dist/cmaps/",
                 cMapPacked: true,
             }}>
             {
