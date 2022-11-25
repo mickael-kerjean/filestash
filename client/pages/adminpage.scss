@@ -108,6 +108,14 @@
                 color: var(--light);
             }
         }
+        .formbuilder_password img.component_icon {
+            background: rgba(0, 0, 0, 0.05);
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+            padding-right: 5px;
+            border: none;
+            height: 22px;
+        }
     }
 }
 

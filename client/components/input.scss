@@ -3,8 +3,11 @@
     border: none;
     border-radius: 0;
     width: 100%;
-    &[type="checkbox"]{
+    &[type="checkbox"] {
         width: initial;
+    }
+    &:not([type="checkbox"]) {
+        height: 32px;
     }
     display: inline-block;
     font-family: "San Francisco","Roboto","Arial",sans-serif;
@@ -15,7 +18,6 @@
     outline: none;
     box-sizing: border-box;
     color: inherit;
-    line-height: 18px;
     border-bottom: 2px solid rgba(70, 99, 114, 0.1);
     transition: border-color 0.2s ease-out;
     &:focus{

@@ -74,7 +74,6 @@ export function SettingsPage({ isSaving = nop }) {
             <FormBuilder
                 form={form}
                 onChange={onChange}
-                autoComplete="new-password"
                 render={renderForm} />
         </form>
     );

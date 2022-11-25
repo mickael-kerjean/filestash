@@ -48,4 +48,19 @@
             width: 100%;
         }
     }
+
+    .formbuilder_password {
+        display: flex;
+        &:focus-within img.component_icon {
+            border-color: var(--emphasis-primary);
+        }
+        img.component_icon {
+            height: 20px;
+            border: none;
+            cursor: pointer;
+            padding: 5px 5px;
+            border-bottom: 2px solid rgba(70, 99, 114, 0.1);
+            transition: border-color 0.2s ease-out;
+        }
+    }
 }

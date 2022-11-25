@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import { Input, Textarea, Select, Enabler } from "./";
+import { Input, Textarea, Select, Enabler, Icon } from "./";
 import { FormObjToJSON, format, autocomplete, notify, gid } from "../helpers/";
 import { t } from "../locales/";
 
@@ -199,10 +199,20 @@ const FormElement = ({
             }
             props.onChange(value);
         };
+        const onClickEye = (e) => {
+            e.preventDefault();
+            let $input = e.target.parentElement.childNodes[0];
+            $input.getAttribute("type") === "password" ?
+                $input.setAttribute("type", "text") :
+                $input.setAttribute("type", "password");
+        }
         $input = (
-            <Input onChange={(e) => onPasswordChange(e.target.value)} {...id} name={struct.label}
+            <div className="formbuilder_password">
+                <Input onChange={(e) => onPasswordChange(e.target.value)} {...id} name={struct.label}
                 type="password" value={struct.value || ""} placeholder={ t(struct.placeholder) }
-                {...inputAttr} />
+                       {...inputAttr} />
+                <Icon name="eye" onClick={onClickEye}/>
+            </div>
         );
         break;
     }

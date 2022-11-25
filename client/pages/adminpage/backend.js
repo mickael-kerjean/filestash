@@ -207,9 +207,6 @@ export class BackendPage extends React.Component {
                 // in this screen, we don't want users to have to click through too many things
                 return null;
             }
-            if (struct.type === "password" && CONFIG.is_debug_mode === true) {
-                struct.type = "text";
-            }
             return (
                 <label className={"no-select input_type_" + props.params["type"]}>
                     <div>

@@ -361,7 +361,6 @@ func (this *Configuration) Export() interface{} {
 		FilePageDefaultSort     string            `json:"default_sort"`
 		FilePageDefaultView     string            `json:"default_view"`
 		AuthMiddleware          interface{}       `json:"auth"`
-		IsDebugMode             bool              `json:"is_debug_mode"`
 	}{
 		Editor:                  this.Get("general.editor").String(),
 		ForkButton:              this.Get("general.fork_button").Bool(),
@@ -384,7 +383,6 @@ func (this *Configuration) Export() interface{} {
 			}
 			return this.Get("middleware.attribute_mapping.related_backend").String()
 		}(),
-		IsDebugMode: this.Get("log.level").String() == "DEBUG",
 	}
 }
 
