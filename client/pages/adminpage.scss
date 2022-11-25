@@ -108,7 +108,7 @@
                 background: var(--dark);
                 color: var(--light);
             }
-            &:hover, &:focus {
+            &:not([readonly]):hover, &:not([readonly])focus {
                 background: rgba(0,0,0,0.07);
             }
         }
