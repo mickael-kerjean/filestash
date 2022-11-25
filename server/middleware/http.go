@@ -80,10 +80,16 @@ func SecureHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *
 func SecureOrigin(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if host := Config.Get("general.host").String(); host != "" {
+			host = strings.TrimPrefix(host, "http://")
+			host = strings.TrimPrefix(host, "https://")
 			if req.Host != host && req.Host != fmt.Sprintf("%s:443", host) {
-				Log.Error("Request coming from \"%s\" was blocked, only traffic from \"%s\" is allowed. You can change this from the admin console under configure -> host", req.Host, host)
-				SendErrorResult(res, ErrNotAllowed)
-				return
+				if strings.HasPrefix(req.URL.Path, "/admin/") == false {
+					Log.Error("Request coming from \"%s\" was blocked, only traffic from \"%s\" is allowed. You can change this from the admin console under configure -> host", req.Host, host)
+					SendErrorResult(res, ErrNotAllowed)
+					return
+				} else {
+					Log.Warning("Access from incorrect hostname. From the admin console under configure -> host, you need to use the following hostname: '%s' current value is '%s' |> URL[%s]", req.Host, host, req.URL.Path)
+				}
 			}
 		}
 		if req.Header.Get("X-Requested-With") == "XmlHttpRequest" { // Browser XHR Access

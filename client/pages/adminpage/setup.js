@@ -55,6 +55,7 @@ export class SetupPage extends React.Component {
                 config = FormObjToJSON(config);
                 config.connections = window.CONFIG.connections;
                 config.auth.admin = hash;
+                config.general.host = location.host;
                 Config.save(config, false)
                     .then(() => Admin.login(p))
                     .then(() => this.setState({ busy: false }, done))
