@@ -31,7 +31,7 @@ class LogManager {
         url += "from.lineNo="+lineNo+"&";
         url += "from.columnNo="+columnNo;
         if (error) url += "error="+encodeURIComponent(error.message)+"&";
-        return http_post(url).catch();
+        return http_post(url).catch(() => {});
     }
 }
 

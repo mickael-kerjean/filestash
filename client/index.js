@@ -21,9 +21,9 @@ import "./assets/css/reset.scss";
                 .then(render);
         }
         return removeLoader().then(render);
-    }).catch((e) => {
-        const msg = navigator.onLine === false ? "OFFLINE" : e.message || "CAN'T LOAD";
-        Log.report(msg + " - " + (e && e.message), location.href);
+    }).catch((err) => {
+        const msg = navigator.onLine === false ? "OFFLINE" : (err.message || "CAN'T LOAD");
+        Log.report(msg + " - " + (err && err.message), location.href);
         return removeLoaderWithAnimation().then(() => {
             $error(msg);
         });
@@ -97,10 +97,7 @@ if ("serviceWorker" in navigator) {
 window.overrides = {};
 function setup_xdg_open() {
     return new Promise((done, err) => {
-        load("/overrides/xdg-open.js", function(error) {
-            if (error) return err(error);
-            done();
-        });
+        load("/overrides/xdg-open.js", () => done());
     });
 }
 

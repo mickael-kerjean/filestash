@@ -6,11 +6,11 @@ const CACHE_NAME = "v0.3";
  */
 self.addEventListener("fetch", function(event) {
     if (is_a_ressource(event.request)) {
-        return event.respondWith(cacheFirstStrategy(event));
+        return event.respondWith(cacheFirstStrategy(event).catch((err) => ({ code: "CANNOT_LOAD", message: err.message })));
     } else if (is_an_api_call(event.request)) {
         return event;
     } else if (is_an_index(event.request)) {
-        return event.respondWith(cacheFirstStrategy(event));
+        return event.respondWith(cacheFirstStrategy(event).catch((err) => ({ code: "CANNOT_LOAD", message: err.message })));
     } else {
         return event;
     }
