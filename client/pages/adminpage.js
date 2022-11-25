@@ -21,6 +21,7 @@ function AdminOnly(WrappedComponent) {
                 setIsAdmin(t);
             }).catch((err) => {
                 notify.send("Error: " + (err && err.message), "error");
+                setIsAdmin(false);
             });
         };
 
