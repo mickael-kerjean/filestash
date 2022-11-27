@@ -135,7 +135,7 @@ export class BackendPage extends React.Component {
             "identity_provider": (function() {
                 const { type, ...other } = objectGet(middlewareData, ["identity_provider"]) || {};
                 return {
-                    "type": type || "nop",
+                    "type": type || null,
                     "params": JSONStringify(other),
                 };
             })(),

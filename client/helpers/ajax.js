@@ -52,7 +52,7 @@ export function http_post(url, data, type = "json", params) {
         xhr.withCredentials = true;
         xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
         if (data && type === "json") {
-            data = JSONStringify(data);
+            data = JSON.stringify(data);
             xhr.setRequestHeader("Content-Type", "application/json");
         }
         if (params && params.progress) {
