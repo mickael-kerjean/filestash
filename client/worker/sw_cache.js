@@ -5,12 +5,17 @@ const CACHE_NAME = "v0.3";
  * strategy for caching, fetching resources
  */
 self.addEventListener("fetch", function(event) {
+    const errResponse = (err) => (new Response(JSON.stringify({
+        code: "CANNOT_LOAD",
+        message: err.message,
+    }), { status: 502 }));
+
     if (is_a_ressource(event.request)) {
-        return event.respondWith(cacheFirstStrategy(event).catch((err) => ({ code: "CANNOT_LOAD", message: err.message })));
+        return event.respondWith(cacheFirstStrategy(event).catch(errResponse));
     } else if (is_an_api_call(event.request)) {
         return event;
     } else if (is_an_index(event.request)) {
-        return event.respondWith(cacheFirstStrategy(event).catch((err) => ({ code: "CANNOT_LOAD", message: err.message })));
+        return event.respondWith(cacheFirstStrategy(event).catch(errResponse));
     } else {
         return event;
     }
