@@ -69,12 +69,19 @@ window.onerror = function(msg, url, lineNo, colNo, error) {
 
 function $error(msg) {
     const $code = document.createElement("code");
-    $code.style.textAlign = "center";
     $code.style.display = "block";
-    $code.style.margin = "50px 0";
+    $code.style.margin = "20px 0";
     $code.style.fontSize = "1.3rem";
+    $code.style.padding = "0 10% 0 10%";
     $code.textContent = msg;
+
+    let $img = document.createElement("img");
+    $img.setAttribute("src", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIAQMAAABvIyEEAAAABlBMVEUAAABTU1OoaSf/AAAAAXRSTlMAQObYZgAAAENJREFUeF7tzbEJACEQRNGBLeAasBCza2lLEGx0CxFGG9hBMDDxRy/72O9FMnIFapGylsu1fgoBdkXfUHLrQgdfrlJN1BdYBjQQm3UAAAAASUVORK5CYII=");
+    $img.style.display = "block";
+    $img.style.padding = "20vh 10% 0 10%";
+
     document.body.innerHTML = "";
+    document.body.appendChild($img);
     document.body.appendChild($code);
 }
 
