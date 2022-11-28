@@ -84,7 +84,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		User:               params["username"],
 		Password:           params["password"],
 		ConnectionsPerHost: conn,
-		Timeout:            10 * time.Second,
+		Timeout:            60 * time.Second,
 	}
 	configWithTLS := configWithoutTLS
 	configWithTLS.TLSConfig = &tls.Config{
