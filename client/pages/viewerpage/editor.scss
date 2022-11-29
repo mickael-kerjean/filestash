@@ -18,8 +18,6 @@
     }
 }
 
-
-
 .CodeMirror {
     width: 100%;
     height: 100%;
@@ -194,9 +192,8 @@ pre.CodeMirror-line{clear: right;}
     text-shadow: 1px 1px 10px var(--color);
 }
 
-span.CodeMirror-matchingbracket {color: #0f0;}
-span.CodeMirror-nonmatchingbracket {color: #f22;}
-
+span.CodeMirror-matchingbracket,
+span.CodeMirror-matchingtag { background: rgba(0,0,0,0.1); color: inherit!important; }
 
 /* BUGFIX */
 // https://github.com/codemirror/CodeMirror/issues/5056

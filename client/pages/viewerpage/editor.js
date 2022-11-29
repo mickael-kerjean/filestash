@@ -9,13 +9,18 @@ import "codemirror/keymap/emacs.js";
 // search
 import "codemirror/addon/search/searchcursor.js";
 import "codemirror/addon/search/search.js";
-import "codemirror/addon/edit/matchbrackets.js";
 import "codemirror/addon/comment/comment.js";
 import "codemirror/addon/dialog/dialog.js";
 // code folding
 import "codemirror/addon/fold/foldcode";
 import "codemirror/addon/fold/foldgutter";
 import "codemirror/addon/fold/foldgutter.css";
+// code editing features
+import "codemirror/addon/edit/matchbrackets.js";
+import "codemirror/addon/edit/closebrackets.js";
+import "codemirror/addon/edit/matchtags.js";
+import "codemirror/addon/edit/closetag.js";
+
 
 import { NgIf, Loader } from "../../components/";
 import { org_shifttab } from "./editor/emacs-org";
@@ -117,6 +122,10 @@ export class EditorClass extends React.Component {
                 foldOptions: {
                     widget: "...",
                 },
+                matchBrackets: {},
+                autoCloseBrackets: true,
+                matchTags: { bothTags: true },
+                autoCloseTags: true,
             });
             if (!("ontouchstart" in window)) editor.focus();
             editor.getWrapperElement().setAttribute("mode", mode);
