@@ -102,7 +102,7 @@
 
 .dark-mode{
     div.buttons button.active{
-        background: var(--dark-mode-bg-color);
-        color: var(--light);
+        background: var(--bg-color);
+        color: var(--super-light);
     }
 }

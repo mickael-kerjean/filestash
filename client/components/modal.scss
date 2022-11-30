@@ -60,8 +60,5 @@
 }
 
 .dark-mode .component_modal{
-    background: var(--dark-mode-bg-color);
-    > div{
-        background: rgba(255,255,255,0.8);
-    }
+    background: var(--bg-color);
 }
