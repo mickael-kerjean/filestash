@@ -80,43 +80,96 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		}
 	}
 
-	configWithoutTLS := goftp.Config{
-		User:               params["username"],
-		Password:           params["password"],
-		ConnectionsPerHost: conn,
-		Timeout:            60 * time.Second,
+	connectStrategy := []string{"ftp", "ftps::implicit", "ftps::explicit"}
+	if strings.HasPrefix(params["hostname"], "ftp://") {
+		connectStrategy = []string{"ftp"}
+		params["hostname"] = strings.TrimPrefix(params["hostname"], "ftp://")
+	} else if strings.HasPrefix(params["hostname"], "ftps://") {
+		connectStrategy = []string{"ftps::implicit", "ftps::explicit"}
+		params["hostname"] = strings.TrimPrefix(params["hostname"], "ftps://")
 	}
-	configWithTLS := configWithoutTLS
-	configWithTLS.TLSConfig = &tls.Config{
-		InsecureSkipVerify: true,
-		ClientSessionCache: tls.NewLRUClientSessionCache(32),
-	}
-	configWithTLS.TLSMode = goftp.TLSExplicit
 
 	var backend *Ftp = nil
-
-	// Attempt to connect using FTPS
-	if client, err := goftp.DialConfig(configWithTLS, fmt.Sprintf("%s:%s", strings.TrimPrefix(params["hostname"], "ftps://"), params["port"])); err == nil {
-		if _, err := client.ReadDir("/"); err != nil {
+	hostname := fmt.Sprintf("%s:%s", params["hostname"], params["port"])
+	cfgBuilder := func(timeout time.Duration, withTLS bool) goftp.Config {
+		cfg := goftp.Config{
+			User:               params["username"],
+			Password:           params["password"],
+			ConnectionsPerHost: conn,
+			Timeout:            timeout * time.Second,
+		}
+		cfg.Timeout = timeout
+		if withTLS {
+			cfg.TLSConfig = &tls.Config{
+				InsecureSkipVerify:     true,
+				ClientSessionCache:     tls.NewLRUClientSessionCache(0),
+				SessionTicketsDisabled: false,
+				ServerName:             hostname,
+			}
+		}
+		return cfg
+	}
+	for i := 0; i < len(connectStrategy); i++ {
+		if connectStrategy[i] == "ftp" {
+			client, err := goftp.DialConfig(cfgBuilder(5*time.Second, false), hostname)
+			if err != nil {
+				Log.Debug("plg_backend_ftp::ftp dial %s", err.Error())
+				continue
+			} else if _, err := client.ReadDir("/"); err != nil {
+				client.Close()
+				Log.Debug("plg_backend_ftp::ftp verify %s", err.Error())
+				continue
+			}
 			client.Close()
-		} else {
+			client, err = goftp.DialConfig(cfgBuilder(60*time.Second, false), hostname)
+			if err != nil {
+				continue
+			}
+			params["mode"] = connectStrategy[i]
 			backend = &Ftp{client, params, nil}
-		}
-	}
-
-	// Attempt to create an FTP connection if FTPS isn't available
-	if backend == nil {
-		client, err := goftp.DialConfig(configWithoutTLS, fmt.Sprintf("%s:%s", strings.TrimPrefix(params["hostname"], "ftp://"), params["port"]))
-		if err != nil {
-			return backend, err
-		}
-		if _, err := client.ReadDir("/"); err != nil {
+			break
+		} else if connectStrategy[i] == "ftps::implicit" {
+			cfg := cfgBuilder(60*time.Second, true)
+			cfg.TLSMode = goftp.TLSImplicit
+			client, err := goftp.DialConfig(cfg, hostname)
+			if err != nil {
+				Log.Debug("plg_backend_ftp::ftps::implicit dial %s", err.Error())
+				continue
+			} else if _, err := client.ReadDir("/"); err != nil {
+				Log.Debug("plg_backend_ftp::ftps::implicit verify %s", err.Error())
+				client.Close()
+				continue
+			}
+			params["mode"] = connectStrategy[i]
+			backend = &Ftp{client, params, nil}
+			break
+		} else if connectStrategy[i] == "ftps::explicit" {
+			cfg := cfgBuilder(5*time.Second, true)
+			cfg.TLSMode = goftp.TLSExplicit
+			client, err := goftp.DialConfig(cfg, hostname)
+			if err != nil {
+				Log.Debug("plg_backend_ftp::ftps::explicit dial '%s'", err.Error())
+				continue
+			} else if _, err := client.ReadDir("/"); err != nil {
+				Log.Debug("plg_backend_ftp::ftps::explicit verify %s", err.Error())
+				client.Close()
+				continue
+			}
 			client.Close()
-			return backend, ErrAuthenticationFailed
+			cfg = cfgBuilder(60*time.Second, true)
+			cfg.TLSMode = goftp.TLSExplicit
+			client, err = goftp.DialConfig(cfg, hostname)
+			if err != nil {
+				continue
+			}
+			params["mode"] = connectStrategy[i]
+			backend = &Ftp{client, params, nil}
+			break
 		}
-		backend = &Ftp{client, params, nil}
 	}
-
+	if backend == nil {
+		return nil, ErrAuthenticationFailed
+	}
 	backend.wg = new(sync.WaitGroup)
 	backend.wg.Add(1)
 	go func() {
