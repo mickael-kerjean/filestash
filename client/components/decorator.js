@@ -75,7 +75,7 @@ export function ErrorPage(WrappedComponent) {
                                 className="error-page"
                                 onClick={() => this.setState({ showTrace: true })}>
                                 <h1>{ t("Oops!") }</h1>
-                                <h2>{ message }</h2>
+                                <h2>{ t(message) }</h2>
                                 { this.state.showTrace && this.state.trace &&
                                   <code> { this.state.trace }</code> }
                             </div>
