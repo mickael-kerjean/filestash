@@ -60,7 +60,7 @@ class FileSystemComponent extends React.PureComponent {
                         </ReactCSSTransitionGroup>
                     </NgIf>
                     <NgIf className="error" cond={this.props.files.length === 0}>
-                        <p className="empty_image">
+                        <p className="empty_image no-select">
                             <Icon name={this.props.isSearch ? "empty_search" : "empty_folder"}/>
                         </p>
                         <p className="label">{ t("There is nothing here") }</p>

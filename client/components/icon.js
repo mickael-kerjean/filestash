@@ -147,6 +147,7 @@ export const Icon = (props) => {
 
     return (
         <img className="component_icon"
+            draggable={false}
             onError={() => Log.send(`cannot load icon ${props.name}`)}
             style={props.style}
             onClick={props.onClick}

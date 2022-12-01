@@ -270,7 +270,7 @@ export class FilesPageComponent extends React.Component {
         return (
             <div className="component_page_filespage">
                 <BreadCrumb className="breadcrumb" path={this.state.path} currentSelection={this.state.selected} />
-                <SelectableGroup onSelection={this.handleMultiSelect.bind(this)} tolerance={2} onNonItemClick={this.handleMultiSelect.bind(this, [])} preventDefault={true} enabled={this.state.is_search === false} className="selectablegroup">
+                <SelectableGroup onSelection={this.handleMultiSelect.bind(this)} tolerance={2} onNonItemClick={this.handleMultiSelect.bind(this, [])} preventDefault={true} enabled={this.state.is_search === false && this.state.files.length > 0} className="selectablegroup">
                     <div className="page_container">
                         <div ref={this.$scroll} className="scroll-y">
                             <InfiniteScroll
