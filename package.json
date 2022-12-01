@@ -16,6 +16,7 @@
     "aes-js": "git+https://github.com/mickael-kerjean/aes-js.git",
     "bcryptjs": "^2.4.3",
     "codemirror": "^5.26.0",
+    "epubjs": "^0.3.93",
     "exif-js": "^2.3.0",
     "little-loader": "^0.2.0",
     "prop-types": "^15.5.10",

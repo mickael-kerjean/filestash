@@ -28,6 +28,8 @@ export function opener(file) {
         return ["form", null];
     } else if (mime.split("/")[0] === "video" || mime === "application/ogg") {
         return ["video", null];
+    } else if(["application/epub+zip"].indexOf(mime) !== -1) {
+        return ["ebook", null];
     } else if (mime.split("/")[0] === "application") {
         return ["download", null];
     } else {

@@ -1,0 +1,20 @@
+.component_ebookviewer{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    flex-grow: 1;
+
+    .ebookviewer_container{
+        display: flex;
+        flex-grow: 1;
+        min-height: 0;
+        .epub-container {
+            background: white;
+            padding-top: 50px;
+            padding-bottom: 50px;
+            box-sizing: border-box;
+            overflow-x: hidden!important;
+        }
+    }
+}

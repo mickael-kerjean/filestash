@@ -39,6 +39,13 @@ const Appframe = (props) => (
         {(Comp) => <Comp {...props}/>}
     </Bundle>
 );
+const EbookViewer = (props) => (
+    <Bundle
+        loader={import(/* webpackChunkName: "ebookviewer" */"./viewerpage/ebookviewer")}
+        symbol="EbookViewer">
+        {(Comp) => <Comp {...props}/>}
+    </Bundle>
+)
 
 
 export function ViewerPageComponent({ error, subscribe, unsubscribe, match, location }) {
@@ -185,6 +192,9 @@ export function ViewerPageComponent({ error, subscribe, unsubscribe, match, loca
                     </NgIf>
                     <NgIf cond={state.opener === "appframe"}>
                         <Appframe data={path} filename={filename} args={state.application_arguments} />
+                    </NgIf>
+                    <NgIf cond={state.opener === "ebook"}>
+                        <EbookViewer filename={filename} data={state.url} />
                     </NgIf>
                 </NgIf>
             </div>
