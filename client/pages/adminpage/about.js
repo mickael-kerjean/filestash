@@ -18,6 +18,8 @@ export function AboutPage() {
     }, [])
 
     return (
-        <div id="about-page" />
+        <div id="about-page">
+            loading...
+        </div>
     );
 }

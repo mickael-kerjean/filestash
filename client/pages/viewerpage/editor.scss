@@ -204,14 +204,15 @@ span.CodeMirror-matchingtag { background: rgba(0,0,0,0.1); color: inherit!import
 /* DAR MODE THEME */
 .dark-mode .CodeMirror {
     background: #242424;
-    &, .CodeMirror-linenumber, .cm-variable-2, .cm-number, .cm-quote { color: #f6f3e8; }
+    &, .CodeMirror-linenumber, .cm-variable-2, .cm-variable-3, .cm-number, .cm-quote { color: #f6f3e8; }
     .cm-string, .cm-string-2 { color: #95e454; }
     .cm-atom { color: #e5786d; }
-    .cm-keyword, .cm-meta { color: #8ac6f2; }
+    .cm-keyword, .cm-meta, .cm-header, .cm-property { color: #8ac6f2; }
     .cm-def, .cm-tag, .cm-attribute, .cm-builtin, .cm-qualifier { color: #cae682; }
     .cm-comment { color: #99968b; }
     .CodeMirror-cursor{ background-color: #99968b; }
     .CodeMirror-selected {background-color: rgba(0,0,0,0.3); }
+    .cm-error { color: var(--error); }
 
-    .cm-org-url, .cm-org-image { color: #ccaa8f!important; }
+    .cm-org-url, .cm-link, .cm-org-image, .cm-url { color: #ccaa8f!important; }
 }
