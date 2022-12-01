@@ -361,6 +361,7 @@ func (this *Configuration) Export() interface{} {
 		FilePageDefaultSort     string            `json:"default_sort"`
 		FilePageDefaultView     string            `json:"default_view"`
 		AuthMiddleware          interface{}       `json:"auth"`
+		Thumbnailer             []string          `json:"thumbnailer"`
 	}{
 		Editor:                  this.Get("general.editor").String(),
 		ForkButton:              this.Get("general.fork_button").Bool(),
@@ -382,6 +383,16 @@ func (this *Configuration) Export() interface{} {
 				return ""
 			}
 			return this.Get("middleware.attribute_mapping.related_backend").String()
+		}(),
+		Thumbnailer: func() []string {
+			tMap := Hooks.Get.Thumbnailer()
+			tArray := make([]string, len(tMap))
+			i := 0
+			for key, _ := range tMap {
+				tArray[i] = key
+				i += 1
+			}
+			return tArray
 		}(),
 	}
 }

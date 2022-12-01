@@ -9,52 +9,47 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 )
 
 //go:embed dist/placeholder.png
 var placeholder []byte
 
 func init() {
-	Hooks.Register.ProcessFileContentBeforeSend(thumbnailHandler)
+	Hooks.Register.Thumbnailer("image/png", thumbnailBuilder{thumbnailPng})
+	Hooks.Register.Thumbnailer("image/jpeg", thumbnailBuilder{thumbnailJpeg})
 }
 
-func thumbnailHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
-	p := req.URL.Query().Get("thumbnail")
-	if p == "" || p == "false" {
-		return reader, nil
-	}
-	mType := GetMimeType(req.URL.Query().Get("path"))
-	if strings.HasPrefix(mType, "image/") == false {
-		return reader, nil
-	}
-
-	switch mType {
-	case "image/png":
-		h := (*res).Header()
-		r, err := createThumbnailForPng(reader)
-		if err != nil {
-			h.Set("Content-Type", "image/png")
-			return NewReadCloserFromBytes(placeholder), nil
-		}
-		h.Set("Content-Type", "image/webp")
-		h.Set("Cache-Control", fmt.Sprintf("max-age=%d", 3600*12))
-		return r, nil
-	case "image/jpeg":
-		h := (*res).Header()
-		r, err := createThumbnailForJpeg(reader)
-		if err != nil {
-			h.Set("Content-Type", "image/png")
-			return NewReadCloserFromBytes(placeholder), nil
-		}
-		h.Set("Content-Type", "image/jpeg")
-		h.Set("Cache-Control", fmt.Sprintf("max-age=%d", 3600*12))
-		return r, nil
-	default:
-		reader.Close()
-		(*res).Header().Set("Content-Type", "image/png")
+func thumbnailPng(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+	h := (*res).Header()
+	r, err := createThumbnailForPng(reader)
+	if err != nil {
+		h.Set("Content-Type", "image/png")
+		h.Set("Cache-Control", "max-age=1")
 		return NewReadCloserFromBytes(placeholder), nil
 	}
+	h.Set("Content-Type", "image/webp")
+	h.Set("Cache-Control", fmt.Sprintf("max-age=%d", 3600*12))
+	return r, nil
+}
+
+func thumbnailJpeg(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+	h := (*res).Header()
+	r, err := createThumbnailForJpeg(reader)
+	if err != nil {
+		h.Set("Content-Type", "image/png")
+		return NewReadCloserFromBytes(placeholder), nil
+	}
+	h.Set("Content-Type", "image/jpeg")
+	h.Set("Cache-Control", fmt.Sprintf("max-age=%d", 3600*12))
+	return r, nil
+}
+
+type thumbnailBuilder struct {
+	fn func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error)
+}
+
+func (this thumbnailBuilder) Generate(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+	return this.fn(reader, ctx, res, req)
 }
 
 func setupProgram(name string, raw []byte) error {

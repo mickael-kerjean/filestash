@@ -184,13 +184,13 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// perform the actual `cat` if needed
+	mType := GetMimeType(req.URL.Query().Get("path"))
 	if file == nil {
 		if file, err = ctx.Backend.Cat(path); err != nil {
 			Log.Debug("cat::backend '%s'", err.Error())
 			SendErrorResult(res, err)
 			return
 		}
-		mType := GetMimeType(req.URL.Query().Get("path"))
 		if mType == "application/javascript" {
 			mType = "text/plain"
 		}
@@ -201,6 +201,20 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// plugin hooks
+	if thumb := req.URL.Query().Get("thumbnail"); thumb == "true" {
+		for plgMType, plgHandler := range Hooks.Get.Thumbnailer() {
+			if plgMType != mType {
+				continue
+			}
+			file, err = plgHandler.Generate(file, ctx, &res, req)
+			if err != nil {
+				Log.Debug("cat::thumbnailer '%s'", err.Error())
+				SendErrorResult(res, err)
+				return
+			}
+			break
+		}
+	}
 	for _, obj := range Hooks.Get.ProcessFileContentBeforeSend() {
 		if file, err = obj(file, ctx, &res, req); err != nil {
 			Log.Debug("cat::hooks '%s'", err.Error())

@@ -122,6 +122,20 @@ func (this Get) SearchEngine() ISearch {
 }
 
 /*
+ * The idea here is to enable plugin to register their own thumbnailing process, typically
+ * images but could also be videos, pdf, excel documents, ...
+ */
+var thumbnailer map[string]IThumbnailer = make(map[string]IThumbnailer)
+
+func (this Register) Thumbnailer(mimeType string, fn IThumbnailer) {
+	thumbnailer[mimeType] = fn
+}
+
+func (this Get) Thumbnailer() map[string]IThumbnailer {
+	return thumbnailer
+}
+
+/*
  * Pluggable Audit interface
  */
 var audit IAuditPlugin

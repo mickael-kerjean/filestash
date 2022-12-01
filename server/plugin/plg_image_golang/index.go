@@ -16,39 +16,45 @@ import (
 const THUMB_SIZE int = 150
 
 func init() {
-	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
-		query := req.URL.Query()
-		mType := GetMimeType(query.Get("path"))
+	Hooks.Register.Thumbnailer("image/jpeg", thumbnailer{})
+	Hooks.Register.Thumbnailer("image/png", thumbnailer{})
+	Hooks.Register.Thumbnailer("image/gif", thumbnailer{})
+}
 
-		if query.Get("thumbnail") != "true" {
-			return reader, nil
-		} else if mType != "image/jpeg" && mType != "image/png" && mType != "image/gif" {
-			return reader, nil
-		}
+type thumbnailer struct{}
 
-		src, _, err := image.Decode(reader)
-		if err != nil {
-			return reader, nil
-		}
-		ratio := func(i image.Image) int {
-			b := src.Bounds()
-			max := b.Max.X
-			if b.Max.X < b.Max.Y {
-				max = b.Max.Y
-			}
-			r := max / THUMB_SIZE
-			if r <= 1 {
-				return 1
-			}
-			return r
-		}(src)
+func (this thumbnailer) Generate(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+	query := req.URL.Query()
+	mType := GetMimeType(query.Get("path"))
 
-		dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X/ratio, src.Bounds().Max.Y/ratio))
-		draw.ApproxBiLinear.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
-		output := bytes.NewBuffer([]byte(""))
-		if err = png.Encode(output, dst); err != nil {
-			return reader, err
+	if query.Get("thumbnail") != "true" {
+		return reader, nil
+	} else if mType != "image/jpeg" && mType != "image/png" && mType != "image/gif" {
+		return reader, nil
+	}
+
+	src, _, err := image.Decode(reader)
+	if err != nil {
+		return reader, nil
+	}
+	ratio := func(i image.Image) int {
+		b := src.Bounds()
+		max := b.Max.X
+		if b.Max.X < b.Max.Y {
+			max = b.Max.Y
 		}
-		return NewReadCloserFromBytes(output.Bytes()), nil
-	})
+		r := max / THUMB_SIZE
+		if r <= 1 {
+			return 1
+		}
+		return r
+	}(src)
+
+	dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X/ratio, src.Bounds().Max.Y/ratio))
+	draw.ApproxBiLinear.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+	output := bytes.NewBuffer([]byte(""))
+	if err = png.Encode(output, dst); err != nil {
+		return reader, err
+	}
+	return NewReadCloserFromBytes(output.Bytes()), nil
 }
