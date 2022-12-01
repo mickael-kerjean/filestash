@@ -52,7 +52,7 @@
                 background: white;
                 transition: background 0.1s ease-out;
                 &:hover{
-                    background: var(--bg-color);
+                    background: rgba(0,0,0,0.05);
                 }
             }
         }

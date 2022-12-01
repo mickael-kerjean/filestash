@@ -99,3 +99,7 @@
         transform: translateY(0px);
     }
 }
+
+.dark-mode .component_submenu {
+    input#search { color: var(--light); }
+}
