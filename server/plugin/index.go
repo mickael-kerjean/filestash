@@ -31,6 +31,7 @@ import (
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_security_scanner"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_security_svg"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_starter_http"
+	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_video_thumbnail"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_video_transcoder"
 )
 

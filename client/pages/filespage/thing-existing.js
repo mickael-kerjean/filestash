@@ -165,9 +165,12 @@ class ExistingThingComponent extends React.Component {
     updateThumbnail(props) {
         if (props.view === "grid" && props.icon !== "loading") {
             const type = getMimeType(props.file.path).split("/")[0];
-            if (type === "image") {
+            if (type === "image" || type === "video") {
                 Files.url(props.file.path).then((url) => {
-                    this.setState({ preview: url+"&thumbnail=true" });
+                    this.setState({ 
+                        preview: url+"&thumbnail=true",
+                        previewType: type,
+                    });
                 });
             }
         }
@@ -287,6 +290,7 @@ class ExistingThingComponent extends React.Component {
                         className={className + " " + this.state.hover}>
                         <Image
                             preview={this.state.preview}
+                            previewType={this.state.previewType}
                             icon={this.props.file.icon || this.props.file.type}
                             view={this.props.view}
                             path={path.join(this.props.path, this.props.file.name)}
@@ -519,7 +523,13 @@ class Image extends React.Component {
         if (this.props.preview && this.props.view === "grid") {
             return (
                 <span>
-                    <div className="image_layer"></div>
+                    {
+                        this.props.previewType === "video" ?
+                            <div className="image_layer with_player_icon">
+                                <span className="vjs_play_icon"></span>
+                            </div> :
+                            <div className="image_layer"></div>
+                    }
                     <LazyLoadImage scroller=".scroll-y" className="thumbnail" src={this.props.preview} />
                 </span>
             );
