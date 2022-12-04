@@ -6,3 +6,6 @@ import (
 
 //go:embed dist/png_linux_arm.bin
 var binaryThumbnailPng []byte
+
+//go:embed dist/png_linux_arm.bin.sha256
+var checksumPng []byte

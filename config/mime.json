@@ -22,6 +22,7 @@
 	"crw": "image/x-canon-crw",
 	"css": "text/css",
 	"csv": "text/csv",
+    "dcm": "image/dicom",
 	"dcr": "image/x-kodak-dcr",
 	"deb": "application/octet-stream",
 	"der": "application/x-x509-ca-cert",
