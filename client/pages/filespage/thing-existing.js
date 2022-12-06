@@ -462,16 +462,15 @@ const ActionButton = (props) => {
 
 const DateTime = (props) => {
     function displayTime(timestamp) {
-        if (timestamp) {
-            const t = new Date(timestamp);
-            if("DateTimeFormat" in Intl) {
-                const str = new Intl.DateTimeFormat({ dateStyle: "short" }).format(t);
-                if (str.length <= 10) return str;
-            }
-            return t.getFullYear() + "-" + leftPad((t.getMonth() + 1).toString(), 2) + "-" + leftPad(t.getDate().toString(), 2);
-        } else {
+        if (!timestamp || timestamp < 0) {
             return "";
         }
+        const t = new Date(timestamp);
+        if("DateTimeFormat" in Intl) {
+            const str = new Intl.DateTimeFormat({ dateStyle: "short" }).format(t);
+            if (str.length <= 10) return str;
+        }
+        return t.getFullYear() + "-" + leftPad((t.getMonth() + 1).toString(), 2) + "-" + leftPad(t.getDate().toString(), 2);
     }
 
     if (props.show === false) {
@@ -487,8 +486,7 @@ const DateTime = (props) => {
 
 const FileSize = (props) => {
     function displaySize(bytes) {
-        if (bytes === -1) return "";
-        if (Number.isNaN(bytes) || bytes === undefined) {
+        if (Number.isNaN(bytes) || bytes < 0 || bytes === undefined) {
             return "";
         } else if (bytes < 1024) {
             return "("+bytes+"B)";
