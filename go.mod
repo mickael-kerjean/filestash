@@ -22,11 +22,13 @@ require (
 	github.com/pkg/sftp v1.11.0
 	github.com/prasad83/goftp v0.0.0-20210325080443-f57aaed46a32
 	github.com/qeesung/image2ascii v1.0.1
+	github.com/rasky/go-xdr v0.0.0-20170124162913-1a41d1a06c93 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4 // indirect
 	github.com/tidwall/gjson v1.13.0
 	github.com/tidwall/sjson v1.0.4
 	github.com/tredoe/osutil v1.0.6
+	github.com/vmware/go-nfs-client v0.0.0-20190605212624-d43b92724c1b
 	github.com/wayneashleyberry/terminal-dimensions v1.1.0 // indirect
 	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
 	golang.org/x/image v0.0.0-20210622092929-e6eecd499c2c

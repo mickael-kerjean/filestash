@@ -163,6 +163,9 @@ github.com/prasad83/goftp
 github.com/qeesung/image2ascii/ascii
 github.com/qeesung/image2ascii/convert
 github.com/qeesung/image2ascii/terminal
+# github.com/rasky/go-xdr v0.0.0-20170124162913-1a41d1a06c93
+## explicit
+github.com/rasky/go-xdr/xdr2
 # github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0
 github.com/remyoudompheng/bigfft
 # github.com/rogpeppe/go-internal v1.8.0
@@ -199,6 +202,12 @@ github.com/tredoe/osutil/user/crypt/sha256_crypt
 github.com/tredoe/osutil/user/crypt/sha512_crypt
 # github.com/vivint/infectious v0.0.0-20200605153912-25a574ae18a3
 github.com/vivint/infectious
+# github.com/vmware/go-nfs-client v0.0.0-20190605212624-d43b92724c1b
+## explicit
+github.com/vmware/go-nfs-client/nfs
+github.com/vmware/go-nfs-client/nfs/rpc
+github.com/vmware/go-nfs-client/nfs/util
+github.com/vmware/go-nfs-client/nfs/xdr
 # github.com/wayneashleyberry/terminal-dimensions v1.1.0
 ## explicit
 github.com/wayneashleyberry/terminal-dimensions

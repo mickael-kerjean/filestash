@@ -17,6 +17,7 @@ import (
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_ldap"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_local"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_mysql"
+	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_nfs"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_nop"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_s3"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_samba"
