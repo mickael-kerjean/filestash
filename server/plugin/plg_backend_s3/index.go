@@ -1,6 +1,7 @@
 package plg_backend_s3
 
 import (
+	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -16,14 +17,16 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var S3Cache AppCache
 
 type S3Backend struct {
-	client *s3.S3
-	config *aws.Config
-	params map[string]string
+	client  *s3.S3
+	config  *aws.Config
+	params  map[string]string
+	context context.Context
 }
 
 func init() {
@@ -63,9 +66,10 @@ func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 
 	backend := &S3Backend{
-		config: config,
-		params: params,
-		client: s3.New(session.New(config)),
+		config:  config,
+		params:  params,
+		client:  s3.New(session.New(config)),
+		context: app.Context,
 	}
 	return backend, nil
 }
@@ -161,7 +165,9 @@ func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 	}
 	client := s3.New(s.createSession(p.bucket))
 
-	err = client.ListObjectsV2Pages(
+	startTime := time.Now()
+	err = client.ListObjectsV2PagesWithContext(
+		s.context,
 		&s3.ListObjectsV2Input{
 			Bucket:    aws.String(p.bucket),
 			Prefix:    aws.String(p.path),
@@ -185,7 +191,7 @@ func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 					FType: "directory",
 				})
 			}
-			return true
+			return time.Since(startTime) < 5*time.Second
 		})
 	return files, err
 }
