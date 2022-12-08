@@ -70,9 +70,11 @@ steps:
   - cp ./test/assets/* /tmp/
   - rm -rf server/generator/ && rm -rf server/plugin/plg_image_light
   - sed -i '/plg_image_light/d' server/plugin/index.go
-  - go generate ./test/unit_go/...
   - echo "==== UNIT TEST ====="
-  - go test -mod=vendor --tags "fts5" -count=1 $(go list ./server/... | grep -v "server/plugin" | grep -v "server/generator")
+  - go generate ./test/unit_go/...
+  - go get github.com/stretchr/testify/assert
+  - go mod vendor
+  - go test --tags "fts5" -count=1 $(go list ./server/... | grep -v "server/plugin" | grep -v "server/generator")
 
 - name: test_e2e
   image: machines/puppeteer
