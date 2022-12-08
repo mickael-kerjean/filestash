@@ -2,7 +2,6 @@ all:
 	make build_init
 	make build_frontend
 	GOARCH=amd64 GOOS=linux make build_backend
-	# GOARCH=arm GOARM=7 GOOS=linux make build_backend
 
 build_init:
 	go generate -x ./server/...

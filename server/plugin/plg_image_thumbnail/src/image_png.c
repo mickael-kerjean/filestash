@@ -8,7 +8,7 @@ static int MyWriter(const uint8_t* data, size_t data_size, const WebPPicture* co
   return data_size ? (fwrite(data, data_size, 1, out) == 1) : 1;
 }
 
-int png_to_webp(FILE* input, FILE* output) {
+int png_to_webp(FILE* input, FILE* output, int targetSize) {
     WebPPicture picture;
 
 #ifdef HAS_DEBUG
@@ -79,9 +79,9 @@ int png_to_webp(FILE* input, FILE* output) {
     return 1;
   }
   DEBUG("rescale start");
-  if (image.width > TARGET_SIZE && image.height > TARGET_SIZE) {
-    float ratioHeight = (float) image.height / TARGET_SIZE;
-    float ratioWidth = (float) image.width / TARGET_SIZE;
+  if (image.width > targetSize && image.height > targetSize) {
+    float ratioHeight = (float) image.height / targetSize;
+    float ratioWidth = (float) image.width / targetSize;
     float ratio = ratioWidth > ratioHeight ? ratioHeight : ratioWidth;
     if (!WebPPictureRescale(&picture, image.width / ratio, image.height / ratio)) {
       DEBUG("ERR Rescale");
@@ -97,7 +97,7 @@ int png_to_webp(FILE* input, FILE* output) {
   return 0;
 }
 
-int png_to_png(FILE* input, FILE* output) {
+int png_to_png(FILE* input, FILE* output, int targetSize) {
 #ifdef HAS_DEBUG
   clock_t t;
   t = clock();

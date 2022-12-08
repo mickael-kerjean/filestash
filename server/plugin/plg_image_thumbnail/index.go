@@ -29,7 +29,7 @@ func init() {
 	} {
 		Hooks.Register.Thumbnailer(mType, thumbnailBuilder{thumbnailRaw})
 	}
-	// TODO: Hooks.Register.ProcessFileContentBeforeSend for raw files rendering
+	Hooks.Register.ProcessFileContentBeforeSend(renderRaw)
 }
 
 func thumbnailPng(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
@@ -72,9 +72,17 @@ func thumbnailRaw(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req 
 }
 
 func renderRaw(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+	query := req.URL.Query()
+	if query.Get("thumbnail") == "true" {
+		return reader, nil
+	} else if isRaw(GetMimeType(query.Get("path"))) == false {
+		return reader, nil
+	} else if query.Get("size") == "" {
+		return reader, nil
+	}
+
 	h := (*res).Header()
-	r, err := createThumbnailForRaw(reader)
-	// r, err := createExtractForRaw(reader)
+	r, err := createRenderingForRaw(reader, query.Get("size"))
 	if err != nil {
 		h.Set("Content-Type", "image/png")
 		return NewReadCloserFromBytes(placeholder), nil
@@ -134,16 +142,15 @@ func (this *ThumbnailExecutable) verify() bool {
 	return this.isValid
 }
 
-func (this *ThumbnailExecutable) Execute(reader io.ReadCloser) (io.ReadCloser, error) {
+func (this *ThumbnailExecutable) Execute(reader io.ReadCloser, params ...string) (io.ReadCloser, error) {
 	if this.verify() == false {
 		Log.Error("plg_image_thumbnail::execution abort after verification on '%s'", this.Name)
 		reader.Close()
 		return nil, ErrFilesystemError
 	}
-	// TODO: rate limit this
 	var buf bytes.Buffer
 	var errBuff bytes.Buffer
-	cmd := exec.Command("/tmp/" + this.Name)
+	cmd := exec.Command("/tmp/"+this.Name, params...)
 	cmd.Stdin = reader
 	cmd.Stdout = &buf
 	cmd.Stderr = &errBuff

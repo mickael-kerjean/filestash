@@ -15,7 +15,11 @@ func init() {
 }
 
 func createThumbnailForRaw(reader io.ReadCloser) (io.ReadCloser, error) {
-	return exeForRaw.Execute(reader)
+	return exeForRaw.Execute(reader, "200")
+}
+
+func createRenderingForRaw(reader io.ReadCloser, size string) (io.ReadCloser, error) {
+	return exeForRaw.Execute(reader, size)
 }
 
 func isRaw(mType string) bool {

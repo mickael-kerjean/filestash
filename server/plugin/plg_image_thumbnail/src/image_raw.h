@@ -4,4 +4,4 @@
 #include "utils.h"
 #include "image_jpeg.h"
 
-int raw_to_jpeg(FILE* input, FILE* output);
+int raw_to_jpeg(FILE* input, FILE* output, int targetSize);

@@ -5,9 +5,7 @@
 
 #define JPEG_QUALITY 50
 
-#define min(a, b) (a > b ? b : a)
-
-int jpeg_to_jpeg(FILE* input, FILE* output) {
+int jpeg_to_jpeg(FILE* input, FILE* output, int targetSize) {
 #ifdef HAS_DEBUG
   clock_t t;
   t = clock();
@@ -46,25 +44,25 @@ int jpeg_to_jpeg(FILE* input, FILE* output) {
   image_min_size = min(jpeg_config_input.output_width, jpeg_config_input.output_height);
   jpeg_config_input.scale_num = 1;
   jpeg_config_input.scale_denom = 1;
-  if (image_min_size / 8 >= TARGET_SIZE) {
+  if (image_min_size / 8 >= targetSize) {
     jpeg_config_input.scale_num = 1;
     jpeg_config_input.scale_denom = 8;
-  } else if (image_min_size * 2 / 8 >= TARGET_SIZE) {
+  } else if (image_min_size * 2 / 8 >= targetSize) {
     jpeg_config_input.scale_num = 1;
     jpeg_config_input.scale_denom = 4;
-  } else if (image_min_size * 3 / 8 >= TARGET_SIZE) {
+  } else if (image_min_size * 3 / 8 >= targetSize) {
     jpeg_config_input.scale_num = 3;
     jpeg_config_input.scale_denom = 8;
-  } else if (image_min_size * 4 / 8 >= TARGET_SIZE) {
+  } else if (image_min_size * 4 / 8 >= targetSize) {
     jpeg_config_input.scale_num = 4;
     jpeg_config_input.scale_denom = 8;
-  } else if (image_min_size * 5 / 8 >= TARGET_SIZE) {
+  } else if (image_min_size * 5 / 8 >= targetSize) {
     jpeg_config_input.scale_num = 5;
     jpeg_config_input.scale_denom = 8;
-  } else if (image_min_size * 6 / 8 >= TARGET_SIZE) {
+  } else if (image_min_size * 6 / 8 >= targetSize) {
     jpeg_config_input.scale_num = 6;
     jpeg_config_input.scale_denom = 8;
-  } else if (image_min_size * 7 / 8 >= TARGET_SIZE) {
+  } else if (image_min_size * 7 / 8 >= targetSize) {
     jpeg_config_input.scale_num = 7;
     jpeg_config_input.scale_denom = 8;
   }

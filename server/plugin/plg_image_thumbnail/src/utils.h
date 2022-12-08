@@ -1,5 +1,3 @@
-#define TARGET_SIZE 200
-
 #define HAS_DEBUG 1
 #if HAS_DEBUG == 1
 #include <time.h>
@@ -10,3 +8,5 @@
 #endif
 
 #define ERROR(r) (fprintf(stderr, "[ERROR:('" r "')]"))
+
+#define min(a, b) (a > b ? b : a)
