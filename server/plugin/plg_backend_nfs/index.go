@@ -8,6 +8,7 @@ import (
 	"github.com/vmware/go-nfs-client/nfs/util"
 	"io"
 	"os"
+	"os/user"
 	"strconv"
 	"strings"
 )
@@ -27,33 +28,31 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	if params["hostname"] == "" {
 		params["hostname"] = "localhost"
 	}
-	if params["target"] == "" {
-		params["target"] = "/home/"
-	}
-	if params["machine_name"] == "" {
-		mn, err := os.Hostname()
-		if err != nil {
-			return nil, err
-		}
-		params["machine_name"] = mn
-	}
 	var (
 		uid uint32 = 1000
 		gid uint32 = 1000
 	)
-	if params["uid"] != "" {
-		_uid, err := strconv.Atoi(params["uid"])
-		if err != nil {
-			return nil, err
+	if user, err := user.Current(); err == nil {
+		params["target"] = user.HomeDir
+		if _uid, err := strconv.Atoi(user.Uid); err == nil {
+			uid = uint32(_uid)
 		}
-		uid = uint32(_uid)
+		if _gid, err := strconv.Atoi(user.Gid); err == nil {
+			gid = uint32(_gid)
+		}
+	}
+	if mn, err := os.Hostname(); err == nil && params["machine_name"] == "" {
+		params["machine_name"] = mn
+	}
+	if params["uid"] != "" {
+		if _uid, err := strconv.Atoi(params["uid"]); err == nil {
+			uid = uint32(_uid)
+		}
 	}
 	if params["gid"] != "" {
-		_gid, err := strconv.Atoi(params["gid"])
-		if err != nil {
-			return nil, err
+		if _gid, err := strconv.Atoi(params["gid"]); err == nil {
+			gid = uint32(_gid)
 		}
-		gid = uint32(_gid)
 	}
 	auth := rpc.NewAuthUnix(params["machine_name"], uid, gid)
 
