@@ -25,6 +25,7 @@ require (
 	github.com/rasky/go-xdr v0.0.0-20170124162913-1a41d1a06c93 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4 // indirect
+	github.com/suyashkumar/dicom v1.0.5
 	github.com/tidwall/gjson v1.13.0
 	github.com/tidwall/sjson v1.0.4
 	github.com/tredoe/osutil v1.0.6

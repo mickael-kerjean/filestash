@@ -182,6 +182,16 @@ github.com/src-d/gcfg
 github.com/src-d/gcfg/scanner
 github.com/src-d/gcfg/token
 github.com/src-d/gcfg/types
+# github.com/suyashkumar/dicom v1.0.5
+## explicit
+github.com/suyashkumar/dicom
+github.com/suyashkumar/dicom/pkg/charset
+github.com/suyashkumar/dicom/pkg/debug
+github.com/suyashkumar/dicom/pkg/dicomio
+github.com/suyashkumar/dicom/pkg/frame
+github.com/suyashkumar/dicom/pkg/tag
+github.com/suyashkumar/dicom/pkg/uid
+github.com/suyashkumar/dicom/pkg/vrraw
 # github.com/tidwall/gjson v1.13.0
 ## explicit
 github.com/tidwall/gjson
@@ -298,6 +308,22 @@ golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.3.6
+golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
+golang.org/x/text/encoding/htmlindex
+golang.org/x/text/encoding/internal
+golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/encoding/japanese
+golang.org/x/text/encoding/korean
+golang.org/x/text/encoding/simplifiedchinese
+golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/encoding/unicode
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/language
+golang.org/x/text/runes
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
