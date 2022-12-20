@@ -124,9 +124,7 @@ func (this ThumbnailExecutable) Init() {
 			return
 		}
 	}
-	if f.Close() != nil {
-		Log.Warning("plg_image_thumbnail::init::close '%s'", this.Name)
-	}
+	f.Close()
 }
 
 func (this *ThumbnailExecutable) verify() bool {

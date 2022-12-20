@@ -90,8 +90,12 @@ func (this Storj) Ls(path string) ([]os.FileInfo, error) {
 		})
 		for objects.Next() {
 			item := objects.Item()
+			fname := filepath.Base(item.Key)
+			if fname == ".file_placeholder" {
+				continue
+			}
 			files = append(files, File{
-				FName: filepath.Base(item.Key),
+				FName: fname,
 				FType: func() string {
 					if item.IsPrefix {
 						return "directory"
