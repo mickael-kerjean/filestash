@@ -23,9 +23,6 @@ func init() {
 	for _, mType := range []string{
 		"image/x-canon-cr2", "image/x-fuji-raf", "image/x-nikon-nef",
 		"image/x-nikon-nrw", "image/x-epson-erf",
-		// "image/tiff",
-		// "image/x-kodak-dcr", "image/x-hasselblad-3fr",
-		// "image/x-raw",
 	} {
 		Hooks.Register.Thumbnailer(mType, thumbnailBuilder{thumbnailRaw})
 	}
