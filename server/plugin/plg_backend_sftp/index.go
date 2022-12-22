@@ -138,7 +138,7 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 		User: p.username,
 		Auth: auth,
 		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-			if params["hostkey"] == "" && strings.ToLower(os.Getenv("SFTP_INSECURE")) != "no" {
+			if params["hostkey"] == "" {
 				return nil
 			}
 			fsha := ssh.FingerprintSHA256(key)
