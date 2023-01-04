@@ -137,9 +137,10 @@ var limiter = rate.NewLimiter(10, 1000)
 func RateLimiter(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if limiter.Allow() == false {
+			Log.Warning("middleware::http::ratelimit too many requests")
 			SendErrorResult(
 				res,
-				NewError(http.StatusText(429), http.StatusTooManyRequests),
+				NewError(http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests),
 			)
 			return
 		}
