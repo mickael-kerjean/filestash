@@ -1,7 +1,6 @@
 package ctrl
 
 import (
-	"archive/zip"
 	"encoding/base64"
 	"fmt"
 	"hash/fnv"
@@ -12,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	fastzip "github.com/klauspost/compress/zip"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
@@ -562,8 +563,8 @@ func FileDownloader(ctx *App, res http.ResponseWriter, req *http.Request) {
 	resHeader.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", filename))
 
 	start := time.Now()
-	var addToZipRecursive func(*App, *zip.Writer, string, string, *[]string) error
-	addToZipRecursive = func(c *App, zw *zip.Writer, backendPath string, zipRoot string, errList *[]string) (err error) {
+	var addToZipRecursive func(*App, *fastzip.Writer, string, string, *[]string) error
+	addToZipRecursive = func(c *App, zw *fastzip.Writer, backendPath string, zipRoot string, errList *[]string) (err error) {
 		if time.Now().Sub(start) > time.Duration(ZipTimeout())*time.Second {
 			Log.Debug("downloader::timeout zip not completed due to timeout")
 			return ErrTimeout
@@ -614,7 +615,7 @@ func FileDownloader(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return nil
 	}
 
-	zipWriter := zip.NewWriter(res)
+	zipWriter := fastzip.NewWriter(res)
 	defer zipWriter.Close()
 	errList := []string{}
 	for i := 0; i < len(paths); i++ {
