@@ -41,6 +41,9 @@ func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 
 	if params["region"] == "" {
 		params["region"] = "us-east-2"
+		if strings.HasSuffix(params["endpoint"], ".cloudflarestorage.com") {
+			params["region"] = "auto"
+		}
 	}
 	creds := []credentials.Provider{}
 	if params["access_key_id"] != "" || params["secret_access_key"] != "" {
