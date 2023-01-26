@@ -182,6 +182,12 @@ github.com/src-d/gcfg
 github.com/src-d/gcfg/scanner
 github.com/src-d/gcfg/token
 github.com/src-d/gcfg/types
+# github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
+## explicit
+github.com/srwiley/oksvg
+# github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
+## explicit
+github.com/srwiley/rasterx
 # github.com/suyashkumar/dicom v1.0.5
 ## explicit
 github.com/suyashkumar/dicom
@@ -272,16 +278,26 @@ golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/knownhosts
-# golang.org/x/image v0.0.0-20210622092929-e6eecd499c2c
+# golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 ## explicit
+golang.org/x/image/bmp
+golang.org/x/image/ccitt
+golang.org/x/image/colornames
 golang.org/x/image/draw
 golang.org/x/image/math/f64
+golang.org/x/image/math/fixed
+golang.org/x/image/tiff
+golang.org/x/image/tiff/lzw
+golang.org/x/image/vector
 # golang.org/x/mod v0.4.2
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2
+# golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4
 ## explicit
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
+golang.org/x/net/html
+golang.org/x/net/html/atom
+golang.org/x/net/html/charset
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
