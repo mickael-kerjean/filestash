@@ -12,6 +12,9 @@ For anything else than a typo or a bug fix, please raise an issue to discuss you
 
 As the copyright owner, you agree to license your contributions under an irrevocable MIT license.
 
+## Translations
+
+Contribute translations via https://inlang.com/editor/github.com/mickael-kerjean/filestash
 
 ### Building from source
 
