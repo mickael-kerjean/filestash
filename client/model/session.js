@@ -1,4 +1,4 @@
-import { http_get, http_post, http_delete, currentShare } from "../helpers/";
+import { http_get, http_post, http_delete, currentShare, urlParams } from "../helpers/";
 
 class SessionManager {
     currentUser() {
@@ -16,8 +16,11 @@ class SessionManager {
     }
 
     middleware(formData) {
+        const _GET = urlParams();
         return Promise.resolve(
-            "/api/session/auth/?action=redirect&label=" + (formData["label"] || ""),
+            "/api/session/auth/?action=redirect&label=" +
+                (formData["label"] || "") +
+                (Object.keys(_GET).length > 0 ? `&state=${btoa(JSON.stringify(_GET))}` : "")
         );
     }
 
