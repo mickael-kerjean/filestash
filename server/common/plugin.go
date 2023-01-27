@@ -192,6 +192,15 @@ func (this Get) CSS() string {
 
 const OverrideVideoSourceMapper = "/overrides/video-transcoder.js"
 
+var afterload []func()
+
+func (this Register) Onload(fn func()) {
+	afterload = append(afterload, fn)
+}
+func (this Get) Onload() []func() {
+	return afterload
+}
+
 func init() {
 	Hooks.Register.FrontendOverrides(OverrideVideoSourceMapper)
 }

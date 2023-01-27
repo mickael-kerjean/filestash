@@ -140,6 +140,9 @@ func Init(a App) {
 	}
 	go func() {
 		InitPluginList(EmbedPluginList)
+		for _, fn := range Hooks.Get.Onload() {
+			go fn()
+		}
 	}()
 	wg.Wait()
 }
