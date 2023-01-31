@@ -27,6 +27,10 @@ function HomePageComponent({ error }) {
     if (!redirection) {
         return ( <div> <Loader /> </div> );
     }
+    if (redirection === "/login") {
+        location.href = redirection;
+        return (<div></div>);
+    }
     return ( <Redirect to={redirection} /> );
 }
 
