@@ -160,7 +160,14 @@ function handle_error_response(xhr, err) {
         try {
             message = JSON.parse(content);
         } catch (err) {
-            return { message: content };
+            return {
+                message: Array.from(new Set(
+                    content.replace(/<[^>]*>/g, "")
+                        .replace(/\n{2,}/, "\n")
+                        .trim()
+                        .split("\n")
+                )).join(" "),
+            };
         }
         return message || { message: "empty response" };
     })(xhr.responseText);
