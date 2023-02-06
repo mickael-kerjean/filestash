@@ -96,10 +96,15 @@ func (s S3Backend) LoginForm() Form {
 				Placeholder: "Secret Access Key*",
 			},
 			FormElement{
+				Name:        "endpoint",
+				Type:        "text",
+				Placeholder: "S3 Endpoint*",
+			},
+			FormElement{
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"s3_path", "s3_session_token", "s3_encryption_key", "s3_region", "s3_endpoint"},
+				Target:      []string{"s3_path", "s3_session_token", "s3_encryption_key", "s3_region"},
 			},
 			FormElement{
 				Id:          "s3_session_token",
@@ -124,12 +129,6 @@ func (s S3Backend) LoginForm() Form {
 				Name:        "region",
 				Type:        "text",
 				Placeholder: "Region",
-			},
-			FormElement{
-				Id:          "s3_endpoint",
-				Name:        "endpoint",
-				Type:        "text",
-				Placeholder: "Endpoint",
 			},
 		},
 	}
