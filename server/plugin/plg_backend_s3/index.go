@@ -442,9 +442,11 @@ func (s S3Backend) Save(path string, file io.Reader) error {
 }
 
 func (s S3Backend) createSession(bucket string) *session.Session {
-	params := s.params
-	params["bucket"] = bucket
-	c := S3Cache.Get(params)
+	newParams := map[string]string{"bucket": bucket}
+	for k, v := range s.params {
+		newParams[k] = v
+	}
+	c := S3Cache.Get(newParams)
 	if c == nil {
 		res, err := s.client.GetBucketLocation(&s3.GetBucketLocationInput{
 			Bucket: aws.String(bucket),
@@ -458,7 +460,7 @@ func (s S3Backend) createSession(bucket string) *session.Session {
 				s.config.Region = res.LocationConstraint
 			}
 		}
-		S3Cache.Set(params, s.config.Region)
+		S3Cache.Set(newParams, s.config.Region)
 	} else {
 		s.config.Region = c.(*string)
 	}
