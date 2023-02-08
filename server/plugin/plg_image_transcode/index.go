@@ -31,7 +31,7 @@ func renderImages(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req 
 	case "image/dicom":
 		out, mType, err = transcodeDicom(reader)
 	default:
-		err = ErrNotImplemented
+		return reader, nil
 	}
 	reader.Close()
 	if err == nil {
