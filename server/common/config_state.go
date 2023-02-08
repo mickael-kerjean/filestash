@@ -57,10 +57,12 @@ func LoadConfig() ([]byte, error) {
 		}
 		t, err := DecryptString(Hash(key, 16), p)
 		if err != nil {
+			Log.Warning("common::config_state::load cannot decrypt config path '%s': %s", jsonPathWithEncryptedData, err.Error())
 			continue
 		}
 		val, err := sjson.Set(configStr, jsonPathWithEncryptedData, t)
 		if err != nil {
+			Log.Warning("common::config_state::load cannot put json value in config '%s': %s", jsonPathWithEncryptedData, err.Error())
 			continue
 		}
 		configStr = val
@@ -79,23 +81,23 @@ func SaveConfig(v []byte) error {
 	}
 
 	configStr := string(v)
-	for _, jsonPath := range configKeysToEncrypt {
+	for _, jsonPathWithEncryptedData := range configKeysToEncrypt {
 		key := os.Getenv("CONFIG_SECRET")
 		if key == "" {
 			key = SECRET_KEY_DERIVATE_FOR_PROOF
 		}
-		p := gjson.Get(configStr, jsonPath).String()
+		p := gjson.Get(configStr, jsonPathWithEncryptedData).String()
 		if p == "" {
 			continue
 		}
 		t, err := EncryptString(Hash(key, 16), p)
 		if err != nil {
-			Log.Warning("common::config_state cannot encrypt config path '%s'", jsonPath)
+			Log.Warning("common::config_state::save cannot encrypt config path '%s': %s", jsonPathWithEncryptedData, err.Error())
 			continue
 		}
-		val, err := sjson.Set(configStr, jsonPath, t)
+		val, err := sjson.Set(configStr, jsonPathWithEncryptedData, t)
 		if err != nil {
-			Log.Warning("common::config_state cannot put json value in config '%s'", jsonPath)
+			Log.Warning("common::config_state::save cannot put json value in config '%s': %s", jsonPathWithEncryptedData, err.Error())
 			continue
 		}
 		configStr = val
