@@ -403,11 +403,11 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 
 	if _, err := model.NewBackend(ctx, session); err != nil {
 		Log.Debug("session::authMiddleware 'backend connection failed %+v - %s'", session, err.Error())
-		http.Redirect(
-			res, req,
-			"/?error=Not%20Valid&trace=backend error - "+err.Error(),
-			http.StatusTemporaryRedirect,
-		)
+		url := "/?error=" + ErrNotValid.Error() + "&trace=backend error - " + err.Error()
+		if IsATranslatedError(err) {
+			url = "/?error=" + err.Error()
+		}
+		http.Redirect(res, req, url, http.StatusTemporaryRedirect)
 		return
 	}
 

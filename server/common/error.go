@@ -30,6 +30,17 @@ var (
 	ErrInternal             error = NewError("Internal Error", 500)
 )
 
+func IsATranslatedError(err error) bool {
+	if err == ErrNotFound || err == ErrNotAllowed || err == ErrPermissionDenied ||
+		err == ErrNotValid || err == ErrInvalidPassword || err == ErrNotImplemented ||
+		err == ErrNotSupported || err == ErrFilesystemError || err == ErrMissingDependency ||
+		err == ErrNotAuthorized || err == ErrAuthenticationFailed || err == ErrCongestion ||
+		err == ErrTimeout || err == ErrInternal {
+		return true
+	}
+	return false
+}
+
 type AppError struct {
 	message string
 	status  int
