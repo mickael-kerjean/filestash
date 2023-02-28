@@ -182,8 +182,8 @@ func _extractShare(req *http.Request) (Share, error) {
 		return Share{}, nil
 	}
 	if Config.Get("features.share.enable").Bool() == false {
-		Log.Debug("Share feature isn't enable, contact your administrator")
-		return Share{}, NewError("Feature isn't enable, contact your administrator", 405)
+		Log.Debug("Share feature isn't enabled, contact your administrator")
+		return Share{}, NewError("Feature isn't enabled, contact your administrator", 405)
 	}
 
 	s, err := model.ShareGet(share_id)
