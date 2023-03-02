@@ -262,32 +262,36 @@ func (s S3Backend) Rm(path string) error {
 		})
 		return err
 	}
-
-	objs, err := client.ListObjects(&s3.ListObjectsInput{
-		Bucket:    aws.String(p.bucket),
-		Prefix:    aws.String(p.path),
-		Delimiter: aws.String("/"),
-	})
-	if err != nil {
-		return err
-	}
-	for _, obj := range objs.Contents {
-		_, err := client.DeleteObject(&s3.DeleteObjectInput{
-			Bucket: aws.String(p.bucket),
-			Key:    obj.Key,
+	for {
+		objs, err := client.ListObjects(&s3.ListObjectsInput{
+			Bucket:    aws.String(p.bucket),
+			Prefix:    aws.String(p.path),
+			Delimiter: aws.String("/"),
 		})
 		if err != nil {
 			return err
 		}
-	}
-	for _, pref := range objs.CommonPrefixes {
-		s.Rm("/" + p.bucket + "/" + *pref.Prefix)
-		_, err := client.DeleteObject(&s3.DeleteObjectInput{
-			Bucket: aws.String(p.bucket),
-			Key:    pref.Prefix,
-		})
-		if err != nil {
-			return err
+		for _, obj := range objs.Contents {
+			_, err := client.DeleteObject(&s3.DeleteObjectInput{
+				Bucket: aws.String(p.bucket),
+				Key:    obj.Key,
+			})
+			if err != nil {
+				return err
+			}
+		}
+		for _, pref := range objs.CommonPrefixes {
+			s.Rm("/" + p.bucket + "/" + *pref.Prefix)
+			_, err := client.DeleteObject(&s3.DeleteObjectInput{
+				Bucket: aws.String(p.bucket),
+				Key:    pref.Prefix,
+			})
+			if err != nil {
+				return err
+			}
+		}
+		if !aws.BoolValue(objs.IsTruncated) {
+			break
 		}
 	}
 
@@ -297,7 +301,7 @@ func (s S3Backend) Rm(path string) error {
 		})
 		return err
 	}
-	_, err = client.DeleteObject(&s3.DeleteObjectInput{
+	_, err := client.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: aws.String(p.bucket),
 		Key:    aws.String(p.path),
 	})
