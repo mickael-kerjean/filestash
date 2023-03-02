@@ -28,7 +28,7 @@ var (
 )
 
 func init() {
-	cachePath = filepath.Join(GetCurrentDir(), DAVCachePath) + "/"
+	cachePath = GetAbsolutePath(DAVCachePath) + "/"
 	os.RemoveAll(cachePath)
 	os.MkdirAll(cachePath, os.ModePerm)
 

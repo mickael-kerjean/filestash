@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-var SSL_PATH string = filepath.Join(GetCurrentDir(), CERT_PATH, "ssl")
+var SSL_PATH string = GetAbsolutePath(CERT_PATH, "ssl")
 
 func init() {
 	os.MkdirAll(SSL_PATH, os.ModePerm)

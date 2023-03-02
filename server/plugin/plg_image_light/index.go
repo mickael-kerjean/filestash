@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -108,7 +107,7 @@ func init() {
 	}
 	image_caching()
 
-	cachePath := filepath.Join(GetCurrentDir(), ImageCachePath)
+	cachePath := GetAbsolutePath(ImageCachePath)
 	os.RemoveAll(cachePath)
 	os.MkdirAll(cachePath, os.ModePerm)
 

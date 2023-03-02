@@ -31,7 +31,7 @@ var (
 
 func init() {
 	FileCache = NewAppCache()
-	cachePath := filepath.Join(GetCurrentDir(), TMP_PATH)
+	cachePath := GetAbsolutePath(TMP_PATH)
 	FileCache.OnEvict(func(key string, value interface{}) {
 		os.RemoveAll(filepath.Join(cachePath, key))
 	})
@@ -235,7 +235,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 				}
 			}
 		} else {
-			tmpPath := filepath.Join(GetCurrentDir(), TMP_PATH, "file_"+QuickString(20)+".dat")
+			tmpPath := GetAbsolutePath(TMP_PATH, "file_"+QuickString(20)+".dat")
 			f, err := os.OpenFile(tmpPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 			if err != nil {
 				Log.Debug("cat::range0 '%s'", err.Error())

@@ -5,14 +5,13 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	_ "modernc.org/sqlite"
 	"os"
-	"path/filepath"
 	"time"
 )
 
 var DB *sql.DB
 
 func init() {
-	cachePath := filepath.Join(GetCurrentDir(), DB_PATH)
+	cachePath := GetAbsolutePath(DB_PATH)
 	os.MkdirAll(cachePath, os.ModePerm)
 	var err error
 	if DB, err = sql.Open("sqlite", cachePath+"/share.sql?_fk=true"); err != nil {

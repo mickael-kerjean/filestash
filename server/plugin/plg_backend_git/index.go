@@ -29,7 +29,7 @@ func init() {
 	Backend.Register("git", Git{})
 
 	GitCache = NewAppCache()
-	cachePath := filepath.Join(GetCurrentDir(), GitCachePath)
+	cachePath := GetAbsolutePath(GitCachePath)
 	os.RemoveAll(cachePath)
 	os.MkdirAll(cachePath, os.ModePerm)
 	GitCache.OnEvict(func(key string, value interface{}) {

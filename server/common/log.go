@@ -4,7 +4,6 @@ import (
 	"fmt"
 	slog "log"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -18,8 +17,8 @@ var logfile *os.File
 
 func init() {
 	var err error
-	logPath := filepath.Join(GetCurrentDir(), LOG_PATH)
-	logfile, err = os.OpenFile(filepath.Join(logPath, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	logPath := GetAbsolutePath(LOG_PATH)
+	logfile, err = os.OpenFile(GetAbsolutePath(logPath, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		slog.Printf("ERROR log file: %+v", err)
 		return

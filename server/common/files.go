@@ -20,8 +20,15 @@ func GetCurrentDir() string {
 	return filepath.Dir(ex)
 }
 
-func GetAbsolutePath(p string) string {
-	return filepath.Join(GetCurrentDir(), p)
+func GetAbsolutePath(base string, opts ...string) string {
+	fullPath := base
+	if strings.HasPrefix(base, "/") == false { // relative filepath are relative to the binary
+		fullPath = filepath.Join(GetCurrentDir(), base)
+	}
+	if len(opts) == 0 {
+		return fullPath
+	}
+	return filepath.Join(append([]string{fullPath}, opts...)...)
 }
 
 func IsDirectory(path string) bool {

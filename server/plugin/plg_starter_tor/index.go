@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var TOR_PATH string = filepath.Join(GetCurrentDir(), CERT_PATH, "tor")
+var TOR_PATH string = GetAbsolutePath(CERT_PATH, "tor")
 
 func init() {
 	os.MkdirAll(TOR_PATH, os.ModePerm)

@@ -8,12 +8,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"time"
 )
 
-var logpath = filepath.Join(GetCurrentDir(), LOG_PATH, "access.log")
+var logpath = GetAbsolutePath(LOG_PATH, "access.log")
 
 func AdminSessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if admin := Config.Get("auth.admin").String(); admin == "" {

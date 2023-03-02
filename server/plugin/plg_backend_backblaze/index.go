@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -42,7 +41,7 @@ type BackblazeError struct {
 func init() {
 	Backend.Register("backblaze", Backblaze{})
 	BackblazeCache = NewAppCache()
-	cachePath := filepath.Join(GetCurrentDir(), BackblazeCachePath)
+	cachePath := GetAbsolutePath(BackblazeCachePath)
 	os.RemoveAll(cachePath)
 	os.MkdirAll(cachePath, os.ModePerm)
 }

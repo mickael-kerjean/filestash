@@ -5,7 +5,6 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"net/http"
 	"os"
-	"path/filepath"
 )
 
 func ReportHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -24,7 +23,7 @@ func HealthHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Access-Control-Allow-Origin", "*")
 	// CHECK 1: open the config file
 	file, err := os.OpenFile(
-		filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"),
+		GetAbsolutePath(CONFIG_PATH, "config.json"),
 		os.O_RDWR, os.ModePerm,
 	)
 	if err != nil {

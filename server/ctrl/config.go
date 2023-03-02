@@ -4,10 +4,9 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io/ioutil"
 	"net/http"
-	"path/filepath"
 )
 
-var configpath = filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json")
+var configpath = GetAbsolutePath(CONFIG_PATH, "config.json")
 
 func PrivateConfigHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, &Config)

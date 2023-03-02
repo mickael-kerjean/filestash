@@ -30,7 +30,7 @@ type SearchIndexer struct {
 
 func NewSearchIndexer(id string, b IBackend) SearchIndexer {
 	s := SearchIndexer{
-		DBPath:         filepath.Join(GetCurrentDir(), FTS_PATH, "fts_"+id+".sql"),
+		DBPath:         GetAbsolutePath(FTS_PATH, "fts_"+id+".sql"),
 		Id:             id,
 		Backend:        b,
 		FoldersUnknown: make(HeapDoc, 0, 1),

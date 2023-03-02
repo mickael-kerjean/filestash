@@ -9,7 +9,6 @@ import (
 	"net/http"
 	URL "net/url"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
@@ -155,8 +154,8 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		Version:    fmt.Sprintf("Filestash %s.%s", APP_VERSION, BUILD_DATE),
 		CommitHash: BUILD_REF,
 		Checksum: []string{
-			hashFileContent(filepath.Join(GetCurrentDir(), "/filestash"), 0),
-			hashFileContent(filepath.Join(GetCurrentDir(), CONFIG_PATH, "config.json"), 0),
+			hashFileContent(GetAbsolutePath("filestash"), 0),
+			hashFileContent(GetAbsolutePath(CONFIG_PATH, "config.json"), 0),
 		},
 		License: strings.ToUpper(LICENSE),
 		Plugins: []string{
