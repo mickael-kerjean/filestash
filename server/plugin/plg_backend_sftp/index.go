@@ -78,12 +78,10 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 
 	addr := p.hostname + ":" + p.port
-	var auth []ssh.AuthMethod
 
 	keyStartMatcher := regexp.MustCompile(`^-----BEGIN [A-Z\ ]+-----`)
 	keyEndMatcher := regexp.MustCompile(`-----END [A-Z\ ]+-----$`)
 	keyContentMatcher := regexp.MustCompile(`^[a-zA-Z0-9\+\/\=\n]+$`)
-
 	isPrivateKey := func(pass string) bool {
 		p := strings.TrimSpace(pass)
 
@@ -118,6 +116,15 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 		return keyStartString + "\n" + keyContentString + "\n" + keyEndString
 	}
 
+	/*
+	 * SSH has a range of authentication methods available: publickey, password,
+	 * keyboard-interactive, password-callback, publickey-callback, gss, .... Typical sftp
+	 * servers only have those 2: 'publickey' and 'password' but some exotic ones we've seen
+	 * have 'publickey' and 'keyboard-interactive'. If you're unlucky enough to have to work
+	 * with something else than those 3 we provide support for, either create a PR here
+	 * or contact us
+	 */
+	var auth []ssh.AuthMethod
 	if isPrivateKey(p.password) {
 		privateKey := restorePrivateKeyLineBreaks(p.password)
 		signer, err := func() (ssh.Signer, error) {
@@ -131,7 +138,16 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 		}
 		auth = []ssh.AuthMethod{ssh.PublicKeys(signer)}
 	} else {
-		auth = []ssh.AuthMethod{ssh.Password(p.password)}
+		auth = []ssh.AuthMethod{
+			ssh.Password(p.password),
+			ssh.KeyboardInteractive(func(user, instruction string, questions []string, echos []bool) ([]string, error) {
+				answers := make([]string, len(questions))
+				for i, _ := range answers {
+					answers[i] = p.password
+				}
+				return answers, nil
+			}),
+		}
 	}
 
 	config := &ssh.ClientConfig{
