@@ -2,7 +2,7 @@
     .box-container {
         display: flex;
         flex-wrap: wrap;
-        margin: -5px -5px 20px -5px;
+        margin: 0px 0px 20px 0px;
         .box-item{
             position: relative;
             width: 20%;
@@ -90,6 +90,10 @@
                 }
             }
         }
+    }
+
+    .component_storagebackend form {
+        width: calc(100% - 15px);
     }
 
 

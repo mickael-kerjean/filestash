@@ -2,10 +2,10 @@
     clear: both;
 
     &:hover .box, .highlight.box{
-        transition: 0.2s ease-out box-shadow;
-        box-shadow: rgba(158, 163, 172, 0.3) 3px 3px 10px;
-        background: var(--super-light);
+        transition: 0.1s ease-out background;
+        background: rgba(0,0,0,0.07);
         border-color: var(--super-light);
+        border-radius: 5px;
     }
     &:hover .box:not(.loading){
         .component_datetime{display: none;}
@@ -261,7 +261,6 @@
     }
     .box{
         background: inherit;
-        box-shadow: none;
     }
     .component_filename{
         color: var(--light);
@@ -272,6 +271,6 @@
 
     form input {
         border-color: var(--light);
-        color: var(--light);
+        color: rgba(255,255,255,0.8);
     }
 }

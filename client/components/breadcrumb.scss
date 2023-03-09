@@ -4,10 +4,8 @@
     .breadcrumb{
         background: white;
         margin: 0 0 0px 0;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-        border-bottom: 1px solid #e8e8e8;
         z-index: 1000;
-        padding: 4px 0;
+        padding: 5px 0;
 
         .ul{
             list-style-type: none;
@@ -164,9 +162,7 @@ body.touch-yes{
 .dark-mode{
     .component_breadcrumb{
         .breadcrumb{
-            background: var(--dark);
-            border-bottom-color: rgba(0,0,0,0.2);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: rgba(0,0,0,0.07);
         }
         .label{
             color: var(--super-light);

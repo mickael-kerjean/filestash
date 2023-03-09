@@ -239,7 +239,7 @@ export class BackendPage extends React.Component {
         };
 
         return (
-            <div className="component_dashboard">
+            <div className="component_dashboard sticky">
                 {
                     this.state.isLoading ? (
                         <Loader />
