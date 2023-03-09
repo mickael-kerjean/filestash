@@ -122,9 +122,10 @@
             margin: 2px;
             padding: 0;
             position: relative;
-            border: 3px solid transparent;
             border-width: 0;
             box-sizing: border-box;
+            border: 2px solid rgba(100,100,100, 0.1);
+            border-radius: 5px;
 
             > span > img{
                 padding: 0;
