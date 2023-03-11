@@ -1,0 +1,133 @@
+name: CI
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build_frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 14.x
+    - name: Setup
+      run: npm install
+    - name: Build
+      run: make build_frontend
+    - uses: actions/upload-artifact@master
+      with:
+        name: build-frontend
+        path: server/ctrl/static/www/
+
+  build_backend:
+    needs: build_frontend
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@master
+      with:
+        name: build-frontend
+        path: server/ctrl/static/www/
+    - uses: actions/setup-go@v3.5.0
+      with:
+        go-version: 1.16
+    - name: Setup
+      run: |
+        mkdir -p ./dist/data/state/config
+        cp config/config.json ./dist/data/state/config/
+        mkdir -p ./filestash/data/state/config
+        cp config/config.json ./filestash/data/state/config/
+    - name: Build
+      run: |
+        make build_init
+        make build_backend
+        cp dist/filestash filestash/
+    - uses: actions/upload-artifact@master
+      with:
+        name: build
+        path: filestash
+    - name: Quick Run
+      run: timeout 1 ./dist/filestash || true
+
+  test_prepare:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - name: Clone test repo
+      env:
+        PAT: ${{ secrets.PAT }}
+      run: |
+        git clone https://mickael-kerjean:$PAT@github.com/mickael-kerjean/filestash-test test
+        chmod -R 777 ./test/
+    - uses: actions/cache/save@v3
+      with:
+        path: .
+        key: test
+
+  test_frontend:
+    needs: test_prepare
+    runs-on: ubuntu-latest
+    steps:
+    - name: Restore
+      uses: actions/cache/restore@v3
+      with:
+        path: .
+        key: test
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 14.x
+    - name: Setup
+      run: |
+        npm install
+        cd ./test/unit_js
+        npm install
+    - name: Run
+      run: |
+        cd ./test/unit_js
+        npm test
+
+  test_backend:
+    needs: test_prepare
+    runs-on: ubuntu-latest
+    steps:
+    - name: Restore
+      uses: actions/cache/restore@v3
+      with:
+        path: .
+        key: test
+    - uses: actions/setup-go@v3.5.0
+      with:
+        go-version: 1.16
+    - name: Setup
+      run: |
+        sudo apt-get install -y poppler-utils
+        cp ./test/assets/* /tmp/
+        mkdir server/ctrl/static/www/ && touch server/ctrl/static/www/index.html
+        make build_init
+        rm -rf server/generator/
+        go generate ./test/unit_go/...
+        go get github.com/stretchr/testify/assert
+        go mod vendor
+    - name: Run
+      run: go test --tags "fts5" -count=1 $(go list ./server/... | grep -v "server/plugin" | grep -v "server/generator")
+
+  test_e2e:
+    needs: [test_prepare, build_backend]
+    runs-on: ubuntu-latest
+    container:
+      image: machines/puppeteer
+      options: --user root
+      env:
+        ADMIN_PASSWORD: $$2a$$10$$9OFbPZV4lYpYjU5eUi91o.kgeMyCuW11j878YBRri3gBwccq2lSFy
+        APP_URL: http://127.0.0.1:8334
+        CI: true
+    steps:
+    - name: todo
+      run: echo "ongoing work"

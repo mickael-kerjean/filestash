@@ -15,7 +15,7 @@
     </a>
     <br>
     <a href="#" alt="Build">
-        <img src="https://cloud.drone.io/api/badges/mickael-kerjean/filestash/status.svg" style="max-width:100%;">
+        <img src="https://github.com/mickael-kerjean/filestash/actions/workflows/ci.yml/badge.svg" style="max-width:100%;">
     </a>
     <a href="https://kiwiirc.com/nextclient/#irc://irc.libera.chat/#filestash?nick=guest??" alt="Chat on IRC">
         <img src="https://img.shields.io/badge/IRC-%23filestash-brightgreen.svg" style="max-width:100%;">
