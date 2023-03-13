@@ -40,19 +40,16 @@ jobs:
       run: |
         mkdir -p ./dist/data/state/config
         cp config/config.json ./dist/data/state/config/
-        mkdir -p ./filestash/data/state/config
-        cp config/config.json ./filestash/data/state/config/
     - name: Build
       run: |
         make build_init
         make build_backend
-        cp dist/filestash filestash/
     - uses: actions/upload-artifact@master
       with:
         name: build
-        path: filestash
-    - name: Quick Run
-      run: timeout 1 ./dist/filestash || true
+        path: dist
+    - name: Verify
+      run: timeout 5 ./dist/filestash || code=$?; if [[ $code -ne 124 ]]; then exit $code; fi
 
   test_prepare:
     runs-on: ubuntu-latest
@@ -64,22 +61,21 @@ jobs:
       env:
         PAT: ${{ secrets.PAT }}
       run: |
-        git clone https://mickael-kerjean:$PAT@github.com/mickael-kerjean/filestash-test test
+        git clone --depth 1 https://mickael-kerjean:$PAT@github.com/mickael-kerjean/filestash-test test
         chmod -R 777 ./test/
-    - uses: actions/cache/save@v3
+    - uses: actions/upload-artifact@master
       with:
+        name: test
         path: .
-        key: test
 
   test_frontend:
     needs: test_prepare
     runs-on: ubuntu-latest
     steps:
     - name: Restore
-      uses: actions/cache/restore@v3
+      uses: actions/download-artifact@v3
       with:
-        path: .
-        key: test
+        name: test
     - uses: actions/setup-node@v3
       with:
         node-version: 14.x
@@ -98,10 +94,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Restore
-      uses: actions/cache/restore@v3
+      uses: actions/download-artifact@v3
       with:
-        path: .
-        key: test
+        name: test
     - uses: actions/setup-go@v3.5.0
       with:
         go-version: 1.16
@@ -125,9 +120,26 @@ jobs:
       image: machines/puppeteer
       options: --user root
       env:
-        ADMIN_PASSWORD: $$2a$$10$$9OFbPZV4lYpYjU5eUi91o.kgeMyCuW11j878YBRri3gBwccq2lSFy
+        ADMIN_PASSWORD: $2a$10$9OFbPZV4lYpYjU5eUi91o.kgeMyCuW11j878YBRri3gBwccq2lSFy
         APP_URL: http://127.0.0.1:8334
         CI: true
     steps:
-    - name: todo
-      run: echo "ongoing work"
+    - name: Restore Build
+      uses: actions/download-artifact@v3
+      with:
+        name: build
+    - name: Restore Project
+      uses: actions/download-artifact@v3
+      with:
+        name: test
+    - name: Setup
+      run: |
+        cd ./test/e2e
+        npm install
+    - name: Run
+      run: |
+        chmod +x ./filestash
+        ./filestash > /dev/null &
+        cd ./test/e2e
+        node servers/webdav.js > /dev/null &
+        npm test
