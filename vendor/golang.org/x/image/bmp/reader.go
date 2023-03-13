@@ -85,7 +85,7 @@ func decodeRGB(r io.Reader, c image.Config, topDown bool) (image.Image, error) {
 
 // decodeNRGBA reads a 32 bit-per-pixel BMP image from r.
 // If topDown is false, the image rows will be read bottom-up.
-func decodeNRGBA(r io.Reader, c image.Config, topDown bool) (image.Image, error) {
+func decodeNRGBA(r io.Reader, c image.Config, topDown, allowAlpha bool) (image.Image, error) {
 	rgba := image.NewNRGBA(image.Rect(0, 0, c.Width, c.Height))
 	if c.Width == 0 || c.Height == 0 {
 		return rgba, nil
@@ -102,6 +102,9 @@ func decodeNRGBA(r io.Reader, c image.Config, topDown bool) (image.Image, error)
 		for i := 0; i < len(p); i += 4 {
 			// BMP images are stored in BGRA order rather than RGBA order.
 			p[i+0], p[i+2] = p[i+2], p[i+0]
+			if !allowAlpha {
+				p[i+3] = 0xFF
+			}
 		}
 	}
 	return rgba, nil
@@ -110,7 +113,7 @@ func decodeNRGBA(r io.Reader, c image.Config, topDown bool) (image.Image, error)
 // Decode reads a BMP image from r and returns it as an image.Image.
 // Limitation: The file must be 8, 24 or 32 bits per pixel.
 func Decode(r io.Reader) (image.Image, error) {
-	c, bpp, topDown, err := decodeConfig(r)
+	c, bpp, topDown, allowAlpha, err := decodeConfig(r)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +123,7 @@ func Decode(r io.Reader) (image.Image, error) {
 	case 24:
 		return decodeRGB(r, c, topDown)
 	case 32:
-		return decodeNRGBA(r, c, topDown)
+		return decodeNRGBA(r, c, topDown, allowAlpha)
 	}
 	panic("unreachable")
 }
@@ -129,13 +132,15 @@ func Decode(r io.Reader) (image.Image, error) {
 // decoding the entire image.
 // Limitation: The file must be 8, 24 or 32 bits per pixel.
 func DecodeConfig(r io.Reader) (image.Config, error) {
-	config, _, _, err := decodeConfig(r)
+	config, _, _, _, err := decodeConfig(r)
 	return config, err
 }
 
-func decodeConfig(r io.Reader) (config image.Config, bitsPerPixel int, topDown bool, err error) {
-	// We only support those BMP images that are a BITMAPFILEHEADER
-	// immediately followed by a BITMAPINFOHEADER.
+func decodeConfig(r io.Reader) (config image.Config, bitsPerPixel int, topDown bool, allowAlpha bool, err error) {
+	// We only support those BMP images with one of the following DIB headers:
+	// - BITMAPINFOHEADER (40 bytes)
+	// - BITMAPV4HEADER (108 bytes)
+	// - BITMAPV5HEADER (124 bytes)
 	const (
 		fileHeaderLen   = 14
 		infoHeaderLen   = 40
@@ -147,21 +152,21 @@ func decodeConfig(r io.Reader) (config image.Config, bitsPerPixel int, topDown b
 		if err == io.EOF {
 			err = io.ErrUnexpectedEOF
 		}
-		return image.Config{}, 0, false, err
+		return image.Config{}, 0, false, false, err
 	}
 	if string(b[:2]) != "BM" {
-		return image.Config{}, 0, false, errors.New("bmp: invalid format")
+		return image.Config{}, 0, false, false, errors.New("bmp: invalid format")
 	}
 	offset := readUint32(b[10:14])
 	infoLen := readUint32(b[14:18])
 	if infoLen != infoHeaderLen && infoLen != v4InfoHeaderLen && infoLen != v5InfoHeaderLen {
-		return image.Config{}, 0, false, ErrUnsupported
+		return image.Config{}, 0, false, false, ErrUnsupported
 	}
 	if _, err := io.ReadFull(r, b[fileHeaderLen+4:fileHeaderLen+infoLen]); err != nil {
 		if err == io.EOF {
 			err = io.ErrUnexpectedEOF
 		}
-		return image.Config{}, 0, false, err
+		return image.Config{}, 0, false, false, err
 	}
 	width := int(int32(readUint32(b[18:22])))
 	height := int(int32(readUint32(b[22:26])))
@@ -169,12 +174,12 @@ func decodeConfig(r io.Reader) (config image.Config, bitsPerPixel int, topDown b
 		height, topDown = -height, true
 	}
 	if width < 0 || height < 0 {
-		return image.Config{}, 0, false, ErrUnsupported
+		return image.Config{}, 0, false, false, ErrUnsupported
 	}
 	// We only support 1 plane and 8, 24 or 32 bits per pixel and no
 	// compression.
 	planes, bpp, compression := readUint16(b[26:28]), readUint16(b[28:30]), readUint32(b[30:34])
-	// if compression is set to BITFIELDS, but the bitmask is set to the default bitmask
+	// if compression is set to BI_BITFIELDS, but the bitmask is set to the default bitmask
 	// that would be used if compression was set to 0, we can continue as if compression was 0
 	if compression == 3 && infoLen > infoHeaderLen &&
 		readUint32(b[54:58]) == 0xff0000 && readUint32(b[58:62]) == 0xff00 &&
@@ -182,16 +187,16 @@ func decodeConfig(r io.Reader) (config image.Config, bitsPerPixel int, topDown b
 		compression = 0
 	}
 	if planes != 1 || compression != 0 {
-		return image.Config{}, 0, false, ErrUnsupported
+		return image.Config{}, 0, false, false, ErrUnsupported
 	}
 	switch bpp {
 	case 8:
 		if offset != fileHeaderLen+infoLen+256*4 {
-			return image.Config{}, 0, false, ErrUnsupported
+			return image.Config{}, 0, false, false, ErrUnsupported
 		}
 		_, err = io.ReadFull(r, b[:256*4])
 		if err != nil {
-			return image.Config{}, 0, false, err
+			return image.Config{}, 0, false, false, err
 		}
 		pcm := make(color.Palette, 256)
 		for i := range pcm {
@@ -199,19 +204,40 @@ func decodeConfig(r io.Reader) (config image.Config, bitsPerPixel int, topDown b
 			// Every 4th byte is padding.
 			pcm[i] = color.RGBA{b[4*i+2], b[4*i+1], b[4*i+0], 0xFF}
 		}
-		return image.Config{ColorModel: pcm, Width: width, Height: height}, 8, topDown, nil
+		return image.Config{ColorModel: pcm, Width: width, Height: height}, 8, topDown, false, nil
 	case 24:
 		if offset != fileHeaderLen+infoLen {
-			return image.Config{}, 0, false, ErrUnsupported
+			return image.Config{}, 0, false, false, ErrUnsupported
 		}
-		return image.Config{ColorModel: color.RGBAModel, Width: width, Height: height}, 24, topDown, nil
+		return image.Config{ColorModel: color.RGBAModel, Width: width, Height: height}, 24, topDown, false, nil
 	case 32:
 		if offset != fileHeaderLen+infoLen {
-			return image.Config{}, 0, false, ErrUnsupported
+			return image.Config{}, 0, false, false, ErrUnsupported
 		}
-		return image.Config{ColorModel: color.RGBAModel, Width: width, Height: height}, 32, topDown, nil
+		// 32 bits per pixel is possibly RGBX (X is padding) or RGBA (A is
+		// alpha transparency). However, for BMP images, "Alpha is a
+		// poorly-documented and inconsistently-used feature" says
+		// https://source.chromium.org/chromium/chromium/src/+/bc0a792d7ebc587190d1a62ccddba10abeea274b:third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_reader.cc;l=621
+		//
+		// That goes on to say "BITMAPV3HEADER+ have an alpha bitmask in the
+		// info header... so we respect it at all times... [For earlier
+		// (smaller) headers we] ignore alpha in Windows V3 BMPs except inside
+		// ICO files".
+		//
+		// "Ignore" means to always set alpha to 0xFF (fully opaque):
+		// https://source.chromium.org/chromium/chromium/src/+/bc0a792d7ebc587190d1a62ccddba10abeea274b:third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_reader.h;l=272
+		//
+		// Confusingly, "Windows V3" does not correspond to BITMAPV3HEADER, but
+		// instead corresponds to the earlier (smaller) BITMAPINFOHEADER:
+		// https://source.chromium.org/chromium/chromium/src/+/bc0a792d7ebc587190d1a62ccddba10abeea274b:third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_reader.cc;l=258
+		//
+		// This Go package does not support ICO files and the (infoLen >
+		// infoHeaderLen) condition distinguishes BITMAPINFOHEADER (40 bytes)
+		// vs later (larger) headers.
+		allowAlpha = infoLen > infoHeaderLen
+		return image.Config{ColorModel: color.RGBAModel, Width: width, Height: height}, 32, topDown, allowAlpha, nil
 	}
-	return image.Config{}, 0, false, ErrUnsupported
+	return image.Config{}, 0, false, false, ErrUnsupported
 }
 
 func init() {
