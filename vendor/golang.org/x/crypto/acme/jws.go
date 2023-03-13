@@ -33,6 +33,10 @@ const noKeyID = KeyID("")
 // See https://tools.ietf.org/html/rfc8555#section-6.3 for more details.
 const noPayload = ""
 
+// noNonce indicates that the nonce should be omitted from the protected header.
+// See jwsEncodeJSON for details.
+const noNonce = ""
+
 // jsonWebSignature can be easily serialized into a JWS following
 // https://tools.ietf.org/html/rfc7515#section-3.2.
 type jsonWebSignature struct {
@@ -45,30 +49,54 @@ type jsonWebSignature struct {
 // The result is serialized in JSON format containing either kid or jwk
 // fields based on the provided KeyID value.
 //
-// If kid is non-empty, its quoted value is inserted in the protected head
+// The claimset is marshalled using json.Marshal unless it is a string.
+// In which case it is inserted directly into the message.
+//
+// If kid is non-empty, its quoted value is inserted in the protected header
 // as "kid" field value. Otherwise, JWK is computed using jwkEncode and inserted
 // as "jwk" field value. The "jwk" and "kid" fields are mutually exclusive.
 //
+// If nonce is non-empty, its quoted value is inserted in the protected header.
+//
 // See https://tools.ietf.org/html/rfc7515#section-7.
 func jwsEncodeJSON(claimset interface{}, key crypto.Signer, kid KeyID, nonce, url string) ([]byte, error) {
+	if key == nil {
+		return nil, errors.New("nil key")
+	}
 	alg, sha := jwsHasher(key.Public())
 	if alg == "" || !sha.Available() {
 		return nil, ErrUnsupportedKey
 	}
-	var phead string
+	headers := struct {
+		Alg   string          `json:"alg"`
+		KID   string          `json:"kid,omitempty"`
+		JWK   json.RawMessage `json:"jwk,omitempty"`
+		Nonce string          `json:"nonce,omitempty"`
+		URL   string          `json:"url"`
+	}{
+		Alg:   alg,
+		Nonce: nonce,
+		URL:   url,
+	}
 	switch kid {
 	case noKeyID:
 		jwk, err := jwkEncode(key.Public())
 		if err != nil {
 			return nil, err
 		}
-		phead = fmt.Sprintf(`{"alg":%q,"jwk":%s,"nonce":%q,"url":%q}`, alg, jwk, nonce, url)
+		headers.JWK = json.RawMessage(jwk)
 	default:
-		phead = fmt.Sprintf(`{"alg":%q,"kid":%q,"nonce":%q,"url":%q}`, alg, kid, nonce, url)
+		headers.KID = string(kid)
 	}
-	phead = base64.RawURLEncoding.EncodeToString([]byte(phead))
+	phJSON, err := json.Marshal(headers)
+	if err != nil {
+		return nil, err
+	}
+	phead := base64.RawURLEncoding.EncodeToString([]byte(phJSON))
 	var payload string
-	if claimset != noPayload {
+	if val, ok := claimset.(string); ok {
+		payload = val
+	} else {
 		cs, err := json.Marshal(claimset)
 		if err != nil {
 			return nil, err
