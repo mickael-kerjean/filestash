@@ -131,7 +131,7 @@ jobs:
          cat access.log | grep -vz "ERR"
 
   test_e2e:
-    needs: [test_prepare, build_backend]
+    needs: [test_prepare, build_backend, test_smoke]
     runs-on: ubuntu-latest
     container:
       image: machines/puppeteer
@@ -163,7 +163,7 @@ jobs:
 
   release_docker:
     if: github.ref == 'refs/heads/master'
-    needs: test_smoke
+    needs: [test_smoke, test_e2e]
     runs-on: ubuntu-latest
     steps:
     - name: Init
