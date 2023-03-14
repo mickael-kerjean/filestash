@@ -35,7 +35,7 @@ jobs:
         path: server/ctrl/static/www/
     - uses: actions/setup-go@v3.5.0
       with:
-        go-version: 1.20
+        go-version: 1.19
     - name: Setup
       run: |
         mkdir -p ./dist/data/state/config
@@ -99,7 +99,7 @@ jobs:
         name: test
     - uses: actions/setup-go@v3.5.0
       with:
-        go-version: 1.20
+        go-version: 1.19
     - name: Setup
       run: |
         sudo apt-get install -y poppler-utils
@@ -125,6 +125,9 @@ jobs:
        run: |
          chmod +x filestash
          timeout 5 ./filestash > access.log || code=$?; if [[ $code -ne 124 ]]; then exit $code; fi
+         echo "========= access.log "
+         cat access.log
+         echo "====================="
          cat access.log | grep -q "Filestash v0.5 starting"
          cat access.log | grep -q "listening on :"
          cat access.log | grep -vz "WARN"
@@ -177,10 +180,10 @@ jobs:
       run: |
         export COMMIT_SHA=`git rev-parse --short HEAD`
         cd docker
-        docker build --tag machines/tmp:latest .
-        docker tag machines/tmp:latest machines/tmp:$COMMIT_SHA
-        docker push machines/tmp:latest
-        docker push machines/tmp:$COMMIT_SHA
+        docker build --tag machines/filestash:latest .
+        docker tag machines/filestash:latest machines/filestash:$COMMIT_SHA
+        docker push machines/filestash:latest
+        docker push machines/filestash:$COMMIT_SHA
 
   deploy:
     if: github.ref == 'refs/heads/master'
