@@ -1,10 +1,12 @@
 @import "../../assets/css/mixin.scss";
 .component_submenu{
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    background: var(--bg-color);
-    opacity: 0.95;
+    &.sticky {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: var(--bg-color);
+        opacity: 0.95;
+    }
 
     .component_container{
         padding-left: 0;

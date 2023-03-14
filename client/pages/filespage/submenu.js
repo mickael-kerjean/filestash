@@ -121,9 +121,9 @@ class SubmenuComponent extends React.Component {
 
     render() {
         return (
-            <div className="component_submenu">
+            <div className={"component_submenu" + (this.props.selected.length > 0 ? " sticky" : "")}>
                 <Container>
-                    <div className={"menubar no-select "+(this.state.search_input_visible ? "search_focus" : "")}>
+                    <div className={"menubar no-select"+(this.state.search_input_visible ? " search_focus" : "")}>
                         <NgIf
                             className="button-new-file"
                             cond={this.props.accessRight.can_create_file !== false && this.props.selected.length === 0}
