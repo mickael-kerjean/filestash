@@ -68,6 +68,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		params["port"] = "21"
 	}
 	if params["username"] == "" {
+		params["acl"] = "r"
 		params["username"] = "anonymous"
 	}
 	if params["username"] == "anonymous" && params["password"] == "" {
@@ -229,6 +230,20 @@ func (f Ftp) LoginForm() Form {
 			},
 		},
 	}
+}
+
+func (f Ftp) Meta(path string) Metadata {
+	if f.p["acl"] == "r" {
+		return Metadata{
+			CanCreateFile:      NewBool(false),
+			CanCreateDirectory: NewBool(false),
+			CanRename:          NewBool(false),
+			CanMove:            NewBool(false),
+			CanUpload:          NewBool(false),
+			CanDelete:          NewBool(false),
+		}
+	}
+	return Metadata{}
 }
 
 func (f Ftp) Home() (string, error) {
