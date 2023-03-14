@@ -41,7 +41,7 @@
         .label{color: var(--color);padding: 2px 5px;}
         a.label{
             position: relative;
-            color: var(--light);
+            color: rgba(0,0,0,0.5);
             span.title{
                 position: absolute;
                 left: 0;
