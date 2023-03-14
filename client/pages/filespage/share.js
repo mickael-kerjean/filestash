@@ -200,23 +200,23 @@ export class ShareComponent extends React.Component {
                 <h2>{ t("Create a New Link") }</h2>
 
                 <div className="share--content link-type no-select">
-                    { this.props.type === "file" ? null :
-                        <div
-                            onClick={this.updateState.bind(this, "role", "uploader")}
-                            className={this.state.role === "uploader" ? "active" : ""}>
-                            { t("Uploader") }
-                        </div>
-                    }
                     <div
                         onClick={this.updateState.bind(this, "role", "viewer")}
-                        className={this.state.role === "viewer" ? "active" : ""}>
+                        className={"acl-r" + (this.state.role === "viewer" ? " active" : "")}>
                         { t("Viewer") }
                     </div>
                     <div
                         onClick={this.updateState.bind(this, "role", "editor")}
-                        className={this.state.role === "editor" ? "active" : ""}>
+                        className={"acl-rw" + (this.state.role === "editor" ? " active" : "")}>
                         { t("Editor") }
                     </div>
+                    { this.props.type === "file" ? null :
+                        <div
+                            onClick={this.updateState.bind(this, "role", "uploader")}
+                            className={"acl-w" + (this.state.role === "uploader" ? " active" : "")}>
+                            { t("Uploader") }
+                        </div>
+                    }
                 </div>
 
                 <NgIf
