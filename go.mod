@@ -20,6 +20,8 @@ require (
 	github.com/pkg/sftp v1.11.0
 	github.com/prasad83/goftp v0.0.0-20210325080443-f57aaed46a32
 	github.com/qeesung/image2ascii v1.0.1
+	github.com/rasky/go-xdr v0.0.0-20170124162913-1a41d1a06c93 // indirect
+	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/stretchr/testify v1.7.0
@@ -35,6 +37,7 @@ require (
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9
 	google.golang.org/api v0.15.0
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/ldap.v2 v2.5.1
 	gopkg.in/ldap.v3 v3.1.0
@@ -78,10 +81,8 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rasky/go-xdr v0.0.0-20170124162913-1a41d1a06c93 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/russellhaering/goxmldsig v1.1.1 // indirect
-	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/spacemonkeygo/monkit/v3 v3.0.17 // indirect
 	github.com/src-d/gcfg v1.4.0 // indirect
@@ -99,7 +100,6 @@ require (
 	google.golang.org/appengine v1.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20190502173448-54afdca5d873 // indirect
 	google.golang.org/grpc v1.20.1 // indirect
-	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
 	gopkg.in/src-d/go-billy.v4 v4.3.2 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
