@@ -6,9 +6,11 @@ import (
 	"github.com/vmware/go-nfs-client/nfs"
 	"github.com/vmware/go-nfs-client/nfs/rpc"
 	"github.com/vmware/go-nfs-client/nfs/util"
+	"github.com/vmware/go-nfs-client/nfs/xdr"
 	"io"
 	"os"
 	"os/user"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -16,6 +18,7 @@ import (
 type NfsShare struct {
 	mount *nfs.Mount
 	v     *nfs.Target
+	auth  rpc.Auth
 	ctx   context.Context
 }
 
@@ -60,11 +63,12 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	if err != nil {
 		return nil, err
 	}
-	v, err := mount.Mount(params["target"], auth.Auth())
+	authenticator := auth.Auth()
+	v, err := mount.Mount(params["target"], authenticator)
 	if err != nil {
 		return nil, err
 	}
-	return NfsShare{mount, v, app.Context}, nil
+	return NfsShare{mount, v, authenticator, app.Context}, nil
 }
 
 func (this NfsShare) LoginForm() Form {
@@ -157,25 +161,70 @@ func (this NfsShare) Cat(path string) (io.ReadCloser, error) {
 
 func (this NfsShare) Mkdir(path string) error {
 	defer this.Close()
-	_, err := this.v.Mkdir(path, 0775)
+	_, err := this.v.Mkdir(this.nfsPath(path), 0775)
 	return err
 }
 
 func (this NfsShare) Rm(path string) error {
 	defer this.Close()
 	if strings.HasSuffix(path, "/") {
-		return this.v.RemoveAll(path)
+		return this.v.RemoveAll(this.nfsPath(path))
 	}
 	return this.v.Remove(path)
 }
 
+// this wasn't implemented in the original lib and considering
+// PR aren't handled by vmware, we did come with the implementation as
+// of RFC1813 in: https://www.rfc-editor.org/rfc/rfc1813#section-3.3.14
 func (this NfsShare) Mv(from string, to string) error {
 	defer this.Close()
-	return ErrNotImplemented
+
+	f, fName := filepath.Split(this.nfsPath(from))
+	_, fh, err := this.v.Lookup(f)
+	if err != nil {
+		return err
+	}
+	t, tName := filepath.Split(this.nfsPath(to))
+	_, th, err := this.v.Lookup(t)
+	if err != nil {
+		return err
+	}
+
+	type RenameArgs struct {
+		rpc.Header
+		From nfs.Diropargs3
+		To   nfs.Diropargs3
+	}
+	const RENAME3res = 14
+	res, err := this.v.Call(&RenameArgs{
+		Header: rpc.Header{
+			Rpcvers: 2,
+			Prog:    nfs.Nfs3Prog,
+			Vers:    nfs.Nfs3Vers,
+			Proc:    RENAME3res,
+			Cred:    this.auth,
+			Verf:    rpc.AuthNull,
+		},
+		From: nfs.Diropargs3{
+			FH:       fh,
+			Filename: fName,
+		},
+		To: nfs.Diropargs3{
+			FH:       th,
+			Filename: tName,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	status, err := xdr.ReadUint32(res)
+	if err != nil {
+		return err
+	}
+	return nfs.NFS3Error(status)
 }
 
 func (this NfsShare) Touch(path string) error {
-	defer this.Close()
 	return this.Save(path, strings.NewReader(""))
 }
 
@@ -193,4 +242,8 @@ func (this NfsShare) Save(path string, file io.Reader) error {
 func (this NfsShare) Close() {
 	this.v.Close()
 	this.mount.Close()
+}
+
+func (this NfsShare) nfsPath(path string) string {
+	return strings.TrimSuffix(path, "/")
 }
