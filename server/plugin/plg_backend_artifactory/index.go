@@ -142,13 +142,13 @@ func (this ArtifactoryStorage) Ls(path string) ([]os.FileInfo, error) {
 						return "file"
 					}(),
 					FTime: func() int64 {
-						t, err := time.Parse(time.RFC1123, artifactoryFile.LastModified)
+						t, err := time.Parse("2006-01-02T15:04:05.000Z", artifactoryFile.LastModified)
 						if err != nil {
 							return 0
 						}
 						return t.Unix()
 					}(),
-					FSize: 0,
+					FSize: artifactoryFile.Size,
 				}
 			}
 			return files, nil
