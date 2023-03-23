@@ -3,6 +3,7 @@ package plg_backend_s3
 import (
 	"context"
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -12,12 +13,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	. "github.com/mickael-kerjean/filestash/server/common"
+
 	"io"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 var S3Cache AppCache
@@ -168,7 +169,6 @@ func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 	}
 	client := s3.New(s.createSession(p.bucket))
 
-	startTime := time.Now()
 	err = client.ListObjectsV2PagesWithContext(
 		s.context,
 		&s3.ListObjectsV2Input{
@@ -194,7 +194,7 @@ func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 					FType: "directory",
 				})
 			}
-			return time.Since(startTime) < 5*time.Second
+			return aws.BoolValue(objs.IsTruncated)
 		})
 	return files, err
 }
