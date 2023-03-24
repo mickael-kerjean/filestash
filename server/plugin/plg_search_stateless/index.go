@@ -2,6 +2,7 @@ package plg_search_stateless
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -56,7 +57,13 @@ func (this StatelessSearch) Query(app App, path string, keyword string) ([]IFile
 					}(),
 					FSize: f[i].Size(),
 					FTime: f[i].ModTime().Unix() * 1000,
-					FPath: currentPath.Path + name,
+					FPath: func() string {
+						p := filepath.Join(currentPath.Path, name)
+						if f[i].IsDir() {
+							p = p + "/"
+						}
+						return p
+					}(),
 				})
 			}
 
