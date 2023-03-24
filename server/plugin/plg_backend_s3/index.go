@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var S3Cache AppCache
@@ -169,6 +170,7 @@ func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 	}
 	client := s3.New(s.createSession(p.bucket))
 
+	startTime := time.Now()
 	err = client.ListObjectsV2PagesWithContext(
 		s.context,
 		&s3.ListObjectsV2Input{
@@ -193,6 +195,11 @@ func (s S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 					FName: filepath.Base(*object.Prefix),
 					FType: "directory",
 				})
+			}
+
+			if time.Since(startTime) > ls_timeout() {
+				Log.Debug("plg_backend_s3::ls timeout triggered after getting %d files", len(files))
+				return false
 			}
 			return aws.BoolValue(objs.IsTruncated)
 		})
