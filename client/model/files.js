@@ -89,9 +89,6 @@ class FileSystem {
                 return Promise.resolve(null);
             });
         }).catch((_err) => {
-            if (_err.code === "Unauthorized") {
-                location = "/login?next=" + location.pathname;
-            }
             this.obs.next(_err);
             return Promise.reject(_err);
         });

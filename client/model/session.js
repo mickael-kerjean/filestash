@@ -4,7 +4,16 @@ class SessionManager {
     currentUser() {
         const shareID = currentShare();
         return http_get("/api/session" + (shareID && `?share=${shareID}`))
-            .then((data) => data.result);
+            .then((data) => data.result)
+            .catch((err) => {
+                if (err.code === "Unauthorized") {
+                    if (location.pathname.indexOf("/files/") !== -1 || location.pathname.indexOf("/view/") !== -1) {
+                        location = "/login?next=" + location.pathname;
+                        return;
+                    }
+                }
+                return Promise.reject(err);
+            });
     }
 
     oauth2(url, next) {

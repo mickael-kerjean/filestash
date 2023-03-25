@@ -440,5 +440,9 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	})
-	http.Redirect(res, req, "/", http.StatusTemporaryRedirect)
+	redirectURI := templateBind["next"]
+	if redirectURI == "" {
+		redirectURI = "/"
+	}
+	http.Redirect(res, req, redirectURI, http.StatusTemporaryRedirect)
 }
