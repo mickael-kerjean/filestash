@@ -8,10 +8,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go/service/sts"
 	. "github.com/mickael-kerjean/filestash/server/common"
 
 	"io"
@@ -55,6 +57,16 @@ func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 			SessionToken:    params["session_token"],
 		}})
 	}
+
+	if params["role_arn"] != "" {
+		sessOptions := session.Options{Config: aws.Config{Region: aws.String(params["region"])}}
+		creds = append(creds, &stscreds.AssumeRoleProvider{
+			Client:   sts.New(session.Must(session.NewSessionWithOptions(sessOptions))),
+			RoleARN:  params["role_arn"],
+			Duration: stscreds.DefaultDuration,
+		})
+	}
+
 	creds = append(
 		creds,
 		&ec2rolecreds.EC2RoleProvider{Client: ec2metadata.New(session.Must(session.NewSession()))},
@@ -101,7 +113,13 @@ func (s S3Backend) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"s3_path", "s3_session_token", "s3_encryption_key", "s3_region", "s3_endpoint"},
+				Target:      []string{"s3_role_arn", "s3_path", "s3_session_token", "s3_encryption_key", "s3_region", "s3_endpoint"},
+			},
+			FormElement{
+				Id:          "s3_role_arn",
+				Name:        "role_arn",
+				Type:        "text",
+				Placeholder: "Role ARN",
 			},
 			FormElement{
 				Id:          "s3_session_token",
