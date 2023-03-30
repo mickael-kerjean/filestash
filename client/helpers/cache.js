@@ -332,6 +332,16 @@ export function setup_cache() {
     if ("indexedDB" in window && window.indexedDB !== null) {
         cache = new DataFromIndexedDB();
         return Promise.all([cache.db, setup_cache_state()])
+            .catch((err) => {
+                if (err === "INDEXEDDB_NOT_SUPPORTED") {
+                    // Firefox in private mode act like if it supports indexedDB but
+                    // is throwing that string as an error if you try to use it ...
+                    // so we fallback with our basic ram cache
+                    cache = new DataFromMemory();
+                    return setup_cache_state();
+                }
+                throw err;
+            })
     }
     return setup_cache_state();
 }
