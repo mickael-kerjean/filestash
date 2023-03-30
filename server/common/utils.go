@@ -3,6 +3,7 @@ package common
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"strconv"
@@ -58,8 +59,9 @@ func NewStringpFromInterface(val interface{}) *string {
 func NewStringFromInterface(val interface{}) string {
 	switch val.(type) {
 	case string:
-		v := val.(string)
-		return v
+		return val.(string)
+	case float64:
+		return fmt.Sprintf("%d", int64(val.(float64)))
 	default:
 		return ""
 	}
