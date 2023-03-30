@@ -66,6 +66,7 @@ export class BreadCrumb extends React.Component {
                             this.state.path.map((path, index) => {
                                 return (
                                     <Path key={"breadcrumb_"+index}
+                                        className={"n" + index}
                                         baseURL={index === 0 ? URL_FILES : this.props.baseURL || URL_FILES}
                                         currentSelection={this.props.currentSelection} path={path}
                                         isLast={this.state.path.length === index + 1}
@@ -185,7 +186,7 @@ class PathElementWrapperComponent extends React.Component {
                     <Separator/>
                 </NgIf>
                 <NgIf cond={this.props.isLast === true} className="label">
-                    {this.limitSize(this.props.path.label)}
+                    <div>{this.limitSize(this.props.path.label)}</div>
                     <Saving needSaving={this.props.needSaving} />
                 </NgIf>
             </div>
@@ -204,9 +205,9 @@ export class PathElement extends PathElementWrapper {
 
     render(highlight = false) {
         let className = "component_path-element";
-        if (this.props.isLast) {
-            className += " is-last";
-        }
+        if (this.props.isFirst) className += ` is-first`;
+        if (this.props.className) className += ` ${this.props.className}`;
+
         return (
             <div className={className}>
                 <PathElementWrapper highlight={highlight} {...this.props} />
