@@ -24,7 +24,7 @@ const HOCDropTargetForFSFile = (Cmp) => {
 class FileSystemComponent extends React.PureComponent {
     render() {
         return this.props.connectDropFile(
-            <div className="component_filesystem">
+            <div className={"component_filesystem" + (this.props.isSearch ? " is_search" : " is_folder")}>
                 <Container>
                     <NewThing
                         path={this.props.path} sort={this.props.sort}
