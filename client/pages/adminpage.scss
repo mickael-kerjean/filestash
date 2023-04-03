@@ -3,7 +3,7 @@
     .adminpage { max-width: 1400px; }
     .page_container{
         width: 100%;
-        background: var(--super-light);
+        background: rgb(253, 253, 252);
         padding-bottom: 150px;
         padding-left: 60px;
         padding-right: 60px;
@@ -20,10 +20,16 @@
             padding: 50px 0 0 0;
             margin-bottom: 30px;
             margin-top: 0;
-            @media screen and (max-width: 1000px) { padding: 25px 0 0 0; }
-            @media screen and (max-width: 500px) { padding: 10px 0 0 0; }
+
+            @media screen and (max-width: 1000px) { padding-top: 25px; }
+            @media screen and (max-width: 500px) { padding-top: 10px; }
             font-weight: 300;
             line-height: 1em;
+            margin-left: -60px;
+            margin-right: -60px;
+            padding-left: 60px;
+            padding-right: 60px;
+
             &:after{
                 content: "_";
                 display: block;
@@ -37,10 +43,10 @@
         }
         .sticky h2{
             position: sticky;
-            background: var(--super-light);
+            background: rgba(253, 253, 252, 0.9);
+            backdrop-filter: blur(5px);
             z-index: 2;
             top: 0;
-            opacity: 0.9;
         }
         label{
             > div{
@@ -129,7 +135,7 @@
 
 .component_menu_sidebar{
     height: 100vh;
-    background: linear-gradient(#313538, var(--dark));
+    background: linear-gradient(#2c3032, #313538);
     width: 250px;
     border-right: 2px solid var(--color);
     padding: 50px 0px 0px 40px;
@@ -206,14 +212,14 @@
     }
 }
 
-
-.adminpage-appear{
-    transition: transform 0.3s ease, opacity 0.5s ease;
-    opacity: 0;
-    transform: translateX(5px);
+@keyframes PageAdminAnimationLoaded {
+    from { transform: translateY(3px); opacity: 0;}
+    to {transform: translateY(0); opacity: 1; }
 }
-
-.adminpage-appear.adminpage-appear-active{
-    opacity: 1;
-    transform: translateX(0px);
+.component_page_admin .component_dashboard,
+.component_page_admin .component_logpage,
+.component_page_admin .component_settingspage{
+    animation-duration: 0.2s;
+    animation-fill-mode: forwards;
+    animation-name: PageAdminAnimationLoaded;
 }

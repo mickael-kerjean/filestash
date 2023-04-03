@@ -252,7 +252,8 @@ const FormElement = ({
         $input = (
             <Input onChange={(e) => onBcryptChange(e.target.value)} {...id} name={struct.label}
                 type="password" defaultValue={struct.value || ""}
-                placeholder={ t(struct.placeholder) } />
+                placeholder={ t(struct.placeholder) }
+                {...inputAttr} />
         );
         break;
     }

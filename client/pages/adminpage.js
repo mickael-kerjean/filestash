@@ -47,27 +47,24 @@ export default AdminOnly((props) => {
         <div className="component_page_admin">
             <SideMenu url={match.url} isLoading={isSaving}/>
             <div className="page_container scroll-y">
-                <CSSTransition key={location.pathname} transitionName="adminpage"
-                    transitionAppearTimeout={30000}>
-                    <Switch>
-                        <Route
-                            path={match.url + "/backend"}
-                            render={()=> <BackendPage isSaving={setIsSaving}/>}
-                        />
-                        <Route
-                            path={match.url + "/settings"}
-                            render={()=> <SettingsPage isSaving={setIsSaving}/>}
-                        />
-                        <Route
-                            path={match.url + "/logs"}
-                            render={() => <LogPage isSaving={setIsSaving}/>} />
-                        <Route
-                            path={match.url + "/about"}
-                            render={() => <AboutPage />} />
-                        <Route path={match.url + "/setup"} component={SetupPage} />
-                        <Route path={match.url} component={HomePage} />
-                    </Switch>
-                </CSSTransition>
+                <Switch>
+                    <Route
+                        path={match.url + "/backend"}
+                        render={()=> <BackendPage isSaving={setIsSaving}/>}
+                    />
+                    <Route
+                        path={match.url + "/settings"}
+                        render={()=> <SettingsPage isSaving={setIsSaving}/>}
+                    />
+                    <Route
+                        path={match.url + "/logs"}
+                        render={() => <LogPage isSaving={setIsSaving}/>} />
+                    <Route
+                        path={match.url + "/about"}
+                        render={() => <AboutPage />} />
+                    <Route path={match.url + "/setup"} component={SetupPage} />
+                    <Route path={match.url} component={HomePage} />
+                </Switch>
             </div>
         </div>
     );

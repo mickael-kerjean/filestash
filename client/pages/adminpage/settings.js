@@ -70,11 +70,13 @@ export function SettingsPage({ isSaving = nop }) {
     );
 
     return (
-        <form className="sticky">
-            <FormBuilder
-                form={form}
-                onChange={onChange}
-                render={renderForm} />
-        </form>
+        <div className="component_settingspage sticky">
+            <form>
+                <FormBuilder
+                    form={form}
+                    onChange={onChange}
+                    render={renderForm} />
+            </form>
+        </div>
     );
 }

@@ -107,6 +107,7 @@ function LogComponent({ isSaving }) {
                     <Button className="primary">Download</Button>
                 </a>
             </div>
+            <br/><br/>
         </React.Fragment>
     );
 }
