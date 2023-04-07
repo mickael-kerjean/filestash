@@ -100,7 +100,7 @@ func SecureOrigin(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 			return
 		}
 
-		Log.Warning("Intrusion detection: %s - %s", req.RemoteAddr, req.URL.String())
+		Log.Warning("Intrusion detection: %s - %s", RetrievePublicIp(req), req.URL.String())
 		SendErrorResult(res, ErrNotAllowed)
 	}
 }
@@ -181,4 +181,12 @@ func EnableCors(req *http.Request, res http.ResponseWriter, host string) error {
 	h.Set("Access-Control-Allow-Methods", method)
 	h.Set("Access-Control-Allow-Headers", "Authorization")
 	return nil
+}
+
+func RetrievePublicIp(req *http.Request) string {
+	if req.Header.Get("X-Forwarded-For") != "" {
+		return req.Header.Get("X-Forwarded-For")
+	} else { 
+		return req.RemoteAddr
+	}
 }
