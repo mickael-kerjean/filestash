@@ -67,24 +67,22 @@ export function ViewerPageComponent({ error, subscribe, unsubscribe, match, loca
     const filename = Path.basename(currentUrl.replace("/view", "")) || "untitled.dat";
 
     const save = (file) => {
-        return Files.save(path, file)
-            .then(() => setState({ isSaving: false, needSaving: false }))
-            .then(() => (new Promise((done, err) => {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        setState({ content: reader.result });
-                        done();
-                    };
-                    reader.onerror = (e) => {
-                        err(new Error("Internal error 500"));
-                    };
-                    reader.readAsText(file);
-            })))
-            .catch((err) => {
-                if (err && err.code === "CANCELLED") return;
-                setState({ isSaving: false });
-                notify.send(err, "error");
-            });
+        setState({ isSaving: true, needSaving: false });
+        return (new Promise((done, err) => {
+            const reader = new FileReader();
+            reader.onload = () => done(reader.result);
+            reader.readAsText(file);
+        })).then((content) => {
+            let oldContent = state.content;
+            setState({ content: content });
+            return Files.save(path, file)
+                .then(() => setState({ isSaving: false }))
+                .catch((err) => {
+                    if (err && err.code === "CANCELLED") return;
+                    setState({ isSaving: false, needSaving: true, content: oldContent });
+                    notify.send(err, "error");
+                });
+        });
     }
 
     const needSaving = (bool) => {
