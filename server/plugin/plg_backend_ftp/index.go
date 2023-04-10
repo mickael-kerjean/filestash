@@ -22,6 +22,7 @@ type Ftp struct {
 	client *goftp.Client
 	p      map[string]string
 	wg     *sync.WaitGroup
+	ctx    context.Context
 }
 
 func init() {
@@ -55,8 +56,9 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 			return nil, ErrInternal
 		}
 		d.wg.Add(1)
+		d.ctx = app.Context
 		go func() {
-			<-app.Context.Done()
+			<-d.ctx.Done()
 			d.wg.Done()
 		}()
 		return d, nil
@@ -128,7 +130,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 				continue
 			}
 			params["mode"] = connectStrategy[i]
-			backend = &Ftp{client, params, nil}
+			backend = &Ftp{client, params, nil, app.Context}
 			break
 		} else if connectStrategy[i] == "ftps::implicit" {
 			cfg := cfgBuilder(60*time.Second, true)
@@ -143,7 +145,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 				continue
 			}
 			params["mode"] = connectStrategy[i]
-			backend = &Ftp{client, params, nil}
+			backend = &Ftp{client, params, nil, app.Context}
 			break
 		} else if connectStrategy[i] == "ftps::explicit" {
 			cfg := cfgBuilder(5*time.Second, true)
@@ -165,7 +167,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 				continue
 			}
 			params["mode"] = connectStrategy[i]
-			backend = &Ftp{client, params, nil}
+			backend = &Ftp{client, params, nil, app.Context}
 			break
 		}
 	}
@@ -174,8 +176,9 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 	backend.wg = new(sync.WaitGroup)
 	backend.wg.Add(1)
+	backend.ctx = app.Context
 	go func() {
-		<-app.Context.Done()
+		<-backend.ctx.Done()
 		backend.wg.Done()
 	}()
 	FtpCache.Set(params, backend)
@@ -375,7 +378,7 @@ func (f Ftp) Execute(fn func(*goftp.Client) error) {
 		if code == 421 || (code == 0 && err.Error() == "error reading response: EOF") {
 			f.Close()
 			FtpCache.Set(f.p, nil)
-			if b, err := f.Init(f.p, &App{Context: context.Background()}); err == nil {
+			if b, err := f.Init(f.p, &App{Context: f.ctx}); err == nil {
 				fn(b.(*Ftp).client)
 			}
 		}
