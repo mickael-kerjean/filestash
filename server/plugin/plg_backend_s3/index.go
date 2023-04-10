@@ -75,7 +75,7 @@ func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 	config := &aws.Config{
 		Credentials:                   credentials.NewChainCredentials(creds),
 		CredentialsChainVerboseErrors: aws.Bool(true),
-		S3ForcePathStyle:              aws.Bool(params["url_style"] == "path-style"),
+		S3ForcePathStyle:              aws.Bool(true),
 		Region:                        aws.String(params["region"]),
 	}
 	if params["endpoint"] != "" {
@@ -113,13 +113,7 @@ func (s S3Backend) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"s3_endpoint", "s3_role_arn", "s3_path", "s3_session_token", "s3_encryption_key", "s3_region", "s3_url_style"},
-			},
-			FormElement{
-				Id:          "s3_endpoint",
-				Name:        "endpoint",
-				Type:        "text",
-				Placeholder: "Endpoint",
+				Target:      []string{"s3_role_arn", "s3_path", "s3_session_token", "s3_encryption_key", "s3_region", "s3_endpoint"},
 			},
 			FormElement{
 				Id:          "s3_role_arn",
@@ -152,13 +146,10 @@ func (s S3Backend) LoginForm() Form {
 				Placeholder: "Region",
 			},
 			FormElement{
-				Id:          "s3_url_style",
-				Name:        "url_style",
-				Type:        "select",
-				Default:     "path-style",
-				Opts:        []string{"path-style", "virtual-hosted–style"},
-				Description: "Amazon S3 supports both virtual-hosted–style and path-style URL access in all AWS Regions. Default: \"path-style\"",
-				Placeholder: "S3 URL Style",
+				Id:          "s3_endpoint",
+				Name:        "endpoint",
+				Type:        "text",
+				Placeholder: "Endpoint",
 			},
 		},
 	}
