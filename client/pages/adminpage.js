@@ -3,9 +3,11 @@ import { Route, Switch, NavLink, useRouteMatch } from "react-router-dom";
 
 import "./error.scss";
 import "./adminpage.scss";
-import { Icon, LoadingPage, CSSTransition } from "../components/";
+import { Icon, LoadingPage, CSSTransition, ErrorPage } from "../components/";
 import { Admin } from "../model";
 import { notify } from "../helpers/";
+import { t } from "../locales/";
+
 import {
     HomePage, BackendPage, SettingsPage, AboutPage, LogPage, SetupPage, LoginPage,
 } from "./adminpage/";
@@ -16,10 +18,14 @@ function AdminOnly(WrappedComponent) {
         const [isAdmin, setIsAdmin] = useState(initIsAdmin);
 
         const refresh = () => {
-            Admin.isAdmin().then((t) => {
-                initIsAdmin = t;
-                setIsAdmin(t);
+            Admin.isAdmin().then((r) => {
+                initIsAdmin = r;
+                setIsAdmin(r);
             }).catch((err) => {
+                if (err.code === "INTERNAL_SERVER_ERROR") {
+                    props.error({message: t("Cannot establish a connection")})
+                    return;
+                }
                 notify.send("Error: " + (err && err.message), "error");
                 setIsAdmin(false);
             });
@@ -40,7 +46,7 @@ function AdminOnly(WrappedComponent) {
     };
 }
 
-export default AdminOnly((props) => {
+export default ErrorPage(AdminOnly((props) => {
     const match = useRouteMatch();
     const [isSaving, setIsSaving] = useState(false);
     return (
@@ -68,7 +74,7 @@ export default AdminOnly((props) => {
             </div>
         </div>
     );
-});
+}));
 
 function SideMenu(props) {
     const [version, setVersion] = useState(null);
