@@ -1,6 +1,7 @@
 package plg_backend_ftp
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -21,6 +22,7 @@ type Ftp struct {
 	client *goftp.Client
 	p      map[string]string
 	wg     *sync.WaitGroup
+	ctx    context.Context
 }
 
 func init() {
@@ -47,15 +49,16 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	if c := FtpCache.Get(params); c != nil {
 		d := c.(*Ftp)
 		if d == nil {
-			Log.Warning("plg_backend_ftp::sftp is nil on get")
+			Log.Warning("plg_backend_ftp::ftp is nil on get")
 			return nil, ErrInternal
 		} else if d.wg == nil {
 			Log.Warning("plg_backend_ftp::wg is nil on get")
 			return nil, ErrInternal
 		}
 		d.wg.Add(1)
+		d.ctx = app.Context
 		go func() {
-			<-app.Context.Done()
+			<-d.ctx.Done()
 			d.wg.Done()
 		}()
 		return d, nil
@@ -127,7 +130,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 				continue
 			}
 			params["mode"] = connectStrategy[i]
-			backend = &Ftp{client, params, nil}
+			backend = &Ftp{client, params, nil, app.Context}
 			break
 		} else if connectStrategy[i] == "ftps::implicit" {
 			cfg := cfgBuilder(60*time.Second, true)
@@ -142,7 +145,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 				continue
 			}
 			params["mode"] = connectStrategy[i]
-			backend = &Ftp{client, params, nil}
+			backend = &Ftp{client, params, nil, app.Context}
 			break
 		} else if connectStrategy[i] == "ftps::explicit" {
 			cfg := cfgBuilder(5*time.Second, true)
@@ -164,7 +167,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 				continue
 			}
 			params["mode"] = connectStrategy[i]
-			backend = &Ftp{client, params, nil}
+			backend = &Ftp{client, params, nil, app.Context}
 			break
 		}
 	}
@@ -173,8 +176,9 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 	backend.wg = new(sync.WaitGroup)
 	backend.wg.Add(1)
+	backend.ctx = app.Context
 	go func() {
-		<-app.Context.Done()
+		<-backend.ctx.Done()
 		backend.wg.Done()
 	}()
 	FtpCache.Set(params, backend)
@@ -246,31 +250,50 @@ func (f Ftp) Meta(path string) Metadata {
 	return Metadata{}
 }
 
-func (f Ftp) Home() (string, error) {
-	return f.client.Getwd()
+func (f Ftp) Home() (home string, err error) {
+	f.Execute(func(client *goftp.Client) error {
+		home, err = f.client.Getwd()
+		return err
+	})
+	return home, err
 }
 
-func (f Ftp) Ls(path string) ([]os.FileInfo, error) {
-	return f.client.ReadDir(path)
+func (f Ftp) Ls(path string) (files []os.FileInfo, err error) {
+	f.Execute(func(client *goftp.Client) error {
+		files, err = client.ReadDir(path)
+		return err
+	})
+	return files, err
 }
 
-func (f Ftp) Cat(path string) (io.ReadCloser, error) {
-	pr, pw := io.Pipe()
-	go func() {
-		if err := f.client.Retrieve(path, pw); err != nil {
-			pr.CloseWithError(NewError("Problem", 409))
+func (f Ftp) Cat(path string) (reader io.ReadCloser, err error) {
+	f.Execute(func(client *goftp.Client) error {
+		if _, err = client.Stat(path); err != nil {
+			return err
 		}
-		pw.Close()
-	}()
-	return pr, nil
+		pr, pw := io.Pipe()
+		go func() {
+			err = client.Retrieve(path, pw)
+			if err != nil {
+				pr.CloseWithError(NewError("Problem", 409))
+			}
+			pw.Close()
+		}()
+		reader = pr
+		return nil
+	})
+	return reader, err
 }
 
-func (f Ftp) Mkdir(path string) error {
-	_, err := f.client.Mkdir(path)
+func (f Ftp) Mkdir(path string) (err error) {
+	f.Execute(func(client *goftp.Client) error {
+		_, err = client.Mkdir(path)
+		return err
+	})
 	return err
 }
 
-func (f Ftp) Rm(path string) error {
+func (f Ftp) Rm(path string) (err error) {
 	isDirectory := func(p string) bool {
 		return regexp.MustCompile(`\/$`).MatchString(p)
 	}
@@ -287,43 +310,77 @@ func (f Ftp) Rm(path string) error {
 		}
 		return e
 	}
-	if isDirectory(path) {
-		entries, err := f.Ls(path)
-		if transformError(err) != nil {
-			return err
-		}
-		for _, entry := range entries {
-			if entry.IsDir() {
-				err = f.Rm(path + entry.Name() + "/")
-				if transformError(err) != nil {
-					return err
-				}
-			} else {
-				err = f.Rm(path + entry.Name())
-				if transformError(err) != nil {
-					return err
+	var recursiveDelete func(client *goftp.Client, _path string) error
+	recursiveDelete = func(client *goftp.Client, _path string) error {
+		if isDirectory(_path) {
+			entries, err := client.ReadDir(_path)
+			if transformError(err) != nil {
+				return err
+			}
+			for _, entry := range entries {
+				if entry.IsDir() {
+					err = recursiveDelete(client, _path+entry.Name()+"/")
+					if transformError(err) != nil {
+						return err
+					}
+				} else {
+					err = recursiveDelete(client, _path+entry.Name())
+					if transformError(err) != nil {
+						return err
+					}
 				}
 			}
+			err = client.Rmdir(_path)
+			return transformError(err)
 		}
-		err = f.client.Rmdir(path)
+		err = client.Delete(_path)
 		return transformError(err)
 	}
-	err := f.client.Delete(path)
-	return transformError(err)
+	f.Execute(func(client *goftp.Client) error {
+		err = recursiveDelete(client, path)
+		return err
+	})
+	return err
 }
 
-func (f Ftp) Mv(from string, to string) error {
-	return f.client.Rename(from, to)
+func (f Ftp) Mv(from string, to string) (err error) {
+	f.Execute(func(client *goftp.Client) error {
+		err = client.Rename(from, to)
+		return err
+	})
+	return err
 }
 
-func (f Ftp) Touch(path string) error {
-	return f.client.Store(path, strings.NewReader(""))
+func (f Ftp) Touch(path string) (err error) {
+	f.Execute(func(client *goftp.Client) error {
+		err = client.Store(path, strings.NewReader(""))
+		return err
+	})
+	return err
 }
 
-func (f Ftp) Save(path string, file io.Reader) error {
-	return f.client.Store(path, file)
+func (f Ftp) Save(path string, file io.Reader) (err error) {
+	f.Execute(func(client *goftp.Client) error {
+		err = client.Store(path, file)
+		return err
+	})
+	return err
 }
 
 func (f Ftp) Close() error {
 	return f.client.Close()
+}
+
+func (f Ftp) Execute(fn func(*goftp.Client) error) {
+	err := fn(f.client)
+	if ftpErr, ok := err.(goftp.Error); ok {
+		code := ftpErr.Code()
+		if code == 421 || (code == 0 && err.Error() == "error reading response: EOF") {
+			f.Close()
+			FtpCache.Set(f.p, nil)
+			if b, err := f.Init(f.p, &App{Context: f.ctx}); err == nil {
+				fn(b.(*Ftp).client)
+			}
+		}
+	}
 }
