@@ -69,6 +69,7 @@ const config = {
             { from: "locales/*.json", to: "assets/" },
             { from: "worker/*.js", to: "assets/" },
             { from: "assets/logo/*" },
+            { from: "assets/img/*" },
             { from: "assets/icons/*" },
             { from: "assets/fonts/*" },
         ], { context: path.join(__dirname, "client") }),

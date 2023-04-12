@@ -42,6 +42,10 @@ import img_stop from "../assets/img/stop.svg";
 import img_refresh from "../assets/img/refresh.svg";
 import img_copy from "../assets/img/copy.svg";
 import img_eye from "../assets/img/eye.svg";
+import img_volume from "../assets/img/volume.svg";
+import img_volume_mute from "../assets/img/volume_mute.svg";
+import img_volume_low from "../assets/img/volume_low.svg";
+
 export const img_placeholder = "/assets/icons/placeholder.png";
 
 export const Icon = (props) => {
@@ -141,6 +145,12 @@ export const Icon = (props) => {
         img = "/assets/icons/empty_search.svg";
     } else if (props.name === "eye") {
         img = img_eye;
+    } else if (props.name === "volume") {
+        img = img_volume;
+    } else if (props.name === "volume_mute") {
+        img = img_volume_mute;
+    } else if (props.name === "volume_low") {
+        img = img_volume_low;
     } else {
         throw (new Error(`unknown icon: "${props.name}"`));
     }
