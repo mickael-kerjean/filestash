@@ -7,7 +7,7 @@ import "./audioplayer.scss";
 
 export function AudioPlayer({ filename, data }) {
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const wavesurfer = useRef(null);
 
