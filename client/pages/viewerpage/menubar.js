@@ -16,6 +16,7 @@ export const MenuBar = (props) => {
                     <div className="titlebar" style={{ letterSpacing: "0.3px" }}>{props.title}</div>
                     <div className="action-item no-select">
                         <span className="specific">
+                            <span id="chromecast-target"></span>
                             {props.children}
                         </span>
                         {

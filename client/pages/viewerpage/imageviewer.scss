@@ -7,10 +7,6 @@
         flex-direction: column;
     }
 
-    .component_menubar{
-        .specific{padding-right: 0;}
-    }
-
     .component_image_container{
         &.fullscreen{
             background: var(--dark);

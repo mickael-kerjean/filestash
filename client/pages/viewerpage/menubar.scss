@@ -3,6 +3,22 @@
     background: linear-gradient(#585b5d 94%, var(--dark));
 }
 
+// chromecast
+:root {
+    --disconnected-color: #F2F2F2;
+    --connected-color: var(--primary);
+}
+google-cast-launcher{
+    display: inline-block;
+    height: 23px;
+    width: 23px;
+    cursor: pointer;
+    padding: 0 5px;
+    position: relative;
+    top: 1px;
+    cursor: pointer;
+}
+
 .component_menubar{
     background: var(--dark);
     color: #f1f1f1;
@@ -26,7 +42,6 @@
     }
 
     .action-item{
-        .specific{ padding-right: 10px; }
         .component_icon{
             height: 19px;
             width: 19px;

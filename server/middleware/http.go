@@ -47,6 +47,9 @@ func IndexHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 		cspHeader += "font-src 'self' data: blob:; "
 		cspHeader += "manifest-src 'self'; "
 		cspHeader += "script-src 'self' 'sha256-JNAde5CZQqXtYRLUk8CGgyJXo6C7Zs1lXPPClLM1YM4=' 'sha256-9/gQeQaAmVkFStl6tfCbHXn8mr6PgtxlH+hEp685lzY=' 'sha256-ER9LZCe8unYk8AJJ2qopE+rFh7OUv8QG5q3h6jZeoSk='; "
+		if Config.Get("features.protection.enable_chromecast").Bool() {
+			cspHeader += "script-src-elem 'self' 'unsafe-inline' https://www.gstatic.com http://www.gstatic.com; "
+		}
 		cspHeader += "img-src 'self' blob: data: https://maps.wikimedia.org; "
 		cspHeader += "connect-src 'self'; "
 		cspHeader += "object-src 'self'; "

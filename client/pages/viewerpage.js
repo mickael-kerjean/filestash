@@ -8,7 +8,7 @@ import { Files } from "../model/";
 import {
     BreadCrumb, Bundle, NgIf, Loader, EventReceiver, LoggedInOnly, ErrorPage,
 } from "../components/";
-import { opener, notify } from "../helpers/";
+import { opener, notify, objectGet } from "../helpers/";
 import { FileDownloader, ImageViewer, PDFViewer, FormViewer } from "./viewerpage/";
 
 const VideoPlayer = (props) => (
@@ -134,6 +134,15 @@ export function ViewerPageComponent({ error, subscribe, unsubscribe, match, loca
         metadata().then(data_fetch);
         return history.listen(() => {})
     }, [path]);
+
+    useEffect(() => {
+        return () => {
+            if (!objectGet(window.chrome, ["cast", "isAvailable"])) {
+                return
+            }
+            cast.framework.CastContext.getInstance().endCurrentSession();
+        };
+    }, [])
 
     return (
         <div className="component_page_viewerpage">

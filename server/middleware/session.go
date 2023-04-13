@@ -53,10 +53,12 @@ func AdminOnly(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App,
 func SessionStart(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		var err error
+
 		if ctx.Share, err = _extractShare(req); err != nil {
 			SendErrorResult(res, err)
 			return
 		}
+		ctx.Authorization = _extractAuthorization(req)
 		if ctx.Session, err = _extractSession(req, ctx); err != nil {
 			SendErrorResult(res, err)
 			return
@@ -76,6 +78,7 @@ func SessionStart(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 func SessionTry(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		ctx.Share, _ = _extractShare(req)
+		ctx.Authorization = _extractAuthorization(req)
 		ctx.Session, _ = _extractSession(req, ctx)
 		ctx.Backend, _ = _extractBackend(req, ctx)
 		fn(ctx, res, req)
@@ -163,6 +166,33 @@ func CanManageShare(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx 
 	}
 }
 
+func _extractAuthorization(req *http.Request) (token string) {
+	// strategy 1: split cookie
+	index := 0
+	for {
+		cookie, err := req.Cookie(CookieName(index))
+		if err != nil {
+			break
+		}
+		index++
+		token += cookie.Value
+	}
+	// strategy 2: Authorization header
+	if token == "" {
+		authHeader := req.Header.Get("Authorization")
+		if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+			token = strings.TrimPrefix(req.Header.Get("Authorization"), "Bearer ")
+		}
+	}
+	// strategy 3: Authorization query param
+	if token == "" {
+		if auth := req.URL.Query().Get("authorization"); auth != "" {
+			token = auth
+		}
+	}
+	return token
+}
+
 func _extractShareId(req *http.Request) string {
 	share := req.URL.Query().Get("share")
 	if share != "" {
@@ -236,9 +266,11 @@ func _extractShare(req *http.Request) (Share, error) {
 }
 
 func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
-	var str string
-	var err error
-	var session map[string]string = make(map[string]string)
+	var (
+		str     string
+		err     error
+		session map[string]string = make(map[string]string)
+	)
 
 	if ctx.Share.Id != "" { // Shared link
 		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Share.Auth)
@@ -265,26 +297,10 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		return session, err
 	}
 
-	str = ""
-	index := 0
-	for {
-		cookie, err := req.Cookie(CookieName(index))
-		if err != nil {
-			break
-		}
-		index++
-		str += cookie.Value
-	}
-	if str == "" {
-		authHeader := req.Header.Get("Authorization")
-		if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
-			str = strings.TrimPrefix(req.Header.Get("Authorization"), "Bearer ")
-		}
-	}
-	if str == "" {
+	if ctx.Authorization == "" {
 		return session, nil
 	}
-	str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, str)
+	str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Authorization)
 	if err != nil {
 		// This typically happen when changing the secret key
 		Log.Debug("middleware::session decrypt error '%s'", err.Error())

@@ -103,6 +103,7 @@ func NewConfiguration() Configuration {
 						Title: "protection",
 						Elmnts: []FormElement{
 							FormElement{Name: "iframe", Type: "text", Default: "", Description: "list of domains who can use the application from an iframe. eg: https://www.filestash.app http://example.com"},
+							FormElement{Name: "enable_chromecast", Type: "boolean", Default: true, Description: "Enable users to stream content on a chromecast device. This feature requires the browser to access google's server to download the chromecast SDK."},
 						},
 					},
 				},
@@ -362,6 +363,7 @@ func (this *Configuration) Export() interface{} {
 		FilePageDefaultView     string            `json:"default_view"`
 		AuthMiddleware          interface{}       `json:"auth"`
 		Thumbnailer             []string          `json:"thumbnailer"`
+		EnableChromecast        bool              `json:"enable_chromecast"`
 	}{
 		Editor:                  this.Get("general.editor").String(),
 		ForkButton:              this.Get("general.fork_button").Bool(),
@@ -394,6 +396,7 @@ func (this *Configuration) Export() interface{} {
 			}
 			return tArray
 		}(),
+		EnableChromecast: this.Get("features.protection.enable_chromecast").Bool(),
 	}
 }
 

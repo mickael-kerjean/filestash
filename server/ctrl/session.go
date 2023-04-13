@@ -18,9 +18,10 @@ import (
 )
 
 type Session struct {
-	Home    *string `json:"home,omitempty"`
-	IsAuth  bool    `json:"is_authenticated"`
-	Backend string  `json:"backendID"`
+	Home          *string `json:"home,omitempty"`
+	IsAuth        bool    `json:"is_authenticated"`
+	Backend       string  `json:"backendID"`
+	Authorization string  `json:"authorization,omitempty"`
 }
 
 func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -41,6 +42,9 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 	r.IsAuth = true
 	r.Home = NewString(home)
 	r.Backend = GenerateID(ctx)
+	if ctx.Share.Id == "" && Config.Get("features.protection.enable_chromecast").Bool() {
+		r.Authorization = ctx.Authorization
+	}
 	SendSuccessResult(res, r)
 }
 

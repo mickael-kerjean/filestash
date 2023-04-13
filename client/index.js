@@ -10,7 +10,8 @@ import "./assets/css/reset.scss";
 
 (function() {
     Promise.all([
-        setup_dom(), setup_translation(), setup_xdg_open(), setup_cache(), Config.refresh(),
+        setup_dom(), setup_translation(), setup_xdg_open(), setup_cache(),
+        Config.refresh().then(setup_chromecast),
     ]).then(() => {
         const timeSinceBoot = new Date() - window.initTime;
         if (window.CONFIG.name) document.title = window.CONFIG.name;
@@ -138,5 +139,28 @@ function setup_translation() {
     }
     return http_get("/assets/locales/"+selectedLanguage+".json").then((d) => {
         window.LNG = d;
+    });
+}
+
+function setup_chromecast() {
+    if (!CONFIG.enable_chromecast) {
+        return Promise.resolve();
+    } else if (typeof window.chrome === undefined) {
+        return Promise.resolve();
+	} else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        return Promise.resolve();
+    }
+    return new Promise((done) => {
+        const script = document.createElement("script");
+        script.src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
+        script.onerror = () => done()
+        window["__onGCastApiAvailable"] = function(isAvailable) {
+            if (isAvailable) cast.framework.CastContext.getInstance().setOptions({
+                receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+                autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+            });
+            done();
+        };
+        document.head.appendChild(script)
     });
 }

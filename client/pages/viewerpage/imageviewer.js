@@ -1,10 +1,11 @@
-import React, { createRef } from "react";
-import path from "path";
+import React, { useEffect, useReducer, useRef } from "react";
+import filepath from "path";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
 import { MenuBar } from "./menubar";
 import { Bundle, Icon, NgIf, Loader, EventEmitter, EventReceiver } from "../../components/";
-import { alert, randomString } from "../../helpers/";
+import { alert, randomString, objectGet, notify, getMimeType, currentShare } from "../../helpers/";
+import { Session } from "../../model/";
 import { Pager } from "./pager";
 import { t } from "../../locales/";
 import "./imageviewer.scss";
@@ -21,127 +22,177 @@ const LargeExif = (props) => (
     </Bundle>
 );
 
-
-export class ImageViewerComponent extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            preload: null,
-            _: null,
-            show_exif: false,
-            is_loaded: false,
-            draggable: true,
-        };
-        this.shortcut= (e) => {
-            if (e.keyCode === 27) this.setState({ show_exif: false });
-            else if (e.keyCode === 73) this.setState({ show_exif: !this.state.show_exif });
-        };
-        this.refresh = () => this.setState({ "_": randomString() });
-        this.$container = createRef();
-    }
-
-    componentDidMount() {
-        this.props.subscribe("media::preload", (preload) => {
-            this.setState({ preload: preload });
+export function ImageViewerComponent({ filename, data, path, subscribe, unsubscribe }) {
+    const [state, setState] = useReducer((s, a) => {
+        return { ...s, ...a };
+    }, {
+        preload: null,
+        refresh: 0,
+        show_exif: false,
+        is_loaded: false,
+        draggable: false,
+    });
+    const $container = useRef();
+    const refresh = () => setState({ refresh: state.refresh + 1 });
+    const shortcut = (e) => {
+        if (e.keyCode === 27) setState({ show_exif: false });
+        else if (e.keyCode === 73) setState({ show_exif: !state.show_exif });
+    };
+    useEffect(() => {
+        setState({ is_loaded: false });
+        subscribe("media::preload", (preload) => {
+            setState({ preload: preload });
         });
-        document.addEventListener("webkitfullscreenchange", this.refresh);
-        document.addEventListener("mozfullscreenchange", this.refresh);
-        document.addEventListener("fullscreenchange", this.refresh);
-        document.addEventListener("keydown", this.shortcut);
-    }
+        document.addEventListener("webkitfullscreenchange", refresh);
+        document.addEventListener("mozfullscreenchange", refresh);
+        document.addEventListener("fullscreenchange", refresh);
+        document.addEventListener("keydown", shortcut);
 
-    componentWillUnmount() {
-        this.props.unsubscribe("media::preload");
-        document.removeEventListener("webkitfullscreenchange", this.refresh);
-        document.removeEventListener("mozfullscreenchange", this.refresh);
-        document.removeEventListener("fullscreenchange", this.refresh);
-        document.removeEventListener("keydown", this.shortcut);
-    }
+        return () => {
+            unsubscribe("media::preload");
+            document.removeEventListener("webkitfullscreenchange", refresh);
+            document.removeEventListener("mozfullscreenchange", refresh);
+            document.removeEventListener("fullscreenchange", refresh);
+            document.removeEventListener("keydown", shortcut);
+        };
 
-    UNSAFE_componentWillReceiveProps(props) {
-        if (props.data !== this.props.data) {
-            this.setState({ is_loaded: false });
+    }, [data]);
+
+    const chromecastSetup = (event) => {
+        switch (event.sessionState) {
+        case cast.framework.SessionState.SESSION_STARTED:
+            chromecastHandler();
+            break;
         }
-    }
+    };
 
-    toggleExif() {
+    const chromecastHandler = (event) => {
+        const cSession = cast.framework.CastContext.getInstance().getCurrentSession()
+        if (!cSession) return;
+
+        const createLink = () => {
+            const shareID = currentShare();
+            const origin = location.origin;
+            if (shareID) {
+                const target = new URL(origin + data);
+                target.searchParams.append("share", shareID);
+                return Promise.resolve(target.toString());
+            }
+            return Session.currentUser().then(({ authorization }) => {
+                const target = new URL(origin + data);
+                target.searchParams.append("authorization", authorization);
+                return target.toString()
+            });
+        };
+
+        return createLink().then((link) => {
+            const media = new chrome.cast.media.MediaInfo(
+                link,
+                getMimeType(filename),
+            );
+            media.metadata = new chrome.cast.media.PhotoMediaMetadata();
+            media.metadata.title = filename;
+            media.metadata.images = [
+                new chrome.cast.Image(origin + "/assets/icons/photo.png"),
+            ];
+            return cSession.loadMedia(new chrome.cast.media.LoadRequest(media));
+        }).catch((err) => {
+            notify.send(err && err.message, "error");
+        });
+    };
+
+    useEffect(() => {
+        if (!objectGet(window.chrome, ["cast", "isAvailable"])) {
+            return;
+        }
+        const context = cast.framework.CastContext.getInstance();
+        document.getElementById("chromecast-target").append(document.createElement("google-cast-launcher"));
+        context.addEventListener(
+            cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+            chromecastSetup,
+        );
+        chromecastHandler();
+        return () => {
+            context.removeEventListener(
+                cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+                chromecastSetup,
+            );
+        };
+    }, []);
+
+    const hasExif = (fname) => {
+        const ext = filepath.extname(fname).toLowerCase().substring(1);
+        return ["jpg", "jpeg", "tiff", "tif"].indexOf(ext) !== -1;
+    };
+    const toggleExif = () => {
         if (window.innerWidth < 580) {
             alert.now(<SmallExif />);
         } else {
-            this.setState({
-                show_exif: !this.state.show_exif,
+            setState({
+                show_exif: !state.show_exif,
             });
         }
-    }
-
-    requestFullScreen() {
+    };
+    const requestFullScreen = () => {
         if ("webkitRequestFullscreen" in document.body) {
-            this.$container.current.webkitRequestFullscreen();
+            $container.current.webkitRequestFullscreen();
         } else if ("mozRequestFullScreen" in document.body) {
-            this.$container.current.mozRequestFullScreen();
+            $container.current.mozRequestFullScreen();
         }
-    }
+    };
 
-    render() {
-        const hasExif = (filename) => {
-            const ext = path.extname(filename).toLowerCase().substring(1);
-            return ["jpg", "jpeg", "tiff", "tif"].indexOf(ext) !== -1;
-        };
-
-        return (
-            <div className="component_imageviewer">
-                <MenuBar title={this.props.filename} download={this.props.data}>
-                    <NgIf type="inline" cond={hasExif(this.props.filename)}>
-                        <Icon name="info" onClick={this.toggleExif.bind(this)} />
-                    </NgIf>
-                    <NgIf
-                        type="inline"
-                        cond={("webkitRequestFullscreen" in document.body) ||
-                              ("mozRequestFullScreen" in document.body)}>
-                        <Icon name="fullscreen" onClick={this.requestFullScreen.bind(this)} />
-                    </NgIf>
-                </MenuBar>
-                <div
-                    ref={this.$container}
-                    className={
-                        "component_image_container " +
-                        (document.webkitIsFullScreen || document.mozFullScreen ? "fullscreen" : "")
-                    }
-                >
-                    <div className="images_wrapper">
-                        <ImageFancy
-                            draggable={this.state.draggable}
-                            onLoad={() => this.setState({ is_loaded: true })}
-                            url={this.props.data} />
-                    </div>
-                    <div className={"images_aside scroll-y"+(this.state.show_exif ? " open": "")}>
-                        <div className="header">
-                            <div>{ t("Info") }</div>
-                            <div style={{ flex: 1 }}>
-                                <Icon name="close" onClick={this.toggleExif.bind(this)} />
-                            </div>
-                        </div>
-                        <div className="content">
-                            <LargeExif
-                                data={this.props.data}
-                                show={this.state.show_exif}
-                                ready={this.state.is_loaded} />
-                        </div>
-                    </div>
-                    <Pager
-                        type={["image"]}
-                        path={this.props.path}
-                        pageChange={(files) =>
-                            this.setState({ draggable: files.length > 1 ? true : false })}
-                        next={(e) => this.setState({ preload: e })} />
-                </div>
-
-                <NgIf cond={this.state.is_loaded}>
-                    <Img style={{ display: "none" }} src={this.state.preload}/>
+    return (
+        <div className="component_imageviewer">
+            <MenuBar title={filename} download={data}>
+                <NgIf type="inline" cond={hasExif(filename)}>
+                    <Icon name="info" onClick={toggleExif} />
                 </NgIf>
+                <NgIf
+                    type="inline"
+                    cond={("webkitRequestFullscreen" in document.body) ||
+                          ("mozRequestFullScreen" in document.body)}>
+                    <Icon name="fullscreen" onClick={requestFullScreen} />
+                </NgIf>
+            </MenuBar>
+            <div
+                ref={$container}
+                className={
+                    "component_image_container " +
+                        (document.webkitIsFullScreen || document.mozFullScreen ? "fullscreen" : "")
+                }
+            >
+                <div className="images_wrapper">
+                    <ImageFancy
+                        draggable={state.draggable}
+                        onLoad={() => setState({ is_loaded: true })}
+                        url={data} />
+                </div>
+                <div className={"images_aside scroll-y"+(state.show_exif ? " open": "")}>
+                    <div className="header">
+                        <div>{ t("Info") }</div>
+                        <div style={{ flex: 1 }}>
+                            <Icon name="close" onClick={toggleExif} />
+                        </div>
+                    </div>
+                    <div className="content">
+                        <LargeExif
+                            data={data}
+                            show={state.show_exif}
+                            ready={state.is_loaded} />
+                    </div>
+                </div>
+                <Pager
+                    type={["image"]}
+                    path={path}
+                    pageChange={(files) => setState({ draggable: files.length > 1 ? true : false })}
+                    next={(e) => setState({ preload: e })} />
             </div>
-        );
-    }
+
+            <NgIf cond={state.is_loaded}>
+                <Img style={{ display: "none" }} src={state.preload}/>
+            </NgIf>
+        </div>
+    );
 }
 
 export const ImageViewer = EventReceiver(EventEmitter(ImageViewerComponent));
@@ -180,6 +231,7 @@ class ImageFancyComponent extends React.Component {
     }
 
     imageDragStart(e) {
+        if(!this.props.draggable) return;
         const t = new Date();
         if (e.touches) {
             this.setState({
