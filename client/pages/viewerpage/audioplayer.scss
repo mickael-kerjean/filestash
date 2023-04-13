@@ -90,15 +90,22 @@
                 top: 0;
                 left: 0;
             }
+            .component_icon[alt="loading"] {
+                position: absolute;
+                margin: 50px 0px
+            }
+            .chromecast_loader .component_icon[alt="loading"] {
+                margin: 0;
+                right: 20px;
+                top: 20px;
+                width: 30px;
+            }
+
             .percent {
                 position: absolute;
                 margin: 100px 0px;
                 width: 120px;
                 font-size: 1.4rem;
-            }
-            .component_icon[alt="loading"] {
-                position: absolute;
-                margin: 50px 0px
             }
         }
     }

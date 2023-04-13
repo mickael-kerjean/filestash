@@ -4,7 +4,7 @@ import Path from "path";
 
 import "./viewerpage.scss";
 import "./error.scss";
-import { Files } from "../model/";
+import { Files, Chromecast } from "../model/";
 import {
     BreadCrumb, Bundle, NgIf, Loader, EventReceiver, LoggedInOnly, ErrorPage,
 } from "../components/";
@@ -137,12 +137,11 @@ export function ViewerPageComponent({ error, subscribe, unsubscribe, match, loca
 
     useEffect(() => {
         return () => {
-            if (!objectGet(window.chrome, ["cast", "isAvailable"])) {
-                return
-            }
-            cast.framework.CastContext.getInstance().endCurrentSession();
+            const context = Chromecast.context();
+            if (!context) return;
+            context.endCurrentSession();
         };
-    }, [])
+    }, []);
 
     return (
         <div className="component_page_viewerpage">

@@ -34,7 +34,8 @@
     max-height: 500px;
 
     .vjs-control-bar{
-        background: rgba(255,255,255,0.2);
+        background: black;
+        background: linear-gradient(transparent 20%, #00000099);
     }
     .vjs-load-progress div{
         background: var(--primary);

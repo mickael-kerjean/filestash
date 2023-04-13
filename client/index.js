@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import Router from "./router";
 
-import { Config, Log } from "./model/";
+import { Config, Log, Chromecast } from "./model/";
 import { http_get, setup_cache } from "./helpers/";
 import load from "little-loader";
 
@@ -150,17 +150,5 @@ function setup_chromecast() {
 	} else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
         return Promise.resolve();
     }
-    return new Promise((done) => {
-        const script = document.createElement("script");
-        script.src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
-        script.onerror = () => done()
-        window["__onGCastApiAvailable"] = function(isAvailable) {
-            if (isAvailable) cast.framework.CastContext.getInstance().setOptions({
-                receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-                autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
-            });
-            done();
-        };
-        document.head.appendChild(script)
-    });
+    return Chromecast.init();
 }

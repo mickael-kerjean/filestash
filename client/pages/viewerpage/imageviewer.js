@@ -4,8 +4,8 @@ import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
 import { MenuBar } from "./menubar";
 import { Bundle, Icon, NgIf, Loader, EventEmitter, EventReceiver } from "../../components/";
-import { alert, randomString, objectGet, notify, getMimeType, currentShare } from "../../helpers/";
-import { Session } from "../../model/";
+import { alert, randomString, notify, getMimeType, currentShare } from "../../helpers/";
+import { Chromecast } from "../../model/";
 import { Pager } from "./pager";
 import { t } from "../../locales/";
 import "./imageviewer.scss";
@@ -67,45 +67,30 @@ export function ImageViewerComponent({ filename, data, path, subscribe, unsubscr
     };
 
     const chromecastHandler = (event) => {
-        const cSession = cast.framework.CastContext.getInstance().getCurrentSession()
-        if (!cSession) return;
+        const session = Chromecast.session();
+        if (!session) return;
 
-        const createLink = () => {
-            const shareID = currentShare();
-            const origin = location.origin;
-            if (shareID) {
-                const target = new URL(origin + data);
-                target.searchParams.append("share", shareID);
-                return Promise.resolve(target.toString());
-            }
-            return Session.currentUser().then(({ authorization }) => {
-                const target = new URL(origin + data);
-                target.searchParams.append("authorization", authorization);
-                return target.toString()
+        const link = Chromecast.createLink(data);
+        const media = new chrome.cast.media.MediaInfo(
+            link,
+            getMimeType(filename),
+        );
+        media.metadata = new chrome.cast.media.PhotoMediaMetadata();
+        media.metadata.title = filename;
+        media.metadata.images = [
+            new chrome.cast.Image(Chromecast.origin() + "/assets/icons/photo.png"),
+        ];
+        Chromecast.createRequest(media)
+            .then((req) => session.loadMedia(req))
+            .catch((err) => {
+                console.error(err)
+                notify.send(t("Cannot establish a connection"), "error");
             });
-        };
-
-        return createLink().then((link) => {
-            const media = new chrome.cast.media.MediaInfo(
-                link,
-                getMimeType(filename),
-            );
-            media.metadata = new chrome.cast.media.PhotoMediaMetadata();
-            media.metadata.title = filename;
-            media.metadata.images = [
-                new chrome.cast.Image(origin + "/assets/icons/photo.png"),
-            ];
-            return cSession.loadMedia(new chrome.cast.media.LoadRequest(media));
-        }).catch((err) => {
-            notify.send(err && err.message, "error");
-        });
     };
 
     useEffect(() => {
-        if (!objectGet(window.chrome, ["cast", "isAvailable"])) {
-            return;
-        }
-        const context = cast.framework.CastContext.getInstance();
+        const context = Chromecast.context();
+        if (!context) return;
         document.getElementById("chromecast-target").append(document.createElement("google-cast-launcher"));
         context.addEventListener(
             cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
@@ -157,8 +142,9 @@ export function ImageViewerComponent({ filename, data, path, subscribe, unsubscr
             <div
                 ref={$container}
                 className={
-                    "component_image_container " +
-                        (document.webkitIsFullScreen || document.mozFullScreen ? "fullscreen" : "")
+                    "component_image_container" +
+                        (state.draggable ? "" : " component_image_no_pager") +
+                        (document.webkitIsFullScreen || document.mozFullScreen ? " fullscreen" : "")
                 }
             >
                 <div className="images_wrapper">

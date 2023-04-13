@@ -4,7 +4,10 @@ class SessionManager {
     currentUser() {
         const shareID = currentShare();
         return http_get("/api/session" + (shareID && `?share=${shareID}`))
-            .then((data) => data.result)
+            .then((data) => {
+                this.authorization = data.result.authorization;
+                return data.result;
+            })
             .catch((err) => {
                 if (err.code === "Unauthorized") {
                     if (location.pathname.indexOf("/files/") !== -1 || location.pathname.indexOf("/view/") !== -1) {
@@ -41,6 +44,7 @@ class SessionManager {
 
     logout() {
         const url = "/api/session";
+        this.authorization = null;
         return http_delete(url)
             .then((data) => data.result);
     }
