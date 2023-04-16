@@ -143,5 +143,12 @@ function setup_translation() {
 }
 
 function setup_chromecast() {
-    return Promise.resolve();
+    if (!CONFIG.enable_chromecast) {
+        return Promise.resolve();
+    } else if (!("chrome" in window)) {
+        return Promise.resolve();
+	} else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        return Promise.resolve();
+    }
+    return Chromecast.init();
 }

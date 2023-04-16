@@ -18,6 +18,7 @@
     "codemirror": "^5.26.0",
     "epubjs": "^0.3.93",
     "exif-js": "^2.3.0",
+    "hls.js": "^1.4.0",
     "little-loader": "^0.2.0",
     "prop-types": "^15.5.10",
     "react": "^16.5.0",
@@ -33,9 +34,6 @@
     "react-selectable": "git+https://github.com/mickael-kerjean/react-selectable.git",
     "react-sticky": "^6.0.2",
     "rxjs": "^5.4.0",
-    "video.js": "^7.14.3",
-    "videojs-contrib-hls": "^5.14.1",
-    "videojs-sublime-skin": "^1.0.3",
     "wavesurfer.js": "^1.4.0"
   },
   "devDependencies": {

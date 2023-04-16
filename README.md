@@ -38,6 +38,7 @@
 - Manage your files from a browser
 - Authentication middleware to connect to various source of user
 - Flexible Share mechanism
+- Chromecast support for images, music, and videos
 - Video player
 - Video transcoding (mov, mkv, avi, mpeg, and more)
 - Image viewer
