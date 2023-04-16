@@ -48,7 +48,7 @@ class PagerComponent extends React.Component {
     navigatePage(n) {
         if (this.state.files[n]) {
             const url = appendShareToUrl(this.state.files[n].link);
-            if (this.$page) this.$page.current.blur();
+            if (this.$page && this.$page.current) this.$page.current.blur();
             const preload_index = (
                 n >= this.state.n ||
                     (this.state.n === this.state.files.length - 1 && n === 0)
