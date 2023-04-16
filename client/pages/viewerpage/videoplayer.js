@@ -88,18 +88,36 @@ export function VideoPlayer({ filename, data, path }) {
     useEffect(() => {
         const resizeHandler = () => setRender(render + 1);
         const onKeyPressHandler = (e) => {
-            if(e.code !== "Space") {
-                return
+            switch(e.code) {
+            case "Space":
+            case "KeyK": return isPlaying ? onPause(e) : onPlay(e);
+            case "KeyM": return onVolumeChange(0);
+            case "ArrowUp": return onVolumeChange(Math.min(volume + 10, 100));
+            case "ArrowDown": return onVolumeChange(Math.max(volume - 10, 0));
+            case "ArrowLeft": return onSeek(_currentTime - 5);
+            case "ArrowRight": return onSeek(_currentTime + 5);
+            case "KeyL": return onSeek(_currentTime + 10);
+            case "KeyJ": return onSeek(_currentTime - 10);
+            case "KeyF": return onRequestFullscreen();
+            case "Digit0": return onSeek(0);
+            case "Digit1": return onSeek(duration / 10);
+            case "Digit2": return onSeek(2 * duration / 10);
+            case "Digit3": return onSeek(3 * duration / 10);
+            case "Digit4": return onSeek(4 * duration / 10);
+            case "Digit5": return onSeek(5 * duration / 10);
+            case "Digit6": return onSeek(6 * duration / 10);
+            case "Digit7": return onSeek(7 * duration / 10);
+            case "Digit8": return onSeek(8 * duration / 10);
+            case "Digit9": return onSeek(9 * duration / 10);
             }
-            isPlaying ? onPause(e) : onPlay(e);
         };
         window.addEventListener("resize", resizeHandler);
-        window.addEventListener("keypress", onKeyPressHandler);
+        window.addEventListener("keydown", onKeyPressHandler);
         return () => {
             window.removeEventListener("resize", resizeHandler);
-            window.removeEventListener("keypress", onKeyPressHandler);
+            window.removeEventListener("keydown", onKeyPressHandler);
         };
-    }, [render, isPlaying, isChromecast]);
+    }, [render, isPlaying, isChromecast, volume]);
 
     useEffect(() => {
         const context = Chromecast.context();
