@@ -1,6 +1,10 @@
 import { http_get, http_post, http_delete, currentShare, urlParams } from "../helpers/";
 
 class SessionManager {
+    constructor() {
+        this.authorization = null;
+    }
+
     currentUser() {
         const shareID = currentShare();
         return http_get("/api/session" + (shareID && `?share=${shareID}`))
@@ -38,6 +42,7 @@ class SessionManager {
 
     authenticate(params) {
         const url = "/api/session";
+        this.authorization = null;
         return http_post(url, params)
             .then((data) => data.result);
     }

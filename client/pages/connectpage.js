@@ -12,7 +12,7 @@ function ConnectPageComponent({ error, history }) {
 
     const authenticate = (formData) => {
         return Session.authenticate(formData)
-            .then(Session.currentUser)
+            .then(() => Session.currentUser())
             .then((user) => {
                 if (formData["next"]) {
                     location = formData["next"];
