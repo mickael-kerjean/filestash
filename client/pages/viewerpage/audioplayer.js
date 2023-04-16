@@ -60,9 +60,16 @@ export function AudioPlayer({ filename, data }) {
     }, []);
 
     useEffect(() => {
+        const onKeyPressHandler = (e) => {
+            if(e.code !== "Space") {
+                return
+            }
+            isPlaying ? onPause(e) : onPlay(e);
+        };
+
         window.addEventListener("keypress", onKeyPressHandler);
         return () => window.removeEventListener("keypress", onKeyPressHandler);
-    }, [isPlaying])
+    }, [isPlaying, isChromecast])
 
     const chromecastSetup = (event) => {
         switch (event.sessionState) {
@@ -71,15 +78,17 @@ export function AudioPlayer({ filename, data }) {
             setIsLoading(true);
             break;
         case cast.framework.SessionState.SESSION_START_FAILED:
-            notify.send(t("Cannot establish a connection"), "error");
             setIsChromecast(false);
             setIsLoading(false);
             break;
         case cast.framework.SessionState.SESSION_STARTED:
             chromecastHandler()
+            const session = Chromecast.session();
+            if (session) setVolume(session.getVolume() * 100);
             break;
         case cast.framework.SessionState.SESSION_ENDING:
             wavesurfer.current.setMute(false);
+            setVolume(wavesurfer.current.getVolume() * 100);
             setIsChromecast(false);
             break;
         }
@@ -138,7 +147,7 @@ export function AudioPlayer({ filename, data }) {
         const context = Chromecast.context();
         if (!context) return;
         chromecastAlive(false);
-        document.getElementById("chromecast-target").append(document.createElement("google-cast-launcher"));        
+        document.getElementById("chromecast-target").append(document.createElement("google-cast-launcher"));
         context.addEventListener(
             cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
             chromecastSetup,
@@ -154,13 +163,6 @@ export function AudioPlayer({ filename, data }) {
             chromecastAlive(false);
         };
     }, []);
-
-    const onKeyPressHandler = (e) => {
-        if(e.code !== "Space") {
-            return
-        }
-        isPlaying ? onPause(e) : onPlay(e);
-    };
 
     const onPlay = (e) => {
         e.preventDefault();
@@ -184,8 +186,7 @@ export function AudioPlayer({ filename, data }) {
         }
     };
 
-    const onVolumeChange = (e) => {
-        const v = Number(e.target.value);
+    const onVolumeChange = (v) => {
         settings_put("volume", v);
         setVolume(v);
         if (isChromecast) {
@@ -194,10 +195,14 @@ export function AudioPlayer({ filename, data }) {
         } else wavesurfer.current.setVolume(v / 100);
     };
     const onVolumeClick = () => {
-        onVolumeChange({ target: { value: 0 }});
+        onVolumeChange(0);
     };
 
-    const formatTimecode = (seconds) => (new Date(seconds * 1000).toISOString().substr(11, 8));
+    const formatTimecode = (seconds) => {
+        return String(parseInt(seconds / 60)).padStart(2, "0") +
+            ":"+
+            String(parseInt(seconds % 60)).padStart(2, "0");
+    };
 
     return (
         <div className="component_audioplayer">
@@ -238,13 +243,12 @@ export function AudioPlayer({ filename, data }) {
                                     )
                                 }
                                 <span><Icon onClick={onVolumeClick} name={volume === 0 ? "volume_mute" : volume < 50 ? "volume_low" : "volume"}/></span>
-                                <input onChange={onVolumeChange} type="range" min="0" max="100" value={volume}/>
+                                <input onChange={(e) => onVolumeChange(Number(e.target.value) || 0)} type="range" min="0" max="100" value={volume}/>
                             </div>
-
                             <div className="timecode">
-                                <span id="currentTime">00:00:00</span>
+                                <span id="currentTime">{ formatTimecode(0) }</span>
                                 <span id="separator" className="no-select">/</span>
-                                <span id="totalDuration">00:00:00</span>
+                                <span id="totalDuration">{ formatTimecode(0) }</span>
                             </div>
                         </div>
                     </div>
