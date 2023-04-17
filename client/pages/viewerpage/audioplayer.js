@@ -14,8 +14,11 @@ export function AudioPlayer({ filename, data }) {
     const [isLoading, setIsLoading] = useState(true);
     const [purcentLoading, setPurcentLoading] = useState(0);
     const [volume, setVolume] = useState(settings_get("volume") === null ? 50 : settings_get("volume"));
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
     const [isChromecast, setIsChromecast] = useState(false);
     const [error, setError] = useState(null);
+    const [render, setRender] = useState(0);
     const wavesurfer = useRef(null);
 
     useEffect(() => {
@@ -28,18 +31,18 @@ export function AudioPlayer({ filename, data }) {
             height: 200,
             barWidth: 1,
         });
+        window.wavesurfer = wavesurfer.current; // TODO: remove this
         wavesurfer.current.load(data);
-
-        let $currentTime = document.getElementById("currentTime");
-        let $totalDuration = document.getElementById("totalDuration");
         wavesurfer.current.on("ready", () => {
             setPurcentLoading(100);
             setIsLoading(false);
             wavesurfer.current.setVolume(volume / 100);
-            $totalDuration.innerHTML = formatTimecode(wavesurfer.current.getDuration());
+            setDuration(wavesurfer.current.getDuration());
         });
         wavesurfer.current.on("audioprocess", () => {
-            $currentTime.innerHTML = formatTimecode(wavesurfer.current.getCurrentTime());
+            const t = wavesurfer.current.getCurrentTime()
+            _currentTime = t;
+            setCurrentTime(t);
         });
         wavesurfer.current.on("loading", (n) => {
             setPurcentLoading(n);
@@ -48,106 +51,53 @@ export function AudioPlayer({ filename, data }) {
             setIsLoading(false);
             setError(err);
         });
-        wavesurfer.current.on("seek", (s) => {
-            const media = Chromecast.media();
-            if (!media) return;
-            const seekRequest = new chrome.cast.media.SeekRequest();
-            seekRequest.currentTime = parseInt(s*wavesurfer.current.getDuration());
-            media.seek(seekRequest);
-        });
-
         return () => wavesurfer.current.destroy();
-    }, []);
+    }, [data]);
 
     useEffect(() => {
         const onKeyPressHandler = (e) => {
             if(e.code !== "Space") {
                 return
             }
+            // TODO: write shortcut
             isPlaying ? onPause(e) : onPlay(e);
         };
 
         window.addEventListener("keypress", onKeyPressHandler);
         return () => window.removeEventListener("keypress", onKeyPressHandler);
-    }, [isPlaying, isChromecast])
-
-    const chromecastSetup = (event) => {
-        switch (event.sessionState) {
-        case cast.framework.SessionState.SESSION_STARTING:
-            setIsChromecast(true);
-            setIsLoading(true);
-            break;
-        case cast.framework.SessionState.SESSION_START_FAILED:
-            setIsChromecast(false);
-            setIsLoading(false);
-            break;
-        case cast.framework.SessionState.SESSION_STARTED:
-            chromecastHandler()
-            const session = Chromecast.session();
-            if (session) setVolume(session.getVolume() * 100);
-            break;
-        case cast.framework.SessionState.SESSION_ENDING:
-            wavesurfer.current.setMute(false);
-            setVolume(wavesurfer.current.getVolume() * 100);
-            setIsChromecast(false);
-            break;
-        }
-    };
-
-    const chromecastHandler = () => {
-        setIsLoading(true);
-        const link = Chromecast.createLink(data);
-        const media = new chrome.cast.media.MediaInfo(
-            link,
-            getMimeType(data),
-        );
-        media.metadata = new chrome.cast.media.MusicTrackMediaMetadata()
-        media.metadata.title = filename.substr(0, filename.lastIndexOf(filepath.extname(filename)));
-        media.metadata.subtitle = CONFIG.name;
-        media.metadata.albumName = CONFIG.name;
-        media.metadata.images = [
-            new chrome.cast.Image(origin + "/assets/icons/music.png"),
-        ];
-        const session = Chromecast.session();
-        if (!session) return;
-
-        Chromecast.createRequest(media)
-            .then((req) => {
-                req.currentTime = parseInt(wavesurfer.current.getCurrentTime());
-                return session.loadMedia(req)
-            })
-            .then(() => {
-                setIsPlaying(true);
-                setIsLoading(false);
-                wavesurfer.current.play();
-                wavesurfer.current.setMute(true);
-
-                const media = Chromecast.media();
-                if (!media) return;
-                wavesurfer.current.seekTo(media.getEstimatedTime() / wavesurfer.current.getDuration());
-                media.addUpdateListener(chromecastAlive);
-            }).catch((err) => {
-                console.error(err);
-                notify.send(t("Cannot establish a connection"), "error");
-                setIsChromecast(false);
-                setIsLoading(false);
-            });
-    }
-
-    const chromecastAlive = (isAlive) => {
-        if (isAlive) return;
-        const session = Chromecast.session();
-        if (session) {
-            session.endSession();
-            wavesurfer.current.setMute(false);
-        }
-    };
+    }, [isPlaying, isChromecast]);
 
     useEffect(() => {
         const context = Chromecast.context();
         if (!context) return;
-        chromecastAlive(false);
         document.getElementById("chromecast-target").append(document.createElement("google-cast-launcher"));
+        _currentTime = 0;
+
+        const chromecastSetup = (event) => {
+            switch (event.sessionState) {
+            case cast.framework.SessionState.SESSION_STARTING:
+                setIsChromecast(true);
+                setIsLoading(true);
+                break;
+            case cast.framework.SessionState.SESSION_START_FAILED:
+                setIsChromecast(false);
+                setIsLoading(false);
+                break;
+            case cast.framework.SessionState.SESSION_STARTED:
+                chromecastLoader()
+                break;
+            case cast.framework.SessionState.SESSION_ENDING:
+                setIsChromecast(false);
+                // console.log("ENDING seekTo", _currentTime, duration, wavesurfer.current.getDuration(), _currentTime / wavesurfer.current.getDuration());
+                wavesurfer.current.seekTo(_currentTime / wavesurfer.current.getDuration());
+                // TODO: reset volume  setVolume(wavesurfer.current.getVolume() * 100) --> not working
+                wavesurfer.current.setMute(false);
+                const media = Chromecast.media();
+                if (media && media.playerState === "PLAYING") wavesurfer.current.play();
+                else if (media && media.playerState === "PAUSED") wavesurfer.current.pause();
+                break;
+            }
+        };
         context.addEventListener(
             cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
             chromecastSetup,
@@ -157,12 +107,91 @@ export function AudioPlayer({ filename, data }) {
                 cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
                 chromecastSetup,
             );
-            const media = Chromecast.media();
-            if (!media) return
-            media.removeUpdateListener(chromecastAlive);
-            chromecastAlive(false);
         };
     }, []);
+
+    useEffect(() => {
+        if (!wavesurfer) return;
+        const onSeek = (s) => {
+            // console.log("ON SEEK", isChromecast, isLoading);
+            if (isChromecast === false) return
+            else if (s * duration === _currentTime) {
+                // wavesurfer trigger a seek event when trying to synchronise the remote to the local
+                // which we want to ignore as we're only interested in user requested seek
+                return;
+            }
+            const media = Chromecast.media();
+            if (!media) return;
+
+            wavesurfer.current.pause();
+            const seekRequest = new chrome.cast.media.SeekRequest();
+            seekRequest.currentTime = s*duration;
+            media.seek(seekRequest);
+        }
+        wavesurfer.current.on("seek", onSeek);
+        return () => {
+            wavesurfer.current.un("seek", onSeek);
+        };
+    }, [wavesurfer.current, isChromecast]);
+
+    useEffect(() => {
+        const media = Chromecast.media();
+        if (!media) return;
+
+        const remotePlayer = new cast.framework.RemotePlayer();
+        const remotePlayerController = new cast.framework.RemotePlayerController(remotePlayer);
+        const onPlayerStateChangeHandler = (event) => {
+            // console.log("PLAYER STATE CHANGE", event)
+            switch(event.value) {
+            case "BUFFERING":
+                wavesurfer.current.pause();
+                break
+            case "PLAYING":
+                wavesurfer.current.play();
+                break;
+            }
+        };
+        const onPlayerCurrentTimeChangeHandler = (event) => {
+            _currentTime = event.value;
+            setCurrentTime(event.value);
+            if (event.value > 0) wavesurfer.current.seekTo(event.value / wavesurfer.current.getDuration());
+            // console.log("time change", event.value, wavesurfer.current.getDuration(), event.value / wavesurfer.current.getDuration())            
+        };
+        const onMediaChange = (isAlive) => {
+            if (media.playerState !== chrome.cast.media.PlayerState.IDLE) return;
+            
+            switch(media.idleReason) {
+            case chrome.cast.media.IdleReason.FINISHED:
+                setIsPlaying(false);
+                setIsChromecast(false);
+                setVolume($video.current.volume * 100);
+                $video.current.currentTime = _currentTime;
+                $video.current.muted = false;
+                break;
+            }
+        };
+
+
+
+        remotePlayerController.addEventListener(
+            cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED,
+            onPlayerStateChangeHandler,
+        );
+        remotePlayerController.addEventListener(
+            cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED,
+            onPlayerCurrentTimeChangeHandler,
+        );
+        return () => {
+            remotePlayerController.removeEventListener(
+                cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED,
+                onPlayerStateChangeHandler,
+            );
+            remotePlayerController.removeEventListener(
+                cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED,
+                onPlayerCurrentTimeChangeHandler,
+            );
+        };
+    }, [isChromecast, isLoading, render]);
 
     const onPlay = (e) => {
         e.preventDefault();
@@ -187,13 +216,20 @@ export function AudioPlayer({ filename, data }) {
     };
 
     const onVolumeChange = (v) => {
-        settings_put("volume", v);
         setVolume(v);
         if (isChromecast) {
             const session = Chromecast.session()
             if (session) session.setVolume(v / 100);
-        } else wavesurfer.current.setVolume(v / 100);
+            else {
+                setIsChromecast(false);
+                notify.send(t("Cannot establish a connection"), "error");
+            }
+        } else {
+            wavesurfer.current.setVolume(v / 100);
+            settings_put("volume", v);
+        }
     };
+
     const onVolumeClick = () => {
         onVolumeChange(0);
     };
@@ -204,9 +240,52 @@ export function AudioPlayer({ filename, data }) {
             String(parseInt(seconds % 60)).padStart(2, "0");
     };
 
+    const chromecastLoader = () => {
+        const link = Chromecast.createLink(data);
+        const media = new chrome.cast.media.MediaInfo(
+            link,
+            getMimeType(data),
+        );
+        media.metadata = new chrome.cast.media.MusicTrackMediaMetadata()
+        media.metadata.title = filename.substr(0, filename.lastIndexOf(filepath.extname(filename)));
+        media.metadata.subtitle = CONFIG.name;
+        media.metadata.albumName = CONFIG.name;
+        media.metadata.images = [
+            new chrome.cast.Image(origin + "/assets/icons/music.png"),
+        ];
+
+        setIsChromecast(true);
+        setIsLoading(false);
+        setIsPlaying(true);
+        wavesurfer.current.setMute(true);
+        wavesurfer.current.pause();
+
+        const session = Chromecast.session();
+        if (!session) return;
+        setVolume(session.getVolume() * 100);
+        Chromecast.createRequest(media)
+            .then((req) => {
+                req.currentTime = _currentTime;
+                return session.loadMedia(req)
+            })
+            .then(() => setRender(render + 1))
+            .catch((err) => {
+                console.error(err);
+                notify.send(t("Cannot establish a connection"), "error");
+                setIsChromecast(false);
+                setIsLoading(false);
+            });
+    }
+
     return (
         <div className="component_audioplayer">
-            <MenuBar title={filename} download={data} />
+            <MenuBar title={filename} download={data}>
+                {
+                    Chromecast.session() && (
+                        <Icon name="fullscreen" onClick={() => chromecastLoader()} />
+                    )
+                }
+            </MenuBar>
             <div className="audioplayer_container">
                 <NgIf cond={error !== null} className="audioplayer_error">
                     {error}
@@ -246,9 +325,9 @@ export function AudioPlayer({ filename, data }) {
                                 <input onChange={(e) => onVolumeChange(Number(e.target.value) || 0)} type="range" min="0" max="100" value={volume}/>
                             </div>
                             <div className="timecode">
-                                <span id="currentTime">{ formatTimecode(0) }</span>
+                                <span id="currentTime">{ formatTimecode(currentTime) }</span>
                                 <span id="separator" className="no-select">/</span>
-                                <span id="totalDuration">{ formatTimecode(0) }</span>
+                                <span id="totalDuration">{ formatTimecode(duration) }</span>
                             </div>
                         </div>
                     </div>
@@ -257,3 +336,5 @@ export function AudioPlayer({ filename, data }) {
         </div>
     )
 }
+
+let _currentTime = 0; // trick to avoid making too many call to the chromecast SDK

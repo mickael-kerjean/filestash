@@ -135,14 +135,6 @@ export function ViewerPageComponent({ error, subscribe, unsubscribe, match, loca
         return history.listen(() => {})
     }, [path]);
 
-    useEffect(() => {
-        return () => {
-            const context = Chromecast.context();
-            if (!context) return;
-            context.endCurrentSession();
-        };
-    }, []);
-
     return (
         <div className="component_page_viewerpage">
             <BreadCrumb needSaving={state.needSaving} className="breadcrumb" path={path} />

@@ -38,7 +38,9 @@
                 width: 100%;
             }
 
-            &.video-state-pause .videoplayer_control { opacity: 1; transition: 0.1s opacity ease; }
+            &.is-casting-yes .videoplayer_control,
+            &.video-state-pause .videoplayer_control,
+            &.video-state-buffer .videoplayer_control,
             &.video-state-play:hover .videoplayer_control { opacity: 1; transition: 0.1s opacity ease; }
             .videoplayer_control {
                 transition: 0.5s opacity ease;
@@ -141,10 +143,6 @@
                         background: #e2e2e222;
                         width: 100%;
                     }
-                }
-                .pull-right {
-                    margin-left: auto;
-                    padding-right: 10px;
                 }
             }
         }

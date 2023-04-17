@@ -74,9 +74,15 @@ class PagerComponent extends React.Component {
                 if (f === null) return Promise.reject({ code: "NO_DATA" });
                 return Promise.resolve(f);
             })
-            .then((f) => f.results
-                .filter((file) => (isImage(file.name) || isVideo(file.name)) &&
-                        file.type === "file"))
+            .then((f) => f.results.filter((file) => {
+                if (file.type !== "file") return false;
+                const mType = getMimeType(file.name);
+                switch(mType.split("/")[0]) {
+                case "video": return true;
+                case "image": return true;
+                }
+                return false;
+            }))
             .then((f) => sort(f, settings_get("filespage_sort") || "type"))
             .then((f) => findPosition(f, basename(props.path)))
             .then((res) => {
@@ -97,12 +103,6 @@ class PagerComponent extends React.Component {
                 }
             }
             return [files, i];
-        };
-        const isVideo = (filename) => {
-            return getMimeType(filename).split("/")[0] === "video";
-        };
-        const isImage = (filename) => {
-            return getMimeType(filename).split("/")[0] === "image";
         };
     }
 
@@ -125,6 +125,8 @@ class PagerComponent extends React.Component {
     }
 
     onKeyPress(e) {
+        e.preventDefault();
+        e.stopPropagation();
         if (e.target.classList.contains("prevent")) return;
         if (e.keyCode === 39) {
             this.navigatePage(this.calculateNextPageNumber(this.state.n));

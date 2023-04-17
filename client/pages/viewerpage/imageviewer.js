@@ -61,12 +61,12 @@ export function ImageViewerComponent({ filename, data, path, subscribe, unsubscr
     const chromecastSetup = (event) => {
         switch (event.sessionState) {
         case cast.framework.SessionState.SESSION_STARTED:
-            chromecastHandler();
+            chromecastLoader();
             break;
         }
     };
 
-    const chromecastHandler = (event) => {
+    const chromecastLoader = () => {
         const session = Chromecast.session();
         if (!session) return;
 
@@ -96,7 +96,8 @@ export function ImageViewerComponent({ filename, data, path, subscribe, unsubscr
             cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
             chromecastSetup,
         );
-        chromecastHandler();
+        const media = Chromecast.media();
+        if (media && media.media && media.media.mediaCategory === "IMAGE") chromecastLoader();
         return () => {
             context.removeEventListener(
                 cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
@@ -119,6 +120,7 @@ export function ImageViewerComponent({ filename, data, path, subscribe, unsubscr
         }
     };
     const requestFullScreen = () => {
+        chromecastLoader();
         if ("webkitRequestFullscreen" in document.body) {
             $container.current.webkitRequestFullscreen();
         } else if ("mozRequestFullScreen" in document.body) {
@@ -168,10 +170,9 @@ export function ImageViewerComponent({ filename, data, path, subscribe, unsubscr
                     </div>
                 </div>
                 <Pager
-                    type={["image"]}
                     path={path}
                     pageChange={(files) => setState({ draggable: files.length > 1 ? true : false })}
-                    next={(e) => setState({ preload: e })} />
+                />
             </div>
 
             <NgIf cond={state.is_loaded}>

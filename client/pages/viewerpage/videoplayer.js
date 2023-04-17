@@ -33,7 +33,6 @@ export function VideoPlayer({ filename, data, path }) {
             setIsLoading(false);
         };
         const finishHandler = () => {
-            $video.current.currentTime = 0;
             setIsPlaying(false);
         };
         const errorHandler = (err) => {
@@ -94,8 +93,6 @@ export function VideoPlayer({ filename, data, path }) {
             case "KeyM": return onVolumeChange(0);
             case "ArrowUp": return onVolumeChange(Math.min(volume + 10, 100));
             case "ArrowDown": return onVolumeChange(Math.max(volume - 10, 0));
-            case "ArrowLeft": return onSeek(_currentTime - 5);
-            case "ArrowRight": return onSeek(_currentTime + 5);
             case "KeyL": return onSeek(_currentTime + 10);
             case "KeyJ": return onSeek(_currentTime - 10);
             case "KeyF": return onRequestFullscreen();
@@ -135,13 +132,22 @@ export function VideoPlayer({ filename, data, path }) {
                 setIsLoading(false);
                 break;
             case cast.framework.SessionState.SESSION_STARTED:
-                chromecastLoader()
+                chromecastLoader();
                 break;
             case cast.framework.SessionState.SESSION_ENDING:
                 setIsChromecast(false);
+                setVolume($video.current.volume * 100);
                 $video.current.currentTime = _currentTime;
                 $video.current.muted = false;
-                if (isPlaying) $video.current.play();
+                const media = Chromecast.media();
+                if (media && media.playerState === "PLAYING") $video.current.play();
+                else if (media && media.playerState === "PAUSED") $video.current.pause();
+                break;
+            case cast.framework.SessionState.SESSION_ENDED:
+                setIsChromecast(false);
+                setVolume($video.current.volume * 100);
+                $video.current.currentTime = _currentTime;
+                $video.current.muted = false;
                 break;
             }
         };
@@ -150,8 +156,6 @@ export function VideoPlayer({ filename, data, path }) {
             chromecastSetup,
         );
         return () => {
-            const media = Chromecast.media();
-            if (media) media.removeUpdateListener(chromecastMediaHandler);
             context.removeEventListener(
                 cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
                 chromecastSetup,
@@ -160,20 +164,71 @@ export function VideoPlayer({ filename, data, path }) {
     }, []);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            if (isLoading) return;
-            if (isChromecast) {
-                const media = Chromecast.media();
-                if (!media) return;
-                _currentTime = media.getEstimatedTime();
-                setIsBuffering(media.playerState === "BUFFERING");
-            } else _currentTime = $video.current.currentTime;
-            setCurrentTime(_currentTime)
-        }, 100);
-        return () => {
-            clearInterval(interval);
+        if (isLoading === true) return;
+        else if (isChromecast === false) {
+            const interval = setInterval(() => {
+                _currentTime = $video.current.currentTime;
+                setCurrentTime(_currentTime);
+            }, 100);
+            return () => {
+                clearInterval(interval);
+            };
+        }
+
+        const media = Chromecast.media();
+        if (!media) return;
+
+        const remotePlayer = new cast.framework.RemotePlayer();
+        const remotePlayerController = new cast.framework.RemotePlayerController(remotePlayer);
+        const onPlayerStateChangeHandler = (event) => {
+            switch(event.value) {
+            case "BUFFERING":
+                setIsBuffering(true);
+                break
+            case "PLAYING":
+                setIsBuffering(false);
+                break;
+            }
         };
-    }, [data, isChromecast, isLoading]);
+        const onPlayerCurrentTimeChangeHandler = (event) => {
+            _currentTime = event.value;
+            setCurrentTime(event.value);
+        };
+        const onMediaChange = (isAlive) => {
+            if (media.playerState !== chrome.cast.media.PlayerState.IDLE) return;
+
+            switch(media.idleReason) {
+            case chrome.cast.media.IdleReason.FINISHED:
+                setIsPlaying(false);
+                setIsChromecast(false);
+                setVolume($video.current.volume * 100);
+                $video.current.currentTime = _currentTime;
+                $video.current.muted = false;
+                break;
+            }
+        };
+
+        media.addUpdateListener(onMediaChange);
+        remotePlayerController.addEventListener(
+            cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED,
+            onPlayerStateChangeHandler,
+        );
+        remotePlayerController.addEventListener(
+            cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED,
+            onPlayerCurrentTimeChangeHandler,
+        );
+        return () => {
+            media.removeUpdateListener(onMediaChange);
+            remotePlayerController.removeEventListener(
+                cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED,
+                onPlayerStateChangeHandler,
+            );
+            remotePlayerController.removeEventListener(
+                cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED,
+                onPlayerCurrentTimeChangeHandler,
+            );
+        };
+    }, [isChromecast, isLoading, render]);
 
     const onPlay = () => {
         setIsPlaying(true);
@@ -194,11 +249,10 @@ export function VideoPlayer({ filename, data, path }) {
         if (isChromecast) {
             const media = Chromecast.media();
             if (!media) return;
-            setIsLoading(true);
+            setIsBuffering(true);
             const seekRequest = new chrome.cast.media.SeekRequest();
             seekRequest.currentTime = parseInt(newTime);
             media.seek(seekRequest);
-            setTimeout(() => setIsLoading(false), 1000);
         } else $video.current.currentTime = newTime;
     };
     const onClickSeek = (e) => {
@@ -213,18 +267,24 @@ export function VideoPlayer({ filename, data, path }) {
             onPause();
             n = 0;
         }
-        onSeek(n * duration);
+        _currentTime = n * duration;
+        setCurrentTime(_currentTime);
+        onSeek(_currentTime);
     };
 
     const onVolumeChange = (n) => {
-        settings_put("volume", n);
         setVolume(n);
         if (isChromecast) {
             const session = Chromecast.session()
             if (session) session.setVolume(n / 100);
-            else notify.send(t("Cannot establish a connection"), "error");
+            else {
+                setIsChromecast(false);
+                notify.send(t("Cannot establish a connection"), "error");
+            }
+        } else {
+            $video.current.volume = n / 100;
+            settings_put("volume", n);
         }
-        else $video.current.volume = n / 100;
     };
 
     const onProgressHover = (e) => {
@@ -232,9 +292,9 @@ export function VideoPlayer({ filename, data, path }) {
         const width = e.clientX - rec.x;
         const time = duration * width / rec.width;
         let posX = width;
-        posX = Math.max(posX, 30) // min boundary
+        posX = Math.max(posX, 30);
         posX = Math.min(posX, e.target.clientWidth - 30);
-        setHint({ x: `${posX}px`, time })
+        setHint({ x: `${posX}px`, time });
     };
 
     const onRequestFullscreen = () => {
@@ -242,9 +302,7 @@ export function VideoPlayer({ filename, data, path }) {
         if (!session) {
             document.querySelector(".video_screen").requestFullscreen();
             requestAnimationFrame(() => setRender(render + 1));
-        } else {
-            chromecastLoader();
-        }
+        } else chromecastLoader();
     };
 
     const isFullscreen = () => {
@@ -290,47 +348,34 @@ export function VideoPlayer({ filename, data, path }) {
         ];
 
         setIsChromecast(true);
-        setIsPlaying(true);
         setIsLoading(false);
+        setIsPlaying(true);
+        setIsBuffering(false);
         $video.current.muted = true;
         $video.current.pause();
 
         const session = Chromecast.session();
         if (!session) return;
-        $video.current.pause();
         setVolume(session.getVolume() * 100);
-        Chromecast.createRequest(media)
+        return Chromecast.createRequest(media)
             .then((req) => {
-                req.currentTime = parseInt($video.current.currentTime);
-                setCurrentTime($video.current.currentTime);
+                req.currentTime = parseInt(_currentTime);
                 return session.loadMedia(req);
             })
-            .then(() => {
-                const media = session.getMediaSession();
-                if (!media) return;
-                media.addUpdateListener(chromecastMediaHandler);
-            })
+            .then(() => setRender(render + 1))
             .catch((err) => {
                 console.error(err);
                 notify.send(t("Cannot establish a connection"), "error");
+                setIsChromecast(false);
+                setIsLoading(false);
             });
-    };
-    const chromecastMediaHandler = (isAlive) => {
-        if (isAlive) return;
-        const session = Chromecast.session();
-        if (session) {
-            session.endSession();
-            $video.current.muted = false;
-            setVolume($video.current.volume * 100);
-            setIsChromecast(false);
-            onSeek(0);
-            onPause();
-        }
     };
 
     return (
-        <div className="component_videoplayer">
-            <MenuBar title={filename} download={data} />
+        <div className="component_videoplayer" >
+            <MenuBar title={filename} download={data}>
+                <Icon name="fullscreen" onClick={onRequestFullscreen} />
+            </MenuBar>
             <div className="video_container" ref={$container}>
                 <ReactCSSTransitionGroup
                     transitionName="video"
@@ -339,7 +384,11 @@ export function VideoPlayer({ filename, data, path }) {
                     transitionEnter={true}
                     transitionEnterTimeout={300}
                     transitionAppearTimeout={300}>
-                    <div className={"video_screen" + (isPlaying ? " video-state-play" : " video-state-pause")}>
+                    <div className={
+                             "video_screen" +
+                             (isBuffering ? " video-state-buffer" : isPlaying ? " video-state-play" : " video-state-pause") +
+                             (isChromecast ? " is-casting-yes" : " is-casting-no")
+                         }>
                         <div className="video_wrapper" style={isFullscreen() ? {
                                  maxHeight: "inherit",
                                  height: "inherit",
@@ -392,13 +441,6 @@ export function VideoPlayer({ filename, data, path }) {
                                             )
                                         }
                                     </span>
-                                    <div className="pull-right">
-                                        {
-                                            <React.Fragment>
-                                                <Icon name="fullscreen" onClick={onRequestFullscreen} />
-                                            </React.Fragment>
-                                        }
-                                    </div>
                                 </div>
                             )
                         }
