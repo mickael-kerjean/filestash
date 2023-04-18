@@ -215,10 +215,7 @@ func hls_transcode(ctx *App, res http.ResponseWriter, req *http.Request) {
 	cmd.Stderr = &str
 	err = cmd.Run()
 	if err != nil {
-		Log.Error("plg_video_transcoder::ffmpeg::run '%s'", err.Error())
-	}
-	if str.String() != "" {
-		Log.Debug("plg_video_transcoder::ffmpeg::stderr %s", str.String())
+		Log.Error("plg_video_transcoder::ffmpeg::run '%s' - %s", err.Error(), str.String())
 	}
 }
 
