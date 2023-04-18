@@ -87,11 +87,10 @@ export function AudioPlayer({ filename, data }) {
                 chromecastLoader()
                 break;
             case cast.framework.SessionState.SESSION_ENDING:
-                setIsChromecast(false);
-                // console.log("ENDING seekTo", _currentTime, duration, wavesurfer.current.getDuration(), _currentTime / wavesurfer.current.getDuration());
-                wavesurfer.current.seekTo(_currentTime / wavesurfer.current.getDuration());
-                // TODO: reset volume  setVolume(wavesurfer.current.getVolume() * 100) --> not working
                 wavesurfer.current.setMute(false);
+                wavesurfer.current.seekTo(_currentTime / wavesurfer.current.getDuration());
+                setIsChromecast(false);
+                setVolume(wavesurfer.current.getVolume() * 100)
                 const media = Chromecast.media();
                 if (media && media.playerState === "PLAYING") wavesurfer.current.play();
                 else if (media && media.playerState === "PAUSED") wavesurfer.current.pause();
@@ -113,9 +112,8 @@ export function AudioPlayer({ filename, data }) {
     useEffect(() => {
         if (!wavesurfer) return;
         const onSeek = (s) => {
-            // console.log("ON SEEK", isChromecast, isLoading);
             if (isChromecast === false) return
-            else if (s * duration === _currentTime) {
+            else if (Math.abs(s * duration - _currentTime) < 1) {
                 // wavesurfer trigger a seek event when trying to synchronise the remote to the local
                 // which we want to ignore as we're only interested in user requested seek
                 return;
@@ -141,7 +139,6 @@ export function AudioPlayer({ filename, data }) {
         const remotePlayer = new cast.framework.RemotePlayer();
         const remotePlayerController = new cast.framework.RemotePlayerController(remotePlayer);
         const onPlayerStateChangeHandler = (event) => {
-            // console.log("PLAYER STATE CHANGE", event)
             switch(event.value) {
             case "BUFFERING":
                 wavesurfer.current.pause();
@@ -154,25 +151,23 @@ export function AudioPlayer({ filename, data }) {
         const onPlayerCurrentTimeChangeHandler = (event) => {
             _currentTime = event.value;
             setCurrentTime(event.value);
-            if (event.value > 0) wavesurfer.current.seekTo(event.value / wavesurfer.current.getDuration());
-            // console.log("time change", event.value, wavesurfer.current.getDuration(), event.value / wavesurfer.current.getDuration())            
+            if (event.value > 0) wavesurfer.current.seekTo(event.value / duration);
         };
         const onMediaChange = (isAlive) => {
             if (media.playerState !== chrome.cast.media.PlayerState.IDLE) return;
-            
             switch(media.idleReason) {
             case chrome.cast.media.IdleReason.FINISHED:
-                setIsPlaying(false);
+                wavesurfer.current.seekTo(_currentTime / wavesurfer.current.getDuration());
+                wavesurfer.current.pause();
+                wavesurfer.current.setMute(false);
+                setVolume(wavesurfer.current.getVolume() * 100)
                 setIsChromecast(false);
-                setVolume($video.current.volume * 100);
-                $video.current.currentTime = _currentTime;
-                $video.current.muted = false;
+                setIsPlaying(false);
                 break;
             }
         };
 
-
-
+        media.addUpdateListener(onMediaChange);
         remotePlayerController.addEventListener(
             cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED,
             onPlayerStateChangeHandler,
@@ -182,6 +177,7 @@ export function AudioPlayer({ filename, data }) {
             onPlayerCurrentTimeChangeHandler,
         );
         return () => {
+            media.removeUpdateListener(onMediaChange);
             remotePlayerController.removeEventListener(
                 cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED,
                 onPlayerStateChangeHandler,
@@ -191,7 +187,7 @@ export function AudioPlayer({ filename, data }) {
                 onPlayerCurrentTimeChangeHandler,
             );
         };
-    }, [isChromecast, isLoading, render]);
+    }, [isChromecast, isLoading, render, duration]);
 
     const onPlay = (e) => {
         e.preventDefault();
@@ -268,7 +264,9 @@ export function AudioPlayer({ filename, data }) {
                 req.currentTime = _currentTime;
                 return session.loadMedia(req)
             })
-            .then(() => setRender(render + 1))
+            .then(() => {
+                setRender(render + 1);
+            })
             .catch((err) => {
                 console.error(err);
                 notify.send(t("Cannot establish a connection"), "error");
@@ -281,7 +279,7 @@ export function AudioPlayer({ filename, data }) {
         <div className="component_audioplayer">
             <MenuBar title={filename} download={data}>
                 {
-                    Chromecast.session() && (
+                    Chromecast.session() && isChromecast === false && (
                         <Icon name="fullscreen" onClick={() => chromecastLoader()} />
                     )
                 }
