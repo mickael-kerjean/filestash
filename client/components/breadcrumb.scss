@@ -165,8 +165,8 @@ body.touch-yes{
         .breadcrumb{
             background: rgba(0,0,0,0.07);
         }
-        .label{
-            color: var(--super-light);
+        .component_path-element a.label{
+            color: #f1f1f1;
         }
     }
 }
