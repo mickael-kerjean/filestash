@@ -34,7 +34,7 @@
     "react-selectable": "git+https://github.com/mickael-kerjean/react-selectable.git",
     "react-sticky": "^6.0.2",
     "rxjs": "^5.4.0",
-    "wavesurfer.js": "^1.4.0"
+    "wavesurfer.js": "^6.6.3"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.16.5",
