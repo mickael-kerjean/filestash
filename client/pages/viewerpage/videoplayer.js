@@ -15,12 +15,12 @@ export function VideoPlayer({ filename, data, path }) {
     const $video = useRef();
     const $container = useRef();
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isBuffering, setIsBuffering] = useState(false);
     const [volume, setVolume] = useState(settings_get("volume") === null ? 50 : settings_get("volume"));
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [isChromecast, setIsChromecast] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isBuffering, setIsBuffering] = useState(false);
     const [render, setRender] = useState(0);
     const [hint, setHint] = useState(null);
     const [videoSources, setVideoSources] = useState([]);
@@ -90,9 +90,9 @@ export function VideoPlayer({ filename, data, path }) {
             switch(e.code) {
             case "Space":
             case "KeyK": return isPlaying ? onPause(e) : onPlay(e);
-            case "KeyM": return onVolumeChange(0);
-            case "ArrowUp": return onVolumeChange(Math.min(volume + 10, 100));
-            case "ArrowDown": return onVolumeChange(Math.max(volume - 10, 0));
+            case "KeyM": return onVolume(0);
+            case "ArrowUp": return onVolume(Math.min(volume + 10, 100));
+            case "ArrowDown": return onVolume(Math.max(volume - 10, 0));
             case "KeyL": return onSeek(_currentTime + 10);
             case "KeyJ": return onSeek(_currentTime - 10);
             case "KeyF": return onRequestFullscreen();
@@ -135,10 +135,10 @@ export function VideoPlayer({ filename, data, path }) {
                 chromecastLoader();
                 break;
             case cast.framework.SessionState.SESSION_ENDING:
-                setIsChromecast(false);
-                setVolume($video.current.volume * 100);
                 $video.current.currentTime = _currentTime;
                 $video.current.muted = false;
+                setIsChromecast(false);
+                setVolume($video.current.volume * 100);
                 const media = Chromecast.media();
                 if (media && media.playerState === "PLAYING") $video.current.play();
                 else if (media && media.playerState === "PAUSED") $video.current.pause();
@@ -166,13 +166,12 @@ export function VideoPlayer({ filename, data, path }) {
     useEffect(() => {
         if (isLoading === true) return;
         else if (isChromecast === false) {
-            const interval = setInterval(() => {
+            const onPlayerTimeChangeHandler = (event) => {
                 _currentTime = $video.current.currentTime;
                 setCurrentTime(_currentTime);
-            }, 100);
-            return () => {
-                clearInterval(interval);
             };
+            $video.current.addEventListener("timeupdate", onPlayerTimeChangeHandler);
+            return () => $video.current.removeEventListener("timeupdate", onPlayerTimeChangeHandler);
         }
 
         const media = Chromecast.media();
@@ -230,31 +229,51 @@ export function VideoPlayer({ filename, data, path }) {
         };
     }, [isChromecast, isLoading, render]);
 
+    const onVolume = (n) => {
+        setVolume(n);
+        if (!isChromecast) {
+            $video.current.volume = n / 100;
+            settings_put("volume", n);
+        } else {
+            const session = Chromecast.session()
+            if (session) session.setVolume(n / 100);
+            else {
+                setIsChromecast(false);
+                notify.send(t("Cannot establish a connection"), "error");
+            }
+        }
+    };
+
     const onPlay = () => {
         setIsPlaying(true);
-        if (isChromecast) {
+        if (!isChromecast) $video.current.play();
+        else {
             const media = Chromecast.media();
             if (media) media.play();
-        } else $video.current.play();
+        }
     };
+
     const onPause = () => {
         setIsPlaying(false);
-        if (isChromecast) {
+        if (!isChromecast) $video.current.pause();
+        else {
             const media = Chromecast.media();
             if (media) media.pause();
-        } else $video.current.pause();
-
+        }
     };
+
     const onSeek = (newTime) => {
-        if (isChromecast) {
+        if (!isChromecast) $video.current.currentTime = newTime;
+        else {
             const media = Chromecast.media();
             if (!media) return;
             setIsBuffering(true);
             const seekRequest = new chrome.cast.media.SeekRequest();
             seekRequest.currentTime = parseInt(newTime);
             media.seek(seekRequest);
-        } else $video.current.currentTime = newTime;
+        }
     };
+
     const onClickSeek = (e) => {
         let $progress = e.target;
         if (e.target.classList.contains("progress") == false) {
@@ -272,22 +291,7 @@ export function VideoPlayer({ filename, data, path }) {
         onSeek(_currentTime);
     };
 
-    const onVolumeChange = (n) => {
-        setVolume(n);
-        if (isChromecast) {
-            const session = Chromecast.session()
-            if (session) session.setVolume(n / 100);
-            else {
-                setIsChromecast(false);
-                notify.send(t("Cannot establish a connection"), "error");
-            }
-        } else {
-            $video.current.volume = n / 100;
-            settings_put("volume", n);
-        }
-    };
-
-    const onProgressHover = (e) => {
+    const onHoverProgress = (e) => {
         const rec = e.target.getBoundingClientRect();
         const width = e.clientX - rec.x;
         const time = duration * width / rec.width;
@@ -297,7 +301,7 @@ export function VideoPlayer({ filename, data, path }) {
         setHint({ x: `${posX}px`, time });
     };
 
-    const onRequestFullscreen = () => {
+    const onClickFullscreen = () => {
         const session = Chromecast.session();
         if (!session) {
             document.querySelector(".video_screen").requestFullscreen();
@@ -374,7 +378,7 @@ export function VideoPlayer({ filename, data, path }) {
     return (
         <div className="component_videoplayer" >
             <MenuBar title={filename} download={data}>
-                <Icon name="fullscreen" onClick={onRequestFullscreen} />
+                <Icon name="fullscreen" onClick={onClickFullscreen} />
             </MenuBar>
             <div className="video_container" ref={$container}>
                 <ReactCSSTransitionGroup
@@ -413,7 +417,7 @@ export function VideoPlayer({ filename, data, path }) {
                         {
                             duration > 0 && (
                                 <div className="videoplayer_control no-select">
-                                    <div className="progress" onClick={onClickSeek} onMouseMove={onProgressHover} onMouseLeave={() => setHint(null)}>
+                                    <div className="progress" onClick={onClickSeek} onMouseMove={onHoverProgress} onMouseLeave={() => setHint(null)}>
                                         { isChromecast === false && renderBuffer() }
                                         <div className="progress-active" style={{width: (currentTime * 100 / (duration || 1)) + "%"}}>
                                             <div className="thumb" />
@@ -429,8 +433,8 @@ export function VideoPlayer({ filename, data, path }) {
                                             <Icon name="play" onClick={onPlay} />
                                         )
                                     }
-                                    <Icon name="volume" onClick={() => onVolumeChange(0)} name={volume === 0 ? "volume_mute" : volume < 50 ? "volume_low" : "volume"}/>
-                                    <input type="range" onChange={(e) => onVolumeChange(Number(e.target.value))} value={volume} min="0" max="100" />
+                                    <Icon name="volume" onClick={() => onVolume(0)} name={volume === 0 ? "volume_mute" : volume < 50 ? "volume_low" : "volume"}/>
+                                    <input type="range" onChange={(e) => onVolume(Number(e.target.value))} value={volume} min="0" max="100" />
                                     <span className="timecode">
                                         { formatTimecode(currentTime) }
                                         &nbsp; / &nbsp;
