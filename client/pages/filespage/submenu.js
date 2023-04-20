@@ -9,7 +9,6 @@ import {
 import { debounce, prompt } from "../../helpers/";
 import { t } from "../../locales/";
 import "./submenu.scss";
-
 class SubmenuComponent extends React.Component {
     constructor(props) {
         super(props);
@@ -121,7 +120,7 @@ class SubmenuComponent extends React.Component {
 
     render() {
         return (
-            <div className={"component_submenu" + (this.props.selected.length > 0 ? " sticky" : "")}>
+            <div className={"component_submenu" + (this.props.selected.length > 0 || this.state.search_input_visible ? " sticky" : "")}>
                 <Container>
                     <div className={"menubar no-select"+(this.state.search_input_visible ? " search_focus" : "")}>
                         <NgIf

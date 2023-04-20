@@ -3,10 +3,11 @@
     z-index: 5;
     .breadcrumb{
         background: white;
-        border-bottom: 2px solid rgba(100, 100, 100, 0.1);
+        border-bottom: 2px solid rgba(100, 100, 100, 0.05);
+        transition: 1s ease border-bottom;
         margin: 0 0 0px 0;
         z-index: 1000;
-        padding: 5px 0;
+        padding: 3px 0;
 
         .ul{
             list-style-type: none;
@@ -19,6 +20,9 @@
                 display: inline-block;
             }
         }
+    }
+    &:hover .breadcrumb {
+        border-bottom: 2px solid rgba(100, 100, 100, 0.1);
     }
     .component_logout{
         float: right;
@@ -38,7 +42,7 @@
 
     .component_path-element{
         display: inline-block;
-        .label{color: var(--color);padding: 2px 5px;}
+        .label{color: rgba(0,0,0,0.75); padding: 4px 5px;}
         a.label{
             position: relative;
             color: rgba(0,0,0,0.5);
@@ -50,7 +54,7 @@
                 font-size: 0.8em;
                 opacity: 0;
                 transform: translateY(5px);
-                border-radius: 2px;
+                border-radius: 3px;
                 white-space: nowrap;
                 padding: 3px 10px!important;
                 margin: 23px 0px 5px 0px;
@@ -62,7 +66,7 @@
             font-size: 18px;
             display: inline-block;
 
-            a{border-radius: 2px; letter-spacing: -0.5px;}
+            a{border-radius: 3px; letter-spacing: -0.5px;}
             &.highlight a{
                 background: var(--emphasis-primary);
                 border: 2px solid var(--primary);
@@ -86,6 +90,10 @@ body.touch-no{
         }
     }
 }
+body.dark-mode.touch-no {
+    .component_path-element-wrapper a.label:hover { background: rgba(255, 255, 255, 0.05); }
+}
+
 
 // mobile user have a scrollable breadcrumb
 body.touch-yes{
@@ -165,8 +173,9 @@ body.touch-yes{
         .breadcrumb{
             background: rgba(0,0,0,0.07);
         }
-        .component_path-element a.label{
-            color: #f1f1f1;
+        .component_path-element {
+            .label{ color: #f1f1f1; opacity: 0.7; }
+            a.label { opacity: 1; }
         }
     }
 }
