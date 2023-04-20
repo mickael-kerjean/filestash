@@ -21,3 +21,4 @@ export { getMimeType } from "./mimetype";
 export { settings_get, settings_put } from "./settings";
 export { FormObjToJSON, createFormBackend, autocomplete, JSONStringify } from "./form";
 export { upload } from "./upload";
+export { formatTimecode } from "./format";

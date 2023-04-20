@@ -5,7 +5,7 @@ import filepath from "path";
 import { Pager } from "./pager";
 import { MenuBar } from "./menubar";
 import { Chromecast } from "../../model/"
-import { getMimeType,settings_get, settings_put, notify } from "../../helpers/";
+import { getMimeType,settings_get, settings_put, notify, formatTimecode } from "../../helpers/";
 import { t } from "../../locales/";
 import { Icon } from "../../components/";
 import hls from "hls.js";
@@ -331,11 +331,6 @@ export function VideoPlayer({ filename, data, path }) {
                 }
             </React.Fragment>
         );
-    };
-    const formatTimecode = (seconds) => {
-        return String(parseInt(seconds / 60)).padStart(2, "0") +
-            ":"+
-            String(parseInt(seconds % 60)).padStart(2, "0");
     };
 
     const chromecastLoader = () => {
