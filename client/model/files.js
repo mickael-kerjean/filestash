@@ -2,7 +2,7 @@
 
 import {
     http_get, http_post, http_options, prepare, basename, dirname, pathBuilder,
-    currentShare, currentBackend, appendShareToUrl,
+    filetype, currentShare, currentBackend, appendShareToUrl,
 } from "../helpers/";
 
 import { Observable } from "rxjs/Observable";
@@ -455,6 +455,7 @@ class FileSystem {
     }
     _add(path, icon) {
         return cache.upsert(cache.FILE_PATH, [currentBackend(), currentShare(), dirname(path)], (res) => {
+            const alreadyExist = res !== null;
             if (!res || !res.results) {
                 res = {
                     path: path,
@@ -469,10 +470,14 @@ class FileSystem {
             const file = mutateFile({
                 path: path,
                 name: basename(path),
-                type: /\/$/.test(path) ? "directory" : "file",
+                type: filetype(path),
             }, path);
             if (icon) file.icon = icon;
-            res.results.push(file);
+
+            if (!(alreadyExist === false && file.type === "directory")) {
+                // add something in the cache ONLY IF we're not creating a new folder
+                res.results.push(file);
+            }
             return res;
         });
     }
