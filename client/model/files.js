@@ -264,13 +264,10 @@ class FileSystem {
                 });
         };
 
-
-        if (step === "prepare_only") {
-            return action_prepare(true);
-        } else if (step === "execute_only") {
-            return action_execute(true);
-        } else {
-            return action_prepare().then(action_execute);
+        switch(step) {
+        case "prepare_only": return action_prepare(true);
+        case "execute_only": return action_execute(true);
+        default: return action_prepare().then(action_execute);
         }
     }
 
@@ -284,8 +281,7 @@ class FileSystem {
                     .then(() => this._refresh(destination_path));
             } else {
                 return this._add(destination_path, "loading")
-                    .then(() => origin_path !== destination_path ?
-                        this._add(origin_path, "loading") : Promise.resolve())
+                    .then(() => origin_path !== destination_path ? this._add(origin_path, "loading") : Promise.resolve())
                     .then(() => this._refresh(origin_path, destination_path));
             }
         };
@@ -330,12 +326,10 @@ class FileSystem {
             }
         };
 
-        if (step === "prepare_only") {
-            return action_prepare(true);
-        } else if (step === "execute_only") {
-            return action_execute(true);
-        } else {
-            return action_prepare().then(action_execute);
+        switch(step) {
+        case "prepare_only": return action_prepare(true);
+        case "execute_only": return action_execute(true);
+        default: return action_prepare().then(action_execute);
         }
     }
 
@@ -455,18 +449,6 @@ class FileSystem {
     }
     _add(path, icon) {
         return cache.upsert(cache.FILE_PATH, [currentBackend(), currentShare(), dirname(path)], (res) => {
-            const alreadyExist = res !== null;
-            if (!res || !res.results) {
-                res = {
-                    path: path,
-                    backend: currentBackend(),
-                    share: currentShare(),
-                    results: [],
-                    access_count: 0,
-                    last_access: null,
-                    last_update: new Date(),
-                };
-            }
             const file = mutateFile({
                 path: path,
                 name: basename(path),
@@ -474,10 +456,21 @@ class FileSystem {
             }, path);
             if (icon) file.icon = icon;
 
-            if (!(alreadyExist === false && file.type === "directory")) {
-                // add something in the cache ONLY IF we're not creating a new folder
-                res.results.push(file);
+            if (!res || !res.results) {
+                res = {
+                    path: dirname(path),
+                    backend: currentBackend(),
+                    share: currentShare(),
+                    results: [],
+                    access_count: 0,
+                    last_access: null,
+                    last_update: new Date(),
+                };
+                if (file.type === "directory") {
+                    return res;
+                }
             }
+            res.results.push(file);
             return res;
         });
     }
