@@ -47,6 +47,7 @@ export function AudioPlayer({ filename, data }) {
             wavesurfer.current.backend.startPosition = 0;
             wavesurfer.current.backend.lastPlay = 0;
             wavesurfer.current.backend.source.start(0, 0);
+            isPlaying ? wavesurfer.current.backend.ac.resume() : wavesurfer.current.backend.ac.suspend();
         });
 
         wavesurfer.current.on("loading", (n) => {
