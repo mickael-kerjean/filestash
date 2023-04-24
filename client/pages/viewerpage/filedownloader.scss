@@ -1,12 +1,15 @@
+body:not(.dark-mode) .component_filedownloader {
+    background: #525659;
+    .download_button { background: rgba(0,0,0,0.4); }
+}
 .component_filedownloader {
     text-align: center;
-    background: #525659;
     width: 100%;
 
     .download_button{
         padding: 15px 20px;
-        background: #323639;
-        border-radius: 2px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 3px;
         color: inherit;
         display: inline-block;
         margin-top: 50px;
