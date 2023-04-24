@@ -82,6 +82,15 @@ body:not(.dark-mode) .component_videoplayer {
                         background: white;
                         margin-top: -5px;
                     }
+                    &::-moz-range-thumb {
+                        -webkit-appearance: none;
+                        height: 12px;
+                        width: 12px;
+                        border: none;
+                        border-radius: 50%;
+                        background: white;
+                        margin-top: -5px;
+                    }
                     &::-webkit-slider-runnable-track {
                         width: 100%;
                         height: 2px;
