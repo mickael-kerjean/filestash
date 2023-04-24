@@ -145,7 +145,6 @@ export function ImageViewerComponent({ filename, data, path, subscribe, unsubscr
                 ref={$container}
                 className={
                     "component_image_container" +
-                        (state.draggable ? "" : " component_image_no_pager") +
                         (document.webkitIsFullScreen || document.mozFullScreen ? " fullscreen" : "")
                 }
             >
