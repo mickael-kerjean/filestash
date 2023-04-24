@@ -1,6 +1,9 @@
+body:not(.dark-mode) .component_appframe {
+    background: #525659;
+}
+
 .component_appframe {
     text-align: center;
-    background: #525659;
     width: 100%;
 
     iframe {

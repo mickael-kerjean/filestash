@@ -1,6 +1,6 @@
 body:not(.dark-mode) .component_filedownloader {
     background: #525659;
-    .download_button { background: rgba(0,0,0,0.4); }
+    .download_button a > div { color: var(--light); }
 }
 .component_filedownloader {
     text-align: center;
@@ -8,7 +8,7 @@ body:not(.dark-mode) .component_filedownloader {
 
     .download_button{
         padding: 15px 20px;
-        background: rgba(255,255,255,0.05);
+        background: var(--dark);
         border-radius: 3px;
         color: inherit;
         display: inline-block;
@@ -20,7 +20,7 @@ body:not(.dark-mode) .component_filedownloader {
             font-size: 17px;
             display: inline-block;
             text-transform: uppercase;
-            color: var(--light);
+            color: var(--super-light);
             font-weight: bold;
         }
         // loading

@@ -1,3 +1,6 @@
+body:not(.dark-mode) .component_formviewer {
+    background: #525659;
+}
 .component_formviewer{
     display: flex;
     flex-direction: column;

@@ -1,3 +1,7 @@
+body:not(.dark-mode) .component_pdfviewer .pdfviewer_container {
+    background: #525659;
+}
+
 .component_pdfviewer{
     display: flex;
     flex-direction: column;
@@ -5,9 +9,8 @@
     width: 100%;
     flex-grow: 1;
 
-    .pdfviewer_container{
+    .pdfviewer_container {
         text-align: center;
-        background: #525659;
         height: 100%;
         width: 100%;
         flex-grow: 1;
@@ -21,6 +24,7 @@
             height: 100%;
             .react-pdf__Page{
                 margin-top: 15px;
+                padding-bottom: 50px;
             }
         }
     }

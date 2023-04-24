@@ -1,5 +1,7 @@
-.component_videoplayer {
+body:not(.dark-mode) .component_videoplayer {
     background: #525659;
+}
+.component_videoplayer {
     display: flex;
     flex: 1;
     flex-direction: column;

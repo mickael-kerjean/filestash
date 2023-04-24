@@ -1,3 +1,6 @@
+body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
+    background: #525659;
+}
 .component_audioplayer{
     display: flex;
     flex-direction: column;
@@ -10,7 +13,6 @@
         flex: 1;
         width: 100%;
         text-align: center;
-        background: #525659;
         height: 100%;
         overflow: hidden;
         padding: 20px;

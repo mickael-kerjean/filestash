@@ -1,6 +1,5 @@
 .component_modal.todo-modal{
-    background: var(--super-light);
-    background: linear-gradient(var(--super-light), var(--bg-color));
+    background: var(--bg-color);
 
     > div{
         width: calc(100% - 20px);

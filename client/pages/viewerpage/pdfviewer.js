@@ -48,7 +48,7 @@ function PDFEmbedViewer({ src }) {
                 ref={$embed}
                 src={`${src}#toolbar=0`}
                 type="application/pdf"
-                style={{ height: "100%", width: "100%" }}
+                style={{ height: "100%", width: "100%", "opacity": (isLoading ? "0": "1") }}
             />
         </React.Fragment>
     );

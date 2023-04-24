@@ -1,3 +1,6 @@
+body:not(.dark-mode) .component_imageviewer .component_image_container {
+    &, .fullscreen .component_pager .wrapper > span { background: #525659; }
+}
 .component_imageviewer{
     &, .component_image_container > .images_wrapper, .component_image_container > .images_wrapper > span, .component_image_container > .images_wrapper > span > div{
         flex: 1;
@@ -11,7 +14,7 @@
         &.fullscreen{
             background: var(--dark);
             .component_pager .wrapper > span{
-                background: #525659;
+                background: var(--dark);
             }
             img[srcset]{
                 background: var(--color);
@@ -23,7 +26,6 @@
         height: 100%;
         width: 100%;
         text-align: center;
-        background: #525659;
         overflow: hidden;
         padding: 15px 10px 65px 10px;
         &.component_image_no_pager { padding-bottom: 15px; }
