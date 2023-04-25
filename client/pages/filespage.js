@@ -1,7 +1,6 @@
 import React, { createRef } from "react";
 import { DragDropContext } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend-filedrop";
-import { SelectableGroup } from "react-selectable";
 
 import "./filespage.scss";
 import "./error.scss";
@@ -51,7 +50,7 @@ export class FilesPageComponent extends React.Component {
         this.$scroll = createRef();
 
         this.observers = [];
-        this.toggleHiddenFilesVisibilityonCtrlK = this.toggleHiddenFilesVisibilityonCtrlK.bind(this);
+        this.shortcut = this.shortcut.bind(this);
     }
 
     componentDidMount() {
@@ -74,7 +73,7 @@ export class FilesPageComponent extends React.Component {
         this.props.subscribe("file.download.multiple", onMultiDownload.bind(this));
         this.props.subscribe("file.refresh", this.onRefresh.bind(this));
         this.props.subscribe("file.select", this.toggleSelect.bind(this));
-        window.addEventListener("keydown", this.toggleHiddenFilesVisibilityonCtrlK);
+        window.addEventListener("keydown", this.shortcut);
     }
 
     componentWillUnmount() {
@@ -85,7 +84,7 @@ export class FilesPageComponent extends React.Component {
         this.props.unsubscribe("file.delete.multiple");
         this.props.unsubscribe("file.refresh");
         this.props.unsubscribe("file.select");
-        window.removeEventListener("keydown", this.toggleHiddenFilesVisibilityonCtrlK);
+        window.removeEventListener("keydown", this.shortcut);
         this._cleanupListeners();
 
         LAST_PAGE_PARAMS.path = this.state.path;
@@ -109,8 +108,8 @@ export class FilesPageComponent extends React.Component {
         }
     }
 
-    toggleHiddenFilesVisibilityonCtrlK(e) {
-        if (e.keyCode === 72 && e.ctrlKey === true) {
+    shortcut(e) {
+        if (e.code === "KeyH" && e.ctrlKey === true) {
             e.preventDefault();
             this.setState({ show_hidden: !this.state.show_hidden }, () => {
                 settings_put("filespage_show_hidden", this.state.show_hidden);
@@ -121,6 +120,12 @@ export class FilesPageComponent extends React.Component {
                 }
             });
             this.onRefresh();
+        } else if(e.code === "KeyA" && e.ctrlKey === true) {
+            if (this.state.selected.length === this.state.files.length) {
+                this.handleMultiSelect([], e);
+            } else {
+                this.handleMultiSelect(this.state.files, e);
+            }
         }
     }
 
@@ -246,8 +251,16 @@ export class FilesPageComponent extends React.Component {
     }
 
     handleMultiSelect(selectedFiles, e) {
-        this.setState({ selected: selectedFiles.map((f) => f.path) });
+        if (!e.target) {
+            this.setState({ selected: selectedFiles.map((f) => f.path) });
+            return;
+        } else if (e.target.classList.contains("component_thing")) {
+            return;
+        }
+        this.handleMultiSelect(selectedFiles, {target: e.target.parentElement});
+        return;
     }
+
     toggleSelect(path) {
         const idx = this.state.selected.indexOf(path);
         if (idx == -1) {
@@ -270,7 +283,7 @@ export class FilesPageComponent extends React.Component {
         return (
             <div className="component_page_filespage">
                 <BreadCrumb className="breadcrumb" path={this.state.path} currentSelection={this.state.selected} />
-                <SelectableGroup onSelection={this.handleMultiSelect.bind(this)} tolerance={2} onNonItemClick={this.handleMultiSelect.bind(this, [])} preventDefault={true} enabled={this.state.is_search === false && this.state.files.length > 0} className="selectablegroup">
+                <div onClick={(e) => this.handleMultiSelect([], e)} className="selectablegroup">
                     <div className="page_container">
                         <div ref={this.$scroll} className="scroll-y">
                             <InfiniteScroll
@@ -312,7 +325,7 @@ export class FilesPageComponent extends React.Component {
                             <MobileFileUpload path={this.state.path} accessRight={this.state.permissions || {}} />
                         </div>
                     </div>
-                </SelectableGroup>
+                </div>
             </div>
         );
     }

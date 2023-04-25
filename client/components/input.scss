@@ -37,8 +37,12 @@ input.component_input[readonly], textarea.component_textarea[readonly]{
 
 
 .component_checkbox {
-    display: inline;
-    padding: 5px 11px 0 11px;
+    display: inline-block;
+    padding: 0;
+    height: 25px;
+    width: 25px;
+    vertical-align: middle;
+
 
     position: relative;
     -webkit-user-select: none;
@@ -47,6 +51,7 @@ input.component_input[readonly], textarea.component_textarea[readonly]{
     user-select: none;
     input[type="checkbox"] {
         position: absolute;
+        top: -20px;
         opacity: 0;
         &:focus ~ span {
             border: 2px solid rgba(0, 0, 0, 0.05);
@@ -64,7 +69,7 @@ input.component_input[readonly], textarea.component_textarea[readonly]{
         border-radius: 3px;
         position: absolute;
         left: 0;
-        top: 7px;
+        top: 3px;
         width:  12px;
         height: 12px;
         background-color: rgba(0, 0, 0, 0.05);

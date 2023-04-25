@@ -31,7 +31,6 @@
     "react-pdf": "5.3.2", "pdfjs-dist": "2.6.347",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-selectable": "git+https://github.com/mickael-kerjean/react-selectable.git",
     "react-sticky": "^6.0.2",
     "rxjs": "^5.4.0",
     "wavesurfer.js": "^1.4.0"

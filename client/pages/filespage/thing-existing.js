@@ -2,7 +2,6 @@ import React, { createRef } from "react";
 import path from "path";
 import { Link } from "react-router-dom";
 import { DragSource, DropTarget } from "react-dnd";
-import { createSelectable } from "react-selectable";
 
 import "./thing.scss";
 import { Card, NgIf, Icon, EventEmitter, img_placeholder, Input } from "../../components/";
@@ -236,13 +235,21 @@ class ExistingThingComponent extends React.Component {
     }
 
     onThingClick(e) {
-        if (e.ctrlKey === true) {
+        if (e.ctrlKey === true || e.target.classList.contains("component_checkbox")) {
             e.preventDefault();
             this.props.emit(
                 "file.select",
                 pathBuilder(this.props.path, this.props.file.name, this.props.file.type),
             );
         }
+    }
+
+    onThingClickCheckbox(e) {
+        e.preventDefault();
+        this.props.emit(
+            "file.select",
+            pathBuilder(this.props.path, this.props.file.name, this.props.file.type),
+        );
     }
 
     _confirm_delete_text() {
@@ -285,6 +292,7 @@ class ExistingThingComponent extends React.Component {
                     disabled={this.props.file.icon === "loading"}>
                     <Card
                         className={className + " " + this.state.hover}>
+                        <Input type="checkbox" checked={this.props.selected} />
                         <Image
                             preview={this.state.preview}
                             icon={this.props.file.icon || this.props.file.type}
@@ -318,13 +326,11 @@ class ExistingThingComponent extends React.Component {
     }
 }
 
-export const ExistingThing = createSelectable(
-    EventEmitter(
-        HOCDropTargetForFsFile(
-            HOVDropTargetForVirtualFile(
-                HOVDropSourceForVirtualFile(
-                    ExistingThingComponent,
-                ),
+export const ExistingThing = EventEmitter(
+    HOCDropTargetForFsFile(
+        HOVDropTargetForVirtualFile(
+            HOVDropSourceForVirtualFile(
+                ExistingThingComponent,
             ),
         ),
     ),

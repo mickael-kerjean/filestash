@@ -16,7 +16,7 @@ export function FrequentlyAccess({ files, tags }) {
     else if(tags && tags.length > 0) showPlaceholder = false;
 
     return (
-        <div className="component_frequently-access">
+        <div className="component_frequently-access no-select">
             <ReactCSSTransitionGroup
                 transitionName="frequent-access" transitionLeave={false} transitionEnter={true}
                 transitionAppear={true} transitionEnterTimeout={500}

@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { nop } from "../helpers/";
 import "./input.scss";
 
 export class Input extends React.Component {
@@ -15,6 +16,7 @@ export class Input extends React.Component {
                     <input
                         type="checkbox"
                         {...this.props}
+                        onChange={this.props.onChange || nop}
                         ref={(comp) => this.ref = comp } />
                     <span className="indicator"></span>
                 </div>
@@ -23,7 +25,7 @@ export class Input extends React.Component {
             return (
                 <input
                     className="component_input"
-                    onChange={this.props.onChange}
+                    onChange={this.props.onChange || nop}
                     {...this.props}
                     ref={(comp) => this.ref = comp } />
             );
