@@ -126,6 +126,7 @@ export class FilesPageComponent extends React.Component {
             } else {
                 this.handleMultiSelect(this.state.files, e);
             }
+            requestAnimationFrame(() => document.getSelection().removeAllRanges());
         }
     }
 
