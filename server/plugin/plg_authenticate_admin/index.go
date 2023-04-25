@@ -25,7 +25,7 @@ func (this Admin) Setup() Form {
 				Name:     "password",
 				Type:     "text",
 				ReadOnly: true,
-				Value:    Config.Get("auth.admin").String(),
+				Value:    "__YOUR_ADMIN_PASSWORD__",
 				Description: `This plugin will redirect the user to a page asking for a password. Only the admin password will be considered valid.
 This plugin exposes {{ .user }} (which is 'admin') and {{ .password }} for the attribute mapping section
 `,
