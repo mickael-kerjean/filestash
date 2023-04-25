@@ -339,7 +339,7 @@ const SuperCheckbox = (props) => {
     return (
         <div className="component_supercheckbox">
             <label>
-                <input type="checkbox" checked={_is_expended} onChange={onCheckboxTick} />
+                <Input type="checkbox" checked={_is_expended} onChange={onCheckboxTick} />
                 {props.label}
             </label>
             <NgIf cond={_is_expended && props.inputType !== undefined}>

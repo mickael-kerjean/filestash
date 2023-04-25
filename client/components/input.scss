@@ -3,13 +3,7 @@
     border: none;
     border-radius: 0;
     width: 100%;
-    &[type="checkbox"] {
-        width: 1rem;
-        height: 1rem;
-    }
-    &:not([type="checkbox"]) {
-        height: 32px;
-    }
+    height: 32px;
     display: inline-block;
     font-family: "San Francisco","Roboto","Arial",sans-serif;
     -webkit-text-size-adjust: 100%;
@@ -39,4 +33,46 @@ input.component_input[readonly], textarea.component_textarea[readonly]{
 }
 .component_input[data-autocompleted] {
     background-color: transparent !important;
+}
+
+
+.component_checkbox {
+    display: inline;
+    padding: 5px 11px 0 11px;
+
+    position: relative;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        &:focus ~ span {
+            border: 2px solid rgba(0, 0, 0, 0.05);
+        }
+        &:focus:checked ~ span {
+            border: 2px solid rgba(0, 0, 0, 0.05);
+        }
+        &:checked ~ span {
+            color: white;
+            background: var(--primary) url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+DQo8c3ZnIHdpZHRoPSIxMiIgaGVpZ2h0PSI5IiB2aWV3Qm94PSIwIDAgMTIgOSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCiAgPHBhdGggZD0iTTQuNTc1IDguOTc3cy0uNDA0LS4wMDctLjUzNi0uMTY1TC4wNTcgNS42NGwuODI5LTEuMjI3TDQuNDcgNy4yNjggMTAuOTIxLjA4NmwuOTIzIDEuMTAzLTYuODYzIDcuNjRjLS4xMzQtLjAwMy0uNDA2LjE0OC0uNDA2LjE0OHoiIGZpbGw9IiNGRkYiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPg0KPC9zdmc+) 50% 40% no-repeat;
+            border: 2px solid var(--primary);
+        }
+    }
+    span {
+        border-radius: 3px;
+        position: absolute;
+        left: 0;
+        top: 7px;
+        width:  12px;
+        height: 12px;
+        background-color: rgba(0, 0, 0, 0.05);
+        border: 2px solid rgba(0, 0, 0, 0.05);
+        pointer-events: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
 }

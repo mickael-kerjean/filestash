@@ -5,7 +5,7 @@ import { DragSource, DropTarget } from "react-dnd";
 import { createSelectable } from "react-selectable";
 
 import "./thing.scss";
-import { Card, NgIf, Icon, EventEmitter, img_placeholder } from "../../components/";
+import { Card, NgIf, Icon, EventEmitter, img_placeholder, Input } from "../../components/";
 import { pathBuilder, basename, filetype, prompt, alert, leftPad, getMimeType, debounce, memory } from "../../helpers/";
 import { Files } from "../../model/";
 import { ShareComponent } from "./share";

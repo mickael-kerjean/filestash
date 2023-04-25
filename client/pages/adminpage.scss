@@ -49,12 +49,11 @@
             top: 0;
         }
         label{
-            > div{
+            > div {
                 display: flex;
                 @media screen and (max-width: 550px) {
                     display: block;
                     .nothing{ display: none; }
-                    input[type="checkbox"] { top: -7px; }
                 }
                 > span{
                     white-space: nowrap;
@@ -68,6 +67,7 @@
                     margin-top: auto;
                     margin-bottom: auto;
                 }
+                .component_checkbox .indicator { top: 10px; }
             }
         }
         a{
@@ -108,7 +108,7 @@
     }
     .formbuilder {
         .component_input, .component_textarea, .component_select {
-            background: rgba(0,0,0,0.05); border-bottom: 0;
+            background: rgba(0,0,0,0.05); border: 2px solid rgba(0,0,0,0.05);
             border-radius: 3px;
             padding-left: 5px;
             &[readonly]{
@@ -120,13 +120,19 @@
             }
         }
         .formbuilder_password {
+            .component_input {
+                border-right: none;
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
             img.component_icon {
+                border: 2px solid rgba(0, 0, 0, 0.05);
+                height: 18px;
+                border-left: none;
                 background: rgba(0, 0, 0, 0.05);
                 border-top-right-radius: 3px;
                 border-bottom-right-radius: 3px;
                 padding-right: 5px;
-                border: none;
-                height: 22px;
             }
         }
     }

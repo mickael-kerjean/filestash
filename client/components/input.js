@@ -8,13 +8,26 @@ export class Input extends React.Component {
     }
 
     render() {
-        return (
-            <input
-                className="component_input"
-                onChange={this.props.onChange}
-                {...this.props}
-                ref={(comp) => this.ref = comp } />
-        );
+        switch(this.props.type) {
+        case "checkbox":
+            return (
+                <div className="component_checkbox">
+                    <input
+                        type="checkbox"
+                        {...this.props}
+                        ref={(comp) => this.ref = comp } />
+                    <span className="indicator"></span>
+                </div>
+            );
+        default:
+            return (
+                <input
+                    className="component_input"
+                    onChange={this.props.onChange}
+                    {...this.props}
+                    ref={(comp) => this.ref = comp } />
+            );
+        }
     }
 }
 
@@ -64,11 +77,11 @@ export class Enabler extends React.Component {
             const $el = document.getElementById(t);
             if (!$el) return;
             if (value === true) {
-                $el.parentElement.parentElement.parentElement.style.display = "block";
-                $el.parentElement.parentElement.parentElement.style.opacity = "1";
+                $el.parentElement.parentElement.parentElement.parentElement.style.display = "block";
+                $el.parentElement.parentElement.parentElement.parentElement.style.opacity = "1";
             } else {
-                $el.parentElement.parentElement.parentElement.style.display = "none";
-                $el.parentElement.parentElement.parentElement.style.opacity = "0";
+                $el.parentElement.parentElement.parentElement.parentElement.style.display = "none";
+                $el.parentElement.parentElement.parentElement.parentElement.style.opacity = "0";
 
                 // reset value
                 if ($el.value) {

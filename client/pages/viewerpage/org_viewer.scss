@@ -242,19 +242,19 @@
 .subtask_container{
     background: #fafafa;
     color: var(--light);
-    font-size: 0.95em;
-    line-height: 0.95em;
+    font-size: 0.95rem;
+    line-height: 1rem;
     padding: 5px 0;
 
     .component_subtask{
-        margin: 5px;
+        margin: 0 5px;
         label{
             width: 100%;
             display: inline-block;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            input[type="checkbox"]{ margin: 0 5px; }
+            .component_checkbox .indicator{ top: 6px; }
         }
     }
 }

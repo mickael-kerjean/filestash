@@ -56,9 +56,8 @@
                 margin: 0;
             }
         }
-        input[type="checkbox"]{
-            top: 0px;
-            margin-right: 5px;
+        .component_checkbox .indicator{
+            top: 4px;
         }
         input.component_input[name="oauth2"]{
             display: none;
