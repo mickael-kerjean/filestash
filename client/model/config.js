@@ -59,7 +59,7 @@ class MiddlewareModel {
     }
 
     getAllAuthentication() {
-        return http_get("/api/middlewares/authentication").then((r) => r.result);
+        return http_get("/admin/api/middlewares/authentication").then((r) => r.result);
     }
 }
 

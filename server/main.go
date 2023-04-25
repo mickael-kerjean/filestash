@@ -52,6 +52,7 @@ func Init(a App) {
 	middlewares = []Middleware{ApiHeaders, AdminOnly, SecureOrigin}
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigHandler, middlewares, a)).Methods("GET")
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, a)).Methods("POST")
+	admin.HandleFunc("/middlewares/authentication", NewMiddlewareChain(AdminAuthenticationMiddleware, middlewares, a)).Methods("GET")
 	admin.HandleFunc("/audit", NewMiddlewareChain(FetchAuditHandler, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{IndexHeaders, AdminOnly}
 	admin.HandleFunc("/logs", NewMiddlewareChain(FetchLogHandler, middlewares, a)).Methods("GET")
@@ -95,7 +96,6 @@ func Init(a App) {
 	middlewares = []Middleware{ApiHeaders, SecureHeaders}
 	r.HandleFunc("/api/config", NewMiddlewareChain(PublicConfigHandler, middlewares, a)).Methods("GET")
 	r.HandleFunc("/api/backend", NewMiddlewareChain(AdminBackend, middlewares, a)).Methods("GET")
-	r.HandleFunc("/api/middlewares/authentication", NewMiddlewareChain(AdminAuthenticationMiddleware, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{StaticHeaders, SecureHeaders}
 	r.PathPrefix("/assets").Handler(http.HandlerFunc(NewMiddlewareChain(StaticHandler("/"), middlewares, a))).Methods("GET")
 	r.HandleFunc("/favicon.ico", NewMiddlewareChain(StaticHandler("/assets/logo/"), middlewares, a)).Methods("GET")
