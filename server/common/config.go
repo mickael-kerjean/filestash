@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"regexp"
 	"strings"
 	"sync"
 )
@@ -361,7 +362,7 @@ func (this *Configuration) Export() interface{} {
 		RefreshAfterUpload      bool              `json:"refresh_after_upload"`
 		FilePageDefaultSort     string            `json:"default_sort"`
 		FilePageDefaultView     string            `json:"default_view"`
-		AuthMiddleware          interface{}       `json:"auth"`
+		AuthMiddleware          []string          `json:"auth"`
 		Thumbnailer             []string          `json:"thumbnailer"`
 		EnableChromecast        bool              `json:"enable_chromecast"`
 	}{
@@ -380,11 +381,13 @@ func (this *Configuration) Export() interface{} {
 		RefreshAfterUpload:      this.Get("general.refresh_after_upload").Bool(),
 		FilePageDefaultSort:     this.Get("general.filepage_default_sort").String(),
 		FilePageDefaultView:     this.Get("general.filepage_default_view").String(),
-		AuthMiddleware: func() string {
+		AuthMiddleware: func() []string {
 			if this.Get("middleware.identity_provider.type").String() == "" {
-				return ""
+				return []string{}
 			}
-			return this.Get("middleware.attribute_mapping.related_backend").String()
+			return regexp.MustCompile("\\s*,\\s*").Split(
+				this.Get("middleware.attribute_mapping.related_backend").String(), -1,
+			)
 		}(),
 		Thumbnailer: func() []string {
 			tMap := Hooks.Get.Thumbnailer()

@@ -130,7 +130,7 @@ export function Form({
                     const key = Object.keys(form)[0];
                     if (selectedTab !== i) return null;
 
-                    const auth = window.CONFIG["auth"].split(/\s*,\s*/);
+                    const auth = window.CONFIG["auth"];
                     if (auth.indexOf(key) !== -1 || auth.indexOf(form[key].label.value) !== -1) {
                         return hasUserInteracted === false && enabledBackends.length > 1 ? (
                             <Button
