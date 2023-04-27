@@ -709,7 +709,7 @@ func FileExtract(ctx *App, res http.ResponseWriter, req *http.Request) {
 			fmt.Sprintf("%s/", filepath.Dir(path)): true,
 		}
 		for _, f := range r.File {
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(2 * time.Millisecond)
 			if err = c.Err(); err != nil {
 				cancel()
 				return ErrTimeout
