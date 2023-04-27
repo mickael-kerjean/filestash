@@ -83,10 +83,6 @@
     }
 
     .component_checkbox{
-        input[type="checkbox"]:checked ~ span {
-            background-color: #6f6f6f88;
-            border-color: #6f6f6f88;
-        }
         opacity: 0;
         transform: translateX(-3px);
         transition: 0.15s ease-out all;
@@ -287,7 +283,8 @@
             top: 12px;
             left: 15px;
         }
-        &:hover .box > span > .component_icon, &.selected .box > span > .component_icon {
+        .component_icon { transition: opacity 0.1s ease; }
+        .component_checkbox:hover ~ span > .component_icon, &.selected .box > span > .component_icon {
             opacity: 0;
         }
     }
