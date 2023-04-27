@@ -1,12 +1,13 @@
-import React, { createRef } from "react";
+import React, { createRef, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
 import {
     NgIf, Icon, EventEmitter, Dropdown, DropdownButton, DropdownList,
-    DropdownItem, Container,
+    DropdownItem, Container, Loader,
 } from "../../components/";
-import { debounce, prompt } from "../../helpers/";
+import { debounce, alert, confirm, prompt, notify } from "../../helpers/";
+import { Files } from "../../model/";
 import { t } from "../../locales/";
 import "./submenu.scss";
 class SubmenuComponent extends React.Component {
@@ -65,6 +66,12 @@ class SubmenuComponent extends React.Component {
     }
     onDownload(arrayOfPaths) {
         this.props.emit("file.download.multiple", arrayOfPaths);
+    }
+
+    onExtract(arrayOfPaths) {
+        alert.now(<ExtractZipRequest
+                      refresh={this.props.emit.bind(this, "file.refresh")}
+                      paths={arrayOfPaths} />);
     }
 
     onViewChange() {
@@ -155,62 +162,77 @@ class SubmenuComponent extends React.Component {
                                 <span>{ t("Remove") }</span>
                             </ReactCSSTransitionGroup>
                         </NgIf>
+                        <NgIf
+                            className="button-extract"
+                            cond={/canary/.test(location.search) && this.props.selected.length === 1 && this.props.selected[0].replace(/.*\.([^\.]+)/, "$1") === "zip"}
+                            type="inline"
+                            onMouseDown={this.onExtract.bind(this, this.props.selected)}>
+                            <ReactCSSTransitionGroup transitionName="submenuwithSelection" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={10000}>
+                                <span>{ t("Extract") }</span>
+                            </ReactCSSTransitionGroup>
+                        </NgIf>
 
-                        <Dropdown
-                            className="view sort"
-                            onChange={this.onSortChange.bind(this)}>
-                            <DropdownButton>
-                                <Icon name="sort"/>
-                            </DropdownButton>
-                            <DropdownList>
-                                <DropdownItem
-                                    name="type"
-                                    icon={this.props.sort === "type" ? "check" : null}>
-                                    { t("Sort By Type") }
-                                </DropdownItem>
-                                <DropdownItem
-                                    name="date"
-                                    icon={this.props.sort === "date" ? "check" : null}>
-                                    { t("Sort By Date") }
-                                </DropdownItem>
-                                <DropdownItem
-                                    name="name"
-                                    icon={this.props.sort === "name" ? "check" : null}>
-                                    { t("Sort By Name") }
-                                </DropdownItem>
-                            </DropdownList>
-                        </Dropdown>
-                        <div
-                            className="view list-grid"
-                            onClick={this.onViewChange.bind(this)}>
-                            <Icon name={this.props.view === "grid" ? "list" : "grid"}/>
-                        </div>
-                        <div className="view">
-                            <form onSubmit={(e) => this.onSearchKeypress(this.state.search_keyword, false, e)}>
-                                <label className="view search" onClick={this.onSearchToggle.bind(this, null)}>
-                                    <NgIf cond={this.state.search_input_visible !== true}>
-                                        <Icon name="search_dark"/>
-                                    </NgIf>
-                                    <NgIf cond={this.state.search_input_visible === true}>
-                                        <Icon name="close_dark"/>
-                                    </NgIf>
-                                </label>
-                                <NgIf cond={this.state.search_input_visible !== null} type="inline">
-                                    <input
-                                        ref={this.$input}
-                                        onBlur={this.closeIfEmpty.bind(this, false)}
-                                        style={{ "width": this.state.search_input_visible ? "180px" : "0px" }}
-                                        value={this.state.search_keyword}
-                                        onChange={(e) => this.onSearchKeypress(e.target.value, true)}
-                                        type="text"
-                                        id="search"
-                                        placeholder={ t("search") }
-                                        name="search"
-                                        autoComplete="off" />
-                                    <label htmlFor="search" className="hidden">{ t("search") }</label>
-                                </NgIf>
-                            </form>
-                        </div>
+                        {
+                            this.props.selected.length === 0 && (
+                                <React.Fragment>
+                                    <Dropdown
+                                        className="view sort"
+                                        onChange={this.onSortChange.bind(this)}>
+                                        <DropdownButton>
+                                            <Icon name="sort"/>
+                                        </DropdownButton>
+                                        <DropdownList>
+                                            <DropdownItem
+                                                name="type"
+                                                icon={this.props.sort === "type" ? "check" : null}>
+                                                { t("Sort By Type") }
+                                            </DropdownItem>
+                                            <DropdownItem
+                                                name="date"
+                                                icon={this.props.sort === "date" ? "check" : null}>
+                                                { t("Sort By Date") }
+                                            </DropdownItem>
+                                            <DropdownItem
+                                                name="name"
+                                                icon={this.props.sort === "name" ? "check" : null}>
+                                                { t("Sort By Name") }
+                                            </DropdownItem>
+                                        </DropdownList>
+                                    </Dropdown>
+                                    <div
+                                        className="view list-grid"
+                                        onClick={this.onViewChange.bind(this)}>
+                                        <Icon name={this.props.view === "grid" ? "list" : "grid"}/>
+                                    </div>
+                                    <div className="view">
+                                        <form onSubmit={(e) => this.onSearchKeypress(this.state.search_keyword, false, e)}>
+                                            <label className="view search" onClick={this.onSearchToggle.bind(this, null)}>
+                                                <NgIf cond={this.state.search_input_visible !== true}>
+                                                    <Icon name="search_dark"/>
+                                                </NgIf>
+                                                <NgIf cond={this.state.search_input_visible === true}>
+                                                    <Icon name="close_dark"/>
+                                                </NgIf>
+                                            </label>
+                                            <NgIf cond={this.state.search_input_visible !== null} type="inline">
+                                                <input
+                                                    ref={this.$input}
+                                                    onBlur={this.closeIfEmpty.bind(this, false)}
+                                                    style={{ "width": this.state.search_input_visible ? "180px" : "0px" }}
+                                                    value={this.state.search_keyword}
+                                                    onChange={(e) => this.onSearchKeypress(e.target.value, true)}
+                                                    type="text"
+                                                    id="search"
+                                                    placeholder={ t("search") }
+                                                    name="search"
+                                                    autoComplete="off" />
+                                                <label htmlFor="search" className="hidden">{ t("search") }</label>
+                                            </NgIf>
+                                        </form>
+                                    </div>
+                                </React.Fragment>
+                            )
+                        }
                     </div>
                 </Container>
             </div>
@@ -223,5 +245,40 @@ SubmenuComponent.propTypes = {
     onSortUpdate: PropTypes.func.isRequired,
     sort: PropTypes.string.isRequired,
 };
+
+
+function ExtractZipRequest({ paths, refresh }) {
+    const [error, setError] = useState(null);
+    useEffect(() => {
+        const controller = new AbortController();
+        Files.unzip(paths, controller.signal)
+            .then((a) => {
+                refresh();
+                document.querySelector("#modal-box").click();
+            })
+            .catch((err) => {
+                refresh();
+                setError(t(err && err.message))
+            });
+        return () => controller.abort();
+    }, []);
+    return (
+        <div>
+            {
+                error === null ? (
+                    <React.Fragment>
+                        <style>{`
+                           .component_modal button { opacity: 0 }
+                           .component_modal .component_loader { margin: 30px 0 0 0; }
+                        `}</style>
+                        <Loader />
+                    </React.Fragment>
+                ) : (
+                    <div>{ error }</div>
+                )
+            }
+        </div>
+    )
+}
 
 export const Submenu = EventEmitter(SubmenuComponent);

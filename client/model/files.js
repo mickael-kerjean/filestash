@@ -181,6 +181,17 @@ class FileSystem {
         window.open(url);
         return Promise.resolve();
     }
+    unzip(paths, signal) {
+        const url = appendShareToUrl(
+            "/api/files/unzip?" + paths.map((p) => "path=" + prepare(p)).join("&"),
+        );
+        return fetch(url, { signal, method: "POST" }).then((r) => {
+            if (r.ok) return r.json();
+            return r.json().then((err) => {
+                throw new Error(err.message);
+            });
+        });
+    }
 
     options(path) {
         const url = appendShareToUrl("/api/files/cat?path=" + prepare(path));
