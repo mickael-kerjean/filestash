@@ -11,7 +11,7 @@
         .component_datetime{display: none;}
         .component_action{display: block;}
     }
-    .component_action{display: none;}
+    .component_action, .component_checkbox{display: none;}
 
 
     .file-is-hover{
@@ -84,16 +84,19 @@
 
     .component_checkbox{
         opacity: 0;
-        transform: translateX(-3px);
-        transition: 0.15s ease-out all;
         z-index: 2;
-        display: block;
         position: absolute;
+        transition: 0.15s ease-out all;
+        transform: translateX(0px);
+        padding: 2px;
+        border-radius: 50px;
+        .indicator {
+            top: 7px; left: 7px;
+        }
     }
     &:hover .component_checkbox, &.selected .component_checkbox {
         transition-delay: 0.1s;
         opacity: 1;
-        transform: translateY(0);
     }
 
     .selectionOverlay{ display: none; }
@@ -107,12 +110,6 @@
         background: var(--primary);
         z-index: 1;
         opacity: 0.3;
-    }
-
-    &.view-grid:hover, &.selected {
-        .box:not(.loading) .component_checkbox {
-            display: block;
-        }
     }
 }
 
@@ -136,6 +133,7 @@
         @media (max-width: 400px){.box{height: 140px; .info_extension{font-size: 0.8em!important; padding: 3px 10px;}}}
         @media (max-width: 340px){.box{height: 130px}}
         text-align: center;
+        transition: 0.1s ease transform;
 
         .box{
             margin: 2px;
@@ -238,10 +236,6 @@
                 margin-right: 0px;
                 padding: 0px;
             }
-            .component_checkbox {
-                top: 5px;
-                left: 10px;
-            }
             img.thumbnail{transition: 0.2s ease-out transform;}
         }
         &.not-selected .box{
@@ -278,14 +272,38 @@
     }
 
     // LIST VIEW
+    > .component_thing.view-grid{
+        .component_checkbox {
+            display: block;
+            top: 3px;
+            left: 3px;
+            transform: translateX(-5px);
+        }
+        &:hover .component_checkbox, &.selected .component_checkbox {
+            transform: translateX(0px);
+        }
+    }
     > .component_thing.view-list{
         .component_checkbox {
-            top: 12px;
-            left: 15px;
+            top: 8px;
+            left: 8px;
+            transition: 0.5s ease all;
+            background: rgba(0,0,0,0);
         }
-        .component_icon { transition: opacity 0.1s ease; }
-        .component_checkbox:hover ~ span > .component_icon, &.selected .box > span > .component_icon {
-            opacity: 0;
+        .component_checkbox:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        &:hover .component_checkbox, &.selected .component_checkbox {
+            display: block;
+            & ~ span > .component_icon { visibility:hidden; } // hide file and folder icon
+            .indicator { border-color: var(--color); }
+            input ~ span {
+                background-color: rgba(255,255,255,0.4);
+            }
+            input:checked ~ span {
+                background-color: var(--color);
+            }
         }
     }
 }

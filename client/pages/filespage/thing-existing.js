@@ -284,15 +284,22 @@ class ExistingThingComponent extends React.Component {
             .replace(/\?/g, "%3F")
             .replace(/\#/g, "%23");
 
+        const onClickCheckbox = (e, scaleNumber) => {
+            const $box = e.target.parentElement.parentElement.parentElement;
+            if ($box.classList.contains("view-grid") === false) return;
+            $box.style.transform = `scale(${scaleNumber})`;
+        };
+
         return connectDragSource(connectDropNativeFile(connectDropFile(
-            <div className={"component_thing view-"+this.props.view+(this.props.selected === true ? " selected" : " not-selected")}>
+            <div className={"component_thing" + ` view-${this.props.view}`+
+                            (this.props.selected === true ? " selected" : " not-selected")}>
                 <ToggleableLink
                     onClick={this.onThingClick.bind(this)}
                     to={fileLink + window.location.search}
                     disabled={this.props.file.icon === "loading"}>
                     <Card
                         className={className + " " + this.state.hover}>
-                        <Input type="checkbox" checked={this.props.selected} />
+                        <Input type="checkbox" checked={this.props.selected} onMouseUp={(e) => onClickCheckbox(e, 1)} onMouseDown={(e) => onClickCheckbox(e, 0.95)}/>
                         <Image
                             preview={this.state.preview}
                             icon={this.props.file.icon || this.props.file.type}

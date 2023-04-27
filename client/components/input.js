@@ -12,7 +12,10 @@ export class Input extends React.Component {
         switch(this.props.type) {
         case "checkbox":
             return (
-                <div className="component_checkbox">
+                <div
+                    className="component_checkbox"
+                    onMouseDown={this.props.onMouseDown && this.props.onMouseDown.bind(this)}
+                    onMouseUp={this.props.onMouseUp && this.props.onMouseUp.bind(this)}>
                     <input
                         type="checkbox"
                         {...this.props}
