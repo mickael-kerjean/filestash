@@ -175,9 +175,12 @@ class FileSystem {
     }
 
     zip(paths) {
-        const url = appendShareToUrl(
-            "/api/files/zip?" + paths.map((p) => "path=" + prepare(p)).join("&"),
-        );
+        let url;
+        if (paths.length === 1) {
+            url = appendShareToUrl("/api/files/cat?path=" + prepare(paths[0]) + "&name=" + basename(paths[0]));
+        } else {
+            url = appendShareToUrl("/api/files/zip?" + paths.map((p) => "path=" + prepare(p)).join("&"));
+        }
         window.open(url);
         return Promise.resolve();
     }

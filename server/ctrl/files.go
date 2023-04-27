@@ -8,6 +8,7 @@ import (
 	"hash/fnv"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -139,7 +140,13 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
-	header := res.Header()
+	var (
+		file              io.ReadCloser
+		contentLength     int64       = -1
+		needToCreateCache bool        = false
+		query             url.Values  = req.URL.Query()
+		header            http.Header = res.Header()
+	)
 	http.SetCookie(res, &http.Cookie{
 		Name:   "download",
 		Value:  "",
@@ -151,7 +158,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}
-	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
+	path, err := PathBuilder(ctx, query.Get("path"))
 	if err != nil {
 		Log.Debug("cat::path '%s'", err.Error())
 		SendErrorResult(res, err)
@@ -165,10 +172,6 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
-
-	var file io.ReadCloser
-	var contentLength int64 = -1
-	var needToCreateCache bool = false
 
 	// use our cache if necessary (range request) when possible
 	if req.Header.Get("range") != "" {
@@ -185,7 +188,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// perform the actual `cat` if needed
-	mType := GetMimeType(req.URL.Query().Get("path"))
+	mType := GetMimeType(query.Get("path"))
 	if file == nil {
 		if file, err = ctx.Backend.Cat(path); err != nil {
 			Log.Debug("cat::backend '%s'", err.Error())
@@ -202,7 +205,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// plugin hooks
-	if thumb := req.URL.Query().Get("thumbnail"); thumb == "true" {
+	if thumb := query.Get("thumbnail"); thumb == "true" {
 		for plgMType, plgHandler := range Hooks.Get.Thumbnailer() {
 			if plgMType != mType {
 				continue
@@ -298,6 +301,9 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 	if header.Get("Content-Security-Policy") == "" {
 		header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; font-src data:; script-src-elem 'self'")
+	}
+	if fname := query.Get("name"); fname != "" {
+		header.Set("Content-Disposition", "attachment; filename=\""+fname+"\"")
 	}
 	header.Set("Accept-Ranges", "bytes")
 
