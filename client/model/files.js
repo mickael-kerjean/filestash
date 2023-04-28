@@ -175,11 +175,9 @@ class FileSystem {
     }
 
     zip(paths) {
-        let url;
-        if (paths.length === 1) {
+        let url = appendShareToUrl("/api/files/zip?" + paths.map((p) => "path=" + prepare(p)).join("&"));
+        if (paths.length === 1 && filetype(paths[0]) === "file") {
             url = appendShareToUrl("/api/files/cat?path=" + prepare(paths[0]) + "&name=" + basename(paths[0]));
-        } else {
-            url = appendShareToUrl("/api/files/zip?" + paths.map((p) => "path=" + prepare(p)).join("&"));
         }
         window.open(url);
         return Promise.resolve();
