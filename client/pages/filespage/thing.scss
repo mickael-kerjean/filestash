@@ -76,6 +76,7 @@
         margin: 0 -10px;
         padding: 0 10px;
         position: relative;
+
         .component_icon{
             padding: 1px 0;
             box-sizing: border-box;
@@ -224,7 +225,6 @@
             }
             .component_filesize, .component_datetime{ display: none; }
             .component_action{
-                opacity: 0;
                 transform: translateX(5px);
                 transition: 0.15s ease-out all;
                 z-index: 2;
@@ -242,7 +242,6 @@
             &:hover{
                 .component_action{
                     transition-delay: 0.1s;
-                    opacity: 1;
                     transform: translateX(0);
                 }
                 img.thumbnail{
@@ -305,6 +304,14 @@
                 background-color: var(--color);
             }
         }
+    }
+
+    .not-selected .box {
+        &:hover .component_action { opacity: 1; }
+        .component_action { opacity: 0; }
+    }
+    .selected .box {
+        .component_action { opacity: 0; }
     }
 }
 

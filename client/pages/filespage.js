@@ -120,7 +120,7 @@ export class FilesPageComponent extends React.Component {
                 }
             });
             this.onRefresh();
-        } else if(e.code === "KeyA" && e.ctrlKey === true) {
+        } else if (e.code === "KeyA" && e.ctrlKey === true && document.activeElement.tagName !== "INPUT") {
             if (this.state.selected.length === this.state.files.length) {
                 this.handleMultiSelect([], e);
             } else {
