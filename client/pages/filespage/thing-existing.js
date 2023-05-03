@@ -296,7 +296,7 @@ class ExistingThingComponent extends React.Component {
                 <ToggleableLink
                     onClick={this.onThingClick.bind(this)}
                     to={fileLink + window.location.search}
-                    disabled={this.props.file.icon === "loading"}>
+                    disabled={this.props.file.icon === "loading" || this.state.is_renaming}>
                     <Card
                         className={className + " " + this.state.hover}>
                         <Input type="checkbox" checked={this.props.selected} onMouseUp={(e) => onClickCheckbox(e, 1)} onMouseDown={(e) => onClickCheckbox(e, 0.95)}/>
