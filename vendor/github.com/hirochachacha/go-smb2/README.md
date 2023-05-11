@@ -1,8 +1,8 @@
 smb2
 ====
 
-[![Build Status](https://travis-ci.org/hirochachacha/go-smb2.svg?branch=master)](https://travis-ci.org/hirochachacha/go-smb2)
-[![GoDoc](https://godoc.org/github.com/hirochachacha/go-smb2?status.svg)](http://godoc.org/github.com/hirochachacha/go-smb2)
+[![Build Status](https://github.com/hirochachacha/go-smb2/actions/workflows/go.yml/badge.svg)](https://github.com/hirochachacha/go-smb2/actions/workflows/go.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/hirochachacha/go-smb2.svg)](https://pkg.go.dev/github.com/hirochachacha/go-smb2)
 
 Description
 -----------
@@ -175,10 +175,9 @@ func main() {
 	fmt.Println(os.IsNotExist(err)) // true
 	fmt.Println(os.IsExist(err))    // false
 
-	f, _ := fs.Open("hello.txt")
-	_, err = f.WriteString("test")
-
-	fmt.Println(os.IsPermission(err)) // true: on the read only share, false: otherwise
+	fs.WriteFile("hello2.txt", []byte("test"), 0444)
+	err = fs.WriteFile("hello2.txt", []byte("test2"), 0444)
+	fmt.Println(os.IsPermission(err)) // true
 
 	ctx, cancel := context.WithTimeout(context.Background(), 0)
 	defer cancel()
@@ -186,5 +185,63 @@ func main() {
 	_, err = fs.WithContext(ctx).Open("hello.txt")
 
 	fmt.Println(os.IsTimeout(err)) // true
+}
+```
+
+### Glob and Walk by fs.FS interface ###
+
+```go
+package main
+
+import (
+	"fmt"
+	"net"
+	iofs "io/fs"
+
+	"github.com/hirochachacha/go-smb2"
+)
+
+func main() {
+	conn, err := net.Dial("tcp", "SERVERNAME:445")
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	d := &smb2.Dialer{
+		Initiator: &smb2.NTLMInitiator{
+			User:     "USERNAME",
+			Password: "PASSWORD",
+		},
+	}
+
+	s, err := d.Dial(conn)
+	if err != nil {
+		panic(err)
+	}
+	defer s.Logoff()
+
+	fs, err := s.Mount("SHARENAME")
+	if err != nil {
+		panic(err)
+	}
+	defer fs.Umount()
+
+	matches, err := iofs.Glob(fs.DirFS("."), "*")
+	if err != nil {
+		panic(err)
+	}
+	for _, match := range matches {
+		fmt.Println(match)
+	}
+
+	err = iofs.WalkDir(fs.DirFS("."), ".", func(path string, d fs.DirEntry, err error) error {
+		fmt.Println(path, d, err)
+
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
 }
 ```

@@ -75,16 +75,22 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	if err != nil {
 		return nil, err
 	}
-	names, err := s.session.ListSharenames()
-	if err != nil {
-		return nil, err
-	}
-	for _, name := range names {
-		if strings.HasSuffix(name, "$") {
-			continue
+	if params["share"] == "" {
+		names, err := s.session.ListSharenames()
+		if err != nil {
+			return nil, err
 		}
-		if m, err := s.session.Mount(name); err == nil {
-			s.share[name] = m
+		for _, name := range names {
+			if strings.HasSuffix(name, "$") {
+				continue
+			}
+			if m, err := s.session.Mount(name); err == nil {
+				s.share[name] = m
+			}
+		}
+	} else {
+		if m, err := s.session.Mount(params["share"]); err == nil {
+			s.share[params["share"]] = m
 		}
 	}
 	SambaCache.Set(params, s)
@@ -118,7 +124,7 @@ func (smb Samba) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"samba_port", "samba_path", "samba_domain"},
+				Target:      []string{"samba_port", "samba_path", "samba_domain", "samba_share"},
 			},
 			{
 				Id:          "samba_path",
@@ -137,6 +143,12 @@ func (smb Samba) LoginForm() Form {
 				Name:        "domain",
 				Type:        "text",
 				Placeholder: "Domain",
+			},
+			{
+				Id:          "samba_share",
+				Name:        "share",
+				Type:        "text",
+				Placeholder: "Share Name",
 			},
 		},
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net"
 	"os"
@@ -46,6 +45,11 @@ func (d *Dialer) DialContext(ctx context.Context, tcpConn net.Conn) (*Session, e
 	}
 	if d.Initiator == nil {
 		return nil, &InternalError{"Initiator is empty"}
+	}
+	if i, ok := d.Initiator.(*NTLMInitiator); ok {
+		if i.User == "" {
+			return nil, &InternalError{"Anonymous account is not supported yet. Use guest account instead"}
+		}
 	}
 
 	maxCreditBalance := d.MaxCreditBalance
@@ -154,11 +158,12 @@ func (c *Session) ListSharenames() ([]string, error) {
 	callId++
 
 	reqReq := &IoctlRequest{
-		CtlCode:           FSCTL_PIPE_TRANSCEIVE,
-		OutputOffset:      0,
-		OutputCount:       0,
-		MaxInputResponse:  0,
-		MaxOutputResponse: 4280,
+		CtlCode:          FSCTL_PIPE_TRANSCEIVE,
+		OutputOffset:     0,
+		OutputCount:      0,
+		MaxInputResponse: 0,
+		// MaxOutputResponse: 4280,
+		MaxOutputResponse: 1024,
 		Flags:             SMB2_0_IOCTL_IS_FSCTL,
 		Input: &msrpc.NetShareEnumAllRequest{
 			CallId:     callId,
@@ -169,11 +174,47 @@ func (c *Session) ListSharenames() ([]string, error) {
 
 	output, err = f.ioctl(reqReq)
 	if err != nil {
+		if rerr, ok := err.(*ResponseError); ok && NtStatus(rerr.Code) == STATUS_BUFFER_OVERFLOW {
+			buf := make([]byte, 4280)
+
+			rlen := 4280 - len(output)
+
+			n, err := f.readAt(buf[:rlen], 0)
+			if err != nil {
+				return nil, &os.PathError{Op: "listSharenames", Path: f.name, Err: err}
+			}
+
+			output = append(output, buf[:n]...)
+
+			r2 := msrpc.NetShareEnumAllResponseDecoder(output)
+			if r2.IsInvalid() || r2.CallId() != callId {
+				return nil, &os.PathError{Op: "listSharenames", Path: f.name, Err: &InvalidResponseError{"broken net share enum response format"}}
+			}
+
+			for r2.IsIncomplete() {
+				n, err := f.readAt(buf, 0)
+				if err != nil {
+					return nil, &os.PathError{Op: "listSharenames", Path: f.name, Err: err}
+				}
+
+				r3 := msrpc.NetShareEnumAllResponseDecoder(buf[:n])
+				if r3.IsInvalid() || r3.CallId() != callId {
+					return nil, &os.PathError{Op: "listSharenames", Path: f.name, Err: &InvalidResponseError{"broken net share enum response format"}}
+				}
+
+				output = append(output, r3.Buffer()...)
+
+				r2 = msrpc.NetShareEnumAllResponseDecoder(output)
+			}
+
+			return r2.ShareNameList(), nil
+		}
+
 		return nil, &os.PathError{Op: "listSharenames", Path: f.name, Err: err}
 	}
 
 	r2 := msrpc.NetShareEnumAllResponseDecoder(output)
-	if r2.IsInvalid() || r2.CallId() != callId {
+	if r2.IsInvalid() || r2.IsIncomplete() || r2.CallId() != callId {
 		return nil, &os.PathError{Op: "listSharenames", Path: f.name, Err: &InvalidResponseError{"broken net share enum response format"}}
 	}
 
@@ -205,8 +246,21 @@ func (fs *Share) Create(name string) (*File, error) {
 	return fs.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 }
 
-func (fs *Share) newFile(fd FileIdDecoder, name string) *File {
-	f := &File{fs: fs, fd: fd.Decode(), name: name}
+func (fs *Share) newFile(r CreateResponseDecoder, name string) *File {
+	fd := r.FileId().Decode()
+
+	fileStat := &FileStat{
+		CreationTime:   time.Unix(0, r.CreationTime().Nanoseconds()),
+		LastAccessTime: time.Unix(0, r.LastAccessTime().Nanoseconds()),
+		LastWriteTime:  time.Unix(0, r.LastWriteTime().Nanoseconds()),
+		ChangeTime:     time.Unix(0, r.ChangeTime().Nanoseconds()),
+		EndOfFile:      r.EndofFile(),
+		AllocationSize: r.AllocationSize(),
+		FileAttributes: r.FileAttributes(),
+		FileName:       base(name),
+	}
+
+	f := &File{fs: fs, fd: fd, name: name, fileStat: fileStat}
 
 	runtime.SetFinalizer(f, (*File).close)
 
@@ -344,7 +398,7 @@ func (fs *Share) Readlink(name string) (string, error) {
 		OutputOffset:      0,
 		OutputCount:       0,
 		MaxInputResponse:  0,
-		MaxOutputResponse: 64 * 1024,
+		MaxOutputResponse: uint32(f.maxTransactSize()),
 		Flags:             SMB2_0_IOCTL_IS_FSCTL,
 		Input:             nil,
 	}
@@ -579,7 +633,7 @@ func (fs *Share) Lstat(name string) (os.FileInfo, error) {
 		return nil, &os.PathError{Op: "stat", Path: name, Err: err}
 	}
 
-	fi, err := f.stat()
+	fi, err := f.fileStat, nil
 	if e := f.close(); err == nil {
 		err = e
 	}
@@ -613,7 +667,7 @@ func (fs *Share) Stat(name string) (os.FileInfo, error) {
 		return nil, &os.PathError{Op: "stat", Path: name, Err: err}
 	}
 
-	fi, err := f.stat()
+	fi, err := f.fileStat, nil
 	if e := f.close(); err == nil {
 		err = e
 	}
@@ -755,6 +809,11 @@ func (fs *Share) ReadDir(dirname string) ([]os.FileInfo, error) {
 	return fis, nil
 }
 
+const (
+	intSize = 32 << (^uint(0) >> 63) // 32 or 64
+	maxInt  = 1<<(intSize-1) - 1
+)
+
 func (fs *Share) ReadFile(filename string) ([]byte, error) {
 	f, err := fs.Open(filename)
 	if err != nil {
@@ -762,7 +821,39 @@ func (fs *Share) ReadFile(filename string) ([]byte, error) {
 	}
 	defer f.Close()
 
-	return ioutil.ReadAll(f)
+	size64 := f.fileStat.Size() + 1 // one byte for final read at EOF
+
+	var size int
+
+	if size64 <= maxInt {
+		size = int(size64)
+
+		// If a file claims a small size, read at least 512 bytes.
+		// In particular, files in Linux's /proc claim size 0 but
+		// then do not work right if read in small pieces,
+		// so an initial read of 1 byte would not work correctly.
+		if size < 512 {
+			size = 512
+		}
+	} else {
+		size = maxInt
+	}
+
+	data := make([]byte, 0, size)
+	for {
+		if len(data) >= cap(data) {
+			d := append(data[:cap(data)], 0)
+			data = d[:len(data)]
+		}
+		n, err := f.Read(data[len(data):cap(data)])
+		data = data[:len(data)+n]
+		if err != nil {
+			if err == io.EOF {
+				err = nil
+			}
+			return data, err
+		}
+	}
 }
 
 func (fs *Share) WriteFile(filename string, data []byte, perm os.FileMode) error {
@@ -840,7 +931,7 @@ func (fs *Share) createFile(name string, req *CreateRequest, followSymlinks bool
 		return nil, &InvalidResponseError{"broken create response format"}
 	}
 
-	f = fs.newFile(r.FileId(), name)
+	f = fs.newFile(r, name)
 
 	return f, nil
 }
@@ -878,7 +969,7 @@ func (fs *Share) createFileRec(name string, req *CreateRequest) (f *File, err er
 			return nil, &InvalidResponseError{"broken create response format"}
 		}
 
-		f = fs.newFile(r.FileId(), name)
+		f = fs.newFile(r, name)
 
 		return f, nil
 	}
@@ -935,6 +1026,7 @@ type File struct {
 	fs          *Share
 	fd          *FileId
 	name        string
+	fileStat    *FileStat
 	dirents     []os.FileInfo
 	noMoreFiles bool
 
@@ -1046,18 +1138,54 @@ func (f *File) ReadAt(b []byte, off int64) (n int, err error) {
 	return n, nil
 }
 
-// MaxReadSizeLimit limits maxReadSize from negotiate data
-const MaxReadSizeLimit = 0x100000
+const winMaxPayloadSize = 1024 * 1024 // windows system don't accept more than 1M bytes request even though they tell us maxXXXSize > 1M
+const singleCreditMaxPayloadSize = 64 * 1024
+
+func (f *File) maxReadSize() int {
+	size := int(f.fs.maxReadSize)
+	if size > winMaxPayloadSize {
+		size = winMaxPayloadSize
+	}
+	if f.fs.conn.capabilities&SMB2_GLOBAL_CAP_LARGE_MTU == 0 {
+		if size > singleCreditMaxPayloadSize {
+			size = singleCreditMaxPayloadSize
+		}
+	}
+	return size
+}
+
+func (f *File) maxWriteSize() int {
+	size := int(f.fs.maxWriteSize)
+	if size > winMaxPayloadSize {
+		size = winMaxPayloadSize
+	}
+	if f.fs.conn.capabilities&SMB2_GLOBAL_CAP_LARGE_MTU == 0 {
+		if size > singleCreditMaxPayloadSize {
+			size = singleCreditMaxPayloadSize
+		}
+	}
+	return size
+}
+
+func (f *File) maxTransactSize() int {
+	size := int(f.fs.maxTransactSize)
+	if size > winMaxPayloadSize {
+		size = winMaxPayloadSize
+	}
+	if f.fs.conn.capabilities&SMB2_GLOBAL_CAP_LARGE_MTU == 0 {
+		if size > singleCreditMaxPayloadSize {
+			size = singleCreditMaxPayloadSize
+		}
+	}
+	return size
+}
 
 func (f *File) readAt(b []byte, off int64) (n int, err error) {
 	if off < 0 {
 		return -1, os.ErrInvalid
 	}
 
-	maxReadSize := int(f.fs.maxReadSize)
-	if maxReadSize > MaxReadSizeLimit {
-		maxReadSize = MaxReadSizeLimit
-	}
+	maxReadSize := f.maxReadSize()
 
 	for {
 		switch {
@@ -1145,7 +1273,7 @@ func (f *File) Readdir(n int) (fi []os.FileInfo, err error) {
 			f.dirents = []os.FileInfo{}
 		}
 		for n <= 0 || n > len(f.dirents) {
-			dirents, err := f.readdir()
+			dirents, err := f.readdir("*")
 			if len(dirents) > 0 {
 				f.dirents = append(f.dirents, dirents...)
 			}
@@ -1220,6 +1348,7 @@ func (f *File) seek(offset int64, whence int) (ret int64, err error) {
 			FileInfoClass:         FileStandardInformation,
 			AdditionalInformation: 0,
 			Flags:                 0,
+			OutputBufferLength:    24,
 		}
 
 		infoBytes, err := f.queryInfo(req)
@@ -1254,6 +1383,7 @@ func (f *File) stat() (os.FileInfo, error) {
 		FileInfoClass:         FileAllInformation,
 		AdditionalInformation: 0,
 		Flags:                 0,
+		OutputBufferLength:    uint32(f.maxTransactSize()),
 	}
 
 	infoBytes, err := f.queryInfo(req)
@@ -1331,6 +1461,7 @@ func (f *File) statfs() (FileFsInfo, error) {
 		FileInfoClass:         FileFsFullSizeInformation,
 		AdditionalInformation: 0,
 		Flags:                 0,
+		OutputBufferLength:    32,
 	}
 
 	infoBytes, err := f.queryInfo(req)
@@ -1421,6 +1552,7 @@ func (f *File) chmod(mode os.FileMode) error {
 		FileInfoClass:         FileBasicInformation,
 		AdditionalInformation: 0,
 		Flags:                 0,
+		OutputBufferLength:    40,
 	}
 
 	infoBytes, err := f.queryInfo(req)
@@ -1496,7 +1628,7 @@ func (f *File) writeAt(b []byte, off int64) (n int, err error) {
 		return 0, nil
 	}
 
-	maxWriteSize := int(f.fs.maxWriteSize)
+	maxWriteSize := f.maxWriteSize()
 
 	for {
 		switch {
@@ -1714,17 +1846,15 @@ func (f *File) ReadFrom(r io.Reader) (n int64, err error) {
 			return n, err
 		}
 
-		maxBufferSize := int(f.fs.maxReadSize)
-		if maxWriteSize := int(f.fs.maxWriteSize); maxWriteSize < maxBufferSize {
+		maxBufferSize := f.maxReadSize()
+		if maxWriteSize := f.maxWriteSize(); maxWriteSize < maxBufferSize {
 			maxBufferSize = maxWriteSize
 		}
 
 		return copyBuffer(r, f, make([]byte, maxBufferSize))
 	}
 
-	maxWriteSize := int(f.fs.maxWriteSize)
-
-	return copyBuffer(r, f, make([]byte, maxWriteSize))
+	return copyBuffer(r, f, make([]byte, f.maxWriteSize()))
 }
 
 // WriteTo implements io.WriteTo.
@@ -1736,25 +1866,39 @@ func (f *File) WriteTo(w io.Writer) (n int64, err error) {
 			return n, err
 		}
 
-		maxBufferSize := int(f.fs.maxReadSize)
-		if maxWriteSize := int(f.fs.maxWriteSize); maxWriteSize < maxBufferSize {
+		maxBufferSize := f.maxReadSize()
+		if maxWriteSize := f.maxWriteSize(); maxWriteSize < maxBufferSize {
 			maxBufferSize = maxWriteSize
 		}
 
 		return copyBuffer(f, w, make([]byte, maxBufferSize))
 	}
 
-	maxReadSize := int(f.fs.maxReadSize)
-
-	return copyBuffer(f, w, make([]byte, maxReadSize))
+	return copyBuffer(f, w, make([]byte, f.maxReadSize()))
 }
 
 func (f *File) WriteString(s string) (n int, err error) {
 	return f.Write([]byte(s))
 }
 
+func (f *File) encodeSize(e Encoder) int {
+	if e == nil {
+		return 0
+	}
+	return e.Size()
+}
+
 func (f *File) ioctl(req *IoctlRequest) (output []byte, err error) {
-	req.CreditCharge, _, err = f.fs.loanCredit(64 * 1024) // hope it is enough
+	payloadSize := f.encodeSize(req.Input) + int(req.OutputCount)
+	if payloadSize < int(req.MaxOutputResponse+req.MaxInputResponse) {
+		payloadSize = int(req.MaxOutputResponse + req.MaxInputResponse)
+	}
+
+	if f.maxTransactSize() < payloadSize {
+		return nil, &InternalError{fmt.Sprintf("payload size %d exceeds max transact size %d", payloadSize, f.maxTransactSize())}
+	}
+
+	req.CreditCharge, _, err = f.fs.loanCredit(payloadSize)
 	defer func() {
 		if err != nil {
 			f.fs.chargeCredit(req.CreditCharge)
@@ -1768,7 +1912,11 @@ func (f *File) ioctl(req *IoctlRequest) (output []byte, err error) {
 
 	res, err := f.sendRecv(SMB2_IOCTL, req)
 	if err != nil {
-		return nil, err
+		r := IoctlResponseDecoder(res)
+		if r.IsInvalid() {
+			return nil, err
+		}
+		return r.Output(), err
 	}
 
 	r := IoctlResponseDecoder(res)
@@ -1779,16 +1927,22 @@ func (f *File) ioctl(req *IoctlRequest) (output []byte, err error) {
 	return r.Output(), nil
 }
 
-func (f *File) readdir() (fi []os.FileInfo, err error) {
+func (f *File) readdir(pattern string) (fi []os.FileInfo, err error) {
 	req := &QueryDirectoryRequest{
 		FileInfoClass:      FileDirectoryInformation,
 		Flags:              0,
 		FileIndex:          0,
-		OutputBufferLength: 64 * 1024,
-		FileName:           "*",
+		OutputBufferLength: uint32(f.maxTransactSize()),
+		FileName:           pattern,
 	}
 
-	req.CreditCharge, _, err = f.fs.loanCredit(64 * 1024) // hope it is enough
+	payloadSize := int(req.OutputBufferLength)
+
+	if f.maxTransactSize() < payloadSize {
+		return nil, &InternalError{fmt.Sprintf("payload size %d exceeds max transact size %d", payloadSize, f.maxTransactSize())}
+	}
+
+	req.CreditCharge, _, err = f.fs.loanCredit(payloadSize)
 	defer func() {
 		if err != nil {
 			f.fs.chargeCredit(req.CreditCharge)
@@ -1843,7 +1997,16 @@ func (f *File) readdir() (fi []os.FileInfo, err error) {
 }
 
 func (f *File) queryInfo(req *QueryInfoRequest) (infoBytes []byte, err error) {
-	req.CreditCharge, _, err = f.fs.loanCredit(0)
+	payloadSize := f.encodeSize(req.Input)
+	if payloadSize < int(req.OutputBufferLength) {
+		payloadSize = int(req.OutputBufferLength)
+	}
+
+	if f.maxTransactSize() < payloadSize {
+		return nil, &InternalError{fmt.Sprintf("payload size %d exceeds max transact size %d", payloadSize, f.maxTransactSize())}
+	}
+
+	req.CreditCharge, _, err = f.fs.loanCredit(payloadSize)
 	defer func() {
 		if err != nil {
 			f.fs.chargeCredit(req.CreditCharge)
@@ -1854,8 +2017,6 @@ func (f *File) queryInfo(req *QueryInfoRequest) (infoBytes []byte, err error) {
 	}
 
 	req.FileId = f.fd
-
-	req.OutputBufferLength = 64 * 1024
 
 	res, err := f.sendRecv(SMB2_QUERY_INFO, req)
 	if err != nil {
@@ -1871,7 +2032,13 @@ func (f *File) queryInfo(req *QueryInfoRequest) (infoBytes []byte, err error) {
 }
 
 func (f *File) setInfo(req *SetInfoRequest) (err error) {
-	req.CreditCharge, _, err = f.fs.loanCredit(0)
+	payloadSize := f.encodeSize(req.Input)
+
+	if f.maxTransactSize() < payloadSize {
+		return &InternalError{fmt.Sprintf("payload size %d exceeds max transact size %d", payloadSize, f.maxTransactSize())}
+	}
+
+	req.CreditCharge, _, err = f.fs.loanCredit(payloadSize)
 	defer func() {
 		if err != nil {
 			f.fs.chargeCredit(req.CreditCharge)

@@ -39,6 +39,8 @@ import (
 
 // MkdirAll mimics os.MkdirAll
 func (fs *Share) MkdirAll(path string, perm os.FileMode) error {
+	path = normPath(path)
+
 	// Fast path: if we can tell whether path is a directory or file, stop with success or error.
 	dir, err := fs.Stat(path)
 	if err == nil {
@@ -86,6 +88,8 @@ func (fs *Share) MkdirAll(path string, perm os.FileMode) error {
 // it encounters. If the path does not exist, RemoveAll
 // returns nil (no error).
 func (fs *Share) RemoveAll(path string) error {
+	path = normPath(path)
+
 	// Simple case: if Remove works, we're done.
 	err := fs.Remove(path)
 	if err == nil || os.IsNotExist(err) {

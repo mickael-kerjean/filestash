@@ -22,6 +22,9 @@ const (
 	RPC_TYPE_BIND     = 11
 	RPC_TYPE_BIND_ACK = 12
 
+	RPC_PACKET_FLAG_FIRST = 0x01
+	RPC_PACKET_FLAG_LAST  = 0x02
+
 	SRVSVC_VERSION       = 3
 	SRVSVC_VERSION_MINOR = 0
 
@@ -47,7 +50,7 @@ func (r *Bind) Encode(b []byte) {
 	b[0] = RPC_VERSION
 	b[1] = RPC_VERSION_MINOR
 	b[2] = RPC_TYPE_BIND
-	b[3] = 0x03
+	b[3] = RPC_PACKET_FLAG_FIRST | RPC_PACKET_FLAG_LAST
 
 	// order = Little-Endian, float = IEEE, char = ASCII
 	b[4] = 0x10
@@ -145,7 +148,7 @@ func (r *NetShareEnumAllRequest) Size() int {
 	off := 40 + utf16le.EncodedStringLen(r.ServerName) + 2
 	off = roundup(off, 4)
 	off += 24
-	off += 8
+	off += 4
 	return off
 }
 
@@ -153,7 +156,7 @@ func (r *NetShareEnumAllRequest) Encode(b []byte) {
 	b[0] = RPC_VERSION
 	b[1] = RPC_VERSION_MINOR
 	b[2] = RPC_TYPE_REQUEST
-	b[3] = 0x03
+	b[3] = RPC_PACKET_FLAG_FIRST | RPC_PACKET_FLAG_LAST
 
 	// order = Little-Endian, float = IEEE, char = ASCII
 	b[4] = 0x10
@@ -199,10 +202,11 @@ func (r *NetShareEnumAllRequest) Encode(b []byte) {
 
 	// pointer to resume handle
 
-	le.PutUint32(b[off:off+4], 0x20008) // referent ID
-	le.PutUint32(b[off+4:off+8], 0)     // resume handle
+	le.PutUint32(b[off:off+4], 0) // null pointer
+	// le.PutUint32(b[off:off+4], 0x20008) // referent ID
+	// le.PutUint32(b[off+4:off+8], 0)     // resume handle
 
-	off += 8
+	off += 4
 
 	le.PutUint16(b[8:10], uint16(off))     // frag length
 	le.PutUint32(b[16:20], uint32(off-24)) // alloc hint
@@ -223,6 +227,7 @@ func (c NetShareEnumAllResponseDecoder) IsInvalid() bool {
 	if c.PacketType() != RPC_TYPE_RESPONSE {
 		return true
 	}
+
 	return false
 }
 
@@ -270,6 +275,82 @@ func (c NetShareEnumAllResponseDecoder) CancelCount() uint8 {
 	return c[22]
 }
 
+func (c NetShareEnumAllResponseDecoder) IsIncomplete() bool {
+	if len(c) < 48 {
+		return true
+	}
+
+	level := le.Uint32(c[24:28])
+
+	count := int(le.Uint32(c[36:40]))
+
+	switch level {
+	case 0:
+		offset := 48 + count*4 // name pointer
+		if len(c) < offset {
+			return true
+		}
+
+		for i := 0; i < count; i++ {
+			if len(c) < offset+12 {
+				return true
+			}
+
+			noff := int(le.Uint32(c[offset+4 : offset+8]))    // offset
+			nlen := int(le.Uint32(c[offset+8:offset+12])) * 2 // actual count
+			offset = roundup(offset+12+noff+nlen, 4)
+
+			if len(c) < offset {
+				return true
+			}
+		}
+	case 1:
+		offset := 48 + count*12
+		if len(c) < offset {
+			return true
+		}
+
+		for i := 0; i < count; i++ {
+			{ // name
+				if len(c) < offset+12 {
+					return true
+				}
+
+				noff := int(le.Uint32(c[offset+4 : offset+8]))    // offset
+				nlen := int(le.Uint32(c[offset+8:offset+12])) * 2 // actual count
+				offset = roundup(offset+12+noff+nlen, 4)
+
+				if len(c) < offset {
+					return true
+				}
+			}
+
+			{ // comment
+				if len(c) < offset+12 {
+					return true
+				}
+
+				coff := int(le.Uint32(c[offset+4 : offset+8]))    // offset
+				clen := int(le.Uint32(c[offset+8:offset+12])) * 2 // actual count
+				offset = roundup(offset+12+coff+clen, 4)
+
+				if len(c) < offset {
+					return true
+				}
+			}
+		}
+	default:
+		// TODO not supported yet
+		return true
+	}
+
+	return false
+}
+
+func (c NetShareEnumAllResponseDecoder) Buffer() []byte {
+	return c[24:]
+}
+
 func (c NetShareEnumAllResponseDecoder) ShareNameList() []string {
 	level := le.Uint32(c[24:28])
 
@@ -281,57 +362,29 @@ func (c NetShareEnumAllResponseDecoder) ShareNameList() []string {
 	case 0:
 		offset := 48 + count*4 // name pointer
 		for i := 0; i < count; i++ {
-			offset += 4 // max count
+			noff := int(le.Uint32(c[offset+4 : offset+8]))    // offset
+			nlen := int(le.Uint32(c[offset+8:offset+12])) * 2 // actual count
 
-			off := int(le.Uint32(c[offset : offset+4]))
+			ss[i] = utf16le.DecodeToString(c[offset+12+noff : offset+12+noff+nlen])
 
-			offset += 4 // offset
-
-			len := int(le.Uint32(c[offset:offset+4])) * 2
-
-			offset += 4 // actual count
-
-			ss[i] = utf16le.DecodeToString(c[offset+off : offset+off+len])
-
-			offset += off + len
-
-			offset = roundup(offset, 4)
+			offset = roundup(offset+12+noff+nlen, 4)
 		}
 	case 1:
 		offset := 48 + count*12
 		for i := 0; i < count; i++ {
 			{ // name
-				offset += 4 // max count
+				noff := int(le.Uint32(c[offset+4 : offset+8]))    // offset
+				nlen := int(le.Uint32(c[offset+8:offset+12])) * 2 // actual count
 
-				noff := int(le.Uint32(c[offset : offset+4]))
+				ss[i] = utf16le.DecodeToString(c[offset+12+noff : offset+12+noff+nlen])
 
-				offset += 4 // offset
-
-				nlen := int(le.Uint32(c[offset:offset+4])) * 2
-
-				offset += 4 // actual count
-
-				ss[i] = utf16le.DecodeToString(c[offset+noff : offset+noff+nlen])
-
-				offset += noff + nlen
-
-				offset = roundup(offset, 4)
+				offset = roundup(offset+12+noff+nlen, 4)
 			}
 
 			{ // comment
-				offset += 4 // max count
-
-				coff := int(le.Uint32(c[offset : offset+4]))
-
-				offset += 4 // offset
-
-				clen := int(le.Uint32(c[offset:offset+4])) * 2
-
-				offset += 4 // actual count
-
-				offset += coff + clen
-
-				offset = roundup(offset, 4)
+				coff := int(le.Uint32(c[offset+4 : offset+8]))    // offset
+				clen := int(le.Uint32(c[offset+8:offset+12])) * 2 // actual count
+				offset = roundup(offset+12+coff+clen, 4)
 			}
 		}
 	default:

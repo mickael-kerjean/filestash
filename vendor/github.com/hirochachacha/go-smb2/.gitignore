@@ -1,5 +1,9 @@
 # Created by https://www.gitignore.io/api/go
 
+# idea
+.idea
+*.code-workspace
+
 ### Go ###
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o

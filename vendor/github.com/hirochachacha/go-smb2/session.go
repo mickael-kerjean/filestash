@@ -75,6 +75,9 @@ func sessionSetup(conn *conn, i Initiator, ctx context.Context) (*session, error
 		if sessionFlags&SMB2_SESSION_FLAG_IS_GUEST != 0 {
 			return nil, &InvalidResponseError{"guest account doesn't support signing"}
 		}
+		if sessionFlags&SMB2_SESSION_FLAG_IS_NULL != 0 {
+			return nil, &InvalidResponseError{"anonymous account doesn't support signing"}
+		}
 	}
 
 	s := &session{
@@ -121,7 +124,7 @@ func sessionSetup(conn *conn, i Initiator, ctx context.Context) (*session, error
 		return nil, err
 	}
 
-	if s.sessionFlags&(SMB2_SESSION_FLAG_IS_GUEST|SMB2_SESSION_FLAG_IS_NULL|SMB2_SESSION_FLAG_ENCRYPT_DATA) != SMB2_SESSION_FLAG_ENCRYPT_DATA {
+	if s.sessionFlags&(SMB2_SESSION_FLAG_IS_GUEST|SMB2_SESSION_FLAG_IS_NULL) == 0 {
 		sessionKey := spnego.sessionKey()
 
 		switch conn.dialect {

@@ -451,7 +451,7 @@ func (conn *conn) makeRequestResponse(req Packet, tc *treeConn, ctx context.Cont
 					return nil, &InternalError{err.Error()}
 				}
 			} else {
-				if s.sessionFlags&SMB2_SESSION_FLAG_IS_GUEST == 0 {
+				if s.sessionFlags&(SMB2_SESSION_FLAG_IS_GUEST|SMB2_SESSION_FLAG_IS_NULL) == 0 {
 					pkt = s.sign(pkt)
 				}
 			}
@@ -625,7 +625,7 @@ func accept(cmd uint16, pkt []byte) (res []byte, err error) {
 	case SMB2_IOCTL:
 		if status == STATUS_BUFFER_OVERFLOW {
 			if !IoctlResponseDecoder(p.Data()).IsInvalid() {
-				return nil, &ResponseError{Code: uint32(status)}
+				return p.Data(), &ResponseError{Code: uint32(status)}
 			}
 		}
 	case SMB2_READ:
@@ -716,7 +716,7 @@ func (conn *conn) tryVerify(pkt []byte, isEncrypted bool) error {
 		} else {
 			if conn.requireSigning && !isEncrypted {
 				if conn.session != nil {
-					if conn.session.sessionFlags&SMB2_SESSION_FLAG_IS_GUEST == 0 {
+					if conn.session.sessionFlags&(SMB2_SESSION_FLAG_IS_GUEST|SMB2_SESSION_FLAG_IS_NULL) == 0 {
 						if conn.session.sessionId == p.SessionId() {
 							return &InvalidResponseError{"signing required"}
 						}
