@@ -51,8 +51,8 @@ input.component_input[readonly], textarea.component_textarea[readonly]{
     user-select: none;
     input[type="checkbox"] {
         position: absolute;
-        top: -20px;
-        opacity: 0;
+        top: 0px;
+        visibility: hidden;
         &:focus ~ span {
             border: 2px solid rgba(0, 0, 0, 0.05);
         }
