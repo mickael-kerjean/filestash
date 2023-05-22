@@ -39,21 +39,11 @@ export function TagsPageComponent({ match }) {
     }
 
     const onClickRemoveFile = (file) => {
-        prompt.now(
-            t("Confirm by typing") + ": remove",
-            (answer) => {
-                if (answer !== "remove") {
-                    return Promise.resolve();
-                }
-                Tags.removeTagFromFile(
-                    path.split("/").filter((r) => !!r).slice(-1)[0],
-                    file,
-                );
-                setRefresh(refresh + 1);
-                return Promise.resolve();
-            },
-            () => {},
+        Tags.removeTagFromFile(
+            file.tag,
+            file.path,
         );
+        setRefresh(refresh + 1);
     }
 
     const onClickMoreDropdown = (what) => {
@@ -74,15 +64,12 @@ export function TagsPageComponent({ match }) {
                         notify.send(t("Not Valid"), "error");
                         return;
                     }
-                    if(JSON.stringify(Object.keys(jsonObject)) !== JSON.stringify(["tags", "weight", "share", "backend"])) {
-                        notify.send(t("Not Valid"), "error");
-                        return;
-                    }
                     setLoading(true);
                     Tags.import(jsonObject).then(() => {
                         setLoading(false);
                         setRefresh(refresh + 1);
                     }).catch((err) => {
+                        notify.send(t(err && err.message), "error");
                         setLoading(false);
                     });
                 };
@@ -111,7 +98,11 @@ export function TagsPageComponent({ match }) {
                         <div className="component_container">
                             <h1>
                                 {
-                                    path.split("/").filter((r) => r).map((tag, idx) => (
+                                    path === "/" ? (
+                                        <Link to="/">
+                                            <Icon name="arrow_left" />home
+                                        </Link>
+                                    ) : path.split("/").filter((r) => r).map((tag, idx) => (
                                         <React.Fragment key={idx}>#{tag} </React.Fragment>
                                     ))
                                 }
@@ -173,15 +164,16 @@ export function TagsPageComponent({ match }) {
                                 {
                                     files && files.map((file, idx) => (
                                         <div className="component_thing view-list" key={idx}>
-                                            <Link to={(isAFolder(file) ? URL_FILES : URL_VIEWER) + file}>
+                                            <Link to={(isAFolder(file.path) ? URL_FILES : URL_VIEWER) + file.path}>
                                                 <Card>
                                                     <span className="component_action" style={{float: "right"}} onClick={(e) => { e.preventDefault(); onClickRemoveFile(file)}}>
                                                         <Icon name="close" />
                                                     </span>
-                                                    <span><Icon name={filetype(file)} /></span>
+                                                    <span><Icon name={filetype(file.path)} /></span>
                                                     <span className="component_filename">
                                                         <span className="file-details">
-                                                            {basename(file)} <br/><i>{file}</i>
+                                                            {basename(file.path)}<br/>
+                                                            {path === "/" && (<i>#{file.tag}&nbsp;</i>)}<i>{file.path}</i>
                                                         </span>
                                                     </span>
                                                 </Card>

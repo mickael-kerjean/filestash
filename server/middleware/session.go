@@ -161,8 +161,10 @@ func CanManageShare(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx 
 				fn(ctx, res, req)
 				return
 			}
+			Log.Debug("middleware::session::share 'permission denied - s.CanShare[%+v] s.Backend[%s]'", s.CanShare, s.Backend)
+		} else {
+			Log.Debug("middleware::session::share 'permission denied - s.CanShare[%+v] s.Backend[%s] GenerateID[%s]'", s.CanShare, s.Backend, id)
 		}
-		Log.Debug("middleware::session::share 'permission denied - s.CanShare[%+v] s.Backend[%s] GenerateID[%s]'", s.CanShare, s.Backend, id)
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	}

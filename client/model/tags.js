@@ -1,56 +1,61 @@
 import { cache, currentShare, currentBackend } from "../helpers/";
 
 class TagManager {
-    all(tagPath = "/", maxSize = -1) {
+    all(tagPath = "/") {
         return cache.get(cache.FILE_TAG, [currentBackend(), currentShare()]).then((DB) => {
             if (DB === null) {
                 return [];
             }
-
-            if (tagPath == "/") {
-                const scoreFn = (acc, el) => (acc + el.replace(/[^\/]/g, "").length);
-                const tags = Object.keys(DB.tags).sort((a, b) => {
-                    if (DB.tags[a].length === DB.tags[b].length) {
-                        return DB.tags[a].reduce(scoreFn, 0) - DB.tags[b].reduce(scoreFn, 0);
-                    }
-                    return DB.tags[a].length < DB.tags[b].length ? 1 : -1;
-                });
-                if(tags.length === 0) {
-                    return ["Bookmark"];
-                } else if(tags.length >= 5) {
-                    return ["All"].concat(tags.slice(0, 5));
-                }
-                return tags;
+            const tags = this._tagPathStringToArray(tagPath);
+            if (tags.length === 0) {
+                return Object.keys(DB.tags);
             }
-            return [
-                // "Bookmark", "wiki", "B", "C", "D", "E", "F"
-            ];
+
+            // STEP1: build the graph of selected tags
+
+            // STEP2: build the node that connects to the initial graph
+            return Object.keys(DB.tags)
+                .map((tag) => {
+                    if (tags.indexOf(tag) !== -1) { // ignore tag that are already selected
+                        return { tag, scrore: 0 };
+                    }
+                    return {
+                        tag,
+                        score: DB.tags[tag].reduce((path, acc) => {
+                            // TODO
+                            return acc;
+                        }, 0),
+                    }
+                })
+                .filter((t) => t && t.score > 0)
+                .sort((a, b) => a.score > b.score)
+                .map((d) => d.tag);
         });
     }
 
     files(tagPath) {
-        const tags = this._tagPathStringToArray(tagPath, false);
-        if (tags.length === 0) return Promise.resolve([]);
-        else if (tags.length > 1) return Promise.resolve([]); // TODO
+        let tags = this._tagPathStringToArray(tagPath);
 
         return cache.get(cache.FILE_TAG, [currentBackend(), currentShare()]).then((DB) => {
-            if(!DB) return [];
-            switch(tags[0]) {
-            case "All":
-                return this.all()
-                    .then((tags) => (tags.reduce((acc, el) => {
-                        return DB.tags[el] ? acc.concat(DB.tags[el]) : acc;
-                    }, [])));
-            default:
-                return Promise.resolve(DB.tags[tags[0]] || []);
+            if (!DB) return [];
+            else if (!DB.tags) return [];
+            else if (tags.length === 0) tags = Object.keys(DB.tags);
+
+            // push all the candidates in an array
+            let paths = (DB.tags[tags[0]] || []).map((t) => ({path: t, tag: tags[0]}));
+            for (let i=1; i<tags.length; i++) {
+                const tp = DB.tags[tags[i]];
+                if (!tp) continue;
+                paths = paths.concat(tp.map((t) => ({path: t, tag: tags[i]})));
             }
+
+            // mark element of the array that shouldn't be here
+            return paths;
         });
     }
 
-    _tagPathStringToArray(tagPathString, removeFirst = true) {
-        return tagPathString
-            .split("/")
-            .filter((r) => r !== "" && (removeFirst ? r !== "All" : true));
+    _tagPathStringToArray(tagPathString) {
+        return tagPathString.split("/").filter((r) => r !== "");
     }
 
     addTagToFile(tag, path) {
@@ -72,13 +77,15 @@ class TagManager {
             DB.tags[tag].splice(idx, 1);
             if (DB.tags[tag].length === 0) {
                 delete DB.tags[tag];
-                delete DB.weight[tag];
             }
             return DB;
         });
     }
 
     import(DB) {
+        if(JSON.stringify(Object.keys(DB)) !== JSON.stringify(["tags", "share", "backend"])) {
+            return Promise.reject(new Error("Not Valid"));
+        }
         return cache.upsert(cache.FILE_TAG, [currentBackend(), currentShare()], () => {
             return DB;
         });
@@ -89,7 +96,7 @@ class TagManager {
         return cache.get(cache.FILE_TAG, key)
             .then((a) => {
                 if (a === null) {
-                    return {tags: {}, weight: {}, share: key[1], backend: key[0]}
+                    return {tags: {}, share: key[1], backend: key[0]}
                 }
                 return a;
             });

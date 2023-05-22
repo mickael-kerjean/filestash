@@ -42,6 +42,10 @@ export function FrequentlyAccess({ files, tags }) {
                     <NgIf cond={!!tags && tags.length > 0}>
                         <span className="caption">{t("Tag")}</span>
                         <div className="frequent_wrapper">
+                            <Link to={"/tags/"}>
+                                <Icon name={"directory"} />
+                                <div>All</div>
+                            </Link>
                             {
                                 tags && tags.map((tag, index) => {
                                     return (

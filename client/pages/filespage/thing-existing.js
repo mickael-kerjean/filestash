@@ -8,6 +8,7 @@ import { Card, NgIf, Icon, EventEmitter, img_placeholder, Input } from "../../co
 import { pathBuilder, basename, filetype, prompt, alert, leftPad, getMimeType, debounce, memory } from "../../helpers/";
 import { Files } from "../../model/";
 import { ShareComponent } from "./share";
+import { TagComponent } from "./tag";
 import { t } from "../../locales/";
 
 
@@ -227,6 +228,13 @@ class ExistingThingComponent extends React.Component {
         this.setState({ delete_request: false });
     }
 
+    onTagRequest() {
+        alert.now(
+            <TagComponent path={this.props.file.path} type={this.props.file.type} />,
+            () => {},
+        )
+    }
+
     onShareRequest(filename) {
         alert.now(
             <ShareComponent path={this.props.file.path} type={this.props.file.type} />,
@@ -321,6 +329,7 @@ class ExistingThingComponent extends React.Component {
                             onClickRename={this.onRenameRequest.bind(this)}
                             onClickDelete={this.onDeleteRequest.bind(this)}
                             onClickShare={this.onShareRequest.bind(this)}
+                            onClickTag={this.onTagRequest.bind(this)}
                             is_renaming={this.state.is_renaming}
                             can_rename={this.props.metadata.can_rename !== false}
                             can_delete={this.props.metadata.can_delete !== false}
@@ -371,6 +380,7 @@ class Filename extends React.Component {
         e.preventDefault();
         e.stopPropagation();
         this.props.onRename(this.state.filename);
+        return false;
     }
 
     onCancel() {
@@ -380,6 +390,7 @@ class Filename extends React.Component {
 
     preventSelect(e) {
         e.preventDefault();
+        e.stopPropagation();
     }
 
     render() {
@@ -412,7 +423,7 @@ class Filename extends React.Component {
                     <NgIf cond={this.props.is_renaming === true} type="inline">
                         <form
                             onClick={this.preventSelect}
-                            onSubmit={this.onRename.bind(this)}>
+                            onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); this.onRename(e) }}>
                             <input
                                 value={this.state.filename}
                                 onChange={(e) => this.setState({ filename: e.target.value })}
@@ -443,6 +454,11 @@ const ActionButton = (props) => {
         props.onClickShare();
     };
 
+    const onTag = (e) => {
+        e.preventDefault();
+        props.onClickTag();
+    }
+
     return (
         <div className="component_action">
             <NgIf
@@ -453,14 +469,25 @@ const ActionButton = (props) => {
                     onClick={onRename}
                     className="component_updater--icon" />
             </NgIf>
-            <NgIf
-                type="inline"
-                cond={props.can_delete !== false}>
-                <Icon
-                    name="delete"
-                    onClick={onDelete}
-                    className="component_updater--icon" />
-            </NgIf>
+            {
+                /canary/.test(location.search) ? (
+                    <span type="inline">
+                        <Icon
+                            name="tag"
+                            onClick={onTag}
+                            className="component_updater--icon" />
+                    </span>
+                ) : (
+                    <NgIf
+                        type="inline"
+                        cond={props.can_delete !== false}>
+                        <Icon
+                            name="delete"
+                            onClick={onDelete}
+                            className="component_updater--icon" />
+                    </NgIf>
+                )
+            }
             <NgIf
                 type="inline"
                 cond={props.can_share !== false}>

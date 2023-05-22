@@ -18,9 +18,15 @@
             h1 {
                 font-weight: 100;
                 text-transform: uppercase;
-                margin: -7px 0 0 0;
+                margin: 0 0 0 0;
                 float: left;
-                line-height: 30px;
+                font-size: 1.7rem;
+                line-height: 1.7rem;
+                a .component_icon {
+                    float: left;
+                    width: 25px;
+                    height: 25px;
+                }
             }
         }
         & > .component_container {
