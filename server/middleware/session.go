@@ -131,6 +131,7 @@ func CanManageShare(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx 
 		// the user that's currently logged in can manage the link. 2 scenarios here:
 		// 1) scenario 1: the user is the very same one that generated the shared link in the first place
 		ctx.Share = Share{}
+		ctx.Authorization = _extractAuthorization(req)
 		if ctx.Session, err = _extractSession(req, ctx); err != nil {
 			Log.Debug("middleware::session::share 'cannot extract session - %s'", err.Error())
 			SendErrorResult(res, err)
@@ -147,6 +148,7 @@ func CanManageShare(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx 
 			SendErrorResult(res, err)
 			return
 		}
+		ctx.Authorization = _extractAuthorization(req)
 		if ctx.Session, err = _extractSession(req, ctx); err != nil {
 			Log.Debug("middleware::session::share 'cannot extract session 2 - %s'", err.Error())
 			SendErrorResult(res, err)

@@ -16,6 +16,7 @@ import (
 	mathrand "math/rand"
 	"os"
 	"runtime"
+	"sort"
 	"sync"
 )
 
@@ -192,42 +193,28 @@ func verify(something []byte) ([]byte, error) {
 // Create a unique ID that can be use to identify different session
 func GenerateID(ctx *App) string {
 	p := ""
-	params := ctx.Session
-	if params["type"] != "" {
-		p += "type =>" + params["type"]
-	}
-	if params["host"] != "" {
-		p += "host =>" + params["host"]
-	}
-	if params["hostname"] != "" {
-		p += "hostname =>" + params["hostname"]
-	}
-	if params["username"] != "" {
-		p += "username =>" + params["username"]
-	}
-	if params["user"] != "" {
-		p += "user =>" + params["user"]
-	}
-	if params["repo"] != "" {
-		p += "repo =>" + params["repo"]
-	}
-	if params["access_key_id"] != "" {
-		p += "access_key_id =>" + params["access_key_id"]
-	}
-	if params["endpoint"] != "" {
-		p += "endpoint =>" + params["endpoint"]
-	}
-	if params["bearer"] != "" {
-		p += "bearer =>" + params["bearer"]
-	}
-	if params["token"] != "" {
-		p += "token =>" + params["token"]
-	}
 
-	if p == "" {
-		return Hash("N/A", 20)
+	orderedKeys := make([]string, len(ctx.Session))
+	for key, _ := range ctx.Session {
+		orderedKeys = append(orderedKeys, key)
 	}
-	p += "salt => " + SECRET_KEY
+	sort.Strings(orderedKeys)
+
+	for _, key := range orderedKeys {
+		switch key {
+		case "timestamp":
+		case "password":
+		case "path":
+		default:
+			if val := ctx.Session[key]; val != "" {
+				p += key + "=>" + ctx.Session[key] + ", "
+			}
+		}
+	}
+	if p == "" {
+		return "na"
+	}
+	p += "salt=>" + SECRET_KEY
 	return Hash(p, 20)
 }
 
