@@ -2,9 +2,10 @@ package common
 
 import (
 	"fmt"
+	"net/http"
 )
 
-func NewError(message string, status int) error {
+func NewError(message string, status int) AppError {
 	if status == 0 {
 		status = 500
 	}
@@ -12,22 +13,22 @@ func NewError(message string, status int) error {
 }
 
 var (
-	ErrNotFound             error = NewError("Not Found", 404)
-	ErrNotAllowed           error = NewError("Not Allowed", 403)
-	ErrPermissionDenied     error = NewError("Permission Denied", 403)
-	ErrNotValid             error = NewError("Not Valid", 405)
-	ErrConflict             error = NewError("Already exist", 409)
-	ErrNotReachable         error = NewError("Cannot establish a connection", 502)
-	ErrInvalidPassword      error = NewError("Invalid Password", 403)
-	ErrNotImplemented       error = NewError("Not Implemented", 501)
-	ErrNotSupported         error = NewError("Not supported", 501)
-	ErrFilesystemError      error = NewError("Can't use filesystem", 503)
-	ErrMissingDependency    error = NewError("Missing dependency", 424)
-	ErrNotAuthorized        error = NewError("Not authorised", 401)
-	ErrAuthenticationFailed error = NewError("Invalid account", 400)
-	ErrCongestion           error = NewError("Traffic congestion, try again later", 500)
-	ErrTimeout              error = NewError("Timeout", 500)
-	ErrInternal             error = NewError("Internal Error", 500)
+	ErrNotFound             = NewError("Not Found", 404)
+	ErrNotAllowed           = NewError("Not Allowed", 403)
+	ErrPermissionDenied     = NewError("Permission Denied", 403)
+	ErrNotValid             = NewError("Not Valid", 405)
+	ErrConflict             = NewError("Already exist", 409)
+	ErrNotReachable         = NewError("Cannot establish a connection", 502)
+	ErrInvalidPassword      = NewError("Invalid Password", 403)
+	ErrNotImplemented       = NewError("Not Implemented", 501)
+	ErrNotSupported         = NewError("Not supported", 501)
+	ErrFilesystemError      = NewError("Can't use filesystem", 503)
+	ErrMissingDependency    = NewError("Missing dependency", 424)
+	ErrNotAuthorized        = NewError("Not authorised", 401)
+	ErrAuthenticationFailed = NewError("Invalid account", 400)
+	ErrCongestion           = NewError("Traffic congestion, try again later", 500)
+	ErrTimeout              = NewError("Timeout", 500)
+	ErrInternal             = NewError("Internal Error", 500)
 )
 
 func IsATranslatedError(err error) bool {
@@ -51,6 +52,45 @@ func (e AppError) Error() string {
 }
 func (e AppError) Status() int {
 	return e.status
+}
+
+func HTTPError(err error) AppError {
+	switch err.Error() {
+	case "Not Found":
+		return ErrNotFound
+	case "Not Allowed":
+		return ErrNotAllowed
+	case "Permission Denied":
+		return ErrPermissionDenied
+	case "Not Valid":
+		return ErrNotValid
+	case "Already exist":
+		return ErrConflict
+	case "Cannot establish a connection":
+		return ErrNotReachable
+	case "Invalid Password":
+		return ErrInvalidPassword
+	case "Not Implemented":
+		return ErrNotImplemented
+	case "Not supported":
+		return ErrNotSupported
+	case "Can't use filesystem":
+		return ErrFilesystemError
+	case "Missing dependency":
+		return ErrMissingDependency
+	case "Not authorised":
+		return ErrNotAuthorized
+	case "Invalid account":
+		return ErrAuthenticationFailed
+	case "Traffic congestion, try again later":
+		return ErrCongestion
+	case "Timeout":
+		return ErrTimeout
+	case "Internal Error":
+		return ErrInternal
+	default:
+		return NewError(err.Error(), http.StatusBadRequest)
+	}
 }
 
 func HTTPFriendlyStatus(n int) string {

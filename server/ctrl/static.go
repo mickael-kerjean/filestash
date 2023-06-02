@@ -2,6 +2,7 @@ package ctrl
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
@@ -242,6 +243,13 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 		{"", ""},
 	}
 
+	statusCode := 200
+	if req.URL.Path == "/" {
+		if errName := req.URL.Query().Get("error"); errName != "" {
+			statusCode = HTTPError(errors.New(errName)).Status()
+		}
+	}
+
 	head := res.Header()
 	acceptEncoding := req.Header.Get("Accept-Encoding")
 	for _, cfg := range staticConfig {
@@ -269,6 +277,7 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 		if cfg.ContentType != "" {
 			head.Set("Content-Encoding", cfg.ContentType)
 		}
+		res.WriteHeader(statusCode)
 		io.Copy(res, file)
 		file.Close()
 		return
