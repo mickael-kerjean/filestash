@@ -21,11 +21,10 @@ import (
 var EmbedPluginList []byte
 
 func main() {
-	app := App{}
-	Init(app)
+	start(build(App{}))
 }
 
-func Init(a App) {
+func build(a App) *mux.Router {
 	var (
 		r           *mux.Router = mux.NewRouter()
 		middlewares []Middleware
@@ -122,6 +121,10 @@ func Init(a App) {
 	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler, middlewares, a))).Methods("GET")
 	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler, middlewares, a))).Methods("GET", "POST")
 
+	return r
+}
+
+func start(routes *mux.Router) {
 	// Routes are served via plugins to avoid getting stuck with plain HTTP. The idea is to
 	// support many more protocols in the future: HTTPS, HTTP2, TOR or whatever that sounds
 	// fancy I don't know much when this got written: IPFS, solid, ...
@@ -135,7 +138,7 @@ func Init(a App) {
 	for _, obj := range Hooks.Get.Starter() {
 		wg.Add(1)
 		go func() {
-			obj(r)
+			obj(routes)
 			wg.Done()
 		}()
 	}
