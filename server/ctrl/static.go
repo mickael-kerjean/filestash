@@ -168,7 +168,7 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func ManifestHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
-	res.WriteHeader(http.StatusFound)
+	res.WriteHeader(http.StatusOK)
 	res.Write([]byte(fmt.Sprintf(`{
     "name": "%s",
     "short_name": "%s",
