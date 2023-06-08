@@ -10,7 +10,7 @@ build_frontend:
 	NODE_ENV=production npm run build
 
 build_backend:
-	CGO_ENABLED=0 go build -ldflags="-extldflags=-static" -mod=vendor --tags "fts5" -o dist/filestash server/main.go
+	CGO_ENABLED=0 go build -ldflags="-extldflags=-static" -mod=vendor --tags "fts5" -o dist/filestash main.go
 
 clean_frontend:
 	rm -rf server/ctrl/static/www/
