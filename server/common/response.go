@@ -134,8 +134,8 @@ func Page(stuff string) string {
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <title>` + Config.Get("general.name").String() + `</title>
     <style>
-      html { background: #f2f3f5; font-size: 16px; font-family: "San Francisco","Roboto","Arial",sans-serif; }
-      body { text-align: center; padding-top: 50px; text-align: center; margin: 0; }
+      html { background: #f2f3f5; font-size: 16px; font-family: "San Francisco","Roboto","Arial",sans-serif; height: 100%;}
+      body { text-align: center; padding-top: 50px; text-align: center; margin: 0; height: 100%; box-sizing: border-box;}
       h1 { font-weight: 200; line-height: 1em; font-size: 40px; }
       p { opacity: 0.8; font-size: 1.05em; }
       form { max-width: 450px; margin: 0 auto; padding: 0 10px; text-align: left; }
