@@ -113,7 +113,7 @@ func NewConfiguration() Configuration {
 				Title: "log",
 				Elmnts: []FormElement{
 					FormElement{Name: "enable", Type: "enable", Target: []string{"log_level"}, Default: true},
-					FormElement{Name: "level", Type: "select", Default: "INFO", Opts: []string{"DEBUG", "INFO", "WARNING", "ERROR"}, Id: "log_level", Description: "Default: \"INFO\". This setting determines the level of detail at which log events are written to the log file"},
+					FormElement{Name: "level", Type: "select", Default: defaultValue("INFO", "LOG_LEVEL"), Opts: []string{"DEBUG", "INFO", "WARNING", "ERROR"}, Id: "log_level", Description: "Default: \"INFO\". This setting determines the level of detail at which log events are written to the log file"},
 					FormElement{Name: "telemetry", Type: "boolean", Default: false, Description: "We won't share anything with any third party. This will only to be used to improve Filestash"},
 				},
 			},
@@ -592,4 +592,11 @@ func (this *Configuration) UnlistenForChange(c ChangeListener) {
 type ChangeListener struct {
 	Id       string
 	Listener chan interface{}
+}
+
+func defaultValue(dval string, envName string) string {
+	if val := os.Getenv(envName); val != "" {
+		return val
+	}
+	return dval
 }
