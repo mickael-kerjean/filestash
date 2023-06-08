@@ -196,37 +196,6 @@ func RobotsHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte(""))
 }
 
-func InitPluginList(code []byte) {
-	listOfPackages := regexp.MustCompile(`github.com/mickael-kerjean/([^\"]+)`).FindAllString(string(code), -1)
-	for _, packageName := range listOfPackages {
-		if packageName == "github.com/mickael-kerjean/filestash/server/common" {
-			continue
-		}
-
-		if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/server/plugin/") {
-			listOfPlugins["oss"] = append(
-				listOfPlugins["oss"],
-				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/server/plugin/"),
-			)
-		} else if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/plugins/") {
-			listOfPlugins["enterprise"] = append(
-				listOfPlugins["enterprise"],
-				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/plugins/"),
-			)
-		} else if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/customers/") {
-			listOfPlugins["custom"] = append(
-				listOfPlugins["custom"],
-				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/customers/"),
-			)
-		} else {
-			listOfPlugins["custom"] = append(
-				listOfPlugins["custom"],
-				packageName,
-			)
-		}
-	}
-}
-
 func CustomCssHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "text/css")
 	io.WriteString(res, Hooks.Get.CSS())
@@ -283,4 +252,35 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 		return
 	}
 	http.NotFound(res, req)
+}
+
+func InitPluginList(code []byte) {
+	listOfPackages := regexp.MustCompile(`github.com/mickael-kerjean/([^\"]+)`).FindAllString(string(code), -1)
+	for _, packageName := range listOfPackages {
+		if packageName == "github.com/mickael-kerjean/filestash/server/common" {
+			continue
+		}
+
+		if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/server/plugin/") {
+			listOfPlugins["oss"] = append(
+				listOfPlugins["oss"],
+				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/server/plugin/"),
+			)
+		} else if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/plugins/") {
+			listOfPlugins["enterprise"] = append(
+				listOfPlugins["enterprise"],
+				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/plugins/"),
+			)
+		} else if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/customers/") {
+			listOfPlugins["custom"] = append(
+				listOfPlugins["custom"],
+				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/customers/"),
+			)
+		} else {
+			listOfPlugins["custom"] = append(
+				listOfPlugins["custom"],
+				packageName,
+			)
+		}
+	}
 }
