@@ -90,13 +90,17 @@ jobs:
         npm test
 
   test_backend:
-    needs: test_prepare
+    needs: [test_prepare, build_frontend]
     runs-on: ubuntu-latest
     steps:
     - name: Restore
       uses: actions/download-artifact@v3
       with:
         name: test
+    - uses: actions/download-artifact@v3
+      with:
+        name: build-frontend
+        path: server/ctrl/static/www/
     - uses: actions/setup-go@v3.5.0
       with:
         go-version: 1.19
