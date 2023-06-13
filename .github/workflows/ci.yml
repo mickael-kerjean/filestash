@@ -90,7 +90,7 @@ jobs:
         npm test
 
   test_backend:
-    needs: [test_prepare, build_frontend]
+    needs: [test_prepare, build_frontend, build_backend]
     runs-on: ubuntu-latest
     steps:
     - name: Restore
@@ -138,7 +138,7 @@ jobs:
          cat access.log | grep -vz "ERR"
 
   test_e2e:
-    needs: [test_prepare, build_backend, test_smoke]
+    needs: [test_smoke, test_prepare]
     runs-on: ubuntu-latest
     container:
       image: machines/puppeteer
@@ -170,7 +170,7 @@ jobs:
 
   release_docker:
     if: github.ref == 'refs/heads/master'
-    needs: [test_smoke, test_e2e]
+    needs: [ test_e2e, test_backend, test_frontend ]
     runs-on: ubuntu-latest
     steps:
     - name: Init
