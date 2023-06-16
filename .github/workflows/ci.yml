@@ -172,13 +172,6 @@ jobs:
     if: github.ref == 'refs/heads/master'
     needs: [ test_e2e, test_backend, test_frontend ]
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
-          - linux/arm/v7
     steps:
     - name: Init
       uses: actions/checkout@v3      
@@ -194,11 +187,9 @@ jobs:
     - name: Run
       run: |
         export COMMIT_SHA=`git rev-parse --short HEAD`
-        cd docker
-        docker build --platform ${{ matrix.platform }} --tag machines/filestash:latest .
-        docker tag machines/filestash:latest machines/filestash:$COMMIT_SHA
-        docker push machines/filestash:latest
-        docker push machines/filestash:$COMMIT_SHA
+        docker buildx build --platform linux/arm/v7,linux/arm64,linux/amd64 \
+          -t machines/filestash:latest -t machines/filestash:$COMMIT_SHA \
+          --push ./docker/
 
   deploy:
     if: github.ref == 'refs/heads/master'
