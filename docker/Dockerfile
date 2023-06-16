@@ -5,7 +5,7 @@ RUN apk add git && \
     git clone --depth 1 https://github.com/mickael-kerjean/filestash
 
 # STEP2: BUILD THE FRONTEND
-FROM node:13-alpine AS builder_frontend
+FROM node:18-alpine AS builder_frontend
 WORKDIR /home/
 COPY --from=builder_prepare /home/filestash/ ./
 RUN apk add make git && \
