@@ -172,6 +172,11 @@ jobs:
     if: github.ref == 'refs/heads/master'
     needs: [ test_e2e, test_backend, test_frontend ]
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
     steps:
     - name: Init
       uses: actions/checkout@v3
