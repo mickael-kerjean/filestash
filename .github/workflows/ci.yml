@@ -177,6 +177,8 @@ jobs:
       matrix:
         platform:
           - linux/amd64
+          - linux/arm64
+          - linux/arm/v7
     steps:
     - name: Init
       uses: actions/checkout@v3
@@ -185,15 +187,13 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Run
-      run: |
-        export COMMIT_SHA=`git rev-parse --short HEAD`
-        cd docker
-        docker build --tag machines/filestash:latest .
-        docker tag machines/filestash:latest machines/filestash:$COMMIT_SHA
-        docker push machines/filestash:latest
-        docker push machines/filestash:$COMMIT_SHA
-
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+       context: docker
+       platforms: ${{ matrix.platform }}
+       push: true
+       tags: machines/filestash:latest
   deploy:
     if: github.ref == 'refs/heads/master'
     needs: release_docker

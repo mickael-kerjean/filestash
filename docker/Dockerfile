@@ -9,7 +9,7 @@ FROM node:18-alpine AS builder_frontend
 WORKDIR /home/
 COPY --from=builder_prepare /home/filestash/ ./
 RUN apk add make git && \
-    npm install --silent && \
+    npm install --silent --legacy-peer-deps && \
     make build_frontend
 
 # STEP3: BUILD THE BACKEND
