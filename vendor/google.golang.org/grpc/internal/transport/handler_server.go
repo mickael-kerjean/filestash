@@ -24,6 +24,7 @@
 package transport
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -38,30 +39,39 @@ import (
 	"golang.org/x/net/http2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/internal/grpcutil"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/stats"
 	"google.golang.org/grpc/status"
 )
 
-// NewServerHandlerTransport returns a ServerTransport handling gRPC
-// from inside an http.Handler. It requires that the http Server
-// supports HTTP/2.
-func NewServerHandlerTransport(w http.ResponseWriter, r *http.Request, stats stats.Handler) (ServerTransport, error) {
+// NewServerHandlerTransport returns a ServerTransport handling gRPC from
+// inside an http.Handler, or writes an HTTP error to w and returns an error.
+// It requires that the http Server supports HTTP/2.
+func NewServerHandlerTransport(w http.ResponseWriter, r *http.Request, stats []stats.Handler) (ServerTransport, error) {
 	if r.ProtoMajor != 2 {
-		return nil, errors.New("gRPC requires HTTP/2")
+		msg := "gRPC requires HTTP/2"
+		http.Error(w, msg, http.StatusBadRequest)
+		return nil, errors.New(msg)
 	}
 	if r.Method != "POST" {
-		return nil, errors.New("invalid gRPC request method")
+		msg := fmt.Sprintf("invalid gRPC request method %q", r.Method)
+		http.Error(w, msg, http.StatusBadRequest)
+		return nil, errors.New(msg)
 	}
 	contentType := r.Header.Get("Content-Type")
 	// TODO: do we assume contentType is lowercase? we did before
-	contentSubtype, validContentType := contentSubtype(contentType)
+	contentSubtype, validContentType := grpcutil.ContentSubtype(contentType)
 	if !validContentType {
-		return nil, errors.New("invalid gRPC request content-type")
+		msg := fmt.Sprintf("invalid gRPC request content-type %q", contentType)
+		http.Error(w, msg, http.StatusUnsupportedMediaType)
+		return nil, errors.New(msg)
 	}
 	if _, ok := w.(http.Flusher); !ok {
-		return nil, errors.New("gRPC requires a ResponseWriter supporting http.Flusher")
+		msg := "gRPC requires a ResponseWriter supporting http.Flusher"
+		http.Error(w, msg, http.StatusInternalServerError)
+		return nil, errors.New(msg)
 	}
 
 	st := &serverHandlerTransport{
@@ -77,7 +87,9 @@ func NewServerHandlerTransport(w http.ResponseWriter, r *http.Request, stats sta
 	if v := r.Header.Get("grpc-timeout"); v != "" {
 		to, err := decodeTimeout(v)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "malformed time-out: %v", err)
+			msg := fmt.Sprintf("malformed grpc-timeout: %v", err)
+			http.Error(w, msg, http.StatusBadRequest)
+			return nil, status.Error(codes.Internal, msg)
 		}
 		st.timeoutSet = true
 		st.timeout = to
@@ -95,7 +107,9 @@ func NewServerHandlerTransport(w http.ResponseWriter, r *http.Request, stats sta
 		for _, v := range vv {
 			v, err := decodeMetadataHeader(k, v)
 			if err != nil {
-				return nil, status.Errorf(codes.Internal, "malformed binary metadata: %v", err)
+				msg := fmt.Sprintf("malformed binary metadata %q in header %q: %v", v, k, err)
+				http.Error(w, msg, http.StatusBadRequest)
+				return nil, status.Error(codes.Internal, msg)
 			}
 			metakv = append(metakv, k, v)
 		}
@@ -111,11 +125,10 @@ func NewServerHandlerTransport(w http.ResponseWriter, r *http.Request, stats sta
 // at this point to be speaking over HTTP/2, so it's able to speak valid
 // gRPC.
 type serverHandlerTransport struct {
-	rw               http.ResponseWriter
-	req              *http.Request
-	timeoutSet       bool
-	timeout          time.Duration
-	didCommonHeaders bool
+	rw         http.ResponseWriter
+	req        *http.Request
+	timeoutSet bool
+	timeout    time.Duration
 
 	headerMD metadata.MD
 
@@ -137,15 +150,17 @@ type serverHandlerTransport struct {
 	// TODO make sure this is consistent across handler_server and http2_server
 	contentSubtype string
 
-	stats stats.Handler
+	stats []stats.Handler
 }
 
-func (ht *serverHandlerTransport) Close() error {
-	ht.closeOnce.Do(ht.closeCloseChanOnce)
-	return nil
+func (ht *serverHandlerTransport) Close(err error) {
+	ht.closeOnce.Do(func() {
+		if logger.V(logLevel) {
+			logger.Infof("Closing serverHandlerTransport: %v", err)
+		}
+		close(ht.closedCh)
+	})
 }
-
-func (ht *serverHandlerTransport) closeCloseChanOnce() { close(ht.closedCh) }
 
 func (ht *serverHandlerTransport) RemoteAddr() net.Addr { return strAddr(ht.req.RemoteAddr) }
 
@@ -185,8 +200,11 @@ func (ht *serverHandlerTransport) WriteStatus(s *Stream, st *status.Status) erro
 	ht.writeStatusMu.Lock()
 	defer ht.writeStatusMu.Unlock()
 
+	headersWritten := s.updateHeaderSent()
 	err := ht.do(func() {
-		ht.writeCommonHeaders(s)
+		if !headersWritten {
+			ht.writePendingHeaders(s)
+		}
 
 		// And flush, in case no header or body has been sent yet.
 		// This forces a separation of headers and trailers if this is the
@@ -225,22 +243,28 @@ func (ht *serverHandlerTransport) WriteStatus(s *Stream, st *status.Status) erro
 	})
 
 	if err == nil { // transport has not been closed
-		if ht.stats != nil {
-			ht.stats.HandleRPC(s.Context(), &stats.OutTrailer{})
+		// Note: The trailer fields are compressed with hpack after this call returns.
+		// No WireLength field is set here.
+		for _, sh := range ht.stats {
+			sh.HandleRPC(s.Context(), &stats.OutTrailer{
+				Trailer: s.trailer.Copy(),
+			})
 		}
 	}
-	ht.Close()
+	ht.Close(errors.New("finished writing status"))
 	return err
+}
+
+// writePendingHeaders sets common and custom headers on the first
+// write call (Write, WriteHeader, or WriteStatus)
+func (ht *serverHandlerTransport) writePendingHeaders(s *Stream) {
+	ht.writeCommonHeaders(s)
+	ht.writeCustomHeaders(s)
 }
 
 // writeCommonHeaders sets common headers on the first write
 // call (Write, WriteHeader, or WriteStatus).
 func (ht *serverHandlerTransport) writeCommonHeaders(s *Stream) {
-	if ht.didCommonHeaders {
-		return
-	}
-	ht.didCommonHeaders = true
-
 	h := ht.rw.Header()
 	h["Date"] = nil // suppress Date to make tests happy; TODO: restore
 	h.Set("Content-Type", ht.contentType)
@@ -259,9 +283,30 @@ func (ht *serverHandlerTransport) writeCommonHeaders(s *Stream) {
 	}
 }
 
+// writeCustomHeaders sets custom headers set on the stream via SetHeader
+// on the first write call (Write, WriteHeader, or WriteStatus).
+func (ht *serverHandlerTransport) writeCustomHeaders(s *Stream) {
+	h := ht.rw.Header()
+
+	s.hdrMu.Lock()
+	for k, vv := range s.header {
+		if isReservedHeader(k) {
+			continue
+		}
+		for _, v := range vv {
+			h.Add(k, encodeMetadataHeader(k, v))
+		}
+	}
+
+	s.hdrMu.Unlock()
+}
+
 func (ht *serverHandlerTransport) Write(s *Stream, hdr []byte, data []byte, opts *Options) error {
+	headersWritten := s.updateHeaderSent()
 	return ht.do(func() {
-		ht.writeCommonHeaders(s)
+		if !headersWritten {
+			ht.writePendingHeaders(s)
+		}
 		ht.rw.Write(hdr)
 		ht.rw.Write(data)
 		ht.rw.(http.Flusher).Flush()
@@ -269,26 +314,28 @@ func (ht *serverHandlerTransport) Write(s *Stream, hdr []byte, data []byte, opts
 }
 
 func (ht *serverHandlerTransport) WriteHeader(s *Stream, md metadata.MD) error {
+	if err := s.SetHeader(md); err != nil {
+		return err
+	}
+
+	headersWritten := s.updateHeaderSent()
 	err := ht.do(func() {
-		ht.writeCommonHeaders(s)
-		h := ht.rw.Header()
-		for k, vv := range md {
-			// Clients don't tolerate reading restricted headers after some non restricted ones were sent.
-			if isReservedHeader(k) {
-				continue
-			}
-			for _, v := range vv {
-				v = encodeMetadataHeader(k, v)
-				h.Add(k, v)
-			}
+		if !headersWritten {
+			ht.writePendingHeaders(s)
 		}
+
 		ht.rw.WriteHeader(200)
 		ht.rw.(http.Flusher).Flush()
 	})
 
 	if err == nil {
-		if ht.stats != nil {
-			ht.stats.HandleRPC(s.Context(), &stats.OutHeader{})
+		for _, sh := range ht.stats {
+			// Note: The header fields are compressed with hpack after this call returns.
+			// No WireLength field is set here.
+			sh.HandleRPC(s.Context(), &stats.OutHeader{
+				Header:      md.Copy(),
+				Compression: s.sendCompress,
+			})
 		}
 	}
 	return err
@@ -314,7 +361,7 @@ func (ht *serverHandlerTransport) HandleStreams(startStream func(*Stream), trace
 		case <-ht.req.Context().Done():
 		}
 		cancel()
-		ht.Close()
+		ht.Close(errors.New("request is done processing"))
 	}()
 
 	req := ht.req
@@ -333,21 +380,21 @@ func (ht *serverHandlerTransport) HandleStreams(startStream func(*Stream), trace
 		Addr: ht.RemoteAddr(),
 	}
 	if req.TLS != nil {
-		pr.AuthInfo = credentials.TLSInfo{State: *req.TLS}
+		pr.AuthInfo = credentials.TLSInfo{State: *req.TLS, CommonAuthInfo: credentials.CommonAuthInfo{SecurityLevel: credentials.PrivacyAndIntegrity}}
 	}
 	ctx = metadata.NewIncomingContext(ctx, ht.headerMD)
 	s.ctx = peer.NewContext(ctx, pr)
-	if ht.stats != nil {
-		s.ctx = ht.stats.TagRPC(s.ctx, &stats.RPCTagInfo{FullMethodName: s.method})
+	for _, sh := range ht.stats {
+		s.ctx = sh.TagRPC(s.ctx, &stats.RPCTagInfo{FullMethodName: s.method})
 		inHeader := &stats.InHeader{
 			FullMethod:  s.method,
 			RemoteAddr:  ht.RemoteAddr(),
 			Compression: s.recvCompress,
 		}
-		ht.stats.HandleRPC(s.ctx, inHeader)
+		sh.HandleRPC(s.ctx, inHeader)
 	}
 	s.trReader = &transportReader{
-		reader:        &recvBufferReader{ctx: s.ctx, ctxDone: s.ctx.Done(), recv: s.buf},
+		reader:        &recvBufferReader{ctx: s.ctx, ctxDone: s.ctx.Done(), recv: s.buf, freeBuffer: func(*bytes.Buffer) {}},
 		windowHandler: func(int) {},
 	}
 
@@ -361,7 +408,7 @@ func (ht *serverHandlerTransport) HandleStreams(startStream func(*Stream), trace
 		for buf := make([]byte, readSize); ; {
 			n, err := req.Body.Read(buf)
 			if n > 0 {
-				s.buf.put(recvMsg{data: buf[:n:n]})
+				s.buf.put(recvMsg{buffer: bytes.NewBuffer(buf[:n:n])})
 				buf = buf[n:]
 			}
 			if err != nil {
@@ -410,10 +457,10 @@ func (ht *serverHandlerTransport) Drain() {
 // mapRecvMsgError returns the non-nil err into the appropriate
 // error value as expected by callers of *grpc.parser.recvMsg.
 // In particular, in can only be:
-//   * io.EOF
-//   * io.ErrUnexpectedEOF
-//   * of type transport.ConnectionError
-//   * an error from the status package
+//   - io.EOF
+//   - io.ErrUnexpectedEOF
+//   - of type transport.ConnectionError
+//   - an error from the status package
 func mapRecvMsgError(err error) error {
 	if err == io.EOF || err == io.ErrUnexpectedEOF {
 		return err

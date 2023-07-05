@@ -29,12 +29,12 @@
 // LastValue just keeps track of the most recently recorded measurement value.
 // All aggregations are cumulative.
 //
-// Views can be registerd and unregistered at any time during program execution.
+// Views can be registered and unregistered at any time during program execution.
 //
 // Libraries can define views but it is recommended that in most cases registering
 // views be left up to applications.
 //
-// Exporting
+// # Exporting
 //
 // Collected and aggregated data can be exported to a metric collection
 // backend by registering its exporter.
