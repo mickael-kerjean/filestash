@@ -1,0 +1,26 @@
+{
+  "type": "module",
+  "name": "Filestash",
+  "version": "1.0.0",
+  "description": "Frontend for Filestash",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest"
+  },
+  "author": "Mickael Kerjean",
+  "license": "AGPL",
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "jsdom": "^22.1.0"
+  },
+  "jest": {
+    "verbose": true,
+    "setupFiles": [
+      "<rootDir>/common/skeleton/test/jest.setup.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "test",
+      "example"
+    ]
+  }
+}

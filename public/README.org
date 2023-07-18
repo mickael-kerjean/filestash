@@ -1,0 +1,16 @@
+WIP of the complete frontend rewrite in vanilla JS
+
+Admin section:
+- [-] pages:
+  - [ ] backend
+  - [ ] settings
+  - [ ] logs
+  - [ ] about
+  - [ ] setup
+  - [X] home
+  - [ ] login
+- [ ] side bar
+- [ ] form
+
+End user section:
+TODO

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <base href="/">
+        <script type="module" src="./pages/boot/nyancat.js"></script>
+        <link rel="stylesheet" href="./assets/css/reset.css">
+        <title></title>
+    </head>
+    <body>
+        <div role="main" id="app">
+            <data-nyancat></data-nyancat>
+        </div>
+        <script type="module" src="./components/loader.js"></script>
+        <script type="module">
+          import main from "./lib/skeleton/index.js";
+          const routes = {
+              "/admin/backend": "pages/adminpage/ctrl_backend.js",
+              "/admin/settings": "pages/adminpage/ctrl_settings.js",
+              "/admin/logs": "pages/adminpage/ctrl_logger.js",
+              "/admin/about": "pages/adminpage/ctrl_about.js",
+
+              "/admin": "pages/adminpage/index.js",
+              "/": "pages/home/index.js",
+          };
+          main(document.getElementById("app"), routes, {
+              loader: `<data-loader></data-loader>`
+          });
+        </script>
+        <noscript>
+            <div>
+                <h2>Error: Javascript is off</h2>
+                <p>You need to enable Javascript to run this application</p>
+            </div>
+        </noscript>
+    </body>
+</html>
