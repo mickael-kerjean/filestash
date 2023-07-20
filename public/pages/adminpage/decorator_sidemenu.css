@@ -1,0 +1,101 @@
+.component_menu_sidebar {
+    height: 100vh;
+    background: linear-gradient(#2c3032, #313538);
+    width: 250px;
+    border-right: 2px solid var(--color);
+    padding: 50px 0px 0px 40px;
+    transition: transform 0.3s ease;
+    transition-delay: 0.7s;
+    flex-shrink: 0;
+}
+.component_menu_sidebar h2 {
+    font-family: "Source Code Pro", monospace;
+    color: white;
+    font-weight: 300;
+    font-size: 1.5em;
+    margin: 25px 0 40px 0;
+}
+.component_menu_sidebar ul {
+    color: rgba(255, 255, 255, 0.5);
+    list-style-type: none;
+    padding: 0;
+}
+.component_menu_sidebar ul li {
+    margin: 15px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.component_menu_sidebar ul li a.active, .component_menu_sidebar ul li a:hover {
+    color: white;
+}
+.component_menu_sidebar ul li.version {
+    position: absolute;
+    bottom: 0;
+    opacity: 0.25;
+}
+.component_menu_sidebar .header {
+    display: block;
+    height: 40px;
+}
+.component_menu_sidebar .header svg {
+    width: 40px;
+    height: 40px;
+}
+.component_menu_sidebar .header svg.arrow_left {
+    position: absolute;
+    margin-left: -35px;
+    opacity: 0.7;
+    padding: 8px;
+    box-sizing: border-box;
+    fill: #6f6f6f;
+}
+.component_menu_sidebar .header svg.logo {
+    transform: scale(1.4);
+    color: #9AD1ED;
+}
+
+@media screen and (max-width: 760px) {
+    .component_menu_sidebar .header svg.arrow_left {
+        display: none;
+    }
+}
+@media screen and (max-width: 1000px) {
+    .component_menu_sidebar {
+        padding-left: 30px;
+        width: 200px;
+    }
+    .component_menu_sidebar h2 {
+        font-size: 1.35em;
+    }
+}
+@media screen and (max-width: 760px) {
+    .component_menu_sidebar {
+        padding: 25px 10px;
+    }
+    .component_menu_sidebar h2 {
+        margin: 15px 0 25px 0;
+        font-size: 1.25em;
+        padding: 0;
+    }
+    .component_menu_sidebar .version {
+        display: none;
+    }
+}
+@media screen and (max-width: 650px) {
+    .component_menu_sidebar {
+        width: inherit;
+        padding: 25px 10px;
+    }
+    .component_menu_sidebar h2 {
+        display: none;
+    }
+}
+@media screen and (max-width: 440px) {
+    .component_menu_sidebar {
+        padding: 5px 5px;
+    }
+    .component_menu_sidebar ul li {
+        width: 50px;
+    }
+}

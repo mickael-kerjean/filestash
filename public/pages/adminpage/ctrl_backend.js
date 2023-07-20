@@ -3,9 +3,9 @@ import { withEffect } from "../../lib/rxjs/index.js";
 import { animate, CSSTransition } from "../../lib/animate/index.js";
 
 import AdminOnly from "./decorator_admin_only.js";
-import WithAdminMenu from "./decorator_sidemenu.js";
+import WithShell from "./decorator_sidemenu.js";
 
-export default AdminOnly(WithAdminMenu(function(render) {
+export default AdminOnly(WithShell(function(render) {
     const $page = createElement(`
         <div className="component_settingspage sticky">
             <form>

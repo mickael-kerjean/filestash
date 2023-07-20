@@ -5,11 +5,12 @@ export { navigate } from "./router.js";
 export { onDestroy } from "./lifecycle.js";
 
 export default async function($root, routes, opts = {}) {
-    const { spinner = "loading ...", spinnerTime = 200, defaultRoute = "/", onload = () => {} } = opts;
+    const { spinner = "loading ...", spinnerTime = 200, defaultRoute = "/" } = opts;
 
     initDOM($root);
     initRouter($root);
 
+    let pageLoader;
     window.addEventListener("pagechange", async () => {
         await $root.cleanup();
         const route = currentRoute(routes, defaultRoute);
@@ -17,18 +18,23 @@ export default async function($root, routes, opts = {}) {
         if (typeof route === "function") {
             ctrl = route;
         } else if (typeof route === "string") {
-            const spinnerID = (typeof spinner === "string") && setTimeout(() => $root.innerHTML = spinner, spinnerTime);
+            let spinnerID;
+            if (pageLoader && typeof pageLoader.then === "function") {
+                const pageLoaderCallback = await pageLoader;
+                if (typeof pageLoaderCallback !== "function") return $root.replaceChildren(createElement(`<div><h1>Error</h1><p>expected a function as returned value`));
+                spinnerID = setTimeout(() => pageLoaderCallback(route), spinnerTime);
+            } else if (typeof spinner === "string") {
+                spinnerID = setTimeout(() => $root.innerHTML = spinner, spinnerTime);
+            }
             const module = await import("../../" + route);
             clearTimeout(spinnerID);
             if (typeof module.default !== "function") return $root.replaceChildren(createElement(`<div><h1>Error</h1><p>missing default export on ${route}`));
             ctrl = module.default;
         }
         if (typeof ctrl !== "function") return $root.replaceChildren(createElement(`<div><h1>Error</h1><p>Unknown route for ${route}`));
-        ctrl((view) => {
-            if (typeof view === "string") $root.replaceChildren(createElement(view));
-            else if (view instanceof window.Element) $root.replaceChildren(view);
+        pageLoader = ctrl((view) => {
+            if (view instanceof window.Element) $root.replaceChildren(view);
             else $root.replaceChildren(createElement(`<div><h1>Error</h1><p>Unknown view type: ${typeof view}</p></div>`));
-            onload();
         });
     });
 }

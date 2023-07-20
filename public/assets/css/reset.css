@@ -60,7 +60,7 @@ body {
     background: var(--bg-color);
     color: var(--color);
 }
-body, html, #app {
+body, html {
     height: 100%;
     margin: 0;
 }
@@ -68,21 +68,26 @@ body.dark-mode{ background: var(--bg-color); }
 body.dark-mode .component_modal > div,
 body.dark-mode .component_page_admin{ --bg-color: #f2f3f5; }
 
-.center{ text-align: center; }
-a { text-decoration: none; }
+.center{
+    text-align: center;
+}
 
-
-
+a {
+    color: inherit;
+    text-decoration: none;
+}
 
 select {
     -webkit-appearance: none;
     -moz-appearance: none;
 }
+
 select:-moz-focusring {
     color: transparent;
     outline: none;
     border: none;
 }
+
 select::-ms-expand {
     display: none;
 }
@@ -163,7 +168,6 @@ select:-moz-focusring {
 }
 
 .scroll-y {
-    overflow-y: scroll;
     scrollbar-3dlight-color: #7d7e94;
     scrollbar-arrow-color: #c1c1d1;
     scrollbar-darkshadow-color: #2d2c4d;

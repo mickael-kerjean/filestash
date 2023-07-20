@@ -17,7 +17,7 @@ class ReleaseImpl {
                     version: xhr.responseHeaders["x-powered-by"].trim().replace(/^Filestash\/([v\.0-9]*).*$/, "$1"),
                 };
             }),
-        );        
+        );
     }
 }
 

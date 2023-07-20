@@ -3,7 +3,7 @@ import { withEffect } from "../../lib/rxjs/index.js";
 import { animate, CSSTransition } from "../../lib/animate/index.js";
 
 import AdminOnly from "./decorator_admin_only.js";
-import WithAdminMenu from "./decorator_sidemenu.js";
+import WithShell from "./decorator_sidemenu.js";
 
 function Page(render) {
     const $page = createElement(`
@@ -22,7 +22,7 @@ function Page(render) {
     renderComponentAuditor($page.querySelector(".component_reporter"));
 }
 
-export default AdminOnly(WithAdminMenu(Page));
+export default AdminOnly(WithShell(Page));
 
 function renderComponentLog($component) {
     // console.log($component);
