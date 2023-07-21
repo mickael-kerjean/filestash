@@ -12,12 +12,14 @@ export default function AdminOnly(ctrl) {
         const handlerUserIsAdminPassthrough = () => ctrl(render);
         const handlerUserIsNOTAdmin = () => {
             const $form = createElement(`
-                <div class="component_container sharepage_component" style="max-width: 300px;">
-                    <form class="" style="margin-top: 174px;">
-                        <input type="password" name="password" placeholder="Password" class="component_input">
-                        <button class="transparent">
-                            <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+CiAgPHBhdGggc3R5bGU9ImZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MC41MzMzMzMzNiIgZD0iTTguNTkgMTYuMzRsNC41OC00LjU5LTQuNTgtNC41OUwxMCA1Ljc1bDYgNi02IDZ6IiAvPgogIDxwYXRoIGZpbGw9Im5vbmUiIGQ9Ik0wLS4yNWgyNHYyNEgweiIgLz4KPC9zdmc+Cg==" alt="arrow_right">
-                        </button>
+                <div class="component_container component_page_adminlogin" style="max-width: 300px;">
+                    <form style="margin-top: 174px;">
+                        <div class="input_group">
+                            <input type="password" name="password" placeholder="Password" class="component_input">
+                            <button class="transparent">
+                                <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+CiAgPHBhdGggc3R5bGU9ImZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MC41MzMzMzMzNiIgZD0iTTguNTkgMTYuMzRsNC41OC00LjU5LTQuNTgtNC41OUwxMCA1Ljc1bDYgNi02IDZ6IiAvPgogIDxwYXRoIGZpbGw9Im5vbmUiIGQ9Ik0wLS4yNWgyNHYyNEgweiIgLz4KPC9zdmc+Cg==" alt="arrow_right">
+                            </button>
+                        </div>
                     </form>
                 </div>
             `);

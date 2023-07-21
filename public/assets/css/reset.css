@@ -1,3 +1,10 @@
+@import url("./designsystem_input.css");
+@import url("./designsystem_inputgroup.css");
+@import url("./designsystem_checkbox.css");
+@import url("./designsystem_button.css");
+@import url("./designsystem_icon.css");
+@import url("./designsystem_container.css");
+
 /* latin-ext */
 @font-face {
     font-family: 'Source Code Pro';

@@ -1,0 +1,37 @@
+.component_input, .component_select {
+  background: inherit;
+  border: none;
+  border-radius: 0;
+  width: 100%;
+  height: 32px;
+  display: inline-block;
+  font-family: "San Francisco","Roboto","Arial",sans-serif;
+  -webkit-text-size-adjust: 100%;
+  font-size: 16px;
+  padding: 5px 0px 5px 0px;
+  margin: 0 0 8px 0;
+  outline: none;
+  box-sizing: border-box;
+  color: inherit;
+  border-bottom: 2px solid rgba(70, 99, 114, 0.1);
+  transition: border-color 0.2s ease-out;
+}
+.component_input:focus, .component_select:focus {
+    border-color: var(--emphasis-primary);
+}
+
+input.component_input[readonly], textarea.component_textarea[readonly] {
+    border-bottom-style: dashed;
+    cursor: pointer;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.component_input:-webkit-autofill,
+.component_input:-webkit-autofill:focus {
+    transition: background-color 600000s 0s, color 600000s 0s;
+}
+
+.component_input[data-autocompleted] {
+    background-color: transparent !important;
+}
