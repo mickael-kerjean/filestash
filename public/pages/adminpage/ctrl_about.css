@@ -1,9 +1,11 @@
 .component_page_about {
-    padding-top: 50px;
-    overflow-x: auto;
-    table td {
-        min-width: 100px;
-        padding: 10px 0;
-    }
-    .small { font-size: 0.9rem; }
+  padding-top: 50px;
+  overflow-x: auto;
+}
+.component_page_about table td {
+    min-width: 100px;
+    padding: 10px 0;
+}
+.component_page_about .small {
+    font-size: 0.9rem;
 }

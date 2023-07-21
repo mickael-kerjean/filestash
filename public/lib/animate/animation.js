@@ -1,4 +1,4 @@
-import rxjs from "../rxjs/index.js";
+const sleep = (t) => new Promise((done) => setTimeout(done, t));
 
 export async function requestAnimation() {
     return new Promise((done) => requestAnimationFrame(done));
@@ -10,7 +10,7 @@ export async function enterAnimation($node, timeout) {
     $node.classList.add("enter");
     await requestAnimation();
     $node.classList.add("enter-active")
-    await rxjs.timer(timeout).toPromise();
+    await sleep(timeout);
     $node.classList.remove("enter", "enter-active");
 }
 
@@ -20,7 +20,7 @@ export async function leaveAnimation($node, timeout) {
     $node.classList.add("leave");
     await requestAnimation();
     $node.classList.add("leave-active")
-    await rxjs.timer(timeout).toPromise();
+    await sleep(timeout);
 }
 
 export function slideXIn(size) {

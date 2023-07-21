@@ -1,5 +1,5 @@
 import { createElement } from "../../../lib/skeleton/index.js";
-import rxjs, { withEffect, textContent } from "../../../lib/rxjs/index.js";
+import rxjs, { effect, textContent } from "../../../lib/rxjs/index.js";
 import CSSLoader from "../../helpers/css.js";
 
 import Release from "./model_release.js";
@@ -34,7 +34,7 @@ export default function(ctrl) {
         const $content = $page.querySelector(`[data-bind="admin"]`)
         ctrl(($node) => $content.appendChild($node));
 
-        withEffect(Release.get().pipe(
+        effect(Release.get().pipe(
             rxjs.map(({ version }) => version),
             textContent($page, `[data-bind="version"]`),
         ));

@@ -1,11 +1,11 @@
 import { createElement, onDestroy } from "../../lib/skeleton/index.js";
-import { withEffect } from "../../lib/rxjs/index.js";
-import rxjs from "../../lib/rxjs/index.js";
+import rxjs, { effect } from "../../lib/rxjs/index.js";
+import { transition } from "../../lib/animate/index.js";
 
 import AdminSessionManager from "./model_admin_session.js";
 
 export default function AdminOnly(ctrl) {
-    return async (render) => {
+    return (render) => {
         const loader$ = rxjs.timer(1000).subscribe(() => render(`<div>loading</div>`));
         onDestroy(() => loader$.unsubscribe());
 
@@ -21,8 +21,11 @@ export default function AdminOnly(ctrl) {
                     </form>
                 </div>
             `);
-            render($form);
-            withEffect(rxjs.fromEvent($form.querySelector("form"), "submit").pipe(
+            render(transition($form, {
+                timeoutEnter: 300, enter: transitionIn,
+                timeoutLeave: 0,
+            }));
+            effect(rxjs.fromEvent($form.querySelector("form"), "submit").pipe(
                 rxjs.tap((e) => e.preventDefault()),
                 rxjs.map(() => ({ password: $form.querySelector(`[name="password"]`).value })),
                 AdminSessionManager.startSession(),
@@ -30,11 +33,22 @@ export default function AdminOnly(ctrl) {
             ));
         };
 
-        return new Promise((done) => {
-            withEffect(AdminSessionManager.state().pipe(
-                rxjs.tap(() => loader$.unsubscribe()),
-                rxjs.tap(({ isAdmin }) => isAdmin ? done(handlerUserIsAdminPassthrough()) : handlerUserIsNOTAdmin()),
-            ));
-        });
+        effect(AdminSessionManager.state().pipe(
+            rxjs.tap(() => loader$.unsubscribe()),
+            rxjs.tap(({ isAdmin }) => isAdmin ? handlerUserIsAdminPassthrough() : handlerUserIsNOTAdmin()),
+        ));
     };
+}
+
+const transitionIn = (querySelector, t) => {
+        return `
+${querySelector}.enter {
+    opacity: 0;
+    transform: scale(2);
+}
+${querySelector}.enter.enter-active {
+    opacity: 1;
+    transform: scale(1);
+    transition: all ${t}ms ease;
+}`;
 }

@@ -7,7 +7,7 @@ const ajaxModule = await import("./vendor/rxjs-ajax.min.js")
 export default rxjsModule;
 export { textContent, htmlContent, setAttribute, getAttribute, removeAttribute } from "./dom.js";
 export const ajax = ajaxModule.ajax;
-export function withEffect(obs) {
-    const tmp = obs.subscribe(() => {}, (err) => console.error("withEffect", err));
+export function effect(obs) {
+    const tmp = obs.subscribe(() => {}, (err) => console.error("effect", err));
     onDestroy(() => tmp.unsubscribe());
 }

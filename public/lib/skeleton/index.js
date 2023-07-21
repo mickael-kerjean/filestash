@@ -32,10 +32,7 @@ export default async function($root, routes, opts = {}) {
             ctrl = module.default;
         }
         if (typeof ctrl !== "function") return $root.replaceChildren(createElement(`<div><h1>Error</h1><p>Unknown route for ${route}`));
-        pageLoader = ctrl((view) => {
-            if (view instanceof window.Element) $root.replaceChildren(view);
-            else $root.replaceChildren(createElement(`<div><h1>Error</h1><p>Unknown view type: ${typeof view}</p></div>`));
-        });
+        pageLoader = ctrl(createRender($root));
     });
 }
 
@@ -43,4 +40,11 @@ export function createElement(str) {
     const $n = window.document.createElement("div");
     $n.innerHTML = str;
     return $n.firstElementChild;
+}
+
+export function createRender($parent) {
+    return ($view) => {
+        if ($view instanceof window.Element) $parent.replaceChildren($view);
+        else $parent.replaceChildren(createElement(`<div><h1>Error</h1><p>Unknown view type: ${typeof $view}</p></div>`));
+    };
 }

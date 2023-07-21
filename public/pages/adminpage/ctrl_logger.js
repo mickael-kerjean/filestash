@@ -1,7 +1,7 @@
-import { createElement } from "../../lib/skeleton/index.js";
-import { withEffect } from "../../lib/rxjs/index.js";
-import { animate, CSSTransition } from "../../lib/animate/index.js";
+import { createElement, createRender } from "../../lib/skeleton/index.js";
+import { effect } from "../../lib/rxjs/index.js";
 
+import transition from "./animate.js";
 import AdminOnly from "./decorator_admin_only.js";
 import WithShell from "./decorator_sidemenu.js";
 
@@ -15,19 +15,18 @@ function Page(render) {
             <div class="component_reporter"></div>
         <div>
     `);
-    render($page);
-    withEffect(animate($page).pipe(CSSTransition()));
+    render(transition($page));
 
-    renderComponentLog($page.querySelector(".component_logger"));
-    renderComponentAuditor($page.querySelector(".component_reporter"));
+    componentLog(createRender($page.querySelector(".component_logger")));
+    componentAuditor(createRender($page.querySelector(".component_reporter")));
 }
 
 export default AdminOnly(WithShell(Page));
 
-function renderComponentLog($component) {
-    // console.log($component);
+function componentLog(render) {
+    render(createElement(`<div>log stuff</div>`));
 }
 
-function renderComponentAuditor($component) {
-    // console.log($component);
+function componentAuditor(render) {
+    render(createElement(`<div>audit stuff</div>`));
 }

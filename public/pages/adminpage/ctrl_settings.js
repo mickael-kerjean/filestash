@@ -1,7 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
-import { withEffect } from "../../lib/rxjs/index.js";
-import { animate, CSSTransition } from "../../lib/animate/index.js";
 
+import transition from "./animate.js";
 import AdminOnly from "./decorator_admin_only.js";
 import WithShell from "./decorator_sidemenu.js";
 
@@ -13,6 +12,5 @@ export default AdminOnly(WithShell(function(render) {
             </form>
         </div>
     `);
-    render($page);
-    withEffect(animate($page).pipe(CSSTransition()));
+    render(transition($page));
 }));

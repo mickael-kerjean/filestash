@@ -11,30 +11,25 @@ export {
     opacityIn, opacityOut
 } from "./animation.js";
 
-export function animate($node, opts = {}) {
-    const { timeoutEnter = 200, timeoutLeave = 100 } = opts;
-    return rxjs.of({ $node: $node, timeoutEnter, timeoutLeave });
-}
+export function transition($node, opts = {}) {
+    const {
+        timeoutEnter = 250, enter = slideXIn(5),
+        timeoutLeave = 50, leave = opacityOut(),
+    } = opts;
 
-export function CSSTransition(opts = {}) {
-    const { enter = slideXIn(3), leave = opacityOut() } = opts;
-    return rxjs.pipe(
-        rxjs.tap(({$node, timeoutEnter, timeoutLeave}) => {
-            if ($node.classList.value === "") { // if node has no class, assign a random one
-                $node.classList.add((Math.random() + 1).toString(36).substring(2));
-            }
-            const className = (" " + $node.classList.value).split(" ").join(".");
+    // STEP1: setup the CSS for $node
+    if ($node.classList.value === "") { // if node has no class, assign a random one
+        $node.classList.add((Math.random() + 1).toString(36).substring(2));
+    }
+    const className = (" " + $node.classList.value).split(" ").join(".");
+    let css = "";
+    if (timeoutEnter && typeof enter === "function") css += enter(className, timeoutEnter);
+    if (timeoutLeave && typeof leave === "function") css += leave(className, timeoutLeave);
+    if (css) $node.appendChild(createElement(`<style>${css}</style>`));
 
-            let css = "";
-            if (timeoutEnter && typeof enter === "function") css += enter(className, timeoutEnter);
-            if (timeoutLeave && typeof leave === "function") css += leave(className, timeoutLeave);
-            if (css) $node.appendChild(createElement(`<style>${css}</style>`));
-        }),
-        rxjs.tap(({$node, timeoutEnter, timeoutLeave}) => {
-            if (timeoutEnter && enter) enterAnimation($node, timeoutEnter);
-            if (timeoutLeave && leave) onDestroy(async () => {
-                await leaveAnimation($node, timeoutLeave);
-            });
-        }),
-    );
+    // STEP2: run the animation
+    enterAnimation($node, timeoutEnter);
+    onDestroy(async () => await leaveAnimation($node, timeoutLeave));
+    
+    return $node;
 }
