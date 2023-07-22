@@ -5,25 +5,38 @@ window.rxjs = rxjs;
 
 class AdminSessionManager {
     constructor() {
-        this.session = new rxjs.ReplaySubject(1);
-        ajax(API_SERVER + "/admin/api/session").subscribe(
-            () => this.session.next({ isAdmin: true }),
-            () => this.session.next({ isAdmin: false }),
-        );
+        this.session = new rxjs.BehaviorSubject({ isAdmin: false });
+        this.session$ = this.session.pipe(rxjs.shareReplay(1));
+
+        // ajax(API_SERVER + "/admin/api/session").subscribe(() => {
+        //     // TODO: setup session
+        // });
     }
-    
+
     state() {
-        return this.session.asObservable().pipe(rxjs.delay(100));
+        return rxjs.merge(
+            this.session$,
+            rxjs.interval(5000).pipe(
+                // rxjs.delay(1000),
+                // rxjs.mergeMap(() => ajax(API_SERVER + "/admin/api/session").pipe(
+                //     // todo: get the result and process it
+                //     rxjs.catchError(() => this.session),
+                // )),
+            ),
+        ).pipe(
+            rxjs.mapTo({ isAdmin: true }), // TODO: remove this
+            rxjs.distinctUntilChanged(),
+            logger(),
+        )
     }
 
     startSession() {
         return rxjs.pipe(
             rxjs.delay(1000),
-            rxjs.tap(() => this.session.next({ isAdmin: true })),
             rxjs.mapTo({ ok: true }),
+            rxjs.tap(({ ok }) => ok && this.session.next({ isAdmin: true })),
         );
     }
-    
 }
 
 export default new AdminSessionManager();
