@@ -8,7 +8,7 @@ class AdminSessionManager {
         this.session = new rxjs.ReplaySubject(1);
         ajax(API_SERVER + "/admin/api/session").subscribe(
             () => this.session.next({ isAdmin: true }),
-            () => this.session.next({ isAdmin: true }),
+            () => this.session.next({ isAdmin: false }),
         );
     }
     

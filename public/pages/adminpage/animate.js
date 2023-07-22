@@ -7,8 +7,8 @@ export default function($node) {
     });
 }
 
-function slideYIn(size) {
-    return function (querySelector, t){
+export function slideYIn(size) {
+    return function(querySelector, t) {
         return `
 ${querySelector}.enter {
     opacity: 0;
@@ -17,6 +17,21 @@ ${querySelector}.enter {
 ${querySelector}.enter.enter-active {
     opacity: 1;
     transform: translateY(0);
+    transition: all ${t}ms ease;
+}`;
+    }
+}
+
+export function zoomIn(size) {
+    return function(querySelector, t) {
+        return `
+${querySelector}.enter {
+    opacity: 0;
+    transform: scale(${size});
+}
+${querySelector}.enter.enter-active {
+    opacity: 1;
+    transform: scale(1);
     transition: all ${t}ms ease;
 }`;
     }

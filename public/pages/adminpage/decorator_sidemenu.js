@@ -1,4 +1,5 @@
 import { createElement } from "../../../lib/skeleton/index.js";
+
 import rxjs, { effect, textContent } from "../../../lib/rxjs/index.js";
 import CSSLoader from "../../helpers/css.js";
 
@@ -31,6 +32,7 @@ export default function(ctrl) {
             </div>
         `);
         render($page);
+
         const $content = $page.querySelector(`[data-bind="admin"]`)
         ctrl(($node) => $content.appendChild($node));
 

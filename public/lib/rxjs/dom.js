@@ -29,3 +29,21 @@ export function getAttribute($node, selector = "", attr = "") {
     if (!$node) throw new Error("dom not found for '" + selector + "'");
     return rxjs.map(() => $node.getAttribute(attr))
 }
+
+export function setValue($node, selector, attr) {
+    if (selector) $node = $node.querySelector(selector);
+    if (!$node) throw new Error("dom not found for '" + selector + "'");
+    return rxjs.tap((val) => $node[attr] = val);
+}
+
+export function addClassList($node, selector) {
+    if (selector) $node = $node.querySelector(selector);
+    if (!$node) throw new Error("dom not found for '" + selector + "'");
+    return rxjs.tap((className) => $node.classList.add(className));
+}
+
+export function removeClassList($node, selector, className) {
+    if (selector) $node = $node.querySelector(selector);
+    if (!$node) throw new Error("dom not found for '" + selector + "'");
+    return rxjs.tap((className) => $node.classList.remove(className));
+}
