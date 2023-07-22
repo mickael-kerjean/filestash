@@ -14,5 +14,5 @@ export default function AdminOnly(ctrlWrapped) {
             rxjs.map(({ isAdmin }) => isAdmin ? ctrlWrapped : ctrlLogin),
             rxjs.tap((ctrl) => ctrl(render)),
         ));
-    };
+    }
 }

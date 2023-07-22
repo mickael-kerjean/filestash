@@ -1,5 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
-import rxjs, { effect, htmlContent } from "../../lib/rxjs/index.js"
+import rxjs, { effect, stateMutation } from "../../lib/rxjs/index.js"
+import { qs } from "../../lib/dom/index.js";
 import CSSLoader from "../../helpers/css.js";
 import transition from "./animate.js";
 
@@ -18,7 +19,7 @@ export default AdminOnly(WithShell(async function(render) {
 
     effect(Release.get().pipe(
         rxjs.map(({ html }) => html),
-        htmlContent($page, `[data-bind="about"]`),
+        stateMutation(qs($page, `[data-bind="about"]`), "innerHTML"),
     ));
 }));
 

@@ -1,6 +1,6 @@
 import { createElement } from "../../../lib/skeleton/index.js";
-
-import rxjs, { effect, textContent } from "../../../lib/rxjs/index.js";
+import rxjs, { effect, stateMutation } from "../../../lib/rxjs/index.js";
+import { qs } from "../../lib/dom/index.js";
 import CSSLoader from "../../helpers/css.js";
 
 import Release from "./model_release.js";
@@ -38,7 +38,7 @@ export default function(ctrl) {
 
         effect(Release.get().pipe(
             rxjs.map(({ version }) => version),
-            textContent($page, `[data-bind="version"]`),
+            stateMutation(qs($page, `[data-bind="version"]`), "textContent"),
         ));
 
         return (route) => $content.innerHTML = `<div>loading "${route}"</div>`;

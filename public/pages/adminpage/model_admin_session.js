@@ -20,7 +20,7 @@ class AdminSessionManager {
         return rxjs.pipe(
             rxjs.delay(1000),
             rxjs.tap(() => this.session.next({ isAdmin: true })),
-            rxjs.mapTo(false),
+            rxjs.mapTo({ ok: true }),
         );
     }
     
