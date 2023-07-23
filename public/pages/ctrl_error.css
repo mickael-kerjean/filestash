@@ -11,20 +11,23 @@
 .error-page h2 {
     margin: 10px 0;
     font-weight: normal;
-    opacity: 0.9;
     font-weight: 100;
-    cursor: pointer;
 }
 .error-page code {
-    margin-top: 20px;
+    margin-top: 5px;
     display: block;
-    background: rgba(255, 255, 255, 0.3);
     padding: 10px;
-    border: 2px dashed rgba(0, 0, 0, 0.1);
     overflow-x: auto;
+    background: #e2e2e2;
+    color: var(--dark);
+    border-radius: 3px;
+}
+.error-page pre {
+    margin: 0;
 }
 .error-page p {
     font-style: italic;
+    margin-bottom: 5px;
 }
 .error-page a {
     border-bottom: 1px dashed;

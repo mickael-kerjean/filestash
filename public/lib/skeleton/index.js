@@ -5,7 +5,7 @@ export { navigate } from "./router.js";
 export { onDestroy } from "./lifecycle.js";
 
 export default async function($root, routes, opts = {}) {
-    const { spinner = "loading ...", spinnerTime = 200, defaultRoute = "/" } = opts;
+    const { spinner = "loading ...", spinnerTime = 200, defaultRoute = "" } = opts;
 
     initDOM($root);
     initRouter($root);
@@ -26,7 +26,7 @@ export default async function($root, routes, opts = {}) {
             } else if (typeof spinner === "string") {
                 spinnerID = setTimeout(() => $root.innerHTML = spinner, spinnerTime);
             }
-            const module = await import("../../" + route);
+            const module = await import("../.." + route);
             clearTimeout(spinnerID);
             if (typeof module.default !== "function") return $root.replaceChildren(createElement(`<div><h1>Error</h1><p>missing default export on ${route}`));
             ctrl = module.default;

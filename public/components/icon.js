@@ -20,7 +20,7 @@ class Icon extends HTMLElement {
                     src="${img}"
                     alt="${name}" />`;
 
-}
+    }
     _mapOfIcon(name) {
         switch(name) {
         case "arrow_right":

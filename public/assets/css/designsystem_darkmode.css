@@ -1,0 +1,7 @@
+body.dark-mode {
+    --bg-color: #242424;
+}
+
+body.dark-mode{ background: var(--bg-color); }
+body.dark-mode .component_modal > div,
+body.dark-mode .component_page_admin{ --bg-color: #f2f3f5; }

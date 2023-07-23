@@ -1,13 +1,14 @@
 .input_group {
     display: flex;
     background: #fff;
-    border-radius: 2px;
+    border-radius: 3px;
     box-shadow: 2px 2px 10px rgba(0,0,0,.1);
 }
 .input_group input {
     padding: 15px 20px;
     border-bottom: 0;
     margin: 0;
+    border-radius: 3px;
     height: inherit !important;
 }
 .input_group button {

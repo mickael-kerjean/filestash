@@ -4,6 +4,8 @@
 @import url("./designsystem_button.css");
 @import url("./designsystem_icon.css");
 @import url("./designsystem_container.css");
+@import url("./designsystem_darkmode.css");
+@import url("./designsystem_utils.css");
 
 /* latin-ext */
 @font-face {
@@ -54,9 +56,6 @@
     --success: #63d9b1;
     --dark: #313538;
 }
-body.dark-mode {
-    --bg-color: #242424;
-}
 
 html {
     font-family: "Roboto", sans-serif;
@@ -70,13 +69,6 @@ body {
 body, html {
     height: 100%;
     margin: 0;
-}
-body.dark-mode{ background: var(--bg-color); }
-body.dark-mode .component_modal > div,
-body.dark-mode .component_page_admin{ --bg-color: #f2f3f5; }
-
-.center{
-    text-align: center;
 }
 
 a {
@@ -106,15 +98,6 @@ button::-moz-focus-inner {
 input, textarea, select {
     transition: border 0.2s;
     outline: none;
-}
-
-.no-select {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
 }
 
 button:focus,
@@ -182,17 +165,4 @@ select:-moz-focusring {
     scrollbar-highlight-color: #7d7e94;
     scrollbar-shadow-color: #2d2c4d;
     scrollbar-track-color: rgba(0, 0, 0, .1);
-}
-
-.pointer {
-    cursor: pointer;
-}
-
-.hidden{
-    position:absolute;
-    left:-10000px;
-    top:auto;
-    width:1px;
-    height:1px;
-    overflow:hidden;
 }

@@ -20,11 +20,16 @@ export class AjaxError extends Error {
 }
 
 export class ApplicationError extends Error {
-    constructor(message) {
+    constructor(message, debug) {
         super(message);
+        this.debugMsg = debug;
     }
 
     type() {
-        return "AppError";
+        return "ApplicationError";
+    }
+
+    debug() {
+        return this.debugMsg || "N/A";
     }
 }

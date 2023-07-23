@@ -2,24 +2,35 @@ button {
   border: none;
   margin: 0;
   padding: 6px;
-  width: 100%;
   display: inline-block;
   outline: none;
   cursor: pointer;
   font-size: inherit;
-  border-radius: 2px;
+  border-radius: 3px;
   color: inherit;
-  background: inherit; }
-  button.primary {
+  background: inherit;
+}
+button.primary {
     background: var(--primary);
-    color: white; }
-  button.emphasis {
+    color: white;
+}
+button.emphasis {
     background: var(--emphasis);
-    color: white; }
-  button.dark {
+    color: white;
+}
+button.dark {
     background: var(--dark);
-    color: white; }
+    color: white;
+}
+button.light {
+    background: #e2e2e2;
+    color: var(--dark);
+}
+button.large {
+    width: 100%;
+}
 
 .touch-no button.dark:hover, .touch-no button.emphasis:hover, .touch-no button.primary:hover {
   filter: brightness(95%);
-  transition: 0.2s ease all; }
+  transition: 0.2s ease all;
+}

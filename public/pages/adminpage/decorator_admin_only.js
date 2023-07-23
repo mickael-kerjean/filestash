@@ -13,7 +13,7 @@ export default function AdminOnly(ctrlWrapped) {
         effect(AdminSessionManager.isAdmin().pipe(
             rxjs.map((isAdmin) => isAdmin ? ctrlWrapped : ctrlLogin),
             rxjs.tap((ctrl) => ctrl(render)),
-            rxjs.catchError(ctrlError(render)),
+            rxjs.catchError((err) => ctrlError(err)(render)),
             rxjs.tap(() => loader$.unsubscribe()),
         ));
     }

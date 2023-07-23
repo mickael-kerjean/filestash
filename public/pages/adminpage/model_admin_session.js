@@ -11,7 +11,7 @@ class AdminSessionManager {
     isAdmin() {
         return rxjs.merge(
             this.subject,
-            rxjs.interval(60000).pipe(
+            rxjs.interval(1000).pipe(
                 rxjs.startWith(null),
                 rxjs.mergeMap(() => ajax({ url: "/admin/api/session", responseType: "json" })),
                 rxjs.map(({ responseJSON }) => responseJSON.result),

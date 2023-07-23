@@ -4,28 +4,28 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <base href="/">
-        <script type="module" src="./pages/boot/nyancat.js"></script>
-        <link rel="stylesheet" href="./assets/css/reset.css">
+        <script type="module" src="/pages/boot/nyancat.js"></script>
+        <link rel="stylesheet" href="/assets/css/reset.css">
         <title></title>
     </head>
-    <body>
+    <body class="todo">
         <div role="main" id="app">
             <data-nyancat></data-nyancat>
         </div>
-        <script type="module" src="./components/loader.js"></script>
+        <script type="module" src="/components/loader.js"></script>
         <script type="module">
-          import main from "./lib/skeleton/index.js";
+          import main from "/lib/skeleton/index.js";
           const routes = {
-              "/admin/backend": "pages/adminpage/ctrl_backend.js",
-              "/admin/settings": "pages/adminpage/ctrl_settings.js",
-              "/admin/logs": "pages/adminpage/ctrl_logger.js",
-              "/admin/about": "pages/adminpage/ctrl_about.js",
-              "/admin/": "pages/adminpage/ctrl_home.js",
+              "/admin/backend": "/pages/adminpage/ctrl_backend.js",
+              "/admin/settings": "/pages/adminpage/ctrl_settings.js",
+              "/admin/logs": "/pages/adminpage/ctrl_logger.js",
+              "/admin/about": "/pages/adminpage/ctrl_about.js",
+              "/admin/": "/pages/adminpage/ctrl_home.js",
 
-              "/logout": "pages/ctrl_logout.js",
+              "/logout": "/pages/ctrl_logout.js",
 
-              "/": "pages/home/index.js",
+              //"/": "/pages/home/index.js",
+              "": "/pages/ctrl_notfound.js",
           };
           main(document.getElementById("app"), routes, {
               loader: `<data-loader></data-loader>`

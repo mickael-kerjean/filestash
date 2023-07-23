@@ -14,13 +14,32 @@ export function navigate(href) {
     triggerPageChange();
 }
 
-export function currentRoute(r, defaultRoute) {
-    for (const prefix in r) {
-        if (window.location .pathname.startsWith(prefix)) {
-            return r[prefix];
+const trimPrefix = (value, prefix) => value.startsWith(prefix) ? value.slice(prefix.length) : value;
+
+export function currentRoute(r, notFoundRoute) {
+    const currentRoute = "/" + trimPrefix(
+        window.location.pathname,
+        document.head.querySelector("base")?.getAttribute("href") || "/"
+    );
+    for (const routeKey in r) {
+        const routeValue = r[routeKey];
+        let exact = true;
+        let modulePath = null;
+        if (typeof routeValue === "string") modulePath = routeValue;
+        else if (typeof routeValue === "object") {
+            exact = routeValue["exact"];
+            modulePath = routeValue["route"];
+        }
+        if (typeof exact !== "boolean") throw new Error("unknown route type", routeValue);
+        else if (typeof modulePath !== "string") throw new Error("unknown route type", routeValue);
+
+        if (exact && currentRoute === routeKey) {
+            return modulePath;
+        } else if (!exact && currentRoute.startsWith(routeKey)) {
+            return modulePath;
         }
     }
-    return r[defaultRoute] || null;
+    return r[notFoundRoute];
 }
 
 function _getHref ($node, $root) {
