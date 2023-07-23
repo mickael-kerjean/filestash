@@ -11,7 +11,6 @@ import "../../components/icon.js";
 
 export default function(ctrl) {
     return (render) => {
-        const isActive = (route) => location.pathname.endsWith(route) ? "active" : "";
         const $page = createElement(`
             <div class="component_page_admin">
                 <div class="component_menu_sidebar no-select">
@@ -23,10 +22,26 @@ export default function(ctrl) {
                     </a>
                     <h2>Admin console</h2>
                     <ul>
-                        <li><a href="/admin/backend" class="${isActive("/admin/backend")}" data-link>Backend</a></li>
-                        <li><a href="/admin/settings" class="${isActive("/admin/settings")}" data-link>Settings</a></li>
-                        <li><a href="/admin/logs" class="${isActive("/admin/logs")}" data-link>Logs</a></li>
-                        <li class="version"><a href="/admin/about" class="${isActive("/admin/about")}" data-link data-bind="version"></a></li>
+                        <li>
+                            <a href="/admin/backend" data-link>
+                                Backend
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/settings" data-link>
+                                Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/logs" data-link>
+                                Logs
+                            </a>
+                        </li>
+                        <li class="version">
+                            <a href="/admin/about" data-link data-bind="version">
+                                &nbsp;
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <div class="page_container scroll-y" data-bind="admin"></div>
@@ -53,6 +68,14 @@ export default function(ctrl) {
                      <path d="M330 202a81 79 0 00-162 0 81 79 0 000 158 81 79 0 000-158m81 79a81 79 0 1181 79H168" fill="none" stroke="currentColor" stroke-width="35px"/>
                  </svg>`),
             stateMutation(qs($page, `[data-bind="logo"]`), "innerHTML"),
+        ));
+
+        // feature: currently active menu link
+        effect(rxjs.of($page.querySelectorAll(".component_menu_sidebar li a")).pipe(
+            rxjs.mergeMap(($els) => $els),
+            rxjs.filter(($el) => location.pathname.endsWith($el.getAttribute("href"))),
+            rxjs.tap(($el) => $el.classList.add("active")),
+            rxjs.tap(($el) => $el.removeAttribute("href")),
         ));
 
         return (route) => $content.innerHTML = `<div>loading "${route}"</div>`;
