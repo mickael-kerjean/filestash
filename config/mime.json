@@ -82,7 +82,7 @@
 	"mng": "video/x-mng",
     "mobi": "application/x-mobipocket-ebook",
 	"mos": "image/x-aptus-mos",
-	"mov": "video/quicktime",
+	"mov": "video/mp4",
 	"mp3": "audio/mp3",
 	"mp4": "video/mp4",
 	"mpeg": "audio/mpeg",
