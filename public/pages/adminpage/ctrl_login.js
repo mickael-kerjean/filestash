@@ -32,9 +32,10 @@ export default function(render) {
         applyMutation(qs($form, "component-icon"), "setAttribute"),
         // STEP2: attempt to login
         rxjs.map(() => ({ password: qs($form, `[name="password"]`).value })),
-        AdminSessionManager.startSession(),
-        // STEP3: update the UI when we're not OK
-        rxjs.filter(({ ok }) => !ok),
+        AdminSessionManager.login(),
+        // STEP3: update the UI when authentication fails, happy path is handle at the middleware
+        //        level one layer above as the login ctrl has no idea what to show after login
+        rxjs.filter((ok) => !ok),
         rxjs.mapTo(["name", "arrow_right"]), applyMutation(qs($form, "component-icon"), "setAttribute"),
         rxjs.mapTo(""), stateMutation(qs($form, `[name="password"]`), "value"),
         rxjs.mapTo(["error"]), applyMutation(qs($form, ".input_group"), "classList", "add"),

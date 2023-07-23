@@ -1,39 +1,32 @@
 import rxjs, { ajax } from "../../lib/rxjs/index.js";
 
-window.rxjs = rxjs;
-
 class AdminSessionManager {
     constructor() {
-        this.session = new rxjs.BehaviorSubject({ isAdmin: false });
-        this.session$ = this.session.pipe(rxjs.shareReplay(1));
-
-        // ajax("/admin/api/session").subscribe(() => {
-        //     // TODO: setup session
-        // });
+        this.subject = new rxjs.Subject();
     }
 
-    state() {
+    isAdmin() {
         return rxjs.merge(
-            this.session$,
-            rxjs.interval(5000).pipe(
-                // rxjs.delay(1000),
-                // rxjs.mergeMap(() => ajax("/admin/api/session").pipe(
-                //     // todo: get the result and process it
-                //     rxjs.catchError(() => this.session),
-                // )),
+            this.subject,
+            rxjs.interval(3000).pipe(
+                rxjs.startWith(null),
+                rxjs.mergeMap(() => ajax("/admin/api/session")),
+                rxjs.map(({ response }) => response.result),
+                rxjs.distinctUntilChanged(),
             ),
-        ).pipe(
-            rxjs.mapTo({ isAdmin: true }), // TODO: remove this
-            rxjs.distinctUntilChanged(),
-            logger(),
-        )
+        );
     }
 
-    startSession() {
+    login() {
         return rxjs.pipe(
-            rxjs.delay(1000),
-            rxjs.mapTo({ ok: true }),
-            rxjs.tap(({ ok }) => ok && this.session.next({ isAdmin: true })),
+            rxjs.mergeMap((body) => ajax({
+                url: "/admin/api/session",
+                method: "POST", body,
+            }).pipe(
+                rxjs.mapTo(true),
+                rxjs.catchError(() => rxjs.of(false)),
+                rxjs.tap((ok) => ok && this.subject.next(ok))
+            )),
         );
     }
 }

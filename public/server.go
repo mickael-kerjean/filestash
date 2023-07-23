@@ -46,7 +46,7 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("%s HTTP %s %s\n", now, r.Method, r.URL.Path)
 	}()
 	fs = http.Dir(".")
-	if strings.HasSuffix(r.URL.Path, "/") {
+	if strings.HasSuffix(r.URL.Path, "/") && strings.HasPrefix(r.URL.Path, "/assets/") {
 		http.FileServer(fs).ServeHTTP(w, r)
 		return
 	}

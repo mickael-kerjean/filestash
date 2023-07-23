@@ -5,7 +5,13 @@ const rxjsModule = await import("./vendor/rxjs.min.js");
 const ajaxModule = await import("./vendor/rxjs-ajax.min.js")
 
 export default rxjsModule;
-export const ajax = ajaxModule.ajax;
+export const ajax = (opts) => {
+    if (typeof opts === "string") return ajaxModule.ajax({ url: opts, headers: { "X-Requested-With": "XmlHttpRequest" }});
+    if (typeof opts !== "object") throw new Error("unsupported call");
+    if (!opts.headers) opts.headers = {};
+    opts.headers["X-Requested-With"] = "XmlHttpRequest";
+    return ajaxModule.ajax(opts);
+}
 export function effect(obs) {
     const tmp = obs.subscribe(() => {}, (err) => console.error("effect", err));
     onDestroy(() => tmp.unsubscribe());
@@ -19,16 +25,16 @@ export function applyMutation($node, ...keys) {
         return getFn(next.bind ? next.bind(obj) : next, ...args);
     };
     const execute = getFn($node, ...keys);
-    return rxjs.tap((val) => execute(...val));
+    return rxjsModule.tap((val) => execute(...val));
 }
 
 export function stateMutation($node, attr) {
     if (!$node) throw new Error("dom not found for '" + selector + "'");
-    return rxjs.tap((val) => $node[attr] = val);
+    return rxjsModule.tap((val) => $node[attr] = val);
 }
 
 export function preventDefault() {
-    return rxjs.tap((e) => e.preventDefault());
+    return rxjsModule.tap((e) => e.preventDefault());
 }
 
 window.logger = function(prefix) {
