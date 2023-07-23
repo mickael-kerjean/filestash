@@ -1,5 +1,4 @@
 import rxjs, { ajax } from "../../lib/rxjs/index.js";
-import { API_SERVER } from "../../model/index.js";
 
 window.rxjs = rxjs;
 
@@ -8,7 +7,7 @@ class AdminSessionManager {
         this.session = new rxjs.BehaviorSubject({ isAdmin: false });
         this.session$ = this.session.pipe(rxjs.shareReplay(1));
 
-        // ajax(API_SERVER + "/admin/api/session").subscribe(() => {
+        // ajax("/admin/api/session").subscribe(() => {
         //     // TODO: setup session
         // });
     }
@@ -18,7 +17,7 @@ class AdminSessionManager {
             this.session$,
             rxjs.interval(5000).pipe(
                 // rxjs.delay(1000),
-                // rxjs.mergeMap(() => ajax(API_SERVER + "/admin/api/session").pipe(
+                // rxjs.mergeMap(() => ajax("/admin/api/session").pipe(
                 //     // todo: get the result and process it
                 //     rxjs.catchError(() => this.session),
                 // )),

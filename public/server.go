@@ -27,9 +27,8 @@ func main() {
 }
 
 func serveStatic(w http.ResponseWriter, r *http.Request) {
-	if strings.HasPrefix(r.URL.Path, "/proxy/") {
+	if strings.HasPrefix(r.URL.Path, "/admin/api/") || strings.HasPrefix(r.URL.Path, "/api/") || strings.HasPrefix(r.URL.Path, "/about") {
 		u, _ := url.Parse("http://127.0.0.1:8334")
-		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/proxy")
 		httputil.NewSingleHostReverseProxy(u).ServeHTTP(w, r)
 		return
 	}

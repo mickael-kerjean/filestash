@@ -30,3 +30,7 @@ export function stateMutation($node, attr) {
 export function preventDefault() {
     return rxjs.tap((e) => e.preventDefault());
 }
+
+window.logger = function(prefix) {
+    return rxjsModule.tap((e) => console.log(prefix || "logger: ", e));
+}

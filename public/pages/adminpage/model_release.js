@@ -1,8 +1,7 @@
 import rxjs, { ajax } from "../../lib/rxjs/index.js";
-import { API_SERVER } from "../../model/index.js";
 
 const release$ = ajax({
-    url: API_SERVER + "/about",
+    url: "/about",
     responseType: "text",
 }).pipe(rxjs.shareReplay(1));
 
