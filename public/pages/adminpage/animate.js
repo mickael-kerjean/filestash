@@ -2,7 +2,7 @@ import { transition } from "../../lib/animate/index.js";
 
 export default function($node) {
     return transition($node, {
-        timeoutEnter: 200,
+        timeoutEnter: 250,
         enter: slideYIn(3),
     });
 }

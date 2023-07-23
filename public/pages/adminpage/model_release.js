@@ -1,4 +1,5 @@
-import rxjs, { ajax } from "../../lib/rxjs/index.js";
+import rxjs from "../../lib/rxjs/index.js";
+import ajax from "../../lib/ajax/index.js";
 
 const release$ = ajax({
     url: "/about",
@@ -8,12 +9,12 @@ const release$ = ajax({
 class ReleaseImpl {
     get() {
         return release$.pipe(
-            rxjs.map((xhr) => {
+            rxjs.map(({ response, responseHeaders }) => {
                 const a = document.createElement("html")
-                a.innerHTML = xhr.response;
+                a.innerHTML = response;
                 return {
                     html: a.querySelector("table").outerHTML,
-                    version: xhr.responseHeaders["x-powered-by"].trim().replace(/^Filestash\/([v\.0-9]*).*$/, "$1"),
+                    version: responseHeaders["x-powered-by"].trim().replace(/^Filestash\/([v\.0-9]*).*$/, "$1"),
                 };
             }),
         );

@@ -5,13 +5,8 @@ const rxjsModule = await import("./vendor/rxjs.min.js");
 const ajaxModule = await import("./vendor/rxjs-ajax.min.js")
 
 export default rxjsModule;
-export const ajax = (opts) => {
-    if (typeof opts === "string") return ajaxModule.ajax({ url: opts, headers: { "X-Requested-With": "XmlHttpRequest" }});
-    if (typeof opts !== "object") throw new Error("unsupported call");
-    if (!opts.headers) opts.headers = {};
-    opts.headers["X-Requested-With"] = "XmlHttpRequest";
-    return ajaxModule.ajax(opts);
-}
+export const ajax = ajaxModule.ajax;
+
 export function effect(obs) {
     const tmp = obs.subscribe(() => {}, (err) => console.error("effect", err));
     onDestroy(() => tmp.unsubscribe());

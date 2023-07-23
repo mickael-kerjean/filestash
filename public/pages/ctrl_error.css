@@ -1,0 +1,46 @@
+.error-page {
+  width: 80%;
+  max-width: 600px;
+  margin: 50px auto 0 auto;
+  flex-direction: column;
+}
+.error-page h1 {
+    margin: 5px 0;
+    font-size: 3.1em;
+}
+.error-page h2 {
+    margin: 10px 0;
+    font-weight: normal;
+    opacity: 0.9;
+    font-weight: 100;
+    cursor: pointer;
+}
+.error-page code {
+    margin-top: 20px;
+    display: block;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 10px;
+    border: 2px dashed rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+.error-page p {
+    font-style: italic;
+}
+.error-page a {
+    border-bottom: 1px dashed;
+}
+
+.backnav {
+  font-weight: 100;
+  display: inline-block;
+  padding: 10px 5px;
+}
+.backnav .component_icon {
+    height: 23px;
+    margin-right: -3px;
+    vertical-align: middle;
+}
+
+.dark-mode .error-page, .dark-mode .backnav {
+    color: rgba(255, 255, 255, 0.8);
+}

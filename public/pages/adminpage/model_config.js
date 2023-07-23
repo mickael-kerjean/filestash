@@ -1,11 +1,9 @@
-import rxjs, { ajax } from "../../lib/rxjs/index.js";
+import rxjs from "../../lib/rxjs/index.js";
+
 
 class ConfigManager {
     constructor() {
-        this.isSaving$ = new rxjs.BehaviorSubject(true)
-        setInterval(() => {
-            this.isSaving$.next(!this.isSaving$.value)
-        }, 5000);
+        this.isSaving$ = new rxjs.BehaviorSubject(false);
     }
 
     isSaving() {
