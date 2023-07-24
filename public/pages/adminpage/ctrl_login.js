@@ -44,7 +44,7 @@ export default function(render) {
 
     // feature: nice transition
     render(transition($form, {
-        timeoutEnter: 300, enter: zoomIn(1.2),
+        timeoutEnter: 250, enter: zoomIn(1.2),
         timeoutLeave: 0,
     }));
 

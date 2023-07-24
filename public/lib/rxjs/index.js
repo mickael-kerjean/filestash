@@ -32,6 +32,6 @@ export function preventDefault() {
     return rxjsModule.tap((e) => e.preventDefault());
 }
 
-window.logger = function(prefix) {
+window.dbg = function(prefix) {
     return rxjsModule.tap((e) => console.log(prefix || "logger: ", e));
 }

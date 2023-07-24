@@ -1,13 +1,13 @@
-import { createElement, createRender } from "../../lib/skeleton/index.js";
+import { createElement, createRender, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect, stateMutation, applyMutation, preventDefault } from "../../lib/rxjs/index.js";
 import { qs } from "../../lib/dom/index.js";
 import { ApplicationError } from "../../lib/error/index.js";
-import { transition, opacityOut } from "../../lib/animate/index.js";
+import { transition, animate } from "../../lib/animate/index.js";
 
 import CSSLoader from "../../helpers/css.js";
 import ctrlError from "../ctrl_error.js";
 import WithShell from "./decorator_sidemenu.js";
-import { zoomIn } from "./animate.js";
+import { zoomIn, slideXOut, slideXIn, cssHideMenu } from "./animate.js";
 
 import "../../components/icon.js";
 
@@ -36,8 +36,6 @@ export default function(render) {
     ));
 };
 
-const cssHideMenu = `.component_menu_sidebar{transform: translateX(-300px)}`;
-
 function componentStep1(render) {
     const $page = createElement(`
         <div id="step1">
@@ -51,14 +49,13 @@ function componentStep1(render) {
                     </button>
                 </form>
             </div>
-            <style>${cssHideMenu}</style>
+            <style></style>
         </div>
     `);
     render(transition($page, {
-        timeoutEnter: 250, enter: zoomIn(1.2),
-        timeoutLeave: 0,
+        timeEnter: 250, enter: zoomIn(1.2),
+        timeLeave: 0,
     }));
-    render($page);
 
     // feature: form handling
     effect(rxjs.fromEvent(qs($page, "form"), "submit").pipe(
@@ -66,10 +63,14 @@ function componentStep1(render) {
         rxjs.mapTo(["name", "loading"]), applyMutation(qs($page, "component-icon"), "setAttribute"),
         rxjs.map(() => qs($page, "input").value),
         rxjs.delay(1000),
-        dbg("SUBMIT"),
-        animateOut($page),
-        dbg("after merge"),
+        rxjs.tap(() => animate($page, { time: 200, keyframes: slideXOut(-30) })),
+        rxjs.delay(200),
         rxjs.tap(() => stepper$.next(2)),
+    ));
+
+    // feature: hide side menu to remove distractions
+    effect(rxjs.of(cssHideMenu).pipe(
+        stateMutation(qs($page, "style"), "textContent"),
     ));
 
     // feature: autofocus
@@ -87,7 +88,7 @@ function componentStep2(render) {
             Summary
         </h4>
         ${deps.map((t) => t.label).join("")}
-        <style>${cssHideMenu}</style>
+        <style></style>
     </div>`);
     render($page);
 
@@ -97,39 +98,25 @@ function componentStep2(render) {
         rxjs.tap(() => stepper$.next(1)),
     ));
 
-    // feature: animate the screen
-    effect(rxjs.of([]).pipe(
-        rxjs.tap(() => qs($page, "h4").animate([
-            { transform: "translateX(30px)", opacity: "0"},
-            { transform: "translateX(0px)", opacity: "1"},
-        ], {
-            duration: 200,
-            fill: "forwards",
-        })),
+    // feature: reveal animation
+    effect(rxjs.of(cssHideMenu).pipe(
+        stateMutation(qs($page, "style"), "textContent"),
+        rxjs.tap(() => animate(qs($page, "h4"), { time: 200, keyframes: slideXIn(30) })),
         rxjs.delay(200),
-        applyMutation(qs($page, "style"), "remove"),
+        rxjs.mapTo([]), applyMutation(qs($page, "style"), "remove"),
         dbg("")
     ));
 
-
     // feature: opt in for telemetry
-    // onDestroy()
+    onDestroy(() => console.log("opt in for telemetry"));
 }
 
 const animateOut = ($el) => {
     return rxjs.pipe(
-        dbg("animate: "+ opacityOut()),
-        // rxjs.tap(() => transition($el, {
-        //     timeoutEnter: 500, enter: opacityOut(),
-        //     timeoutLeave: 0,
-        // })),
-        rxjs.tap(() => $el.animate([
+        rxjs.tap(() => animate($el, {time: 300, keyframes: [
             { transform: "translateX(0px)", opacity: "1"},
             { transform: "translateX(-30px)", opacity: "0"},
-        ], {
-            duration: 300,
-            fill: "forwards",
-        })),
+        ]})),
         rxjs.delay(200),
     );
 }
