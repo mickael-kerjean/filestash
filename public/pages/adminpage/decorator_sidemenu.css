@@ -5,7 +5,7 @@
     border-right: 2px solid var(--color);
     padding: 50px 0px 0px 40px;
     transition: transform 0.3s ease;
-    transition-delay: 0.7s;
+    transition-delay: 0s;
     flex-shrink: 0;
 }
 .component_menu_sidebar h2 {

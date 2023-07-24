@@ -1,0 +1,79 @@
+.component_setup {
+    transform: none !important;
+}
+.component_setup h4 {
+    user-select: none;
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: 500;
+    padding: 20px 0 0px 0;
+}
+.component_setup h4 .component_icon {
+    vertical-align: text-top;
+    width: 1.3em;
+    cursor: pointer;
+}
+.component_setup h4 .component_icon[alt="loading"] {
+    opacity: 0;
+}
+.component_setup #step1 p {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+.component_setup #step1 form {
+    max-width: 400px;
+}
+.component_setup #step1 form {
+    display: flex;
+    background: white;
+    border-radius: 2px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+.component_setup #step1 form input {
+    padding: 15px 20px;
+    border-bottom: 0;
+    margin: 0;
+    height: inherit !important;
+}
+.component_setup #step1 form button {
+    width: inherit;
+    padding: 0 10px;
+}
+.component_setup #step1 form button .component_icon {
+    height: 25px;
+}
+.component_setup #step2 .component_dependency_installed {
+    margin: 10px 0;
+    padding: 10px 10px;
+    border-radius: 3px;
+    color: rgba(0, 0, 0, 0.6);
+}
+.component_setup #step2 .component_dependency_installed.yes {
+    background: var(--success);
+}
+.component_setup #step2 .component_dependency_installed.no {
+    background: var(--primary);
+}
+.component_setup #step2 .component_dependency_installed.no.severe {
+    background: var(--error);
+}
+.component_setup #step2 .component_dependency_installed.no.severe span {
+    font-weight: bold;
+    font-style: italic;
+}
+.component_setup .stepper-form-appear, .component_setup .stepper-form-enter {
+    transition-delay: 0.3s;
+    transform: scale(1.02);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+.component_setup .stepper-form-appear.stepper-form-appear-active,
+.component_setup .stepper-form-appear.stepper-form-enter-active,
+.component_setup .stepper-form-enter.stepper-form-appear-active,
+.component_setup .stepper-form-enter.stepper-form-enter-active {
+    opacity: 1;
+    transform: scale(1);
+}
+.component_setup .component_icon {
+    width: 30px;
+}
