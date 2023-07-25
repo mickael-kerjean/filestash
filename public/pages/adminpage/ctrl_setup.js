@@ -5,13 +5,15 @@ import { ApplicationError } from "../../lib/error/index.js";
 import { transition, animate } from "../../lib/animate/index.js";
 
 import CSSLoader from "../../helpers/css.js";
+import modal from "../../helpers/modal.js";
+
 import ctrlError from "../ctrl_error.js";
 import WithShell from "./decorator_sidemenu.js";
 import { zoomIn, slideXOut, slideXIn, cssHideMenu } from "./animate.js";
 
 import "../../components/icon.js";
 
-const stepper$ = new rxjs.BehaviorSubject(1);
+const stepper$ = new rxjs.BehaviorSubject(2);
 
 export default function(render) {
     const $page = createElement(`
@@ -23,7 +25,6 @@ export default function(render) {
     render($page);
 
     effect(stepper$.pipe(
-        dbg("CHANGE"),
         rxjs.map((step) => {
             switch(step) {
             case 1: return WithShell(componentStep1);
@@ -94,7 +95,6 @@ function componentStep2(render) {
 
     // feature: navigate previous step
     effect(rxjs.fromEvent(qs($page, `[data-bind="previous"]`), "click").pipe(
-        dbg("click"),
         rxjs.tap(() => stepper$.next(1)),
     ));
 
@@ -104,11 +104,29 @@ function componentStep2(render) {
         rxjs.tap(() => animate(qs($page, "h4"), { time: 200, keyframes: slideXIn(30) })),
         rxjs.delay(200),
         rxjs.mapTo([]), applyMutation(qs($page, "style"), "remove"),
-        dbg("")
     ));
 
-    // feature: opt in for telemetry
-    onDestroy(() => console.log("opt in for telemetry"));
+    // feature: telemetry popup
+    onDestroy(() => {
+        const $node = createElement(`
+          <div>
+            <p style="text-align: justify;">Help making this software better by sending crash reports and anonymous usage statistics</p>
+            <form style="font-size: 0.9em; margin-top: 10px;">
+              <label>
+                <div class="component_checkbox">
+                  <input type="checkbox">
+                  <span class="indicator"></span>
+                </div>I accept but the data is not to be share with any third party
+              </label>
+            </form>
+          </div>
+        `);
+        return new Promise((done) => {
+            modal.alert($node, {
+                onQuit: done,
+            });
+        });
+    });
 }
 
 const animateOut = ($el) => {

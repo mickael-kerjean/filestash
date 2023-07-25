@@ -1,0 +1,56 @@
+.component_modal{
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #f2f3f5f0;
+    z-index: 1000;
+}
+.component_modal > div{
+    box-shadow: 1px 2px 20px rgba(0, 0, 0, 0.1);
+    background: white;
+    width: 80%;
+    max-width: 310px;
+    padding: 20px 20px 0 20px;
+    border-radius: 2px;
+}
+
+.dark-mode .component_modal{
+    background: var(--bg-color);
+}
+
+.component_popup .popup--content {
+  font-size: 1.1em;
+  margin: 0;
+}
+.component_popup .popup--content p {
+    margin: 0;
+}
+.component_popup .popup--content .modal-error-message {
+    font-size: 15px;
+}
+.component_popup .buttons {
+  margin: 15px -20px 0 -20px;
+  display: flex;
+}
+.component_popup .buttons > div {
+    display: flex;
+    width: 100%;
+}
+.component_popup .buttons [type="submit"] {
+    border-radius: 10px 0 0;
+}
+.component_popup .buttons > button {
+    width: 50%;
+    margin-left: auto;
+}
+.component_popup .buttons button {
+    text-transform: uppercase;
+}
+.component_popup .modal-error-message {
+    color: var(--error);
+}
+.component_popup .center {
+    text-align: center;
+}
