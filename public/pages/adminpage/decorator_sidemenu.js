@@ -1,6 +1,6 @@
 import { createElement } from "../../../lib/skeleton/index.js";
-import rxjs, { effect, stateMutation } from "../../../lib/rxjs/index.js";
-import { qs } from "../../lib/dom/index.js";
+import rxjs, { effect, stateMutation } from "../../../lib/rx.js";
+import { qs } from "../../lib/dom.js";
 
 import CSSLoader from "../../helpers/css.js";
 

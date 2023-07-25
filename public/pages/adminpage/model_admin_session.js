@@ -1,5 +1,5 @@
-import rxjs from "../../lib/rxjs/index.js";
-import ajax from "../../lib/ajax/index.js";
+import rxjs from "../../lib/rx.js";
+import ajax from "../../lib/ajax.js";
 
 window.ajax = ajax;
 

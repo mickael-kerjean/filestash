@@ -1,9 +1,9 @@
 import { createElement } from "../lib/skeleton/index.js";
-import rxjs, { effect, applyMutation } from "../lib/rxjs/index.js";
-import { qs } from "../lib/dom/index.js";
-import t from "../lib/locales/index.js";
+import rxjs, { effect, applyMutation } from "../lib/rx.js";
+import { qs } from "../lib/dom.js";
+import t from "../lib/locales.js";
 
-import { AjaxError, ApplicationError } from "../lib/error/index.js";
+import { AjaxError, ApplicationError } from "../lib/error.js";
 import CSSLoader from "../helpers/css.js";
 
 import "../../components/icon.js";

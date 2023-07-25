@@ -1,6 +1,6 @@
 import { createElement, navigate } from "../lib/skeleton/index.js";
-import rxjs, { effect } from "../lib/rxjs/index.js";
-import ajax from "../lib/ajax/index.js";
+import rxjs, { effect } from "../lib/rx.js";
+import ajax from "../lib/ajax.js";
 
 import ctrlError from "./ctrl_error.js";
 import "../components/icon.js";

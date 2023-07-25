@@ -1,8 +1,8 @@
 import { createElement, createRender, onDestroy } from "../../lib/skeleton/index.js";
-import rxjs, { effect, stateMutation, applyMutation, preventDefault } from "../../lib/rxjs/index.js";
-import { qs } from "../../lib/dom/index.js";
-import { ApplicationError } from "../../lib/error/index.js";
-import { transition, animate } from "../../lib/animate/index.js";
+import rxjs, { effect, stateMutation, applyMutation, preventDefault } from "../../lib/rx.js";
+import { qs } from "../../lib/dom.js";
+import { ApplicationError } from "../../lib/error.js";
+import { transition, animate } from "../../lib/animate.js";
 
 import CSSLoader from "../../helpers/css.js";
 import modal from "../../helpers/modal.js";

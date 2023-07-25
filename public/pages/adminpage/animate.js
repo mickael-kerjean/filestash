@@ -1,4 +1,4 @@
-import { transition } from "../../lib/animate/index.js";
+import { transition } from "../../lib/animate.js";
 
 export default function($node) {
     return transition($node, {

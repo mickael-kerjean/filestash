@@ -1,5 +1,5 @@
-import { onDestroy, createElement } from "../skeleton/index.js";
-import rxjs from "../rxjs/index.js";
+import { onDestroy, createElement } from "./skeleton/index.js";
+import rxjs from "./rx.js";
 
 export function transition($node, opts = {}) {
     const {

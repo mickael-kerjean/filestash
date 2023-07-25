@@ -1,5 +1,5 @@
 import { createElement } from "../../lib/skeleton/index.js";
-import { effect } from "../../lib/rxjs/index.js";
+import { effect } from "../../lib/rx.js";
 
 import transition from "./animate.js";
 import AdminOnly from "./decorator_admin_only.js";

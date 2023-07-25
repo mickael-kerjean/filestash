@@ -1,7 +1,7 @@
 import { createElement } from "../lib/skeleton/index.js";
-import rxjs, { applyMutation } from "../lib/rxjs/index.js";
-import { animate } from "../lib/animate/index.js";
-import { qs } from "../lib/dom/index.js";
+import rxjs, { applyMutation } from "../lib/rx.js";
+import { animate } from "../lib/animate.js";
+import { qs } from "../lib/dom.js";
 
 import CSSLoader from "../../helpers/css.js";
 // http://127.0.0.1:8000/admin/setup

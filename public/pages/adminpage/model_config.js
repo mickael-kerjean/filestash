@@ -1,4 +1,4 @@
-import rxjs from "../../lib/rxjs/index.js";
+import rxjs from "../../lib/rx.js";
 
 
 class ConfigManager {

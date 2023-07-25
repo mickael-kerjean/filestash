@@ -1,5 +1,5 @@
 import { createElement, onDestroy } from "../../lib/skeleton/index.js";
-import rxjs, { effect } from "../../lib/rxjs/index.js";
+import rxjs, { effect } from "../../lib/rx.js";
 
 import ctrlLogin from "./ctrl_login.js";
 import ctrlError from "../ctrl_error.js";

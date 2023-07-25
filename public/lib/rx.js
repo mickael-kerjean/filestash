@@ -1,4 +1,4 @@
-import { onDestroy } from "../skeleton/index.js";
+import { onDestroy } from "./skeleton/index.js";
 
 // https://github.com/ReactiveX/rxjs/issues/4416#issuecomment-620847759
 const rxjsModule = await import("./vendor/rxjs.min.js");

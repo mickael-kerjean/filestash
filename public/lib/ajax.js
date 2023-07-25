@@ -1,5 +1,5 @@
-import rxjs, { ajax } from "../rxjs/index.js";
-import { AjaxError } from "../error/index.js";
+import rxjs, { ajax } from "./rx.js";
+import { AjaxError } from "./error.js";
 
 export default function(opts) {
     if (typeof opts === "string") opts = { url: opts };
