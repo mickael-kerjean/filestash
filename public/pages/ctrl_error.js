@@ -11,7 +11,6 @@ import "../../components/icon.js";
 export default function(err) {
     return function(render) {
         const [msg, trace] = processError(err);
-        // const [msg, trace] = ["Hooo", "trace"];
         const $page = createElement(`
             <div>
                 <style>${css}</style>

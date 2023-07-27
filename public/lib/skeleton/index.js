@@ -7,15 +7,13 @@ export { onDestroy } from "./lifecycle.js";
 let pageLoader;
 
 export default async function($root, routes, opts = {}) {
-    const { spinner = "loading ...", spinnerTime = 200, defaultRoute = "" } = opts;
-
     initDOM($root);
     initRouter($root);
 
     window.addEventListener("pagechange", async () => {
-        const route = currentRoute(routes, defaultRoute);
+        const route = currentRoute(routes);
         const [ctrl] = await Promise.all([
-            load(route),
+            load(route, opts),
             $root.cleanup(),
         ]);
         if (typeof ctrl !== "function") return $root.replaceChildren(createElement(`<div><h1>Error</h1><p>Unknown route for ${route}`));
@@ -23,7 +21,8 @@ export default async function($root, routes, opts = {}) {
     });
 }
 
-async function load(route) {
+async function load(route, opts) {
+    const { spinner = "loading ...", spinnerTime = 200 } = opts;
     let ctrl;
     if (typeof route === "function") {
         ctrl = route;

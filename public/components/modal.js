@@ -40,7 +40,7 @@ class Modal extends HTMLElement {
 
         // feature: setup the modal body
         effect(rxjs.of([$node]).pipe(
-            applyxMutation(qs($modal, `[data-bind="body"]`), "appendChild"),
+            applyMutation(qs($modal, `[data-bind="body"]`), "appendChild"),
         ));
 
         // feature: closing the modal

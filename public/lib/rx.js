@@ -1,10 +1,10 @@
 import { onDestroy } from "./skeleton/index.js";
 
 // https://github.com/ReactiveX/rxjs/issues/4416#issuecomment-620847759
-const rxjsModule = await import("./vendor/rxjs.min.js");
+const rxjs = await import("./vendor/rxjs.min.js");
 const ajaxModule = await import("./vendor/rxjs-ajax.min.js")
 
-export default rxjsModule;
+export default rxjs;
 export const ajax = ajaxModule.ajax;
 
 export function effect(obs) {
@@ -20,18 +20,18 @@ export function applyMutation($node, ...keys) {
         return getFn(next.bind ? next.bind(obj) : next, ...args);
     };
     const execute = getFn($node, ...keys);
-    return rxjsModule.tap((val) => execute(...val));
+    return rxjs.tap((val) => execute(...val));
 }
 
 export function stateMutation($node, attr) {
     if (!$node) throw new Error("dom not found for '" + selector + "'");
-    return rxjsModule.tap((val) => $node[attr] = val);
+    return rxjs.tap((val) => $node[attr] = val);
 }
 
 export function preventDefault() {
-    return rxjsModule.tap((e) => e.preventDefault());
+    return rxjs.tap((e) => e.preventDefault());
 }
 
 window.dbg = function(prefix) {
-    return rxjsModule.tap((e) => console.log(prefix || "logger: ", e));
+    return rxjs.tap((e) => console.log(prefix || "logger: ", e));
 }
