@@ -10,17 +10,21 @@ import transition from "./animate.js";
 
 export default AdminOnly(WithShell(function(render) {
     const $container = createElement(`
-        <div className="component_settingspage sticky">
-            <form>
-                SETTINGS
-            </form>
+        <div class="component_settingspage sticky">
+            <form data-bind="form"></form>
         </div>
     `);
     render(transition($container));
 
-    const config$ = Config.get();
+    const config$ = Config.get().pipe(
+        rxjs.map((res) => {
+            delete res.constant;
+            delete res.middleware;
+            return res;
+        }),
+    )
     const form$ = config$.pipe(
-        rxjs.mergeMap(() => qsa($container, "form [name]")),
+        rxjs.mergeMap(() => qsa($container, `form[data-bind="form"] [name]`)),
         rxjs.mergeMap(($el) => rxjs.fromEvent($el, "input")),
         rxjs.map((e) => ({
             name: e.target.getAttribute("name"),
@@ -35,7 +39,7 @@ export default AdminOnly(WithShell(function(render) {
     effect(config$.pipe(
         rxjs.map((formSpec) => createForm(formSpec, formTmpl)),
         rxjs.map(($form) => [$form]),
-        applyMutation(qs($container, "form"), "appendChild"),
+        applyMutation(qs($container, `form[data-bind="form"]`), "appendChild"),
     ));
 
     effect(form$.pipe(
@@ -48,36 +52,40 @@ export default AdminOnly(WithShell(function(render) {
 
 const formTmpl = {
     renderNode: ({ label, level }) => {
-        let $chunk;
-        if (level === 0) $chunk = createElement(`
-            <label className="no-select input_type_TODO">
+        if (level === 0) return createElement(`
+            <div class="formbuilder">
+                <h2 class="no-select">${label}</h2>
+                <div data-bind="children"></div>
+            </div>
+        `);
+        return createElement(`
+            <fieldset>
+                <legend class="no-select">${label}</legend>
+                <div data-bind="children"></div>
+            </fieldset>
+        `);
+    },
+    renderLeaf: ({ label, type, description, path = [] }) => {
+        return createElement(`
+            <label class="no-select input_type_TODO">
                 <div>
                     <span>
                         ${label}:
                     </span>
-                    <div style={{ width: "100%" }}>
+                    <div style="width:100%">
                         <div data-bind="children"></div>
                     </div>
                 </div>
                 <div>
                     <span class="nothing"></span>
                     <div style="width:100%">
-                        <div className="description">${label}</div>
+                        <div class="description">${description}</div>
                     </div>
                 </div>
             </label>
         `);
-        else $chunk = createElement(`
-            <div>
-                <fieldset>
-                    <legend className="no-select">${label}</legend>
-                    <div data-bind="children"></div>
-                </fieldset>
-            </div>
-        `);
-        return $chunk;
     },
-    renderLeaf: ({ label, type, description, path = [] }) => {
+    renderInput: ({ label, type, description, path = [] }) => {
         return createElement(`<input type="text" name=${path.join(".")} />`);
     },
 };

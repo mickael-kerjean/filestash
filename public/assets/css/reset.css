@@ -158,6 +158,9 @@ select:-moz-focusring {
 }
 
 .scroll-y {
+    flex: 1;
+    overflow-y: scroll;
+    overflow-x: hidden;
     scrollbar-3dlight-color: #7d7e94;
     scrollbar-arrow-color: #c1c1d1;
     scrollbar-darkshadow-color: #2d2c4d;

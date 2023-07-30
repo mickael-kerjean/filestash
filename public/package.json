@@ -16,7 +16,7 @@
   "jest": {
     "verbose": true,
     "setupFiles": [
-      "<rootDir>/common/skeleton/test/jest.setup.js"
+      "<rootDir>/lib/skeleton/test/jest.setup.js"
     ],
     "coveragePathIgnorePatterns": [
       "test",

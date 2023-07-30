@@ -10,53 +10,60 @@ class ConfigManager {
     }
 
     get() {
-        return rxjs.of({
-            "general": {
-                "name": {
-                    "label": "name",
-                    "type": "text",
-                    "description": "Name has shown in the UI",
-                    "placeholder": "Default: \"Filestash\"",
-                    "readonly": false,
-                    "default": "Filestash",
-                    "value": null,
-                    "required": false
-                },
-                "port": {
-                    "label": "port",
-                    "type": "number",
-                    "description": "Port on which the application is available.",
-                    "placeholder": "Default: 8334",
-                    "readonly": false,
-                    "default": 8334,
-                    "value": null,
-                    "required": false
-                },
-            },
-            "features": {
-                "api": {
-                    "enable": {
-                        "label": "enable",
-                        "type": "boolean",
-                        "description": "Enable/Disable the API",
-                        "readonly": false,
-                        "default": true,
-                        "value": null,
-                        "required": false
-                    },
-                    "api_key": {
-                        "label": "api_key",
-                        "type": "long_text",
-                        "description": "Format: '[mandatory:key] [optional:hostname]'. The hostname is used to enabled CORS for your application.",
-                        "placeholder": "foobar *.filestash.app",
-                        "readonly": false,
-                        "default": null,
-                        "value": null,
-                        "required": false
-                    }
-                },
-            },
-        }).pipe(rxjs.share());
+        return ajax({
+            url: "/admin/api/config",
+            withCredentials: true,
+            method: "GET", responseType: "json",
+        }).pipe(
+            rxjs.map((res) => res.responseJSON.result),
+        );
+        // return rxjs.of({
+        //     "general": {
+        //         "name": {
+        //             "label": "name",
+        //             "type": "text",
+        //             "description": "Name has shown in the UI",
+        //             "placeholder": "Default: \"Filestash\"",
+        //             "readonly": false,
+        //             "default": "Filestash",
+        //             "value": null,
+        //             "required": false
+        //         },
+        //         "port": {
+        //             "label": "port",
+        //             "type": "number",
+        //             "description": "Port on which the application is available.",
+        //             "placeholder": "Default: 8334",
+        //             "readonly": false,
+        //             "default": 8334,
+        //             "value": null,
+        //             "required": false
+        //         },
+        //     },
+        //     "features": {
+        //         "api": {
+        //             "enable": {
+        //                 "label": "enable",
+        //                 "type": "boolean",
+        //                 "description": "Enable/Disable the API",
+        //                 "readonly": false,
+        //                 "default": true,
+        //                 "value": null,
+        //                 "required": false
+        //             },
+        //             "api_key": {
+        //                 "label": "api_key",
+        //                 "type": "long_text",
+        //                 "description": "Format: '[mandatory:key] [optional:hostname]'. The hostname is used to enabled CORS for your application.",
+        //                 "placeholder": "foobar *.filestash.app",
+        //                 "readonly": false,
+        //                 "default": null,
+        //                 "value": null,
+        //                 "required": false
+        //             }
+        //         },
+        //     },
+        // }).pipe(rxjs.share());
     }
 
     save() {

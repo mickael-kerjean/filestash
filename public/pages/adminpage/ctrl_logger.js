@@ -24,6 +24,7 @@ function Page(render) {
 export default AdminOnly(WithShell(Page));
 
 function componentLog(render) {
+
     render(createElement(`<div>log stuff</div>`));
 }
 

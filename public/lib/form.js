@@ -1,5 +1,4 @@
 import { createElement } from "./skeleton/index.js";
-import { qs } from "./dom.js";
 
 export function mutateForm(formSpec, formState) {
     Object.keys(formState).forEach((inputName) => {
@@ -13,27 +12,34 @@ export function mutateForm(formSpec, formState) {
     return formSpec;
 }
 
-export function createForm(node, { renderNode, renderLeaf, path = [], level = 0 }) {
+export function createForm(node, { renderNode, renderLeaf, renderInput, path = [], level = 0 }) {
     // CASE 0: invalid form spec
     if (typeof node !== "object") {
         return createElement(`<div>ERR: node[${typeof node}] path[${path.join(".")}] level[${level}]</div>`);
     }
-    // CASE 1: leaf node = the input elements who have many possible types
-    else if (typeof node["type"] === "string") {
-        return renderLeaf({ ...node, path: path });
-    }
-    // CASE 2: non leaf node
-    else {
-        const $container = document.createElement("div");
-        Object.keys(node).forEach((key) => {
+    const $container = window.document.createElement("div");
+    Object.keys(node).forEach((key) => {
+        // CASE 0: invalid form spec
+        if (typeof node[key] !== "object") {
+            $container.appendChild(createElement(`<div>ERR: node[${typeof node[key]}] path[${path.join(".")}] level[${level}]</div>`));
+        }
+        // CASE 1: leaf node = the input elements who have many possible types
+        else if (typeof node[key]["type"] === "string") {
+            const $leaf = renderLeaf({ ...node[key], path, label: key });
+            const $target = $leaf.querySelector(`[data-bind="children"]`) || $leaf;
+            $target.appendChild(renderInput({ ...node, path }));
+            $container.appendChild($target);
+        }
+        // CASE 2: non leaf node
+        else {
             const $chunk = renderNode({ level, label: key });
-            const $children = qs($chunk, `[data-bind="children"]`);
+            const $children = $chunk.querySelector(`[data-bind="children"]`) || $chunk;
             $children.appendChild(createForm(node[key], {
-                path: path.concat(key), level: level+1,
-                renderNode, renderLeaf,
+                path: path.concat(key), level: level + 1, label: key,
+                renderNode, renderLeaf, renderInput,
             }));
             $container.appendChild($chunk);
-        });
-        return $container;
-    }
+        }
+    });
+    return $container;
 }
