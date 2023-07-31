@@ -93,6 +93,8 @@
         min-width: 115px;
     }
 }
+
+/* form builder */
 .component_page_admin .page_container label > div .component_checkbox .indicator {
     top: 6px;
 }
@@ -129,25 +131,34 @@
     padding-bottom: 5px;
     margin-top: 15px;
 }
-.component_page_admin .formbuilder .component_input, .component_page_admin .formbuilder .component_textarea, .component_page_admin .formbuilder .component_select {
+.component_page_admin .component_input,
+.component_page_admin .component_textarea,
+.component_page_admin .component_select {
     background: rgba(0, 0, 0, 0.05);
     border: 2px solid rgba(0, 0, 0, 0.05);
     border-radius: 3px;
     padding-left: 5px;
 }
-.component_page_admin .formbuilder .component_input[readonly], .component_page_admin .formbuilder .component_textarea[readonly], .component_page_admin .formbuilder .component_select[readonly] {
+.component_page_admin .component_input[readonly],
+.component_page_admin .component_textarea[readonly],
+.component_page_admin .component_select[readonly] {
     background: var(--dark);
     color: var(--light);
 }
-.component_page_admin .formbuilder .component_input:not([readonly]):hover, .component_page_admin .formbuilder .component_input:not([readonly]):focus, .component_page_admin .formbuilder .component_textarea:not([readonly]):hover, .component_page_admin .formbuilder .component_textarea:not([readonly]):focus, .component_page_admin .formbuilder .component_select:not([readonly]):hover, .component_page_admin .formbuilder .component_select:not([readonly]):focus {
+.component_page_admin .component_input:not([readonly]):hover,
+.component_page_admin .component_input:not([readonly]):focus,
+.component_page_admin .component_textarea:not([readonly]):hover,
+.component_page_admin .component_textarea:not([readonly]):focus,
+.component_page_admin .component_select:not([readonly]):hover,
+.component_page_admin .component_select:not([readonly]):focus {
     background: rgba(0, 0, 0, 0.07);
 }
-.component_page_admin .formbuilder .formbuilder_password .component_input {
+.component_page_admin .formbuilder_password .component_input {
     border-right: none;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 }
-.component_page_admin .formbuilder .formbuilder_password img.component_icon {
+.component_page_admin .formbuilder_password img.component_icon {
     border: 2px solid rgba(0, 0, 0, 0.05);
     height: 18px;
     border-left: none;
@@ -155,4 +166,56 @@
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
     padding-right: 5px;
+}
+.component_page_admin form .description {
+  margin-top: -2px;
+  margin-bottom: 10px;
+  opacity: 0.6;
+  font-size: 0.9em;
+  line-height: 1em;
+  text-align: justify;
+}
+.component_page_admin form input::placeholder,
+.component_page_admin form textarea::placeholder {
+    opacity: 0.6;
+}
+.component_page_admin form label.input_type_hidden {
+    display: none;
+}
+.component_page_admin form fieldset legend {
+    text-transform: uppercase;
+    font-weight: 200;
+    font-size: 1em;
+    padding: 0 15px;
+}
+.component_page_admin form img {
+    max-height: 110px;
+    border: 8px solid rgba(0, 0, 0, 0);
+}
+.component_page_admin form .fileupload-image img {
+    height: 150px;
+    width: 100%;
+    object-fit: contain;
+    background: var(--bg-color);
+    border-radius: 2px;
+    box-sizing: border-box;
+}
+.component_page_admin form .fileupload-image object {
+    background: var(--bg-color);
+    height: 300px;
+    width: 100%;
+}
+.component_page_admin form .formbuilder_password {
+    display: flex;
+}
+.component_page_admin form .formbuilder_password:focus-within img.component_icon {
+    border-color: var(--emphasis-primary);
+}
+.component_page_admin form .formbuilder_password img.component_icon {
+    height: 20px;
+    border: none;
+    cursor: pointer;
+    padding: 5px 5px;
+    border-bottom: 2px solid rgba(70, 99, 114, 0.1);
+    transition: border-color 0.2s ease-out;
 }
