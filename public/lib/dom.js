@@ -9,3 +9,9 @@ export function qsa($node, selector) {
     if (!$node) throw new Error("undefined node");
     return $node.querySelectorAll(selector);
 }
+
+export function safe(str) {
+    const $div = window.document.createElement("div");
+	$div.textContent = str;
+	return $div.innerHTML;
+}

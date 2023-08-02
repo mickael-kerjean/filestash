@@ -20,11 +20,6 @@
     border-color: var(--emphasis-primary);
 }
 
-.component_input:disabled, .component_select:disabled {
-    background: rgba(0,0,0,0.2)!important;
-    font-style: italic;
-}
-
 input.component_input[readonly], textarea.component_textarea[readonly] {
     border-bottom-style: dashed;
     cursor: pointer;

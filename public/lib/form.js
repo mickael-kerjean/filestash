@@ -19,7 +19,6 @@ async function createFormNodes(node, { renderNode, renderLeaf, renderInput, path
     }
     const $list = [];
     for (const key of Object.keys(node)) {
-
         if (typeof node[key] !== "object") {
             $list.push(createElement(`<div>ERR: node[${typeof node[key]}] path[${path.join(".")}] level[${level}]</div>`));
         }
@@ -38,14 +37,12 @@ async function createFormNodes(node, { renderNode, renderLeaf, renderInput, path
             const $chunk = renderNode({ level, label: key });
             const $children = $chunk.querySelector(`[data-bind="children"]`) || $chunk;
             $children.removeAttribute("data-bind");
-            const $nodes = await createForm(node[key], {
+            const $nested = await createForm(node[key], {
                 path: path.concat(key), level: level + 1, label: key,
                 renderNode, renderLeaf, renderInput,
             });
-            $nodes.childNodes.forEach(($node) => {
-                $children.appendChild($node);
-            });
-            $list.push($chunk);
+            $children.appendChild($nested);
+            $list.push($children);
         }
     }
     return $list;
