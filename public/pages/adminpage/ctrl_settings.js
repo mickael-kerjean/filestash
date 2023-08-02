@@ -39,8 +39,7 @@ export default AdminOnly(WithShell(function(render) {
     );
 
     effect(config$.pipe(
-        rxjs.map((formSpec) => createForm(formSpec, formTmpl({ autocomplete: false }))),
-        rxjs.mergeMap((promise) => rxjs.from(promise)),
+        rxjs.mergeMap((formSpec) => createForm(formSpec, formTmpl(false))),
         rxjs.map(($form) => [$form]),
         applyMutation(qs($container, `[data-bind="form"]`), "appendChild"),
     ));

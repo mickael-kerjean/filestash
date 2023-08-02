@@ -1,0 +1,103 @@
+.component_page_connection_form .box {
+    margin-bottom: 7px;
+    border-radius: 3px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    background: white;
+}
+.component_page_connection_form div.buttons {
+    display: flex;
+    margin: 0px 0px 15px 0px;
+    padding: 5px;
+    overflow-x: auto;
+}
+.component_page_connection_form div.buttons button {
+    min-width: 110px;
+    padding: 8px 5px;
+    box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
+}
+.component_page_connection_form div.buttons button:not(.active):hover {
+    transition: background 0.2s ease;
+    background: rgba(0, 0, 0, 0.03);
+}
+.component_page_connection_form div.buttons button.active {
+    transition: box-shadow 0.2s;
+    box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.2);
+}
+.component_page_connection_form .formBody form .formbuilder {
+    animation-name: PageConnectionFormBody;
+    opacity: 0;
+    animation-duration: 0.25s;
+    animation-fill-mode: forwards;
+}
+.component_page_connection_form form {
+    padding-top: 5px;
+}
+.component_page_connection_form form label {
+    font-style: italic;
+    font-size: 0.9em;
+    display: block;
+    text-transform: capitalize;
+}
+.component_page_connection_form form .advanced_form {
+    max-height: 156px;
+    overflow-y: auto;
+    margin-top: 5px;
+    padding-right: 10px;
+}
+.component_page_connection_form form button.emphasis {
+    margin-top: 10px;
+    color: white;
+    text-transform: uppercase;
+}
+.component_page_connection_form form .third-party {
+    text-align: center;
+}
+.component_page_connection_form form .third-party img {
+    height: 115px;
+    margin: 0;
+}
+.component_page_connection_form form .component_checkbox .indicator {
+    top: 2px;
+}
+.component_page_connection_form form input.component_input[name="oauth2"] {
+    display: none;
+}
+.component_page_connection_form .component_loader {
+    margin: 45px 0;
+}
+
+.component_page_connection_form.form-appear {
+    opacity: 0;
+    transform: translateX(5px);
+}
+
+.component_page_connection_form.form-appear.form-appear-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: transform 0.25s ease-out, opacity 0.5s ease-out;
+}
+
+.scroll-x {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+}
+.scroll-x::-webkit-scrollbar {
+    height: 4px;
+}
+.scroll-x::-webkit-scrollbar-track {
+    background: white;
+}
+.scroll-x::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    -ms-border-radius: 2px;
+    -o-border-radius: 2px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode div.buttons button.active {
+    background: var(--bg-color);
+    color: var(--super-light);
+}
