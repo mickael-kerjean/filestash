@@ -2,6 +2,8 @@ import { createElement, createRender } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 
+import CSSLoader from "../../helpers/css.js";
+
 import ctrlForm from "./ctrl_form.js";
 import config$ from "./model_config.js";
 
@@ -12,10 +14,11 @@ export default function(render) {
     const $page = createElement(`
         <div class="component_page_connect">
             <div data-bind="component_forkme"></div>
-            <div data-bind="centerthis" class="component_container" style="max-width:565px;">
+            <div data-bind="centerthis" class="component_page_connection_form component_container" style="max-width:565px;">
                 <div data-bind="component_form"></div>
             </div>
             <div data-bind="component_poweredby"></div>
+            <style>${css}</style>
         </div>
     `);
     render($page);
@@ -54,3 +57,5 @@ export default function(render) {
         applyMutation(qs($page, `[data-bind="centerthis"]`), "style", "setProperty"),
     ));
 }
+
+const css = await CSSLoader(import.meta, "ctrl_connectpage.css");

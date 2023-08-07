@@ -66,9 +66,6 @@
     z-index: 2;
     top: 0;
 }
-.component_page_admin .page_container label > div {
-    display: flex;
-}
 @media screen and (max-width: 550px) {
     .component_page_admin .page_container label > div {
         display: block;
@@ -124,7 +121,8 @@
     border-radius: 3px;
     margin: 15px 0;
 }
-.component_page_admin .formbuilder > div > label {
+
+.component_page_admin .formbuilder h2 ~ div > div > label {
     display: block;
     border-bottom: 2px dashed rgba(100, 100, 100, 0.1);
     margin-bottom: 15px;

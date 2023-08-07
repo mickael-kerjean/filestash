@@ -96,9 +96,4 @@
         width: calc(100% - 15px);
     }
 
-
-    /* TODO in 2024: deprecate the underlying code */
-    .component_storagebackend fieldset > div:not(:nth-child(2)) {
-        display: none;
-    }
 }

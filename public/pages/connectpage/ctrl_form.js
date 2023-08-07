@@ -1,6 +1,7 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation, preventDefault } from "../../lib/rx.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
+import { animate, slideYIn } from "../../lib/animate.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 
@@ -15,7 +16,9 @@ export default function(render) {
         <div class="no-select component_page_connection_form">
             <div role="navigation" class="buttons scroll-x box"></div>
             <style>${css}</style>
-            <form class="box"></form>
+            <div class="box">
+                <form></form>
+            </div>
         </div>
     `);
 
@@ -45,19 +48,31 @@ export default function(render) {
     // feature3: highlight the selected button
     effect(getCurrentBackend().pipe(
         rxjs.map((n) => ({ $buttons: qsa($page, `[role="navigation"] button`), n })),
-        rxjs.tap(({ $buttons }) => $buttons.forEach(($node) => $node.classList.remove("active"))),
+        rxjs.tap(({ $buttons }) => $buttons.forEach(($node) => $node.classList.remove("active", "primary"))),
         rxjs.map(({ $buttons, n }) => $buttons[n]),
         rxjs.filter(($button) => !!$button),
-        rxjs.tap(($button) => $button.classList.add("active")),
+        rxjs.tap(($button) => $button.classList.add("active", "primary")),
     ));
 
     // feature4: insert all the connection form
+    const tmpl = formTmpl({
+        renderNode: () => createElement(`<div></div>`),
+        renderLeaf: ({ label, type, format }) => {
+            if (type === "enable") return createElement(`
+                <label class="advanced">
+                    <span data-bind="children"></span>
+                    ${label}
+                </label>
+            `);
+            return createElement(`<label></label>`);
+        }
+    })
     effect(rxjs.combineLatest(
         config$.pipe(
             rxjs.first(),
             rxjs.mergeMap(({ connections }) => connections),
             rxjs.mergeMap(({ type }) => backend$.pipe(rxjs.map((spec) => spec[type]))),
-            rxjs.mergeMap((formSpec) => createForm(formSpec, formTmpl(true))),
+            rxjs.mergeMap((formSpec) => createForm(formSpec, tmpl)),
             rxjs.toArray(),
             rxjs.share(),
         ),
@@ -65,7 +80,8 @@ export default function(render) {
     ).pipe(
         rxjs.map(([$forms, n]) => [$forms[n]]),
         applyMutation(qs($page, "form"), "replaceChildren"),
-        rxjs.tap(() => qs($page, "form").appendChild(createElement(`<button class="emphasis">CONNECT</button>`))),
+        rxjs.tap(() => animate($page.querySelector("form > div"), { time: 200, keyframes: slideYIn(-2) })),
+        rxjs.tap(() => qs($page, "form").appendChild(createElement(`<button class="emphasis full-width">CONNECT</button>`))),
     ));
 
     // feature5: form submission

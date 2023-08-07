@@ -1,0 +1,7 @@
+.box{
+    padding: 10px;
+    cursor: pointer;
+    margin: 3px 0;
+    overflow: hidden;
+    position: relative;
+}

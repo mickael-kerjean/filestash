@@ -1,0 +1,51 @@
+.formbuilder .description {
+    margin-top: -2px;
+    margin-bottom: 10px;
+    opacity: 0.6;
+    font-size: 0.9em;
+    line-height: 1em;
+    text-align: justify;
+}
+.formbuilder input::placeholder, .formbuilder textarea::placeholder {
+    opacity: 0.6;
+}
+.formbuilder label.input_type_hidden {
+    display: none;
+}
+.formbuilder fieldset legend {
+    text-transform: uppercase;
+    font-weight: 200;
+    font-size: 1em;
+    padding: 0 15px;
+}
+.formbuilder img {
+    max-height: 110px;
+    border: 8px solid rgba(0, 0, 0, 0);
+}
+.formbuilder .fileupload-image img {
+    height: 150px;
+    width: 100%;
+    object-fit: contain;
+    background: var(--bg-color);
+    border-radius: 2px;
+    box-sizing: border-box;
+}
+.formbuilder .fileupload-image object {
+    background: var(--bg-color);
+    height: 300px;
+    width: 100%;
+}
+.formbuilder .formbuilder_password {
+    display: flex;
+}
+.formbuilder .formbuilder_password:focus-within img.component_icon {
+    border-color: var(--emphasis-primary);
+}
+.formbuilder .formbuilder_password img.component_icon {
+    height: 20px;
+    border: none;
+    cursor: pointer;
+    padding: 5px 5px;
+    border-bottom: 2px solid rgba(70, 99, 114, 0.1);
+    transition: border-color 0.2s ease-out;
+}

@@ -23,3 +23,11 @@
 .center{
     text-align: center;
 }
+
+.full-width {
+    width: 100%;
+}
+
+.flex {
+    display: flex;
+}

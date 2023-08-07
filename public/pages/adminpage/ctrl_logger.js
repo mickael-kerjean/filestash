@@ -4,12 +4,13 @@ import { qs } from "../../lib/dom.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 
+import transition from "./animate.js";
+import { renderLeaf } from "./helper_form.js";
+import AdminOnly from "./decorator_admin_only.js";
+import WithShell from "./decorator_sidemenu.js";
 import Log from "./model_log.js";
 import Audit from "./model_audit.js";
 import Config from "./model_config.js";
-import transition from "./animate.js";
-import AdminOnly from "./decorator_admin_only.js";
-import WithShell from "./decorator_sidemenu.js";
 
 function Page(render) {
     const $page = createElement(`
@@ -39,7 +40,7 @@ function componentLogForm(render) {
     // feature1: render the form
     effect(Config.get().pipe(
         rxjs.map(({ log }) => ({ params: log })),
-        rxjs.map((formSpec) => createForm(formSpec, formTmpl(false))),
+        rxjs.map((formSpec) => createForm(formSpec, formTmpl({ renderLeaf }))),
         rxjs.mergeMap((promise) => rxjs.from(promise)),
         rxjs.map(($form) => [$form]),
         applyMutation($form, "appendChild"),
@@ -69,7 +70,7 @@ function componentAuditor(render) {
     // setup the form
     effect(Audit.get().pipe(
         rxjs.map(({ form }) => form),        
-        rxjs.map((formSpec) => createForm(formSpec, formTmpl(true))),
+        rxjs.map((formSpec) => createForm(formSpec, formTmpl())),
         rxjs.mergeMap((promise) => rxjs.from(promise)),
         rxjs.map(($form) => [$form]),
         applyMutation(qs($page, "form"), "appendChild"),

@@ -10,8 +10,13 @@ export function qsa($node, selector) {
     return $node.querySelectorAll(selector);
 }
 
-export function safe(str) {
+export function safe(str, ...escapeChars) {
+    if (typeof str !== "str") return str; // TODO: ?!? throw
+
     const $div = window.document.createElement("div");
+    escapeChars.forEach((c) => {
+        str = str.replaceAll(c, "\\"+c);
+    });
 	$div.textContent = str;
 	return $div.innerHTML;
 }

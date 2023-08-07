@@ -11,7 +11,7 @@ export default async function($root, routes, opts = {}) {
     initRouter($root);
 
     window.addEventListener("pagechange", async () => {
-        const route = currentRoute(routes);
+        const route = currentRoute(routes, "");
         const [ctrl] = await Promise.all([
             load(route, opts),
             $root.cleanup(),

@@ -25,17 +25,37 @@ export function animate($node, opts = {}) {
     });
 }
 
-const slideXIn = (dist) => ([
+export const slideXIn = (dist) => ([
     { transform: `translateX(${dist}px)`, opacity: 0 },
     { transform: `translateX(0)`, opacity: 1 },
 ]);
 
-const opacityOut = () => ([
+export const slideXOut = (size) => ([
+    { opacity: 1, transform: `translateX(0)`},
+    { opacity: 0, transform: `translateX(${size}px)` },
+]);
+
+export const opacityIn = () => ([
+    { opacity: 0 },
+    { opacity: 1 },
+]);
+
+export const opacityOut = () => ([
     { opacity: 1 },
     { opacity: 0 },
 ]);
 
-const opacityIn = () => ([
-    { opacity: 0 },
-    { opacity: 1 },
+export const slideYIn = (size) => ([
+    { opacity: 0, transform: `translateY(${size}px)` },
+    { opacity: 1, transform: `translateY(0)`},
+]);
+
+export const slideYOut = (size) => ([
+    { opacity: 0, transform: `translateY(0px)` },
+    { opacity: 1, transform: `translateY(${size}px)`},
+]);
+
+export const zoomIn = (size) => ([
+    { opacity: 0, transform: `scale(${size})`},
+    { opacity: 1, transform: `scale(1)`},
 ]);

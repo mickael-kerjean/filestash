@@ -1,5 +1,5 @@
 <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-    <defs><style>.cls-1{fill:none;stroke:#919192;stroke-linecap:round;stroke-linejoin:round;stroke-width:4px;}</style></defs>
+    <style>.cls-1{fill:none;stroke:#919192;stroke-linecap:round;stroke-linejoin:round;stroke-width:4px;}</style>
     <path class="cls-1" d="M1,24a26.85,26.85,0,0,1,46,0"/>
     <path class="cls-1" d="M1,24a26.85,26.85,0,0,0,46,0"/>
     <ellipse class="cls-1" cx="24" cy="24" rx="7" ry="7"/>

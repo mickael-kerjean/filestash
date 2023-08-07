@@ -38,6 +38,10 @@
     display: block;
     text-transform: capitalize;
 }
+.component_page_connection_form form .advanced {
+    color: rgba(0, 0, 0, 0.4);
+    font-style: italic;
+}
 .component_page_connection_form form .advanced_form {
     max-height: 156px;
     overflow-y: auto;
