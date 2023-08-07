@@ -75,7 +75,6 @@ async function createFormNodes(node, { renderNode, renderLeaf, renderInput, path
                 // initial state of the toggle
                 const isToggled = typeof node[key]["value"] === "boolean" ? node[key]["value"] : node[key]["default"];
                 if (!isToggled) $container.style.setProperty("display", "none");
-                // if (!!node[key]["value"]) $container.style.setProperty("height", "0");
                 let clientHeight = null; // this will only be known when the dom is mounted
 
                 // setup events
@@ -88,7 +87,6 @@ async function createFormNodes(node, { renderNode, renderLeaf, renderInput, path
                             keyframes: [{ height:0 }, {height:`${clientHeight}px`}],
                         });
                     } else {
-                        console.log(clientHeight, Math.max(30, Math.min(clientHeight, 75)))
                         animate($container, {
                             time: Math.max(25, Math.min(clientHeight, 75)),
                             keyframes: [ {height: `${clientHeight}px`}, {height: 0}],

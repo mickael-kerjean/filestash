@@ -1,0 +1,173 @@
+.component_breadcrumb {
+    position: relative;
+    z-index: 5;
+}
+.component_breadcrumb .breadcrumb {
+    background: white;
+    border-bottom: 2px solid rgba(100, 100, 100, 0.05);
+    transition: 1s ease border-bottom;
+    margin: 0 0 0px 0;
+    z-index: 1000;
+    padding: 3px 0;
+}
+.component_breadcrumb .breadcrumb .ul {
+    list-style-type: none;
+    margin: 0 auto;
+    width: 95%;
+    max-width: 800px;
+    padding: 0;
+}
+.component_breadcrumb .breadcrumb .ul > span {
+    display: block;
+    padding: 7px 0;
+}
+.component_breadcrumb .breadcrumb .ul div, .component_breadcrumb .breadcrumb .ul .li {
+    display: inline-block;
+}
+.component_breadcrumb:hover .breadcrumb {
+    border-bottom: 2px solid rgba(100, 100, 100, 0.1);
+}
+.component_breadcrumb .component_logout {
+    float: right;
+    display: inline-block;
+    margin: 0 0px 0 5px;
+    line-height: 25px;
+    padding: 7px 0;
+}
+.component_breadcrumb .component_logout a {
+    display: block;
+    vertical-align: middle;
+}
+.component_breadcrumb .component_logout .component_icon {
+    height: 20px;
+    vertical-align: middle;
+}
+.component_breadcrumb .component_saving {
+    padding-left: 1px;
+}
+.component_breadcrumb .component_path-element {
+    display: inline-block;
+}
+.component_breadcrumb .component_path-element .label {
+    color: rgba(0, 0, 0, 0.75);
+    padding: 4px 5px;
+}
+.component_breadcrumb .component_path-element a.label {
+    position: relative;
+    color: rgba(0, 0, 0, 0.5);
+}
+.component_breadcrumb .component_path-element a.label span.title {
+    position: absolute;
+    left: 0;
+    background: var(--color);
+    color: white;
+    font-size: 0.8em;
+    opacity: 0;
+    transform: translateY(5px);
+    border-radius: 3px;
+    white-space: nowrap;
+    padding: 3px 10px !important;
+    margin: 23px 0px 5px 0px;
+}
+.component_breadcrumb .component_path-element .component_path-element-wrapper {
+    font-size: 18px;
+    display: inline-block;
+}
+.component_breadcrumb .component_path-element .component_path-element-wrapper a {
+    border-radius: 3px;
+    letter-spacing: -0.5px;
+}
+.component_breadcrumb .component_path-element .component_path-element-wrapper.highlight a {
+    background: var(--emphasis-primary);
+    border: 2px solid var(--primary);
+    box-sizing: border-box;
+}
+.component_breadcrumb .component_separator img {
+    vertical-align: middle;
+}
+
+body.touch-no .component_path-element-wrapper a.label:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+body.touch-no .component_path-element-wrapper a.label:hover span.title {
+    opacity: 1;
+    transform: translateY(0px);
+    transition: all 0.15s ease-out;
+}
+
+body.dark-mode.touch-no .component_path-element-wrapper a.label:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.touch-yes ul span {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    white-space: nowrap;
+}
+body.touch-yes ul span::-webkit-scrollbar {
+    height: 0px;
+}
+body.touch-yes ul span::-webkit-scrollbar-track {
+    background: var(--super-light);
+}
+body.touch-yes ul span::-webkit-scrollbar-thumb {
+    background: #d2d2d2;
+    border-radius: 1px;
+}
+
+/* ANIMATION */
+.component_breadcrumb .breadcrumb-leave {
+    display: inline-block;
+    opacity: 1;
+    transform: translateY(0px);
+}
+.component_breadcrumb .breadcrumb-leave.breadcrumb-leave-active {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.15s ease-out;
+}
+.component_breadcrumb .breadcrumb-enter {
+    transform: translateX(10px);
+    opacity: 0;
+    display: inline-block;
+}
+.component_breadcrumb .breadcrumb-enter.breadcrumb-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: all 0.2s ease-out;
+}
+.component_breadcrumb .saving_indicator-leave {
+    opacity: 1;
+}
+.component_breadcrumb .saving_indicator-leave.saving_indicator-leave-active {
+    opacity: 0;
+    transition: all 0.2s ease-out;
+}
+.component_breadcrumb .saving_indicator-enter, .component_breadcrumb .saving_indicator-appear {
+    transform-origin: center;
+    animation-name: bounce;
+    animation-duration: 0.5s;
+}
+@keyframes bounce {
+    0% {
+        transform: scale(0);
+    }
+    30% {
+        transform: scale(1.5);
+    }
+    100% {
+        transform: scale(1);
+    } }
+.dark-mode .component_breadcrumb .breadcrumb {
+    background: rgba(0, 0, 0, 0.07);
+}
+.dark-mode .component_breadcrumb .component_path-element .label {
+    color: #f1f1f1;
+    opacity: 0.7;
+}
+.dark-mode .component_breadcrumb .component_path-element a.label {
+    opacity: 1;
+}

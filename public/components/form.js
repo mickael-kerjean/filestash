@@ -120,7 +120,6 @@ function $renderInput(options = {}) {
             case "long_password":
                 // TODO
             case "long_text":
-                console.log(props);
                 return createElement(`
                     <textarea ${safe(attr)} class="component_textarea" rows="8">
                     </textarea>

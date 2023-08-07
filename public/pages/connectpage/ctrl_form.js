@@ -6,6 +6,7 @@ import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 
 import CSSLoader from "../../helpers/css.js";
+import { createSession } from "../../model/session.js";
 
 import config$ from "./model_config.js";
 import backend$ from "./model_backend.js";
@@ -95,6 +96,7 @@ export default function(render) {
             }
             return json;
         }),
+        rxjs.mergeMap((creds) => createSession(creds)),
         dbg("SUBMIT"),
     ));
 

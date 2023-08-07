@@ -4,7 +4,7 @@ import { qs } from "../../lib/dom.js";
 import { transition, zoomIn } from "../../lib/animate.js";
 import CSSLoader from "../../helpers/css.js";
 
-import AdminSessionManager from "./model_admin_session.js";
+import { authenticate$ } from "./model_admin_session.js";
 
 import "../../components/icon.js";
 
@@ -14,7 +14,7 @@ export default function(render) {
             <style>${css}</style>
             <form>
                 <div class="input_group">
-                    <input type="password" name="password" placeholder="Password" class="component_input">
+                    <input type="password" name="password" placeholder="Password" class="component_input" autocomplete>
                     <button class="transparent">
                         <component-icon name="arrow_right"></component-icon>
                     </button>
@@ -31,7 +31,7 @@ export default function(render) {
         applyMutation(qs($form, "component-icon"), "setAttribute"),
         // STEP2: attempt to login
         rxjs.map(() => ({ password: qs($form, `[name="password"]`).value })),
-        AdminSessionManager.login(),
+        authenticate$(),
         // STEP3: update the UI when authentication fails, happy path is handle at the middleware
         //        level one layer above as the login ctrl has no idea what to show after login
         rxjs.filter((ok) => !ok),

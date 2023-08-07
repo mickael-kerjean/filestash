@@ -1,6 +1,6 @@
 const triggerPageChange = () => window.dispatchEvent(new window.Event("pagechange"));
 
-export function init($root) {
+export async function init($root) {
     window.addEventListener("DOMContentLoaded", triggerPageChange);
     window.addEventListener("popstate", triggerPageChange);
     $root.addEventListener("click", (e) => {
@@ -19,7 +19,7 @@ const trimPrefix = (value, prefix) => value.startsWith(prefix) ? value.slice(pre
 export function currentRoute(r, notFoundRoute) {
     const currentRoute = "/" + trimPrefix(
         window.location.pathname,
-        document.head.querySelector("base")?.getAttribute("href") || "/"
+        window.document.head.querySelector("base")?.getAttribute("href") || "/"
     );
     for (const routeKey in r) {
         const routeValue = r[routeKey];

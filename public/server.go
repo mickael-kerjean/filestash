@@ -27,7 +27,11 @@ func main() {
 }
 
 func serveStatic(w http.ResponseWriter, r *http.Request) {
-	if strings.HasPrefix(r.URL.Path, "/admin/api/") || strings.HasPrefix(r.URL.Path, "/api/") || strings.HasPrefix(r.URL.Path, "/about") {
+	if strings.HasPrefix(r.URL.Path, "/admin/api/") ||
+		strings.HasPrefix(r.URL.Path, "/api/") ||
+		strings.HasPrefix(r.URL.Path, "/about") ||
+		strings.HasPrefix(r.URL.Path, "/overrides/") ||
+		strings.HasPrefix(r.URL.Path, "/sw_cache.js") {
 		u, _ := url.Parse("http://127.0.0.1:8334")
 		httputil.NewSingleHostReverseProxy(u).ServeHTTP(w, r)
 		return
@@ -49,6 +53,9 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/") && strings.HasPrefix(r.URL.Path, "/assets/") {
 		http.FileServer(fs).ServeHTTP(w, r)
 		return
+	}
+	if r.URL.Path == "/" {
+		r.URL.Path = CHROOT + "index.html"
 	}
 	f, err = openFile(fs, r, w)
 	if err != nil {

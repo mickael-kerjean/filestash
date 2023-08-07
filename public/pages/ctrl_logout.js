@@ -3,14 +3,10 @@ import rxjs, { effect } from "../lib/rx.js";
 import ajax from "../lib/ajax.js";
 
 import ctrlError from "./ctrl_error.js";
-import "../components/icon.js";
+import "../components/loader.js";
 
 export default function(render) {
-    const $page = createElement(`
-        <div class="center">
-            <component-icon name="loading"></component-icon>
-        </div>
-    `);
+    const $page = createElement(`<component-loader></component-loader>`);
     render($page);
 
     effect(ajax({

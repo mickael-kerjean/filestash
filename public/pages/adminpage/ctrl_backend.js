@@ -48,7 +48,6 @@ function componentStorageBackend(render) {
             </div>
         `)]),
         applyMutation(qs($page, `[data-bind="backend-available"]`), "appendChild"),
-        dbg("b")
     ));
 }
 

@@ -4,15 +4,14 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script type="module" src="/pages/boot/nyancat.js"></script>
         <link rel="stylesheet" href="/assets/css/reset.css">
+        <script type="module" src="/components/loader.js"></script>
         <title></title>
     </head>
-    <body class="todo">
+    <body>
         <div role="main" id="app">
-            <data-nyancat></data-nyancat>
+            <component-loader delay="500"></component-loader>
         </div>
-        <script type="module" src="/components/loader.js"></script>
         <script type="module">
           import main from "/lib/skeleton/index.js";
           const routes = {
@@ -26,12 +25,14 @@
               "/logout": "/pages/ctrl_logout.js",
 
               "/login": "/pages/connectpage/ctrl_connectpage.js",
+              "/files/": "/pages/ctrl_filespage.js",
 
-              //"/": "/pages/home/index.js",
+              "/": "/pages/ctrl_homepage.js",
               "": "/pages/ctrl_notfound.js",
           };
           main(document.getElementById("app"), routes, {
-              loader: `<data-loader></data-loader>`
+              spinner: `<component-loader></component-loader>`,
+              beforeStart: import("/pages/ctrl_boot.js"),
           });
         </script>
 
