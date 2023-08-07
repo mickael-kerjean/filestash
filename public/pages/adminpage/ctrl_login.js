@@ -2,7 +2,7 @@ import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, stateMutation, applyMutation, preventDefault } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { transition, zoomIn } from "../../lib/animate.js";
-import CSSLoader from "../../helpers/css.js";
+import { CSS } from "../../helpers/loader.js";
 
 import { authenticate$ } from "./model_admin_session.js";
 
@@ -60,4 +60,4 @@ export default function(render) {
     ));
 }
 
-const css = await CSSLoader(import.meta, "ctrl_login.css");
+const css = await CSS(import.meta, "ctrl_login.css");

@@ -20,3 +20,10 @@ export function getSession() {
         rxjs.map(({ responseJSON }) => responseJSON.result),
     );
 }
+
+export function deleteSession() {
+    return ajax({
+        url: "/api/session",
+        method: "DELETE",
+    });
+}

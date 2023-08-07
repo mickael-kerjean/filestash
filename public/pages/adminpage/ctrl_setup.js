@@ -4,7 +4,7 @@ import { qs } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
 import { transition, animate, zoomIn, slideXOut, slideXIn } from "../../lib/animate.js";
 
-import CSSLoader from "../../helpers/css.js";
+import { CSS } from "../../helpers/loader
 import modal from "../../helpers/modal.js";
 
 import ctrlError from "../ctrl_error.js";
@@ -139,4 +139,4 @@ const animateOut = ($el) => {
     );
 }
 
-const css = await CSSLoader(import.meta, "ctrl_setup.css");
+const css = await CSS(import.meta, "ctrl_setup.css");

@@ -15,6 +15,15 @@
         <script type="module">
           import main from "/lib/skeleton/index.js";
           const routes = {
+              "/login": "/pages/ctrl_connectpage.js",
+              "/logout": "/pages/ctrl_logout.js",
+
+              "/": "/pages/ctrl_homepage.js",
+              "/files/.*": "/pages/ctrl_filespage.js",
+              "/view/.*": "/pages/ctrl_viewerpage.js",
+              // /tags/.* -> "pages/ctrl_tags.js",
+              // /s/.* -> "/pages/ctrl_share.js",
+
               "/admin/backend": "/pages/adminpage/ctrl_backend.js",
               "/admin/settings": "/pages/adminpage/ctrl_settings.js",
               "/admin/logs": "/pages/adminpage/ctrl_logger.js",
@@ -22,12 +31,6 @@
               "/admin/setup": "/pages/adminpage/ctrl_setup.js",
               "/admin/": "/pages/adminpage/ctrl_home.js",
 
-              "/logout": "/pages/ctrl_logout.js",
-
-              "/login": "/pages/connectpage/ctrl_connectpage.js",
-              "/files/": "/pages/ctrl_filespage.js",
-
-              "/": "/pages/ctrl_homepage.js",
               "": "/pages/ctrl_notfound.js",
           };
           main(document.getElementById("app"), routes, {

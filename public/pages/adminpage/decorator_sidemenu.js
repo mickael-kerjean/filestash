@@ -2,7 +2,7 @@ import { createElement } from "../../../lib/skeleton/index.js";
 import rxjs, { effect, stateMutation } from "../../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 
-import CSSLoader from "../../helpers/css.js";
+import { CSS } from "../../helpers/loader.js";
 
 import Release from "./model_release.js";
 import Config from "./model_config.js";
@@ -82,4 +82,4 @@ export default function(ctrl) {
     };
 }
 
-const css = await CSSLoader(import.meta, "decorator_sidemenu.css", "index.css");
+const css = await CSS(import.meta, "decorator_sidemenu.css", "index.css");

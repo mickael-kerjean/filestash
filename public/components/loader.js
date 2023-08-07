@@ -1,3 +1,6 @@
+import { createElement } from "../lib/skeleton/index.js";
+import rxjs from "../lib/rx.js";
+
 class Loader extends HTMLElement {
     constructor() {
         super();
@@ -36,3 +39,9 @@ class Loader extends HTMLElement {
 }
 
 customElements.define("component-loader", Loader);
+
+export default createElement(`<component-loader></component-loader>`);
+export function toggle($node, show = false) {
+    if (show === true) return rxjs.tap(() => $node.appendChild(createElement(`<component-loader></component-loader>`)));
+    else return rxjs.tap(() => $node.querySelector("component-loader")?.remove());
+}

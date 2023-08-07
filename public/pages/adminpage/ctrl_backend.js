@@ -1,7 +1,7 @@
 import { createElement, createRender } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
-import CSSLoader from "../../helpers/css.js";
+import { CSS } from "../../helpers/loader.js";
 
 import backend$ from "../connectpage/model_backend.js";
 
@@ -52,4 +52,4 @@ function componentStorageBackend(render) {
 }
 
 
-const css = await CSSLoader(import.meta, "ctrl_backend.css");
+const css = await CSS(import.meta, "ctrl_backend.css");

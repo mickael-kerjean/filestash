@@ -1,14 +1,13 @@
-import { createElement, createRender } from "../../lib/skeleton/index.js";
-import rxjs, { effect, applyMutation } from "../../lib/rx.js";
-import { qs } from "../../lib/dom.js";
+import { createElement, createRender } from "../lib/skeleton/index.js";
+import rxjs, { effect, applyMutation } from "../lib/rx.js";
+import { qs } from "../lib/dom.js";
+import { CSS } from "../helpers/loader.js";
 
-import CSSLoader from "../../helpers/css.js";
+import ctrlForm from "./connectpage/ctrl_form.js";
+import config$ from "./connectpage/model_config.js";
 
-import ctrlForm from "./ctrl_form.js";
-import config$ from "./model_config.js";
-
-import $fork from "./component_forkme.js";
-import $poweredby from "./component_poweredby.js";
+import $fork from "./connectpage/component_forkme.js";
+import $poweredby from "./connectpage/component_poweredby.js";
 
 export default function(render) {
     const $page = createElement(`
@@ -58,4 +57,4 @@ export default function(render) {
     ));
 }
 
-const css = await CSSLoader(import.meta, "ctrl_connectpage.css");
+const css = await CSS(import.meta, "ctrl_connectpage.css");

@@ -1,7 +1,7 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, stateMutation } from "../../lib/rx.js"
 import { qs } from "../../lib/dom.js";
-import CSSLoader from "../../helpers/css.js";
+import { CSS } from "../../helpers/loader.js";
 import transition from "./animate.js";
 
 import Release from "./model_release.js";
@@ -23,4 +23,4 @@ export default AdminOnly(WithShell(async function(render) {
     ));
 }));
 
-const css = await CSSLoader(import.meta, "ctrl_about.css");
+const css = await CSS(import.meta, "ctrl_about.css");

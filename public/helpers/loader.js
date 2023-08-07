@@ -14,7 +14,9 @@ export async function CSS(importMeta, ...arrayOfFilenames) {
 }
 
 async function loadSingleCSS(importMeta, filename) {
-    const res = await fetch(importMeta.url.replace(/(.*)\/[^\/]+$/, "$1/") + filename);
+    const res = await fetch(importMeta.url.replace(/(.*)\/[^\/]+$/, "$1/") + filename, {
+        cache: "default",
+    });
     if (res.status !== 200) return `/* ERROR: ${res.status} */`;
     else if (!res.headers.get("Content-Type").startsWith("text/css")) return `/* ERROR: wrong type, got "${res.headers.get("Content-Type")}"*/`
     return await res.text();

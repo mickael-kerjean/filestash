@@ -3,8 +3,7 @@ import rxjs, { applyMutation } from "../lib/rx.js";
 import { animate } from "../lib/animate.js";
 import { qs } from "../lib/dom.js";
 
-import CSSLoader from "../../helpers/css.js";
-// http://127.0.0.1:8000/admin/setup
+import { CSS } from "../../helpers/loader.js";
 
 const _observables = [];
 const effect = (obs) => _observables.push(obs.subscribe());
@@ -111,4 +110,4 @@ class Modal extends HTMLElement {
 
 customElements.define("component-modal", Modal);
 
-const css = await CSSLoader(import.meta, "modal.css");
+const css = await CSS(import.meta, "modal.css");

@@ -22,21 +22,8 @@ export function currentRoute(r, notFoundRoute) {
         window.document.head.querySelector("base")?.getAttribute("href") || "/"
     );
     for (const routeKey in r) {
-        const routeValue = r[routeKey];
-        let exact = true;
-        let modulePath = null;
-        if (typeof routeValue === "string") modulePath = routeValue;
-        else if (typeof routeValue === "object") {
-            exact = routeValue["exact"];
-            modulePath = routeValue["route"];
-        }
-        if (typeof exact !== "boolean") throw new Error("unknown route type", routeValue);
-        else if (typeof modulePath !== "string") throw new Error("unknown route type", routeValue);
-
-        if (exact && currentRoute === routeKey) {
-            return modulePath;
-        } else if (!exact && currentRoute.startsWith(routeKey)) {
-            return modulePath;
+        if (new RegExp("^" + routeKey + "$").test(currentRoute)) {
+            return r[routeKey];
         }
     }
     return r[notFoundRoute];

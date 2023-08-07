@@ -4,7 +4,7 @@ import { qs } from "../lib/dom.js";
 import t from "../lib/locales.js";
 
 import { AjaxError, ApplicationError } from "../lib/error.js";
-import CSSLoader from "../helpers/css.js";
+import { CSS } from "../helpers/loader.js";
 
 import "../../components/icon.js";
 
@@ -74,4 +74,4 @@ trace:   ${err.stack || "N/A"}`;
     return [msg, trace.trim()];
 }
 
-const css = await CSSLoader(import.meta, "ctrl_error.css");
+const css = await CSS(import.meta, "ctrl_error.css");

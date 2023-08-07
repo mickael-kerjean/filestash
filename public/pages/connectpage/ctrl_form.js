@@ -5,7 +5,7 @@ import { animate, slideYIn } from "../../lib/animate.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 
-import CSSLoader from "../../helpers/css.js";
+import { CSS } from "../../helpers/loader.js";
 import { createSession } from "../../model/session.js";
 
 import config$ from "./model_config.js";
@@ -103,4 +103,4 @@ export default function(render) {
     render($page);
 }
 
-const css = await CSSLoader(import.meta, "ctrl_form.css");
+const css = await CSS(import.meta, "ctrl_form.css");
