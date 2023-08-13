@@ -5,12 +5,16 @@ Admin section:
   - [ ] backend
   - [ ] settings
   - [ ] logs
-  - [ ] about
+  - [X] about
   - [ ] setup
   - [X] home
-  - [ ] login
-- [ ] side bar
+  - [X] login
+  - [X] middleware admin only
+  - [X] middleware error:
+  - [X] side menu
+- [X] side bar
 - [ ] form
+- [X] error page
 
 End user section:
 TODO

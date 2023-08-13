@@ -6,9 +6,7 @@ export function createSession(authenticationRequest) {
         method: "POST",
         url: "/api/session",
         body: authenticationRequest
-    }).pipe(
-        dbg("got"),
-    );
+    });
 }
 
 export function getSession() {

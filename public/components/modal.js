@@ -3,9 +3,9 @@ import rxjs, { applyMutation } from "../lib/rx.js";
 import { animate } from "../lib/animate.js";
 import { qs } from "../lib/dom.js";
 
-import { CSS } from "../../helpers/loader.js";
+import { CSS } from "../helpers/loader.js";
 
-const _observables = [];
+let _observables = [];
 const effect = (obs) => _observables.push(obs.subscribe());
 const free = () => {
     for (let i=0; i<_observables.length; i++) {
@@ -14,16 +14,16 @@ const free = () => {
     _observables = [];
 }
 
-class Modal extends HTMLElement {
+export default class Modal extends HTMLElement {
     constructor() {
         super();
     }
 
-    trigger($node, opts = {}) {
+    async trigger($node, opts = {}) {
         const { onQuit, leftButton, rightButton } = opts;
         const $modal = createElement(`
 <div class="component_modal" id="modal-box">
-  <style>${css}</style>
+  <style>${await CSS(import.meta.url, "modal.css")}</style>
   <div>
     <div class="component_popup">
       <div class="popup--content">
@@ -95,7 +95,7 @@ class Modal extends HTMLElement {
             rxjs.map(() => {
                 let size = 300;
                 const $box = document.querySelector("#modal-box > div");
-                if ($box) size = $box.offsetHeight;
+                if ($box instanceof HTMLElement) size = $box.offsetHeight;
 
                 size = Math.round((document.body.offsetHeight - size) / 2);
                 if (size < 0) return 0;
@@ -109,5 +109,3 @@ class Modal extends HTMLElement {
 }
 
 customElements.define("component-modal", Modal);
-
-const css = await CSS(import.meta, "modal.css");

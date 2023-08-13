@@ -12,11 +12,11 @@ import config$ from "./model_config.js";
 import backend$ from "./model_backend.js";
 import { setCurrentBackend, getCurrentBackend } from "./state.js";
 
-export default function(render) {
+export default async function(render) {
     const $page = createElement(`
         <div class="no-select component_page_connection_form">
             <div role="navigation" class="buttons scroll-x box"></div>
-            <style>${css}</style>
+            <style>${await CSS(import.meta.url, "ctrl_form.css")}</style>
             <div class="box">
                 <form></form>
             </div>
@@ -97,10 +97,7 @@ export default function(render) {
             return json;
         }),
         rxjs.mergeMap((creds) => createSession(creds)),
-        dbg("SUBMIT"),
     ));
 
     render($page);
 }
-
-const css = await CSS(import.meta, "ctrl_form.css");

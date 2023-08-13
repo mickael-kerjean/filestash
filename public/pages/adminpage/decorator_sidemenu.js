@@ -1,5 +1,5 @@
-import { createElement } from "../../../lib/skeleton/index.js";
-import rxjs, { effect, stateMutation } from "../../../lib/rx.js";
+import { createElement } from "../../lib/skeleton/index.js";
+import rxjs, { effect, stateMutation } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 
 import { CSS } from "../../helpers/loader.js";
@@ -77,8 +77,6 @@ export default function(ctrl) {
             rxjs.tap(($el) => $el.classList.add("active")),
             rxjs.tap(($el) => $el.removeAttribute("href")),
         ));
-
-        return (route) => $content.innerHTML = `<div>loading "${route}"</div>`;
     };
 }
 

@@ -1,5 +1,5 @@
 export function report(msg, error, link, lineNo, columnNo) {
-    if (navigator.onLine === false) return Promise.resolve();
+    if (window.navigator.onLine === false) return Promise.resolve();
     let url = "/report?";
     url += "url="+encodeURIComponent(location.href)+"&";
     url += "msg="+encodeURIComponent(msg)+"&";

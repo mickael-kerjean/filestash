@@ -11,9 +11,9 @@ export function qsa($node, selector) {
 }
 
 export function safe(str, ...escapeChars) {
-    if (typeof str !== "str") return str; // TODO: ?!? throw
+    if (typeof str !== "string") return str;
 
-    const $div = window.document.createElement("div");
+    const $div = document.createElement("div");
     escapeChars.forEach((c) => {
         str = str.replaceAll(c, "\\"+c);
     });

@@ -1,8 +1,6 @@
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 
-window.ajax = ajax;
-
 const sessionSubject$ = new rxjs.Subject();
 
 const adminSession$ = rxjs.merge(

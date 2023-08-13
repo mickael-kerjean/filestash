@@ -6,16 +6,16 @@ import t from "../lib/locales.js";
 import { AjaxError, ApplicationError } from "../lib/error.js";
 import { CSS } from "../helpers/loader.js";
 
-import "../../components/icon.js";
+import "../components/icon.js";
 
 export default function(err) {
     return function(render) {
         const [msg, trace] = processError(err);
         const $page = createElement(`
             <div>
-                <style>${css}</style>
+                <style></style>
                 <a href="/" class="backnav">
-                    <component-icon name="arrow_left"></component-icon>
+                    <component-icon data-name="arrow_left"></component-icon>
                     home
                 </a>
                 <div class="component_container">
@@ -32,6 +32,11 @@ export default function(err) {
             </div>
         `);
         render($page);
+
+        // // feature: css loading
+        // effect(rxjs.of(CSS(import.meta.url, "ctrl_error.css")).pipe(
+        //     stateMutation(qs($page, "style"), "textContent"),
+        // ));
 
         // feature: show error details
         effect(rxjs.fromEvent(qs($page, `button[data-bind="details"]`), "click").pipe(
@@ -73,5 +78,3 @@ trace:   ${err.stack || "N/A"}`;
     }
     return [msg, trace.trim()];
 }
-
-const css = await CSS(import.meta, "ctrl_error.css");

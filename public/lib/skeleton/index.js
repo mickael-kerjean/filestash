@@ -48,9 +48,14 @@ async function load(route, opts) {
     return ctrl;
 }
 
+/**
+ * @param {string} str
+ * @returns {HTMLElement}
+ */
 export function createElement(str) {
     const $n = window.document.createElement("div");
     $n.innerHTML = str;
+    if (!($n.firstElementChild instanceof window.HTMLElement)) throw new Error(`createElement - unexpected type`);
     return $n.firstElementChild;
 }
 

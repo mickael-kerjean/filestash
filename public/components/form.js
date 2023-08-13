@@ -111,7 +111,9 @@ function $renderInput(options = {}) {
                         <component-icon name="eye"></component-icon>
                     </div>
                 `);
-                $node.querySelector("component-icon").onclick = (e) => {
+                const $icon = $node.querySelector("component-icon");
+                if ($icon instanceof window.HTMLElement) $icon.onclick = function(e) {
+                    if (!(e.target instanceof window.HTMLElement)) return;
                     const $input = e.target.parentElement.previousElementSibling;
                     if ($input.getAttribute("type") === "password") $input.setAttribute("type", "text");
                     else $input.setAttribute("type", "password");
@@ -178,7 +180,7 @@ function $renderInput(options = {}) {
                     />
                 `);
             case "image":
-                return createElement(` <img id="${safe(id)}" src="${save(value)}" />`);
+                return createElement(`<img id="${safe(id)}" src="${safe(value)}" />`);
             case "file":
                 // return createElement() // TODO
             default:

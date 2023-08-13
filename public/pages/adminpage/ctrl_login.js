@@ -55,7 +55,7 @@ export default function(render) {
     // feature: vertically center the form
     effect(rxjs.fromEvent(window, "resize").pipe(
         rxjs.startWith(null),
-        rxjs.map(() => ["margin-top", `${parseInt(window.innerHeight / 3)}px`]),
+        rxjs.map(() => ["margin-top", `${Math.floor(window.innerHeight / 3)}px`]),
         applyMutation($form, "style", "setProperty"),
     ));
 }

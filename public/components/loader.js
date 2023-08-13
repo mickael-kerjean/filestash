@@ -1,12 +1,12 @@
 import { createElement } from "../lib/skeleton/index.js";
 import rxjs from "../lib/rx.js";
 
-class Loader extends HTMLElement {
+class Loader extends window.HTMLElement {
     constructor() {
         super();
         this.timeout = window.setTimeout(() => {
             this.innerHTML = this.render();
-        }, this.getAttribute("delay") || 0);
+        }, parseInt(this.getAttribute("delay")) || 0);
     }
 
     disconnectedCallback() {
@@ -38,7 +38,7 @@ class Loader extends HTMLElement {
     }
 }
 
-customElements.define("component-loader", Loader);
+window.customElements.define("component-loader", Loader);
 
 export default createElement(`<component-loader></component-loader>`);
 export function toggle($node, show = false) {

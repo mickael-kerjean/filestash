@@ -1,0 +1,354 @@
+.component_thing {
+    clear: both;
+}
+.component_thing:hover .box, .component_thing .highlight.box {
+    transition: 0.1s ease-out background;
+    background: rgba(0, 0, 0, 0.07);
+    border-color: var(--super-light);
+    border-radius: 5px;
+}
+.component_thing:hover .box:not(.loading) .component_datetime {
+    display: none;
+}
+.component_thing:hover .box:not(.loading) .component_action {
+    display: block;
+}
+.component_thing .component_action, .component_thing .component_checkbox {
+    display: none;
+}
+.component_thing .file-is-hover {
+    background: var(--emphasis-primary);
+}
+.component_thing .file-is-dragging {
+    opacity: 0.15;
+}
+.component_thing .file-details {
+    padding: 0 5px;
+    line-height: 22px;
+    white-space: nowrap;
+}
+.component_thing .file-details > span {
+    display: inline-block;
+    width: calc(100% - 130px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+    color: inherit;
+}
+.component_thing form {
+    display: inline-block;
+}
+.component_thing form input {
+    font-size: 1em;
+    border-width: 0px;
+    padding: 0 2px 0 2px;
+    background: inherit;
+    border-bottom: 2px solid var(--emphasis-primary);
+    color: var(--color);
+}
+.component_thing .component_icon {
+    width: 25px;
+    height: 25px;
+}
+.component_thing .component_filesize span {
+    color: var(--light);
+    font-size: 0.85em;
+}
+.component_thing .component_datetime {
+    float: right;
+    color: var(--light);
+    line-height: 25px;
+    margin: 0 -10px;
+    padding: 0 10px;
+    position: relative;
+}
+.component_thing .component_action {
+    float: right;
+    color: #6f6f6f;
+    line-height: 25px;
+    margin: 0 -10px;
+    padding: 0 10px;
+    position: relative;
+}
+.component_thing .component_action .component_icon {
+    padding: 1px 0;
+    box-sizing: border-box;
+}
+.component_thing .component_checkbox {
+    opacity: 0;
+    z-index: 2;
+    position: absolute;
+    transition: 0.15s ease-out all;
+    transform: translateX(0px);
+    padding: 2px;
+    border-radius: 50px;
+}
+.component_thing .component_checkbox .indicator {
+    top: 7px;
+    left: 7px;
+}
+.component_thing:hover .component_checkbox, .component_thing.selected .component_checkbox {
+    transition-delay: 0.1s;
+    opacity: 1;
+}
+.component_thing .selectionOverlay {
+    display: none;
+}
+.component_thing.selected .selectionOverlay {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--primary);
+    z-index: 1;
+    opacity: 0.3;
+}
+
+/* GRID & LIST VIEW */
+.list {
+    display: flex;
+    flex-wrap: wrap;
+}
+.list > .component_thing {
+    width: 100%;
+}
+.list > .component_thing .box {
+    margin: 0px 0 2px 0;
+}
+.list > .component_thing.view-grid {
+    width: 25%;
+    text-align: center;
+    transition: 0.1s ease transform;
+}
+.list > .component_thing.view-grid .box {
+    height: 160px;
+}
+@media (max-width: 699px) {
+    .list > .component_thing.view-grid {
+        width: 33.33%;
+    }
+    .list > .component_thing.view-grid .box {
+        height: 200px;
+    }
+}
+@media (max-width: 670px) {
+    .list > .component_thing.view-grid .box {
+        height: 170px;
+    }
+}
+@media (max-width: 550px) {
+    .list > .component_thing.view-grid {
+        width: 50%;
+    }
+    .list > .component_thing.view-grid .box {
+        height: 200px;
+    }
+}
+@media (max-width: 480px) {
+    .list > .component_thing.view-grid .box {
+        height: 170px;
+    }
+}
+@media (max-width: 400px) {
+    .list > .component_thing.view-grid .box {
+        height: 140px;
+    }
+    .list > .component_thing.view-grid .box .info_extension {
+        font-size: 0.8em !important;
+        padding: 3px 10px;
+    }
+}
+@media (max-width: 340px) {
+    .list > .component_thing.view-grid .box {
+        height: 130px;
+    }
+}
+.list > .component_thing.view-grid .box {
+    margin: 2px;
+    padding: 0;
+    position: relative;
+    border-width: 0;
+    box-sizing: border-box;
+    border: 2px solid rgba(100, 100, 100, 0.1);
+    border-radius: 5px;
+}
+.list > .component_thing.view-grid .box > span > img {
+    padding: 0;
+    margin: 0;
+    display: block;
+}
+.list > .component_thing.view-grid .box > span > img.component_icon {
+    padding: 30px;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    margin: 0 auto;
+    z-index: 0;
+}
+.list > .component_thing.view-grid .box > span > img.thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+    background: var(--dark);
+    z-index: 0;
+}
+.list > .component_thing.view-grid .box .info_extension {
+    position: absolute;
+    top: 45%;
+    text-align: right;
+    left: 0;
+    right: 20%;
+    margin: 0 auto;
+    text-transform: uppercase;
+    font-size: 0.95em;
+    text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.2);
+}
+.list > .component_thing.view-grid .box .info_extension span {
+    background: var(--color);
+    color: var(--bg-color);
+    border-radius: 4px;
+    padding: 3px 10px;
+    display: inline-block;
+    text-align: center;
+    min-width: 20px;
+    max-width: 65px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.list > .component_thing.view-grid .box .component_filename {
+    letter-spacing: -0.5px;
+    z-index: 2;
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+    border-radius: 2px;
+    padding: 3px 0px;
+}
+.list > .component_thing.view-grid .box .component_filename .file-details {
+    width: calc(100% - 10px);
+    display: block;
+}
+.list > .component_thing.view-grid .box .component_filename .file-details > span {
+    width: 100%;
+}
+.list > .component_thing.view-grid .box .component_filename .file-details > span form input {
+    letter-spacing: -0.5px;
+    text-align: center;
+    width: 100%;
+    padding: 0;
+}
+.list > .component_thing.view-grid .box .image_layer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    background: rgba(0, 0, 0, 0);
+    transition: 0.2s ease-out background;
+}
+.list > .component_thing.view-grid .box .component_filesize, .list > .component_thing.view-grid .box .component_datetime {
+    display: none;
+}
+.list > .component_thing.view-grid .box .component_action {
+    transform: translateX(5px);
+    transition: 0.15s ease-out all;
+    z-index: 2;
+    display: block;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    border-radius: 5px;
+    margin-right: 0px;
+    padding: 0px;
+}
+.list > .component_thing.view-grid .box img.thumbnail {
+    transition: 0.2s ease-out transform;
+}
+.list > .component_thing.view-grid.not-selected .box:hover .component_action {
+    transition-delay: 0.1s;
+    transform: translateX(0);
+}
+.list > .component_thing.view-grid.not-selected .box:hover img.thumbnail {
+    transform: scale(0.6);
+}
+.list > .component_thing.view-grid.not-selected .box:hover .image_layer {
+    background: rgba(242, 242, 242, 0.7);
+}
+.list > .component_thing.view-grid.not-selected .box.preview:hover .component_filename {
+    opacity: 1;
+}
+.list > .component_thing.view-grid.not-selected .box.preview .component_filename {
+    transition: 0.2s ease-out opacity;
+    opacity: 0;
+}
+.list > .component_thing.view-grid.selected .box img.thumbnail {
+    transform: scale(0.6);
+}
+.list > .component_thing.view-grid .component_checkbox {
+    display: block;
+    top: 3px;
+    left: 3px;
+    transform: translateX(-5px);
+}
+.list > .component_thing.view-grid:hover .component_checkbox, .list > .component_thing.view-grid.selected .component_checkbox {
+    transform: translateX(0px);
+}
+.list > .component_thing.view-list .component_checkbox {
+    top: 8px;
+    left: 8px;
+    transition: 0.5s ease all;
+    background: rgba(0, 0, 0, 0);
+}
+.list > .component_thing.view-list .component_checkbox:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+.list > .component_thing.view-list:hover .component_checkbox, .list > .component_thing.view-list.selected .component_checkbox {
+    display: block;
+}
+.list > .component_thing.view-list:hover .component_checkbox ~ span > .component_icon, .list > .component_thing.view-list.selected .component_checkbox ~ span > .component_icon {
+    visibility: hidden;
+}
+.list > .component_thing.view-list:hover .component_checkbox .indicator, .list > .component_thing.view-list.selected .component_checkbox .indicator {
+    border-color: var(--color);
+}
+.list > .component_thing.view-list:hover .component_checkbox input ~ span, .list > .component_thing.view-list.selected .component_checkbox input ~ span {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+.list > .component_thing.view-list:hover .component_checkbox input:checked ~ span, .list > .component_thing.view-list.selected .component_checkbox input:checked ~ span {
+    background-color: var(--color);
+}
+.list .not-selected .box:hover .component_action {
+    opacity: 1;
+}
+.list .not-selected .box .component_action {
+    opacity: 0;
+}
+.list .selected .box .component_action {
+    opacity: 0;
+}
+
+.dark-mode .component_thing:hover .box {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+}
+.dark-mode .component_thing .box {
+    background: inherit;
+}
+.dark-mode .component_thing .component_filename {
+    color: var(--light);
+}
+.dark-mode .component_thing .box.highlight {
+    background: rgba(255, 255, 255, 0.05);
+}
+.dark-mode .component_thing form input {
+    border-color: var(--light);
+    color: rgba(255, 255, 255, 0.8);
+}

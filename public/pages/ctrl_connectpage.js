@@ -45,7 +45,7 @@ export default function(render) {
         rxjs.map(() => {
             let size = 300;
             const $screen = document.querySelector(".login-form");
-            if ($screen) size = $screen.offsetHeight;
+            if ($screen instanceof window.HTMLElement) size = $screen.offsetHeight;
 
             size = Math.round((document.body.offsetHeight - size) / 2);
             if (size < 0) return 0;
@@ -57,4 +57,4 @@ export default function(render) {
     ));
 }
 
-const css = await CSS(import.meta, "ctrl_connectpage.css");
+const css = await CSS(import.meta.url, "ctrl_connectpage.css");

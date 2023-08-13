@@ -1,8 +1,8 @@
 import { onDestroy } from "./skeleton/index.js";
 
 // https://github.com/ReactiveX/rxjs/issues/4416#issuecomment-620847759
-const rxjs = await import("./vendor/rxjs.min.js");
-const ajaxModule = await import("./vendor/rxjs-ajax.min.js")
+import * as rxjs from "./vendor/rxjs.min.js";
+import * as ajaxModule from "./vendor/rxjs-ajax.min.js";
 
 export default rxjs;
 export const ajax = ajaxModule.ajax;
@@ -24,14 +24,10 @@ export function applyMutation($node, ...keys) {
 }
 
 export function stateMutation($node, attr) {
-    if (!$node) throw new Error("dom not found for '" + selector + "'");
+    if (!$node) throw new Error("undefined node");
     return rxjs.tap((val) => $node[attr] = val);
 }
 
 export function preventDefault() {
     return rxjs.tap((e) => e.preventDefault());
-}
-
-window.dbg = function(prefix) {
-    return rxjs.tap((e) => console.log(prefix || "logger: ", e));
 }

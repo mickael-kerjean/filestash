@@ -1,4 +1,5 @@
 import rxjs from "../../lib/rx.js";
+import ajax from "../../lib/ajax.js";
 
 class ConfigManager {
     constructor() {
@@ -23,7 +24,7 @@ class ConfigManager {
         return rxjs.pipe(
             rxjs.tap(() => this.isSaving$.next(true)),
             rxjs.debounceTime(1000),
-            dbg("TODO: API CALL"), rxjs.delay(1000),
+            rxjs.delay(1000),
             rxjs.tap(() => this.isSaving$.next(false)),
         );
     }

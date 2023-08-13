@@ -1,5 +1,5 @@
-import { createElement, navigate } from "../../lib/skeleton/index.js";
-import rxjs, { effect } from "../../lib/rx.js";
+import { createElement, navigate } from "../lib/skeleton/index.js";
+import rxjs, { effect } from "../lib/rx.js";
 import { ApplicationError } from "../lib/error.js";
 import ctrlError from "./ctrl_error.js";
 
@@ -20,7 +20,7 @@ export default function(render) {
     render(createElement(`<component-loader></component-loader>`));
 
     effect(getSession().pipe(
-        rxjs.tap(({ is_authenticated, home = "" }) => {
+        rxjs.tap(({ is_authenticated, home = "/" }) => {
             if (is_authenticated !== true) return navigate("/login");
             return navigate(`/files${home}`);
         }),
