@@ -7,16 +7,16 @@ export { onDestroy } from "./lifecycle.js";
 let pageLoader;
 
 export default async function($root, routes, opts = {}) {
-    window.addEventListener("pagechange", async () => {
+    window.addEventListener("pagechange", async() => {
         try {
             const route = currentRoute(routes, "");
             const [ctrl] = await Promise.all([
                 load(route, { ...opts, $root }),
-                $root.cleanup(),
+                $root.cleanup()
             ]);
             if (typeof ctrl !== "function") throw new Error(`Unknown route for ${route}`);
             pageLoader = ctrl(createRender($root));
-        } catch(err) {
+        } catch (err) {
             window.onerror && window.onerror(err.message);
         }
     });
@@ -50,12 +50,12 @@ async function load(route, opts) {
 
 /**
  * @param {string} str
- * @returns {HTMLElement}
+ * @return {HTMLElement}
  */
 export function createElement(str) {
     const $n = window.document.createElement("div");
     $n.innerHTML = str;
-    if (!($n.firstElementChild instanceof window.HTMLElement)) throw new Error(`createElement - unexpected type`);
+    if (!($n.firstElementChild instanceof window.HTMLElement)) throw new Error("createElement - unexpected type");
     return $n.firstElementChild;
 }
 

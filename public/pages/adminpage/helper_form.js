@@ -16,5 +16,5 @@ export function renderLeaf({ format, type, label, description }) {
                 </div>
             </div>
         </label>
-    `);   
+    `);
 }

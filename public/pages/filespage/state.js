@@ -7,7 +7,7 @@ const state$ = new rxjs.BehaviorSubject({
     acl: {},
     path: "/",
     mutation: {},
-    error: null,
+    error: null
 });
 
 export const getState$ = () => state$.asObservable();
@@ -18,10 +18,12 @@ export const onNewFile = () => {
 
 export const handleError = () => {
     return rxjs.catchError((err) => {
-        if (err) state$.next({
-            ...state$.value,
-            error: err,
-        });
+        if (err) {
+            state$.next({
+                ...state$.value,
+                error: err
+            });
+        }
         return rxjs.empty();
     });
 };
@@ -31,5 +33,5 @@ export const onNewDirectory = () => {
 };
 
 export const onSearch = () => {
-    console.log("SEARCH")
+    console.log("SEARCH");
 };

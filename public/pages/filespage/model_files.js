@@ -5,15 +5,14 @@ export function ls() {
     return rxjs.pipe(
         rxjs.mergeMap((path) => ajax({
             url: `/api/files/ls?path=${path}`,
-            responseType: "json",
+            responseType: "json"
         })),
-        rxjs.map(({ responseJSON }) => ({ files: responseJSON.results })),
+        rxjs.map(({ responseJSON }) => ({ files: responseJSON.results }))
     );
 }
 
-
 function repeat(element, times) {
-    var result = Array(times);
-    for(var i=0;i<times;i++) result[i] = element;
+    const result = Array(times);
+    for (let i = 0; i < times; i++) result[i] = element;
     return result;
 }

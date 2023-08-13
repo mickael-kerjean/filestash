@@ -23,7 +23,7 @@ export default AdminOnly(WithShell(function(render) {
             delete res.constant;
             delete res.middleware;
             return res;
-        }),
+        })
     );
 
     const tmpl = formTmpl({
@@ -35,28 +35,29 @@ export default AdminOnly(WithShell(function(render) {
                     <div data-bind="children"></div>
                 </div>
             `);
-        }, renderLeaf,
-    })
+        },
+        renderLeaf
+    });
     effect(config$.pipe(
         rxjs.mergeMap((formSpec) => createForm(formSpec, tmpl)),
         rxjs.map(($form) => [$form]),
-        applyMutation(qs($container, `[data-bind="form"]`), "appendChild"),
+        applyMutation(qs($container, "[data-bind=\"form\"]"), "appendChild")
     ));
 
     effect(config$.pipe(
-        rxjs.mergeMap(() => qsa($container, `[data-bind="form"] [name]`)),
+        rxjs.mergeMap(() => qsa($container, "[data-bind=\"form\"] [name]")),
         rxjs.mergeMap(($el) => rxjs.fromEvent($el, "input")),
         rxjs.map((e) => ({
             name: e.target.getAttribute("name"),
-            value: e.target.value,
+            value: e.target.value
         })),
         rxjs.scan((store, keyValue) => {
             store[keyValue.name] = keyValue.value;
             return store;
-        }, {}),
+        }, {})
     ).pipe(
         rxjs.withLatestFrom(config$),
         rxjs.map(([formState, formSpec]) => mutateForm(formSpec, formState)),
-        Config.save(),
+        Config.save()
     ));
 }));

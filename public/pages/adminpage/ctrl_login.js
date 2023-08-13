@@ -30,21 +30,22 @@ export default function(render) {
         rxjs.mapTo(["name", "loading"]),
         applyMutation(qs($form, "component-icon"), "setAttribute"),
         // STEP2: attempt to login
-        rxjs.map(() => ({ password: qs($form, `[name="password"]`).value })),
+        rxjs.map(() => ({ password: qs($form, "[name=\"password\"]").value })),
         authenticate$(),
         // STEP3: update the UI when authentication fails, happy path is handle at the middleware
         //        level one layer above as the login ctrl has no idea what to show after login
         rxjs.filter((ok) => !ok),
         rxjs.mapTo(["name", "arrow_right"]), applyMutation(qs($form, "component-icon"), "setAttribute"),
-        rxjs.mapTo(""), stateMutation(qs($form, `[name="password"]`), "value"),
+        rxjs.mapTo(""), stateMutation(qs($form, "[name=\"password\"]"), "value"),
         rxjs.mapTo(["error"]), applyMutation(qs($form, ".input_group"), "classList", "add"),
-        rxjs.delay(300), applyMutation(qs($form, ".input_group"), "classList", "remove"),
+        rxjs.delay(300), applyMutation(qs($form, ".input_group"), "classList", "remove")
     ));
 
     // feature: nice transition
     render(transition($form, {
-        timeoutEnter: 250, enter: zoomIn(1.2),
-        timeoutLeave: 0,
+        timeoutEnter: 250,
+        enter: zoomIn(1.2),
+        timeoutLeave: 0
     }));
 
     // feature: autofocus
@@ -56,7 +57,7 @@ export default function(render) {
     effect(rxjs.fromEvent(window, "resize").pipe(
         rxjs.startWith(null),
         rxjs.map(() => ["margin-top", `${Math.floor(window.innerHeight / 3)}px`]),
-        applyMutation($form, "style", "setProperty"),
+        applyMutation($form, "style", "setProperty")
     ));
 }
 

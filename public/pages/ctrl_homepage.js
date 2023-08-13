@@ -12,18 +12,18 @@ export default function(render) {
     if (GET.get("error")) {
         ctrlError(new ApplicationError(
             GET.get("error"),
-            GET.get("trace") || "server error from URL",
+            GET.get("trace") || "server error from URL"
         ))(render);
         return;
     }
 
-    render(createElement(`<component-loader></component-loader>`));
+    render(createElement("<component-loader></component-loader>"));
 
     effect(getSession().pipe(
         rxjs.tap(({ is_authenticated, home = "/" }) => {
             if (is_authenticated !== true) return navigate("/login");
             return navigate(`/files${home}`);
         }),
-        rxjs.catchError(() => navigate("/login")),
+        rxjs.catchError(() => navigate("/login"))
     ));
 };

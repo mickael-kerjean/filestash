@@ -31,9 +31,9 @@ export default async function(render) {
         rxjs.map(({ error }) => error),
         rxjs.filter((error) => !!error),
         rxjs.map(ctrlError),
-        rxjs.tap((fn) => fn(render)),
+        rxjs.tap((fn) => fn(render))
     ));
 
     // feature2: render the filesystem
-    componentFilesystem(createRender($page.querySelector(`[is="component-filesystem"]`)));
+    componentFilesystem(createRender($page.querySelector("[is=\"component-filesystem\"]")));
 }

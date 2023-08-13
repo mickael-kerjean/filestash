@@ -5,9 +5,9 @@ class LogManager {
     get(maxSize = 1000) {
         return ajax({
             url: `/admin/api/logs?maxSize=${maxSize}`,
-            responseType: "text",
+            responseType: "text"
         }).pipe(
-            rxjs.map(({ response }) => response),
+            rxjs.map(({ response }) => response)
             // rxjs.repeat({ delay: 10000 }),
         );
     }

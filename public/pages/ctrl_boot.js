@@ -11,7 +11,7 @@ export default async function main() {
             // setup_cache(), // TODO: dependency on session
             setup_device(),
             // setup_sw(), // TODO
-            setup_blue_death_screen(),
+            setup_blue_death_screen()
         ]);
         // await Config.refresh()
 
@@ -20,14 +20,14 @@ export default async function main() {
         ]);
 
         window.dispatchEvent(new window.Event("pagechange"));
-    } catch(err) {
+    } catch (err) {
         console.error(err);
         const msg = window.navigator.onLine === false ? "OFFLINE" : (err.message || "CAN'T LOAD");
         report(msg + " - " + (err && err.message), location.href);
         $error(msg);
     }
 }
-main()
+main();
 
 function $error(msg) {
     const $code = document.createElement("code");
@@ -37,7 +37,7 @@ function $error(msg) {
     $code.style.padding = "0 10% 0 10%";
     $code.textContent = msg;
 
-    let $img = document.createElement("img");
+    const $img = document.createElement("img");
     $img.setAttribute("src", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABQAQMAAADcLOLWAAAABlBMVEUAAABTU1OoaSf/AAAAAXRSTlMAQObYZgAAAFlJREFUeF69zrERgCAQBdElMqQEOtHSuNIohRIMjfjO6DDmB7jZy5YgySQVYDIakIHD1kBPC9Bra5G2Ans0N7iAcOLF+EHvXySpjSBWCDI/3nIdBDihr8m4AcKdbn96jpAHAAAAAElFTkSuQmCC");
     $img.style.display = "block";
     $img.style.padding = "20vh 10% 0 10%";
@@ -47,11 +47,11 @@ function $error(msg) {
     document.body.appendChild($code);
 }
 
-////////////////////////////////////////////
+/// /////////////////////////////////////////
 // boot steps helpers
 function setup_translation() {
     let selectedLanguage = "en";
-    switch(window.navigator.language) {
+    switch (window.navigator.language) {
     case "zh-TW":
         selectedLanguage = "zh_tw";
         break;
@@ -61,28 +61,28 @@ function setup_translation() {
             "az", "be", "bg", "ca", "cs", "da", "de", "el", "es", "et",
             "eu", "fi", "fr", "gl", "hr", "hu", "id", "is", "it", "ja",
             "ka", "ko", "lt", "lv", "mn", "nb", "nl", "pl", "pt", "ro",
-            "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi", "zh",
+            "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi", "zh"
         ].indexOf(window.navigator.language.split("-")[0]);
-        if(idx !== -1) {
+        if (idx !== -1) {
             selectedLanguage = userLanguage;
         }
     }
 
     if (selectedLanguage === "en") {
-        return
+        return;
     }
     return ajax({
-        url: "/assets/locales/"+selectedLanguage+".json",
-        responseType: "json",
+        url: "/assets/locales/" + selectedLanguage + ".json",
+        responseType: "json"
     }).pipe(
         rxjs.tap(({ responseHeaders, response }) => {
             const contentType = responseHeaders["content-type"].trim();
             if (contentType !== "application/json") {
                 report(`ctrl_boot.js - wrong content type '${contentType}'`);
-                return
+                return;
             }
             window.LNG = response;
-        }),
+        })
     ).toPromise();
 }
 
@@ -115,8 +115,8 @@ async function setup_sw() {
     }
     try {
         await window.navigator.serviceWorker.register("/sw_cache.js");
-    } catch(err) {
-        report("ServiceWorker registration failed", err)
+    } catch (err) {
+        report("ServiceWorker registration failed", err);
     }
 }
 
@@ -132,7 +132,7 @@ async function setup_chromecast() {
         return Promise.resolve();
     } else if (!("chrome" in window)) {
         return Promise.resolve();
-	} else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    } else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
         return Promise.resolve();
     }
     return window.Chromecast.init();

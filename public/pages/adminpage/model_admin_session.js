@@ -10,8 +10,8 @@ const adminSession$ = rxjs.merge(
         rxjs.mergeMap(() => ajax({ url: "/admin/api/session", responseType: "json" })),
         rxjs.map(({ responseJSON }) => responseJSON.result),
         rxjs.distinctUntilChanged(),
-        rxjs.shareReplay(1),
-    ),
+        rxjs.shareReplay(1)
+    )
 );
 
 export function isAdmin$() {
@@ -22,11 +22,13 @@ export function authenticate$() {
     return rxjs.pipe(
         rxjs.mergeMap((body) => ajax({
             url: "/admin/api/session",
-            method: "POST", body, responseType: "json",
+            method: "POST",
+            body,
+            responseType: "json"
         }).pipe(
             rxjs.mapTo(true),
             rxjs.catchError(() => rxjs.of(false)),
             rxjs.tap((ok) => ok && sessionSubject$.next(ok))
-        )),
+        ))
     );
 }

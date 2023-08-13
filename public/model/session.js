@@ -13,15 +13,15 @@ export function getSession() {
     return ajax({
         url: "/api/session",
         method: "GET",
-        responseType: "json",
+        responseType: "json"
     }).pipe(
-        rxjs.map(({ responseJSON }) => responseJSON.result),
+        rxjs.map(({ responseJSON }) => responseJSON.result)
     );
 }
 
 export function deleteSession() {
     return ajax({
         url: "/api/session",
-        method: "DELETE",
+        method: "DELETE"
     });
 }

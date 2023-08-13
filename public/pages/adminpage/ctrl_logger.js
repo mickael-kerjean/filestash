@@ -33,7 +33,7 @@ function Page(render) {
 export default AdminOnly(WithShell(Page));
 
 function componentLogForm(render) {
-    const $form = createElement(`<form></form>`);
+    const $form = createElement("<form></form>");
 
     render($form);
 
@@ -43,14 +43,14 @@ function componentLogForm(render) {
         rxjs.map((formSpec) => createForm(formSpec, formTmpl({ renderLeaf }))),
         rxjs.mergeMap((promise) => rxjs.from(promise)),
         rxjs.map(($form) => [$form]),
-        applyMutation($form, "appendChild"),
+        applyMutation($form, "appendChild")
     ));
 
     // TODO feature2: response to form change
 }
 
 function componentLogViewer(render) {
-    const $page = createElement(`<pre>t</pre>`);
+    const $page = createElement("<pre>t</pre>");
     render($page);
 
     effect(Log.get().pipe(
@@ -69,16 +69,16 @@ function componentAuditor(render) {
 
     // setup the form
     effect(Audit.get().pipe(
-        rxjs.map(({ form }) => form),        
+        rxjs.map(({ form }) => form),
         rxjs.map((formSpec) => createForm(formSpec, formTmpl())),
         rxjs.mergeMap((promise) => rxjs.from(promise)),
         rxjs.map(($form) => [$form]),
-        applyMutation(qs($page, "form"), "appendChild"),
+        applyMutation(qs($page, "form"), "appendChild")
     ));
 
     // setup the result
     effect(Audit.get().pipe(
         rxjs.map(({ render }) => render),
-        stateMutation(qs($page, `[data-bind="auditor"]`), "innerHTML"),
+        stateMutation(qs($page, "[data-bind=\"auditor\"]"), "innerHTML")
     ));
 }

@@ -51,23 +51,23 @@ export default function(ctrl) {
         render($page);
 
         // feature: setup the childrens
-        ctrl(($node) => qs($page, `[data-bind="admin"]`).appendChild($node));
+        ctrl(($node) => qs($page, "[data-bind=\"admin\"]").appendChild($node));
 
         // feature: display the release version
         effect(Release.get().pipe(
             rxjs.map(({ version }) => version),
-            stateMutation(qs($page, `[data-bind="version"]`), "textContent"),
+            stateMutation(qs($page, "[data-bind=\"version\"]"), "textContent")
         ));
 
         // feature: logo serving as loading indicator
         effect(Config.isSaving().pipe(
             rxjs.startWith(false),
-            rxjs.map((isLoading) => isLoading ?
-                `<component-icon name="loading"></component-icon>` :
-                `<svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            rxjs.map((isLoading) => isLoading
+                ? "<component-icon name=\"loading\"></component-icon>"
+                : `<svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                      <path d="M330 202a81 79 0 00-162 0 81 79 0 000 158 81 79 0 000-158m81 79a81 79 0 1181 79H168" fill="none" stroke="currentColor" stroke-width="35px"/>
                  </svg>`),
-            stateMutation(qs($page, `[data-bind="logo"]`), "innerHTML"),
+            stateMutation(qs($page, "[data-bind=\"logo\"]"), "innerHTML")
         ));
 
         // feature: currently active menu link
@@ -75,7 +75,7 @@ export default function(ctrl) {
             rxjs.mergeMap(($els) => $els),
             rxjs.filter(($el) => location.pathname.endsWith($el.getAttribute("href"))),
             rxjs.tap(($el) => $el.classList.add("active")),
-            rxjs.tap(($el) => $el.removeAttribute("href")),
+            rxjs.tap(($el) => $el.removeAttribute("href"))
         ));
     };
 }

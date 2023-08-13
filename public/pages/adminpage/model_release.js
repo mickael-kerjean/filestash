@@ -3,20 +3,20 @@ import ajax from "../../lib/ajax.js";
 
 const release$ = ajax({
     url: "/about",
-    responseType: "text",
+    responseType: "text"
 }).pipe(rxjs.shareReplay(1));
 
 class ReleaseImpl {
     get() {
         return release$.pipe(
             rxjs.map(({ response, responseHeaders }) => {
-                const a = document.createElement("html")
+                const a = document.createElement("html");
                 a.innerHTML = response;
                 return {
                     html: a.querySelector("table").outerHTML,
-                    version: responseHeaders["x-powered-by"].trim().replace(/^Filestash\/([v\.0-9]*).*$/, "$1"),
+                    version: responseHeaders["x-powered-by"].trim().replace(/^Filestash\/([v\.0-9]*).*$/, "$1")
                 };
-            }),
+            })
         );
     }
 }

@@ -26,14 +26,14 @@ export default function(render) {
 
     effect(stepper$.pipe(
         rxjs.map((step) => {
-            switch(step) {
+            switch (step) {
             case 1: return WithShell(componentStep1);
             case 2: return WithShell(componentStep2);
             default: throw new ApplicationError("INTERNAL_ERROR", "Assumption failed");
             }
         }),
-        rxjs.tap((ctrl) => ctrl(createRender(qs($page, `[data-bind="multistep-form"]`)))),
-        rxjs.catchError((err) => ctrlError(err)(render)),
+        rxjs.tap((ctrl) => ctrl(createRender(qs($page, "[data-bind=\"multistep-form\"]")))),
+        rxjs.catchError((err) => ctrlError(err)(render))
     ));
 };
 
@@ -54,8 +54,9 @@ function componentStep1(render) {
         </div>
     `);
     render(transition($page, {
-        timeEnter: 250, enter: zoomIn(1.2),
-        timeLeave: 0,
+        timeEnter: 250,
+        enter: zoomIn(1.2),
+        timeLeave: 0
     }));
 
     // feature: form handling
@@ -66,17 +67,17 @@ function componentStep1(render) {
         rxjs.delay(1000),
         rxjs.tap(() => animate($page, { time: 200, keyframes: slideXOut(-30) })),
         rxjs.delay(200),
-        rxjs.tap(() => stepper$.next(2)),
+        rxjs.tap(() => stepper$.next(2))
     ));
 
     // feature: hide side menu to remove distractions
     effect(rxjs.of(cssHideMenu).pipe(
-        stateMutation(qs($page, "style"), "textContent"),
+        stateMutation(qs($page, "style"), "textContent")
     ));
 
     // feature: autofocus
     effect(rxjs.of([]).pipe(
-        applyMutation(qs($page, "input"), "focus"),
+        applyMutation(qs($page, "input"), "focus")
     ));
 }
 
@@ -94,8 +95,8 @@ function componentStep2(render) {
     render($page);
 
     // feature: navigate previous step
-    effect(rxjs.fromEvent(qs($page, `[data-bind="previous"]`), "click").pipe(
-        rxjs.tap(() => stepper$.next(1)),
+    effect(rxjs.fromEvent(qs($page, "[data-bind=\"previous\"]"), "click").pipe(
+        rxjs.tap(() => stepper$.next(1))
     ));
 
     // feature: reveal animation
@@ -103,7 +104,7 @@ function componentStep2(render) {
         stateMutation(qs($page, "style"), "textContent"),
         rxjs.tap(() => animate(qs($page, "h4"), { time: 200, keyframes: slideXIn(30) })),
         rxjs.delay(200),
-        rxjs.mapTo([]), applyMutation(qs($page, "style"), "remove"),
+        rxjs.mapTo([]), applyMutation(qs($page, "style"), "remove")
     ));
 
     // feature: telemetry popup
@@ -123,7 +124,7 @@ function componentStep2(render) {
         `);
         return new Promise((done) => {
             modal.alert($node, {
-                onQuit: done,
+                onQuit: done
             });
         });
     });
@@ -131,12 +132,15 @@ function componentStep2(render) {
 
 const animateOut = ($el) => {
     return rxjs.pipe(
-        rxjs.tap(() => animate($el, {time: 300, keyframes: [
-            { transform: "translateX(0px)", opacity: "1"},
-            { transform: "translateX(-30px)", opacity: "0"},
-        ]})),
-        rxjs.delay(200),
+        rxjs.tap(() => animate($el, {
+            time: 300,
+            keyframes: [
+                { transform: "translateX(0px)", opacity: "1" },
+                { transform: "translateX(-30px)", opacity: "0" }
+            ]
+        })),
+        rxjs.delay(200)
     );
-}
+};
 
 const css = await CSS(import.meta, "ctrl_setup.css");

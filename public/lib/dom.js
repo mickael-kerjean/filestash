@@ -15,8 +15,8 @@ export function safe(str, ...escapeChars) {
 
     const $div = document.createElement("div");
     escapeChars.forEach((c) => {
-        str = str.replaceAll(c, "\\"+c);
+        str = str.replaceAll(c, "\\" + c);
     });
-	$div.textContent = str;
-	return $div.innerHTML;
+    $div.textContent = str;
+    return $div.innerHTML;
 }

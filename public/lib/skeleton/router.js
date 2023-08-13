@@ -29,7 +29,7 @@ export function currentRoute(r, notFoundRoute) {
     return r[notFoundRoute];
 }
 
-function _getHref ($node, $root) {
+function _getHref($node, $root) {
     if ($node.matches("[data-link]")) return $node.getAttribute("href");
     if (!$node.parentElement || $node.isSameNode($root)) return null;
     return _getHref($node.parentElement, $root);

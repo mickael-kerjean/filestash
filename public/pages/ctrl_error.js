@@ -39,18 +39,18 @@ export default function(err) {
         // ));
 
         // feature: show error details
-        effect(rxjs.fromEvent(qs($page, `button[data-bind="details"]`), "click").pipe(
+        effect(rxjs.fromEvent(qs($page, "button[data-bind=\"details\"]"), "click").pipe(
             rxjs.mapTo(["hidden"]),
-            applyMutation(qs($page, "pre"), "classList", "toggle"),
+            applyMutation(qs($page, "pre"), "classList", "toggle")
         ));
 
         // feature: refresh button
-        effect(rxjs.fromEvent(qs($page, `button[data-bind="refresh"]`), "click").pipe(
-            rxjs.tap(() => location.reload()),
+        effect(rxjs.fromEvent(qs($page, "button[data-bind=\"refresh\"]"), "click").pipe(
+            rxjs.tap(() => location.reload())
         ));
 
         return rxjs.of(err);
-    }
+    };
 }
 
 function processError(err) {
@@ -68,7 +68,6 @@ trace:   ${err.stack}`;
 type:  ${err.type()}
 debug: ${err.debug()}
 trace: ${err.stack}`;
-
     } else {
         msg = t("Internal Error");
         trace = `

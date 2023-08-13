@@ -10,6 +10,6 @@ export default function(render) {
 
     effect(deleteSession().pipe(
         rxjs.tap(() => navigate("/")),
-        rxjs.catchError(ctrlError(render)),
+        rxjs.catchError(ctrlError(render))
     ));
 }

@@ -3,5 +3,5 @@ import ajax from "../../lib/ajax.js";
 
 export default ajax({
     url: "/api/backend",
-    responseType: "json",
+    responseType: "json"
 }).pipe(rxjs.map(({ responseJSON }) => responseJSON.result));

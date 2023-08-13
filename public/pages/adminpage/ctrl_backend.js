@@ -22,7 +22,7 @@ export default AdminOnly(WithShell(function(render) {
     `);
     render(transition($page));
 
-    componentStorageBackend(createRender(qs($page, `[data-bind="backend"]`)));
+    componentStorageBackend(createRender(qs($page, "[data-bind=\"backend\"]")));
 }));
 
 function componentStorageBackend(render) {
@@ -47,9 +47,8 @@ function componentStorageBackend(render) {
                 </div>
             </div>
         `)]),
-        applyMutation(qs($page, `[data-bind="backend-available"]`), "appendChild"),
+        applyMutation(qs($page, "[data-bind=\"backend-available\"]"), "appendChild")
     ));
 }
-
 
 const css = await CSS(import.meta, "ctrl_backend.css");

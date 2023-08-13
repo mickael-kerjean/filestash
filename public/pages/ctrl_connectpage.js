@@ -23,20 +23,20 @@ export default function(render) {
     render($page);
 
     // feature1: connection form
-    ctrlForm(createRender(qs($page, `[data-bind="component_form"]`)));
+    ctrlForm(createRender(qs($page, "[data-bind=\"component_form\"]")));
 
     // feature2: forkme button
     effect(config$.pipe(
         rxjs.filter(({ fork_button }) => fork_button !== false),
         rxjs.mapTo([$fork]),
-        applyMutation(qs($page, `[data-bind="component_forkme"]`), "appendChild"),
+        applyMutation(qs($page, "[data-bind=\"component_forkme\"]"), "appendChild")
     ));
 
     // feature3: poweredby button
     effect(config$.pipe(
         rxjs.filter(({ fork_button }) => fork_button !== false),
         rxjs.mapTo([$poweredby]),
-        applyMutation(qs($page, `[data-bind="component_poweredby"]`), "appendChild"),
+        applyMutation(qs($page, "[data-bind=\"component_poweredby\"]"), "appendChild")
     ));
 
     // feature4: center the form
@@ -53,7 +53,7 @@ export default function(render) {
             return size;
         }),
         rxjs.map((size) => ["padding-top", `${size}px`]),
-        applyMutation(qs($page, `[data-bind="centerthis"]`), "style", "setProperty"),
+        applyMutation(qs($page, "[data-bind=\"centerthis\"]"), "style", "setProperty")
     ));
 }
 

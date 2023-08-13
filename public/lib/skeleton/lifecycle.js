@@ -2,7 +2,7 @@ let _cleanup = [];
 
 export async function init($root) {
     $root.cleanup = () => {
-        const fns = _cleanup.map((fn) => fn($root))
+        const fns = _cleanup.map((fn) => fn($root));
         _cleanup = [];
         return Promise.all(fns);
     };

@@ -39,8 +39,8 @@ export function createThing({
 }) {
     const $thing = $tmpl.cloneNode(true);
     if ($thing instanceof HTMLElement) {
-        const $label = $thing.querySelector(".component_filename .file-details > span")
-        if($label instanceof HTMLElement) $label.textContent = label;
+        const $label = $thing.querySelector(".component_filename .file-details > span");
+        if ($label instanceof HTMLElement) $label.textContent = label;
         // if (files[i]["type"] === "file") $node.querySelector("a").setAttribute("href", "/view" + path + files[i]["name"]);
         // else $node.querySelector("a").setAttribute("href", "/files" + path + files[i]["name"] + "/");
     }

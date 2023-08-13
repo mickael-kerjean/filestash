@@ -9,9 +9,9 @@ class AuditManager {
         });
         return ajax({
             url: "/admin/api/audit?" + p.toString(),
-            responseType: "json",
+            responseType: "json"
         }).pipe(
-            rxjs.map((res) => res.responseJSON.result),
+            rxjs.map((res) => res.responseJSON.result)
         );
     }
 }

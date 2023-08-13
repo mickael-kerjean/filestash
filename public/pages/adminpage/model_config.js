@@ -14,9 +14,10 @@ class ConfigManager {
         return ajax({
             url: "/admin/api/config",
             withCredentials: true,
-            method: "GET", responseType: "json",
+            method: "GET",
+            responseType: "json"
         }).pipe(
-            rxjs.map((res) => res.responseJSON.result),
+            rxjs.map((res) => res.responseJSON.result)
         );
     }
 
@@ -25,7 +26,7 @@ class ConfigManager {
             rxjs.tap(() => this.isSaving$.next(true)),
             rxjs.debounceTime(1000),
             rxjs.delay(1000),
-            rxjs.tap(() => this.isSaving$.next(false)),
+            rxjs.tap(() => this.isSaving$.next(false))
         );
     }
 }

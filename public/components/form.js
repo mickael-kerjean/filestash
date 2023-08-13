@@ -8,7 +8,7 @@ export function formTmpl(options = {}) {
     const {
         autocomplete = true,
         renderNode = null,
-        renderLeaf = null,
+        renderLeaf = null
     } = options;
     return {
         renderNode: (opts) => {
@@ -36,7 +36,7 @@ export function formTmpl(options = {}) {
             `);
         },
         renderInput: $renderInput({ autocomplete }),
-        formatLabel: format,
+        formatLabel: format
     };
 };
 
@@ -53,34 +53,34 @@ function $renderInput(options = {}) {
             readonly = false,
             path = [],
             datalist = null,
-            options = null,
+            options = null
         } = props;
 
         let attr = `name="${path.join(".")}" `;
         if (id) attr += `id="${id}" `;
         if (placeholder) attr += `placeholder="${safe(placeholder, "\"")}" `;
-        if (!autocomplete) attr += `autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="off" `;
+        if (!autocomplete) attr += "autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"off\" ";
         if (required) attr += "required ";
         if (readonly) attr += "readonly ";
 
         switch (type) {
-            case "text": // TODO
-                const dataListId = gid("list_");
-                const $input = createElement(`
+        case "text": // TODO
+            const dataListId = gid("list_");
+            const $input = createElement(`
                     <input ${safe(attr)}
                         type="text"
                         value="${safe(value, "\"") || ""}"
                         class="component_input"
                     />
                 `);
-                if (!datalist) return $input;
-                const $wrapper = window.document.createElement("span");
-                const $datalist = window.document.createElement("datalist")
-                $wrapper.appendChild($input);
-                $datalist.setAttribute("id", dataListId);
-                return $wrapper;
-            case "enable":
-                return createElement(`
+            if (!datalist) return $input;
+            const $wrapper = window.document.createElement("span");
+            const $datalist = window.document.createElement("datalist");
+            $wrapper.appendChild($input);
+            $datalist.setAttribute("id", dataListId);
+            return $wrapper;
+        case "enable":
+            return createElement(`
                     <div class="component_checkbox">
                         <input
                             type="checkbox"
@@ -89,8 +89,8 @@ function $renderInput(options = {}) {
                         <span className="indicator"></span>
                     </div>
                 `);
-            case "number":
-                return createElement(`
+        case "number":
+            return createElement(`
                     <input
                         ${safe(attr)}
                         type="number"
@@ -98,9 +98,9 @@ function $renderInput(options = {}) {
                         class="component_input"
                     />
                 `);
-            case "password":
-                // TODO: click eye
-                const $node = createElement(`
+        case "password":
+            // TODO: click eye
+            const $node = createElement(`
                     <div class="formbuilder_password">
                         <input
                             ${safe(attr)}
@@ -111,23 +111,25 @@ function $renderInput(options = {}) {
                         <component-icon name="eye"></component-icon>
                     </div>
                 `);
-                const $icon = $node.querySelector("component-icon");
-                if ($icon instanceof window.HTMLElement) $icon.onclick = function(e) {
+            const $icon = $node.querySelector("component-icon");
+            if ($icon instanceof window.HTMLElement) {
+                $icon.onclick = function(e) {
                     if (!(e.target instanceof window.HTMLElement)) return;
                     const $input = e.target.parentElement.previousElementSibling;
                     if ($input.getAttribute("type") === "password") $input.setAttribute("type", "text");
                     else $input.setAttribute("type", "password");
                 };
-                return $node;
-            case "long_password":
-                // TODO
-            case "long_text":
-                return createElement(`
+            }
+            return $node;
+        case "long_password":
+            // TODO
+        case "long_text":
+            return createElement(`
                     <textarea ${safe(attr)} class="component_textarea" rows="8">
                     </textarea>
                 `);
-            case "bcrypt":
-                return createElement(`
+        case "bcrypt":
+            return createElement(`
                     <input
                     type="password"
                     ${safe(attr)}
@@ -136,17 +138,17 @@ function $renderInput(options = {}) {
                         class="component_input"
                     />
                 `);
-                // TODO
-            case "hidden":
-                return createElement(`
+            // TODO
+        case "hidden":
+            return createElement(`
                     <input
                         type="hidden"
                         value=${safe(value)}
                         name="${safe(path.join("."))}"
                     />
                 `);
-            case "boolean":
-                return createElement(`
+        case "boolean":
+            return createElement(`
                     <div class="component_checkbox">
                         <input
                             ${safe(attr)}
@@ -156,35 +158,35 @@ function $renderInput(options = {}) {
                         <span class="indicator"></span>
                     </div>
                 `);
-            case "select":
-                const renderOption = (name) => `<option name="${safe(name)}">${safe(name)}</option>`;
-                return createElement(`
+        case "select":
+            const renderOption = (name) => `<option name="${safe(name)}">${safe(name)}</option>`;
+            return createElement(`
                     <select class="component_select" ${safe(attr)}>
                         ${(options || []).map(renderOption)}
                     </select>
                 `);
-            case "date":
-                return createElement(`
+        case "date":
+            return createElement(`
                     <input
                         ${safe(attr)}
                         type="date"
                         class="component_input"
                     />
                 `);
-            case "datetime":
-                return createElement(`
+        case "datetime":
+            return createElement(`
                     <input
                         ${safe(attr)}
                         type="datetime-local"
                         class="component_input"
                     />
                 `);
-            case "image":
-                return createElement(`<img id="${safe(id)}" src="${safe(value)}" />`);
-            case "file":
-                // return createElement() // TODO
-            default:
-                return createElement(`
+        case "image":
+            return createElement(`<img id="${safe(id)}" src="${safe(value)}" />`);
+        case "file":
+            // return createElement() // TODO
+        default:
+            return createElement(`
                     <input
                         value="unknown element type ${type}"
                         type="text"
@@ -194,7 +196,7 @@ function $renderInput(options = {}) {
                     />
                 `);
         }
-    }
+    };
 }
 
 export function format(name) {
