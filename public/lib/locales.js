@@ -13,9 +13,9 @@ export default function t(str = "", replacementString, requestedKey) {
     // ).replace("{{VALUE}}", replacementString);
 }
 
-function reformat(translated, initial) {
-    if (initial[0] && initial[0].toLowerCase() === initial[0]) {
-        return translated || "";
-    }
-    return (translated[0] && translated[0].toUpperCase() + translated.substring(1)) || "";
-}
+// function reformat(translated, initial) {
+//     if (initial[0] && initial[0].toLowerCase() === initial[0]) {
+//         return translated || "";
+//     }
+//     return (translated[0] && translated[0].toUpperCase() + translated.substring(1)) || "";
+// }

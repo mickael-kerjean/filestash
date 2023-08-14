@@ -130,17 +130,17 @@ function componentStep2(render) {
     });
 }
 
-const animateOut = ($el) => {
-    return rxjs.pipe(
-        rxjs.tap(() => animate($el, {
-            time: 300,
-            keyframes: [
-                { transform: "translateX(0px)", opacity: "1" },
-                { transform: "translateX(-30px)", opacity: "0" }
-            ]
-        })),
-        rxjs.delay(200)
-    );
-};
+// const animateOut = ($el) => {
+//     return rxjs.pipe(
+//         rxjs.tap(() => animate($el, {
+//             time: 300,
+//             keyframes: [
+//                 { transform: "translateX(0px)", opacity: "1" },
+//                 { transform: "translateX(-30px)", opacity: "0" }
+//             ]
+//         })),
+//         rxjs.delay(200)
+//     );
+// };
 
-const css = await CSS(import.meta, "ctrl_setup.css");
+const css = await CSS(import.meta.url, "ctrl_setup.css");

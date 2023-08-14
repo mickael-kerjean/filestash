@@ -4,7 +4,7 @@ import { qs } from "../../lib/dom.js";
 
 import { CSS } from "../../helpers/loader.js";
 
-import Release from "./model_release.js";
+import { get as getRelease } from "./model_release.js";
 import Config from "./model_config.js";
 
 import "../../components/icon.js";
@@ -45,7 +45,7 @@ export default function(ctrl) {
                     </ul>
                 </div>
                 <div class="page_container scroll-y" data-bind="admin"></div>
-                <style>${css}</style>
+                <style id="adminpage::decorator_sidemenu">.component_menu_sidebar { visibility: hidden; } </style>
             </div>
         `);
         render($page);
@@ -53,8 +53,15 @@ export default function(ctrl) {
         // feature: setup the childrens
         ctrl(($node) => qs($page, "[data-bind=\"admin\"]").appendChild($node));
 
+
+        // feature: css loading
+        effect(rxjs.from(CSS(import.meta.url, "decorator_sidemenu.css", "index.css")).pipe(
+            rxjs.mergeMap((cssPromise) => cssPromise),
+            stateMutation(qs($page, `style[id="adminpage::decorator_sidemenu"]`), "textContent"),
+        ));
+
         // feature: display the release version
-        effect(Release.get().pipe(
+        effect(getRelease().pipe(
             rxjs.map(({ version }) => version),
             stateMutation(qs($page, "[data-bind=\"version\"]"), "textContent")
         ));
@@ -79,5 +86,3 @@ export default function(ctrl) {
         ));
     };
 }
-
-const css = await CSS(import.meta, "decorator_sidemenu.css", "index.css");

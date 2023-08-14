@@ -14,7 +14,7 @@ class Icon extends window.HTMLElement {
                     class="component_icon"
                     draggable="false"
                     src="${img}"
-                    alt="${name}" />`;
+                    alt="${alt}" />`;
     }
 
     _mapOfIcon(name) {
@@ -32,4 +32,4 @@ class Icon extends window.HTMLElement {
     }
 }
 
-window.customElements.define("component-icon", Icon);
+customElements.define("component-icon", Icon);

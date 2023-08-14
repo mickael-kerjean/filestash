@@ -2,7 +2,7 @@ import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation, preventDefault } from "../../lib/rx.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
 import { animate, slideYIn } from "../../lib/animate.js";
-import { createForm, mutateForm } from "../../lib/form.js";
+import { createForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 
 import { CSS } from "../../helpers/loader.js";

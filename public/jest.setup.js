@@ -19,3 +19,6 @@ global.console = {
     warn: jest.fn(),
     error: jest.fn()
 };
+global.customElements = {
+    define: jest.fn(),
+};

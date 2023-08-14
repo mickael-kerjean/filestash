@@ -51,4 +51,4 @@ function componentStorageBackend(render) {
     ));
 }
 
-const css = await CSS(import.meta, "ctrl_backend.css");
+const css = await CSS(import.meta.url, "ctrl_backend.css");

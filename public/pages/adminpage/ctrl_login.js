@@ -11,7 +11,7 @@ import "../../components/icon.js";
 export default function(render) {
     const $form = createElement(`
         <div class="component_container component_page_adminlogin">
-            <style>${css}</style>
+            <style id="adminpage::ctrl_login">.component_page_adminlogin{ visibility: hidden; } </style>
             <form>
                 <div class="input_group">
                     <input type="password" name="password" placeholder="Password" class="component_input" autocomplete>
@@ -41,6 +41,11 @@ export default function(render) {
         rxjs.delay(300), applyMutation(qs($form, ".input_group"), "classList", "remove")
     ));
 
+    // feature: load CSS
+    effect(rxjs.from(CSS(import.meta.url, "ctrl_login.css")).pipe(
+        stateMutation(qs($form, `style[id="adminpage::ctrl_login"]`), "textContent"),
+    ));
+
     // feature: nice transition
     render(transition($form, {
         timeoutEnter: 250,
@@ -60,5 +65,3 @@ export default function(render) {
         applyMutation($form, "style", "setProperty")
     ));
 }
-
-const css = await CSS(import.meta, "ctrl_login.css");

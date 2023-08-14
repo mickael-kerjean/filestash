@@ -1,5 +1,4 @@
-import { onDestroy, createElement } from "./skeleton/index.js";
-import rxjs from "./rx.js";
+import { onDestroy } from "./skeleton/index.js";
 
 export function transition($node, opts = {}) {
     const {
@@ -18,7 +17,7 @@ export function animate($node, opts = {}) {
     else if (typeof $node.animate !== "function") return Promise.resolve();
 
     return new Promise((done) => {
-        const run = $node.animate(keyframes, {
+        $node.animate(keyframes, {
             duration: time,
             fill: "forwards"
         }).onfinish = done;

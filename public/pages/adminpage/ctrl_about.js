@@ -23,4 +23,4 @@ export default AdminOnly(WithShell(async function(render) {
     ));
 }));
 
-const css = await CSS(import.meta, "ctrl_about.css");
+const css = await CSS(import.meta.url, "ctrl_about.css");

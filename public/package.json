@@ -5,7 +5,7 @@
   "description": "Frontend for Filestash",
   "main": "index.js",
   "scripts": {
-    "check": "tsc",
+    "check": "tsc && eslint .",
     "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest"
   },
   "author": "Mickael Kerjean",
@@ -43,6 +43,34 @@
           "babel-plugin-transform-import-meta"
         ]
       }
+    }
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2021": true,
+      "jest": true
+    },
+    "ignorePatterns": ["lib/vendor/*.js", "*.test.js"],
+    "extends": "standard",
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },
+    "rules": {
+      "quotes": ["error", "double"],
+      "indent": ["error", 4],
+      "semi": ["error", "always"],
+      "space-before-function-paren": ["error", "never"],
+      "camelcase": ["off"],
+      "dot-notation": ["off"],
+      "no-case-declarations": ["off"],
+      "no-fallthrough": ["off"],
+      "prefer-regex-literals": ["off"],
+      "promise/param-names": ["off"],
+      "no-return-assign": ["off"],
+      "brace-style": ["off"],
+      "no-useless-escape": ["off"]
     }
   }
 }

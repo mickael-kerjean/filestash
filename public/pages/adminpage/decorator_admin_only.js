@@ -12,9 +12,9 @@ export default function AdminOnly(ctrlWrapped) {
 
         effect(isAdmin$().pipe(
             rxjs.map((isAdmin) => isAdmin ? ctrlWrapped : ctrlLogin),
-            rxjs.tap((ctrl) => ctrl(render)),
-            rxjs.catchError((err) => ctrlError(err)(render)),
-            rxjs.tap(() => loader$.unsubscribe())
+            rxjs.catchError((err) => rxjs.of(ctrlError(err))),
+            rxjs.tap(() => loader$.unsubscribe()),
+            rxjs.tap((ctrl) => ctrl(render))
         ));
     };
 }

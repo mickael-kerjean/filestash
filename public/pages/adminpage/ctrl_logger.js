@@ -1,7 +1,7 @@
 import { createElement, createRender } from "../../lib/skeleton/index.js";
 import rxjs, { effect, stateMutation, applyMutation } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
-import { createForm, mutateForm } from "../../lib/form.js";
+import { createForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 
 import transition from "./animate.js";

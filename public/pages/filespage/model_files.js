@@ -11,8 +11,8 @@ export function ls() {
     );
 }
 
-function repeat(element, times) {
-    const result = Array(times);
-    for (let i = 0; i < times; i++) result[i] = element;
-    return result;
-}
+// function repeat(element, times) {
+//     const result = Array(times);
+//     for (let i = 0; i < times; i++) result[i] = element;
+//     return result;
+// }

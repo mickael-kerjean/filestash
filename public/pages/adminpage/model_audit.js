@@ -4,7 +4,7 @@ import ajax from "../../lib/ajax.js";
 class AuditManager {
     get(searchParams = {}) {
         const p = new URLSearchParams();
-        Object.keys(searchParams).map((key) => {
+        Object.keys(searchParams).forEach((key) => {
             p.set(key, searchParams[key]);
         });
         return ajax({

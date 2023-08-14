@@ -4,7 +4,6 @@ import { qs } from "../lib/dom.js";
 import t from "../lib/locales.js";
 
 import { AjaxError, ApplicationError } from "../lib/error.js";
-import { CSS } from "../helpers/loader.js";
 
 import "../components/icon.js";
 

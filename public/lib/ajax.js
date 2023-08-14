@@ -6,7 +6,6 @@ export default function(opts) {
     else if (typeof opts !== "object") throw new Error("unsupported call");
     if (!opts.headers) opts.headers = {};
     opts.headers["X-Requested-With"] = "XmlHttpRequest";
-    const isJson = opts.responseType;
     return ajax({ ...opts, responseType: "text" }).pipe(
         rxjs.catchError((err) => rxjs.throwError(processError(err.xhr, err))),
         rxjs.map((res) => {
@@ -52,7 +51,6 @@ function processError(xhr, err) {
             message || "Oups something went wrong with our servers",
             err, "INTERNAL_SERVER_ERROR"
         );
-        break;
     case 401:
         return new AjaxError(
             message || "Authentication error",
@@ -60,10 +58,9 @@ function processError(xhr, err) {
         );
     case 403:
         return new AjaxError(
-            message || "You can\'t do that",
+            message || "You can't do that",
             err, "FORBIDDEN"
         );
-        break;
     case 413:
         return new AjaxError(
             message || "Payload too large",
@@ -77,7 +74,7 @@ function processError(xhr, err) {
     case 409:
         if (response.error_summary) { // dropbox way to say doesn't exist
             return new AjaxError(
-                "Doesn\'t exist",
+                "Doesn't exist",
                 err, "UNKNOWN_PATH"
             );
         }
@@ -92,7 +89,6 @@ function processError(xhr, err) {
                 "Service unavailable, if the problem persist, contact your administrator",
                 err, "INTERNAL_SERVER_ERROR"
             );
-            break;
         default:
             return new AjaxError(xhr.responseText, err, "INTERNAL_SERVER_ERROR");
         }

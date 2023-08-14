@@ -1,6 +1,5 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
-import rxjs, { effect, applyMutation } from "../lib/rx.js";
-import { qs } from "../lib/dom.js";
+import rxjs, { effect } from "../lib/rx.js";
 import { CSS } from "../helpers/loader.js";
 import ctrlError from "./ctrl_error.js";
 
@@ -9,7 +8,7 @@ import componentFilesystem from "./filespage/filesystem.js";
 
 import "../components/breadcrumb.js";
 
-export default async function(render) {
+export default function(render) {
     const currentPath = location.pathname.replace(new RegExp("/files"), "");
     const $page = createElement(`
         <div class="component_page_filespage">
@@ -21,7 +20,7 @@ export default async function(render) {
                     <div is="component-filesystem"></div>
                 </div>
             </div>
-            <style>${await CSS(import.meta.url, "ctrl_filespage.css")}</style>
+            <style>${css}</style>
         </div>
     `);
     render($page);
@@ -37,3 +36,5 @@ export default async function(render) {
     // feature2: render the filesystem
     componentFilesystem(createRender($page.querySelector("[is=\"component-filesystem\"]")));
 }
+
+const css = await CSS(import.meta.url, "ctrl_filespage.css");

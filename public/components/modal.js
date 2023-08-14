@@ -16,7 +16,7 @@ const free = () => {
 
 export default class Modal extends HTMLElement {
     async trigger($node, opts = {}) {
-        const { onQuit, leftButton, rightButton } = opts;
+        const { onQuit } = opts;
         const $modal = createElement(`
 <div class="component_modal" id="modal-box">
   <style>${await CSS(import.meta.url, "modal.css")}</style>

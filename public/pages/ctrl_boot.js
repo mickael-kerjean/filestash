@@ -103,22 +103,22 @@ async function setup_device() {
     });
 }
 
-async function setup_sw() {
-    if (!("serviceWorker" in window.navigator)) return;
+// async function setup_sw() {
+//     if (!("serviceWorker" in window.navigator)) return;
 
-    if (window.navigator.userAgent.indexOf("Mozilla/") !== -1 &&
-        window.navigator.userAgent.indexOf("Firefox/") !== -1 &&
-        window.navigator.userAgent.indexOf("Gecko/") !== -1) {
-        // Firefox was acting weird with service worker so we disabled it
-        // see: https://github.com/mickael-kerjean/filestash/issues/255
-        return;
-    }
-    try {
-        await window.navigator.serviceWorker.register("/sw_cache.js");
-    } catch (err) {
-        report("ServiceWorker registration failed", err);
-    }
-}
+//     if (window.navigator.userAgent.indexOf("Mozilla/") !== -1 &&
+//         window.navigator.userAgent.indexOf("Firefox/") !== -1 &&
+//         window.navigator.userAgent.indexOf("Gecko/") !== -1) {
+//         // Firefox was acting weird with service worker so we disabled it
+//         // see: https://github.com/mickael-kerjean/filestash/issues/255
+//         return;
+//     }
+//     try {
+//         await window.navigator.serviceWorker.register("/sw_cache.js");
+//     } catch (err) {
+//         report("ServiceWorker registration failed", err);
+//     }
+// }
 
 async function setup_blue_death_screen() {
     window.onerror = function(msg, url, lineNo, colNo, error) {
@@ -127,13 +127,13 @@ async function setup_blue_death_screen() {
     };
 }
 
-async function setup_chromecast() {
-    if (!window.CONFIG["enable_chromecast"]) {
-        return Promise.resolve();
-    } else if (!("chrome" in window)) {
-        return Promise.resolve();
-    } else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-        return Promise.resolve();
-    }
-    return window.Chromecast.init();
-}
+// async function setup_chromecast() {
+//     if (!window.CONFIG["enable_chromecast"]) {
+//         return Promise.resolve();
+//     } else if (!("chrome" in window)) {
+//         return Promise.resolve();
+//     } else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+//         return Promise.resolve();
+//     }
+//     return window.Chromecast.init();
+// }
