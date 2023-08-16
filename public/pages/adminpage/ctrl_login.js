@@ -8,10 +8,11 @@ import { authenticate$ } from "./model_admin_session.js";
 
 import "../../components/icon.js";
 
-export default function(render) {
+export default async function(render) {
+    const css = await CSS(import.meta.url, "ctrl_login.css");
     const $form = createElement(`
         <div class="component_container component_page_adminlogin">
-            <style id="adminpage::ctrl_login">.component_page_adminlogin{ visibility: hidden; } </style>
+            <style>.component_page_adminlogin{ visibility: hidden; } </style>
             <form>
                 <div class="input_group">
                     <input type="password" name="password" placeholder="Password" class="component_input" autocomplete>
@@ -39,11 +40,6 @@ export default function(render) {
         rxjs.mapTo(""), stateMutation(qs($form, "[name=\"password\"]"), "value"),
         rxjs.mapTo(["error"]), applyMutation(qs($form, ".input_group"), "classList", "add"),
         rxjs.delay(300), applyMutation(qs($form, ".input_group"), "classList", "remove")
-    ));
-
-    // feature: load CSS
-    effect(rxjs.from(CSS(import.meta.url, "ctrl_login.css")).pipe(
-        stateMutation(qs($form, `style[id="adminpage::ctrl_login"]`), "textContent"),
     ));
 
     // feature: nice transition

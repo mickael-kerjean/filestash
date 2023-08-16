@@ -10,7 +10,7 @@ import AdminOnly from "./decorator_admin_only.js";
 import WithShell from "./decorator_sidemenu.js";
 import Log from "./model_log.js";
 import Audit from "./model_audit.js";
-import Config from "./model_config.js";
+import { get as getConfig } from "./model_config.js";
 
 function Page(render) {
     const $page = createElement(`
@@ -38,7 +38,7 @@ function componentLogForm(render) {
     render($form);
 
     // feature1: render the form
-    effect(Config.get().pipe(
+    effect(getConfig().pipe(
         rxjs.map(({ log }) => ({ params: log })),
         rxjs.map((formSpec) => createForm(formSpec, formTmpl({ renderLeaf }))),
         rxjs.mergeMap((promise) => rxjs.from(promise)),

@@ -42,7 +42,7 @@ function processError(xhr, err) {
 
     const message = response.message || null;
 
-    if (navigator.onLine === false) {
+    if (window.navigator.onLine === false) {
         return new AjaxError("Connection Lost", err, "NO_INTERNET");
     }
     switch (xhr.status) {

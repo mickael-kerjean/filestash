@@ -5,14 +5,16 @@ import { qs } from "../../lib/dom.js";
 import { CSS } from "../../helpers/loader.js";
 
 import { get as getRelease } from "./model_release.js";
-import Config from "./model_config.js";
+import { isSaving } from "./model_config.js";
 
 import "../../components/icon.js";
 
 export default function(ctrl) {
-    return (render) => {
+    return async (render) => {
+        const css = await CSS(import.meta.url, "decorator_sidemenu.css", "index.css");
         const $page = createElement(`
             <div class="component_page_admin">
+                <style id="adminpage::decorator_sidemenu">${css}</style>
                 <div class="component_menu_sidebar no-select">
                     <a class="header" href="/">
                         <svg class="arrow_left" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -45,20 +47,12 @@ export default function(ctrl) {
                     </ul>
                 </div>
                 <div class="page_container scroll-y" data-bind="admin"></div>
-                <style id="adminpage::decorator_sidemenu">.component_menu_sidebar { visibility: hidden; } </style>
             </div>
         `);
         render($page);
 
         // feature: setup the childrens
         ctrl(($node) => qs($page, "[data-bind=\"admin\"]").appendChild($node));
-
-
-        // feature: css loading
-        effect(rxjs.from(CSS(import.meta.url, "decorator_sidemenu.css", "index.css")).pipe(
-            rxjs.mergeMap((cssPromise) => cssPromise),
-            stateMutation(qs($page, `style[id="adminpage::decorator_sidemenu"]`), "textContent"),
-        ));
 
         // feature: display the release version
         effect(getRelease().pipe(
@@ -67,7 +61,7 @@ export default function(ctrl) {
         ));
 
         // feature: logo serving as loading indicator
-        effect(Config.isSaving().pipe(
+        effect(isSaving().pipe(
             rxjs.startWith(false),
             rxjs.map((isLoading) => isLoading
                 ? "<component-icon name=\"loading\"></component-icon>"

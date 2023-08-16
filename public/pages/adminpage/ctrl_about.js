@@ -4,11 +4,12 @@ import { qs } from "../../lib/dom.js";
 import { CSS } from "../../helpers/loader.js";
 import transition from "./animate.js";
 
-import Release from "./model_release.js";
+import { get as getRelease } from "./model_release.js";
 import AdminOnly from "./decorator_admin_only.js";
 import WithShell from "./decorator_sidemenu.js";
 
 export default AdminOnly(WithShell(async function(render) {
+    const css = await CSS(import.meta.url, "ctrl_about.css");
     const $page = createElement(`
         <div class="component_page_about">
             <style>${css}</style>
@@ -17,10 +18,8 @@ export default AdminOnly(WithShell(async function(render) {
     `);
     render(transition($page));
 
-    effect(Release.get().pipe(
+    effect(getRelease().pipe(
         rxjs.map(({ html }) => html),
         stateMutation(qs($page, "[data-bind=\"about\"]"), "innerHTML")
     ));
 }));
-
-const css = await CSS(import.meta.url, "ctrl_about.css");

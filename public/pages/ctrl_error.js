@@ -2,17 +2,19 @@ import { createElement } from "../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation } from "../lib/rx.js";
 import { qs } from "../lib/dom.js";
 import t from "../lib/locales.js";
+import { CSS } from "../helpers/loader.js";
 
 import { AjaxError, ApplicationError } from "../lib/error.js";
 
 import "../components/icon.js";
 
 export default function(err) {
-    return function(render) {
+    return async function(render) {
+        const css = await CSS(import.meta.url, "ctrl_error.css");
         const [msg, trace] = processError(err);
         const $page = createElement(`
             <div>
-                <style></style>
+                <style>${css}</style>
                 <a href="/" class="backnav">
                     <component-icon data-name="arrow_left"></component-icon>
                     home
@@ -31,11 +33,6 @@ export default function(err) {
             </div>
         `);
         render($page);
-
-        // // feature: css loading
-        // effect(rxjs.of(CSS(import.meta.url, "ctrl_error.css")).pipe(
-        //     stateMutation(qs($page, "style"), "textContent"),
-        // ));
 
         // feature: show error details
         effect(rxjs.fromEvent(qs($page, "button[data-bind=\"details\"]"), "click").pipe(

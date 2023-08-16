@@ -8,7 +8,7 @@ import transition from "./animate.js";
 import { renderLeaf } from "./helper_form.js";
 import AdminOnly from "./decorator_admin_only.js";
 import WithShell from "./decorator_sidemenu.js";
-import Config from "./model_config.js";
+import { get as getConfig, save as saveConfig } from "./model_config.js";
 
 export default AdminOnly(WithShell(function(render) {
     const $container = createElement(`
@@ -18,12 +18,12 @@ export default AdminOnly(WithShell(function(render) {
     `);
     render(transition($container));
 
-    const config$ = Config.get().pipe(
+    const config$ = getConfig().pipe(
         rxjs.map((res) => {
             delete res.constant;
             delete res.middleware;
             return res;
-        })
+        }),
     );
 
     const tmpl = formTmpl({
@@ -38,13 +38,18 @@ export default AdminOnly(WithShell(function(render) {
         },
         renderLeaf
     });
-    effect(config$.pipe(
+
+    // feature: setup the form
+    const setup$ = config$.pipe(
         rxjs.mergeMap((formSpec) => createForm(formSpec, tmpl)),
         rxjs.map(($form) => [$form]),
-        applyMutation(qs($container, "[data-bind=\"form\"]"), "appendChild")
-    ));
+        applyMutation(qs($container, "[data-bind=\"form\"]"), "appendChild"),
+        rxjs.share(),
+    )
+    effect(setup$);
 
-    effect(config$.pipe(
+    // feature: handle form change
+    effect(setup$.pipe(
         rxjs.mergeMap(() => qsa($container, "[data-bind=\"form\"] [name]")),
         rxjs.mergeMap(($el) => rxjs.fromEvent($el, "input")),
         rxjs.map((e) => ({
@@ -58,6 +63,6 @@ export default AdminOnly(WithShell(function(render) {
     ).pipe(
         rxjs.withLatestFrom(config$),
         rxjs.map(([formState, formSpec]) => mutateForm(formSpec, formState)),
-        Config.save()
+        saveConfig(),
     ));
 }));
