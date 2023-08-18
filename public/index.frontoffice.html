@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/assets/css/reset.css">
+        <script type="module" src="/components/loader.js"></script>
+        <title></title>
+    </head>
+    <body>
+        <div role="main" id="app">
+            <component-loader delay="500"></component-loader>
+        </div>
+        <script type="module">
+          import main from "/lib/skeleton/index.js";
+          const routes = {
+              "/login": "/pages/ctrl_connectpage.js",
+              "/logout": "/pages/ctrl_logout.js",
+
+              "/": "/pages/ctrl_homepage.js",
+              "/files/.*": "/pages/ctrl_filespage.js",
+              "/view/.*": "/pages/ctrl_viewerpage.js",
+              // /tags/.* -> "pages/ctrl_tags.js",
+              // /s/.* -> "/pages/ctrl_share.js",
+
+              "/admin/backend": "/pages/adminpage/ctrl_backend.js",
+              "/admin/settings": "/pages/adminpage/ctrl_settings.js",
+              "/admin/logs": "/pages/adminpage/ctrl_logger.js",
+              "/admin/about": "/pages/adminpage/ctrl_about.js",
+              "/admin/setup": "/pages/adminpage/ctrl_setup.js",
+              "/admin/": "/pages/ctrl_adminpage.js",
+
+              "": "/pages/ctrl_notfound.js",
+          };
+          main(document.getElementById("app"), routes, {
+              spinner: `<component-loader></component-loader>`,
+              beforeStart: import("/pages/ctrl_boot.js"),
+          });
+        </script>
+
+        <script type="module" src="/components/modal.js"></script>
+        <component-modal></component-modal>
+
+        <noscript>
+            <div>
+                <h2>Error: Javascript is off</h2>
+                <p>You need to enable Javascript to run this application</p>
+            </div>
+        </noscript>
+    </body>
+</html>

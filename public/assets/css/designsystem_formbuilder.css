@@ -38,9 +38,6 @@
 .formbuilder .formbuilder_password {
     display: flex;
 }
-.formbuilder .formbuilder_password:focus-within img.component_icon {
-    border-color: var(--emphasis-primary);
-}
 .formbuilder .formbuilder_password img.component_icon {
     height: 20px;
     border: none;

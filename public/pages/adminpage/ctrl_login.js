@@ -24,6 +24,13 @@ export default async function(render) {
         </div>
     `);
 
+    // feature: nice transition
+    render(transition($form, {
+        timeoutEnter: 250,
+        enter: zoomIn(1.2),
+        timeoutLeave: 0
+    }));
+
     // feature: form interactions
     effect(rxjs.fromEvent(qs($form, "form"), "submit").pipe(
         preventDefault(),
@@ -41,13 +48,6 @@ export default async function(render) {
         rxjs.mapTo(["error"]), applyMutation(qs($form, ".input_group"), "classList", "add"),
         rxjs.delay(300), applyMutation(qs($form, ".input_group"), "classList", "remove")
     ));
-
-    // feature: nice transition
-    render(transition($form, {
-        timeoutEnter: 250,
-        enter: zoomIn(1.2),
-        timeoutLeave: 0
-    }));
 
     // feature: autofocus
     effect(rxjs.of([]).pipe(

@@ -122,36 +122,42 @@
     margin: 15px 0;
 }
 
-.component_page_admin .formbuilder h2 ~ div > div > label {
+.component_page_admin .formbuilder h2 ~ div > div > label,
+.component_page_admin .formbuilder h2 ~ div > div > div > label {
     display: block;
     border-bottom: 2px dashed rgba(100, 100, 100, 0.1);
     margin-bottom: 15px;
     padding-bottom: 5px;
     margin-top: 15px;
 }
-.component_page_admin .component_input,
-.component_page_admin .component_textarea,
-.component_page_admin .component_select {
+.component_page_admin .formbuilder .component_input,
+.component_page_admin .formbuilder .component_textarea,
+.component_page_admin .formbuilder .component_select {
     background: rgba(0, 0, 0, 0.05);
     border: 2px solid rgba(0, 0, 0, 0.05);
     border-radius: 3px;
     padding-left: 5px;
 }
-.component_page_admin .component_input[readonly],
-.component_page_admin .component_textarea[readonly],
-.component_page_admin .component_select[readonly] {
+.component_page_admin .formbuilder .component_input[readonly],
+.component_page_admin .formbuilder .component_textarea[readonly],
+.component_page_admin .formbuilder .component_select[readonly] {
     background: var(--dark);
     color: var(--light);
 }
-.component_page_admin .component_input:not([readonly]):hover,
-.component_page_admin .component_input:not([readonly]):focus,
-.component_page_admin .component_textarea:not([readonly]):hover,
-.component_page_admin .component_textarea:not([readonly]):focus,
-.component_page_admin .component_select:not([readonly]):hover,
-.component_page_admin .component_select:not([readonly]):focus {
+.component_page_admin .formbuilder .component_input:not([readonly]):hover,
+.component_page_admin .formbuilder .component_input:not([readonly]):focus,
+.component_page_admin .formbuilder .component_textarea:not([readonly]):hover,
+.component_page_admin .formbuilder .component_textarea:not([readonly]):focus,
+.component_page_admin .formbuilder .component_select:not([readonly]):hover,
+.component_page_admin .formbuilder .component_select:not([readonly]):focus {
     background: rgba(0, 0, 0, 0.07);
 }
-.component_page_admin .formbuilder_password .component_input {
+.component_page_admin form .formbuilder_password:focus-within img.component_icon,
+.component_page_admin form .formbuilder_password:hover img.component_icon{
+    border-color: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.07);
+}
+.component_page_admin .formbuilder .formbuilder_password .component_input {
     border-right: none;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
@@ -173,11 +179,11 @@
   line-height: 1em;
   text-align: justify;
 }
-.component_page_admin form input::placeholder,
-.component_page_admin form textarea::placeholder {
+.component_page_admin .formbuilder input::placeholder,
+.component_page_admin .formbuilder textarea::placeholder {
     opacity: 0.6;
 }
-.component_page_admin form label.input_type_hidden {
+.component_page_admin .formbuilder label.input_type_hidden {
     display: none;
 }
 .component_page_admin form fieldset legend {
@@ -206,14 +212,12 @@
 .component_page_admin form .formbuilder_password {
     display: flex;
 }
-.component_page_admin form .formbuilder_password:focus-within img.component_icon {
-    border-color: var(--emphasis-primary);
-}
 .component_page_admin form .formbuilder_password img.component_icon {
-    height: 20px;
-    border: none;
-    cursor: pointer;
-    padding: 5px 5px;
-    border-bottom: 2px solid rgba(70, 99, 114, 0.1);
-    transition: border-color 0.2s ease-out;
+    border: 2px solid rgba(0,0,0,.05);
+    height: 18px;
+    border-left: none;
+    background: rgba(0,0,0,.05);
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    padding-right: 5px;
 }

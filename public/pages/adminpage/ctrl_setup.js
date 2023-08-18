@@ -4,7 +4,7 @@ import { qs } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
 import { transition, animate, zoomIn, slideXOut, slideXIn } from "../../lib/animate.js";
 
-import { CSS } from "../../helpers/loader";
+import { CSS } from "../../helpers/loader.js";
 import modal from "../../helpers/modal.js";
 
 import ctrlError from "../ctrl_error.js";
@@ -13,7 +13,7 @@ import { cssHideMenu } from "./animate.js";
 
 import "../../components/icon.js";
 
-const stepper$ = new rxjs.BehaviorSubject(2);
+const stepper$ = new rxjs.BehaviorSubject(1);
 
 export default function(render) {
     const $page = createElement(`
@@ -44,10 +44,12 @@ function componentStep1(render) {
             <div>
                 <p>Create your instance admin password: </p>
                 <form>
-                    <input class="component_input" type="password" placeholder="Password" />
-                    <button theme="transparent">
-                        <component-icon name="arrow_right"></component-icon>
-                    </button>
+                    <div class="input_group">
+                        <input type="password" name="password" placeholder="Password" class="component_input" autocomplete>
+                        <button class="transparent">
+                            <component-icon name="arrow_right"></component-icon>
+                        </button>
+                    </div>
                 </form>
             </div>
             <style></style>

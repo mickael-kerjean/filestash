@@ -23,25 +23,7 @@
 .component_setup #step1 form {
     max-width: 400px;
 }
-.component_setup #step1 form {
-    display: flex;
-    background: white;
-    border-radius: 2px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-}
-.component_setup #step1 form input {
-    padding: 15px 20px;
-    border-bottom: 0;
-    margin: 0;
-    height: inherit !important;
-}
-.component_setup #step1 form button {
-    width: inherit;
-    padding: 0 10px;
-}
-.component_setup #step1 form button .component_icon {
-    height: 25px;
-}
+
 .component_setup #step2 .component_dependency_installed {
     margin: 10px 0;
     padding: 10px 10px;
