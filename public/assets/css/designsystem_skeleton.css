@@ -1,0 +1,12 @@
+.component_skeleton {
+    height: 30px;
+    background: linear-gradient(110deg, rgba(0,0,0,0.02) 8%, rgba(0,0,0,0.04) 18%, rgba(0,0,0,0.02) 33%);
+    border-radius: 5px;
+    background-size: 200% 100%;
+    animation: 3s skeleton_shine linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes skeleton_shine {
+    to { background-position-x: -200%; }
+}

@@ -3,17 +3,20 @@ import rxjs, { effect, applyMutation } from "../../lib/rx.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
+import { generateSkeleton } from "../../components/skeleton.js";
 
 import transition from "./animate.js";
 import { renderLeaf } from "./helper_form.js";
-import AdminOnly from "./decorator_admin_only.js";
-import WithShell from "./decorator_sidemenu.js";
+import AdminHOC from "./decorator.js";
 import { get as getConfig, save as saveConfig } from "./model_config.js";
 
-export default AdminOnly(WithShell(function(render) {
+export default AdminHOC(function(render) {
     const $container = createElement(`
         <div class="component_settingspage sticky">
-            <form data-bind="form" class="formbuilder"></form>
+            <form data-bind="form" class="formbuilder">
+                <h2>…</h2>
+                ${generateSkeleton(10)}
+            </form>
         </div>
     `);
     render(transition($container));
@@ -36,16 +39,16 @@ export default AdminOnly(WithShell(function(render) {
                 </div>
             `);
         },
-        renderLeaf
+        renderLeaf, autocomplete: false,
     });
 
     // feature: setup the form
     const setup$ = config$.pipe(
         rxjs.mergeMap((formSpec) => createForm(formSpec, tmpl)),
         rxjs.map(($form) => [$form]),
-        applyMutation(qs($container, "[data-bind=\"form\"]"), "appendChild"),
+        applyMutation(qs($container, "[data-bind=\"form\"]"), "replaceChildren"),
         rxjs.share(),
-    )
+    );
     effect(setup$);
 
     // feature: handle form change
@@ -65,4 +68,4 @@ export default AdminOnly(WithShell(function(render) {
         rxjs.map(([formState, formSpec]) => mutateForm(formSpec, formState)),
         saveConfig(),
     ));
-}));
+});

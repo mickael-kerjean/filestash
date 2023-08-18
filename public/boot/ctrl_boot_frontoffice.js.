@@ -11,7 +11,8 @@ export default async function main() {
             // setup_cache(), // TODO: dependency on session
             setup_device(),
             // setup_sw(), // TODO
-            setup_blue_death_screen()
+            setup_blue_death_screen(),
+            setup_history(),
         ]);
         // await Config.refresh()
 
@@ -137,3 +138,7 @@ async function setup_blue_death_screen() {
 //     }
 //     return window.Chromecast.init();
 // }
+
+async function setup_history() {
+    window.history.replaceState({}, "");
+}

@@ -12,7 +12,7 @@ export default async function(render) {
     const css = await CSS(import.meta.url, "ctrl_login.css");
     const $form = createElement(`
         <div class="component_container component_page_adminlogin">
-            <style>.component_page_adminlogin{ visibility: hidden; } </style>
+            <style>${css}</style>
             <form>
                 <div class="input_group">
                     <input type="password" name="password" placeholder="Password" class="component_input" autocomplete>

@@ -5,10 +5,9 @@ import { CSS } from "../../helpers/loader.js";
 import transition from "./animate.js";
 
 import { get as getRelease } from "./model_release.js";
-import AdminOnly from "./decorator_admin_only.js";
-import WithShell from "./decorator_sidemenu.js";
+import AdminHOC from "./decorator.js";
 
-export default AdminOnly(WithShell(async function(render) {
+export default AdminHOC(async function(render) {
     const css = await CSS(import.meta.url, "ctrl_about.css");
     const $page = createElement(`
         <div class="component_page_about">
@@ -22,4 +21,4 @@ export default AdminOnly(WithShell(async function(render) {
         rxjs.map(({ html }) => html),
         stateMutation(qs($page, "[data-bind=\"about\"]"), "innerHTML")
     ));
-}));
+});

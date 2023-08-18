@@ -5,7 +5,9 @@ class Loader extends window.HTMLElement {
     constructor() {
         super();
         this.timeout = window.setTimeout(() => {
-            this.innerHTML = this.render();
+            this.innerHTML = this.render({
+                inline: this.hasAttribute("inlined"),
+            });
         }, parseInt(this.getAttribute("delay")) || 0);
     }
 
@@ -13,7 +15,12 @@ class Loader extends window.HTMLElement {
         window.clearTimeout(this.timeout);
     }
 
-    render() {
+    render({ inline }) {
+        const fixedCss = `
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: calc(50% - 200px);`
         return `
 <div class="component_loader">
     <svg width="120px" height="120px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
@@ -27,11 +34,8 @@ class Loader extends window.HTMLElement {
     <style>
     .component_loader{
         text-align: center;
-        margin: 50px auto 0 auto;
-        position: fixed;
-        left: 0;
-        right: 0;
-        top: calc(50% - 200px);
+        margin: 100px auto 0 auto;
+        ${inline ? "" : fixedCss}
     }
     </style>
 </div>`;

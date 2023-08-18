@@ -9,7 +9,7 @@ import componentFilesystem from "./filespage/filesystem.js";
 import "../components/breadcrumb.js";
 
 export default function(render) {
-    const currentPath = location.pathname.replace(new RegExp("/files"), "");
+    const currentPath = decodeURIComponent(location.pathname).replace(new RegExp("/files"), "");
     const $page = createElement(`
         <div class="component_page_filespage">
             <div is="component-breadcrumb" path="${currentPath}"></div>

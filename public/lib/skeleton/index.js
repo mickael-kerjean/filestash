@@ -7,7 +7,7 @@ export { onDestroy } from "./lifecycle.js";
 let pageLoader;
 
 export default async function($root, routes, opts = {}) {
-    window.addEventListener("pagechange", async() => {
+    window.addEventListener("pagechange", async () => {
         try {
             const route = currentRoute(routes, "");
             const [ctrl] = await Promise.all([
@@ -17,6 +17,7 @@ export default async function($root, routes, opts = {}) {
             if (typeof ctrl !== "function") throw new Error(`Unknown route for ${route}`);
             pageLoader = ctrl(createRender($root));
         } catch (err) {
+            console.error("skeleton::index.js", err);
             window.onerror && window.onerror(err.message);
         }
     });
@@ -33,16 +34,17 @@ async function load(route, opts) {
         ctrl = route;
     } else if (typeof route === "string") {
         let spinnerID;
-        if (pageLoader && typeof pageLoader.then === "function") {
-            const pageLoaderCallback = await pageLoader;
-            if (typeof pageLoaderCallback !== "function") throw new Error("expected a function as returned value");
-            spinnerID = setTimeout(() => pageLoaderCallback(route), spinnerTime);
+        if (pageLoader && typeof pageLoader === "function") {
+            spinnerID = setTimeout(() => pageLoader(createRender($root)), spinnerTime);
         } else if (typeof spinner === "string") {
             spinnerID = setTimeout(() => $root.innerHTML = spinner, spinnerTime);
         }
         const module = await import("../.." + route);
         clearTimeout(spinnerID);
-        if (typeof module.default !== "function") throw new Error(`missing default export on ${route}`);
+        if (typeof module.default !== "function") {
+            console.error(module, module.default);
+            throw new Error(`missing default export on ${route}`);
+        }
         ctrl = module.default;
     }
     return ctrl;

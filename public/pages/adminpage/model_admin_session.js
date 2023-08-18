@@ -1,7 +1,7 @@
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 
-const sessionSubject$ = new rxjs.Subject();
+const sessionSubject$ = new rxjs.Subject(1);
 
 const adminSession$ = rxjs.merge(
     sessionSubject$,
@@ -10,9 +10,8 @@ const adminSession$ = rxjs.merge(
         rxjs.mergeMap(() => ajax({ url: "/admin/api/session", responseType: "json" })),
         rxjs.map(({ responseJSON }) => responseJSON.result),
         rxjs.distinctUntilChanged(),
-        rxjs.shareReplay(1)
     )
-);
+).pipe(rxjs.shareReplay(1));
 
 export function isAdmin$() {
     return adminSession$;

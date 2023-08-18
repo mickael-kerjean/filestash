@@ -1,7 +1,7 @@
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 
-let release$ = ajax({
+const release$ = ajax({
     url: "/about",
     responseType: "text"
 }).pipe(rxjs.shareReplay(1));

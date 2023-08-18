@@ -3,7 +3,7 @@ import { CSS } from "../../helpers/loader.js";
 
 const $tmpl = createElement(`
     <div class="component_thing view-grid not-selected" draggable="true">
-        <a href="/files/Videos/" data-link>
+        <a href="/view/README.org" data-link>
             <div class="box">
                 <div class="component_checkbox"><input type="checkbox"><span class="indicator"></span></div>
                 <span>
@@ -32,17 +32,18 @@ const $tmpl = createElement(`
 // can toggle links, potentially includes a thumbnail, can be used as a source and target for
 // drag and drop on other folders and many other non obvious stuff
 export function createThing({
-    link = null,
-    label = "N/A",
+    name = null,
+    type = "N/A",
+    size = 0,
     time = null,
+    link = "",
     permissions = {}
 }) {
     const $thing = $tmpl.cloneNode(true);
     if ($thing instanceof HTMLElement) {
         const $label = $thing.querySelector(".component_filename .file-details > span");
-        if ($label instanceof HTMLElement) $label.textContent = label;
-        // if (files[i]["type"] === "file") $node.querySelector("a").setAttribute("href", "/view" + path + files[i]["name"]);
-        // else $node.querySelector("a").setAttribute("href", "/files" + path + files[i]["name"] + "/");
+        if ($label instanceof HTMLElement) $label.textContent = name;
+        $thing.querySelector("a").setAttribute("href", link);
     }
     return $thing;
 }

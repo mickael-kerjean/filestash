@@ -1,4 +1,4 @@
-import { createElement } from "../../lib/skeleton/index.js";
+import { createElement, navigate } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation, preventDefault } from "../../lib/rx.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
 import { animate, slideYIn } from "../../lib/animate.js";
@@ -98,7 +98,9 @@ export default async function(render) {
             }
             return json;
         }),
-        rxjs.mergeMap((creds) => createSession(creds))
+        rxjs.mergeMap((creds) => createSession(creds)),
+        rxjs.tap(() => navigate("/")),
+        // TODO: error with notification
     ));
 
     render($page);

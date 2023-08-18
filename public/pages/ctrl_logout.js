@@ -5,7 +5,7 @@ import { deleteSession } from "../model/session.js";
 import ctrlError from "./ctrl_error.js";
 import $loader from "../components/loader.js";
 
-export default async function(render) {
+export default function(render) {
     render($loader);
 
     effect(deleteSession().pipe(

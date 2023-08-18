@@ -10,7 +10,10 @@ export async function init($root) {
 }
 
 export function navigate(href) {
-    window.history.pushState("", "", href);
+    window.history.pushState({
+        ...window.history,
+        previous: window.location.pathname,
+    }, "", href);
     triggerPageChange();
 }
 

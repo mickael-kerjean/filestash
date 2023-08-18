@@ -3,11 +3,11 @@ import rxjs, { effect, stateMutation, applyMutation } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { createForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
+import { generateSkeleton } from "../../components/skeleton.js";
 
 import transition from "./animate.js";
 import { renderLeaf } from "./helper_form.js";
-import AdminOnly from "./decorator_admin_only.js";
-import WithShell from "./decorator_sidemenu.js";
+import AdminHOC from "./decorator.js";
 import Log from "./model_log.js";
 import Audit from "./model_audit.js";
 import { get as getConfig } from "./model_config.js";
@@ -16,8 +16,8 @@ function Page(render) {
     const $page = createElement(`
         <div class="component_logpage sticky">
             <h2>Logging</h2>
-            <div class="component_logger"></div>
             <div class="component_logviewer"></div>
+            <div class="component_logger"></div>
 
             <h2>Activity Report</h2>
             <div class="component_reporter"></div>
@@ -30,10 +30,14 @@ function Page(render) {
     componentAuditor(createRender($page.querySelector(".component_reporter")));
 }
 
-export default AdminOnly(WithShell(Page));
+export default AdminHOC(Page);
 
 function componentLogForm(render) {
-    const $form = createElement("<form></form>");
+    const $form = createElement(`
+        <form style="min-height: 240px; margin-top:20px;">
+            ${generateSkeleton(4)}
+        </form>
+    `);
 
     render($form);
 
@@ -43,14 +47,14 @@ function componentLogForm(render) {
         rxjs.map((formSpec) => createForm(formSpec, formTmpl({ renderLeaf }))),
         rxjs.mergeMap((promise) => rxjs.from(promise)),
         rxjs.map(($form) => [$form]),
-        applyMutation($form, "appendChild")
+        applyMutation($form, "replaceChildren")
     ));
 
     // TODO feature2: response to form change
 }
 
 function componentLogViewer(render) {
-    const $page = createElement("<pre>t</pre>");
+    const $page = createElement(`<pre style="height:350px; max-height: 350px">…</pre>`);
     render($page);
 
     effect(Log.get().pipe(
