@@ -97,7 +97,7 @@ func NewConfiguration() Configuration {
 						Elmnts: []FormElement{
 							FormElement{Name: "enable", Type: "boolean", Default: true, Description: "Enable/Disable the share feature"},
 							FormElement{Name: "default_access", Type: "select", Default: "editor", Opts: []string{"editor", "viewer"}, Description: "Default access for shared links"},
-							FormElement{Name: "redirect", Type: "string", Placeholder: "redirection URL", Description: "When set, shared links will perform a redirection to another link. Example: https://example.com?full_path={{path}}"},
+							FormElement{Name: "redirect", Type: "text", Placeholder: "redirection URL", Description: "When set, shared links will perform a redirection to another link. Example: https://example.com?full_path={{path}}"},
 						},
 					},
 					Form{
