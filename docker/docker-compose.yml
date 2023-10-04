@@ -12,6 +12,8 @@ services:
     - ONLYOFFICE_URL=http://onlyoffice
     ports:
     - "8334:8334"
+    volumes:
+    - filestash:/app/data/state/
 
   onlyoffice:
     container_name: filestash_oods
@@ -20,3 +22,5 @@ services:
     security_opt:
       - seccomp:unconfined
 
+volumes:
+    filestash: {}
