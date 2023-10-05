@@ -1,4 +1,4 @@
-export default function t(str = "", replacementString, requestedKey) {
+export function t(str = "", replacementString, requestedKey) {
     const calculatedKey = str.toUpperCase()
         .replace(/ /g, "_")
         .replace(/[^a-zA-Z0-9\-\_\*\{\}\?]/g, "")
@@ -18,3 +18,5 @@ function reformat(translated, initial) {
     }
     return (translated[0] && translated[0].toUpperCase() + translated.substring(1)) || "";
 }
+
+export default t;
