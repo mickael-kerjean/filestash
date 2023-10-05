@@ -56,7 +56,9 @@ export function VideoPlayer({ filename, data, path }) {
         }]);
         setVideoSources(sources.map((source) => {
             if (source.type !== "application/x-mpegURL" && source.type !== "application/vnd.apple.mpegurl") return source;
-            const h = new hls();
+            const h = new hls({
+                enableWorker: false, // until https://github.com/video-dev/hls.js/issues/5107 is fixed
+            });
             h.loadSource(source.src);
             h.attachMedia($video.current);
             return source;
