@@ -8,19 +8,26 @@ export default rxjs;
 export const ajax = ajaxModule.ajax;
 
 export function effect(obs) {
-    const tmp = obs.subscribe(() => {}, (err) => console.error("effect", err));
+    const tmp = obs.subscribe(() => {}, (err) => { throw err; });
     onDestroy(() => tmp.unsubscribe());
 }
 
+const getFn = (obj, arg0, ...args) => {
+    if (arg0 === undefined) return obj;
+    const next = obj[arg0];
+    return getFn(next.bind ? next.bind(obj) : next, ...args);
+};
 export function applyMutation($node, ...keys) {
     if (!$node) throw new Error("undefined node");
-    const getFn = (obj, arg0, ...args) => {
-        if (arg0 === undefined) return obj;
-        const next = obj[arg0];
-        return getFn(next.bind ? next.bind(obj) : next, ...args);
-    };
     const execute = getFn($node, ...keys);
-    return rxjs.tap((val) => execute(...val));
+    return rxjs.tap((val) => Array.isArray(val) ? execute(...val) : execute(val));
+}
+export function applyMutations($node, ...keys) {
+    if (!$node) throw new Error("undefined node");
+    const execute = getFn($node, ...keys);
+    return rxjs.tap((vals) => vals.forEach((val) => {
+        execute(val);
+    }));
 }
 
 export function stateMutation($node, attr) {
@@ -30,4 +37,11 @@ export function stateMutation($node, attr) {
 
 export function preventDefault() {
     return rxjs.tap((e) => e.preventDefault());
+}
+
+export function onClick($node) {
+    if (!$node) return rxjs.EMPTY;
+    return rxjs.fromEvent($node, "click").pipe(
+        rxjs.map(() => $node),
+    );
 }

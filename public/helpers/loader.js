@@ -1,3 +1,7 @@
+import { get as getRelease } from "../pages/adminpage/model_release.js";
+
+let version = null;
+
 export async function loadScript(url) {
     const $script = document.createElement("script");
     $script.setAttribute("src", url);
@@ -14,10 +18,15 @@ export async function CSS(baseURL, ...arrayOfFilenames) {
 }
 
 async function loadSingleCSS(baseURL, filename) {
-    const res = await fetch(baseURL.replace(/(.*)\/[^\/]+$/, "$1/") + filename + "?version=" + "__", {
-        cache: "force-cache"
+    const res = await fetch(baseURL.replace(/(.*)\/[^\/]+$/, "$1/") + `${filename}?version=${version}`, {
+        cache: "force-cache",
     });
     if (res.status !== 200) return `/* ERROR: ${res.status} */`;
     else if (!res.headers.get("Content-Type").startsWith("text/css")) return `/* ERROR: wrong type, got "${res.headers.get("Content-Type")}"*/`;
     return await res.text();
+}
+
+export async function init() {
+    const info = await getRelease().toPromise();
+    version = info.version;
 }

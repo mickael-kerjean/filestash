@@ -4,11 +4,13 @@ import { qs, qsa } from "../../lib/dom.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 import { generateSkeleton } from "../../components/skeleton.js";
+import notification from "../../components/notification.js";
+import { get as getConfig } from "../../model/config.js";
 
+import { get as getAdminConfig, save as saveConfig } from "./model_config.js";
+import { renderLeaf, useForm$, formObjToJSON$ } from "./helper_form.js";
 import transition from "./animate.js";
-import { renderLeaf } from "./helper_form.js";
 import AdminHOC from "./decorator.js";
-import { get as getConfig, save as saveConfig } from "./model_config.js";
 
 export default AdminHOC(function(render) {
     const $container = createElement(`
@@ -21,12 +23,9 @@ export default AdminHOC(function(render) {
     `);
     render(transition($container));
 
-    const config$ = getConfig().pipe(
-        rxjs.map((res) => {
-            delete res.constant;
-            delete res.middleware;
-            return res;
-        }),
+    const config$ = getAdminConfig().pipe(
+        rxjs.first(),
+        reshapeConfigBeforeDisplay,
     );
 
     const tmpl = formTmpl({
@@ -43,29 +42,46 @@ export default AdminHOC(function(render) {
     });
 
     // feature: setup the form
-    const setup$ = config$.pipe(
+    const init$ = config$.pipe(
         rxjs.mergeMap((formSpec) => createForm(formSpec, tmpl)),
         rxjs.map(($form) => [$form]),
-        applyMutation(qs($container, "[data-bind=\"form\"]"), "replaceChildren"),
+        applyMutation(qs($container, `[data-bind="form"]`), "replaceChildren"),
         rxjs.share(),
     );
-    effect(setup$);
+    effect(init$);
 
     // feature: handle form change
-    effect(setup$.pipe(
-        rxjs.mergeMap(() => qsa($container, "[data-bind=\"form\"] [name]")),
-        rxjs.mergeMap(($el) => rxjs.fromEvent($el, "input")),
-        rxjs.map((e) => ({
-            name: e.target.getAttribute("name"),
-            value: e.target.value
-        })),
-        rxjs.scan((store, keyValue) => {
-            store[keyValue.name] = keyValue.value;
-            return store;
-        }, {})
-    ).pipe(
-        rxjs.withLatestFrom(config$),
+    effect(init$.pipe(
+        useForm$(() => qsa($container, `[data-bind="form"] [name]`)),
+        rxjs.combineLatestWith(config$.pipe(rxjs.first())),
         rxjs.map(([formState, formSpec]) => mutateForm(formSpec, formState)),
+        reshapeConfigBeforeSave,
         saveConfig(),
     ));
 });
+
+// the config contains stuff wich we don't want to show in this page such as:
+// - the middleware info which is set in the backend page
+// - the connections info which is set in the backend page
+// - the constant info which is for the setup page
+const reshapeConfigBeforeDisplay = rxjs.map((cfg) => {
+    const { constant, middleware, connections, ...other } = cfg;
+    return other;
+});
+
+// before saving things back to the server, we want to hydrate the config and insert back:
+// - the middleware info
+// - the connections info
+const reshapeConfigBeforeSave = rxjs.pipe(
+    rxjs.combineLatestWith(getAdminConfig().pipe(rxjs.first())),
+    rxjs.map(([configWithMissingKeys, config]) => {
+        configWithMissingKeys["middleware"] = config["middleware"];
+        return configWithMissingKeys;
+    }),
+    formObjToJSON$(),
+    rxjs.combineLatestWith(getConfig().pipe(rxjs.first())),
+    rxjs.map(([adminConfig, publicConfig]) => {
+        adminConfig["connections"] = publicConfig["connections"];
+        return adminConfig;
+    }),
+);

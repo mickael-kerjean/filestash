@@ -10,13 +10,14 @@ export function qsa($node, selector) {
     return $node.querySelectorAll(selector);
 }
 
-export function safe(str, ...escapeChars) {
-    if (typeof str !== "string") return str;
+export function safe(str) {
+    if (typeof str !== "string") return "";
 
     const $div = document.createElement("div");
-    escapeChars.forEach((c) => {
-        str = str.replaceAll(c, "\\" + c);
-    });
     $div.textContent = str;
-    return $div.innerHTML;
+    return ($div.innerHTML || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
 }

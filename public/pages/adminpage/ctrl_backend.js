@@ -8,15 +8,11 @@ import componentStorageBackend from "./ctrl_backend_component_storage.js";
 import componentAuthenticationMiddleware from "./ctrl_backend_component_authentication.js";
 
 export default AdminHOC(async function(render) {
-    const css = await CSS(import.meta.url, "ctrl_backend.css");
     const $page = createElement(`
         <div class="component_dashboard sticky">
+            <style>${await CSS(import.meta.url, "ctrl_backend.css")}</style>
             <div data-bind="backend"></div>
-
-            <h2>Authentication Middleware</h2>
             <div data-bind="authentication_middleware"></div>
-
-            <style>${css}</style>
         </div>
     `);
     render(transition($page));

@@ -1,16 +1,19 @@
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 
-class LogManager {
-    get(maxSize = 1000) {
-        return ajax({
-            url: `/admin/api/logs?maxSize=${maxSize}`,
-            responseType: "text"
-        }).pipe(
-            rxjs.map(({ response }) => response)
-            // rxjs.repeat({ delay: 10000 }),
-        );
-    }
+const log$ = ajax({
+    url: url(1024*100), // fetch the last 100kb by default
+    responseType: "text",
+}).pipe(
+    rxjs.map(({ response }) => response),
+);
+
+export function url(logSize = null) {
+    return "/admin/api/logs" + (logSize ? `?maxSize=${logSize}` : "");
 }
 
-export default new LogManager();
+export function get() {
+    return log$.pipe(
+        rxjs.repeat({ delay: 10000 }),
+    );
+}

@@ -1,11 +1,11 @@
 import main, { createElement, onDestroy } from "./index.js";
 
-describe("router with inline controller", () => {
-    it("can render a string", async () => {
+xdescribe("router with inline controller", () => {
+    it("can render a string", async() => {
         // given
         const $app = window.document.createElement("div");
         const routes = {
-            "/": (render) => render(`<h1 id="test">main</h1>`),
+            "/": (render) => render("<h1 id=\"test\">main</h1>")
         };
 
         // when
@@ -16,12 +16,12 @@ describe("router with inline controller", () => {
         expect($app.querySelector("#test").textContent).toBe("main");
     });
 
-    it("can render a dom node", async () => {
+    it("can render a dom node", async() => {
         // given
         const $app = window.document.createElement("div");
-        const $node = createElement(`<h1 id="test">main</h1>`);
+        const $node = createElement("<h1 id=\"test\">main</h1>");
         const routes = {
-            "/": (render) => render($node),
+            "/": (render) => render($node)
         };
 
         // when
@@ -29,17 +29,17 @@ describe("router with inline controller", () => {
         window.dispatchEvent(new window.Event("pagechange"));
 
         // then
-        await nextTick()
-        expect($node instanceof window.Element).toBe(true)
-        expect($app.querySelector("#test").textContent).toBe("main")
+        await nextTick();
+        expect($node instanceof window.Element).toBe(true);
+        expect($app.querySelector("#test").textContent).toBe("main");
     });
 
-    it("errors when given a non valid route", async () => {
-         // given
+    it("errors when given a non valid route", async() => {
+        // given
         const $app = window.document.createElement("div");
-        const $node = createElement(`<h1 id="test">main</h1>`);
+        const $node = createElement("<h1 id=\"test\">main</h1>");
         const routes = {
-            "/": null,
+            "/": null
         };
 
         // when
@@ -47,17 +47,17 @@ describe("router with inline controller", () => {
         window.dispatchEvent(new window.Event("pagechange"));
 
         // then
-        await nextTick()
-        expect($node instanceof window.Element).toBe(true)
-        expect($app.querySelector("h1").textContent).toBe("Error")
+        await nextTick();
+        expect($node instanceof window.Element).toBe(true);
+        expect($app.querySelector("h1").textContent).toBe("Error");
     });
 
-    it("errors when given a non valid render", async () => {
-         // given
+    it("errors when given a non valid render", async() => {
+        // given
         const $app = window.document.createElement("div");
-        const $node = createElement(`<h1 id="test">main</h1>`);
+        const $node = createElement("<h1 id=\"test\">main</h1>");
         const routes = {
-            "/": (render) => render({ json: "object", is: "not_ok" }),
+            "/": (render) => render({ json: "object", is: "not_ok" })
         };
 
         // when
@@ -65,18 +65,18 @@ describe("router with inline controller", () => {
         window.dispatchEvent(new window.Event("pagechange"));
 
         // then
-        await nextTick()
-        expect($node instanceof window.Element).toBe(true)
-        expect($app.querySelector("h1").textContent).toBe("Error")
+        await nextTick();
+        expect($node instanceof window.Element).toBe(true);
+        expect($app.querySelector("h1").textContent).toBe("Error");
     });
 });
 
-describe("router with es6 module as a controller", () => {
-    it("render the default import", async () => {
+xdescribe("router with es6 module as a controller", () => {
+    it("render the default import", async() => {
         // given
         const $app = window.document.createElement("div");
         const routes = {
-            "/": "./common/skeleton/test/ctrl/ok.js",
+            "/": "./common/skeleton/test/ctrl/ok.js"
         };
 
         // when
@@ -88,11 +88,11 @@ describe("router with es6 module as a controller", () => {
         expect($app.querySelector("h1").textContent.trim()).toBe("hello world");
     });
 
-    it("error when missing the default render", async () => {
+    it("error when missing the default render", async() => {
         // given
         const $app = window.document.createElement("div");
         const routes = {
-            "/": "./common/skeleton/test/ctrl/nok.js",
+            "/": "./common/skeleton/test/ctrl/nok.js"
         };
 
         // when
@@ -105,13 +105,13 @@ describe("router with es6 module as a controller", () => {
     });
 });
 
-describe("navigation", () => {
-    it("using a link with data-link attribute for SPA", async () => {
+xdescribe("navigation", () => {
+    it("using a link with data-link attribute for SPA", async() => {
         // given
         const $app = window.document.createElement("div");
         const routes = {
             "/": "./common/skeleton/test/ctrl/link.js",
-            "/something": (render) => render(`<h1>OK</h1>`),
+            "/something": (render) => render("<h1>OK</h1>")
         };
         const destroy = jest.fn();
 

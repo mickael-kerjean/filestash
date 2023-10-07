@@ -4,15 +4,17 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"io/fs"
 	"net/http"
-	URL "net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
+
+	. "github.com/mickael-kerjean/filestash"
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 var (
@@ -28,25 +30,19 @@ func init() {
 	WWWDir = os.DirFS(GetAbsolutePath("../"))
 }
 
-func StaticHandler(_path string) func(*App, http.ResponseWriter, *http.Request) {
+func LegacyStaticHandler(_path string) func(*App, http.ResponseWriter, *http.Request) { // TODO: migrate away
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		var chroot string = GetAbsolutePath(_path)
 		if srcPath := JoinPath(chroot, req.URL.Path); strings.HasPrefix(srcPath, chroot) == false {
 			http.NotFound(res, req)
 			return
 		}
-		ServeFile(res, req, JoinPath(_path, req.URL.Path))
+		LegacyServeFile(res, req, JoinPath(_path, req.URL.Path))
 	}
 }
 
-func IndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
-	urlObj, err := URL.Parse(req.URL.String())
-	if err != nil {
-		NotFoundHandler(ctx, res, req)
-		return
-	}
-	url := urlObj.Path
-
+func LegacyIndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	url := req.URL.Path
 	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
 		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
 		return
@@ -72,7 +68,74 @@ func IndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
                 `)))
 		return
 	}
-	ServeFile(res, req, "/index.html")
+	LegacyServeFile(res, req, "/index.html")
+}
+
+func LegacyServeFile(res http.ResponseWriter, req *http.Request, filePath string) { // TODO: migrate away
+	staticConfig := []struct {
+		ContentType string
+		FileExt     string
+	}{
+		{"br", ".br"},
+		{"gzip", ".gz"},
+		{"", ""},
+	}
+
+	statusCode := 200
+	if req.URL.Path == "/" {
+		if errName := req.URL.Query().Get("error"); errName != "" {
+			statusCode = HTTPError(errors.New(errName)).Status()
+		}
+	}
+
+	head := res.Header()
+	acceptEncoding := req.Header.Get("Accept-Encoding")
+	for _, cfg := range staticConfig {
+		if strings.Contains(acceptEncoding, cfg.ContentType) == false {
+			continue
+		}
+		curPath := filePath + cfg.FileExt
+		file, err := WWWEmbed.Open("static/www" + curPath)
+		if env := os.Getenv("DEBUG"); env == "true" {
+			//file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
+			file, err = WWWDir.Open("public" + curPath)
+		}
+		if err != nil {
+			continue
+		} else if stat, err := file.Stat(); err == nil {
+			etag := QuickHash(fmt.Sprintf(
+				"%s %d %d %s",
+				curPath, stat.Size(), stat.Mode(), stat.ModTime()), 10,
+			)
+			if etag == req.Header.Get("If-None-Match") {
+				res.WriteHeader(http.StatusNotModified)
+				return
+			}
+			head.Set("Etag", etag)
+		}
+		if cfg.ContentType != "" {
+			head.Set("Content-Encoding", cfg.ContentType)
+		}
+		res.WriteHeader(statusCode)
+		io.Copy(res, file)
+		file.Close()
+		return
+	}
+	http.NotFound(res, req)
+}
+
+func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	url := req.URL.Path
+	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
+		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
+		return
+	}
+
+	if filepath.Ext(filepath.Base(url)) == "" {
+		ServeFile(res, req, WWWPublic, "index.backoffice.html")
+		return
+	}
+	ServeFile(res, req, WWWPublic, strings.TrimPrefix(req.URL.Path, "/admin/"))
 }
 
 func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -202,7 +265,7 @@ func CustomCssHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	io.WriteString(res, Config.Get("general.custom_css").String())
 }
 
-func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
+func ServeFile(res http.ResponseWriter, req *http.Request, fs http.FileSystem, filePath string) {
 	staticConfig := []struct {
 		ContentType string
 		FileExt     string
@@ -212,13 +275,6 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 		{"", ""},
 	}
 
-	statusCode := 200
-	if req.URL.Path == "/" {
-		if errName := req.URL.Query().Get("error"); errName != "" {
-			statusCode = HTTPError(errors.New(errName)).Status()
-		}
-	}
-
 	head := res.Header()
 	acceptEncoding := req.Header.Get("Accept-Encoding")
 	for _, cfg := range staticConfig {
@@ -226,10 +282,7 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 			continue
 		}
 		curPath := filePath + cfg.FileExt
-		file, err := WWWEmbed.Open("static/www" + curPath)
-		if env := os.Getenv("NODE_ENV"); env == "development" {
-			file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
-		}
+		file, err := fs.Open(curPath)
 		if err != nil {
 			continue
 		} else if stat, err := file.Stat(); err == nil {
@@ -243,10 +296,11 @@ func ServeFile(res http.ResponseWriter, req *http.Request, filePath string) {
 			}
 			head.Set("Etag", etag)
 		}
+		head.Set("Content-Type", GetMimeType(filepath.Ext(filePath)))
 		if cfg.ContentType != "" {
 			head.Set("Content-Encoding", cfg.ContentType)
 		}
-		res.WriteHeader(statusCode)
+		res.WriteHeader(http.StatusOK)
 		io.Copy(res, file)
 		file.Close()
 		return

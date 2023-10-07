@@ -78,7 +78,7 @@ func Build(a App) *mux.Router {
 
 	// Webdav server / Shared Link
 	middlewares = []Middleware{IndexHeaders, SecureHeaders}
-	r.HandleFunc("/s/{share}", NewMiddlewareChain(IndexHandler, middlewares, a)).Methods("GET")
+	r.HandleFunc("/s/{share}", NewMiddlewareChain(LegacyIndexHandler, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{WebdavBlacklist, SessionStart}
 	r.PathPrefix("/s/{share}").Handler(NewMiddlewareChain(WebdavHandler, middlewares, a))
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, RedirectSharedLoginIfNeeded, SessionStart, LoggedInOnly}
@@ -89,9 +89,9 @@ func Build(a App) *mux.Router {
 	r.HandleFunc("/api/config", NewMiddlewareChain(PublicConfigHandler, middlewares, a)).Methods("GET")
 	r.HandleFunc("/api/backend", NewMiddlewareChain(AdminBackend, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{StaticHeaders, SecureHeaders}
-	r.PathPrefix("/assets").Handler(http.HandlerFunc(NewMiddlewareChain(StaticHandler("/"), middlewares, a))).Methods("GET")
-	r.HandleFunc("/favicon.ico", NewMiddlewareChain(StaticHandler("/assets/logo/"), middlewares, a)).Methods("GET")
-	r.HandleFunc("/sw_cache.js", NewMiddlewareChain(StaticHandler("/assets/worker/"), middlewares, a)).Methods("GET")
+	r.PathPrefix("/assets").Handler(http.HandlerFunc(NewMiddlewareChain(LegacyStaticHandler("/"), middlewares, a))).Methods("GET")
+	r.HandleFunc("/favicon.ico", NewMiddlewareChain(LegacyStaticHandler("/assets/logo/"), middlewares, a)).Methods("GET")
+	r.HandleFunc("/sw_cache.js", NewMiddlewareChain(LegacyStaticHandler("/assets/worker/"), middlewares, a)).Methods("GET")
 
 	// Other endpoints
 	middlewares = []Middleware{ApiHeaders}
@@ -110,8 +110,10 @@ func Build(a App) *mux.Router {
 	}
 	initPluginsRoutes(r, &a)
 
-	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler, middlewares, a))).Methods("GET")
-	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(IndexHandler, middlewares, a))).Methods("GET", "POST")
+	middlewares = []Middleware{SecureHeaders}
+	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(ServeBackofficeHandler, middlewares, a))).Methods("GET")
+	middlewares = []Middleware{IndexHeaders, SecureHeaders}
+	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(LegacyIndexHandler, middlewares, a))).Methods("GET", "POST")
 
 	return r
 }

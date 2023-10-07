@@ -17,17 +17,14 @@ export function isAdmin$() {
     return adminSession$;
 }
 
-export function authenticate$() {
-    return rxjs.pipe(
-        rxjs.mergeMap((body) => ajax({
-            url: "/admin/api/session",
-            method: "POST",
-            body,
-            responseType: "json"
-        }).pipe(
-            rxjs.mapTo(true),
-            rxjs.catchError(() => rxjs.of(false)),
-            rxjs.tap((ok) => ok && sessionSubject$.next(ok))
-        ))
+export function authenticate$(body) {
+    return ajax({
+        url: "/admin/api/session",
+        method: "POST",
+        body,
+        responseType: "json"
+    }).pipe(
+        rxjs.mapTo(true),
+        rxjs.tap((ok) => ok && sessionSubject$.next(ok)),
     );
 }

@@ -50,8 +50,8 @@ export const slideYIn = (size) => ([
 ]);
 
 export const slideYOut = (size) => ([
-    { opacity: 0, transform: "translateY(0px)" },
-    { opacity: 1, transform: `translateY(${size}px)` }
+    { opacity: 1, transform: "translateY(0px)" },
+    { opacity: 0, transform: `translateY(${size}px)` }
 ]);
 
 export const zoomIn = (size) => ([

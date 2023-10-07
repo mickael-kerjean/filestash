@@ -6,15 +6,15 @@ import { CSS } from "../../helpers/loader.js";
 
 import { get as getRelease } from "./model_release.js";
 import { isSaving } from "./model_config.js";
+import { isLoading } from "./model_audit.js";
 
 import "../../components/icon.js";
 
 export default function(ctrl) {
     return async function(render) {
-        const css = await CSS(import.meta.url, "decorator_sidemenu.css", "index.css");
         const $page = createElement(`
             <div class="component_page_admin">
-                <style>${css}</style>
+                <style>${await CSS(import.meta.url, "decorator_sidemenu.css", "index.css")}</style>
                 <div class="component_menu_sidebar no-select">
                     <a class="header" href="/">
                         <svg class="arrow_left" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -61,8 +61,11 @@ export default function(ctrl) {
         ));
 
         // feature: logo serving as loading indicator
-        effect(isSaving().pipe(
-            rxjs.startWith(false),
+        effect(rxjs.combineLatest([
+            isSaving().pipe(rxjs.startWith(false)),
+            isLoading().pipe(rxjs.startWith(false)),
+        ]).pipe(
+            rxjs.map(([a, b]) => a || b),
             rxjs.map((isLoading) => isLoading
                 ? "<component-icon name=\"loading\"></component-icon>"
                 : `<svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">

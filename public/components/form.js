@@ -57,60 +57,85 @@ function $renderInput(options = {}) {
         } = props;
 
         let attr = `name="${path.join(".")}" `;
-        if (id) attr += `id="${id}" `;
-        if (placeholder) attr += `placeholder="${safe(placeholder, "\"")}" `;
-        if (!autocomplete) attr += "autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"off\" ";
+        if (id) attr += `id="${safe(id)}" `;
+        if (placeholder) attr += `placeholder="${safe(placeholder)}" `;
+        if (!autocomplete || props.autocomplete === false) attr += "autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"off\" ";
         if (required) attr += "required ";
         if (readonly) attr += "readonly ";
 
         switch (type) {
-        case "text": // TODO
+        case "text":
+            if (!datalist) return createElement(`
+                <input ${attr}
+                    type="text"
+                    value="${safe(value)}"
+                    class="component_input"
+                />
+            `);
             const dataListId = gid("list_");
             const $input = createElement(`
-                    <input ${safe(attr)}
-                        type="text"
-                        value="${safe(value, "\"") || ""}"
-                        class="component_input"
-                    />
-                `);
-            if (!datalist) return $input;
-            const $wrapper = window.document.createElement("span");
-            const $datalist = window.document.createElement("datalist");
-            $wrapper.appendChild($input);
+                <input ${attr}
+                    list="${dataListId}"
+                    datalist="${datalist.join(",")}"
+                    type="text"
+                    value="${safe(value)}"
+                    class="component_input"
+                />
+            `);
+            const $wrapper = document.createElement("span");
+            const $datalist = document.createElement("datalist");
             $datalist.setAttribute("id", dataListId);
+            $wrapper.appendChild($input);
+            $wrapper.appendChild($datalist);
+            (props.multi ? multicomplete(value, datalist) : (datalist || [])).forEach((value) => {
+                $datalist.appendChild(createElement(`<option value="${value}"/>`))
+            });
+            if (!props.multi) return $wrapper;
+            $input.refresh = () => {
+                const _datalist = $input.getAttribute("datalist").split(",");
+                multicomplete($input.value, _datalist).forEach((value) => {
+                    $datalist.appendChild(createElement(`<option value="${value}"/>`));
+                });
+            };
+            $input.oninput = (e) => {
+                for (const $option of $datalist.children) {
+                    $option.remove();
+                }
+                $input.refresh();
+            };
             return $wrapper;
         case "enable":
             return createElement(`
-                    <div class="component_checkbox">
-                        <input
-                            type="checkbox"
-                            ${(value || props.default) ? "checked" : ""}
-                         />
-                        <span className="indicator"></span>
-                    </div>
-                `);
+                <div class="component_checkbox">
+                    <input
+                        ${attr}
+                        type="checkbox"
+                        ${(value === null ? props.default : value) ? "checked" : ""}
+                    />
+                    <span className="indicator"></span>
+                </div>
+            `);
         case "number":
             return createElement(`
+                <input
+                    ${attr}
+                    type="number"
+                    value="${safe(value)}"
+                    class="component_input"
+                />
+            `);
+        case "password":
+            const $node = createElement(`
+                <div class="formbuilder_password">
                     <input
-                        ${safe(attr)}
-                        type="number"
-                        value="${safe(value, "\"") || ""}"
+                        ${attr}
+                        value="${safe(value)}"
+                        type="password"
                         class="component_input"
                     />
-                `);
-        case "password":
-            // TODO: click eye
-            const $node = createElement(`
-                    <div class="formbuilder_password">
-                        <input
-                            ${safe(attr)}
-                            value="${safe(value, "\"") || ""}"
-                            type="password"
-                            class="component_input"
-                        />
-                        <component-icon name="eye"></component-icon>
-                    </div>
-                `);
+                    <component-icon name="eye"></component-icon>
+                </div>
+            `);
             const $icon = $node.querySelector("component-icon");
             if ($icon instanceof window.HTMLElement) {
                 $icon.onclick = function(e) {
@@ -124,77 +149,94 @@ function $renderInput(options = {}) {
         case "long_password":
             // TODO
         case "long_text":
-            return createElement(`
-                    <textarea ${safe(attr)} class="component_textarea" rows="8">
-                    </textarea>
-                `);
+            const $textarea = createElement(`
+                <textarea ${attr} class="component_textarea" rows="8" placeholder="${safe(props.default)}"></textarea>
+            `);
+            if (value) $textarea.value = value;
+            return $textarea;
         case "bcrypt":
             return createElement(`
-                    <input
+                <input
                     type="password"
-                    ${safe(attr)}
-                        value="${safe(value, "\"") || ""}"
-                        readonly
-                        class="component_input"
-                    />
-                `);
-            // TODO
+                    ${attr}
+                    value="${safe(value)}"
+                    readonly
+                    class="component_input"
+                />
+            `);
         case "hidden":
             return createElement(`
-                    <input
-                        type="hidden"
-                        value=${safe(value)}
-                        name="${safe(path.join("."))}"
-                    />
-                `);
+                <input
+                    type="hidden"
+                    value=${safe(value)}
+                    name="${safe(path.join("."))}"
+                />
+            `);
         case "boolean":
             return createElement(`
-                    <div class="component_checkbox">
-                        <input
-                            ${safe(attr)}
-                            type="checkbox"
-                            ${(value || props.default) ? "checked" : ""}
-                        />
-                        <span class="indicator"></span>
-                    </div>
-                `);
+                <div class="component_checkbox">
+                    <input
+                        ${attr}
+                        type="checkbox"
+                        ${(value === null ? props.default : value) ? "checked" : ""}
+                    />
+                    <span class="indicator"></span>
+                </div>
+            `);
         case "select":
-            const renderOption = (name) => `<option name="${safe(name)}">${safe(name)}</option>`;
+            const renderOption = (name) => {
+                const optName = safe(name);
+                const formVal = safe(value || props.default);
+                return `
+                    <option
+                        name="${optName}"
+                        ${(optName === formVal) && "selected"}
+                    >
+                        ${optName}
+                    </option>
+                `;
+            }
             return createElement(`
-                    <select class="component_select" ${safe(attr)}>
-                        ${(options || []).map(renderOption)}
-                    </select>
-                `);
+                <select
+                    ${attr}
+                    value="${safe(value || props.default)}"
+                    class="component_select"
+                >
+                    ${(options || []).map(renderOption)}
+                </select>
+            `);
         case "date":
             return createElement(`
-                    <input
-                        ${safe(attr)}
-                        type="date"
-                        class="component_input"
-                    />
-                `);
+                <input
+                    ${attr}
+                    value="${safe(value || props.default)}"
+                    type="date"
+                    class="component_input"
+                />
+            `);
         case "datetime":
             return createElement(`
-                    <input
-                        ${safe(attr)}
-                        type="datetime-local"
-                        class="component_input"
-                    />
-                `);
+                <input
+                    ${attr}
+                    value="${safe(value || props.default)}"
+                    type="datetime-local"
+                    class="component_input"
+                />
+            `);
         case "image":
             return createElement(`<img id="${safe(id)}" src="${safe(value)}" />`);
         case "file":
             // return createElement() // TODO
         default:
             return createElement(`
-                    <input
-                        value="unknown element type ${type}"
-                        type="text"
-                        class="component_input"
-                        path="${safe(path.join("."))}"
-                        readonly
-                    />
-                `);
+                <input
+                    value="unknown element type ${type}"
+                    type="text"
+                    class="component_input"
+                    name="${safe(path.join("."))}"
+                    readonly
+                />
+            `);
         }
     };
 }
@@ -213,3 +255,10 @@ export function format(name) {
         })
         .join(" ");
 };
+
+export function multicomplete(input, datalist) {
+    input = input.trim().replace(/,$/g, "");
+    const current = input.split(",").map((val) => val.trim()).filter((t) => !!t);
+    const diff = datalist.filter((x) => current.indexOf(x) === -1);
+    return diff.map((candidate) => input.length === 0 ? candidate : `${input}, ${candidate}`);
+}

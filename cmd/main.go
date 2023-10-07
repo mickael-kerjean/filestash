@@ -1,20 +1,17 @@
 package main
 
 import (
-	_ "embed"
 	"os"
 	"sync"
 
 	"github.com/gorilla/mux"
 
+	"github.com/mickael-kerjean/filestash"
 	. "github.com/mickael-kerjean/filestash/server"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/ctrl"
 	_ "github.com/mickael-kerjean/filestash/server/plugin"
 )
-
-//go:embed server/plugin/index.go
-var EmbedPluginList []byte
 
 func main() {
 	start(Build(App{}))
@@ -39,7 +36,7 @@ func start(routes *mux.Router) {
 		}()
 	}
 	go func() {
-		InitPluginList(EmbedPluginList)
+		InitPluginList(embed.EmbedPluginList)
 		for _, fn := range Hooks.Get.Onload() {
 			go fn()
 		}

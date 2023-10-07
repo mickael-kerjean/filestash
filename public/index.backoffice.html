@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/admin/assets/css/reset.css">
+        <script type="module" src="/admin/components/loader.js"></script>
+        <title>Admin Console</title>
+    </head>
+    <body>
+        <div role="main" id="app">
+            <component-loader delay="500"></component-loader>
+        </div>
+        <script type="module">
+          import main from "/admin/lib/skeleton/index.js";
+          import routes from "/admin/boot/router_backoffice.js";
+          main(document.getElementById("app"), routes, {
+              spinner: `<component-loader></component-loader>`,
+              beforeStart: import("/admin/boot/ctrl_boot_backoffice.js"),
+          });
+        </script>
+
+        <script type="module" src="/admin/components/modal.js"></script>
+        <component-modal></component-modal>
+        <script type="module" src="/admin/components/notification.js"></script>
+        <component-notification></component-notification>
+
+        <noscript>
+            <div>
+                <h2>Error: Javascript is off</h2>
+                <p>You need to enable Javascript to run this application</p>
+            </div>
+        </noscript>
+    </body>
+</html>

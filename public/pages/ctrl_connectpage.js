@@ -9,7 +9,7 @@ import config$ from "./connectpage/model_config.js";
 import $fork from "./connectpage/component_forkme.js";
 import $poweredby from "./connectpage/component_poweredby.js";
 
-export default function(render) {
+export default async function(render) {
     const $page = createElement(`
         <div class="component_page_connect">
             <div data-bind="component_forkme"></div>
@@ -17,7 +17,7 @@ export default function(render) {
                 <div data-bind="component_form"></div>
             </div>
             <div data-bind="component_poweredby"></div>
-            <style>${css}</style>
+            <style>${await CSS(import.meta.url, "ctrl_connectpage.css")}</style>
         </div>
     `);
     render($page);
@@ -56,5 +56,3 @@ export default function(render) {
         applyMutation(qs($page, "[data-bind=\"centerthis\"]"), "style", "setProperty")
     ));
 }
-
-const css = await CSS(import.meta.url, "ctrl_connectpage.css");

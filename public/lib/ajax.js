@@ -2,11 +2,11 @@ import rxjs, { ajax } from "./rx.js";
 import { AjaxError } from "./error.js";
 
 export default function(opts) {
-    if (typeof opts === "string") opts = { url: opts };
+    if (typeof opts === "string") opts = { url: opts, withCredentials: true };
     else if (typeof opts !== "object") throw new Error("unsupported call");
     if (!opts.headers) opts.headers = {};
     opts.headers["X-Requested-With"] = "XmlHttpRequest";
-    return ajax({ ...opts, responseType: "text" }).pipe(
+    return ajax({ withCredentials: true, ...opts, responseType: "text" }).pipe(
         rxjs.catchError((err) => rxjs.throwError(processError(err.xhr, err))),
         rxjs.map((res) => {
             const result = res.xhr.responseText;
@@ -38,14 +38,14 @@ function processError(xhr, err) {
             };
         }
         return message || { message: "empty response" };
-    })(xhr.responseText);
+    })(xhr?.responseText || "");
 
     const message = response.message || null;
 
     if (window.navigator.onLine === false) {
         return new AjaxError("Connection Lost", err, "NO_INTERNET");
     }
-    switch (xhr.status) {
+    switch (xhr?.status) {
     case 500:
         return new AjaxError(
             message || "Oups something went wrong with our servers",
@@ -83,7 +83,7 @@ function processError(xhr, err) {
             err, "CONFLICT"
         );
     case 0:
-        switch (xhr.responseText) {
+        switch (xhr?.responseText) {
         case "":
             return new AjaxError(
                 "Service unavailable, if the problem persist, contact your administrator",

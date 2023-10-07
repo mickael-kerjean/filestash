@@ -24,6 +24,9 @@ export default function(render) {
             if (is_authenticated !== true) return navigate("/login");
             return navigate(`/files${home}`);
         }),
-        rxjs.catchError(() => navigate("/login"))
+        rxjs.catchError(() => {
+            navigate("/login");
+            return rxjs.EMPTY;
+        }),
     ));
 };

@@ -1,19 +1,21 @@
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 
-class AuditManager {
-    get(searchParams = {}) {
-        const p = new URLSearchParams();
-        Object.keys(searchParams).forEach((key) => {
-            p.set(key, searchParams[key]);
-        });
-        return ajax({
-            url: "/admin/api/audit?" + p.toString(),
-            responseType: "json"
-        }).pipe(
-            rxjs.map((res) => res.responseJSON.result)
-        );
-    }
+const isLoading$ = new rxjs.BehaviorSubject(false);
+
+export function get(searchParams = new URLSearchParams()) {
+    return ajax({
+        url: "/admin/api/audit?" + searchParams.toString(),
+        responseType: "json"
+    }).pipe(
+        rxjs.map(({ responseJSON }) => responseJSON.result)
+    );
 }
 
-export default new AuditManager();
+export function setLoader(value) {
+    return isLoading$.next(!!value);
+}
+
+export function isLoading() {
+    return isLoading$.asObservable();
+}

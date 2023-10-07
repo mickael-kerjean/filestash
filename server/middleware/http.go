@@ -63,7 +63,7 @@ func IndexHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 		} else {
 			cspHeader += fmt.Sprintf("frame-ancestors %s;", ori)
 		}
-		header.Set("Content-Security-Policy", cspHeader)
+		// header.Set("Content-Security-Policy", cspHeader)
 		fn(ctx, res, req)
 	}
 }
@@ -189,7 +189,7 @@ func EnableCors(req *http.Request, res http.ResponseWriter, host string) error {
 func RetrievePublicIp(req *http.Request) string {
 	if req.Header.Get("X-Forwarded-For") != "" {
 		return req.Header.Get("X-Forwarded-For")
-	} else { 
+	} else {
 		return req.RemoteAddr
 	}
 }

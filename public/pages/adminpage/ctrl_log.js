@@ -1,6 +1,4 @@
 import { createElement, createRender } from "../../lib/skeleton/index.js";
-import rxjs, { effect, stateMutation, applyMutation } from "../../lib/rx.js";
-import { qs } from "../../lib/dom.js";
 
 import componentLogForm from "./ctrl_log_form.js";
 import componentLogViewer from "./ctrl_log_viewer.js";
@@ -21,8 +19,8 @@ function Page(render) {
     `);
     render(transition($page));
 
-    componentLogForm(createRender($page.querySelector(".component_logger")));
     componentLogViewer(createRender($page.querySelector(".component_logviewer")));
+    componentLogForm(createRender($page.querySelector(".component_logger")));
     componentAuditor(createRender($page.querySelector(".component_reporter")));
 }
 

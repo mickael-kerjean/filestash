@@ -98,6 +98,9 @@ export default async function(render) {
             }
             return json;
         }),
+        // rxjs.map((formData) => JSON.parse(JSON.stringify(a, (key, value) => {
+        //     if (value !== null) return value;
+        // })),
         rxjs.mergeMap((creds) => createSession(creds)),
         rxjs.tap(() => navigate("/")),
         // TODO: error with notification

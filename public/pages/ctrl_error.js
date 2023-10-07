@@ -10,13 +10,12 @@ import "../components/icon.js";
 
 export default function(err) {
     return async function(render) {
-        const css = await CSS(import.meta.url, "ctrl_error.css");
         const [msg, trace] = processError(err);
         const $page = createElement(`
             <div>
-                <style>${css}</style>
+                <style>${await CSS(import.meta.url, "ctrl_error.css")}</style>
                 <a href="/" class="backnav">
-                    <component-icon data-name="arrow_left"></component-icon>
+                    <component-icon name="arrow_left"></component-icon>
                     home
                 </a>
                 <div class="component_container">
@@ -35,13 +34,13 @@ export default function(err) {
         render($page);
 
         // feature: show error details
-        effect(rxjs.fromEvent(qs($page, "button[data-bind=\"details\"]"), "click").pipe(
+        effect(rxjs.fromEvent(qs($page, `button[data-bind="details"]`), "click").pipe(
             rxjs.mapTo(["hidden"]),
             applyMutation(qs($page, "pre"), "classList", "toggle")
         ));
 
         // feature: refresh button
-        effect(rxjs.fromEvent(qs($page, "button[data-bind=\"refresh\"]"), "click").pipe(
+        effect(rxjs.fromEvent(qs($page, `button[data-bind="refresh"]`), "click").pipe(
             rxjs.tap(() => location.reload())
         ));
 
@@ -52,11 +51,11 @@ export default function(err) {
 function processError(err) {
     let msg, trace;
     if (err instanceof AjaxError) {
-        msg = t(err.code());
+        msg = t(err.message);
         trace = `
 type:    ${err.type()}
-message: ${err.message}
 code:    ${err.code()}
+message: ${err.message}
 trace:   ${err.stack}`;
     } else if (err instanceof ApplicationError) {
         msg = t(err.message);

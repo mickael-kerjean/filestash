@@ -67,3 +67,5 @@ export function createRender($parent) {
         else throw new Error(`Unknown view type: ${typeof $view}`);
     };
 }
+
+export function nop() {}

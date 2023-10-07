@@ -42,7 +42,7 @@ class Loader extends window.HTMLElement {
     }
 }
 
-window.customElements.define("component-loader", Loader);
+customElements.define("component-loader", Loader);
 
 export default createElement("<component-loader></component-loader>");
 export function toggle($node, show = false) {

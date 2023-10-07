@@ -6,7 +6,9 @@ class Icon extends window.HTMLElement {
     attributeChangedCallback() {
         const alt = this.getAttribute("name");
         const img = this._mapOfIcon(alt);
-        this.innerHTML = this.render({ alt, img });
+        requestAnimationFrame(() => {
+            this.innerHTML = this.render({ alt, img });
+        });
     }
 
     render({ alt, img }) {

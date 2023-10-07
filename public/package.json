@@ -70,7 +70,8 @@
       "promise/param-names": ["off"],
       "no-return-assign": ["off"],
       "brace-style": ["off"],
-      "no-useless-escape": ["off"]
+      "no-useless-escape": ["off"],
+      "comma-dangle": [0]
     }
   }
 }

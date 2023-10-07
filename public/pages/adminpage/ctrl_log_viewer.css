@@ -1,0 +1,7 @@
+.component_logpage button{
+    width: inherit;
+    float: right;
+    margin-top: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+}

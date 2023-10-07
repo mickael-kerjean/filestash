@@ -1,53 +1,63 @@
-import { createElement } from "../lib/skeleton/index.js";
+import { createElement, nop } from "../lib/skeleton/index.js";
 import rxjs, { applyMutation } from "../lib/rx.js";
 import { animate } from "../lib/animate.js";
-import { qs } from "../lib/dom.js";
+import { qs, qsa } from "../lib/dom.js";
 
 import { CSS } from "../helpers/loader.js";
 
-let _observables = [];
-const effect = (obs) => _observables.push(obs.subscribe());
-const free = () => {
-    for (let i = 0; i < _observables.length; i++) {
-        _observables[i].unsubscribe();
+export default class Modal {
+    static open($node, opts = {}) {
+        find().trigger($node, opts);
     }
-    _observables = [];
-};
+}
 
-export default class Modal extends HTMLElement {
-    async trigger($node, opts = {}) {
-        const { onQuit } = opts;
-        const $modal = createElement(`
-<div class="component_modal" id="modal-box">
-  <style>${await CSS(import.meta.url, "modal.css")}</style>
-  <div>
-    <div class="component_popup">
-      <div class="popup--content">
-        <div class="modal-message" data-bind="body"><!-- MODAL BODY --></div>
-      </div>
-      <div class="buttons">
-        <button type="submit" class="emphasis">OK</button>
-      </div>
+const createModal = async () => createElement(`
+    <div class="component_modal" id="modal-box">
+        <style>${await CSS(import.meta.url, "modal.css")}</style>
+        <div>
+            <div class="component_popup">
+                <div class="popup--content">
+                    <div class="modal-message" data-bind="body"><!-- MODAL BODY --></div>
+                </div>
+                <div class="buttons">
+                    <button type="button"></button>
+                    <button type="submit" class="emphasis"></button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>`);
-        this.replaceChildren($modal);
+`);
 
-        // feature: setup the modal body
-        effect(rxjs.of([$node]).pipe(
-            applyMutation(qs($modal, "[data-bind=\"body\"]"), "appendChild")
+class ModalComponent extends window.HTMLElement {
+    async trigger($node, opts = {}) {
+        const $modal = await createModal();
+        const close$ = new rxjs.Subject();
+        const { onQuit = nop, withButtonsLeft = null, withButtonsRight = null } = opts;
+
+        // feature: build the dom
+        qs($modal, `[data-bind="body"]`).replaceChildren($node);
+        this.replaceChildren($modal);
+        qsa($modal, `.component_popup > div.buttons > button`).forEach(($button, i) => {
+            let currentLabel = null;
+            if (i === 0) currentLabel = withButtonsLeft;
+            else if (i === 1) currentLabel = withButtonsRight;
+
+            if (currentLabel === null) return $button.remove();
+            $button.textContent = currentLabel;
+            $button.onclick = () => close$.next(currentLabel);
+        });
+        effect(rxjs.fromEvent($modal, "click").pipe(
+            rxjs.filter((e) => e.target.getAttribute("id") === "modal-box"),
+            rxjs.tap(() => close$.next()),
+        ));
+        effect(rxjs.fromEvent(window, "keydown").pipe(
+            rxjs.filter((e) => e.keyCode === 27),
+            rxjs.tap(() => close$.next()),
         ));
 
         // feature: closing the modal
-        effect(rxjs.merge(
-            rxjs.fromEvent($modal, "click").pipe(
-                rxjs.filter((e) => e.target.getAttribute("id") === "modal-box")
-            ),
-            rxjs.fromEvent(window, "keydown").pipe(
-                rxjs.filter((e) => e.keyCode === 27)
-            )
-        ).pipe(
-            rxjs.tap(() => typeof onQuit === "function" && onQuit()),
+        effect(close$.pipe(
+            rxjs.tap((label) => onQuit(label)),
             rxjs.tap(() => animate(qs($modal, "div > div"), {
                 time: 200,
                 keyframes: [
@@ -91,7 +101,7 @@ export default class Modal extends HTMLElement {
             rxjs.map(() => {
                 let size = 300;
                 const $box = document.querySelector("#modal-box > div");
-                if ($box instanceof HTMLElement) size = $box.offsetHeight;
+                if ($box instanceof window.HTMLElement) size = $box.offsetHeight;
 
                 size = Math.round((document.body.offsetHeight - size) / 2);
                 if (size < 0) return 0;
@@ -104,4 +114,19 @@ export default class Modal extends HTMLElement {
     }
 }
 
-customElements.define("component-modal", Modal);
+customElements.define("component-modal", ModalComponent);
+
+let _observables = [];
+const effect = (obs) => _observables.push(obs.subscribe());
+const free = () => {
+    for (let i = 0; i < _observables.length; i++) {
+        _observables[i].unsubscribe();
+    }
+    _observables = [];
+};
+
+function find() {
+    const $dom = document.body.querySelector("component-modal");
+    if (!($dom instanceof ModalComponent)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: wrong type modal component");
+    return $dom;
+}

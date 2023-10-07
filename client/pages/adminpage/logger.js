@@ -154,7 +154,6 @@ function AuditComponent() {
         });
         return () => ctrl.abort();
     }, [debouncedSearchParams]);
-
     return (
         <div className="component_audit">
             {

@@ -13,24 +13,18 @@
             <component-loader delay="500"></component-loader>
         </div>
         <script type="module">
-         import main from "/lib/skeleton/index.js";
-         const routes = {
-             "/admin/backend": "/pages/adminpage/ctrl_backend.js",
-             "/admin/settings": "/pages/adminpage/ctrl_settings.js",
-             "/admin/logs": "/pages/adminpage/ctrl_log.js",
-             "/admin/about": "/pages/adminpage/ctrl_about.js",
-             "/admin/setup": "/pages/adminpage/ctrl_setup.js",
-             "/admin/": "/pages/ctrl_adminpage.js",
-             "": "/pages/ctrl_notfound.js",
-         };
-         main(document.getElementById("app"), routes, {
-             spinner: `<component-loader></component-loader>`,
-             beforeStart: import("/boot/ctrl_boot_backoffice.js"),
-         });
+          import main from "/lib/skeleton/index.js";
+          import routes from "/boot/router_backoffice.js";
+          main(document.getElementById("app"), routes, {
+              spinner: `<component-loader></component-loader>`,
+              beforeStart: import("/boot/ctrl_boot_backoffice.js"),
+          });
         </script>
 
         <script type="module" src="/components/modal.js"></script>
         <component-modal></component-modal>
+        <script type="module" src="/components/notification.js"></script>
+        <component-notification></component-notification>
 
         <noscript>
             <div>

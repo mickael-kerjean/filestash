@@ -8,7 +8,8 @@ export function mutateForm(formSpec, formState) {
 
         let ptr = formSpec;
         while (keys.length > 1) ptr = ptr[keys.shift()];
-        ptr[keys.shift()].value = (value === "" ? null : value);
+        const key = keys.shift();
+        if (ptr && ptr[key]) ptr[key].value = (value === "" ? null : value);
     });
     return formSpec;
 }
@@ -43,7 +44,7 @@ async function createFormNodes(node, { renderNode, renderLeaf, renderInput, path
         else {
             const currentPath = path.concat(key);
             const $leaf = renderLeaf({ ...node[key], path: currentPath, label: key });
-            const $input = await renderInput({ ...node[key], path: currentPath });
+            const $input = await renderInput({ ...node[key], path: currentPath.filter((chunk) => !!chunk) });
             const $target = $leaf.querySelector("[data-bind=\"children\"]") || $leaf;
 
             // leaf node is either "classic" or can be the target of something that can be toggled
@@ -67,8 +68,8 @@ async function createFormNodes(node, { renderNode, renderLeaf, renderInput, path
                     else if (!node[k].id) continue;
                     else if (node[key].target.indexOf(node[k].id) === -1) continue;
 
-                    const $kleaf = renderLeaf({ ...node[k], path: currentPath, label: k });
-                    const $kinput = await renderInput({ ...node[k], path: currentPath });
+                    const $kleaf = renderLeaf({ ...node[k], path: path.concat(k), label: k });
+                    const $kinput = await renderInput({ ...node[k], path: path.concat(k) });
                     const $ktarget = $kleaf.querySelector("[data-bind=\"children\"]") || $kleaf;
                     $ktarget.removeAttribute("data-bind");
                     $ktarget.appendChild($kinput);
