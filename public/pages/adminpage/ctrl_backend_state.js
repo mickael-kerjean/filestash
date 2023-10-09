@@ -1,4 +1,5 @@
 import rxjs from "../../lib/rx.js";
+import { qs } from "../../lib/dom.js";
 import { get as getConfig } from "../../model/config.js";
 import { get as getAdminConfig } from "./model_config.js";
 import { formObjToJSON$ } from "./helper_form.js";
@@ -65,4 +66,63 @@ export function toggleMiddleware(type) {
     const newValue = middlewareEnabled$.value === type ? null : type;
     middlewareEnabled$.next(newValue);
     return newValue;
+}
+
+export function getState() {
+    return getAdminConfig().pipe(
+        rxjs.first(),
+        formObjToJSON$(),
+        rxjs.map((config) => { // connections
+            const connections = [];
+            const formData = new FormData(qs(document, `[data-bind="backend-enabled"]`));
+            for (const [type, label] of formData.entries()) {
+                connections.push({ type, label });
+            }
+            config.connections = connections;
+            return config;
+        }),
+        rxjs.map((config) => { // middleware
+            const authType = document
+                  .querySelector(`[data-bind="authentication_middleware"] [is="box-item"].active`)
+                  .getAttribute("data-label");
+
+            const middleware = {
+                identity_provider: {},
+                attribute_mapping: {},
+            };
+            if (!authType) return config;
+
+            let formValues = [...new FormData(document.querySelector(`[data-bind="idp"]`))];
+            middleware.identity_provider = {
+                type: authType,
+                params: JSON.stringify(
+                    formValues
+                        .filter(([key, value]) => key.startsWith(`${authType}.`)) // remove elements that aren't in scope
+                        .map(([key, value]) => [key.replace(new RegExp(`^${authType}\.`), ""), value]) // format the relevant keys
+                        .reduce((acc, [key, value]) => { // transform onto something ready to be saved
+                            if (key === "type") return acc;
+                            return {
+                                ...acc,
+                                [key]: value,
+                            };
+                        }, {}),
+                ),
+            };
+
+            formValues = [...new FormData(document.querySelector(`[data-bind="attribute-mapping"]`))];
+            middleware.attribute_mapping = {
+                related_backend: formValues.shift()[1],
+                params: JSON.stringify(formValues.reduce((acc, [key, value]) => {
+                    const k = key.split(".");
+                    if (k.length !== 2) return acc;
+                    if (!acc[k[0]]) acc[k[0]] = {};
+                    if (value !== "") acc[k[0]][k[1]] = value;
+                    return acc;
+                }, {})),
+            };
+
+            config.middleware = middleware;
+            return config;
+        }),
+    );
 }

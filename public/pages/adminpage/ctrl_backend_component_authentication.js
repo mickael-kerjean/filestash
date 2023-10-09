@@ -8,7 +8,7 @@ import { generateSkeleton } from "../../components/skeleton.js";
 import { get as getConfig } from "../../model/config.js";
 
 import {
-    initMiddleware, initStorage,
+    initMiddleware, initStorage, getState,
     getMiddlewareAvailable, getMiddlewareEnabled, toggleMiddleware,
     getBackendAvailable, getBackendEnabled,
 } from "./ctrl_backend_state.js";
@@ -65,7 +65,7 @@ export default async function(render) {
         rxjs.mergeMap(($nodes) => $nodes),
         rxjs.mergeMap(($node) => onClick($node)),
         rxjs.map(($node) => toggleMiddleware($node.getAttribute("data-label"))),
-        saveMiddleware,
+        saveMiddleware(),
     ));
 
     // feature: setup forms - we insert everything in the DOM so we don't lose
@@ -237,57 +237,11 @@ export default async function(render) {
     effect(setupAMForm$.pipe(
         rxjs.switchMap(() => rxjs.fromEvent($page, "input")),
         rxjs.mergeMap(() => getMiddlewareEnabled().pipe(rxjs.first())),
-        saveMiddleware,
+        saveMiddleware(),
     ));
 }
 
-const saveMiddleware = rxjs.pipe(
-    rxjs.map((authType) => {
-        const middleware = {
-            identity_provider: {},
-            attribute_mapping: {},
-        };
-        if (!authType) return middleware;
-
-        let formValues = [...new FormData(document.querySelector(`[data-bind="idp"]`))];
-        middleware.identity_provider = {
-            type: authType,
-            params: JSON.stringify(
-                formValues
-                    .filter(([key, value]) => key.startsWith(`${authType}.`)) // remove elements that aren't in scope
-                    .map(([key, value]) => [key.replace(new RegExp(`^${authType}\.`), ""), value]) // format the relevant keys
-                    .reduce((acc, [key, value]) => { // transform onto something ready to be saved
-                        if (key === "type") return acc;
-                        return {
-                            ...acc,
-                            [key]: value,
-                        };
-                    }, {}),
-            ),
-        };
-
-        formValues = [...new FormData(document.querySelector(`[data-bind="attribute-mapping"]`))];
-        middleware.attribute_mapping = {
-            related_backend: formValues.shift()[1],
-            params: JSON.stringify(formValues.reduce((acc, [key, value]) => {
-                const k = key.split(".");
-                if (k.length !== 2) return acc;
-                if (!acc[k[0]]) acc[k[0]] = {};
-                if (value !== "") acc[k[0]][k[1]] = value;
-                return acc;
-            }, {})),
-        };
-        return middleware;
-    }),
-    rxjs.mergeMap((middleware) => getAdminConfig().pipe(
-        rxjs.first(),
-        formObjToJSON$(),
-        rxjs.map((config) => [middleware, config]),
-    )),
-    rxjs.map(([middleware, config]) => ({...config, middleware})),
-    rxjs.mergeMap((newConfig) => getConfig().pipe(
-        rxjs.first(),
-        rxjs.map(({ connections }) => ({ ...newConfig, connections })),
-    )),
+const saveMiddleware = () => rxjs.pipe(
+    rxjs.mergeMap(() => getState()),
     saveConfig(),
 );

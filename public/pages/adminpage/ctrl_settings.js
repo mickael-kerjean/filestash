@@ -7,12 +7,12 @@ import { generateSkeleton } from "../../components/skeleton.js";
 import notification from "../../components/notification.js";
 import { get as getConfig } from "../../model/config.js";
 
-import { get as getAdminConfig, save as saveConfig } from "./model_config.js";
+import { get as getAdminConfig, save as saveConfig, initConfig } from "./model_config.js";
 import { renderLeaf, useForm$, formObjToJSON$ } from "./helper_form.js";
 import transition from "./animate.js";
 import AdminHOC from "./decorator.js";
 
-export default AdminHOC(function(render) {
+export default AdminHOC(async function(render) {
     const $container = createElement(`
         <div class="component_settingspage sticky">
             <form data-bind="form" class="formbuilder">
@@ -22,6 +22,7 @@ export default AdminHOC(function(render) {
         </div>
     `);
     render(transition($container));
+    await initConfig();
 
     const config$ = getAdminConfig().pipe(
         rxjs.first(),

@@ -5,7 +5,7 @@ import { qs, qsa } from "../../lib/dom.js";
 import { formTmpl } from "../../components/form.js";
 import { generateSkeleton } from "../../components/skeleton.js";
 
-import { initStorage, getBackendAvailable, getBackendEnabled, addBackendEnabled, removeBackendEnabled } from "./ctrl_backend_state.js";
+import { initStorage, getState, getBackendAvailable, getBackendEnabled, addBackendEnabled, removeBackendEnabled } from "./ctrl_backend_state.js";
 import { formObjToJSON$ } from "./helper_form.js";
 import { get as getAdminConfig, save as saveConfig } from "./model_config.js";
 
@@ -57,7 +57,7 @@ export default async function(render) {
         rxjs.mergeMap(($nodes) => $nodes),
         rxjs.mergeMap(($node) => onClick($node)),
         rxjs.map(($node) => addBackendEnabled($node.getAttribute("data-label"))),
-        saveConnections,
+        saveConnections(),
     ));
 
     // feature: setup form
@@ -105,33 +105,21 @@ export default async function(render) {
         rxjs.mergeMap(($node) => onClick($node.querySelector(".icons"))),
         rxjs.map(($node) => qs($node.parentElement, "input").value),
         rxjs.map((label) => removeBackendEnabled(label)),
-        saveConnections,
+        saveConnections(),
     ));
 
     // feature: form input change handler
     effect(setupForm$.pipe(
         rxjs.mergeMap((forms) => forms),
         rxjs.mergeMap(($el) => rxjs.fromEvent($el, "input")),
-        rxjs.map(() => new FormData(qs($page, `[data-bind="backend-enabled"]`))),
-        rxjs.map((formData) => {
-            const connections = [];
-            for (const [type, label] of formData.entries()) {
-                connections.push({ type, label });
-            }
-            return connections;
-        }),
-        saveConnections,
+        saveConnections(),
     ));
 }
 
-const saveConnections = rxjs.pipe(
-    rxjs.mergeMap((connections) => getAdminConfig().pipe(
-        rxjs.first(),
-        formObjToJSON$(),
-        rxjs.map((config) => ({
-            ...config,
-            connections,
-        })),
-    )),
+const saveConnections = () => rxjs.pipe(
+    rxjs.mergeMap((connections) => getState().pipe(rxjs.map((config) => {
+        config.connections = connections;
+        return config;
+    }))),
     saveConfig(),
 );

@@ -14,6 +14,10 @@ const config$ = isSaving$.pipe(
     rxjs.shareReplay(1),
 )
 
+export async function initConfig() {
+    if (isSaving$.value === true) isSaving$.next(false);
+}
+
 export function isSaving() {
     return isSaving$.asObservable();
 }
@@ -25,7 +29,7 @@ export function get() {
 export function save() {
     return rxjs.pipe(
         rxjs.tap(() => isSaving$.next(true)),
-        rxjs.debounceTime(2000),
+        rxjs.debounceTime(1500),
         rxjs.mergeMap((formData) => ajax({
             url: "/admin/api/config",
             method: "POST",
