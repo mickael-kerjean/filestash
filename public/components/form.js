@@ -93,6 +93,7 @@ function $renderInput(options = {}) {
             if (!props.multi) return $wrapper;
             $input.refresh = () => {
                 const _datalist = $input.getAttribute("datalist").split(",");
+                $datalist.innerHTML = "";
                 multicomplete($input.value, _datalist).forEach((value) => {
                     $datalist.appendChild(createElement(`<option value="${value}"/>`));
                 });

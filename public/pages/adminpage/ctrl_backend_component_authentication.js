@@ -158,8 +158,15 @@ export default async function(render) {
 
     // feature: setup autocompletion of related backend field
     effect(setupAMForm$.pipe(
-        rxjs.switchMap(() => getBackendEnabled()),
-        rxjs.map((backends) => backends.map(({ label }) => label)),
+        rxjs.switchMap(() => rxjs.merge(
+            getBackendEnabled(),
+            rxjs.fromEvent(qs(document, `[data-bind="backend-enabled"]`), "input").pipe(
+                rxjs.debounceTime(500),
+            ),
+        )),
+        rxjs.mergeMap(() => getState().pipe(
+            rxjs.map(({ connections }) => connections.map(({ label }) => label)),
+        )),
         rxjs.tap((datalist) => {
             const $input = $page.querySelector(`[name="attribute_mapping.related_backend"]`);
             $input.setAttribute("datalist", datalist.join(","));
@@ -170,7 +177,9 @@ export default async function(render) {
     // feature: related backend values triggers creation/deletion of related backends
     effect(setupAMForm$.pipe(
         rxjs.switchMap(() => rxjs.merge(
-            getBackendEnabled().pipe(rxjs.map(() => qs($page, `[name="attribute_mapping.related_backend"]`).value)),
+            getBackendEnabled().pipe(
+                rxjs.map(() => qs($page, `[name="attribute_mapping.related_backend"]`).value)
+            ),
             rxjs.fromEvent(qs($page, `[name="attribute_mapping.related_backend"]`), "input").pipe(
                 rxjs.map((e) => e.target.value),
             ),
