@@ -118,7 +118,7 @@ export default async function(render) {
 
 const saveConnections = () => rxjs.pipe(
     rxjs.mergeMap((connections) => getState().pipe(rxjs.map((config) => {
-        config.connections = connections;
+        if (Array.isArray(connections)) config.connections = connections;
         return config;
     }))),
     saveConfig(),
