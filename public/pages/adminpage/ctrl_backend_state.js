@@ -84,7 +84,7 @@ export function getState() {
         rxjs.map((config) => { // middleware
             const authType = document
                   .querySelector(`[data-bind="authentication_middleware"] [is="box-item"].active`)
-                  .getAttribute("data-label");
+                  ?.getAttribute("data-label");
 
             const middleware = {
                 identity_provider: {},

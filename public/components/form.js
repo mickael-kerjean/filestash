@@ -257,7 +257,7 @@ export function format(name) {
 };
 
 export function multicomplete(input, datalist) {
-    input = input.trim().replace(/,$/g, "");
+    input = (input || "").trim().replace(/,$/g, "");
     const current = input.split(",").map((val) => val.trim()).filter((t) => !!t);
     const diff = datalist.filter((x) => current.indexOf(x) === -1);
     return diff.map((candidate) => input.length === 0 ? candidate : `${input}, ${candidate}`);

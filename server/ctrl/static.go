@@ -126,12 +126,11 @@ func LegacyServeFile(res http.ResponseWriter, req *http.Request, filePath string
 
 func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	url := req.URL.Path
-	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
-		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
-		return
-	}
-
 	if filepath.Ext(filepath.Base(url)) == "" {
+		if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
+			http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
+			return
+		}
 		ServeFile(res, req, WWWPublic, "index.backoffice.html")
 		return
 	}

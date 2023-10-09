@@ -75,7 +75,7 @@ export default async function(render) {
             rxjs.first(),
             rxjs.map((cfg) => ({
                 type: cfg?.middleware?.identity_provider?.type?.value,
-                params: JSON.parse(cfg?.middleware?.identity_provider?.params?.value),
+                params: JSON.parse(cfg?.middleware?.identity_provider?.params?.value || "{}"),
             })),
         )),
         rxjs.concatMap(async ([availableSpecs, idpState = {}]) => {
@@ -175,7 +175,7 @@ export default async function(render) {
                 rxjs.map((e) => e.target.value),
             ),
         )),
-        rxjs.map((value) => value.split(",").map((val) => val.trim()).filter((t) => !!t)),
+        rxjs.map((value) => value.split(",").map((val) => (val || "").trim()).filter((t) => !!t)),
         rxjs.mergeMap((inputBackends) => getBackendEnabled().pipe(
             rxjs.first(),
             rxjs.map((enabledBackends) => inputBackends
@@ -206,7 +206,7 @@ export default async function(render) {
         }),
         rxjs.mergeMap((spec) => getAdminConfig().pipe(
             rxjs.first(),
-            rxjs.map((cfg) => JSON.parse(cfg?.middleware?.attribute_mapping?.params?.value)),
+            rxjs.map((cfg) => JSON.parse(cfg?.middleware?.attribute_mapping?.params?.value || "{}")),
             rxjs.map((cfg) => {
                 // transform the form state from legacy format (= an object struct which was replicating the spec object)
                 // to the new format which leverage the dom (= or the input name attribute to be precise) to store the entire schema

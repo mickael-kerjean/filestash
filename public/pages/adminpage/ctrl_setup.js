@@ -7,13 +7,14 @@ import bcrypt from "../../lib/vendor/bcrypt.js";
 import { CSS } from "../../helpers/loader.js";
 import modal from "../../components/modal.js";
 import { get as getConfig } from "../../model/config.js";
+import ctrlError from "../ctrl_error.js";
 
 import { get as getAdminConfig, save as saveConfig } from "./model_config.js";
-import ctrlError from "../ctrl_error.js";
 import WithShell from "./decorator_sidemenu.js";
 import { cssHideMenu } from "./animate.js";
 import { formObjToJSON$ } from "./helper_form.js";
 import { getDeps } from "./model_setup.js";
+import { authenticate$ } from "./model_admin_session.js";
 
 import "../../components/icon.js";
 
@@ -68,13 +69,16 @@ function componentStep1(render) {
         preventDefault(),
         rxjs.mapTo(["name", "loading"]), applyMutation(qs($page, "component-icon"), "setAttribute"),
         rxjs.map(() => qs($page, "input").value),
-        rxjs.combineLatestWith(getAdminConfig().pipe(rxjs.first())),
-        rxjs.map(([pwd, config]) => {
-            config["auth"]["admin"]["value"] = bcrypt.hashSync(pwd);
-            return config;
-        }),
-        reshapeConfigBeforeSave,
-        saveConfig(),
+        rxjs.mergeMap((pwd) => getAdminConfig().pipe(
+            rxjs.first(),
+            rxjs.map((config) => {
+                config["auth"]["admin"]["value"] = bcrypt.hashSync(pwd);
+                return config;
+            }),
+            reshapeConfigBeforeSave,
+            saveConfig(),
+            rxjs.mergeMap(() => authenticate$({ password: pwd })),
+        )),
         rxjs.tap(() => animate($page, { time: 200, keyframes: slideXOut(-30) })),
         rxjs.delay(200),
         rxjs.tap(() => stepper$.next(2))
