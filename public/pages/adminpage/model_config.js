@@ -29,7 +29,7 @@ export function get() {
 export function save() {
     return rxjs.pipe(
         rxjs.tap(() => isSaving$.next(true)),
-        rxjs.debounceTime(1500),
+        rxjs.debounceTime(800),
         rxjs.mergeMap((formData) => ajax({
             url: "/admin/api/config",
             method: "POST",

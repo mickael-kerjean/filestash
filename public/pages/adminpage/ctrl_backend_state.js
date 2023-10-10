@@ -86,14 +86,14 @@ export function getState() {
                   .querySelector(`[data-bind="authentication_middleware"] [is="box-item"].active`)
                   ?.getAttribute("data-label");
 
-            const middleware = {
-                identity_provider: {},
-                attribute_mapping: {},
+            config.middleware = {
+                identity_provider: { type: null },
+                attribute_mapping: null,
             };
             if (!authType) return config;
 
             let formValues = [...new FormData(document.querySelector(`[data-bind="idp"]`))];
-            middleware.identity_provider = {
+            config.middleware.identity_provider = {
                 type: authType,
                 params: JSON.stringify(
                     formValues
@@ -110,7 +110,7 @@ export function getState() {
             };
 
             formValues = [...new FormData(document.querySelector(`[data-bind="attribute-mapping"]`))];
-            middleware.attribute_mapping = {
+            config.middleware.attribute_mapping = {
                 related_backend: formValues.shift()[1],
                 params: JSON.stringify(formValues.reduce((acc, [key, value]) => {
                     const k = key.split(".");
@@ -121,7 +121,6 @@ export function getState() {
                 }, {})),
             };
 
-            config.middleware = middleware;
             return config;
         }),
     );
