@@ -119,6 +119,11 @@
 .component_dashboard form fieldset .icons .component_icon {
     height: 20px;
 }
+.component_dashboard form fieldset label > img {
+    height: 200px;
+    display: flex;
+    margin: 5px auto 0 auto;
+}
 .component_dashboard .component_storagebackend form {
     width: calc(100% - 15px);
 }
