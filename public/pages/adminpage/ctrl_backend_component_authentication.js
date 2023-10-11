@@ -162,11 +162,10 @@ export default async function(render) {
             getBackendEnabled(),
             rxjs.fromEvent(qs(document, `[data-bind="backend-enabled"]`), "input").pipe(
                 rxjs.debounceTime(500),
+                rxjs.mergeMap(() => getState().pipe(rxjs.map(({ connections }) => connections))),
             ),
         )),
-        rxjs.mergeMap(() => getState().pipe(
-            rxjs.map(({ connections }) => connections.map(({ label }) => label)),
-        )),
+        rxjs.map((connections) => connections.map(({ label }) => label)),
         rxjs.tap((datalist) => {
             const $input = $page.querySelector(`[name="attribute_mapping.related_backend"]`);
             $input.setAttribute("datalist", datalist.join(","));
