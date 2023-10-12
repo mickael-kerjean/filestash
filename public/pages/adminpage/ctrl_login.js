@@ -42,9 +42,14 @@ export default async function(render) {
         rxjs.map(() => ({ password: qs($form, "[name=\"password\"]").value })),
         rxjs.switchMap((creds) => authenticate$(creds).pipe(
             rxjs.catchError((err) => {
-                if (err instanceof AjaxError && err.code() === "INTERNAL_SERVER_ERROR") {
-                    ctrlError(err)(render);
-                    return rxjs.EMPTY;
+                if (err instanceof AjaxError) {
+                    switch(err.code()) {
+                    case "INTERNAL_SERVER_ERROR":
+                        ctrlError(err)(render);
+                        return rxjs.EMPTY;
+                    case "FORBIDDEN":
+                        return rxjs.of(false);
+                    }
                 }
                 notification.error(err && err.message);
                 return rxjs.of(false);
