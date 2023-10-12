@@ -8,9 +8,10 @@ RUN apk add git && \
 FROM node:18-alpine AS builder_frontend
 WORKDIR /home/
 COPY --from=builder_prepare /home/filestash/ ./
-RUN apk add make git && \
+RUN apk add make git gzip brotli && \
     npm install --legacy-peer-deps && \
-    make build_frontend
+    make build_frontend && \
+    cd public && make compress
 
 # STEP3: BUILD THE BACKEND
 FROM golang:1.19-buster AS builder_backend

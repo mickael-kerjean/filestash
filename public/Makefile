@@ -1,4 +1,4 @@
-all:
+compress:
 	find . -type f -name '*.html' | xargs brotli -f -k
 	find . -type f -name '*.html' | xargs gzip -f -k
 	find . -type f -name '*.js' | xargs brotli -f -k
