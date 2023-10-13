@@ -176,15 +176,22 @@ export default async function(render) {
     // feature: related backend values triggers creation/deletion of related backends
     effect(setupAMForm$.pipe(
         rxjs.switchMap(() => rxjs.merge(
-            getBackendEnabled().pipe(
-                rxjs.map(() => qs($page, `[name="attribute_mapping.related_backend"]`).value)
-            ),
+            // case 1: user is typing in the related backend field
             rxjs.fromEvent(qs($page, `[name="attribute_mapping.related_backend"]`), "input").pipe(
                 rxjs.map((e) => e.target.value),
             ),
+            // case 2: user is adding / removing a storage backend
+            getBackendEnabled().pipe(
+                rxjs.map(() => qs($page, `[name="attribute_mapping.related_backend"]`).value)
+            ),
+            // case 3: user is changing the storage backend label
+            rxjs.fromEvent(qs(document, `[data-bind="backend-enabled"]`), "input").pipe(
+                rxjs.map(() => qs($page, `[name="attribute_mapping.related_backend"]`).value),
+            ),
         )),
         rxjs.map((value) => value.split(",").map((val) => (val || "").trim()).filter((t) => !!t)),
-        rxjs.mergeMap((inputBackends) => getBackendEnabled().pipe(
+        rxjs.mergeMap((inputBackends) => getState().pipe(
+            rxjs.map(({ connections }) => connections),
             rxjs.first(),
             rxjs.map((enabledBackends) => inputBackends
                      .map((label) => enabledBackends.find((b) => b.label === label))
