@@ -34,7 +34,7 @@ export default function(render) {
     effect(setup$.pipe(
         rxjs.first(),
         rxjs.tap(() => updateLoop($page, audit$)),
-    ))
+    ));
 }
 
 function updateLoop($page, audit$) {
@@ -47,7 +47,7 @@ function updateLoop($page, audit$) {
 
     // feature2: update to the query form
     effect(rxjs.of(null).pipe(
-        useForm$(() => qsa($page, `form [name]`)),
+        useForm$(() => qsa($page, "form [name]")),
         rxjs.tap(() => setLoader(true)),
         rxjs.debounceTime(1000),
         rxjs.first(),

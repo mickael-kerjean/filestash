@@ -12,7 +12,7 @@ const config$ = isSaving$.pipe(
     })),
     rxjs.map((res) => res.responseJSON.result),
     rxjs.shareReplay(1),
-)
+);
 
 export async function initConfig() {
     if (isSaving$.value === true) isSaving$.next(false);

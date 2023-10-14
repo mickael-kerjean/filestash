@@ -7,7 +7,7 @@ import componentAuditor from "./ctrl_log_audit.js";
 import transition from "./animate.js";
 import AdminHOC from "./decorator.js";
 
-export default AdminHOC(async function (render) {
+export default AdminHOC(async function(render) {
     const $page = createElement(`
         <div class="component_logpage sticky">
             <h2>Logging</h2>

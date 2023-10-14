@@ -214,7 +214,7 @@ export function $renderInput(options = {}) {
             `);
             $select.value = value || props.default;
             attrs.map((setAttribute) => setAttribute($select));
-            (options || []).map((name) => {
+            (options || []).forEach((name) => {
                 const $option = createElement(`
                     <option></option>
                 `);
@@ -274,7 +274,7 @@ export function $renderInput(options = {}) {
             `);
             $input.value = `unknown element type ${type}`;
             $input.setAttribute("name", path.join("."));
-        }}
+        } }
     };
 }
 

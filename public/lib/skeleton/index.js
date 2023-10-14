@@ -7,7 +7,7 @@ export { onDestroy } from "./lifecycle.js";
 let pageLoader;
 
 export default async function($root, routes, opts = {}) {
-    window.addEventListener("pagechange", async () => {
+    window.addEventListener("pagechange", async() => {
         try {
             const route = currentRoute(routes, "");
             const [ctrl] = await Promise.all([

@@ -14,13 +14,3 @@ export default function(render) {
     `);
     render($page);
 }
-
-const tmp = () => {
-    const { previous } = history.state;
-    if (!previous) return;
-
-    const path = previous.split("/").slice(2)
-};
-
-
-const cleanupPath = (path = "") => path.split("/").slice(2);

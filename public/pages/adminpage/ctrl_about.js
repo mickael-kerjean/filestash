@@ -18,6 +18,6 @@ export default AdminHOC(async function(render) {
 
     effect(getRelease().pipe(
         rxjs.map(({ html }) => html),
-        stateMutation(qs($page, `[data-bind="about"]`), "innerHTML"),
+        stateMutation(qs($page, "[data-bind=\"about\"]"), "innerHTML"),
     ));
 });

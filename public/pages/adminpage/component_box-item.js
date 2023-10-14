@@ -1,5 +1,3 @@
-let htmlSelect = "";
-
 class BoxItem extends window.HTMLDivElement {
     constructor() {
         super();
@@ -31,7 +29,7 @@ class BoxItem extends window.HTMLDivElement {
 
     toggleSelection(opt = {}) {
         const { tmpl, isSelected = !this.classList.contains("active") } = opt;
-        let $icon = this.querySelector(".icon");
+        const $icon = this.querySelector(".icon");
         if (isSelected) {
             this.classList.add("active");
             if (tmpl) $icon.innerHTML = tmpl;

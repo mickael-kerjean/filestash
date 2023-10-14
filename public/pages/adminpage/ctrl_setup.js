@@ -1,5 +1,5 @@
-import { createElement, createRender, onDestroy } from "../../lib/skeleton/index.js";
-import rxjs, { effect, stateMutation, applyMutation, preventDefault } from "../../lib/rx.js";
+import { createElement, createRender } from "../../lib/skeleton/index.js";
+import rxjs, { effect, applyMutation, preventDefault } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
 import { transition, animate, zoomIn, slideXOut, slideXIn } from "../../lib/animate.js";
@@ -35,7 +35,7 @@ export default async function(render) {
             else if (step === 2) return WithShell(componentStep2);
             throw new ApplicationError("INTERNAL_ERROR", "Assumption failed");
         }),
-        rxjs.tap((ctrl) => ctrl(createRender(qs($page, `[data-bind="multistep-form"]`)))),
+        rxjs.tap((ctrl) => ctrl(createRender(qs($page, "[data-bind=\"multistep-form\"]")))),
         rxjs.catchError((err) => ctrlError(err)(render)),
     ));
 };
@@ -92,10 +92,9 @@ const reshapeConfigBeforeSave = rxjs.pipe(
         config["connections"] = publicConfig["connections"];
         return config;
     }),
-)
+);
 
 function componentStep2(render) {
-    const deps = [];
     const $page = createElement(`
         <div id="step2">
             <h4>
@@ -112,7 +111,7 @@ function componentStep2(render) {
     effect(getDeps().pipe(
         rxjs.mergeMap((deps) => deps),
         rxjs.map(({ name_success, name_failure, pass, severe, message }) => ({
-            className: (severe ? "severe" : "") + " " +(pass ? "yes" : "no"),
+            className: (severe ? "severe" : "") + " " + (pass ? "yes" : "no"),
             label: pass ? name_success : name_failure,
             extraLabel: pass ? "" : ": " + message,
         })),
@@ -121,11 +120,11 @@ function componentStep2(render) {
                 <span>${label}</span>${extraLabel}
             </div>
         `)),
-        applyMutation(qs($page, `[data-bind="dependencies"]`), "appendChild"),
-    ))
+        applyMutation(qs($page, "[data-bind=\"dependencies\"]"), "appendChild"),
+    ));
 
     // feature: navigate previous step
-    effect(rxjs.fromEvent(qs($page, `[data-bind="previous"]`), "click").pipe(
+    effect(rxjs.fromEvent(qs($page, "[data-bind=\"previous\"]"), "click").pipe(
         rxjs.tap(() => stepper$.next(1))
     ));
 
@@ -162,12 +161,12 @@ function componentStep2(render) {
                 withButtonsRight: "OK",
                 onQuit: () => next(config),
             });
-            qs($modal, `[type="checkbox"]`).oninput = (e) => {
+            qs($modal, "[type=\"checkbox\"]").oninput = (e) => {
                 if (!e.target.checked) return;
                 qs(document, "component-modal > div").click();
-            }
+            };
         })),
-        rxjs.filter(() => qs($modal, `[type="checkbox"]`).checked),
+        rxjs.filter(() => qs($modal, "[type=\"checkbox\"]").checked),
         rxjs.map((config) => {
             config["log"]["telemetry"] = true;
             return config;

@@ -43,7 +43,7 @@ export default async function(render) {
         rxjs.switchMap((creds) => authenticate$(creds).pipe(
             rxjs.catchError((err) => {
                 if (err instanceof AjaxError) {
-                    switch(err.code()) {
+                    switch (err.code()) {
                     case "INTERNAL_SERVER_ERROR":
                         ctrlError(err)(render);
                         return rxjs.EMPTY;

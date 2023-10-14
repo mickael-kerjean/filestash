@@ -25,11 +25,11 @@ export function addBackendEnabled(type) {
         existingLabels.add(obj.label.toLowerCase());
     });
 
-    let label = "", i = 1;
+    let label = ""; let i = 1;
     while (true) {
         label = type + (i === 1 ? "" : ` ${i}`);
         if (existingLabels.has(label) === false) break;
-        i+=1;
+        i += 1;
     }
 
     const b = backendsEnabled$.value.concat({ type, label });
@@ -74,7 +74,7 @@ export function getState() {
         formObjToJSON$(),
         rxjs.map((config) => { // connections
             const connections = [];
-            const formData = new FormData(qs(document, `[data-bind="backend-enabled"]`));
+            const formData = new FormData(qs(document, "[data-bind=\"backend-enabled\"]"));
             for (const [type, label] of formData.entries()) {
                 connections.push({ type, label });
             }
@@ -83,8 +83,8 @@ export function getState() {
         }),
         rxjs.map((config) => { // middleware
             const authType = document
-                  .querySelector(`[data-bind="authentication_middleware"] [is="box-item"].active`)
-                  ?.getAttribute("data-label");
+                .querySelector("[data-bind=\"authentication_middleware\"] [is=\"box-item\"].active")
+                ?.getAttribute("data-label");
 
             config.middleware = {
                 identity_provider: { type: null },
@@ -92,7 +92,7 @@ export function getState() {
             };
             if (!authType) return config;
 
-            let formValues = [...new FormData(document.querySelector(`[data-bind="idp"]`))];
+            let formValues = [...new FormData(document.querySelector("[data-bind=\"idp\"]"))];
             config.middleware.identity_provider = {
                 type: authType,
                 params: JSON.stringify(
@@ -109,7 +109,7 @@ export function getState() {
                 ),
             };
 
-            formValues = [...new FormData(document.querySelector(`[data-bind="attribute-mapping"]`))];
+            formValues = [...new FormData(document.querySelector("[data-bind=\"attribute-mapping\"]"))];
             config.middleware.attribute_mapping = {
                 related_backend: formValues.shift()[1],
                 params: JSON.stringify(formValues.reduce((acc, [key, value]) => {

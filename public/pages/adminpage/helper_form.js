@@ -26,14 +26,14 @@ export function useForm$($inputNodeList) {
         rxjs.mergeMap(($el) => rxjs.fromEvent($el, "input")),
         rxjs.map((e) => ({
             name: e.target.getAttribute("name"),
-            value: function() {
-                switch(e.target.getAttribute("type")) {
+            value: (function() {
+                switch (e.target.getAttribute("type")) {
                 case "checkbox":
                     return e.target.checked;
                 default:
                     return e.target.value;
                 }
-            }(),
+            }()),
         })),
         rxjs.scan((store, keyValue) => {
             store[keyValue.name] = keyValue.value;
@@ -45,7 +45,7 @@ export function useForm$($inputNodeList) {
 export function formObjToJSON$() {
     const formObjToJSON = (o, level = 0) => {
         const obj = Object.assign({}, o);
-        Object.keys(obj).map((key) => {
+        Object.keys(obj).forEach((key) => {
             const t = obj[key];
             if ("label" in t && "type" in t && "default" in t && "value" in t) {
                 obj[key] = obj[key].value;
@@ -54,6 +54,6 @@ export function formObjToJSON$() {
             }
         });
         return obj;
-    }
+    };
     return rxjs.map(formObjToJSON);
 }

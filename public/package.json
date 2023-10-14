@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "check": "tsc && eslint .",
-    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest"
+    "test": "npx jest"
   },
   "author": "Mickael Kerjean",
   "license": "AGPL",
@@ -71,7 +71,8 @@
       "no-return-assign": ["off"],
       "brace-style": ["off"],
       "no-useless-escape": ["off"],
-      "comma-dangle": [0]
+      "comma-dangle": ["off"],
+      "curly": ["off"]
     }
   }
 }

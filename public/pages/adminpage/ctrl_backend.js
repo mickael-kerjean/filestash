@@ -19,6 +19,6 @@ export default AdminHOC(async function(render) {
     render(transition($page));
     await initConfig();
 
-    componentStorageBackend(createRender(qs($page, `[data-bind="backend"]`)));
-    componentAuthenticationMiddleware(createRender(qs($page, `[data-bind="authentication_middleware"]`)));
+    componentStorageBackend(createRender(qs($page, "[data-bind=\"backend\"]")));
+    componentAuthenticationMiddleware(createRender(qs($page, "[data-bind=\"authentication_middleware\"]")));
 });

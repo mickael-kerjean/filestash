@@ -1,5 +1,4 @@
-import rxjs, { ajax } from "../lib/rx.js";
-import { loadScript, init as initCSS } from "../helpers/loader.js";
+import { init as initCSS } from "../helpers/loader.js";
 import { report } from "../helpers/log.js";
 import { $error } from "./common.js";
 
@@ -45,5 +44,5 @@ async function setup_history() {
 }
 
 async function setup_css() {
-    return initCSS()
+    return initCSS();
 }

@@ -6,8 +6,7 @@ import { formTmpl } from "../../components/form.js";
 import { generateSkeleton } from "../../components/skeleton.js";
 
 import { initStorage, getState, getBackendAvailable, getBackendEnabled, addBackendEnabled, removeBackendEnabled } from "./ctrl_backend_state.js";
-import { formObjToJSON$ } from "./helper_form.js";
-import { get as getAdminConfig, save as saveConfig } from "./model_config.js";
+import { save as saveConfig } from "./model_config.js";
 
 import "./component_box-item.js";
 
@@ -26,11 +25,11 @@ export default async function(render) {
 
     // feature: setup the buttons
     const init$ = getBackendAvailable().pipe(
-        rxjs.tap(() => qs($page, `[data-bind="backend-available"]`).innerHTML = ""),
+        rxjs.tap(() => qs($page, "[data-bind=\"backend-available\"]").innerHTML = ""),
         rxjs.mergeMap((specs) => Promise.all(Object.keys(specs).map((label) => createElement(`
             <div is="box-item" data-label="${label}"></div>
         `)))),
-        applyMutations(qs($page, `[data-bind="backend-available"]`), "appendChild"),
+        applyMutations(qs($page, "[data-bind=\"backend-available\"]"), "appendChild"),
         rxjs.share(),
     );
     effect(init$);
@@ -45,10 +44,10 @@ export default async function(render) {
             });
             return enabledSet;
         }),
-        rxjs.tap((backends) => qsa($page, `[is="box-item"]`).forEach(($button) => {
-            backends.has($button.getAttribute("data-label")) ?
-                $button.classList.add("active") :
-                $button.classList.remove("active");
+        rxjs.tap((backends) => qsa($page, "[is=\"box-item\"]").forEach(($button) => {
+            backends.has($button.getAttribute("data-label"))
+                ? $button.classList.add("active")
+                : $button.classList.remove("active");
         })),
     ));
 
@@ -63,10 +62,12 @@ export default async function(render) {
     // feature: setup form
     const setupForm$ = getBackendEnabled().pipe(
         // initialise the forms
-        rxjs.mergeMap((enabled) => Promise.all(enabled.map(({ type, label }) => createForm({ [type]: {
-            "": { type: "text", placeholder: "Label", value: label },
-        }}, formTmpl({
-            renderLeaf: () => createElement(`<label></label>`),
+        rxjs.mergeMap((enabled) => Promise.all(enabled.map(({ type, label }) => createForm({
+            [type]: {
+                "": { type: "text", placeholder: "Label", value: label },
+            }
+        }, formTmpl({
+            renderLeaf: () => createElement("<label></label>"),
             renderNode: ({ label, format }) => {
                 const $fieldset = createElement(`
                     <fieldset>
@@ -86,15 +87,15 @@ export default async function(render) {
             },
         }))))),
         rxjs.map((nodeList) => {
-            if (nodeList.length === 0) return [createElement(`
+            if (nodeList.length === 0) { return [createElement(`
                 <div class="alert">
                     You need to select at least 1 storage backend
                 </div>
-            `)];
+            `)]; }
             return nodeList;
         }),
-        rxjs.tap(() => qs($page, `[data-bind="backend-enabled"]`).innerHTML = ""),
-        applyMutations(qs($page, `[data-bind="backend-enabled"]`), "appendChild"),
+        rxjs.tap(() => qs($page, "[data-bind=\"backend-enabled\"]").innerHTML = ""),
+        applyMutations(qs($page, "[data-bind=\"backend-enabled\"]"), "appendChild"),
         rxjs.share(),
     );
     effect(setupForm$);

@@ -3,7 +3,7 @@ import { ApplicationError } from "../lib/error.js";
 import { animate, slideYIn, slideYOut } from "../lib/animate.js";
 import { CSS } from "../helpers/loader.js";
 
-const createNotification = async (msg, type) => createElement(`
+const createNotification = async(msg, type) => createElement(`
     <span class="component_notification">
         <style>${await CSS(import.meta.url, "notification.css")}</style>
         <div class="no-select">
@@ -19,10 +19,6 @@ const createNotification = async (msg, type) => createElement(`
 
 class NotificationComponent extends window.HTMLElement {
     buffer = [];
-
-    constructor() {
-        super();
-    }
 
     async trigger(message, type) {
         if (this.buffer.length > 20) this.buffer.pop(); // failsafe
@@ -44,7 +40,7 @@ class NotificationComponent extends window.HTMLElement {
             keyframes: slideYIn(50),
             time: 100,
         });
-        const ids = []
+        const ids = [];
         await Promise.race([
             new Promise((done) => ids.push(window.setTimeout(done, this.buffer.length === 1 ? 8000 : 800))),
             new Promise((done) => ids.push(window.setTimeout(() => $notification.querySelector(".close").onclick = done, 1000))),

@@ -6,7 +6,7 @@ import "../../components/loader.js";
 
 export default function HOC(ctrlPage) {
     const ctrlLoading = (render) => {
-        render(createElement(`<component-loader inlined></component-loader>`));
+        render(createElement("<component-loader inlined></component-loader>"));
     };
 
     return (render) => {
@@ -14,6 +14,6 @@ export default function HOC(ctrlPage) {
 
         return (render) => {
             WithShell(ctrlLoading)(render);
-        }
-    }
+        };
+    };
 }

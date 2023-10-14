@@ -2,7 +2,7 @@ import { createElement, nop } from "../lib/skeleton/index.js";
 import rxjs, { applyMutation } from "../lib/rx.js";
 import { animate } from "../lib/animate.js";
 import { qs, qsa } from "../lib/dom.js";
-
+import { ApplicationError } from "../lib/error.js";
 import { CSS } from "../helpers/loader.js";
 
 export default class Modal {
@@ -11,7 +11,7 @@ export default class Modal {
     }
 }
 
-const createModal = async () => createElement(`
+const createModal = async() => createElement(`
     <div class="component_modal" id="modal-box">
         <style>${await CSS(import.meta.url, "modal.css")}</style>
         <div>
@@ -35,9 +35,9 @@ class ModalComponent extends window.HTMLElement {
         const { onQuit = nop, withButtonsLeft = null, withButtonsRight = null } = opts;
 
         // feature: build the dom
-        qs($modal, `[data-bind="body"]`).replaceChildren($node);
+        qs($modal, "[data-bind=\"body\"]").replaceChildren($node);
         this.replaceChildren($modal);
-        qsa($modal, `.component_popup > div.buttons > button`).forEach(($button, i) => {
+        qsa($modal, ".component_popup > div.buttons > button").forEach(($button, i) => {
             let currentLabel = null;
             if (i === 0) currentLabel = withButtonsLeft;
             else if (i === 1) currentLabel = withButtonsRight;

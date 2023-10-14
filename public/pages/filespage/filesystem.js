@@ -32,7 +32,7 @@ export default async function(render) {
                     type: files[i].type,
                     size: files[i].size,
                     time: files[i].time,
-                    link: (files[i].type === "file"? "/view" : "/files") + path + files[i].name + (files[i].type === "file" ? "" : "/"),
+                    link: (files[i].type === "file" ? "/view" : "/files") + path + files[i].name + (files[i].type === "file" ? "" : "/"),
                 }));
             }
             qs($page, ".list").appendChild($fs);

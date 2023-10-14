@@ -34,13 +34,13 @@ export default function(err) {
         render($page);
 
         // feature: show error details
-        effect(rxjs.fromEvent(qs($page, `button[data-bind="details"]`), "click").pipe(
+        effect(rxjs.fromEvent(qs($page, "button[data-bind=\"details\"]"), "click").pipe(
             rxjs.mapTo(["hidden"]),
             applyMutation(qs($page, "pre"), "classList", "toggle")
         ));
 
         // feature: refresh button
-        effect(rxjs.fromEvent(qs($page, `button[data-bind="refresh"]`), "click").pipe(
+        effect(rxjs.fromEvent(qs($page, "button[data-bind=\"refresh\"]"), "click").pipe(
             rxjs.tap(() => location.reload())
         ));
 

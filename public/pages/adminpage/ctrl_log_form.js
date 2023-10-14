@@ -33,7 +33,7 @@ export default function(render) {
 
     // feature2: form change
     effect(setup$.pipe(
-        useForm$(() => qsa($form, `[name]`)),
+        useForm$(() => qsa($form, "[name]")),
         rxjs.combineLatestWith(getAdminConfig().pipe(rxjs.first())),
         rxjs.map(([formState, formSpec]) => {
             const fstate = Object.fromEntries(Object.entries(formState).map(([key, value]) => ([
@@ -50,7 +50,7 @@ export default function(render) {
         }),
         saveConfig(),
         rxjs.catchError((err) => {
-            notification.error(err && err.message || t("Oops"));
+            notification.error((err && err.message) || t("Oops"));
             return rxjs.EMPTY;
         }),
     ));

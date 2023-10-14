@@ -2,7 +2,7 @@ import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 
 const log$ = ajax({
-    url: url(1024*100), // fetch the last 100kb by default
+    url: url(1024 * 100), // fetch the last 100kb by default
     responseType: "text",
 }).pipe(
     rxjs.map(({ response }) => response),

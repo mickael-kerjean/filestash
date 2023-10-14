@@ -20,7 +20,7 @@ class Loader extends window.HTMLElement {
         position: fixed;
         left: 0;
         right: 0;
-        top: calc(50% - 200px);`
+        top: calc(50% - 200px);`;
         return `
 <div class="component_loader">
     <svg width="120px" height="120px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
