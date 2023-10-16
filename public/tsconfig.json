@@ -7,11 +7,15 @@
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedIndexedAccess": true,
-        "lib": ["dom", "es2022"],
+        "lib": [
+            "dom",
+            "dom.iterable",
+            "es2022"
+        ],
         "module": "es2022",
         "target": "es2022",
         "types": []
     },
     "input": ["pages/ctrl_boot.d.ts", "pages/*.js"],
-    "exclude": ["**/*.test.js", "worker/sw_cache.js", "coverage", "jest.setup.js"]
+    "exclude": ["**/*.test.js", "lib/vendor/bcrypt.js", "worker/sw_cache.js", "coverage", "jest.setup.js"]
 }

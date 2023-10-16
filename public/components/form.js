@@ -76,7 +76,7 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            if (value !== null) $input.value = value || "";
+            $input.setAttribute("value", value || "");
             attrs.map((setAttribute) => setAttribute($input));
 
             if (!datalist) return $input;
@@ -91,18 +91,14 @@ export function $renderInput(options = {}) {
             $wrapper.appendChild($input);
             $wrapper.appendChild($datalist);
             (props.multi ? multicomplete(value, datalist) : (datalist || [])).forEach((value) => {
-                const $option = createElement("<option />");
-                $option.value = value;
-                $datalist.appendChild($option);
+                $datalist.appendChild(new Option(value));
             });
             if (!props.multi) return $wrapper;
             $input.refresh = () => {
                 const _datalist = $input.getAttribute("datalist").split(",");
                 $datalist.innerHTML = "";
-                multicomplete($input.value, _datalist).forEach((value) => {
-                    const $option = createElement("<option />");
-                    $option.value = value;
-                    $datalist.appendChild($option);
+                multicomplete($input.getAttribute("value"), _datalist).forEach((value) => {
+                    $datalist.appendChild(new Option(value));
                 });
             };
             $input.oninput = (e) => {
@@ -134,7 +130,7 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            $input.value = value;
+            $input.setAttribute("value", value);
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
         }
@@ -170,7 +166,7 @@ export function $renderInput(options = {}) {
                     rows="8"
                 ></textarea>
             `);
-            $textarea.value = value;
+            $textarea.setAttribute("value", value);
             attrs.map((setAttribute) => setAttribute($textarea));
             return $textarea;
         }
@@ -182,7 +178,7 @@ export function $renderInput(options = {}) {
                     readonly
                 />
             `);
-            $input.value = value;
+            $input.setAttribute("value", value);
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
         }
@@ -190,7 +186,7 @@ export function $renderInput(options = {}) {
             const $input = createElement(`
                 <input type="hidden" />
             `);
-            $input.value = value;
+            $input.setAttribute("value", value);
             $input.setAttribute("name", path.join("."));
             return $input;
         }
@@ -212,7 +208,7 @@ export function $renderInput(options = {}) {
             const $select = createElement(`
                 <select class="component_select"></select>
             `);
-            $select.value = value || props.default;
+            $select.setAttribute("value", value || props.default);
             attrs.map((setAttribute) => setAttribute($select));
             (options || []).forEach((name) => {
                 const $option = createElement(`
@@ -234,7 +230,7 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            $input.value = value;
+            $input.setAttribute("value", value);
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
         }
@@ -245,7 +241,7 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            $input.value = value;
+            $input.setAttribute("value", value);
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
         }
@@ -272,8 +268,9 @@ export function $renderInput(options = {}) {
                     readonly
                 />
             `);
-            $input.value = `unknown element type ${type}`;
+            $input.setAttribute("value", `unknown element type ${type}`);
             $input.setAttribute("name", path.join("."));
+            return $input;
         } }
     };
 }

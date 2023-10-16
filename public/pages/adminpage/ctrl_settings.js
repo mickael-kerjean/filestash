@@ -54,8 +54,10 @@ export default AdminHOC(async function(render) {
     // feature: handle form change
     effect(init$.pipe(
         useForm$(() => qsa($container, "[data-bind=\"form\"] [name]")),
-        rxjs.combineLatestWith(config$.pipe(rxjs.first())),
-        rxjs.map(([formState, formSpec]) => mutateForm(formSpec, formState)),
+        rxjs.mergeMap((formState) => config$.pipe(
+            rxjs.first(),
+            rxjs.map((formSpec) => mutateForm(formSpec, formState)),
+        )),
         reshapeConfigBeforeSave,
         saveConfig(),
     ));
@@ -74,15 +76,19 @@ const reshapeConfigBeforeDisplay = rxjs.map((cfg) => {
 // - the middleware info
 // - the connections info
 const reshapeConfigBeforeSave = rxjs.pipe(
-    rxjs.combineLatestWith(getAdminConfig().pipe(rxjs.first())),
-    rxjs.map(([configWithMissingKeys, config]) => {
-        configWithMissingKeys["middleware"] = config["middleware"];
-        return configWithMissingKeys;
-    }),
-    formObjToJSON$(),
-    rxjs.combineLatestWith(getConfig().pipe(rxjs.first())),
-    rxjs.map(([adminConfig, publicConfig]) => {
-        adminConfig["connections"] = publicConfig["connections"];
-        return adminConfig;
-    }),
+    rxjs.mergeMap((configWithMissingKeys) => getAdminConfig().pipe(
+        rxjs.first(),
+        rxjs.map((config) => {
+            configWithMissingKeys["middleware"] = config["middleware"];
+            return configWithMissingKeys;
+        }),
+        formObjToJSON$(),
+    )),
+    rxjs.mergeMap((adminConfig) => getConfig().pipe(
+        rxjs.first(),
+        rxjs.map((publicConfig) => {
+            adminConfig["connections"] = publicConfig["connections"];
+            return adminConfig;
+        }),
+    )),
 );

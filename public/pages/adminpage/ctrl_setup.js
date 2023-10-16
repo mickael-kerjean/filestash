@@ -87,11 +87,13 @@ function componentStep1(render) {
 
 const reshapeConfigBeforeSave = rxjs.pipe(
     formObjToJSON$(),
-    rxjs.combineLatestWith(getConfig().pipe(rxjs.first())),
-    rxjs.map(([config, publicConfig]) => {
-        config["connections"] = publicConfig["connections"];
-        return config;
-    }),
+    rxjs.mergeMap((config) => getConfig().pipe(
+        rxjs.first(),
+        rxjs.map((publicConfig) => {
+            config["connections"] = publicConfig["connections"];
+            return config;
+        }),
+    )),
 );
 
 function componentStep2(render) {

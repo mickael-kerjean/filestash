@@ -69,12 +69,13 @@ export default async function(render) {
     // feature: setup forms - we insert everything in the DOM so we don't lose
     // transient state when clicking around
     const setupIDPForm$ = getMiddlewareAvailable().pipe(
-        rxjs.combineLatestWith(getAdminConfig().pipe(
+        rxjs.mergeMap((availableSpecs) => getAdminConfig().pipe(
             rxjs.first(),
             rxjs.map((cfg) => ({
                 type: cfg?.middleware?.identity_provider?.type?.value,
                 params: JSON.parse(cfg?.middleware?.identity_provider?.params?.value || "{}"),
             })),
+            rxjs.map((idpState) => [availableSpecs, idpState]),
         )),
         rxjs.concatMap(async([availableSpecs, idpState = {}]) => {
             const { type, params } = idpState;
