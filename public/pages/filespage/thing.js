@@ -33,17 +33,17 @@ const $tmpl = createElement(`
 // drag and drop on other folders and many other non obvious stuff
 export function createThing({
     name = null,
-    type = "N/A",
-    size = 0,
-    time = null,
+    // type = "N/A",
+    // size = 0,
+    // time = null,
     link = "",
-    permissions = {}
+    // permissions = {}
 }) {
     const $thing = $tmpl.cloneNode(true);
     if ($thing instanceof HTMLElement) {
         const $label = $thing.querySelector(".component_filename .file-details > span");
         if ($label instanceof HTMLElement) $label.textContent = name;
-        $thing.querySelector("a").setAttribute("href", link);
+        $thing?.querySelector("a")?.setAttribute("href", link);
     }
     return $thing;
 }

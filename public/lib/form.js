@@ -1,4 +1,5 @@
 import { createElement } from "./skeleton/index.js";
+import { ApplicationError } from "./error.js";
 import { animate } from "./animate.js";
 
 export function mutateForm(formSpec, formState) {
@@ -7,8 +8,12 @@ export function mutateForm(formSpec, formState) {
         const keys = inputName.split(".");
 
         let ptr = formSpec;
-        while (keys.length > 1) ptr = ptr[keys.shift()];
-        const key = keys.shift();
+        while (keys.length > 1) {
+            let k = keys.shift();
+            if (!k) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing key");
+            ptr = ptr[k];
+        }
+        const key = keys.shift() || "";
         if (ptr && ptr[key]) ptr[key].value = (value === "" ? null : value);
     });
     return formSpec;

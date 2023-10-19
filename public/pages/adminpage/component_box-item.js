@@ -1,3 +1,5 @@
+import { ApplicationError } from "../../lib/error.js";
+
 class BoxItem extends window.HTMLDivElement {
     constructor() {
         super();
@@ -11,12 +13,11 @@ class BoxItem extends window.HTMLDivElement {
     attributeChangedCallback() {
         this.innerHTML = this.render({
             label: this.getAttribute("data-label"),
-            selected: false,
         });
         this.classList.add("box-item", "pointer", "no-select");
     }
 
-    render({ label, selected }) {
+    render({ label }) {
         return `
             <div>
                 <strong>${label}</strong>
@@ -30,6 +31,7 @@ class BoxItem extends window.HTMLDivElement {
     toggleSelection(opt = {}) {
         const { tmpl, isSelected = !this.classList.contains("active") } = opt;
         const $icon = this.querySelector(".icon");
+        if (!$icon) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: no icon");
         if (isSelected) {
             this.classList.add("active");
             if (tmpl) $icon.innerHTML = tmpl;

@@ -57,7 +57,7 @@ function updateLoop($page, audit$) {
             const p = new URLSearchParams();
             for (const [key, value] of formData.entries()) {
                 if (!value) continue;
-                p.set(key.replace(new RegExp("^search\."), ""), value);
+                p.set(key.replace(new RegExp("^search\."), ""), `${value}`);
             }
             return p;
         }),

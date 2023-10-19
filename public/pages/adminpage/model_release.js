@@ -12,7 +12,7 @@ export function get() {
             const a = document.createElement("html");
             a.innerHTML = response;
             return {
-                html: a.querySelector("table").outerHTML,
+                html: a.querySelector("table")?.outerHTML,
                 version: responseHeaders["x-powered-by"].trim().replace(/^Filestash\/([v\.0-9]*).*$/, "$1")
             };
         })

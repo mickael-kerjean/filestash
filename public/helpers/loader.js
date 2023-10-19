@@ -22,7 +22,7 @@ async function loadSingleCSS(baseURL, filename) {
         cache: "force-cache",
     });
     if (res.status !== 200) return `/* ERROR: ${res.status} */`;
-    else if (!res.headers.get("Content-Type").startsWith("text/css")) return `/* ERROR: wrong type, got "${res.headers.get("Content-Type")}"*/`;
+    else if (!res.headers.get("Content-Type")?.startsWith("text/css")) `/* ERROR: wrong type, got "${res.headers?.get("Content-Type")}"*/`;
     return await res.text();
 }
 

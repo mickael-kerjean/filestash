@@ -1,5 +1,6 @@
 import rxjs from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
+import { ApplicationError } from "../../lib/error.js";
 import { get as getConfig } from "../../model/config.js";
 import { get as getAdminConfig } from "./model_config.js";
 import { formObjToJSON$ } from "./helper_form.js";
@@ -92,15 +93,18 @@ export function getState() {
             };
             if (!authType) return config;
 
-            let formValues = [...new FormData(document.querySelector("[data-bind=\"idp\"]"))];
+            const $formIDP = document.querySelector("[data-bind=\"idp\"]")
+            if (!($formIDP instanceof window.HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: idp isn't a form");
+            let formValues = [...new FormData($formIDP)];
             config.middleware.identity_provider = {
                 type: authType,
                 params: JSON.stringify(
                     formValues
-                        .filter(([key, value]) => key.startsWith(`${authType}.`)) // remove elements that aren't in scope
+                        .filter(([key]) => key.startsWith(`${authType}.`)) // remove elements that aren't in scope
                         .map(([key, value]) => [key.replace(new RegExp(`^${authType}\.`), ""), value]) // format the relevant keys
                         .reduce((acc, [key, value]) => { // transform onto something ready to be saved
                             if (key === "type") return acc;
+                            else if (typeof key !== "string") return acc;
                             return {
                                 ...acc,
                                 [key]: value,
@@ -109,14 +113,16 @@ export function getState() {
                 ),
             };
 
-            formValues = [...new FormData(document.querySelector("[data-bind=\"attribute-mapping\"]"))];
+            const $formAM = document.querySelector("[data-bind=\"attribute-mapping\"]");
+            if (!($formAM instanceof window.HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: attribute mapping isn't a form");
+            formValues = [...new FormData($formAM)];
             config.middleware.attribute_mapping = {
-                related_backend: formValues.shift()[1],
+                related_backend: (formValues.shift() || [])[1],
                 params: JSON.stringify(formValues.reduce((acc, [key, value]) => {
                     const k = key.split(".");
                     if (k.length !== 2) return acc;
-                    if (!acc[k[0]]) acc[k[0]] = {};
-                    if (value !== "") acc[k[0]][k[1]] = value;
+                    if (!acc[`${k[0]}`]) acc[`${k[0]}`] = {};
+                    if (value !== "") acc[`${k[0]}`][`${k[1]}`] = value;
                     return acc;
                 }, {})),
             };

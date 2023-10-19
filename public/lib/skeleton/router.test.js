@@ -43,7 +43,7 @@ describe("router", () => {
         // then
         expect(fn).toBeCalled();
     });
-    xit("trigger a page change when clicking on a link with [data-link] attribute", () => {
+    it("trigger a page change when clicking on a link with [data-link] attribute", () => {
         // given
         const fn = jest.fn();
         const $link = createElement("<a href=\"/something\" data-link></a>");

@@ -8,7 +8,7 @@ class Loader extends window.HTMLElement {
             this.innerHTML = this.render({
                 inline: this.hasAttribute("inlined"),
             });
-        }, parseInt(this.getAttribute("delay")) || 0);
+        }, parseInt(this.getAttribute("delay") || "0"));
     }
 
     disconnectedCallback() {

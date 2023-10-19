@@ -58,7 +58,7 @@ export default async function(render) {
     // feature4: insert all the connection form
     const tmpl = formTmpl({
         renderNode: () => createElement("<div></div>"),
-        renderLeaf: ({ label, type, format }) => {
+        renderLeaf: ({ label, type }) => {
             if (type === "enable") {
                 return createElement(`
                 <label class="advanced">

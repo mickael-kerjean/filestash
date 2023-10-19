@@ -2,6 +2,7 @@ import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation, applyMutations, onClick } from "../../lib/rx.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { qs, qsa } from "../../lib/dom.js";
+import { ApplicationError } from "../../lib/error.js";
 import { formTmpl } from "../../components/form.js";
 import { generateSkeleton } from "../../components/skeleton.js";
 
@@ -77,7 +78,10 @@ export default async function(render) {
             })),
             rxjs.map((idpState) => [availableSpecs, idpState]),
         )),
-        rxjs.concatMap(async([availableSpecs, idpState = {}]) => {
+        rxjs.concatMap(async([
+            availableSpecs,
+            idpState = { type: null, params: null },
+        ]) => {
             const { type, params } = idpState;
             const idps = [];
             for (const key in availableSpecs) {
@@ -167,7 +171,9 @@ export default async function(render) {
         rxjs.map((connections) => connections.map(({ label }) => label)),
         rxjs.tap((datalist) => {
             const $input = $page.querySelector("[name=\"attribute_mapping.related_backend\"]");
+            if (!$input) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing related backend");
             $input.setAttribute("datalist", datalist.join(","));
+            // @ts-ignore
             $input.refresh();
         }),
     ));
@@ -238,6 +244,7 @@ export default async function(render) {
             renderLeaf: () => createElement("<label></label>"),
         }))),
         rxjs.tap(($node) => {
+            /** @type { Element | undefined} */
             let $relatedBackendField;
             $page.querySelectorAll("[data-bind=\"attribute-mapping\"] fieldset").forEach(($el, i) => {
                 if (i === 0) $relatedBackendField = $el;

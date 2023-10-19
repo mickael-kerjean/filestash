@@ -57,13 +57,13 @@ function setup_translation() {
         selectedLanguage = "zh_tw";
         break;
     default:
-        const userLanguage = window.navigator.language.split("-")[0];
+        const userLanguage = window.navigator.language.split("-")[0] || "en";
         const idx = [
             "az", "be", "bg", "ca", "cs", "da", "de", "el", "es", "et",
             "eu", "fi", "fr", "gl", "hr", "hu", "id", "is", "it", "ja",
             "ka", "ko", "lt", "lv", "mn", "nb", "nl", "pl", "pt", "ro",
             "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi", "zh"
-        ].indexOf(window.navigator.language.split("-")[0]);
+        ].indexOf(window.navigator.language.split("-")[0] || "");
         if (idx !== -1) {
             selectedLanguage = userLanguage;
         }

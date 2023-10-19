@@ -1,3 +1,4 @@
+// @ts-nocheck
 // code was adapted from https://github.com/dcodeIO/bcrypt.js, meaning:
 // - we took the code from a CDN https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.2.0/bcrypt.js
 // - remove the amd,commonJS stuff on the top of the file

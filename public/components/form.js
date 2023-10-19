@@ -1,5 +1,6 @@
 import { createElement } from "../lib/skeleton/index.js";
 import { gid } from "../lib/random.js";
+import { ApplicationError } from "../lib/error.js";
 
 import "./icon.js";
 
@@ -76,7 +77,8 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            $input.setAttribute("value", value || "");
+            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
 
             if (!datalist) return $input;
@@ -94,17 +96,19 @@ export function $renderInput(options = {}) {
                 $datalist.appendChild(new Option(value));
             });
             if (!props.multi) return $wrapper;
+            // @ts-ignore
             $input.refresh = () => {
-                const _datalist = $input.getAttribute("datalist").split(",");
+                const _datalist = $input?.getAttribute("datalist")?.split(",");
                 $datalist.innerHTML = "";
                 multicomplete($input.getAttribute("value"), _datalist).forEach((value) => {
                     $datalist.appendChild(new Option(value));
                 });
             };
-            $input.oninput = (e) => {
+            $input.oninput = () => {
                 for (const $option of $datalist.children) {
                     $option.remove();
                 }
+                // @ts-ignore
                 $input.refresh();
             };
             return $wrapper;
@@ -130,7 +134,8 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            $input.setAttribute("value", value);
+            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
         }
@@ -145,14 +150,16 @@ export function $renderInput(options = {}) {
                 </div>
             `);
             const $input = $div.querySelector("input");
-            $input.value = value;
+            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
 
             const $icon = $div.querySelector("component-icon");
             if ($icon instanceof window.HTMLElement) {
                 $icon.onclick = function(e) {
                     if (!(e.target instanceof window.HTMLElement)) return;
-                    const $input = e.target.parentElement.previousElementSibling;
+                    const $input = e.target?.parentElement?.previousElementSibling;
+                    if (!$input) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
                     if ($input.getAttribute("type") === "password") $input.setAttribute("type", "text");
                     else $input.setAttribute("type", "password");
                 };
@@ -166,7 +173,8 @@ export function $renderInput(options = {}) {
                     rows="8"
                 ></textarea>
             `);
-            $textarea.setAttribute("value", value);
+            if (!($textarea instanceof window.HTMLTextAreaElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            else if (value) $textarea.value = value;
             attrs.map((setAttribute) => setAttribute($textarea));
             return $textarea;
         }
@@ -178,7 +186,8 @@ export function $renderInput(options = {}) {
                     readonly
                 />
             `);
-            $input.setAttribute("value", value);
+            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
         }
@@ -186,7 +195,8 @@ export function $renderInput(options = {}) {
             const $input = createElement(`
                 <input type="hidden" />
             `);
-            $input.setAttribute("value", value);
+            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            else if (value) $input.value = value;
             $input.setAttribute("name", path.join("."));
             return $input;
         }
@@ -208,7 +218,8 @@ export function $renderInput(options = {}) {
             const $select = createElement(`
                 <select class="component_select"></select>
             `);
-            $select.setAttribute("value", value || props.default);
+            if (!($select instanceof window.HTMLSelectElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            else if (value) $select.value = value || props.default;
             attrs.map((setAttribute) => setAttribute($select));
             (options || []).forEach((name) => {
                 const $option = createElement(`
@@ -230,7 +241,8 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            $input.setAttribute("value", value);
+            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
         }
@@ -241,7 +253,8 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            $input.setAttribute("value", value);
+            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
         }
@@ -285,7 +298,7 @@ export function format(name) {
             if (word.length < 1) {
                 return word;
             }
-            return word[0].toUpperCase() + word.substring(1);
+            return (word[0] || "").toUpperCase() + word.substring(1);
         })
         .join(" ");
 };

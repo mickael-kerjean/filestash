@@ -1,7 +1,7 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs from "../../lib/rx.js";
 
-export function renderLeaf({ format, type, label, description }) {
+export function renderLeaf({ format, label, description }) {
     return createElement(`
         <label class="no-select">
             <div class="flex">

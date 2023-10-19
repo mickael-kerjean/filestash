@@ -6,7 +6,7 @@ const css = await CSS(import.meta.url, "breadcrumb.css");
 class ComponentBreadcrumb extends HTMLDivElement {
     constructor() {
         super();
-        if (new window.URL(location.href).searchParams.get("nav") === "false") return null;
+        if (new window.URL(location.href).searchParams.get("nav") === "false") return;
 
         const htmlLogout = isRunningFromAnIframe
             ? ""
