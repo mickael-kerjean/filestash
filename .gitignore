@@ -1,4 +1,5 @@
 node_modules/
+.sass-cache
 dist/
 *_generated.go
 test/
@@ -18,7 +19,14 @@ package-lock.json
 *_test.go
 cover.*
 www
-*.test.js
-__snapshots__
 .gitignore
+
+
+# frontend
+public/**/*.test.js
+public/**/__snapshots__
+public/jest.setup.js
+public/package.json
+public/README.org
+
 filestash-enterprise

@@ -29,7 +29,7 @@ export function currentRoute(r, notFoundRoute) {
             return r[routeKey];
         }
     }
-    return r[notFoundRoute];
+    return r[notFoundRoute] || null;
 }
 
 function _getHref($node, $root) {

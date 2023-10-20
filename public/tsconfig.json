@@ -1,0 +1,35 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "checkJs": true,
+        "noEmit": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedIndexedAccess": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noUncheckedIndexedAccess": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "strict": false,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "lib": [
+            "dom",
+            "dom.iterable",
+            "es2022"
+        ],
+        "module": "es2022",
+        "target": "es2022",
+        "typeRoots": []
+    },
+    "input": ["pages/ctrl_boot.d.ts", "pages/*.js"],
+    "exclude": [
+        "**/*.test.js", "worker/sw_cache.js",
+        "coverage", "jest.setup.js"
+    ]
+}

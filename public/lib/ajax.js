@@ -45,7 +45,7 @@ function processError(xhr, err) {
     if (window.navigator.onLine === false) {
         return new AjaxError("Connection Lost", err, "NO_INTERNET");
     }
-    switch (xhr?.status) {
+    switch (parseInt(xhr?.status)) {
     case 500:
         return new AjaxError(
             message || "Oups something went wrong with our servers",
@@ -72,12 +72,6 @@ function processError(xhr, err) {
             err, "BAD_GATEWAY"
         );
     case 409:
-        if (response.error_summary) { // dropbox way to say doesn't exist
-            return new AjaxError(
-                "Doesn't exist",
-                err, "UNKNOWN_PATH"
-            );
-        }
         return new AjaxError(
             message || "Oups you just ran into a conflict",
             err, "CONFLICT"
