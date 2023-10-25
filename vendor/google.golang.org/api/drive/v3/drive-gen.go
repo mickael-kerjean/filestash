@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC.
+// Copyright 2023 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,35 +8,35 @@
 //
 // For product documentation, see: https://developers.google.com/drive/
 //
-// Creating a client
+// # Creating a client
 //
 // Usage example:
 //
-//   import "google.golang.org/api/drive/v3"
-//   ...
-//   ctx := context.Background()
-//   driveService, err := drive.NewService(ctx)
+//	import "google.golang.org/api/drive/v3"
+//	...
+//	ctx := context.Background()
+//	driveService, err := drive.NewService(ctx)
 //
 // In this example, Google Application Default Credentials are used for authentication.
 //
 // For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
-// Other authentication options
+// # Other authentication options
 //
 // By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
 //
-//   driveService, err := drive.NewService(ctx, option.WithScopes(drive.DriveScriptsScope))
+//	driveService, err := drive.NewService(ctx, option.WithScopes(drive.DriveScriptsScope))
 //
 // To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
 //
-//   driveService, err := drive.NewService(ctx, option.WithAPIKey("AIza..."))
+//	driveService, err := drive.NewService(ctx, option.WithAPIKey("AIza..."))
 //
 // To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
 //
-//   config := &oauth2.Config{...}
-//   // ...
-//   token, err := config.Exchange(ctx, ...)
-//   driveService, err := drive.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
+//	config := &oauth2.Config{...}
+//	// ...
+//	token, err := config.Exchange(ctx, ...)
+//	driveService, err := drive.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
 // See https://godoc.org/google.golang.org/api/option/ for details on options.
 package drive // import "google.golang.org/api/drive/v3"
@@ -54,8 +54,10 @@ import (
 	"strings"
 
 	googleapi "google.golang.org/api/googleapi"
+	internal "google.golang.org/api/internal"
 	gensupport "google.golang.org/api/internal/gensupport"
 	option "google.golang.org/api/option"
+	internaloption "google.golang.org/api/option/internaloption"
 	htransport "google.golang.org/api/transport/http"
 )
 
@@ -72,6 +74,7 @@ var _ = googleapi.Version
 var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
+var _ = internaloption.WithDefaultEndpoint
 
 const apiId = "drive:v3"
 const apiName = "drive"
@@ -83,17 +86,18 @@ const (
 	// See, edit, create, and delete all of your Google Drive files
 	DriveScope = "https://www.googleapis.com/auth/drive"
 
-	// View and manage its own configuration data in your Google Drive
+	// See, create, and delete its own configuration data in your Google
+	// Drive
 	DriveAppdataScope = "https://www.googleapis.com/auth/drive.appdata"
 
-	// View and manage Google Drive files and folders that you have opened
-	// or created with this app
+	// See, edit, create, and delete only the specific Google Drive files
+	// you use with this app
 	DriveFileScope = "https://www.googleapis.com/auth/drive.file"
 
 	// View and manage metadata of files in your Google Drive
 	DriveMetadataScope = "https://www.googleapis.com/auth/drive.metadata"
 
-	// View metadata for files in your Google Drive
+	// See information about your Google Drive files
 	DriveMetadataReadonlyScope = "https://www.googleapis.com/auth/drive.metadata.readonly"
 
 	// View the photos, videos and albums in your Google Photos
@@ -108,7 +112,7 @@ const (
 
 // NewService creates a new Service.
 func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, error) {
-	scopesOption := option.WithScopes(
+	scopesOption := internaloption.WithDefaultScopes(
 		"https://www.googleapis.com/auth/drive",
 		"https://www.googleapis.com/auth/drive.appdata",
 		"https://www.googleapis.com/auth/drive.file",
@@ -120,6 +124,7 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	)
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
+	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -333,10 +338,10 @@ type About struct {
 
 	// ForceSendFields is a list of field names (e.g. "AppInstalled") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "AppInstalled") to include
@@ -366,10 +371,10 @@ type AboutDriveThemes struct {
 
 	// ForceSendFields is a list of field names (e.g. "BackgroundImageLink")
 	// to unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "BackgroundImageLink") to
@@ -406,10 +411,10 @@ type AboutStorageQuota struct {
 
 	// ForceSendFields is a list of field names (e.g. "Limit") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Limit") to include in API
@@ -440,10 +445,10 @@ type AboutTeamDriveThemes struct {
 
 	// ForceSendFields is a list of field names (e.g. "BackgroundImageLink")
 	// to unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "BackgroundImageLink") to
@@ -505,10 +510,10 @@ type Change struct {
 
 	// ForceSendFields is a list of field names (e.g. "ChangeType") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "ChangeType") to include in
@@ -554,10 +559,10 @@ type ChangeList struct {
 
 	// ForceSendFields is a list of field names (e.g. "Changes") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Changes") to include in
@@ -611,7 +616,9 @@ type Channel struct {
 	// notification delivered over this channel. Optional.
 	Token string `json:"token,omitempty"`
 
-	// Type: The type of delivery mechanism used for this channel.
+	// Type: The type of delivery mechanism used for this channel. Valid
+	// values are "web_hook" (or "webhook"). Both values refer to a channel
+	// where Http requests are used to deliver messages.
 	Type string `json:"type,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -620,10 +627,10 @@ type Channel struct {
 
 	// ForceSendFields is a list of field names (e.g. "Address") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Address") to include in
@@ -643,9 +650,9 @@ func (s *Channel) MarshalJSON() ([]byte, error) {
 
 // Comment: A comment on a file.
 type Comment struct {
-	// Anchor: A region of the document represented as a JSON string. See
-	// anchor documentation for details on how to define and interpret
-	// anchor properties.
+	// Anchor: A region of the document represented as a JSON string. For
+	// details on defining anchor properties, refer to  Add comments and
+	// replies.
 	Anchor string `json:"anchor,omitempty"`
 
 	// Author: The author of the comment. The author's email address and
@@ -697,10 +704,10 @@ type Comment struct {
 
 	// ForceSendFields is a list of field names (e.g. "Anchor") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Anchor") to include in API
@@ -731,10 +738,10 @@ type CommentQuotedFileContent struct {
 
 	// ForceSendFields is a list of field names (e.g. "MimeType") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "MimeType") to include in
@@ -775,10 +782,10 @@ type CommentList struct {
 
 	// ForceSendFields is a list of field names (e.g. "Comments") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Comments") to include in
@@ -796,10 +803,58 @@ func (s *CommentList) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// ContentRestriction: A restriction for accessing the content of the
+// file.
+type ContentRestriction struct {
+	// ReadOnly: Whether the content of the file is read-only. If a file is
+	// read-only, a new revision of the file may not be added, comments may
+	// not be added or modified, and the title of the file may not be
+	// modified.
+	ReadOnly bool `json:"readOnly,omitempty"`
+
+	// Reason: Reason for why the content of the file is restricted. This is
+	// only mutable on requests that also set readOnly=true.
+	Reason string `json:"reason,omitempty"`
+
+	// RestrictingUser: The user who set the content restriction. Only
+	// populated if readOnly is true.
+	RestrictingUser *User `json:"restrictingUser,omitempty"`
+
+	// RestrictionTime: The time at which the content restriction was set
+	// (formatted RFC 3339 timestamp). Only populated if readOnly is true.
+	RestrictionTime string `json:"restrictionTime,omitempty"`
+
+	// Type: The type of the content restriction. Currently the only
+	// possible value is globalContentRestriction.
+	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ReadOnly") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ReadOnly") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ContentRestriction) MarshalJSON() ([]byte, error) {
+	type NoMethod ContentRestriction
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Drive: Representation of a shared drive.
 type Drive struct {
 	// BackgroundImageFile: An image file and cropping parameters from which
-	// a background image for this shared drive is set. This is a write only
+	// a background image for this shared drive is set. This is a write-only
 	// field; it can only be set on drive.drives.update requests that don't
 	// set themeId. When specified, all fields of the backgroundImageFile
 	// must be set.
@@ -813,8 +868,7 @@ type Drive struct {
 	Capabilities *DriveCapabilities `json:"capabilities,omitempty"`
 
 	// ColorRgb: The color of this shared drive as an RGB hex string. It can
-	// only be set on a drive.drives.update request that does not set
-	// themeId.
+	// only be set on drive.drives.update requests that don't set themeId.
 	ColorRgb string `json:"colorRgb,omitempty"`
 
 	// CreatedTime: The time at which the shared drive was created (RFC 3339
@@ -835,13 +889,18 @@ type Drive struct {
 	// Name: The name of this shared drive.
 	Name string `json:"name,omitempty"`
 
+	// OrgUnitId: The organizational unit of this shared drive. This field
+	// is only populated on drives.list responses when the
+	// useDomainAdminAccess parameter is set to true.
+	OrgUnitId string `json:"orgUnitId,omitempty"`
+
 	// Restrictions: A set of restrictions that apply to this shared drive
 	// or items inside this shared drive.
 	Restrictions *DriveRestrictions `json:"restrictions,omitempty"`
 
 	// ThemeId: The ID of the theme from which the background image and
-	// color will be set. The set of possible driveThemes can be retrieved
-	// from a drive.about.get response. When not specified on a
+	// color are set. The set of possible driveThemes can be retrieved from
+	// a drive.about.get response. When not specified on a
 	// drive.drives.create request, a random theme is chosen from which the
 	// background image and color are set. This is a write-only field; it
 	// can only be set on requests that don't set colorRgb or
@@ -854,10 +913,10 @@ type Drive struct {
 
 	// ForceSendFields is a list of field names (e.g. "BackgroundImageFile")
 	// to unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "BackgroundImageFile") to
@@ -878,7 +937,7 @@ func (s *Drive) MarshalJSON() ([]byte, error) {
 
 // DriveBackgroundImageFile: An image file and cropping parameters from
 // which a background image for this shared drive is set. This is a
-// write only field; it can only be set on drive.drives.update requests
+// write-only field; it can only be set on drive.drives.update requests
 // that don't set themeId. When specified, all fields of the
 // backgroundImageFile must be set.
 type DriveBackgroundImageFile struct {
@@ -909,10 +968,10 @@ type DriveBackgroundImageFile struct {
 
 	// ForceSendFields is a list of field names (e.g. "Id") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Id") to include in API
@@ -972,6 +1031,12 @@ type DriveCapabilities struct {
 	// change the driveMembersOnly restriction of this shared drive.
 	CanChangeDriveMembersOnlyRestriction bool `json:"canChangeDriveMembersOnlyRestriction,omitempty"`
 
+	// CanChangeSharingFoldersRequiresOrganizerPermissionRestriction:
+	// Whether the current user can change the
+	// sharingFoldersRequiresOrganizerPermission restriction of this shared
+	// drive.
+	CanChangeSharingFoldersRequiresOrganizerPermissionRestriction bool `json:"canChangeSharingFoldersRequiresOrganizerPermissionRestriction,omitempty"`
+
 	// CanComment: Whether the current user can comment on files in this
 	// shared drive.
 	CanComment bool `json:"canComment,omitempty"`
@@ -1016,6 +1081,10 @@ type DriveCapabilities struct {
 	// drive.
 	CanRenameDrive bool `json:"canRenameDrive,omitempty"`
 
+	// CanResetDriveRestrictions: Whether the current user can reset the
+	// shared drive restrictions to defaults.
+	CanResetDriveRestrictions bool `json:"canResetDriveRestrictions,omitempty"`
+
 	// CanShare: Whether the current user can share files or folders in this
 	// shared drive.
 	CanShare bool `json:"canShare,omitempty"`
@@ -1026,10 +1095,10 @@ type DriveCapabilities struct {
 
 	// ForceSendFields is a list of field names (e.g. "CanAddChildren") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "CanAddChildren") to
@@ -1072,13 +1141,18 @@ type DriveRestrictions struct {
 	// restricted to its members.
 	DriveMembersOnly bool `json:"driveMembersOnly,omitempty"`
 
+	// SharingFoldersRequiresOrganizerPermission: If true, only users with
+	// the organizer role can share folders. If false, users with either the
+	// organizer role or the file organizer role can share folders.
+	SharingFoldersRequiresOrganizerPermission bool `json:"sharingFoldersRequiresOrganizerPermission,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g.
 	// "AdminManagedRestrictions") to unconditionally include in API
-	// requests. By default, fields with empty values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// requests. By default, fields with empty or default values are omitted
+	// from API requests. However, any non-pointer, non-interface field
+	// appearing in ForceSendFields will be sent to the server regardless of
+	// whether the field is empty or not. This may be used to include empty
+	// fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "AdminManagedRestrictions")
@@ -1120,10 +1194,10 @@ type DriveList struct {
 
 	// ForceSendFields is a list of field names (e.g. "Drives") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Drives") to include in API
@@ -1146,6 +1220,10 @@ type File struct {
 	// AppProperties: A collection of arbitrary key-value pairs which are
 	// private to the requesting app.
 	// Entries with null values are cleared in update and copy requests.
+	// These properties can only be retrieved using an authenticated
+	// request. An authenticated request uses an access token obtained with
+	// a OAuth 2 client ID. You cannot use an API key to retrieve private
+	// properties.
 	AppProperties map[string]string `json:"appProperties,omitempty"`
 
 	// Capabilities: Capabilities the current user has on this file. Each
@@ -1155,6 +1233,10 @@ type File struct {
 	// ContentHints: Additional information about the content of the file.
 	// These fields are never populated in responses.
 	ContentHints *FileContentHints `json:"contentHints,omitempty"`
+
+	// ContentRestrictions: Restrictions for accessing the content of the
+	// file. Only populated if such a restriction exists.
+	ContentRestrictions []*ContentRestriction `json:"contentRestrictions,omitempty"`
 
 	// CopyRequiresWriterPermission: Whether the options to copy, print, or
 	// download this file, should be disabled for readers and commenters.
@@ -1175,16 +1257,17 @@ type File struct {
 	// opposed to recursively trashed from a parent folder.
 	ExplicitlyTrashed bool `json:"explicitlyTrashed,omitempty"`
 
-	// ExportLinks: Links for exporting Google Docs to specific formats.
+	// ExportLinks: Links for exporting Docs Editors files to specific
+	// formats.
 	ExportLinks map[string]string `json:"exportLinks,omitempty"`
 
 	// FileExtension: The final component of fullFileExtension. This is only
 	// available for files with binary content in Google Drive.
 	FileExtension string `json:"fileExtension,omitempty"`
 
-	// FolderColorRgb: The color for a folder as an RGB hex string. The
-	// supported colors are published in the folderColorPalette field of the
-	// About resource.
+	// FolderColorRgb: The color for a folder or shortcut to a folder as an
+	// RGB hex string. The supported colors are published in the
+	// folderColorPalette field of the About resource.
 	// If an unsupported color is specified, the closest color in the
 	// palette will be used instead.
 	FolderColorRgb string `json:"folderColorRgb,omitempty"`
@@ -1194,7 +1277,7 @@ type File struct {
 	// "tar.gz". This is only available for files with binary content in
 	// Google Drive.
 	// This is automatically updated when the name field changes, however it
-	// is not cleared if the new name does not contain a valid extension.
+	// isn't cleared if the new name does not contain a valid extension.
 	FullFileExtension string `json:"fullFileExtension,omitempty"`
 
 	// HasAugmentedPermissions: Whether there are permissions directly on
@@ -1228,8 +1311,15 @@ type File struct {
 	// string "drive#file".
 	Kind string `json:"kind,omitempty"`
 
+	// LabelInfo: An overview of the labels on the file.
+	LabelInfo *FileLabelInfo `json:"labelInfo,omitempty"`
+
 	// LastModifyingUser: The last user to modify the file.
 	LastModifyingUser *User `json:"lastModifyingUser,omitempty"`
+
+	// LinkShareMetadata: Contains details about the link URLs that clients
+	// are using to refer to this item.
+	LinkShareMetadata *FileLinkShareMetadata `json:"linkShareMetadata,omitempty"`
 
 	// Md5Checksum: The MD5 checksum for the content of the file. This is
 	// only applicable to files with binary content in Google Drive.
@@ -1272,8 +1362,8 @@ type File struct {
 	// shared drives.
 	OwnedByMe bool `json:"ownedByMe,omitempty"`
 
-	// Owners: The owners of the file. Currently, only certain legacy files
-	// may have more than one owner. Not populated for items in shared
+	// Owners: The owner of this file. Only certain legacy files may have
+	// more than one owner. This field isn't populated for items in shared
 	// drives.
 	Owners []*User `json:"owners,omitempty"`
 
@@ -1304,6 +1394,21 @@ type File struct {
 	// keepForever enabled.
 	QuotaBytesUsed int64 `json:"quotaBytesUsed,omitempty,string"`
 
+	// ResourceKey: A key needed to access the item via a shared link.
+	ResourceKey string `json:"resourceKey,omitempty"`
+
+	// Sha1Checksum: The SHA1 checksum associated with this file, if
+	// available. This field is only populated for files with content stored
+	// in Google Drive; it isn't populated for Docs Editors or shortcut
+	// files.
+	Sha1Checksum string `json:"sha1Checksum,omitempty"`
+
+	// Sha256Checksum: The SHA256 checksum associated with this file, if
+	// available. This field is only populated for files with content stored
+	// in Google Drive; it isn't populated for Docs Editors or shortcut
+	// files.
+	Sha256Checksum string `json:"sha256Checksum,omitempty"`
+
 	// Shared: Whether the file has been shared. Not populated for items in
 	// shared drives.
 	Shared bool `json:"shared,omitempty"`
@@ -1316,8 +1421,14 @@ type File struct {
 	// if applicable.
 	SharingUser *User `json:"sharingUser,omitempty"`
 
-	// Size: The size of the file's content in bytes. This is only
-	// applicable to files with binary content in Google Drive.
+	// ShortcutDetails: Shortcut file details. Only populated for shortcut
+	// files, which have the mimeType field set to
+	// application/vnd.google-apps.shortcut.
+	ShortcutDetails *FileShortcutDetails `json:"shortcutDetails,omitempty"`
+
+	// Size: The size of the file's content in bytes. This field is
+	// populated for files with binary content stored in Google Drive and
+	// for Docs Editors files; it is not populated for shortcuts or folders.
 	Size int64 `json:"size,omitempty,string"`
 
 	// Spaces: The list of spaces which contain the file. The currently
@@ -1332,7 +1443,9 @@ type File struct {
 
 	// ThumbnailLink: A short-lived link to the file's thumbnail, if
 	// available. Typically lasts on the order of hours. Only populated when
-	// the requesting app can access the file's content.
+	// the requesting app can access the file's content. If the file isn't
+	// shared publicly, the URL returned in Files.thumbnailLink must be
+	// fetched using a credentialed request.
 	ThumbnailLink string `json:"thumbnailLink,omitempty"`
 
 	// ThumbnailVersion: The thumbnail version for use in thumbnail cache
@@ -1340,8 +1453,11 @@ type File struct {
 	ThumbnailVersion int64 `json:"thumbnailVersion,omitempty,string"`
 
 	// Trashed: Whether the file has been trashed, either explicitly or from
-	// a trashed parent folder. Only the owner may trash a file, and other
-	// users cannot see files in the owner's trash.
+	// a trashed parent folder. Only the owner may trash a file. The trashed
+	// item is excluded from all files.list responses returned for any user
+	// who does not own the file. However, all users with access to the file
+	// can see the trashed item metadata in an API response. All users with
+	// access can copy, download, export, and share the file.
 	Trashed bool `json:"trashed,omitempty"`
 
 	// TrashedTime: The time that the item was trashed (RFC 3339 date-time).
@@ -1391,10 +1507,10 @@ type File struct {
 
 	// ForceSendFields is a list of field names (e.g. "AppProperties") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "AppProperties") to include
@@ -1416,13 +1532,32 @@ func (s *File) MarshalJSON() ([]byte, error) {
 // Each capability corresponds to a fine-grained action that a user may
 // take.
 type FileCapabilities struct {
+	// CanAcceptOwnership: Whether the current user is the pending owner of
+	// the file. Not populated for shared drive files.
+	CanAcceptOwnership bool `json:"canAcceptOwnership,omitempty"`
+
 	// CanAddChildren: Whether the current user can add children to this
 	// folder. This is always false when the item is not a folder.
 	CanAddChildren bool `json:"canAddChildren,omitempty"`
 
+	// CanAddFolderFromAnotherDrive: Whether the current user can add a
+	// folder from another drive (different shared drive or My Drive) to
+	// this folder. This is false when the item is not a folder. Only
+	// populated for items in shared drives.
+	CanAddFolderFromAnotherDrive bool `json:"canAddFolderFromAnotherDrive,omitempty"`
+
+	// CanAddMyDriveParent: Whether the current user can add a parent for
+	// the item without removing an existing parent in the same request. Not
+	// populated for shared drive files.
+	CanAddMyDriveParent bool `json:"canAddMyDriveParent,omitempty"`
+
 	// CanChangeCopyRequiresWriterPermission: Whether the current user can
 	// change the copyRequiresWriterPermission restriction of this file.
 	CanChangeCopyRequiresWriterPermission bool `json:"canChangeCopyRequiresWriterPermission,omitempty"`
+
+	// CanChangeSecurityUpdateEnabled: Whether the current user can change
+	// the securityUpdateEnabled field on link share metadata.
+	CanChangeSecurityUpdateEnabled bool `json:"canChangeSecurityUpdateEnabled,omitempty"`
 
 	// CanChangeViewersCanCopyContent: Deprecated
 	CanChangeViewersCanCopyContent bool `json:"canChangeViewersCanCopyContent,omitempty"`
@@ -1459,6 +1594,14 @@ type FileCapabilities struct {
 	// this file.
 	CanModifyContent bool `json:"canModifyContent,omitempty"`
 
+	// CanModifyContentRestriction: Whether the current user can modify
+	// restrictions on content of this file.
+	CanModifyContentRestriction bool `json:"canModifyContentRestriction,omitempty"`
+
+	// CanModifyLabels: Whether the current user can modify the labels on
+	// this file.
+	CanModifyLabels bool `json:"canModifyLabels,omitempty"`
+
 	// CanMoveChildrenOutOfDrive: Whether the current user can move children
 	// of this folder outside of the shared drive. This is false when the
 	// item is not a folder. Only populated for items in shared drives.
@@ -1469,8 +1612,10 @@ type FileCapabilities struct {
 	CanMoveChildrenOutOfTeamDrive bool `json:"canMoveChildrenOutOfTeamDrive,omitempty"`
 
 	// CanMoveChildrenWithinDrive: Whether the current user can move
-	// children of this folder within the shared drive. This is false when
-	// the item is not a folder. Only populated for items in shared drives.
+	// children of this folder within this drive. This is false when the
+	// item is not a folder. Note that a request to move the child may still
+	// fail depending on the current user's access to the child and to the
+	// destination folder.
 	CanMoveChildrenWithinDrive bool `json:"canMoveChildrenWithinDrive,omitempty"`
 
 	// CanMoveChildrenWithinTeamDrive: Deprecated - use
@@ -1492,9 +1637,9 @@ type FileCapabilities struct {
 	CanMoveItemOutOfTeamDrive bool `json:"canMoveItemOutOfTeamDrive,omitempty"`
 
 	// CanMoveItemWithinDrive: Whether the current user can move this item
-	// within this shared drive. Note that a request to change the parent of
-	// the item may still fail depending on the new parent that is being
-	// added. Only populated for items in shared drives.
+	// within this drive. Note that a request to change the parent of the
+	// item may still fail depending on the new parent that is being added
+	// and the parent that is being removed.
 	CanMoveItemWithinDrive bool `json:"canMoveItemWithinDrive,omitempty"`
 
 	// CanMoveItemWithinTeamDrive: Deprecated - use canMoveItemWithinDrive
@@ -1509,9 +1654,13 @@ type FileCapabilities struct {
 	// which this file belongs. Only populated for items in shared drives.
 	CanReadDrive bool `json:"canReadDrive,omitempty"`
 
+	// CanReadLabels: Whether the current user can read the labels on this
+	// file.
+	CanReadLabels bool `json:"canReadLabels,omitempty"`
+
 	// CanReadRevisions: Whether the current user can read the revisions
 	// resource of this file. For a shared drive item, whether revisions of
-	// non-folder descendants of this item, or this item itself if it is not
+	// non-folder descendants of this item, or this item itself if it isn't
 	// a folder, can be read.
 	CanReadRevisions bool `json:"canReadRevisions,omitempty"`
 
@@ -1523,6 +1672,11 @@ type FileCapabilities struct {
 	// a folder in a shared drive, use canDeleteChildren or canTrashChildren
 	// instead.
 	CanRemoveChildren bool `json:"canRemoveChildren,omitempty"`
+
+	// CanRemoveMyDriveParent: Whether the current user can remove a parent
+	// from the item without adding another parent in the same request. Not
+	// populated for shared drive files.
+	CanRemoveMyDriveParent bool `json:"canRemoveMyDriveParent,omitempty"`
 
 	// CanRename: Whether the current user can rename this file.
 	CanRename bool `json:"canRename,omitempty"`
@@ -1543,15 +1697,15 @@ type FileCapabilities struct {
 	// trash.
 	CanUntrash bool `json:"canUntrash,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "CanAddChildren") to
-	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g. "CanAcceptOwnership")
+	// to unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "CanAddChildren") to
+	// NullFields is a list of field names (e.g. "CanAcceptOwnership") to
 	// include in API requests with the JSON null value. By default, fields
 	// with empty values are omitted from API requests. However, any field
 	// with an empty value appearing in NullFields will be sent to the
@@ -1571,8 +1725,8 @@ func (s *FileCapabilities) MarshalJSON() ([]byte, error) {
 // file. These fields are never populated in responses.
 type FileContentHints struct {
 	// IndexableText: Text to be indexed for the file to improve fullText
-	// queries. This is limited to 128KB in length and may contain HTML
-	// elements.
+	// queries. This is limited to 128 KB in length and may contain HTML
+	// elements. For more information, see Manage file metadata.
 	IndexableText string `json:"indexableText,omitempty"`
 
 	// Thumbnail: A thumbnail for the file. This will only be used if Google
@@ -1581,10 +1735,10 @@ type FileContentHints struct {
 
 	// ForceSendFields is a list of field names (e.g. "IndexableText") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "IndexableText") to include
@@ -1614,10 +1768,10 @@ type FileContentHintsThumbnail struct {
 
 	// ForceSendFields is a list of field names (e.g. "Image") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Image") to include in API
@@ -1685,8 +1839,8 @@ type FileImageMediaMetadata struct {
 	// MeteringMode: The metering mode used to create the photo.
 	MeteringMode string `json:"meteringMode,omitempty"`
 
-	// Rotation: The rotation in clockwise degrees from the image's original
-	// orientation.
+	// Rotation: The number of clockwise 90 degree rotations applied from
+	// the image's original orientation.
 	Rotation int64 `json:"rotation,omitempty"`
 
 	// Sensor: The type of sensor used to create the photo.
@@ -1706,10 +1860,10 @@ type FileImageMediaMetadata struct {
 
 	// ForceSendFields is a list of field names (e.g. "Aperture") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Aperture") to include in
@@ -1763,10 +1917,10 @@ type FileImageMediaMetadataLocation struct {
 
 	// ForceSendFields is a list of field names (e.g. "Altitude") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Altitude") to include in
@@ -1802,6 +1956,109 @@ func (s *FileImageMediaMetadataLocation) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// FileLabelInfo: An overview of the labels on the file.
+type FileLabelInfo struct {
+	// Labels: The set of labels on the file as requested by the label IDs
+	// in the includeLabels parameter. By default, no labels are returned.
+	Labels []*Label `json:"labels,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Labels") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Labels") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *FileLabelInfo) MarshalJSON() ([]byte, error) {
+	type NoMethod FileLabelInfo
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// FileLinkShareMetadata: Contains details about the link URLs that
+// clients are using to refer to this item.
+type FileLinkShareMetadata struct {
+	// SecurityUpdateEligible: Whether the file is eligible for security
+	// update.
+	SecurityUpdateEligible bool `json:"securityUpdateEligible,omitempty"`
+
+	// SecurityUpdateEnabled: Whether the security update is enabled for
+	// this file.
+	SecurityUpdateEnabled bool `json:"securityUpdateEnabled,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "SecurityUpdateEligible") to unconditionally include in API requests.
+	// By default, fields with empty or default values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "SecurityUpdateEligible")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *FileLinkShareMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod FileLinkShareMetadata
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// FileShortcutDetails: Shortcut file details. Only populated for
+// shortcut files, which have the mimeType field set to
+// application/vnd.google-apps.shortcut.
+type FileShortcutDetails struct {
+	// TargetId: The ID of the file that this shortcut points to.
+	TargetId string `json:"targetId,omitempty"`
+
+	// TargetMimeType: The MIME type of the file that this shortcut points
+	// to. The value of this field is a snapshot of the target's MIME type,
+	// captured when the shortcut is created.
+	TargetMimeType string `json:"targetMimeType,omitempty"`
+
+	// TargetResourceKey: The ResourceKey for the target file.
+	TargetResourceKey string `json:"targetResourceKey,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "TargetId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "TargetId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *FileShortcutDetails) MarshalJSON() ([]byte, error) {
+	type NoMethod FileShortcutDetails
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // FileVideoMediaMetadata: Additional metadata about video media. This
 // may not be available immediately upon upload.
 type FileVideoMediaMetadata struct {
@@ -1816,10 +2073,10 @@ type FileVideoMediaMetadata struct {
 
 	// ForceSendFields is a list of field names (e.g. "DurationMillis") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "DurationMillis") to
@@ -1869,10 +2126,10 @@ type FileList struct {
 
 	// ForceSendFields is a list of field names (e.g. "Files") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Files") to include in API
@@ -1910,10 +2167,10 @@ type GeneratedIds struct {
 
 	// ForceSendFields is a list of field names (e.g. "Ids") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Ids") to include in API
@@ -1931,8 +2188,305 @@ func (s *GeneratedIds) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// Label: Representation of a label and its fields.
+type Label struct {
+	// Fields: A map of the label's fields keyed by the field ID.
+	Fields map[string]LabelField `json:"fields,omitempty"`
+
+	// Id: The ID of the label.
+	Id string `json:"id,omitempty"`
+
+	// Kind: This is always drive#label
+	Kind string `json:"kind,omitempty"`
+
+	// RevisionId: The revision ID of the label.
+	RevisionId string `json:"revisionId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Fields") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Fields") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Label) MarshalJSON() ([]byte, error) {
+	type NoMethod Label
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LabelField: Representation of a label field.
+type LabelField struct {
+	// DateString: Only present if valueType is dateString. RFC 3339
+	// formatted date: YYYY-MM-DD.
+	DateString []string `json:"dateString,omitempty"`
+
+	// Id: The identifier of this field.
+	Id string `json:"id,omitempty"`
+
+	// Integer: Only present if valueType is integer.
+	Integer googleapi.Int64s `json:"integer,omitempty"`
+
+	// Kind: This is always drive#labelField.
+	Kind string `json:"kind,omitempty"`
+
+	// Selection: Only present if valueType is selection.
+	Selection []string `json:"selection,omitempty"`
+
+	// Text: Only present if valueType is text.
+	Text []string `json:"text,omitempty"`
+
+	// User: Only present if valueType is user.
+	User []*User `json:"user,omitempty"`
+
+	// ValueType: The field type. While new values may be supported in the
+	// future, the following are currently allowed:
+	// - dateString
+	// - integer
+	// - selection
+	// - text
+	// - user
+	ValueType string `json:"valueType,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DateString") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DateString") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LabelField) MarshalJSON() ([]byte, error) {
+	type NoMethod LabelField
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LabelFieldModification: A modification to a label's field.
+type LabelFieldModification struct {
+	// FieldId: The ID of the Field to be modified.
+	FieldId string `json:"fieldId,omitempty"`
+
+	// Kind: This is always drive#labelFieldModification.
+	Kind string `json:"kind,omitempty"`
+
+	// SetDateValues: Replaces a dateString field with these new values. The
+	// values must be strings in the RFC 3339 full-date format: YYYY-MM-DD.
+	SetDateValues []string `json:"setDateValues,omitempty"`
+
+	// SetIntegerValues: Replaces an integer field with these new values.
+	SetIntegerValues googleapi.Int64s `json:"setIntegerValues,omitempty"`
+
+	// SetSelectionValues: Replaces a selection field with these new values.
+	SetSelectionValues []string `json:"setSelectionValues,omitempty"`
+
+	// SetTextValues: Replaces a text field with these new values.
+	SetTextValues []string `json:"setTextValues,omitempty"`
+
+	// SetUserValues: Replaces a user field with these new values. The
+	// values must be valid email addresses.
+	SetUserValues []string `json:"setUserValues,omitempty"`
+
+	// UnsetValues: Unsets the values for this field.
+	UnsetValues bool `json:"unsetValues,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "FieldId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FieldId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LabelFieldModification) MarshalJSON() ([]byte, error) {
+	type NoMethod LabelFieldModification
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LabelList: A list of labels.
+type LabelList struct {
+	// Kind: This is always drive#labelList
+	Kind string `json:"kind,omitempty"`
+
+	// Labels: The list of labels.
+	Labels []*Label `json:"labels,omitempty"`
+
+	// NextPageToken: The page token for the next page of labels. This field
+	// will be absent if the end of the list has been reached. If the token
+	// is rejected for any reason, it should be discarded, and pagination
+	// should be restarted from the first page of results.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Kind") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LabelList) MarshalJSON() ([]byte, error) {
+	type NoMethod LabelList
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LabelModification: A modification to a label on a file. A
+// LabelModification can be used to apply a label to a file, update an
+// existing label on a file, or remove a label from a file.
+type LabelModification struct {
+	// FieldModifications: The list of modifications to this label's fields.
+	FieldModifications []*LabelFieldModification `json:"fieldModifications,omitempty"`
+
+	// Kind: This is always drive#labelModification.
+	Kind string `json:"kind,omitempty"`
+
+	// LabelId: The ID of the label to modify.
+	LabelId string `json:"labelId,omitempty"`
+
+	// RemoveLabel: If true, the label will be removed from the file.
+	RemoveLabel bool `json:"removeLabel,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "FieldModifications")
+	// to unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FieldModifications") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LabelModification) MarshalJSON() ([]byte, error) {
+	type NoMethod LabelModification
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ModifyLabelsRequest: A request to modify the set of labels on a file.
+// This request may contain many modifications that will either all
+// succeed or all fail transactionally.
+type ModifyLabelsRequest struct {
+	// Kind: This is always drive#modifyLabelsRequest
+	Kind string `json:"kind,omitempty"`
+
+	// LabelModifications: The list of modifications to apply to the labels
+	// on the file.
+	LabelModifications []*LabelModification `json:"labelModifications,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Kind") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ModifyLabelsRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod ModifyLabelsRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ModifyLabelsResponse: Response to a ModifyLabels request. This
+// contains only those labels which were added or updated by the
+// request.
+type ModifyLabelsResponse struct {
+	// Kind: This is always drive#modifyLabelsResponse
+	Kind string `json:"kind,omitempty"`
+
+	// ModifiedLabels: The list of labels which were added or updated by the
+	// request.
+	ModifiedLabels []*Label `json:"modifiedLabels,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Kind") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ModifyLabelsResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ModifyLabelsResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Permission: A permission for a file. A permission grants a user,
-// group, domain or the world access to a file or a folder hierarchy.
+// group, domain, or the world access to a file or a folder hierarchy.
 type Permission struct {
 	// AllowFileDiscovery: Whether the permission allows the file to be
 	// discovered through search. This is only applicable for permissions of
@@ -1945,15 +2499,18 @@ type Permission struct {
 
 	// DisplayName: The "pretty" name of the value of the permission. The
 	// following is a list of examples for each type of permission:
-	// - user - User's full name, as defined for their Google account, such
+	// - user - User's full name, as defined for their Google Account, such
 	// as "Joe Smith."
 	// - group - Name of the Google Group, such as "The Company
 	// Administrators."
-	// - domain - String domain name, such as "thecompany.com."
+	// - domain - String domain name, such as "your-company.com."
 	// - anyone - No displayName is present.
 	DisplayName string `json:"displayName,omitempty"`
 
-	// Domain: The domain to which this permission refers.
+	// Domain: The domain to which this permission refers. The following
+	// options are currently allowed:
+	// - The entire domain, such as "your-company.com."
+	// - A target audience, such as "ID.audience.googledomains.com."
 	Domain string `json:"domain,omitempty"`
 
 	// EmailAddress: The email address of the user or group to which this
@@ -1963,9 +2520,10 @@ type Permission struct {
 	// ExpirationTime: The time at which this permission will expire (RFC
 	// 3339 date-time). Expiration times have the following restrictions:
 	//
-	// - They can only be set on user and group permissions
-	// - The time must be in the future
-	// - The time cannot be more than a year in the future
+	// - They cannot be set on shared drive items.
+	// - They can only be set on user and group permissions.
+	// - The time must be in the future.
+	// - The time cannot be more than one year in the future.
 	ExpirationTime string `json:"expirationTime,omitempty"`
 
 	// Id: The ID of this permission. This is a unique identifier for the
@@ -1977,9 +2535,14 @@ type Permission struct {
 	// string "drive#permission".
 	Kind string `json:"kind,omitempty"`
 
+	// PendingOwner: Whether the account associated with this permission is
+	// a pending owner. Only populated for user type permissions for files
+	// that aren't in a shared drive.
+	PendingOwner bool `json:"pendingOwner,omitempty"`
+
 	// PermissionDetails: Details of whether the permissions on this shared
-	// drive item are inherited or directly on this item. This is an
-	// output-only field which is present only for shared drive items.
+	// drive item are inherited or are directly on this item. This is an
+	// output-only field that's present only for shared drive items.
 	PermissionDetails []*PermissionPermissionDetails `json:"permissionDetails,omitempty"`
 
 	// PhotoLink: A link to the user's profile photo, if available.
@@ -2006,8 +2569,13 @@ type Permission struct {
 	// - anyone  When creating a permission, if type is user or group, you
 	// must provide an emailAddress for the user or group. When type is
 	// domain, you must provide a domain. There isn't extra information
-	// required for a anyone type.
+	// required for the anyone type.
 	Type string `json:"type,omitempty"`
+
+	// View: Indicates the view for this permission. Only populated for
+	// permissions that belong to a view. published is the only supported
+	// value.
+	View string `json:"view,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -2015,10 +2583,10 @@ type Permission struct {
 
 	// ForceSendFields is a list of field names (e.g. "AllowFileDiscovery")
 	// to unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "AllowFileDiscovery") to
@@ -2043,18 +2611,17 @@ type PermissionPermissionDetails struct {
 	Inherited bool `json:"inherited,omitempty"`
 
 	// InheritedFrom: The ID of the item from which this permission is
-	// inherited. This is an output-only field and is only populated for
-	// members of the shared drive.
+	// inherited. This is an output-only field.
 	InheritedFrom string `json:"inheritedFrom,omitempty"`
 
 	// PermissionType: The permission type for this user. While new values
-	// may be added in future, the following are currently possible:
+	// may be added in future, the following are currently allowed:
 	// - file
 	// - member
 	PermissionType string `json:"permissionType,omitempty"`
 
 	// Role: The primary role for this user. While new values may be added
-	// in the future, the following are currently possible:
+	// in the future, the following are currently allowed:
 	// - organizer
 	// - fileOrganizer
 	// - writer
@@ -2064,10 +2631,10 @@ type PermissionPermissionDetails struct {
 
 	// ForceSendFields is a list of field names (e.g. "Inherited") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Inherited") to include in
@@ -2102,10 +2669,10 @@ type PermissionTeamDrivePermissionDetails struct {
 
 	// ForceSendFields is a list of field names (e.g. "Inherited") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Inherited") to include in
@@ -2147,10 +2714,10 @@ type PermissionList struct {
 
 	// ForceSendFields is a list of field names (e.g. "Kind") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Kind") to include in API
@@ -2213,10 +2780,10 @@ type Reply struct {
 
 	// ForceSendFields is a list of field names (e.g. "Action") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Action") to include in API
@@ -2257,10 +2824,10 @@ type ReplyList struct {
 
 	// ForceSendFields is a list of field names (e.g. "Kind") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Kind") to include in API
@@ -2280,7 +2847,8 @@ func (s *ReplyList) MarshalJSON() ([]byte, error) {
 
 // Revision: The metadata for a revision to a file.
 type Revision struct {
-	// ExportLinks: Links for exporting Google Docs to specific formats.
+	// ExportLinks: Links for exporting Docs Editors files to specific
+	// formats.
 	ExportLinks map[string]string `json:"exportLinks,omitempty"`
 
 	// Id: The ID of the revision.
@@ -2316,15 +2884,19 @@ type Revision struct {
 	OriginalFilename string `json:"originalFilename,omitempty"`
 
 	// PublishAuto: Whether subsequent revisions will be automatically
-	// republished. This is only applicable to Google Docs.
+	// republished. This is only applicable to Docs Editors files.
 	PublishAuto bool `json:"publishAuto,omitempty"`
 
 	// Published: Whether this revision is published. This is only
-	// applicable to Google Docs.
+	// applicable to Docs Editors files.
 	Published bool `json:"published,omitempty"`
 
+	// PublishedLink: A link to the published revision. This is only
+	// populated for Google Sites files.
+	PublishedLink string `json:"publishedLink,omitempty"`
+
 	// PublishedOutsideDomain: Whether this revision is published outside
-	// the domain. This is only applicable to Google Docs.
+	// the domain. This is only applicable to Docs Editors files.
 	PublishedOutsideDomain bool `json:"publishedOutsideDomain,omitempty"`
 
 	// Size: The size of the revision's content in bytes. This is only
@@ -2337,10 +2909,10 @@ type Revision struct {
 
 	// ForceSendFields is a list of field names (e.g. "ExportLinks") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "ExportLinks") to include
@@ -2381,10 +2953,10 @@ type RevisionList struct {
 
 	// ForceSendFields is a list of field names (e.g. "Kind") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Kind") to include in API
@@ -2416,10 +2988,10 @@ type StartPageToken struct {
 
 	// ForceSendFields is a list of field names (e.g. "Kind") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Kind") to include in API
@@ -2473,6 +3045,11 @@ type TeamDrive struct {
 	// Name: The name of this Team Drive.
 	Name string `json:"name,omitempty"`
 
+	// OrgUnitId: The organizational unit of this shared drive. This field
+	// is only populated on drives.list responses when the
+	// useDomainAdminAccess parameter is set to true.
+	OrgUnitId string `json:"orgUnitId,omitempty"`
+
 	// Restrictions: A set of restrictions that apply to this Team Drive or
 	// items inside this Team Drive.
 	Restrictions *TeamDriveRestrictions `json:"restrictions,omitempty"`
@@ -2492,10 +3069,10 @@ type TeamDrive struct {
 
 	// ForceSendFields is a list of field names (e.g. "BackgroundImageFile")
 	// to unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "BackgroundImageFile") to
@@ -2546,10 +3123,10 @@ type TeamDriveBackgroundImageFile struct {
 
 	// ForceSendFields is a list of field names (e.g. "Id") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Id") to include in API
@@ -2600,6 +3177,12 @@ type TeamDriveCapabilities struct {
 	// CanChangeDomainUsersOnlyRestriction: Whether the current user can
 	// change the domainUsersOnly restriction of this Team Drive.
 	CanChangeDomainUsersOnlyRestriction bool `json:"canChangeDomainUsersOnlyRestriction,omitempty"`
+
+	// CanChangeSharingFoldersRequiresOrganizerPermissionRestriction:
+	// Whether the current user can change the
+	// sharingFoldersRequiresOrganizerPermission restriction of this Team
+	// Drive.
+	CanChangeSharingFoldersRequiresOrganizerPermissionRestriction bool `json:"canChangeSharingFoldersRequiresOrganizerPermissionRestriction,omitempty"`
 
 	// CanChangeTeamDriveBackground: Whether the current user can change the
 	// background of this Team Drive.
@@ -2656,6 +3239,10 @@ type TeamDriveCapabilities struct {
 	// Drive.
 	CanRenameTeamDrive bool `json:"canRenameTeamDrive,omitempty"`
 
+	// CanResetTeamDriveRestrictions: Whether the current user can reset the
+	// Team Drive restrictions to defaults.
+	CanResetTeamDriveRestrictions bool `json:"canResetTeamDriveRestrictions,omitempty"`
+
 	// CanShare: Whether the current user can share files or folders in this
 	// Team Drive.
 	CanShare bool `json:"canShare,omitempty"`
@@ -2666,10 +3253,10 @@ type TeamDriveCapabilities struct {
 
 	// ForceSendFields is a list of field names (e.g. "CanAddChildren") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "CanAddChildren") to
@@ -2708,17 +3295,22 @@ type TeamDriveRestrictions struct {
 	// sharing policies controlled outside of this Team Drive.
 	DomainUsersOnly bool `json:"domainUsersOnly,omitempty"`
 
+	// SharingFoldersRequiresOrganizerPermission: If true, only users with
+	// the organizer role can share folders. If false, users with either the
+	// organizer role or the file organizer role can share folders.
+	SharingFoldersRequiresOrganizerPermission bool `json:"sharingFoldersRequiresOrganizerPermission,omitempty"`
+
 	// TeamMembersOnly: Whether access to items inside this Team Drive is
 	// restricted to members of this Team Drive.
 	TeamMembersOnly bool `json:"teamMembersOnly,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
 	// "AdminManagedRestrictions") to unconditionally include in API
-	// requests. By default, fields with empty values are omitted from API
-	// requests. However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// requests. By default, fields with empty or default values are omitted
+	// from API requests. However, any non-pointer, non-interface field
+	// appearing in ForceSendFields will be sent to the server regardless of
+	// whether the field is empty or not. This may be used to include empty
+	// fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "AdminManagedRestrictions")
@@ -2760,10 +3352,10 @@ type TeamDriveList struct {
 
 	// ForceSendFields is a list of field names (e.g. "Kind") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "Kind") to include in API
@@ -2806,10 +3398,10 @@ type User struct {
 
 	// ForceSendFields is a list of field names (e.g. "DisplayName") to
 	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g. "DisplayName") to include
@@ -2881,7 +3473,7 @@ func (c *AboutGetCall) Header() http.Header {
 
 func (c *AboutGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2916,17 +3508,17 @@ func (c *AboutGetCall) Do(opts ...googleapi.CallOption) (*About, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &About{
 		ServerResponse: googleapi.ServerResponse{
@@ -2979,17 +3571,15 @@ func (r *ChangesService) GetStartPageToken() *ChangesGetStartPageTokenCall {
 
 // DriveId sets the optional parameter "driveId": The ID of the shared
 // drive for which the starting pageToken for listing future changes
-// from that shared drive will be returned.
+// from that shared drive is returned.
 func (c *ChangesGetStartPageTokenCall) DriveId(driveId string) *ChangesGetStartPageTokenCall {
 	c.urlParams_.Set("driveId", driveId)
 	return c
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *ChangesGetStartPageTokenCall) SupportsAllDrives(supportsAllDrives bool) *ChangesGetStartPageTokenCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -3046,7 +3636,7 @@ func (c *ChangesGetStartPageTokenCall) Header() http.Header {
 
 func (c *ChangesGetStartPageTokenCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3081,17 +3671,17 @@ func (c *ChangesGetStartPageTokenCall) Do(opts ...googleapi.CallOption) (*StartP
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &StartPageToken{
 		ServerResponse: googleapi.ServerResponse{
@@ -3110,13 +3700,13 @@ func (c *ChangesGetStartPageTokenCall) Do(opts ...googleapi.CallOption) (*StartP
 	//   "id": "drive.changes.getStartPageToken",
 	//   "parameters": {
 	//     "driveId": {
-	//       "description": "The ID of the shared drive for which the starting pageToken for listing future changes from that shared drive will be returned.",
+	//       "description": "The ID of the shared drive for which the starting pageToken for listing future changes from that shared drive is returned.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -3160,6 +3750,11 @@ type ChangesListCall struct {
 }
 
 // List: Lists the changes for a user or shared drive.
+//
+//   - pageToken: The token for continuing a previous list request on the
+//     next page. This should be set to the value of 'nextPageToken' from
+//     the previous response or to the response from the getStartPageToken
+//     method.
 func (r *ChangesService) List(pageToken string) *ChangesListCall {
 	c := &ChangesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.urlParams_.Set("pageToken", pageToken)
@@ -3167,7 +3762,7 @@ func (r *ChangesService) List(pageToken string) *ChangesListCall {
 }
 
 // DriveId sets the optional parameter "driveId": The shared drive from
-// which changes will be returned. If specified the change IDs will be
+// which changes are returned. If specified the change IDs will be
 // reflective of the shared drive; use the combined drive ID and change
 // ID as an identifier.
 func (c *ChangesListCall) DriveId(driveId string) *ChangesListCall {
@@ -3186,12 +3781,27 @@ func (c *ChangesListCall) IncludeCorpusRemovals(includeCorpusRemovals bool) *Cha
 }
 
 // IncludeItemsFromAllDrives sets the optional parameter
-// "includeItemsFromAllDrives": Deprecated - Whether both My Drive and
-// shared drive items should be included in results. This parameter will
-// only be effective until June 1, 2020. Afterwards shared drive items
-// will be included in the results.
+// "includeItemsFromAllDrives": Whether both My Drive and shared drive
+// items should be included in results.
 func (c *ChangesListCall) IncludeItemsFromAllDrives(includeItemsFromAllDrives bool) *ChangesListCall {
 	c.urlParams_.Set("includeItemsFromAllDrives", fmt.Sprint(includeItemsFromAllDrives))
+	return c
+}
+
+// IncludeLabels sets the optional parameter "includeLabels": A
+// comma-separated list of IDs of labels to include in the labelInfo
+// part of the response.
+func (c *ChangesListCall) IncludeLabels(includeLabels string) *ChangesListCall {
+	c.urlParams_.Set("includeLabels", includeLabels)
+	return c
+}
+
+// IncludePermissionsForView sets the optional parameter
+// "includePermissionsForView": Specifies which additional view's
+// permissions to include in the response. Only 'published' is
+// supported.
+func (c *ChangesListCall) IncludePermissionsForView(includePermissionsForView string) *ChangesListCall {
+	c.urlParams_.Set("includePermissionsForView", includePermissionsForView)
 	return c
 }
 
@@ -3229,18 +3839,16 @@ func (c *ChangesListCall) RestrictToMyDrive(restrictToMyDrive bool) *ChangesList
 }
 
 // Spaces sets the optional parameter "spaces": A comma-separated list
-// of spaces to query within the user corpus. Supported values are
-// 'drive', 'appDataFolder' and 'photos'.
+// of spaces to query within the corpora. Supported values are 'drive'
+// and 'appDataFolder'.
 func (c *ChangesListCall) Spaces(spaces string) *ChangesListCall {
 	c.urlParams_.Set("spaces", spaces)
 	return c
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *ChangesListCall) SupportsAllDrives(supportsAllDrives bool) *ChangesListCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -3297,7 +3905,7 @@ func (c *ChangesListCall) Header() http.Header {
 
 func (c *ChangesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3332,17 +3940,17 @@ func (c *ChangesListCall) Do(opts ...googleapi.CallOption) (*ChangeList, error) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ChangeList{
 		ServerResponse: googleapi.ServerResponse{
@@ -3364,7 +3972,7 @@ func (c *ChangesListCall) Do(opts ...googleapi.CallOption) (*ChangeList, error) 
 	//   ],
 	//   "parameters": {
 	//     "driveId": {
-	//       "description": "The shared drive from which changes will be returned. If specified the change IDs will be reflective of the shared drive; use the combined drive ID and change ID as an identifier.",
+	//       "description": "The shared drive from which changes are returned. If specified the change IDs will be reflective of the shared drive; use the combined drive ID and change ID as an identifier.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -3376,9 +3984,19 @@ func (c *ChangesListCall) Do(opts ...googleapi.CallOption) (*ChangeList, error) 
 	//     },
 	//     "includeItemsFromAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether both My Drive and shared drive items should be included in results. This parameter will only be effective until June 1, 2020. Afterwards shared drive items will be included in the results.",
+	//       "description": "Whether both My Drive and shared drive items should be included in results.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "includeLabels": {
+	//       "description": "A comma-separated list of IDs of labels to include in the labelInfo part of the response.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "includePermissionsForView": {
+	//       "description": "Specifies which additional view's permissions to include in the response. Only 'published' is supported.",
+	//       "location": "query",
+	//       "type": "string"
 	//     },
 	//     "includeRemoved": {
 	//       "default": "true",
@@ -3415,13 +4033,13 @@ func (c *ChangesListCall) Do(opts ...googleapi.CallOption) (*ChangeList, error) 
 	//     },
 	//     "spaces": {
 	//       "default": "drive",
-	//       "description": "A comma-separated list of spaces to query within the user corpus. Supported values are 'drive', 'appDataFolder' and 'photos'.",
+	//       "description": "A comma-separated list of spaces to query within the corpora. Supported values are 'drive' and 'appDataFolder'.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -3465,7 +4083,13 @@ type ChangesWatchCall struct {
 	header_    http.Header
 }
 
-// Watch: Subscribes to changes for a user.
+// Watch: Subscribes to changes for a user. To use this method, you must
+// include the pageToken query parameter.
+//
+//   - pageToken: The token for continuing a previous list request on the
+//     next page. This should be set to the value of 'nextPageToken' from
+//     the previous response or to the response from the getStartPageToken
+//     method.
 func (r *ChangesService) Watch(pageToken string, channel *Channel) *ChangesWatchCall {
 	c := &ChangesWatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.urlParams_.Set("pageToken", pageToken)
@@ -3474,7 +4098,7 @@ func (r *ChangesService) Watch(pageToken string, channel *Channel) *ChangesWatch
 }
 
 // DriveId sets the optional parameter "driveId": The shared drive from
-// which changes will be returned. If specified the change IDs will be
+// which changes are returned. If specified the change IDs will be
 // reflective of the shared drive; use the combined drive ID and change
 // ID as an identifier.
 func (c *ChangesWatchCall) DriveId(driveId string) *ChangesWatchCall {
@@ -3493,12 +4117,27 @@ func (c *ChangesWatchCall) IncludeCorpusRemovals(includeCorpusRemovals bool) *Ch
 }
 
 // IncludeItemsFromAllDrives sets the optional parameter
-// "includeItemsFromAllDrives": Deprecated - Whether both My Drive and
-// shared drive items should be included in results. This parameter will
-// only be effective until June 1, 2020. Afterwards shared drive items
-// will be included in the results.
+// "includeItemsFromAllDrives": Whether both My Drive and shared drive
+// items should be included in results.
 func (c *ChangesWatchCall) IncludeItemsFromAllDrives(includeItemsFromAllDrives bool) *ChangesWatchCall {
 	c.urlParams_.Set("includeItemsFromAllDrives", fmt.Sprint(includeItemsFromAllDrives))
+	return c
+}
+
+// IncludeLabels sets the optional parameter "includeLabels": A
+// comma-separated list of IDs of labels to include in the labelInfo
+// part of the response.
+func (c *ChangesWatchCall) IncludeLabels(includeLabels string) *ChangesWatchCall {
+	c.urlParams_.Set("includeLabels", includeLabels)
+	return c
+}
+
+// IncludePermissionsForView sets the optional parameter
+// "includePermissionsForView": Specifies which additional view's
+// permissions to include in the response. Only 'published' is
+// supported.
+func (c *ChangesWatchCall) IncludePermissionsForView(includePermissionsForView string) *ChangesWatchCall {
+	c.urlParams_.Set("includePermissionsForView", includePermissionsForView)
 	return c
 }
 
@@ -3536,18 +4175,16 @@ func (c *ChangesWatchCall) RestrictToMyDrive(restrictToMyDrive bool) *ChangesWat
 }
 
 // Spaces sets the optional parameter "spaces": A comma-separated list
-// of spaces to query within the user corpus. Supported values are
-// 'drive', 'appDataFolder' and 'photos'.
+// of spaces to query within the corpora. Supported values are 'drive'
+// and 'appDataFolder'.
 func (c *ChangesWatchCall) Spaces(spaces string) *ChangesWatchCall {
 	c.urlParams_.Set("spaces", spaces)
 	return c
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *ChangesWatchCall) SupportsAllDrives(supportsAllDrives bool) *ChangesWatchCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -3594,7 +4231,7 @@ func (c *ChangesWatchCall) Header() http.Header {
 
 func (c *ChangesWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3631,17 +4268,17 @@ func (c *ChangesWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -3655,7 +4292,7 @@ func (c *ChangesWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Subscribes to changes for a user.",
+	//   "description": "Subscribes to changes for a user. To use this method, you must include the pageToken query parameter.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.changes.watch",
 	//   "parameterOrder": [
@@ -3663,7 +4300,7 @@ func (c *ChangesWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	//   ],
 	//   "parameters": {
 	//     "driveId": {
-	//       "description": "The shared drive from which changes will be returned. If specified the change IDs will be reflective of the shared drive; use the combined drive ID and change ID as an identifier.",
+	//       "description": "The shared drive from which changes are returned. If specified the change IDs will be reflective of the shared drive; use the combined drive ID and change ID as an identifier.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -3675,9 +4312,19 @@ func (c *ChangesWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	//     },
 	//     "includeItemsFromAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether both My Drive and shared drive items should be included in results. This parameter will only be effective until June 1, 2020. Afterwards shared drive items will be included in the results.",
+	//       "description": "Whether both My Drive and shared drive items should be included in results.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "includeLabels": {
+	//       "description": "A comma-separated list of IDs of labels to include in the labelInfo part of the response.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "includePermissionsForView": {
+	//       "description": "Specifies which additional view's permissions to include in the response. Only 'published' is supported.",
+	//       "location": "query",
+	//       "type": "string"
 	//     },
 	//     "includeRemoved": {
 	//       "default": "true",
@@ -3714,13 +4361,13 @@ func (c *ChangesWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	//     },
 	//     "spaces": {
 	//       "default": "drive",
-	//       "description": "A comma-separated list of spaces to query within the user corpus. Supported values are 'drive', 'appDataFolder' and 'photos'.",
+	//       "description": "A comma-separated list of spaces to query within the corpora. Supported values are 'drive' and 'appDataFolder'.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -3802,7 +4449,7 @@ func (c *ChannelsStopCall) Header() http.Header {
 
 func (c *ChannelsStopCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3834,7 +4481,7 @@ func (c *ChannelsStopCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -3870,7 +4517,9 @@ type CommentsCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a new comment on a file.
+// Create: Creates a comment on a file.
+//
+// - fileId: The ID of the file.
 func (r *CommentsService) Create(fileId string, comment *Comment) *CommentsCreateCall {
 	c := &CommentsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -3905,7 +4554,7 @@ func (c *CommentsCreateCall) Header() http.Header {
 
 func (c *CommentsCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3945,17 +4594,17 @@ func (c *CommentsCreateCall) Do(opts ...googleapi.CallOption) (*Comment, error) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Comment{
 		ServerResponse: googleapi.ServerResponse{
@@ -3969,7 +4618,7 @@ func (c *CommentsCreateCall) Do(opts ...googleapi.CallOption) (*Comment, error) 
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new comment on a file.",
+	//   "description": "Creates a comment on a file.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.comments.create",
 	//   "parameterOrder": [
@@ -4010,6 +4659,9 @@ type CommentsDeleteCall struct {
 }
 
 // Delete: Deletes a comment.
+//
+// - commentId: The ID of the comment.
+// - fileId: The ID of the file.
 func (r *CommentsService) Delete(fileId string, commentId string) *CommentsDeleteCall {
 	c := &CommentsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -4044,7 +4696,7 @@ func (c *CommentsDeleteCall) Header() http.Header {
 
 func (c *CommentsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4075,7 +4727,7 @@ func (c *CommentsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -4122,6 +4774,9 @@ type CommentsGetCall struct {
 }
 
 // Get: Gets a comment by ID.
+//
+// - commentId: The ID of the comment.
+// - fileId: The ID of the file.
 func (r *CommentsService) Get(fileId string, commentId string) *CommentsGetCall {
 	c := &CommentsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -4174,7 +4829,7 @@ func (c *CommentsGetCall) Header() http.Header {
 
 func (c *CommentsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4213,17 +4868,17 @@ func (c *CommentsGetCall) Do(opts ...googleapi.CallOption) (*Comment, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Comment{
 		ServerResponse: googleapi.ServerResponse{
@@ -4289,6 +4944,8 @@ type CommentsListCall struct {
 }
 
 // List: Lists a file's comments.
+//
+// - fileId: The ID of the file.
 func (r *CommentsService) List(fileId string) *CommentsListCall {
 	c := &CommentsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -4363,7 +5020,7 @@ func (c *CommentsListCall) Header() http.Header {
 
 func (c *CommentsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4401,17 +5058,17 @@ func (c *CommentsListCall) Do(opts ...googleapi.CallOption) (*CommentList, error
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CommentList{
 		ServerResponse: googleapi.ServerResponse{
@@ -4511,6 +5168,9 @@ type CommentsUpdateCall struct {
 }
 
 // Update: Updates a comment with patch semantics.
+//
+// - commentId: The ID of the comment.
+// - fileId: The ID of the file.
 func (r *CommentsService) Update(fileId string, commentId string, comment *Comment) *CommentsUpdateCall {
 	c := &CommentsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -4546,7 +5206,7 @@ func (c *CommentsUpdateCall) Header() http.Header {
 
 func (c *CommentsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4587,17 +5247,17 @@ func (c *CommentsUpdateCall) Do(opts ...googleapi.CallOption) (*Comment, error) 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Comment{
 		ServerResponse: googleapi.ServerResponse{
@@ -4657,7 +5317,14 @@ type DrivesCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a new shared drive.
+// Create: Creates a shared drive.
+//
+//   - requestId: An ID, such as a random UUID, which uniquely identifies
+//     this user's request for idempotent creation of a shared drive. A
+//     repeated request by the same user and with the same request ID will
+//     avoid creating duplicates by attempting to create the same shared
+//     drive. If the shared drive already exists a 409 error will be
+//     returned.
 func (r *DrivesService) Create(requestId string, drive *Drive) *DrivesCreateCall {
 	c := &DrivesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.urlParams_.Set("requestId", requestId)
@@ -4692,7 +5359,7 @@ func (c *DrivesCreateCall) Header() http.Header {
 
 func (c *DrivesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4729,17 +5396,17 @@ func (c *DrivesCreateCall) Do(opts ...googleapi.CallOption) (*Drive, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Drive{
 		ServerResponse: googleapi.ServerResponse{
@@ -4753,7 +5420,7 @@ func (c *DrivesCreateCall) Do(opts ...googleapi.CallOption) (*Drive, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new shared drive.",
+	//   "description": "Creates a shared drive.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.drives.create",
 	//   "parameterOrder": [
@@ -4793,9 +5460,29 @@ type DrivesDeleteCall struct {
 
 // Delete: Permanently deletes a shared drive for which the user is an
 // organizer. The shared drive cannot contain any untrashed items.
+//
+// - driveId: The ID of the shared drive.
 func (r *DrivesService) Delete(driveId string) *DrivesDeleteCall {
 	c := &DrivesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.driveId = driveId
+	return c
+}
+
+// AllowItemDeletion sets the optional parameter "allowItemDeletion":
+// Whether any items inside the shared drive should also be deleted.
+// This option is only supported when useDomainAdminAccess is also set
+// to true.
+func (c *DrivesDeleteCall) AllowItemDeletion(allowItemDeletion bool) *DrivesDeleteCall {
+	c.urlParams_.Set("allowItemDeletion", fmt.Sprint(allowItemDeletion))
+	return c
+}
+
+// UseDomainAdminAccess sets the optional parameter
+// "useDomainAdminAccess": Issue the request as a domain administrator;
+// if set to true, then the requester will be granted access if they are
+// an administrator of the domain to which the shared drive belongs.
+func (c *DrivesDeleteCall) UseDomainAdminAccess(useDomainAdminAccess bool) *DrivesDeleteCall {
+	c.urlParams_.Set("useDomainAdminAccess", fmt.Sprint(useDomainAdminAccess))
 	return c
 }
 
@@ -4826,7 +5513,7 @@ func (c *DrivesDeleteCall) Header() http.Header {
 
 func (c *DrivesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4856,7 +5543,7 @@ func (c *DrivesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -4867,11 +5554,23 @@ func (c *DrivesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//     "driveId"
 	//   ],
 	//   "parameters": {
+	//     "allowItemDeletion": {
+	//       "default": "false",
+	//       "description": "Whether any items inside the shared drive should also be deleted. This option is only supported when useDomainAdminAccess is also set to true.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     },
 	//     "driveId": {
 	//       "description": "The ID of the shared drive.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
+	//     },
+	//     "useDomainAdminAccess": {
+	//       "default": "false",
+	//       "description": "Issue the request as a domain administrator; if set to true, then the requester will be granted access if they are an administrator of the domain to which the shared drive belongs.",
+	//       "location": "query",
+	//       "type": "boolean"
 	//     }
 	//   },
 	//   "path": "drives/{driveId}",
@@ -4894,6 +5593,8 @@ type DrivesGetCall struct {
 }
 
 // Get: Gets a shared drive's metadata by ID.
+//
+// - driveId: The ID of the shared drive.
 func (r *DrivesService) Get(driveId string) *DrivesGetCall {
 	c := &DrivesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.driveId = driveId
@@ -4946,7 +5647,7 @@ func (c *DrivesGetCall) Header() http.Header {
 
 func (c *DrivesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -4984,17 +5685,17 @@ func (c *DrivesGetCall) Do(opts ...googleapi.CallOption) (*Drive, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Drive{
 		ServerResponse: googleapi.ServerResponse{
@@ -5051,6 +5752,8 @@ type DrivesHideCall struct {
 }
 
 // Hide: Hides a shared drive from the default view.
+//
+// - driveId: The ID of the shared drive.
 func (r *DrivesService) Hide(driveId string) *DrivesHideCall {
 	c := &DrivesHideCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.driveId = driveId
@@ -5084,7 +5787,7 @@ func (c *DrivesHideCall) Header() http.Header {
 
 func (c *DrivesHideCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5119,17 +5822,17 @@ func (c *DrivesHideCall) Do(opts ...googleapi.CallOption) (*Drive, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Drive{
 		ServerResponse: googleapi.ServerResponse{
@@ -5185,7 +5888,7 @@ func (r *DrivesService) List() *DrivesListCall {
 }
 
 // PageSize sets the optional parameter "pageSize": Maximum number of
-// shared drives to return.
+// shared drives to return per page.
 func (c *DrivesListCall) PageSize(pageSize int64) *DrivesListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
@@ -5251,7 +5954,7 @@ func (c *DrivesListCall) Header() http.Header {
 
 func (c *DrivesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5286,17 +5989,17 @@ func (c *DrivesListCall) Do(opts ...googleapi.CallOption) (*DriveList, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &DriveList{
 		ServerResponse: googleapi.ServerResponse{
@@ -5316,7 +6019,7 @@ func (c *DrivesListCall) Do(opts ...googleapi.CallOption) (*DriveList, error) {
 	//   "parameters": {
 	//     "pageSize": {
 	//       "default": "10",
-	//       "description": "Maximum number of shared drives to return.",
+	//       "description": "Maximum number of shared drives to return per page.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "maximum": "100",
@@ -5384,6 +6087,8 @@ type DrivesUnhideCall struct {
 }
 
 // Unhide: Restores a shared drive to the default view.
+//
+// - driveId: The ID of the shared drive.
 func (r *DrivesService) Unhide(driveId string) *DrivesUnhideCall {
 	c := &DrivesUnhideCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.driveId = driveId
@@ -5417,7 +6122,7 @@ func (c *DrivesUnhideCall) Header() http.Header {
 
 func (c *DrivesUnhideCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5452,17 +6157,17 @@ func (c *DrivesUnhideCall) Do(opts ...googleapi.CallOption) (*Drive, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Drive{
 		ServerResponse: googleapi.ServerResponse{
@@ -5512,7 +6217,9 @@ type DrivesUpdateCall struct {
 	header_    http.Header
 }
 
-// Update: Updates the metadate for a shared drive.
+// Update: Updates the metadata for a shared drive.
+//
+// - driveId: The ID of the shared drive.
 func (r *DrivesService) Update(driveId string, drive *Drive) *DrivesUpdateCall {
 	c := &DrivesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.driveId = driveId
@@ -5521,9 +6228,9 @@ func (r *DrivesService) Update(driveId string, drive *Drive) *DrivesUpdateCall {
 }
 
 // UseDomainAdminAccess sets the optional parameter
-// "useDomainAdminAccess": Issue the request as a domain administrator;
-// if set to true, then the requester will be granted access if they are
-// an administrator of the domain to which the shared drive belongs.
+// "useDomainAdminAccess": Issue the request as a domain administrator.
+// If set to true, then the requester is granted access if they're an
+// administrator of the domain to which the shared drive belongs.
 func (c *DrivesUpdateCall) UseDomainAdminAccess(useDomainAdminAccess bool) *DrivesUpdateCall {
 	c.urlParams_.Set("useDomainAdminAccess", fmt.Sprint(useDomainAdminAccess))
 	return c
@@ -5556,7 +6263,7 @@ func (c *DrivesUpdateCall) Header() http.Header {
 
 func (c *DrivesUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5596,17 +6303,17 @@ func (c *DrivesUpdateCall) Do(opts ...googleapi.CallOption) (*Drive, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Drive{
 		ServerResponse: googleapi.ServerResponse{
@@ -5620,7 +6327,7 @@ func (c *DrivesUpdateCall) Do(opts ...googleapi.CallOption) (*Drive, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates the metadate for a shared drive.",
+	//   "description": "Updates the metadata for a shared drive.",
 	//   "httpMethod": "PATCH",
 	//   "id": "drive.drives.update",
 	//   "parameterOrder": [
@@ -5635,7 +6342,7 @@ func (c *DrivesUpdateCall) Do(opts ...googleapi.CallOption) (*Drive, error) {
 	//     },
 	//     "useDomainAdminAccess": {
 	//       "default": "false",
-	//       "description": "Issue the request as a domain administrator; if set to true, then the requester will be granted access if they are an administrator of the domain to which the shared drive belongs.",
+	//       "description": "Issue the request as a domain administrator. If set to true, then the requester is granted access if they're an administrator of the domain to which the shared drive belongs.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     }
@@ -5666,11 +6373,21 @@ type FilesCopyCall struct {
 }
 
 // Copy: Creates a copy of a file and applies any requested updates with
-// patch semantics.
+// patch semantics. Folders cannot be copied.
+//
+// - fileId: The ID of the file.
 func (r *FilesService) Copy(fileId string, file *File) *FilesCopyCall {
 	c := &FilesCopyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
 	c.file = file
+	return c
+}
+
+// EnforceSingleParent sets the optional parameter
+// "enforceSingleParent": Deprecated. Copying files into multiple
+// folders is no longer supported. Use shortcuts instead.
+func (c *FilesCopyCall) EnforceSingleParent(enforceSingleParent bool) *FilesCopyCall {
+	c.urlParams_.Set("enforceSingleParent", fmt.Sprint(enforceSingleParent))
 	return c
 }
 
@@ -5682,6 +6399,23 @@ func (r *FilesService) Copy(fileId string, file *File) *FilesCopyCall {
 // are still inherited from parent folders.
 func (c *FilesCopyCall) IgnoreDefaultVisibility(ignoreDefaultVisibility bool) *FilesCopyCall {
 	c.urlParams_.Set("ignoreDefaultVisibility", fmt.Sprint(ignoreDefaultVisibility))
+	return c
+}
+
+// IncludeLabels sets the optional parameter "includeLabels": A
+// comma-separated list of IDs of labels to include in the labelInfo
+// part of the response.
+func (c *FilesCopyCall) IncludeLabels(includeLabels string) *FilesCopyCall {
+	c.urlParams_.Set("includeLabels", includeLabels)
+	return c
+}
+
+// IncludePermissionsForView sets the optional parameter
+// "includePermissionsForView": Specifies which additional view's
+// permissions to include in the response. Only 'published' is
+// supported.
+func (c *FilesCopyCall) IncludePermissionsForView(includePermissionsForView string) *FilesCopyCall {
+	c.urlParams_.Set("includePermissionsForView", includePermissionsForView)
 	return c
 }
 
@@ -5703,10 +6437,8 @@ func (c *FilesCopyCall) OcrLanguage(ocrLanguage string) *FilesCopyCall {
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *FilesCopyCall) SupportsAllDrives(supportsAllDrives bool) *FilesCopyCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -5746,7 +6478,7 @@ func (c *FilesCopyCall) Header() http.Header {
 
 func (c *FilesCopyCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -5786,17 +6518,17 @@ func (c *FilesCopyCall) Do(opts ...googleapi.CallOption) (*File, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &File{
 		ServerResponse: googleapi.ServerResponse{
@@ -5810,13 +6542,19 @@ func (c *FilesCopyCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a copy of a file and applies any requested updates with patch semantics.",
+	//   "description": "Creates a copy of a file and applies any requested updates with patch semantics. Folders cannot be copied.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.files.copy",
 	//   "parameterOrder": [
 	//     "fileId"
 	//   ],
 	//   "parameters": {
+	//     "enforceSingleParent": {
+	//       "default": "false",
+	//       "description": "Deprecated. Copying files into multiple folders is no longer supported. Use shortcuts instead.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     },
 	//     "fileId": {
 	//       "description": "The ID of the file.",
 	//       "location": "path",
@@ -5828,6 +6566,16 @@ func (c *FilesCopyCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	//       "description": "Whether to ignore the domain's default visibility settings for the created file. Domain administrators can choose to make all uploaded files visible to the domain by default; this parameter bypasses that behavior for the request. Permissions are still inherited from parent folders.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "includeLabels": {
+	//       "description": "A comma-separated list of IDs of labels to include in the labelInfo part of the response.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "includePermissionsForView": {
+	//       "description": "Specifies which additional view's permissions to include in the response. Only 'published' is supported.",
+	//       "location": "query",
+	//       "type": "string"
 	//     },
 	//     "keepRevisionForever": {
 	//       "default": "false",
@@ -5842,7 +6590,7 @@ func (c *FilesCopyCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -5881,10 +6629,18 @@ type FilesCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a new file.
+// Create: Creates a file.
 func (r *FilesService) Create(file *File) *FilesCreateCall {
 	c := &FilesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.file = file
+	return c
+}
+
+// EnforceSingleParent sets the optional parameter
+// "enforceSingleParent": Deprecated. Creating files in multiple folders
+// is no longer supported.
+func (c *FilesCreateCall) EnforceSingleParent(enforceSingleParent bool) *FilesCreateCall {
+	c.urlParams_.Set("enforceSingleParent", fmt.Sprint(enforceSingleParent))
 	return c
 }
 
@@ -5896,6 +6652,23 @@ func (r *FilesService) Create(file *File) *FilesCreateCall {
 // are still inherited from parent folders.
 func (c *FilesCreateCall) IgnoreDefaultVisibility(ignoreDefaultVisibility bool) *FilesCreateCall {
 	c.urlParams_.Set("ignoreDefaultVisibility", fmt.Sprint(ignoreDefaultVisibility))
+	return c
+}
+
+// IncludeLabels sets the optional parameter "includeLabels": A
+// comma-separated list of IDs of labels to include in the labelInfo
+// part of the response.
+func (c *FilesCreateCall) IncludeLabels(includeLabels string) *FilesCreateCall {
+	c.urlParams_.Set("includeLabels", includeLabels)
+	return c
+}
+
+// IncludePermissionsForView sets the optional parameter
+// "includePermissionsForView": Specifies which additional view's
+// permissions to include in the response. Only 'published' is
+// supported.
+func (c *FilesCreateCall) IncludePermissionsForView(includePermissionsForView string) *FilesCreateCall {
+	c.urlParams_.Set("includePermissionsForView", includePermissionsForView)
 	return c
 }
 
@@ -5917,10 +6690,8 @@ func (c *FilesCreateCall) OcrLanguage(ocrLanguage string) *FilesCreateCall {
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *FilesCreateCall) SupportsAllDrives(supportsAllDrives bool) *FilesCreateCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -6007,7 +6778,7 @@ func (c *FilesCreateCall) Header() http.Header {
 
 func (c *FilesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6055,17 +6826,17 @@ func (c *FilesCreateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -6081,7 +6852,7 @@ func (c *FilesCreateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &File{
@@ -6096,7 +6867,7 @@ func (c *FilesCreateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new file.",
+	//   "description": "Creates a file.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.files.create",
 	//   "mediaUpload": {
@@ -6116,11 +6887,27 @@ func (c *FilesCreateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	//     }
 	//   },
 	//   "parameters": {
+	//     "enforceSingleParent": {
+	//       "default": "false",
+	//       "description": "Deprecated. Creating files in multiple folders is no longer supported.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     },
 	//     "ignoreDefaultVisibility": {
 	//       "default": "false",
 	//       "description": "Whether to ignore the domain's default visibility settings for the created file. Domain administrators can choose to make all uploaded files visible to the domain by default; this parameter bypasses that behavior for the request. Permissions are still inherited from parent folders.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "includeLabels": {
+	//       "description": "A comma-separated list of IDs of labels to include in the labelInfo part of the response.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "includePermissionsForView": {
+	//       "description": "Specifies which additional view's permissions to include in the response. Only 'published' is supported.",
+	//       "location": "query",
+	//       "type": "string"
 	//     },
 	//     "keepRevisionForever": {
 	//       "default": "false",
@@ -6135,7 +6922,7 @@ func (c *FilesCreateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -6184,17 +6971,26 @@ type FilesDeleteCall struct {
 // it to the trash. If the file belongs to a shared drive the user must
 // be an organizer on the parent. If the target is a folder, all
 // descendants owned by the user are also deleted.
+//
+// - fileId: The ID of the file.
 func (r *FilesService) Delete(fileId string) *FilesDeleteCall {
 	c := &FilesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
 	return c
 }
 
+// EnforceSingleParent sets the optional parameter
+// "enforceSingleParent": Deprecated. If an item is not in a shared
+// drive and its last parent is deleted but the item itself is not, the
+// item will be placed under its owner's root.
+func (c *FilesDeleteCall) EnforceSingleParent(enforceSingleParent bool) *FilesDeleteCall {
+	c.urlParams_.Set("enforceSingleParent", fmt.Sprint(enforceSingleParent))
+	return c
+}
+
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *FilesDeleteCall) SupportsAllDrives(supportsAllDrives bool) *FilesDeleteCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -6234,7 +7030,7 @@ func (c *FilesDeleteCall) Header() http.Header {
 
 func (c *FilesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6264,7 +7060,7 @@ func (c *FilesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -6275,6 +7071,12 @@ func (c *FilesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//     "fileId"
 	//   ],
 	//   "parameters": {
+	//     "enforceSingleParent": {
+	//       "default": "false",
+	//       "description": "Deprecated. If an item is not in a shared drive and its last parent is deleted but the item itself is not, the item will be placed under its owner's root.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     },
 	//     "fileId": {
 	//       "description": "The ID of the file.",
 	//       "location": "path",
@@ -6283,7 +7085,7 @@ func (c *FilesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -6319,6 +7121,15 @@ func (r *FilesService) EmptyTrash() *FilesEmptyTrashCall {
 	return c
 }
 
+// EnforceSingleParent sets the optional parameter
+// "enforceSingleParent": Deprecated. If an item is not in a shared
+// drive and its last parent is deleted but the item itself is not, the
+// item will be placed under its owner's root.
+func (c *FilesEmptyTrashCall) EnforceSingleParent(enforceSingleParent bool) *FilesEmptyTrashCall {
+	c.urlParams_.Set("enforceSingleParent", fmt.Sprint(enforceSingleParent))
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
 // https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
@@ -6346,7 +7157,7 @@ func (c *FilesEmptyTrashCall) Header() http.Header {
 
 func (c *FilesEmptyTrashCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6373,13 +7184,21 @@ func (c *FilesEmptyTrashCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
 	//   "description": "Permanently deletes all of the user's trashed files.",
 	//   "httpMethod": "DELETE",
 	//   "id": "drive.files.emptyTrash",
+	//   "parameters": {
+	//     "enforceSingleParent": {
+	//       "default": "false",
+	//       "description": "Deprecated. If an item is not in a shared drive and its last parent is deleted but the item itself is not, the item will be placed under its owner's root.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     }
+	//   },
 	//   "path": "files/trash",
 	//   "scopes": [
 	//     "https://www.googleapis.com/auth/drive"
@@ -6399,9 +7218,12 @@ type FilesExportCall struct {
 	header_      http.Header
 }
 
-// Export: Exports a Google Doc to the requested MIME type and returns
-// the exported content. Please note that the exported content is
-// limited to 10MB.
+// Export: Exports a Google Workspace document to the requested MIME
+// type and returns exported byte content. Note that the exported
+// content is limited to 10MB.
+//
+// - fileId: The ID of the file.
+// - mimeType: The MIME type of the format requested for this export.
 func (r *FilesService) Export(fileId string, mimeType string) *FilesExportCall {
 	c := &FilesExportCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -6446,7 +7268,7 @@ func (c *FilesExportCall) Header() http.Header {
 
 func (c *FilesExportCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6479,9 +7301,9 @@ func (c *FilesExportCall) Download(opts ...googleapi.CallOption) (*http.Response
 	if err != nil {
 		return nil, err
 	}
-	if err := googleapi.CheckMediaResponse(res); err != nil {
+	if err := googleapi.CheckResponse(res); err != nil {
 		res.Body.Close()
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	return res, nil
 }
@@ -6495,11 +7317,11 @@ func (c *FilesExportCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
-	//   "description": "Exports a Google Doc to the requested MIME type and returns the exported content. Please note that the exported content is limited to 10MB.",
+	//   "description": "Exports a Google Workspace document to the requested MIME type and returns exported byte content. Note that the exported content is limited to 10MB.",
 	//   "httpMethod": "GET",
 	//   "id": "drive.files.export",
 	//   "parameterOrder": [
@@ -6557,9 +7379,18 @@ func (c *FilesGenerateIdsCall) Count(count int64) *FilesGenerateIdsCall {
 
 // Space sets the optional parameter "space": The space in which the IDs
 // can be used to create new files. Supported values are 'drive' and
-// 'appDataFolder'.
+// 'appDataFolder'. (Default: 'drive')
 func (c *FilesGenerateIdsCall) Space(space string) *FilesGenerateIdsCall {
 	c.urlParams_.Set("space", space)
+	return c
+}
+
+// Type sets the optional parameter "type": The type of items which the
+// IDs can be used for. Supported values are 'files' and 'shortcuts'.
+// Note that 'shortcuts' are only supported in the drive 'space'.
+// (Default: 'files')
+func (c *FilesGenerateIdsCall) Type(type_ string) *FilesGenerateIdsCall {
+	c.urlParams_.Set("type", type_)
 	return c
 }
 
@@ -6600,7 +7431,7 @@ func (c *FilesGenerateIdsCall) Header() http.Header {
 
 func (c *FilesGenerateIdsCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6635,17 +7466,17 @@ func (c *FilesGenerateIdsCall) Do(opts ...googleapi.CallOption) (*GeneratedIds, 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &GeneratedIds{
 		ServerResponse: googleapi.ServerResponse{
@@ -6674,7 +7505,13 @@ func (c *FilesGenerateIdsCall) Do(opts ...googleapi.CallOption) (*GeneratedIds, 
 	//     },
 	//     "space": {
 	//       "default": "drive",
-	//       "description": "The space in which the IDs can be used to create new files. Supported values are 'drive' and 'appDataFolder'.",
+	//       "description": "The space in which the IDs can be used to create new files. Supported values are 'drive' and 'appDataFolder'. (Default: 'drive')",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "type": {
+	//       "default": "files",
+	//       "description": "The type of items which the IDs can be used for. Supported values are 'files' and 'shortcuts'. Note that 'shortcuts' are only supported in the drive 'space'. (Default: 'files')",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -6704,6 +7541,8 @@ type FilesGetCall struct {
 }
 
 // Get: Gets a file's metadata or content by ID.
+//
+// - fileId: The ID of the file.
 func (r *FilesService) Get(fileId string) *FilesGetCall {
 	c := &FilesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -6719,11 +7558,26 @@ func (c *FilesGetCall) AcknowledgeAbuse(acknowledgeAbuse bool) *FilesGetCall {
 	return c
 }
 
+// IncludeLabels sets the optional parameter "includeLabels": A
+// comma-separated list of IDs of labels to include in the labelInfo
+// part of the response.
+func (c *FilesGetCall) IncludeLabels(includeLabels string) *FilesGetCall {
+	c.urlParams_.Set("includeLabels", includeLabels)
+	return c
+}
+
+// IncludePermissionsForView sets the optional parameter
+// "includePermissionsForView": Specifies which additional view's
+// permissions to include in the response. Only 'published' is
+// supported.
+func (c *FilesGetCall) IncludePermissionsForView(includePermissionsForView string) *FilesGetCall {
+	c.urlParams_.Set("includePermissionsForView", includePermissionsForView)
+	return c
+}
+
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *FilesGetCall) SupportsAllDrives(supportsAllDrives bool) *FilesGetCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -6773,7 +7627,7 @@ func (c *FilesGetCall) Header() http.Header {
 
 func (c *FilesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -6806,9 +7660,9 @@ func (c *FilesGetCall) Download(opts ...googleapi.CallOption) (*http.Response, e
 	if err != nil {
 		return nil, err
 	}
-	if err := googleapi.CheckMediaResponse(res); err != nil {
+	if err := googleapi.CheckResponse(res); err != nil {
 		res.Body.Close()
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	return res, nil
 }
@@ -6827,17 +7681,17 @@ func (c *FilesGetCall) Do(opts ...googleapi.CallOption) (*File, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &File{
 		ServerResponse: googleapi.ServerResponse{
@@ -6870,9 +7724,19 @@ func (c *FilesGetCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	//       "required": true,
 	//       "type": "string"
 	//     },
+	//     "includeLabels": {
+	//       "description": "A comma-separated list of IDs of labels to include in the labelInfo part of the response.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "includePermissionsForView": {
+	//       "description": "Specifies which additional view's permissions to include in the response. Only 'published' is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -6919,10 +7783,14 @@ func (r *FilesService) List() *FilesListCall {
 	return c
 }
 
-// Corpora sets the optional parameter "corpora": Bodies of items
-// (files/documents) to which the query applies. Supported bodies are
-// 'user', 'domain', 'drive' and 'allDrives'. Prefer 'user' or 'drive'
-// to 'allDrives' for efficiency.
+// Corpora sets the optional parameter "corpora": Groupings of files to
+// which the query applies. Supported groupings are: 'user' (files
+// created by, opened by, or shared directly with the user), 'drive'
+// (files in the specified shared drive as indicated by the 'driveId'),
+// 'domain' (files shared to the user's domain), and 'allDrives' (A
+// combination of 'user' and 'drive' for all drives where the user is a
+// member). When able, use 'user' or 'drive', instead of 'allDrives',
+// for efficiency.
 func (c *FilesListCall) Corpora(corpora string) *FilesListCall {
 	c.urlParams_.Set("corpora", corpora)
 	return c
@@ -6932,8 +7800,12 @@ func (c *FilesListCall) Corpora(corpora string) *FilesListCall {
 // list. Deprecated: use 'corpora' instead.
 //
 // Possible values:
-//   "domain" - Files shared to the user's domain.
-//   "user" - Files owned by or shared to the user.
+//
+//	"domain" - Files shared to the user's domain.
+//	"user" - Files owned by or shared to the user. If a user has
+//
+// permissions on a Shared Drive, the files inside it won't be retrieved
+// unless the user has created, opened, or shared the file.
 func (c *FilesListCall) Corpus(corpus string) *FilesListCall {
 	c.urlParams_.Set("corpus", corpus)
 	return c
@@ -6947,12 +7819,27 @@ func (c *FilesListCall) DriveId(driveId string) *FilesListCall {
 }
 
 // IncludeItemsFromAllDrives sets the optional parameter
-// "includeItemsFromAllDrives": Deprecated - Whether both My Drive and
-// shared drive items should be included in results. This parameter will
-// only be effective until June 1, 2020. Afterwards shared drive items
-// will be included in the results.
+// "includeItemsFromAllDrives": Whether both My Drive and shared drive
+// items should be included in results.
 func (c *FilesListCall) IncludeItemsFromAllDrives(includeItemsFromAllDrives bool) *FilesListCall {
 	c.urlParams_.Set("includeItemsFromAllDrives", fmt.Sprint(includeItemsFromAllDrives))
+	return c
+}
+
+// IncludeLabels sets the optional parameter "includeLabels": A
+// comma-separated list of IDs of labels to include in the labelInfo
+// part of the response.
+func (c *FilesListCall) IncludeLabels(includeLabels string) *FilesListCall {
+	c.urlParams_.Set("includeLabels", includeLabels)
+	return c
+}
+
+// IncludePermissionsForView sets the optional parameter
+// "includePermissionsForView": Specifies which additional view's
+// permissions to include in the response. Only 'published' is
+// supported.
+func (c *FilesListCall) IncludePermissionsForView(includePermissionsForView string) *FilesListCall {
+	c.urlParams_.Set("includePermissionsForView", includePermissionsForView)
 	return c
 }
 
@@ -7002,18 +7889,16 @@ func (c *FilesListCall) Q(q string) *FilesListCall {
 }
 
 // Spaces sets the optional parameter "spaces": A comma-separated list
-// of spaces to query within the corpus. Supported values are 'drive',
-// 'appDataFolder' and 'photos'.
+// of spaces to query within the corpora. Supported values are 'drive'
+// and 'appDataFolder'.
 func (c *FilesListCall) Spaces(spaces string) *FilesListCall {
 	c.urlParams_.Set("spaces", spaces)
 	return c
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *FilesListCall) SupportsAllDrives(supportsAllDrives bool) *FilesListCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -7070,7 +7955,7 @@ func (c *FilesListCall) Header() http.Header {
 
 func (c *FilesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7105,17 +7990,17 @@ func (c *FilesListCall) Do(opts ...googleapi.CallOption) (*FileList, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &FileList{
 		ServerResponse: googleapi.ServerResponse{
@@ -7134,7 +8019,7 @@ func (c *FilesListCall) Do(opts ...googleapi.CallOption) (*FileList, error) {
 	//   "id": "drive.files.list",
 	//   "parameters": {
 	//     "corpora": {
-	//       "description": "Bodies of items (files/documents) to which the query applies. Supported bodies are 'user', 'domain', 'drive' and 'allDrives'. Prefer 'user' or 'drive' to 'allDrives' for efficiency.",
+	//       "description": "Groupings of files to which the query applies. Supported groupings are: 'user' (files created by, opened by, or shared directly with the user), 'drive' (files in the specified shared drive as indicated by the 'driveId'), 'domain' (files shared to the user's domain), and 'allDrives' (A combination of 'user' and 'drive' for all drives where the user is a member). When able, use 'user' or 'drive', instead of 'allDrives', for efficiency.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -7146,7 +8031,7 @@ func (c *FilesListCall) Do(opts ...googleapi.CallOption) (*FileList, error) {
 	//       ],
 	//       "enumDescriptions": [
 	//         "Files shared to the user's domain.",
-	//         "Files owned by or shared to the user."
+	//         "Files owned by or shared to the user. If a user has permissions on a Shared Drive, the files inside it won't be retrieved unless the user has created, opened, or shared the file."
 	//       ],
 	//       "location": "query",
 	//       "type": "string"
@@ -7158,9 +8043,19 @@ func (c *FilesListCall) Do(opts ...googleapi.CallOption) (*FileList, error) {
 	//     },
 	//     "includeItemsFromAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether both My Drive and shared drive items should be included in results. This parameter will only be effective until June 1, 2020. Afterwards shared drive items will be included in the results.",
+	//       "description": "Whether both My Drive and shared drive items should be included in results.",
 	//       "location": "query",
 	//       "type": "boolean"
+	//     },
+	//     "includeLabels": {
+	//       "description": "A comma-separated list of IDs of labels to include in the labelInfo part of the response.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "includePermissionsForView": {
+	//       "description": "Specifies which additional view's permissions to include in the response. Only 'published' is supported.",
+	//       "location": "query",
+	//       "type": "string"
 	//     },
 	//     "includeTeamDriveItems": {
 	//       "default": "false",
@@ -7194,13 +8089,13 @@ func (c *FilesListCall) Do(opts ...googleapi.CallOption) (*FileList, error) {
 	//     },
 	//     "spaces": {
 	//       "default": "drive",
-	//       "description": "A comma-separated list of spaces to query within the corpus. Supported values are 'drive', 'appDataFolder' and 'photos'.",
+	//       "description": "A comma-separated list of spaces to query within the corpora. Supported values are 'drive' and 'appDataFolder'.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -7254,6 +8149,347 @@ func (c *FilesListCall) Pages(ctx context.Context, f func(*FileList) error) erro
 	}
 }
 
+// method id "drive.files.listLabels":
+
+type FilesListLabelsCall struct {
+	s            *Service
+	fileId       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// ListLabels: Lists the labels on a file.
+//
+// - fileId: The ID of the file.
+func (r *FilesService) ListLabels(fileId string) *FilesListLabelsCall {
+	c := &FilesListLabelsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.fileId = fileId
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maximum
+// number of labels to return per page. When not set, this defaults to
+// 100.
+func (c *FilesListLabelsCall) MaxResults(maxResults int64) *FilesListLabelsCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The token for
+// continuing a previous list request on the next page. This should be
+// set to the value of 'nextPageToken' from the previous response.
+func (c *FilesListLabelsCall) PageToken(pageToken string) *FilesListLabelsCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *FilesListLabelsCall) Fields(s ...googleapi.Field) *FilesListLabelsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *FilesListLabelsCall) IfNoneMatch(entityTag string) *FilesListLabelsCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *FilesListLabelsCall) Context(ctx context.Context) *FilesListLabelsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *FilesListLabelsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *FilesListLabelsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "files/{fileId}/listLabels")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"fileId": c.fileId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "drive.files.listLabels" call.
+// Exactly one of *LabelList or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *LabelList.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *FilesListLabelsCall) Do(opts ...googleapi.CallOption) (*LabelList, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &LabelList{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists the labels on a file.",
+	//   "httpMethod": "GET",
+	//   "id": "drive.files.listLabels",
+	//   "parameterOrder": [
+	//     "fileId"
+	//   ],
+	//   "parameters": {
+	//     "fileId": {
+	//       "description": "The ID of the file.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "100",
+	//       "description": "The maximum number of labels to return per page. When not set, this defaults to 100.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "maximum": "100",
+	//       "minimum": "1",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "The token for continuing a previous list request on the next page. This should be set to the value of 'nextPageToken' from the previous response.",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "files/{fileId}/listLabels",
+	//   "response": {
+	//     "$ref": "LabelList"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/drive",
+	//     "https://www.googleapis.com/auth/drive.file",
+	//     "https://www.googleapis.com/auth/drive.metadata",
+	//     "https://www.googleapis.com/auth/drive.metadata.readonly",
+	//     "https://www.googleapis.com/auth/drive.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *FilesListLabelsCall) Pages(ctx context.Context, f func(*LabelList) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "drive.files.modifyLabels":
+
+type FilesModifyLabelsCall struct {
+	s                   *Service
+	fileId              string
+	modifylabelsrequest *ModifyLabelsRequest
+	urlParams_          gensupport.URLParams
+	ctx_                context.Context
+	header_             http.Header
+}
+
+// ModifyLabels: Modifies the set of labels on a file.
+//
+// - fileId: The ID of the file for which the labels are modified.
+func (r *FilesService) ModifyLabels(fileId string, modifylabelsrequest *ModifyLabelsRequest) *FilesModifyLabelsCall {
+	c := &FilesModifyLabelsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.fileId = fileId
+	c.modifylabelsrequest = modifylabelsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *FilesModifyLabelsCall) Fields(s ...googleapi.Field) *FilesModifyLabelsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *FilesModifyLabelsCall) Context(ctx context.Context) *FilesModifyLabelsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *FilesModifyLabelsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *FilesModifyLabelsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.modifylabelsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "files/{fileId}/modifyLabels")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"fileId": c.fileId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "drive.files.modifyLabels" call.
+// Exactly one of *ModifyLabelsResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *ModifyLabelsResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *FilesModifyLabelsCall) Do(opts ...googleapi.CallOption) (*ModifyLabelsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ModifyLabelsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Modifies the set of labels on a file.",
+	//   "httpMethod": "POST",
+	//   "id": "drive.files.modifyLabels",
+	//   "parameterOrder": [
+	//     "fileId"
+	//   ],
+	//   "parameters": {
+	//     "fileId": {
+	//       "description": "The ID of the file for which the labels are modified.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "files/{fileId}/modifyLabels",
+	//   "request": {
+	//     "$ref": "ModifyLabelsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "ModifyLabelsResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/drive",
+	//     "https://www.googleapis.com/auth/drive.file",
+	//     "https://www.googleapis.com/auth/drive.metadata"
+	//   ]
+	// }
+
+}
+
 // method id "drive.files.update":
 
 type FilesUpdateCall struct {
@@ -7266,8 +8502,12 @@ type FilesUpdateCall struct {
 	header_    http.Header
 }
 
-// Update: Updates a file's metadata and/or content with patch
-// semantics.
+// Update: Updates a file's metadata and/or content. When calling this
+// method, only populate fields in the request that you want to modify.
+// When updating fields, some fields might change automatically, such as
+// modifiedDate. This method supports patch semantics.
+//
+// - fileId: The ID of the file.
 func (r *FilesService) Update(fileId string, file *File) *FilesUpdateCall {
 	c := &FilesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -7279,6 +8519,31 @@ func (r *FilesService) Update(fileId string, file *File) *FilesUpdateCall {
 // comma-separated list of parent IDs to add.
 func (c *FilesUpdateCall) AddParents(addParents string) *FilesUpdateCall {
 	c.urlParams_.Set("addParents", addParents)
+	return c
+}
+
+// EnforceSingleParent sets the optional parameter
+// "enforceSingleParent": Deprecated. Adding files to multiple folders
+// is no longer supported. Use shortcuts instead.
+func (c *FilesUpdateCall) EnforceSingleParent(enforceSingleParent bool) *FilesUpdateCall {
+	c.urlParams_.Set("enforceSingleParent", fmt.Sprint(enforceSingleParent))
+	return c
+}
+
+// IncludeLabels sets the optional parameter "includeLabels": A
+// comma-separated list of IDs of labels to include in the labelInfo
+// part of the response.
+func (c *FilesUpdateCall) IncludeLabels(includeLabels string) *FilesUpdateCall {
+	c.urlParams_.Set("includeLabels", includeLabels)
+	return c
+}
+
+// IncludePermissionsForView sets the optional parameter
+// "includePermissionsForView": Specifies which additional view's
+// permissions to include in the response. Only 'published' is
+// supported.
+func (c *FilesUpdateCall) IncludePermissionsForView(includePermissionsForView string) *FilesUpdateCall {
+	c.urlParams_.Set("includePermissionsForView", includePermissionsForView)
 	return c
 }
 
@@ -7307,10 +8572,8 @@ func (c *FilesUpdateCall) RemoveParents(removeParents string) *FilesUpdateCall {
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *FilesUpdateCall) SupportsAllDrives(supportsAllDrives bool) *FilesUpdateCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -7397,7 +8660,7 @@ func (c *FilesUpdateCall) Header() http.Header {
 
 func (c *FilesUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7448,17 +8711,17 @@ func (c *FilesUpdateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
 	if rx != nil {
@@ -7474,7 +8737,7 @@ func (c *FilesUpdateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 		}
 		defer res.Body.Close()
 		if err := googleapi.CheckResponse(res); err != nil {
-			return nil, err
+			return nil, gensupport.WrapError(err)
 		}
 	}
 	ret := &File{
@@ -7489,7 +8752,7 @@ func (c *FilesUpdateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates a file's metadata and/or content with patch semantics.",
+	//   "description": "Updates a file's metadata and/or content. When calling this method, only populate fields in the request that you want to modify. When updating fields, some fields might change automatically, such as modifiedDate. This method supports patch semantics.",
 	//   "httpMethod": "PATCH",
 	//   "id": "drive.files.update",
 	//   "mediaUpload": {
@@ -7517,10 +8780,26 @@ func (c *FilesUpdateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	//       "location": "query",
 	//       "type": "string"
 	//     },
+	//     "enforceSingleParent": {
+	//       "default": "false",
+	//       "description": "Deprecated. Adding files to multiple folders is no longer supported. Use shortcuts instead.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     },
 	//     "fileId": {
 	//       "description": "The ID of the file.",
 	//       "location": "path",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "includeLabels": {
+	//       "description": "A comma-separated list of IDs of labels to include in the labelInfo part of the response.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "includePermissionsForView": {
+	//       "description": "Specifies which additional view's permissions to include in the response. Only 'published' is supported.",
+	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "keepRevisionForever": {
@@ -7541,7 +8820,7 @@ func (c *FilesUpdateCall) Do(opts ...googleapi.CallOption) (*File, error) {
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -7588,7 +8867,11 @@ type FilesWatchCall struct {
 	header_    http.Header
 }
 
-// Watch: Subscribes to changes to a file
+// Watch: Subscribes to changes to a file. While you can establish a
+// channel for changes to a file on a shared drive, a change to a shared
+// drive file won't create a notification.
+//
+// - fileId: The ID of the file.
 func (r *FilesService) Watch(fileId string, channel *Channel) *FilesWatchCall {
 	c := &FilesWatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -7605,11 +8888,26 @@ func (c *FilesWatchCall) AcknowledgeAbuse(acknowledgeAbuse bool) *FilesWatchCall
 	return c
 }
 
+// IncludeLabels sets the optional parameter "includeLabels": A
+// comma-separated list of IDs of labels to include in the labelInfo
+// part of the response.
+func (c *FilesWatchCall) IncludeLabels(includeLabels string) *FilesWatchCall {
+	c.urlParams_.Set("includeLabels", includeLabels)
+	return c
+}
+
+// IncludePermissionsForView sets the optional parameter
+// "includePermissionsForView": Specifies which additional view's
+// permissions to include in the response. Only 'published' is
+// supported.
+func (c *FilesWatchCall) IncludePermissionsForView(includePermissionsForView string) *FilesWatchCall {
+	c.urlParams_.Set("includePermissionsForView", includePermissionsForView)
+	return c
+}
+
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *FilesWatchCall) SupportsAllDrives(supportsAllDrives bool) *FilesWatchCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -7649,7 +8947,7 @@ func (c *FilesWatchCall) Header() http.Header {
 
 func (c *FilesWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7684,9 +8982,9 @@ func (c *FilesWatchCall) Download(opts ...googleapi.CallOption) (*http.Response,
 	if err != nil {
 		return nil, err
 	}
-	if err := googleapi.CheckMediaResponse(res); err != nil {
+	if err := googleapi.CheckResponse(res); err != nil {
 		res.Body.Close()
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	return res, nil
 }
@@ -7705,17 +9003,17 @@ func (c *FilesWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Channel{
 		ServerResponse: googleapi.ServerResponse{
@@ -7729,7 +9027,7 @@ func (c *FilesWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Subscribes to changes to a file",
+	//   "description": "Subscribes to changes to a file. While you can establish a channel for changes to a file on a shared drive, a change to a shared drive file won't create a notification.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.files.watch",
 	//   "parameterOrder": [
@@ -7748,9 +9046,19 @@ func (c *FilesWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	//       "required": true,
 	//       "type": "string"
 	//     },
+	//     "includeLabels": {
+	//       "description": "A comma-separated list of IDs of labels to include in the labelInfo part of the response.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "includePermissionsForView": {
+	//       "description": "Specifies which additional view's permissions to include in the response. Only 'published' is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -7796,7 +9104,11 @@ type PermissionsCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a permission for a file or shared drive.
+// Create: Creates a permission for a file or shared drive. For more
+// information on creating permissions, see Share files, folders &
+// drives.
+//
+// - fileId: The ID of the file or shared drive.
 func (r *PermissionsService) Create(fileId string, permission *Permission) *PermissionsCreateCall {
 	c := &PermissionsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -7811,6 +9123,25 @@ func (c *PermissionsCreateCall) EmailMessage(emailMessage string) *PermissionsCr
 	return c
 }
 
+// EnforceSingleParent sets the optional parameter
+// "enforceSingleParent": Deprecated. See moveToNewOwnersRoot for
+// details.
+func (c *PermissionsCreateCall) EnforceSingleParent(enforceSingleParent bool) *PermissionsCreateCall {
+	c.urlParams_.Set("enforceSingleParent", fmt.Sprint(enforceSingleParent))
+	return c
+}
+
+// MoveToNewOwnersRoot sets the optional parameter
+// "moveToNewOwnersRoot": This parameter will only take effect if the
+// item is not in a shared drive and the request is attempting to
+// transfer the ownership of the item. If set to true, the item will be
+// moved to the new owner's My Drive root folder and all prior parents
+// removed. If set to false, parents are not changed.
+func (c *PermissionsCreateCall) MoveToNewOwnersRoot(moveToNewOwnersRoot bool) *PermissionsCreateCall {
+	c.urlParams_.Set("moveToNewOwnersRoot", fmt.Sprint(moveToNewOwnersRoot))
+	return c
+}
+
 // SendNotificationEmail sets the optional parameter
 // "sendNotificationEmail": Whether to send a notification email when
 // sharing to users or groups. This defaults to true for users and
@@ -7822,10 +9153,8 @@ func (c *PermissionsCreateCall) SendNotificationEmail(sendNotificationEmail bool
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *PermissionsCreateCall) SupportsAllDrives(supportsAllDrives bool) *PermissionsCreateCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -7841,7 +9170,12 @@ func (c *PermissionsCreateCall) SupportsTeamDrives(supportsTeamDrives bool) *Per
 // TransferOwnership sets the optional parameter "transferOwnership":
 // Whether to transfer ownership to the specified user and downgrade the
 // current owner to a writer. This parameter is required as an
-// acknowledgement of the side effect.
+// acknowledgement of the side effect. File owners can only transfer
+// ownership of files existing on My Drive. Files existing in a shared
+// drive are owned by the organization that owns that shared drive.
+// Ownership transfers are not supported for files and folders in shared
+// drives. Organizers of a shared drive can move items from that shared
+// drive into their My Drive which transfers the ownership to them.
 func (c *PermissionsCreateCall) TransferOwnership(transferOwnership bool) *PermissionsCreateCall {
 	c.urlParams_.Set("transferOwnership", fmt.Sprint(transferOwnership))
 	return c
@@ -7884,7 +9218,7 @@ func (c *PermissionsCreateCall) Header() http.Header {
 
 func (c *PermissionsCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -7924,17 +9258,17 @@ func (c *PermissionsCreateCall) Do(opts ...googleapi.CallOption) (*Permission, e
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Permission{
 		ServerResponse: googleapi.ServerResponse{
@@ -7948,7 +9282,7 @@ func (c *PermissionsCreateCall) Do(opts ...googleapi.CallOption) (*Permission, e
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a permission for a file or shared drive.",
+	//   "description": "Creates a permission for a file or shared drive. For more information on creating permissions, see Share files, folders \u0026 drives.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.permissions.create",
 	//   "parameterOrder": [
@@ -7960,11 +9294,23 @@ func (c *PermissionsCreateCall) Do(opts ...googleapi.CallOption) (*Permission, e
 	//       "location": "query",
 	//       "type": "string"
 	//     },
+	//     "enforceSingleParent": {
+	//       "default": "false",
+	//       "description": "Deprecated. See moveToNewOwnersRoot for details.",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     },
 	//     "fileId": {
 	//       "description": "The ID of the file or shared drive.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
+	//     },
+	//     "moveToNewOwnersRoot": {
+	//       "default": "false",
+	//       "description": "This parameter will only take effect if the item is not in a shared drive and the request is attempting to transfer the ownership of the item. If set to true, the item will be moved to the new owner's My Drive root folder and all prior parents removed. If set to false, parents are not changed.",
+	//       "location": "query",
+	//       "type": "boolean"
 	//     },
 	//     "sendNotificationEmail": {
 	//       "description": "Whether to send a notification email when sharing to users or groups. This defaults to true for users and groups, and is not allowed for other requests. It must not be disabled for ownership transfers.",
@@ -7973,7 +9319,7 @@ func (c *PermissionsCreateCall) Do(opts ...googleapi.CallOption) (*Permission, e
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -7985,7 +9331,7 @@ func (c *PermissionsCreateCall) Do(opts ...googleapi.CallOption) (*Permission, e
 	//     },
 	//     "transferOwnership": {
 	//       "default": "false",
-	//       "description": "Whether to transfer ownership to the specified user and downgrade the current owner to a writer. This parameter is required as an acknowledgement of the side effect.",
+	//       "description": "Whether to transfer ownership to the specified user and downgrade the current owner to a writer. This parameter is required as an acknowledgement of the side effect. File owners can only transfer ownership of files existing on My Drive. Files existing in a shared drive are owned by the organization that owns that shared drive. Ownership transfers are not supported for files and folders in shared drives. Organizers of a shared drive can move items from that shared drive into their My Drive which transfers the ownership to them.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -8023,6 +9369,9 @@ type PermissionsDeleteCall struct {
 }
 
 // Delete: Deletes a permission.
+//
+// - fileId: The ID of the file or shared drive.
+// - permissionId: The ID of the permission.
 func (r *PermissionsService) Delete(fileId string, permissionId string) *PermissionsDeleteCall {
 	c := &PermissionsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -8031,10 +9380,8 @@ func (r *PermissionsService) Delete(fileId string, permissionId string) *Permiss
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *PermissionsDeleteCall) SupportsAllDrives(supportsAllDrives bool) *PermissionsDeleteCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -8084,7 +9431,7 @@ func (c *PermissionsDeleteCall) Header() http.Header {
 
 func (c *PermissionsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8115,7 +9462,7 @@ func (c *PermissionsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -8141,7 +9488,7 @@ func (c *PermissionsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -8180,6 +9527,9 @@ type PermissionsGetCall struct {
 }
 
 // Get: Gets a permission by ID.
+//
+// - fileId: The ID of the file.
+// - permissionId: The ID of the permission.
 func (r *PermissionsService) Get(fileId string, permissionId string) *PermissionsGetCall {
 	c := &PermissionsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -8188,10 +9538,8 @@ func (r *PermissionsService) Get(fileId string, permissionId string) *Permission
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *PermissionsGetCall) SupportsAllDrives(supportsAllDrives bool) *PermissionsGetCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -8251,7 +9599,7 @@ func (c *PermissionsGetCall) Header() http.Header {
 
 func (c *PermissionsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8290,17 +9638,17 @@ func (c *PermissionsGetCall) Do(opts ...googleapi.CallOption) (*Permission, erro
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Permission{
 		ServerResponse: googleapi.ServerResponse{
@@ -8336,7 +9684,7 @@ func (c *PermissionsGetCall) Do(opts ...googleapi.CallOption) (*Permission, erro
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -8381,9 +9729,20 @@ type PermissionsListCall struct {
 }
 
 // List: Lists a file's or shared drive's permissions.
+//
+// - fileId: The ID of the file or shared drive.
 func (r *PermissionsService) List(fileId string) *PermissionsListCall {
 	c := &PermissionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
+	return c
+}
+
+// IncludePermissionsForView sets the optional parameter
+// "includePermissionsForView": Specifies which additional view's
+// permissions to include in the response. Only 'published' is
+// supported.
+func (c *PermissionsListCall) IncludePermissionsForView(includePermissionsForView string) *PermissionsListCall {
+	c.urlParams_.Set("includePermissionsForView", includePermissionsForView)
 	return c
 }
 
@@ -8405,10 +9764,8 @@ func (c *PermissionsListCall) PageToken(pageToken string) *PermissionsListCall {
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *PermissionsListCall) SupportsAllDrives(supportsAllDrives bool) *PermissionsListCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -8468,7 +9825,7 @@ func (c *PermissionsListCall) Header() http.Header {
 
 func (c *PermissionsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8506,17 +9863,17 @@ func (c *PermissionsListCall) Do(opts ...googleapi.CallOption) (*PermissionList,
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &PermissionList{
 		ServerResponse: googleapi.ServerResponse{
@@ -8543,6 +9900,11 @@ func (c *PermissionsListCall) Do(opts ...googleapi.CallOption) (*PermissionList,
 	//       "required": true,
 	//       "type": "string"
 	//     },
+	//     "includePermissionsForView": {
+	//       "description": "Specifies which additional view's permissions to include in the response. Only 'published' is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "pageSize": {
 	//       "description": "The maximum number of permissions to return per page. When not set for files in a shared drive, at most 100 results will be returned. When not set for files that are not in a shared drive, the entire list will be returned.",
 	//       "format": "int32",
@@ -8558,7 +9920,7 @@ func (c *PermissionsListCall) Do(opts ...googleapi.CallOption) (*PermissionList,
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -8625,6 +9987,9 @@ type PermissionsUpdateCall struct {
 }
 
 // Update: Updates a permission with patch semantics.
+//
+// - fileId: The ID of the file or shared drive.
+// - permissionId: The ID of the permission.
 func (r *PermissionsService) Update(fileId string, permissionId string, permission *Permission) *PermissionsUpdateCall {
 	c := &PermissionsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -8641,10 +10006,8 @@ func (c *PermissionsUpdateCall) RemoveExpiration(removeExpiration bool) *Permiss
 }
 
 // SupportsAllDrives sets the optional parameter "supportsAllDrives":
-// Deprecated - Whether the requesting application supports both My
-// Drives and shared drives. This parameter will only be effective until
-// June 1, 2020. Afterwards all applications are assumed to support
-// shared drives.
+// Whether the requesting application supports both My Drives and shared
+// drives.
 func (c *PermissionsUpdateCall) SupportsAllDrives(supportsAllDrives bool) *PermissionsUpdateCall {
 	c.urlParams_.Set("supportsAllDrives", fmt.Sprint(supportsAllDrives))
 	return c
@@ -8660,7 +10023,12 @@ func (c *PermissionsUpdateCall) SupportsTeamDrives(supportsTeamDrives bool) *Per
 // TransferOwnership sets the optional parameter "transferOwnership":
 // Whether to transfer ownership to the specified user and downgrade the
 // current owner to a writer. This parameter is required as an
-// acknowledgement of the side effect.
+// acknowledgement of the side effect. File owners can only transfer
+// ownership of files existing on My Drive. Files existing in a shared
+// drive are owned by the organization that owns that shared drive.
+// Ownership transfers are not supported for files and folders in shared
+// drives. Organizers of a shared drive can move items from that shared
+// drive into their My Drive which transfers the ownership to them.
 func (c *PermissionsUpdateCall) TransferOwnership(transferOwnership bool) *PermissionsUpdateCall {
 	c.urlParams_.Set("transferOwnership", fmt.Sprint(transferOwnership))
 	return c
@@ -8703,7 +10071,7 @@ func (c *PermissionsUpdateCall) Header() http.Header {
 
 func (c *PermissionsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8744,17 +10112,17 @@ func (c *PermissionsUpdateCall) Do(opts ...googleapi.CallOption) (*Permission, e
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Permission{
 		ServerResponse: googleapi.ServerResponse{
@@ -8796,7 +10164,7 @@ func (c *PermissionsUpdateCall) Do(opts ...googleapi.CallOption) (*Permission, e
 	//     },
 	//     "supportsAllDrives": {
 	//       "default": "false",
-	//       "description": "Deprecated - Whether the requesting application supports both My Drives and shared drives. This parameter will only be effective until June 1, 2020. Afterwards all applications are assumed to support shared drives.",
+	//       "description": "Whether the requesting application supports both My Drives and shared drives.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -8808,7 +10176,7 @@ func (c *PermissionsUpdateCall) Do(opts ...googleapi.CallOption) (*Permission, e
 	//     },
 	//     "transferOwnership": {
 	//       "default": "false",
-	//       "description": "Whether to transfer ownership to the specified user and downgrade the current owner to a writer. This parameter is required as an acknowledgement of the side effect.",
+	//       "description": "Whether to transfer ownership to the specified user and downgrade the current owner to a writer. This parameter is required as an acknowledgement of the side effect. File owners can only transfer ownership of files existing on My Drive. Files existing in a shared drive are owned by the organization that owns that shared drive. Ownership transfers are not supported for files and folders in shared drives. Organizers of a shared drive can move items from that shared drive into their My Drive which transfers the ownership to them.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -8846,7 +10214,10 @@ type RepliesCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a new reply to a comment.
+// Create: Creates a reply to a comment.
+//
+// - commentId: The ID of the comment.
+// - fileId: The ID of the file.
 func (r *RepliesService) Create(fileId string, commentId string, reply *Reply) *RepliesCreateCall {
 	c := &RepliesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -8882,7 +10253,7 @@ func (c *RepliesCreateCall) Header() http.Header {
 
 func (c *RepliesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -8923,17 +10294,17 @@ func (c *RepliesCreateCall) Do(opts ...googleapi.CallOption) (*Reply, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Reply{
 		ServerResponse: googleapi.ServerResponse{
@@ -8947,7 +10318,7 @@ func (c *RepliesCreateCall) Do(opts ...googleapi.CallOption) (*Reply, error) {
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new reply to a comment.",
+	//   "description": "Creates a reply to a comment.",
 	//   "httpMethod": "POST",
 	//   "id": "drive.replies.create",
 	//   "parameterOrder": [
@@ -8996,6 +10367,10 @@ type RepliesDeleteCall struct {
 }
 
 // Delete: Deletes a reply.
+//
+// - commentId: The ID of the comment.
+// - fileId: The ID of the file.
+// - replyId: The ID of the reply.
 func (r *RepliesService) Delete(fileId string, commentId string, replyId string) *RepliesDeleteCall {
 	c := &RepliesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -9031,7 +10406,7 @@ func (c *RepliesDeleteCall) Header() http.Header {
 
 func (c *RepliesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -9063,7 +10438,7 @@ func (c *RepliesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -9118,6 +10493,10 @@ type RepliesGetCall struct {
 }
 
 // Get: Gets a reply by ID.
+//
+// - commentId: The ID of the comment.
+// - fileId: The ID of the file.
+// - replyId: The ID of the reply.
 func (r *RepliesService) Get(fileId string, commentId string, replyId string) *RepliesGetCall {
 	c := &RepliesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -9171,7 +10550,7 @@ func (c *RepliesGetCall) Header() http.Header {
 
 func (c *RepliesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -9211,17 +10590,17 @@ func (c *RepliesGetCall) Do(opts ...googleapi.CallOption) (*Reply, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Reply{
 		ServerResponse: googleapi.ServerResponse{
@@ -9295,6 +10674,9 @@ type RepliesListCall struct {
 }
 
 // List: Lists a comment's replies.
+//
+// - commentId: The ID of the comment.
+// - fileId: The ID of the file.
 func (r *RepliesService) List(fileId string, commentId string) *RepliesListCall {
 	c := &RepliesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -9362,7 +10744,7 @@ func (c *RepliesListCall) Header() http.Header {
 
 func (c *RepliesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -9401,17 +10783,17 @@ func (c *RepliesListCall) Do(opts ...googleapi.CallOption) (*ReplyList, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ReplyList{
 		ServerResponse: googleapi.ServerResponse{
@@ -9514,6 +10896,10 @@ type RepliesUpdateCall struct {
 }
 
 // Update: Updates a reply with patch semantics.
+//
+// - commentId: The ID of the comment.
+// - fileId: The ID of the file.
+// - replyId: The ID of the reply.
 func (r *RepliesService) Update(fileId string, commentId string, replyId string, reply *Reply) *RepliesUpdateCall {
 	c := &RepliesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -9550,7 +10936,7 @@ func (c *RepliesUpdateCall) Header() http.Header {
 
 func (c *RepliesUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -9592,17 +10978,17 @@ func (c *RepliesUpdateCall) Do(opts ...googleapi.CallOption) (*Reply, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Reply{
 		ServerResponse: googleapi.ServerResponse{
@@ -9674,6 +11060,9 @@ type RevisionsDeleteCall struct {
 // revisions for files with binary content in Google Drive, like images
 // or videos. Revisions for other files, like Google Docs or Sheets, and
 // the last remaining file version can't be deleted.
+//
+// - fileId: The ID of the file.
+// - revisionId: The ID of the revision.
 func (r *RevisionsService) Delete(fileId string, revisionId string) *RevisionsDeleteCall {
 	c := &RevisionsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -9708,7 +11097,7 @@ func (c *RevisionsDeleteCall) Header() http.Header {
 
 func (c *RevisionsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -9739,7 +11128,7 @@ func (c *RevisionsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -9787,6 +11176,9 @@ type RevisionsGetCall struct {
 }
 
 // Get: Gets a revision's metadata or content by ID.
+//
+// - fileId: The ID of the file.
+// - revisionId: The ID of the revision.
 func (r *RevisionsService) Get(fileId string, revisionId string) *RevisionsGetCall {
 	c := &RevisionsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -9840,7 +11232,7 @@ func (c *RevisionsGetCall) Header() http.Header {
 
 func (c *RevisionsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -9874,9 +11266,9 @@ func (c *RevisionsGetCall) Download(opts ...googleapi.CallOption) (*http.Respons
 	if err != nil {
 		return nil, err
 	}
-	if err := googleapi.CheckMediaResponse(res); err != nil {
+	if err := googleapi.CheckResponse(res); err != nil {
 		res.Body.Close()
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	return res, nil
 }
@@ -9895,17 +11287,17 @@ func (c *RevisionsGetCall) Do(opts ...googleapi.CallOption) (*Revision, error) {
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Revision{
 		ServerResponse: googleapi.ServerResponse{
@@ -9977,6 +11369,8 @@ type RevisionsListCall struct {
 }
 
 // List: Lists a file's revisions.
+//
+// - fileId: The ID of the file.
 func (r *RevisionsService) List(fileId string) *RevisionsListCall {
 	c := &RevisionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -10035,7 +11429,7 @@ func (c *RevisionsListCall) Header() http.Header {
 
 func (c *RevisionsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -10073,17 +11467,17 @@ func (c *RevisionsListCall) Do(opts ...googleapi.CallOption) (*RevisionList, err
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &RevisionList{
 		ServerResponse: googleapi.ServerResponse{
@@ -10176,6 +11570,9 @@ type RevisionsUpdateCall struct {
 }
 
 // Update: Updates a revision with patch semantics.
+//
+// - fileId: The ID of the file.
+// - revisionId: The ID of the revision.
 func (r *RevisionsService) Update(fileId string, revisionId string, revision *Revision) *RevisionsUpdateCall {
 	c := &RevisionsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.fileId = fileId
@@ -10211,7 +11608,7 @@ func (c *RevisionsUpdateCall) Header() http.Header {
 
 func (c *RevisionsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -10252,17 +11649,17 @@ func (c *RevisionsUpdateCall) Do(opts ...googleapi.CallOption) (*Revision, error
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &Revision{
 		ServerResponse: googleapi.ServerResponse{
@@ -10324,6 +11721,13 @@ type TeamdrivesCreateCall struct {
 }
 
 // Create: Deprecated use drives.create instead.
+//
+//   - requestId: An ID, such as a random UUID, which uniquely identifies
+//     this user's request for idempotent creation of a Team Drive. A
+//     repeated request by the same user and with the same request ID will
+//     avoid creating duplicates by attempting to create the same Team
+//     Drive. If the Team Drive already exists a 409 error will be
+//     returned.
 func (r *TeamdrivesService) Create(requestId string, teamdrive *TeamDrive) *TeamdrivesCreateCall {
 	c := &TeamdrivesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.urlParams_.Set("requestId", requestId)
@@ -10358,7 +11762,7 @@ func (c *TeamdrivesCreateCall) Header() http.Header {
 
 func (c *TeamdrivesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -10395,17 +11799,17 @@ func (c *TeamdrivesCreateCall) Do(opts ...googleapi.CallOption) (*TeamDrive, err
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &TeamDrive{
 		ServerResponse: googleapi.ServerResponse{
@@ -10458,6 +11862,8 @@ type TeamdrivesDeleteCall struct {
 }
 
 // Delete: Deprecated use drives.delete instead.
+//
+// - teamDriveId: The ID of the Team Drive.
 func (r *TeamdrivesService) Delete(teamDriveId string) *TeamdrivesDeleteCall {
 	c := &TeamdrivesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.teamDriveId = teamDriveId
@@ -10491,7 +11897,7 @@ func (c *TeamdrivesDeleteCall) Header() http.Header {
 
 func (c *TeamdrivesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -10521,7 +11927,7 @@ func (c *TeamdrivesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return err
+		return gensupport.WrapError(err)
 	}
 	return nil
 	// {
@@ -10559,6 +11965,8 @@ type TeamdrivesGetCall struct {
 }
 
 // Get: Deprecated use drives.get instead.
+//
+// - teamDriveId: The ID of the Team Drive.
 func (r *TeamdrivesService) Get(teamDriveId string) *TeamdrivesGetCall {
 	c := &TeamdrivesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.teamDriveId = teamDriveId
@@ -10611,7 +12019,7 @@ func (c *TeamdrivesGetCall) Header() http.Header {
 
 func (c *TeamdrivesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -10649,17 +12057,17 @@ func (c *TeamdrivesGetCall) Do(opts ...googleapi.CallOption) (*TeamDrive, error)
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &TeamDrive{
 		ServerResponse: googleapi.ServerResponse{
@@ -10788,7 +12196,7 @@ func (c *TeamdrivesListCall) Header() http.Header {
 
 func (c *TeamdrivesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -10823,17 +12231,17 @@ func (c *TeamdrivesListCall) Do(opts ...googleapi.CallOption) (*TeamDriveList, e
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &TeamDriveList{
 		ServerResponse: googleapi.ServerResponse{
@@ -10922,6 +12330,8 @@ type TeamdrivesUpdateCall struct {
 }
 
 // Update: Deprecated use drives.update instead
+//
+// - teamDriveId: The ID of the Team Drive.
 func (r *TeamdrivesService) Update(teamDriveId string, teamdrive *TeamDrive) *TeamdrivesUpdateCall {
 	c := &TeamdrivesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.teamDriveId = teamDriveId
@@ -10965,7 +12375,7 @@ func (c *TeamdrivesUpdateCall) Header() http.Header {
 
 func (c *TeamdrivesUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/1.11.0 gdcl/20191216")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -11005,17 +12415,17 @@ func (c *TeamdrivesUpdateCall) Do(opts ...googleapi.CallOption) (*TeamDrive, err
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &TeamDrive{
 		ServerResponse: googleapi.ServerResponse{

@@ -15,6 +15,8 @@
 
 package view
 
+import "time"
+
 // AggType represents the type of aggregation function used on a View.
 type AggType int
 
@@ -45,20 +47,20 @@ type Aggregation struct {
 	Type    AggType   // Type is the AggType of this Aggregation.
 	Buckets []float64 // Buckets are the bucket endpoints if this Aggregation represents a distribution, see Distribution.
 
-	newData func() AggregationData
+	newData func(time.Time) AggregationData
 }
 
 var (
 	aggCount = &Aggregation{
 		Type: AggTypeCount,
-		newData: func() AggregationData {
-			return &CountData{}
+		newData: func(t time.Time) AggregationData {
+			return &CountData{Start: t}
 		},
 	}
 	aggSum = &Aggregation{
 		Type: AggTypeSum,
-		newData: func() AggregationData {
-			return &SumData{}
+		newData: func(t time.Time) AggregationData {
+			return &SumData{Start: t}
 		},
 	}
 )
@@ -82,15 +84,15 @@ func Sum() *Aggregation {
 // Distribution indicates that the desired aggregation is
 // a histogram distribution.
 //
-// An distribution aggregation may contain a histogram of the values in the
+// A distribution aggregation may contain a histogram of the values in the
 // population. The bucket boundaries for that histogram are described
 // by the bounds. This defines len(bounds)+1 buckets.
 //
 // If len(bounds) >= 2 then the boundaries for bucket index i are:
 //
-//     [-infinity, bounds[i]) for i = 0
-//     [bounds[i-1], bounds[i]) for 0 < i < length
-//     [bounds[i-1], +infinity) for i = length
+//	[-infinity, bounds[i]) for i = 0
+//	[bounds[i-1], bounds[i]) for 0 < i < length
+//	[bounds[i-1], +infinity) for i = length
 //
 // If len(bounds) is 0 then there is no histogram associated with the
 // distribution. There will be a single bucket with boundaries
@@ -99,13 +101,14 @@ func Sum() *Aggregation {
 // If len(bounds) is 1 then there is no finite buckets, and that single
 // element is the common boundary of the overflow and underflow buckets.
 func Distribution(bounds ...float64) *Aggregation {
-	return &Aggregation{
+	agg := &Aggregation{
 		Type:    AggTypeDistribution,
 		Buckets: bounds,
-		newData: func() AggregationData {
-			return newDistributionData(bounds)
-		},
 	}
+	agg.newData = func(t time.Time) AggregationData {
+		return newDistributionData(agg, t)
+	}
+	return agg
 }
 
 // LastValue only reports the last value recorded using this
@@ -113,7 +116,7 @@ func Distribution(bounds ...float64) *Aggregation {
 func LastValue() *Aggregation {
 	return &Aggregation{
 		Type: AggTypeLastValue,
-		newData: func() AggregationData {
+		newData: func(_ time.Time) AggregationData {
 			return &LastValueData{}
 		},
 	}
