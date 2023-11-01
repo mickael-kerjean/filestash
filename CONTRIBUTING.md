@@ -23,7 +23,7 @@ git clone https://github.com/mickael-kerjean/filestash
 cd filestash
 
 # Install dependencies
-npm install # frontend dependencies
+npm install --legacy-peer-deps # frontend dependencies
 make build_init # install the required static libraries
 mkdir -p ./dist/data/state/
 cp -R config ./dist/data/state/
