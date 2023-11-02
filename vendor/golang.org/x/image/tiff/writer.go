@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/binary"
+	"errors"
 	"image"
 	"io"
 	"sort"
@@ -279,7 +280,7 @@ type Options struct {
 	Compression CompressionType
 	// Predictor determines whether a differencing predictor is used;
 	// if true, instead of each pixel's color, the color difference to the
-	// preceding one is saved.  This improves the compression for certain
+	// preceding one is saved. This improves the compression for certain
 	// types of images and compressors. For example, it works well for
 	// photos with Deflate compression.
 	Predictor bool
@@ -338,6 +339,8 @@ func Encode(w io.Writer, m image.Image, opt *Options) error {
 		}
 	case cDeflate:
 		dst = zlib.NewWriter(&buf)
+	default:
+		return errors.New("tiff: unsupported compression")
 	}
 
 	pr := uint32(prNone)
