@@ -131,6 +131,57 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 			http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
 			return
 		}
+		header := res.Header()
+		preloadScripts := []string{
+			"/admin/boot/router_backoffice.js", "/admin/boot/router_backoffice.js", "/admin/boot/ctrl_boot_backoffice.js", "/admin/boot/common.js",
+			"/admin/pages/adminpage/decorator.js", "/admin/pages/adminpage/decorator_sidemenu.js", "/admin/pages/adminpage/decorator_admin_only.js",
+			"/admin/components/icon.js", "/admin/lib/locales.js", "/admin/lib/animate.js",
+			"/admin/lib/skeleton/router.js", "/admin/lib/skeleton/lifecycle.js",
+			"/admin/lib/vendor/rxjs-shared.min.js", "/admin/lib/vendor/rxjs-ajax.min.js", "/admin/lib/ajax.js",
+			"/admin/lib/rx.js", "/admin/lib/vendor/rxjs.min.js",
+		}
+		switch url {
+		case "/admin/backend":
+			preloadScripts = append(
+				preloadScripts,
+				"/admin/pages/adminpage/ctrl_backend.js", "/admin/pages/adminpage/ctrl_backend_component_storage.js", "/admin/pages/adminpage/ctrl_backend_component_authentication.js",
+				"/admin/model/config.js", "/admin/model/backend.js",
+				"/admin/pages/adminpage/model_backend.js", "/admin/pages/adminpage/model_auth_middleware.js",
+				"/admin/lib/random.js", "/admin/lib/form.js", "/admin/components/form.js",
+				"/admin/components/skeleton.js", "/admin/pages/adminpage/ctrl_backend_state.js", "/admin/pages/adminpage/component_box-item.js", "/admin/pages/adminpage/helper_form.js",
+			)
+		case "/admin/settings":
+			preloadScripts = append(
+				preloadScripts,
+				"/admin/pages/adminpage/ctrl_settings.js", "/admin/model/config.js",
+				"/admin/lib/random.js", "/admin/lib/form.js", "/admin/components/form.js",
+				"/admin/components/skeleton.js", "/admin/pages/adminpage/helper_form.js",
+			)
+		case "/admin/logs":
+			preloadScripts = append(
+				preloadScripts,
+				"/admin/pages/adminpage/ctrl_log.js", "/admin/model/config.js", "/admin/lib/random.js",
+				"/admin/pages/adminpage/helper_form.js", "/admin/pages/adminpage/model_log.js",
+				"/admin/pages/adminpage/ctrl_log_form.js", "/admin/pages/adminpage/ctrl_log_viewer.js", "/admin/pages/adminpage/ctrl_log_audit.js",
+				"/admin/lib/form.js", "/admin/components/form.js", "/admin/components/skeleton.js",
+			)
+		case "/admin/about":
+			preloadScripts = append(preloadScripts, "/admin/pages/adminpage/ctrl_about.js")
+		default:
+			preloadScripts = append(preloadScripts, "/admin/pages/ctrl_adminpage.js")
+		}
+		preloadScripts = append(
+			preloadScripts,
+			"/admin/pages/ctrl_error.js", "/admin/pages/adminpage/ctrl_login.js", "/admin/lib/dom.js", "/admin/lib/error.js",
+			"/admin/pages/adminpage/animate.js", "/admin/helpers/log.js", "/admin/helpers/loader.js",
+			"/admin/pages/adminpage/model_config.js", "/admin/pages/adminpage/model_admin_session.js", "/admin/pages/adminpage/model_release.js",
+			"/admin/pages/adminpage/model_audit.js",
+		)
+		for _, href := range preloadScripts {
+			header.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, href))
+		}
+		header.Add("Link", `</about>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
+
 		ServeFile(res, req, WWWPublic, "index.backoffice.html")
 		return
 	}

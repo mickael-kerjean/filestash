@@ -5,13 +5,14 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="/admin/assets/css/reset.css">
-        <script type="module" src="/admin/components/loader.js"></script>
         <title>Admin Console</title>
     </head>
     <body>
+        <script type="module" src="/admin/components/loader.js"></script>
         <div role="main" id="app">
             <component-loader delay="500"></component-loader>
         </div>
+
         <script type="module">
           import main from "/admin/lib/skeleton/index.js";
           import routes from "/admin/boot/router_backoffice.js";
@@ -32,91 +33,5 @@
                 <p>You need to enable Javascript to run this application</p>
             </div>
         </noscript>
-
-        <script>
-          window.PRELOAD = function(route) {
-              const $link = document.createElement("link");
-              $link.setAttribute("rel", "preload");
-              $link.setAttribute("as", "script");
-              $link.setAttribute("crossorigin", "anonymous");
-              $link.setAttribute("href", route);
-              document.head.appendChild($link);
-          };
-
-          PRELOAD("/admin/boot/router_backoffice.js");
-          PRELOAD("/admin/boot/router_backoffice.js");
-          PRELOAD("/admin/boot/ctrl_boot_backoffice.js");
-          PRELOAD("/admin/boot/common.js");
-          PRELOAD("/admin/pages/adminpage/decorator.js");
-          PRELOAD("/admin/pages/adminpage/decorator_sidemenu.js");
-          PRELOAD("/admin/pages/adminpage/decorator_admin_only.js");
-          PRELOAD("/admin/components/icon.js");
-          PRELOAD("/admin/lib/locales.js");
-          PRELOAD("/admin/lib/skeleton/router.js");
-          PRELOAD("/admin/lib/skeleton/lifecycle.js");
-          PRELOAD("/admin/lib/vendor/rxjs-shared.min.js");
-          PRELOAD("/admin/lib/vendor/rxjs-ajax.min.js");
-          PRELOAD("/admin/lib/ajax.js");
-          PRELOAD("/admin/lib/rx.js");
-          PRELOAD("/admin/lib/animate.js");
-
-          switch(location.pathname) {
-          case "/admin/backend":
-              PRELOAD("/admin/pages/adminpage/ctrl_backend.js");
-              PRELOAD("/admin/pages/adminpage/ctrl_backend_component_storage.js");
-              PRELOAD("/admin/pages/adminpage/ctrl_backend_component_authentication.js");
-              PRELOAD("/admin/model/config.js");
-              PRELOAD("/admin/model/backend.js");
-              PRELOAD("/admin/pages/adminpage/model_backend.js");
-              PRELOAD("/admin/pages/adminpage/model_auth_middleware.js");
-              PRELOAD("/admin/lib/random.js");
-              PRELOAD("/admin/lib/form.js");
-              PRELOAD("/admin/components/form.js");
-              PRELOAD("/admin/components/skeleton.js");
-              PRELOAD("/admin/pages/adminpage/ctrl_backend_state.js");
-              PRELOAD("/admin/pages/adminpage/component_box-item.js");
-              PRELOAD("/admin/pages/adminpage/helper_form.js");
-              break;
-          case "/admin/settings":
-              PRELOAD("/admin/pages/adminpage/ctrl_settings.js");
-              PRELOAD("/admin/model/config.js");
-              PRELOAD("/admin/lib/random.js");
-              PRELOAD("/admin/lib/form.js");
-              PRELOAD("/admin/components/form.js");
-              PRELOAD("/admin/components/skeleton.js");
-              PRELOAD("/admin/pages/adminpage/helper_form.js");
-              break;
-          case "/admin/logs":
-              PRELOAD("/admin/pages/adminpage/ctrl_log.js")
-              PRELOAD("/admin/model/config.js");
-              PRELOAD("/admin/lib/random.js");
-              PRELOAD("/admin/pages/adminpage/helper_form.js");
-              PRELOAD("/admin/pages/adminpage/model_log.js");
-              PRELOAD("/admin/pages/adminpage/ctrl_log_form.js");
-              PRELOAD("/admin/pages/adminpage/ctrl_log_viewer.js");
-              PRELOAD("/admin/pages/adminpage/ctrl_log_audit.js");
-              PRELOAD("/admin/lib/form.js");
-              PRELOAD("/admin/components/form.js");
-              PRELOAD("/admin/components/skeleton.js");
-              break;
-          case "/admin/about":
-              PRELOAD("/admin/pages/adminpage/ctrl_about.js");
-              break;
-          default:
-              PRELOAD("/admin/pages/ctrl_adminpage.js");
-          }
-
-          PRELOAD("/admin/pages/ctrl_error.js");
-          PRELOAD("/admin/pages/adminpage/ctrl_login.js");
-          PRELOAD("/admin/pages/adminpage/animate.js");
-
-          PRELOAD("/admin/helpers/log.js");
-          PRELOAD("/admin/helpers/loader.js");
-
-          PRELOAD("/admin/pages/adminpage/model_config.js");
-          PRELOAD("/admin/pages/adminpage/model_admin_session.js");
-          PRELOAD("/admin/pages/adminpage/model_release.js");
-          PRELOAD("/admin/pages/adminpage/model_audit.js");
-        </script>
     </body>
 </html>
