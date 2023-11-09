@@ -47,6 +47,8 @@
     "form": "application/x-form",
 	"gif": "image/gif",
 	"gz": "application/x-gzip",
+	"heic": "image/heic",
+	"heif": "image/heic",
 	"hqx": "application/mac-binhex40",
 	"htc": "text/x-component",
 	"htm": "text/html",

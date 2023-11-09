@@ -1,143 +1,131 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <png.h>
-#include <stdlib.h>
-#include "webp/encode.h"
+#include <webp/encode.h>
 #include "utils.h"
 
-static int MyWriter(const uint8_t* data, size_t data_size, const WebPPicture* const pic) {
-  FILE* const out = (FILE*)pic->custom_ptr;
-  return data_size ? (fwrite(data, data_size, 1, out) == 1) : 1;
+void png_read_error(png_structp png_ptr, png_const_charp error_msg) {
+  longjmp(png_jmpbuf(png_ptr), 1);
 }
 
-int png_to_webp(FILE* input, FILE* output, int targetSize) {
-    WebPPicture picture;
+void png_read_warning(png_structp png_ptr, png_const_charp warning_msg) {
+  longjmp(png_jmpbuf(png_ptr), 1);
+}
 
+int png_to_webp(int inputDesc, int outputDesc, int targetSize) {
 #ifdef HAS_DEBUG
   clock_t t;
   t = clock();
 #endif
-  png_image image;
-  memset(&image, 0, sizeof image);
-  image.version = PNG_IMAGE_VERSION;
-  DEBUG("reading png");
-  if (!png_image_begin_read_from_stdio(&image, input)) {
-    ERROR("png_image_begin_read_from_stdio");
-    return 1;
+  if (targetSize < 0 ) {
+    targetSize = -targetSize;
   }
-  DEBUG("allocate");
-  png_bytep buffer;
-  image.format = PNG_FORMAT_RGBA;
-  buffer = malloc(PNG_IMAGE_SIZE(image));
-  if (buffer == NULL) {
-    ERROR("png_malloc");
-    png_image_free(&image);
-    return 1;
-  }
-  DEBUG("start reading");
-  if (!png_image_finish_read(&image, NULL, buffer, 0, NULL)) {
-    ERROR("png_image_finish_read");
-    png_image_free(&image);
-    free(buffer);
+  int status = 0;
+  FILE* input = fdopen(inputDesc, "rb");
+  FILE* output = fdopen(outputDesc, "wb");
+  if (!input || !output) {
     return 1;
   }
 
-  /////////////////////////////////////////////
-  // encode to webp
-  DEBUG("start encoding");
-  if (!WebPPictureInit(&picture)) {
-    ERROR("WebPPictureInit");
-    png_image_free(&image);
-    free(buffer);
-    return 1;
+  // STEP1: setup png
+  png_structp png_ptr = NULL;
+  png_infop info_ptr = NULL;
+  if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, png_read_error, png_read_warning))) {
+    status = 1;
+    goto CLEANUP_AND_ABORT;
   }
-  picture.width = image.width;
-  picture.height = image.height;
-  if(!WebPPictureAlloc(&picture)) {
-    ERROR("WebPPictureAlloc");
-    png_image_free(&image);
-    free(buffer);
-    return 1;
+  if (!(info_ptr = png_create_info_struct(png_ptr))) {
+    status = 1;
+    goto CLEANUP_AND_ABORT_A;
   }
-  DEBUG("start encoding import");
-  WebPPictureImportRGBA(&picture, buffer, PNG_IMAGE_ROW_STRIDE(image));
-  png_image_free(&image);
-  free(buffer);
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    status = 1;
+    goto CLEANUP_AND_ABORT_B;
+  }
+  png_init_io(png_ptr, input);
+  png_read_info(png_ptr, info_ptr);
+  png_uint_32 width = png_get_image_width(png_ptr, info_ptr);
+  png_uint_32 height = png_get_image_height(png_ptr, info_ptr);
+  png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+  png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+  if (color_type == PNG_COLOR_TYPE_PALETTE) {
+    png_set_palette_to_rgb(png_ptr);
+  }
+  if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
+    png_set_expand_gray_1_2_4_to_8(png_ptr);
+  }
+  if (bit_depth == 16) {
+    png_set_strip_16(png_ptr);
+  }
+  png_read_update_info(png_ptr, info_ptr);
+  DEBUG("after png construct");
 
-  WebPConfig webp_config_output;
-  picture.writer = MyWriter;
-  picture.custom_ptr = output;
-  DEBUG("start encoding config init");
-  if (!WebPConfigInit(&webp_config_output)) {
-    ERROR("ERR config init");
-    WebPPictureFree(&picture);
-    return 1;
+  // STEP2: process the image
+  int scale_factor = width > targetSize ? width / targetSize : 1;
+  png_uint_32 thumb_width = width / scale_factor;
+  png_uint_32 thumb_height = height / scale_factor;
+  if (thumb_width == 0 || thumb_height == 0) {
+    ERROR("0 dimensions");
+    status = 1;
+    goto CLEANUP_AND_ABORT_B;
   }
-  webp_config_output.method = 0;
-  webp_config_output.quality = 30;
-  if (!WebPValidateConfig(&webp_config_output)) {
-    ERROR("ERR WEB VALIDATION");
-    WebPPictureFree(&picture);
-    return 1;
+  uint8_t* webp_image_data = (uint8_t*)malloc(thumb_width * thumb_height * 4);
+  if (!webp_image_data) {
+    ERROR("malloc error");
+    status = 1;
+    goto CLEANUP_AND_ABORT_B;
   }
-  DEBUG("rescale start");
-  if (image.width > targetSize && image.height > targetSize) {
-    float ratioHeight = (float) image.height / targetSize;
-    float ratioWidth = (float) image.width / targetSize;
-    float ratio = ratioWidth > ratioHeight ? ratioHeight : ratioWidth;
-    if (!WebPPictureRescale(&picture, image.width / ratio, image.height / ratio)) {
-      DEBUG("ERR Rescale");
-      WebPPictureFree(&picture);
-      return 1;
+  png_bytep row = (png_bytep)malloc(png_get_rowbytes(png_ptr, info_ptr));
+  if (!row) {
+    ERROR("malloc error");
+    status = 1;
+    goto CLEANUP_AND_ABORT_B;
+  }
+  DEBUG("after png malloc");
+  for (png_uint_32 y = 0; y < height; y++) {
+    png_read_row(png_ptr, row, NULL);
+    if (y % scale_factor == 0 && (y / scale_factor < thumb_height)) {
+      for (png_uint_32 x = 0; x < width; x += scale_factor) {
+        if (x / scale_factor < thumb_width) {
+          png_uint_32 thumb_x = x / scale_factor;
+          png_uint_32 thumb_y = y / scale_factor;
+          memcpy(webp_image_data + (thumb_y * thumb_width + thumb_x) * 4, row + x * 4, 4);
+        }
+      }
     }
   }
-  DEBUG("encoder start");
-  WebPEncode(&webp_config_output, &picture);
-  DEBUG("encoder done");
-  WebPPictureFree(&picture);
-  DEBUG("cleaning up");
-  return 0;
-}
+  DEBUG("after png process");
+  free(row);
+  png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+  DEBUG("after png cleanup");
 
-int png_to_png(FILE* input, FILE* output, int targetSize) {
-#ifdef HAS_DEBUG
-  clock_t t;
-  t = clock();
-#endif
-  png_image image;
-  memset(&image, 0, sizeof image);
-  image.version = PNG_IMAGE_VERSION;
-  DEBUG("> reading png");
-  if (!png_image_begin_read_from_stdio(&image, input)) {
-    DEBUG("png_image_begin_read_from_stdio");
-    return 1;
+  // STEP3: save as webp
+  uint8_t* webp_output_data = NULL;
+  size_t webp_output_size = WebPEncodeRGBA(webp_image_data, thumb_width, thumb_height, thumb_width * 4, 75, &webp_output_data);
+  free(webp_image_data);
+  DEBUG("after webp init");
+  if (webp_output_data == NULL) {
+    status = 1;
+    goto CLEANUP_AND_ABORT_B;
+  } else if (webp_output_size == 0) {
+    status = 1;
+    goto CLEANUP_AND_ABORT_C;
   }
-  DEBUG("> allocate");
-  png_bytep buffer;
-  image.format = PNG_FORMAT_RGBA;
-  buffer = malloc(PNG_IMAGE_SIZE(image));
-  if (buffer == NULL) {
-    DEBUG("png_malloc");
-    png_image_free(&image);
-    return 1;
-  }
-  DEBUG("> start reading");
-  if (!png_image_finish_read(&image, NULL, buffer, 0, NULL)) {
-    DEBUG("png_image_finish_read");
-    png_image_free(&image);
-    free(buffer);
-    return 1;
-  }
+  fwrite(webp_output_data, webp_output_size, 1, output);
+  DEBUG("after webp written");
 
-  DEBUG("> write");
-  if (!png_image_write_to_stdio(&image, output, 0, buffer, 0, NULL)) {
-    DEBUG("png_image_write_to_stdio");
-    png_image_free(&image);
-    free(buffer);
-    return 1;
-  }
+ CLEANUP_AND_ABORT_C:
+  if (webp_output_data != NULL) WebPFree(webp_output_data);
 
-  DEBUG("> end");
-  png_image_free(&image);
-  free(buffer);
-  return 0;
+ CLEANUP_AND_ABORT_B:
+  if (info_ptr != NULL) png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
+
+ CLEANUP_AND_ABORT_A:
+  if (png_ptr != NULL) png_destroy_read_struct(&png_ptr, (info_ptr != NULL) ? &info_ptr : NULL, NULL);
+
+ CLEANUP_AND_ABORT:
+  fclose(output);
+  fclose(input);
+  return status;
 }

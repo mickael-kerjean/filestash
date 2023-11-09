@@ -1,4 +1,4 @@
-#define HAS_DEBUG 1
+#define HAS_DEBUG 0
 #include <time.h>
 #if HAS_DEBUG == 1
 #define DEBUG(r) (fprintf(stderr,  "[DEBUG::('" r "')(%.2Fms)]", ((double)clock() - t)/CLOCKS_PER_SEC * 1000))
