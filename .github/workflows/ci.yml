@@ -10,8 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-      with:
-        persist-credentials: false
     - uses: actions/setup-node@v3
       with:
         node-version: 14.x
@@ -38,6 +36,8 @@ jobs:
         go-version: 1.19
     - name: Setup
       run: |
+        sudo apt install -y libraw-dev libjpeg-dev libpng-dev libheif-dev libwebp-dev libgif-dev
+        sudo apt install -y build-essential libstdc++6 libomp-dev
         mkdir -p ./dist/data/state/config
         cp config/config.json ./dist/data/state/config/
     - name: Build
@@ -51,31 +51,17 @@ jobs:
     - name: Verify
       run: timeout 5 ./dist/filestash || code=$?; if [[ $code -ne 124 ]]; then exit $code; fi
 
-  test_prepare:
+  test_frontend:
+    needs: [build_frontend, build_backend]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-      with:
-        persist-credentials: false
     - name: Clone test repo
-      env:
-        PAT: ${{ secrets.PAT }}
-      run: |
-        git clone --depth 1 https://mickael-kerjean:$PAT@github.com/mickael-kerjean/filestash-test test
-        chmod -R 777 ./test/
-    - uses: actions/upload-artifact@master
+      uses: actions/checkout@v3
       with:
-        name: test
-        path: .
-
-  test_frontend:
-    needs: test_prepare
-    runs-on: ubuntu-latest
-    steps:
-    - name: Restore
-      uses: actions/download-artifact@v3
-      with:
-        name: test
+        repository: mickael-kerjean/filestash-test
+        ssh-key: ${{ secrets.DEPLOY_KEY_FILESTASH_TEST }}
+        path: test
     - uses: actions/setup-node@v3
       with:
         node-version: 14.x
@@ -90,13 +76,16 @@ jobs:
         npm test
 
   test_backend:
-    needs: [test_prepare, build_frontend, build_backend]
+    needs: [build_frontend, build_backend]
     runs-on: ubuntu-latest
     steps:
-    - name: Restore
-      uses: actions/download-artifact@v3
+    - uses: actions/checkout@v3
+    - name: Clone test repo
+      uses: actions/checkout@v3
       with:
-        name: test
+        repository: mickael-kerjean/filestash-test
+        ssh-key: ${{ secrets.DEPLOY_KEY_FILESTASH_TEST }}
+        path: test
     - uses: actions/download-artifact@v3
       with:
         name: build-frontend
@@ -138,7 +127,7 @@ jobs:
          cat access.log | grep -vz "ERR"
 
   test_e2e:
-    needs: [test_smoke, test_prepare]
+    needs: [test_smoke]
     runs-on: ubuntu-latest
     container:
       image: machines/puppeteer
@@ -148,14 +137,17 @@ jobs:
         APP_URL: http://127.0.0.1:8334
         CI: true
     steps:
+    - uses: actions/checkout@v3
+    - name: Clone test repo
+      uses: actions/checkout@v3
+      with:
+        repository: mickael-kerjean/filestash-test
+        ssh-key: ${{ secrets.DEPLOY_KEY_FILESTASH_TEST }}
+        path: test
     - name: Restore Build
       uses: actions/download-artifact@v3
       with:
         name: build
-    - name: Restore Project
-      uses: actions/download-artifact@v3
-      with:
-        name: test
     - name: Setup
       run: |
         cd ./test/e2e
