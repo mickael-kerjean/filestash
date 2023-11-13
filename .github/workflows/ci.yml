@@ -75,6 +75,22 @@ jobs:
         cd ./test/unit_js
         npm test
 
+  verify_frontend:
+    needs: [build_frontend, build_backend]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 14.x
+    - name: Setup
+      run: cd public && npm install
+    - name: Run
+      run: |
+        cd public
+        npx eslint .
+        npx tsc
+
   test_backend:
     needs: [build_frontend, build_backend]
     runs-on: ubuntu-latest
