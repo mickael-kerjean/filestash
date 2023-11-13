@@ -195,7 +195,7 @@ jobs:
 
   release_docker_arm64:
     if: github.ref == 'refs/heads/master'
-    needs: [ test_e2e, test_backend, test_frontend ]
+    needs: [ test_backend, test_frontend ]
     runs-on: ubuntu-latest
     steps:
     - name: Init
