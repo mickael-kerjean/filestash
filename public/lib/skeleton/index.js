@@ -7,12 +7,13 @@ export { onDestroy } from "./lifecycle.js";
 let pageLoader;
 
 export default async function($root, routes, opts = {}) {
+    if (!$root) throw new Error("cannot find root element");
     window.addEventListener("pagechange", async() => {
         try {
             const route = currentRoute(routes, "");
             const [ctrl] = await Promise.all([
                 load(route, { ...opts, $root }),
-                $root.cleanup()
+                $root.cleanup(),
             ]);
             if (typeof ctrl !== "function") throw new Error(`Unknown route for ${route}`);
             pageLoader = ctrl(createRender($root));
@@ -39,9 +40,9 @@ async function load(route, opts) {
         } else if (typeof spinner === "string") {
             spinnerID = setTimeout(() => $root.innerHTML = spinner, spinnerTime);
         }
-        const module = window.env === "test" ?
-              require("../.." + route) :
-              await import("../.." + route);
+        const module = "env" in window && window.env === "test"
+            ? require("../.." + route)
+            : await import("../.." + route);
 
         clearTimeout(spinnerID);
         if (typeof module.default !== "function") {
@@ -53,10 +54,6 @@ async function load(route, opts) {
     return ctrl;
 }
 
-/**
- * @param {string} str
- * @return {HTMLElement}
- */
 export function createElement(str) {
     const $n = window.document.createElement("div");
     $n.innerHTML = str;
@@ -66,7 +63,7 @@ export function createElement(str) {
 
 export function createRender($parent) {
     return ($view) => {
-        if ($view instanceof window.Element) $parent.replaceChildren($view);
+        if ($view instanceof window.Element) $parent?.replaceChildren($view);
         else throw new Error(`Unknown view type: ${typeof $view}`);
     };
 }

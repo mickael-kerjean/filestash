@@ -3,9 +3,9 @@ export default function t(str = "", replacementString, requestedKey) {
         .replace(/ /g, "_")
         .replace(/[^a-zA-Z0-9\-\_\*\{\}\?]/g, "")
         .replace(/\_+$/, "");
-    const value = requestedKey === undefined ?
-        window.LNG && window.LNG[calculatedKey] :
-        window.LNG && window.LNG[requestedKey];
+    const value = requestedKey === undefined
+        ? window.LNG && window.LNG[calculatedKey]
+        : window.LNG && window.LNG[requestedKey];
     return reformat(
         value || str || "",
         str,

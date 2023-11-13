@@ -165,7 +165,7 @@ function componentStep2(render) {
             });
             qs($modal, "[type=\"checkbox\"]").oninput = (e) => {
                 if (!e.target.checked) return;
-                qs(document, "component-modal > div").click();
+                qs(document.body, "component-modal > div").click();
             };
         })),
         rxjs.filter(() => qs($modal, "[type=\"checkbox\"]").checked),

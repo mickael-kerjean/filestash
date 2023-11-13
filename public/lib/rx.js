@@ -17,11 +17,13 @@ const getFn = (obj, arg0, ...args) => {
     const next = obj[arg0];
     return getFn(next.bind ? next.bind(obj) : next, ...args);
 };
+
 export function applyMutation($node, ...keys) {
     if (!$node) throw new Error("undefined node");
     const execute = getFn($node, ...keys);
     return rxjs.tap((val) => Array.isArray(val) ? execute(...val) : execute(val));
 }
+
 export function applyMutations($node, ...keys) {
     if (!$node) throw new Error("undefined node");
     const execute = getFn($node, ...keys);

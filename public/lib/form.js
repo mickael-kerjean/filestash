@@ -9,7 +9,7 @@ export function mutateForm(formSpec, formState) {
 
         let ptr = formSpec;
         while (keys.length > 1) {
-            let k = keys.shift();
+            const k = keys.shift();
             if (!k) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing key");
             ptr = ptr[k];
         }

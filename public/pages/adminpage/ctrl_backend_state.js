@@ -75,7 +75,7 @@ export function getState() {
         formObjToJSON$(),
         rxjs.map((config) => { // connections
             const connections = [];
-            const formData = new FormData(qs(document, "[data-bind=\"backend-enabled\"]"));
+            const formData = new FormData(qs(document.body, "[data-bind=\"backend-enabled\"]"));
             for (const [type, label] of formData.entries()) {
                 connections.push({ type, label });
             }
@@ -93,7 +93,7 @@ export function getState() {
             };
             if (!authType) return config;
 
-            const $formIDP = document.querySelector("[data-bind=\"idp\"]")
+            const $formIDP = document.querySelector("[data-bind=\"idp\"]");
             if (!($formIDP instanceof window.HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: idp isn't a form");
             let formValues = [...new FormData($formIDP)];
             config.middleware.identity_provider = {
