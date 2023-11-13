@@ -28,6 +28,7 @@ import (
 func init() {
 	Hooks.Register.Thumbnailer("image/jpeg", &transcoder{runner(jpeg), "image/jpeg", -200})
 	Hooks.Register.Thumbnailer("image/png", &transcoder{runner(png), "image/webp", -200})
+	Hooks.Register.Thumbnailer("image/gif", &transcoder{runner(gif), "image/webp", -300})
 	Hooks.Register.Thumbnailer("image/heic", &transcoder{runner(heif), "image/jpeg", -200})
 	rawMimeType := []string{
 		"image/x-canon-cr2", "image/x-tif", "image/x-canon-cr2", "image/x-canon-crw",
@@ -89,31 +90,34 @@ func (this transcoder) Generate(reader io.ReadCloser, ctx *App, res *http.Respon
 func runner(fn func(uintptr, uintptr, int)) func(io.ReadCloser, int) (io.ReadCloser, error) {
 	return func(inputGo io.ReadCloser, size int) (io.ReadCloser, error) {
 		inputC, tmpw, err := os.Pipe()
+		logErrors(err, "plg_image_c::pipe")
 		if err != nil {
 			return nil, err
 		}
 		outputGo, outputC, err := os.Pipe()
+		logErrors(err, "plg_image_c::pipe")
 		if err != nil {
 			tmpw.Close()
-			Log.Stdout("ERR0 %+v", err.Error())
 			return nil, err
 		}
 
 		go func() {
 			fn(inputC.Fd(), outputC.Fd(), size) // <-- all this code so we can do that
-			inputC.Close()
-			outputC.Close()
+			logErrors(inputC.Close(), "plg_image_c::inputC")
+			logErrors(inputGo.Close(), "plg_image_c::inputGo")
+			logErrors(outputC.Close(), "plg_image_c::outputC")
 		}()
-		_, err = io.Copy(tmpw, inputGo)
-		inputGo.Close()
-		tmpw.Close()
-		if err != nil {
-			outputGo.Close()
-			Log.Stdout("ERR1 %+v", err.Error())
-			return nil, err
-		}
+		io.Copy(tmpw, inputGo)
+		logErrors(tmpw.Close(), "plg_image_c::tmpw")
 		return outputGo, nil
 	}
+}
+
+func logErrors(err error, msg string) {
+	if err == nil {
+		return
+	}
+	Log.Debug(msg + ": " + err.Error())
 }
 
 func contains(s []string, str string) bool {

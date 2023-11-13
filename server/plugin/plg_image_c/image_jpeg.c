@@ -6,17 +6,12 @@
 
 #define JPEG_QUALITY 50
 
-struct filestash_jpeg_error_mgr {
+typedef struct filestash_jpeg_error_mgr {
   struct jpeg_error_mgr pub;
   jmp_buf jmp;
-};
+} *filestash_jpeg_error_ptr;
 
-typedef struct filestash_jpeg_error_mgr *filestash_jpeg_error_ptr;
-
-void filestash_jpeg_error_exit (j_common_ptr cinfo) {
-  filestash_jpeg_error_ptr filestash_err = (filestash_jpeg_error_ptr) cinfo->err;
-  longjmp(filestash_err->jmp, 1);
-}
+void filestash_jpeg_error_exit (j_common_ptr cinfo);
 
 int jpeg_to_jpeg(int inputDesc, int outputDesc, int targetSize) {
 #ifdef HAS_DEBUG
@@ -123,8 +118,11 @@ int jpeg_to_jpeg(int inputDesc, int outputDesc, int targetSize) {
  CLEANUP_AND_ABORT:
   jpeg_destroy_decompress(&jpeg_config_input);
   jpeg_destroy_compress(&jpeg_config_output);
-  fclose(input);
-  fclose(output);
   DEBUG("final");
   return status;
+}
+
+void filestash_jpeg_error_exit (j_common_ptr cinfo) {
+  filestash_jpeg_error_ptr filestash_err = (filestash_jpeg_error_ptr) cinfo->err;
+  longjmp(filestash_err->jmp, 1);
 }

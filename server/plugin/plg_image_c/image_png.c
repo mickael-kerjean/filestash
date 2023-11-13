@@ -113,6 +113,7 @@ int png_to_webp(int inputDesc, int outputDesc, int targetSize) {
     goto CLEANUP_AND_ABORT_C;
   }
   fwrite(webp_output_data, webp_output_size, 1, output);
+  fflush(output);
   DEBUG("after webp written");
 
  CLEANUP_AND_ABORT_C:
@@ -125,7 +126,5 @@ int png_to_webp(int inputDesc, int outputDesc, int targetSize) {
   if (png_ptr != NULL) png_destroy_read_struct(&png_ptr, (info_ptr != NULL) ? &info_ptr : NULL, NULL);
 
  CLEANUP_AND_ABORT:
-  fclose(output);
-  fclose(input);
   return status;
 }
