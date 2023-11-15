@@ -19,6 +19,7 @@ WORKDIR /home/
 COPY --from=builder_frontend /home/ ./
 RUN apt-get update > /dev/null && \
     apt-get install -y libvips-dev curl make > /dev/null 2>&1 && \
+    apt-get install -y libjpeg-dev libtiff-dev libpng-dev libwebp-dev libraw-dev libheif-dev libgif-dev && \
     make build_init && \
     make build_backend && \
     mkdir -p ./dist/data/state/config/ && \
@@ -61,7 +62,7 @@ RUN apt-get update > /dev/null && \
     find /usr/share/emacs -name '*.pbm' | xargs rm -f && \
     find /usr/share/emacs -name '*.png' | xargs rm -f && \
     find /usr/share/emacs -name '*.xpm' | xargs rm -f
-    
+
 RUN useradd filestash && \
     chown -R filestash:filestash /app/ && \
     rm -rf /var/lib/apt/lists/* && \
