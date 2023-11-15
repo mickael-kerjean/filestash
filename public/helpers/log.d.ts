@@ -1,0 +1,1 @@
+export function report(msg: Event|string, error?: Error, link?: string, lineNo?: number, columnno?: number);

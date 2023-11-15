@@ -1,7 +1,7 @@
 import { onDestroy } from "./skeleton/index.js";
+import * as rxjs from "./vendor/rxjs.min.js";
 
 // https://github.com/ReactiveX/rxjs/issues/4416#issuecomment-620847759
-import * as rxjs from "./vendor/rxjs.min.js";
 import * as ajaxModule from "./vendor/rxjs-ajax.min.js";
 
 export default rxjs;

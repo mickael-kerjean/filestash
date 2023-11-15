@@ -27,9 +27,9 @@ export default async function(render) {
 
     // feature: nice transition
     render(transition($form, {
-        timeoutEnter: 250,
+        timeEnter: 250,
         enter: zoomIn(1.2),
-        timeoutLeave: 0
+        timeLeave: 0
     }));
 
     // feature: form interactions

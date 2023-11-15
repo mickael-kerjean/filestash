@@ -9,9 +9,10 @@ import "../components/loader.js";
 
 export default function(render) {
     const GET = new URLSearchParams(location.search);
-    if (GET.get("error")) {
+    const err = GET.get("error");
+    if (err) {
         ctrlError(new ApplicationError(
-            GET.get("error"),
+            err,
             GET.get("trace") || "server error from URL"
         ))(render);
         return;

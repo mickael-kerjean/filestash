@@ -6,6 +6,7 @@ interface IChromecast {
 
 declare global {
     interface Window {
+        env: string
         LNG: object;
         CONFIG: object;
         overrides: object;

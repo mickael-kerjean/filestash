@@ -5,7 +5,7 @@ export default function($root: HTMLElement | null, routes: object, opts: object)
 
 export function createElement(str: string): HTMLElement;
 
-export function createRender($parent: HTMLElement | null): ($page: HTMLElement) => void;
+export function createRender($parent: HTMLElement | null): (HTMLElement) => void;
 
 export function nop(): void
 

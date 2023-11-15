@@ -87,7 +87,7 @@ export default async function(render) {
             for (const key in availableSpecs) {
                 let idpSpec = availableSpecs[key];
                 delete idpSpec.type;
-                if (key === type) idpSpec = mutateForm(idpSpec, params);
+                if (key === type) idpSpec = mutateForm(idpSpec, params || {});
                 const $idp = await createForm({ [key]: idpSpec }, formTmpl({
                     renderLeaf,
                     autocomplete: false,

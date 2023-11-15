@@ -40,7 +40,7 @@ async function load(route, opts) {
         } else if (typeof spinner === "string") {
             spinnerID = setTimeout(() => $root.innerHTML = spinner, spinnerTime);
         }
-        const module = "env" in window && window.env === "test"
+        const module = window.env === "test"
             ? require("../.." + route)
             : await import("../.." + route);
 

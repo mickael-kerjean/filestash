@@ -14,7 +14,7 @@ export default async function main() {
     } catch (err) {
         console.error(err);
         const msg = window.navigator.onLine === false ? "OFFLINE" : (err.message || "CAN'T LOAD");
-        report(msg + " - " + (err && err.message), location.href);
+        report("boot::" + msg, err, location.href);
         $error(msg);
     }
 }
@@ -34,7 +34,7 @@ async function setup_device() {
 
 async function setup_blue_death_screen() {
     window.onerror = function(msg, url, lineNo, colNo, error) {
-        report(msg, url, lineNo, colNo, error);
+        report("boot::" + msg, error, url, lineNo, colNo);
         $error(msg);
     };
 }

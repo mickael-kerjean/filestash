@@ -94,12 +94,12 @@ async function createFormNodes(node, { renderNode, renderLeaf, renderInput, path
                     if (e.target.checked) {
                         animate($container, {
                             time: Math.max(50, Math.min(clientHeight, 150)),
-                            keyframes: [{ height: 0 }, { height: `${clientHeight}px` }]
+                            keyframes: [{ height: "0" }, { height: `${clientHeight}px` }]
                         });
                     } else {
                         animate($container, {
                             time: Math.max(25, Math.min(clientHeight, 75)),
-                            keyframes: [{ height: `${clientHeight}px` }, { height: 0 }]
+                            keyframes: [{ height: `${clientHeight}px` }, { height: "0" }]
                         });
                     }
                 };
