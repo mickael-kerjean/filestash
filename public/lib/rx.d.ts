@@ -1,4 +1,4 @@
-import { Observable, Observer } from "rx-core";
+import type { Observable, Observer } from "rx-core";
 
 import {
     fromEvent, startWith,
