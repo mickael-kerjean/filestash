@@ -178,7 +178,7 @@ jobs:
 
   release_docker_amd64:
     # if: github.ref == 'refs/heads/master'
-    needs: [ test_backend, test_frontend ]
+    needs: [ test_backend, test_frontend, test_smoke ]
     runs-on: ubuntu-latest
     steps:
     - name: Init
@@ -195,7 +195,7 @@ jobs:
 
   release_docker_arm64:
     if: github.ref == 'refs/heads/master'
-    needs: [ test_backend, test_frontend ]
+    needs: [ test_backend, test_frontend, test_smoke ]
     runs-on: ubuntu-latest
     steps:
     - name: Init
