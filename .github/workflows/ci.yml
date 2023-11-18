@@ -123,7 +123,7 @@ jobs:
       run: go test --tags "fts5" -count=1 $(go list ./server/... | grep -v "server/plugin" | grep -v "server/generator")
 
   test_smoke:
-    needs: build_backend
+    needs: [build_frontend, build_backend]
     runs-on: ubuntu-latest
     steps:
      - name: Init
