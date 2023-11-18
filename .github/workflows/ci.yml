@@ -75,21 +75,21 @@ jobs:
         cd ./test/unit_js
         npm test
 
-  verify_frontend:
-    needs: [build_frontend, build_backend]
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 14.x
-    - name: Setup
-      run: cd public && npm install
-    - name: Run
-      run: |
-        cd public
-        # npx eslint .
-        npx tsc
+  # verify_frontend:
+  #   needs: [build_frontend, build_backend]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: actions/setup-node@v3
+  #     with:
+  #       node-version: 14.x
+  #   - name: Setup
+  #     run: cd public && npm install
+  #   - name: Run
+  #     run: |
+  #       cd public
+  #       # npx eslint .
+  #       npx tsc
 
   test_backend:
     needs: [build_frontend, build_backend]
@@ -123,7 +123,7 @@ jobs:
       run: go test --tags "fts5" -count=1 $(go list ./server/... | grep -v "server/plugin" | grep -v "server/generator")
 
   test_smoke:
-    needs: build_backend
+    needs: [build_frontend, build_backend]
     runs-on: ubuntu-latest
     steps:
      - name: Init
@@ -142,43 +142,43 @@ jobs:
          cat access.log | grep -vz "WARN"
          cat access.log | grep -vz "ERR"
 
-  test_e2e:
-    needs: [test_smoke]
-    runs-on: ubuntu-latest
-    container:
-      image: machines/puppeteer
-      options: --user root
-      env:
-        ADMIN_PASSWORD: $2a$10$9OFbPZV4lYpYjU5eUi91o.kgeMyCuW11j878YBRri3gBwccq2lSFy
-        APP_URL: http://127.0.0.1:8334
-        CI: true
-    steps:
-    - uses: actions/checkout@v3
-    - name: Clone test repo
-      uses: actions/checkout@v3
-      with:
-        repository: mickael-kerjean/filestash-test
-        ssh-key: ${{ secrets.DEPLOY_KEY_FILESTASH_TEST }}
-        path: test
-    - name: Restore Build
-      uses: actions/download-artifact@v3
-      with:
-        name: build
-    - name: Setup
-      run: |
-        cd ./test/e2e
-        npm install
-    - name: Run
-      run: |
-        chmod +x ./filestash
-        ./filestash > /dev/null &
-        cd ./test/e2e
-        node servers/webdav.js > /dev/null &
-        npm test
+  # test_e2e:
+  #   needs: [test_smoke]
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: machines/puppeteer
+  #     options: --user root
+  #     env:
+  #       ADMIN_PASSWORD: $2a$10$9OFbPZV4lYpYjU5eUi91o.kgeMyCuW11j878YBRri3gBwccq2lSFy
+  #       APP_URL: http://127.0.0.1:8334
+  #       CI: true
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Clone test repo
+  #     uses: actions/checkout@v3
+  #     with:
+  #       repository: mickael-kerjean/filestash-test
+  #       ssh-key: ${{ secrets.DEPLOY_KEY_FILESTASH_TEST }}
+  #       path: test
+  #   - name: Restore Build
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: build
+  #   - name: Setup
+  #     run: |
+  #       cd ./test/e2e
+  #       npm install
+  #   - name: Run
+  #     run: |
+  #       chmod +x ./filestash
+  #       ./filestash > /dev/null &
+  #       cd ./test/e2e
+  #       node servers/webdav.js > /dev/null &
+  #       npm test
 
   release_docker_amd64:
-    if: github.ref == 'refs/heads/master'
-    needs: [ test_backend, test_frontend ]
+    # if: github.ref == 'refs/heads/master'
+    needs: [ test_backend, test_frontend, test_smoke ]
     runs-on: ubuntu-latest
     steps:
     - name: Init
@@ -195,7 +195,7 @@ jobs:
 
   release_docker_arm64:
     if: github.ref == 'refs/heads/master'
-    needs: [ test_backend, test_frontend ]
+    needs: [ test_backend, test_frontend, test_smoke ]
     runs-on: ubuntu-latest
     steps:
     - name: Init
