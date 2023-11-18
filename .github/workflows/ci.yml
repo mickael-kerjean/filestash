@@ -177,7 +177,7 @@ jobs:
   #       npm test
 
   release_docker_amd64:
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
     needs: [ test_backend, test_frontend ]
     runs-on: ubuntu-latest
     steps:
