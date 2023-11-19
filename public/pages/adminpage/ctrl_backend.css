@@ -26,7 +26,6 @@
     }
 }
 .component_dashboard .box-container .box-item > div {
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.25);
     margin: 3px;
     padding: 30px 0;
     text-align: center;
@@ -35,7 +34,9 @@
     font-size: 1.1em;
     text-transform: uppercase;
     border-radius: 2px;
-    background: var(--light);
+
+    background: rgba(0, 0, 0, 0.05);
+    border: 2px solid rgba(0, 0, 0, 0.05);
 }
 @media (max-width: 900px) {
     .component_dashboard .box-container .box-item > div {
