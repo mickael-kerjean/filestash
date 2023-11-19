@@ -100,7 +100,7 @@ export function $renderInput(options = {}) {
             $input.refresh = () => {
                 const _datalist = $input?.getAttribute("datalist")?.split(",");
                 $datalist.innerHTML = "";
-                multicomplete($input.getAttribute("value"), _datalist).forEach((value) => {
+                multicomplete($input.value, _datalist).forEach((value) => {
                     $datalist.appendChild(new Option(value));
                 });
             };
