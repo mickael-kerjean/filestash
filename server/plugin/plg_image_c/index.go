@@ -31,7 +31,7 @@ func init() {
 	Hooks.Register.Thumbnailer("image/gif", &transcoder{runner(gif), "image/webp", -300})
 	Hooks.Register.Thumbnailer("image/heic", &transcoder{runner(heif), "image/jpeg", -200})
 	Hooks.Register.Thumbnailer("image/webp", &transcoder{runner(webp), "image/webp", -200})
-
+	Hooks.Register.Thumbnailer("image/tiff", &transcoder{runner(tiff), "image/webp", -200})
 	rawMimeType := []string{
 		"image/x-canon-cr2", "image/x-tif", "image/x-canon-cr2", "image/x-canon-crw",
 		"image/x-nikon-nef", "image/x-nikon-nrw", "image/x-sony-arw", "image/x-sony-sr2",
