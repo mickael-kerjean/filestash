@@ -123,6 +123,7 @@
 	"prc": "application/x-pilot",
 	"properties": "text/x-ini",
 	"ps": "application/postscript",
+	"psd": "image/vnd.adobe.photoshop",
 	"ra": "audio/x-realaudio",
 	"raf": "image/x-fuji-raf",
 	"ram": "audio/x-pn-realaudio",

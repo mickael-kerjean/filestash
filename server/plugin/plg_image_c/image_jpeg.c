@@ -19,8 +19,8 @@ int jpeg_to_jpeg(int inputDesc, int outputDesc, int targetSize) {
   t = clock();
 #endif
   int status = 0;
-  FILE* input = fdopen(inputDesc, "r");
-  FILE* output = fdopen(outputDesc, "w");
+  FILE* input = fdopen(inputDesc, "rb");
+  FILE* output = fdopen(outputDesc, "wb");
   if (!input || !output) {
     return 1;
   }

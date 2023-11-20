@@ -52,17 +52,17 @@ int png_to_webp(int inputDesc, int outputDesc, int targetSize) {
   if (color_type == PNG_COLOR_TYPE_PALETTE) {
     png_set_palette_to_rgb(png_ptr);
   }
-  if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
+  if (color_type == PNG_COLOR_TYPE_GRAY) {
     png_set_expand_gray_1_2_4_to_8(png_ptr);
   }
-  if (bit_depth == 16) {
-    png_set_strip_16(png_ptr);
+  if (color_type & PNG_COLOR_MASK_ALPHA) {
+    png_set_strip_alpha(png_ptr);
   }
   png_read_update_info(png_ptr, info_ptr);
   DEBUG("after png construct");
 
   // STEP2: process the image
-  int scale_factor = width > targetSize ? width / targetSize : 1;
+  int scale_factor = height > targetSize ? height / targetSize : 1;
   png_uint_32 thumb_width = width / scale_factor;
   png_uint_32 thumb_height = height / scale_factor;
   if (thumb_width == 0 || thumb_height == 0) {
@@ -70,7 +70,7 @@ int png_to_webp(int inputDesc, int outputDesc, int targetSize) {
     status = 1;
     goto CLEANUP_AND_ABORT_B;
   }
-  uint8_t* webp_image_data = (uint8_t*)malloc(thumb_width * thumb_height * 4);
+  uint8_t* webp_image_data = (uint8_t*)malloc(thumb_width * thumb_height * 3);
   if (!webp_image_data) {
     ERROR("malloc error");
     status = 1;
@@ -90,7 +90,7 @@ int png_to_webp(int inputDesc, int outputDesc, int targetSize) {
         if (x / scale_factor < thumb_width) {
           png_uint_32 thumb_x = x / scale_factor;
           png_uint_32 thumb_y = y / scale_factor;
-          memcpy(webp_image_data + (thumb_y * thumb_width + thumb_x) * 4, row + x * 4, 4);
+          memcpy(webp_image_data + (thumb_y * thumb_width + thumb_x) * 3, row + x * 3, 3);
         }
       }
     }
@@ -102,7 +102,7 @@ int png_to_webp(int inputDesc, int outputDesc, int targetSize) {
 
   // STEP3: save as webp
   uint8_t* webp_output_data = NULL;
-  size_t webp_output_size = WebPEncodeRGBA(webp_image_data, thumb_width, thumb_height, thumb_width * 4, 75, &webp_output_data);
+  size_t webp_output_size = WebPEncodeRGB(webp_image_data, thumb_width, thumb_height, thumb_width * 3, 75, &webp_output_data);
   free(webp_image_data);
   DEBUG("after webp init");
   if (webp_output_data == NULL) {
