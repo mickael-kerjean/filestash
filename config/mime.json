@@ -3,7 +3,7 @@
 	"3gp": "video/3gpp",
 	"3gpp": "video/3gpp",
 	"7z": "application/x-7z-compressed",
-	"ai": "application/postscript",
+	"ai": "application/pdf",
 	"aif": "audio/x-aiff",
 	"aiff": "audio/x-aiff",
 	"apk": "application/vnd.android.package-archive",

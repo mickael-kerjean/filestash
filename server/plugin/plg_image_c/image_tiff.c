@@ -4,7 +4,7 @@
 #include <webp/encode.h>
 #include "utils.h"
 
-#define BUF_SIZE 1024 * 128
+#define BUF_SIZE 1024 * 16
 
 int tiff_to_webp(int inputDesc, int outputDesc, int targetSize) {
 #ifdef HAS_DEBUG
