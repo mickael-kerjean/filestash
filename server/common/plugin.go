@@ -3,7 +3,10 @@ package common
 import (
 	"github.com/gorilla/mux"
 	"io"
+	"io/fs"
 	"net/http"
+	"path/filepath"
+	"strings"
 )
 
 type Plugin struct {
@@ -53,6 +56,35 @@ func (this Register) HttpEndpoint(fn func(*mux.Router, *App) error) {
 }
 func (this Get) HttpEndpoint() []func(*mux.Router, *App) error {
 	return http_endpoint
+}
+
+/*
+ * Override some urls with static content. The main use case for this is to enable
+ * plugins to change the frontend code and overwrite some core components
+ */
+func (this Register) Static(www fs.FS, chroot string) {
+	fs.WalkDir(www, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		} else if d.IsDir() {
+			return nil
+		}
+		this.HttpEndpoint(func(r *mux.Router, app *App) error {
+			r.PathPrefix("/" + strings.TrimPrefix(path, chroot)).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				f, err := www.Open(path)
+				if err != nil {
+					w.Header().Set("Content-Type", "text/plain")
+					w.Write([]byte("plugin.go::static::err " + err.Error()))
+					return
+				}
+				w.Header().Set("Content-Type", GetMimeType(filepath.Ext(path)))
+				io.Copy(w, f)
+				f.Close()
+			})
+			return nil
+		})
+		return nil
+	})
 }
 
 /*
