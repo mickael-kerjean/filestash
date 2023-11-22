@@ -13,7 +13,10 @@ var (
 	CYCLE_TIME         func() int
 	INDEXING_EXT       func() string
 	MAX_INDEXING_FSIZE func() int
-	INDEXING_EXCLUSION = []string{"/node_modules/", "/bower_components/", "/.cache/", "/.npm/", "/.git/"}
+	INDEXING_EXCLUSION = []string{
+		"/node_modules/", "/bower_components/",
+		"/.cache/", "/.npm/", "/.git/",
+	}
 )
 
 func init() {
@@ -24,7 +27,10 @@ func init() {
 			}
 			f.Name = "enable"
 			f.Type = "enable"
-			f.Target = []string{"process_max", "process_par", "reindex_time", "cycle_time", "max_size", "indexer_ext"}
+			f.Target = []string{
+				"process_max", "process_par", "reindex_time",
+				"cycle_time", "max_size", "indexer_ext",
+			}
 			f.Description = "Enable/Disable full text search"
 			f.Placeholder = "Default: false"
 			f.Default = false
@@ -114,7 +120,7 @@ func init() {
 			}
 			f.Id = "indexer_ext"
 			f.Name = "indexer_ext"
-			f.Type = "string"
+			f.Type = "text"
 			f.Description = "File extension we want to see indexed"
 			f.Placeholder = "Default: org,txt,docx,pdf,md,form"
 			f.Default = "org,txt,docx,pdf,md,form"

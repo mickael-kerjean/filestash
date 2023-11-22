@@ -75,39 +75,39 @@ func (this SqliteSearch) Query(app App, path string, keyword string) ([]IFile, e
 
 type SearchHint struct{}
 
-func (this SearchHint) Ls(ctx App, path string) error {
-	go SProc.HintLs(&ctx, path)
+func (this SearchHint) Ls(ctx *App, path string) error {
+	go SProc.HintLs(ctx, path)
 	return nil
 }
 
-func (this SearchHint) Cat(ctx App, path string) error {
-	go SProc.HintLs(&ctx, filepath.Dir(path)+"/")
+func (this SearchHint) Cat(ctx *App, path string) error {
+	go SProc.HintLs(ctx, filepath.Dir(path)+"/")
 	return nil
 }
 
-func (this SearchHint) Mkdir(ctx App, path string) error {
-	go SProc.HintLs(&ctx, filepath.Dir(path)+"/")
+func (this SearchHint) Mkdir(ctx *App, path string) error {
+	go SProc.HintLs(ctx, filepath.Dir(path)+"/")
 	return nil
 }
 
-func (this SearchHint) Rm(ctx App, path string) error {
-	go SProc.HintRm(&ctx, path)
+func (this SearchHint) Rm(ctx *App, path string) error {
+	go SProc.HintRm(ctx, path)
 	return nil
 }
 
-func (this SearchHint) Mv(ctx App, from string, to string) error {
-	go SProc.HintRm(&ctx, filepath.Dir(from)+"/")
-	go SProc.HintLs(&ctx, filepath.Dir(to)+"/")
+func (this SearchHint) Mv(ctx *App, from string, to string) error {
+	go SProc.HintRm(ctx, filepath.Dir(from)+"/")
+	go SProc.HintLs(ctx, filepath.Dir(to)+"/")
 	return nil
 }
 
-func (this SearchHint) Save(ctx App, path string) error {
-	go SProc.HintLs(&ctx, filepath.Dir(path)+"/")
-	go SProc.HintFile(&ctx, path)
+func (this SearchHint) Save(ctx *App, path string) error {
+	go SProc.HintLs(ctx, filepath.Dir(path)+"/")
+	go SProc.HintFile(ctx, path)
 	return nil
 }
 
-func (this SearchHint) Touch(ctx App, path string) error {
-	go SProc.HintLs(&ctx, filepath.Dir(path)+"/")
+func (this SearchHint) Touch(ctx *App, path string) error {
+	go SProc.HintLs(ctx, filepath.Dir(path)+"/")
 	return nil
 }

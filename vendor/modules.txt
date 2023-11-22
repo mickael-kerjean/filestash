@@ -1,6 +1,12 @@
 # cloud.google.com/go v0.38.0
 ## explicit
 cloud.google.com/go/compute/metadata
+cloud.google.com/go/iam
+cloud.google.com/go/internal
+cloud.google.com/go/internal/optional
+cloud.google.com/go/internal/trace
+cloud.google.com/go/internal/version
+cloud.google.com/go/storage
 # github.com/Azure/azure-sdk-for-go/sdk/azcore v1.6.0
 ## explicit; go 1.18
 github.com/Azure/azure-sdk-for-go/sdk/azcore
@@ -21,7 +27,6 @@ github.com/Azure/azure-sdk-for-go/sdk/azcore/to
 github.com/Azure/azure-sdk-for-go/sdk/azcore/tracing
 # github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.0
 ## explicit; go 1.18
-github.com/Azure/azure-sdk-for-go/sdk/azidentity
 # github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0
 ## explicit; go 1.18
 github.com/Azure/azure-sdk-for-go/sdk/internal/diag
@@ -48,27 +53,6 @@ github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/sas
 github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/service
 # github.com/AzureAD/microsoft-authentication-library-for-go v1.0.0
 ## explicit; go 1.18
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/confidential
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/errors
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/base
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/base/internal/storage
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/exported
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/json
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/json/types/time
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/local
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops/accesstokens
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops/authority
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops/internal/comm
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops/internal/grant
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops/wstrust
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops/wstrust/defs
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/options
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/shared
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/version
-github.com/AzureAD/microsoft-authentication-library-for-go/apps/public
 # github.com/aws/aws-sdk-go v1.40.41
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
@@ -191,6 +175,7 @@ github.com/golang-jwt/jwt/v4
 # github.com/golang/protobuf v1.3.1
 ## explicit
 github.com/golang/protobuf/proto
+github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
@@ -244,8 +229,6 @@ github.com/kevinburke/ssh_config
 github.com/kr/fs
 # github.com/kylelemons/godebug v1.1.0
 ## explicit; go 1.11
-github.com/kylelemons/godebug/diff
-github.com/kylelemons/godebug/pretty
 # github.com/lestrrat-go/backoff/v2 v2.0.7
 ## explicit; go 1.16
 github.com/lestrrat-go/backoff/v2
@@ -293,8 +276,8 @@ github.com/mattermost/xml-roundtrip-validator
 # github.com/mattn/go-isatty v0.0.16
 ## explicit; go 1.15
 github.com/mattn/go-isatty
-# github.com/mattn/go-sqlite3 v2.0.2+incompatible
-## explicit
+# github.com/mattn/go-sqlite3 v1.14.18
+## explicit; go 1.16
 github.com/mattn/go-sqlite3
 # github.com/mickael-kerjean/net v0.0.0-20191120063050-2457c043ba06
 ## explicit
@@ -320,7 +303,6 @@ github.com/nfnt/resize
 github.com/patrickmn/go-cache
 # github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 ## explicit; go 1.14
-github.com/pkg/browser
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
@@ -463,8 +445,6 @@ golang.org/x/crypto/openpgp/errors
 golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/pbkdf2
-golang.org/x/crypto/pkcs12
-golang.org/x/crypto/pkcs12/internal/rc2
 golang.org/x/crypto/ripemd160
 golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/sha3
@@ -571,7 +551,9 @@ google.golang.org/api/googleapi/transport
 google.golang.org/api/internal
 google.golang.org/api/internal/gensupport
 google.golang.org/api/internal/third_party/uritemplates
+google.golang.org/api/iterator
 google.golang.org/api/option
+google.golang.org/api/storage/v1
 google.golang.org/api/transport/http
 google.golang.org/api/transport/http/internal/propagation
 # google.golang.org/appengine v1.5.0
@@ -588,6 +570,9 @@ google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
 # google.golang.org/genproto v0.0.0-20190502173448-54afdca5d873
 ## explicit
+google.golang.org/genproto/googleapis/api/annotations
+google.golang.org/genproto/googleapis/iam/v1
+google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.20.1
 ## explicit
@@ -693,7 +678,6 @@ gopkg.in/src-d/go-git.v4/utils/merkletrie/noder
 gopkg.in/warnings.v0
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
-gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3

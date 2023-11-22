@@ -19,6 +19,10 @@
 #ifndef SQLITE3EXT_H
 #define SQLITE3EXT_H
 #include "sqlite3-binding.h"
+#ifdef __clang__
+#define assert(condition) ((void)0)
+#endif
+
 
 /*
 ** The following structure holds pointers to all of the SQLite API
@@ -325,6 +329,48 @@ struct sqlite3_api_routines {
   int (*value_frombind)(sqlite3_value*);
   /* Version 3.30.0 and later */
   int (*drop_modules)(sqlite3*,const char**);
+  /* Version 3.31.0 and later */
+  sqlite3_int64 (*hard_heap_limit64)(sqlite3_int64);
+  const char *(*uri_key)(const char*,int);
+  const char *(*filename_database)(const char*);
+  const char *(*filename_journal)(const char*);
+  const char *(*filename_wal)(const char*);
+  /* Version 3.32.0 and later */
+  const char *(*create_filename)(const char*,const char*,const char*,
+                           int,const char**);
+  void (*free_filename)(const char*);
+  sqlite3_file *(*database_file_object)(const char*);
+  /* Version 3.34.0 and later */
+  int (*txn_state)(sqlite3*,const char*);
+  /* Version 3.36.1 and later */
+  sqlite3_int64 (*changes64)(sqlite3*);
+  sqlite3_int64 (*total_changes64)(sqlite3*);
+  /* Version 3.37.0 and later */
+  int (*autovacuum_pages)(sqlite3*,
+     unsigned int(*)(void*,const char*,unsigned int,unsigned int,unsigned int),
+     void*, void(*)(void*));
+  /* Version 3.38.0 and later */
+  int (*error_offset)(sqlite3*);
+  int (*vtab_rhs_value)(sqlite3_index_info*,int,sqlite3_value**);
+  int (*vtab_distinct)(sqlite3_index_info*);
+  int (*vtab_in)(sqlite3_index_info*,int,int);
+  int (*vtab_in_first)(sqlite3_value*,sqlite3_value**);
+  int (*vtab_in_next)(sqlite3_value*,sqlite3_value**);
+  /* Version 3.39.0 and later */
+  int (*deserialize)(sqlite3*,const char*,unsigned char*,
+                     sqlite3_int64,sqlite3_int64,unsigned);
+  unsigned char *(*serialize)(sqlite3*,const char *,sqlite3_int64*,
+                              unsigned int);
+  const char *(*db_name)(sqlite3*,int);
+  /* Version 3.40.0 and later */
+  int (*value_encoding)(sqlite3_value*);
+  /* Version 3.41.0 and later */
+  int (*is_interrupted)(sqlite3*);
+  /* Version 3.43.0 and later */
+  int (*stmt_explain)(sqlite3_stmt*,int);
+  /* Version 3.44.0 and later */
+  void *(*get_clientdata)(sqlite3*,const char*);
+  int (*set_clientdata)(sqlite3*, const char*, void*, void(*)(void*));
 };
 
 /*
@@ -615,10 +661,49 @@ typedef int (*sqlite3_loadext_entry)(
 /* Version 3.26.0 and later */
 #define sqlite3_normalized_sql         sqlite3_api->normalized_sql
 /* Version 3.28.0 and later */
-#define sqlite3_stmt_isexplain         sqlite3_api->isexplain
-#define sqlite3_value_frombind         sqlite3_api->frombind
+#define sqlite3_stmt_isexplain         sqlite3_api->stmt_isexplain
+#define sqlite3_value_frombind         sqlite3_api->value_frombind
 /* Version 3.30.0 and later */
 #define sqlite3_drop_modules           sqlite3_api->drop_modules
+/* Version 3.31.0 and later */
+#define sqlite3_hard_heap_limit64      sqlite3_api->hard_heap_limit64
+#define sqlite3_uri_key                sqlite3_api->uri_key
+#define sqlite3_filename_database      sqlite3_api->filename_database
+#define sqlite3_filename_journal       sqlite3_api->filename_journal
+#define sqlite3_filename_wal           sqlite3_api->filename_wal
+/* Version 3.32.0 and later */
+#define sqlite3_create_filename        sqlite3_api->create_filename
+#define sqlite3_free_filename          sqlite3_api->free_filename
+#define sqlite3_database_file_object   sqlite3_api->database_file_object
+/* Version 3.34.0 and later */
+#define sqlite3_txn_state              sqlite3_api->txn_state
+/* Version 3.36.1 and later */
+#define sqlite3_changes64              sqlite3_api->changes64
+#define sqlite3_total_changes64        sqlite3_api->total_changes64
+/* Version 3.37.0 and later */
+#define sqlite3_autovacuum_pages       sqlite3_api->autovacuum_pages
+/* Version 3.38.0 and later */
+#define sqlite3_error_offset           sqlite3_api->error_offset
+#define sqlite3_vtab_rhs_value         sqlite3_api->vtab_rhs_value
+#define sqlite3_vtab_distinct          sqlite3_api->vtab_distinct
+#define sqlite3_vtab_in                sqlite3_api->vtab_in
+#define sqlite3_vtab_in_first          sqlite3_api->vtab_in_first
+#define sqlite3_vtab_in_next           sqlite3_api->vtab_in_next
+/* Version 3.39.0 and later */
+#ifndef SQLITE_OMIT_DESERIALIZE
+#define sqlite3_deserialize            sqlite3_api->deserialize
+#define sqlite3_serialize              sqlite3_api->serialize
+#endif
+#define sqlite3_db_name                sqlite3_api->db_name
+/* Version 3.40.0 and later */
+#define sqlite3_value_encoding         sqlite3_api->value_encoding
+/* Version 3.41.0 and later */
+#define sqlite3_is_interrupted         sqlite3_api->is_interrupted
+/* Version 3.43.0 and later */
+#define sqlite3_stmt_explain           sqlite3_api->stmt_explain
+/* Version 3.44.0 and later */
+#define sqlite3_get_clientdata         sqlite3_api->get_clientdata
+#define sqlite3_set_clientdata         sqlite3_api->set_clientdata
 #endif /* !defined(SQLITE_CORE) && !defined(SQLITE_OMIT_LOAD_EXTENSION) */
 
 #if !defined(SQLITE_CORE) && !defined(SQLITE_OMIT_LOAD_EXTENSION)
