@@ -1,4 +1,5 @@
 import { setup_cache_state } from ".";
+import { currentBackend, currentShare } from "./cache_state.js";
 
 const DB_VERSION = 4;
 const FILE_PATH = "file_path";
@@ -331,7 +332,20 @@ export function setup_cache() {
     cache = new DataFromMemory();
     if ("indexedDB" in window && window.indexedDB !== null) {
         cache = new DataFromIndexedDB();
+        const currentPath = location.pathname.replace(/^\/.*?\//, "/");
         return Promise.all([cache.db, setup_cache_state()])
+            .then(() => cache.update(FILE_PATH, [currentBackend(), currentShare(), currentPath], (response) => {
+                response.results = response.results.reduce((acc, file) => {
+                    if (file.icon === "loading") {
+                        cache.remove(FILE_PATH, [currentBackend(), currentShare(), file.path]);
+                        cache.remove(FILE_CONTENT, [currentBackend(), currentShare(), file.path]);
+                        return acc;
+                    }
+                    acc.push(file);
+                    return acc;
+                }, []);
+                return response;
+            }))
             .catch((err) => {
                 if (err === "INDEXEDDB_NOT_SUPPORTED") {
                     // Firefox in private mode act like if it supports indexedDB but

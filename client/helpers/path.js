@@ -1,6 +1,6 @@
 import Path from "path";
 
-export function pathBuilder(path, filename, type = "file") {
+export function pathBuilder(path = "", filename = "", type = "file") {
     const tmp = Path.resolve(path, filename);
     if (type === "file") {
         return tmp;
@@ -9,21 +9,21 @@ export function pathBuilder(path, filename, type = "file") {
     }
 }
 
-export function basename(path) {
+export function basename(path = "") {
     return Path.basename(path);
 }
 
-export function dirname(path) {
+export function dirname(path = "") {
     const dir = Path.dirname(path);
     if (dir === "/") return dir;
     return dir + "/";
 }
 
-export function filetype(path) {
+export function filetype(path = "") {
     return path.slice(-1) === "/" ? "directory" : "file";
 }
 
-export function absoluteToRelative(from, to) {
+export function absoluteToRelative(from = "", to = "") {
     // remove any trace of file that would be interpreted by the path lib as a folder
     from = from.replace(/\/[^\/]+$/, "/");
     let r = Path.relative(from, to);
@@ -36,7 +36,7 @@ export function absoluteToRelative(from, to) {
     return r;
 }
 
-export function appendShareToUrl(link) {
+export function appendShareToUrl(link = "") {
     let url = new window.URL(location.href);
     const share = url.searchParams.get("share");
 
