@@ -20,7 +20,7 @@ body:not(.dark-mode) .component_filedownloader {
             font-size: 17px;
             display: inline-block;
             text-transform: uppercase;
-            color: var(--super-light);
+            color: rgba(255,255,255,0.4);
             font-weight: bold;
         }
         // loading

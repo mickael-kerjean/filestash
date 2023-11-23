@@ -337,8 +337,8 @@ export function setup_cache() {
             .then(() => cache.update(FILE_PATH, [currentBackend(), currentShare(), currentPath], (response) => {
                 response.results = response.results.reduce((acc, file) => {
                     if (file.icon === "loading") {
-                        cache.remove(FILE_PATH, [currentBackend(), currentShare(), file.path]);
-                        cache.remove(FILE_CONTENT, [currentBackend(), currentShare(), file.path]);
+                        cache.remove(FILE_PATH, [currentBackend(), currentShare(), file.path], false);
+                        cache.remove(FILE_CONTENT, [currentBackend(), currentShare(), file.path], false);
                         return acc;
                     }
                     acc.push(file);
