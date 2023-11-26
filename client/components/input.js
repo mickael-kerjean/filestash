@@ -12,17 +12,22 @@ export class Input extends React.Component {
         switch(this.props.type) {
         case "checkbox":
             return (
-                <div
-                    className="component_checkbox"
-                    onMouseDown={this.props.onMouseDown && this.props.onMouseDown.bind(this)}
-                    onMouseUp={this.props.onMouseUp && this.props.onMouseUp.bind(this)}>
-                    <input
-                        type="checkbox"
-                        {...this.props}
-                        onChange={this.props.onChange || nop}
-                        ref={(comp) => this.ref = comp } />
-                    <span className="indicator"></span>
-                </div>
+                <React.Fragment>
+                    <div
+                        className="component_checkbox"
+                        onMouseDown={this.props.onMouseDown && this.props.onMouseDown.bind(this)}
+                        onMouseUp={this.props.onMouseUp && this.props.onMouseUp.bind(this)}>
+                        <input
+                            type="checkbox"
+                            {...this.props}
+                            onChange={this.props.onChange || nop}
+                            ref={(comp) => this.ref = comp } />
+                        <span className="indicator"></span>
+                    </div>
+                    <span style={{"color": "rgba(0, 0, 0, 0.4)"}}>
+                        {this.props.placeholder}
+                    </span>
+                </React.Fragment>
             );
         default:
             return (

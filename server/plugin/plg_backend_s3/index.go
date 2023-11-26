@@ -2,8 +2,8 @@ package plg_backend_s3
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -15,8 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/aws/aws-sdk-go/service/sts"
 	. "github.com/mickael-kerjean/filestash/server/common"
-
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -78,6 +78,16 @@ func (s S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 		S3ForcePathStyle:              aws.Bool(true),
 		Region:                        aws.String(params["region"]),
 	}
+
+	if params["no_verify_ssl"] == "true" {
+		customTransport := &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
+		config.HTTPClient = &http.Client{Transport: customTransport}
+	}
+
 	if params["endpoint"] != "" {
 		config.Endpoint = aws.String(params["endpoint"])
 	}
@@ -113,7 +123,7 @@ func (s S3Backend) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"s3_role_arn", "s3_path", "s3_session_token", "s3_encryption_key", "s3_region", "s3_endpoint"},
+				Target:      []string{"s3_role_arn", "s3_path", "s3_session_token", "s3_encryption_key", "s3_region", "s3_endpoint", "s3_no_verify_ssl"},
 			},
 			FormElement{
 				Id:          "s3_role_arn",
@@ -150,6 +160,13 @@ func (s S3Backend) LoginForm() Form {
 				Name:        "endpoint",
 				Type:        "text",
 				Placeholder: "Endpoint",
+			},
+			FormElement{
+				Id:          "s3_no_verify_ssl",
+				Name:        "no_verify_ssl",
+				Type:        "boolean",
+				Placeholder: "Ignore SSL Verification (unsafe)",
+				Default:     false,
 			},
 		},
 	}

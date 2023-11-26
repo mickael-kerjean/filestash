@@ -21,6 +21,7 @@ cover.*
 www
 .gitignore
 
+.idea
 
 # frontend
 public/**/*.test.js
