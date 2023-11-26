@@ -1,5 +1,6 @@
 import { setup_cache_state } from ".";
 import { currentBackend, currentShare } from "./cache_state.js";
+import Path from "path";
 
 const DB_VERSION = 4;
 const FILE_PATH = "file_path";
@@ -337,8 +338,9 @@ export function setup_cache() {
             .then(() => cache.update(FILE_PATH, [currentBackend(), currentShare(), currentPath], (response) => {
                 response.results = response.results.reduce((acc, file) => {
                     if (file.icon === "loading") {
-                        cache.remove(FILE_PATH, [currentBackend(), currentShare(), file.path], false);
-                        cache.remove(FILE_CONTENT, [currentBackend(), currentShare(), file.path], false);
+                        cache.remove(FILE_PATH, [currentBackend(), currentShare(), Path.join(currentPath, "../")], false);
+                        cache.remove(FILE_CONTENT, [currentBackend(), currentShare(), Path.join(currentPath, "../")], false);
+                        cache.remove(FILE_TAG, [currentBackend(), currentShare(), Path.join(currentPath, "../")], false);
                         return acc;
                     }
                     acc.push(file);
