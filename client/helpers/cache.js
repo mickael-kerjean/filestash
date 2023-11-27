@@ -1,6 +1,5 @@
 import { setup_cache_state } from ".";
 import { currentBackend, currentShare } from "./cache_state.js";
-import Path from "path";
 
 const DB_VERSION = 4;
 const FILE_PATH = "file_path";
@@ -333,21 +332,28 @@ export function setup_cache() {
     cache = new DataFromMemory();
     if ("indexedDB" in window && window.indexedDB !== null) {
         cache = new DataFromIndexedDB();
-        const currentPath = location.pathname.replace(/^\/.*?\//, "/");
         return Promise.all([cache.db, setup_cache_state()])
-            .then(() => cache.update(FILE_PATH, [currentBackend(), currentShare(), currentPath], (response) => {
-                response.results = response.results.reduce((acc, file) => {
-                    if (file.icon === "loading") {
-                        cache.remove(FILE_PATH, [currentBackend(), currentShare(), Path.join(currentPath, "../")], false);
-                        cache.remove(FILE_CONTENT, [currentBackend(), currentShare(), Path.join(currentPath, "../")], false);
-                        cache.remove(FILE_TAG, [currentBackend(), currentShare(), Path.join(currentPath, "../")], false);
-                        return acc;
+            .then(() => {
+                const currentPath = decodeURIComponent(location.pathname.replace(/^\/.*?\//, "/"));
+                return cache.get(
+                    FILE_PATH,
+                    [currentBackend(), currentShare(), currentPath],
+                ).then((response) => {
+                    if (!response || !response.results) return;
+                    for (let i=0; i<response.results.length; i++) {
+                        if (response.results[i].icon !== "loading") continue
+                        // when we see a dirty cache sync issue, we flush the entire thing as nicely recover
+                        // from such issue would be a dirty hack. A known case for this is when a user
+                        // force quit the browser during an upload, in that scenario, it's much simpler to
+                        // assume our cache is unreliable and start fresh
+                        return Promise.all([
+                            cache.remove(FILE_PATH, [currentBackend(), currentShare(), "/"], false),
+                            cache.remove(FILE_CONTENT, [currentBackend(), currentShare(), "/"], false),
+                        ]);
                     }
-                    acc.push(file);
-                    return acc;
-                }, []);
-                return response;
-            }))
+                    return
+                });
+            })
             .catch((err) => {
                 if (err === "INDEXEDDB_NOT_SUPPORTED") {
                     // Firefox in private mode act like if it supports indexedDB but
