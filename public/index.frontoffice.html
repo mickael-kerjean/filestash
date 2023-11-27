@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="/assets/css/reset.css">
-        <script type="module" src="/components/loader.js"></script>
+        <script type="module" src="/assets/components/loader.js"></script>
         <title></title>
     </head>
     <body>
@@ -13,15 +13,15 @@
             <component-loader delay="500"></component-loader>
         </div>
         <script type="module">
-          import main from "/lib/skeleton/index.js";
-          import routes from "/boot/router_frontoffice.js";
+          import main from "/assets/lib/skeleton/index.js";
+          import routes from "/assets/boot/router_frontoffice.js";
           main(document.getElementById("app"), routes, {
               spinner: `<component-loader></component-loader>`,
-              beforeStart: import("/boot/ctrl_boot_frontoffice.js"),
+              beforeStart: import("/assets/boot/ctrl_boot_frontoffice.js"),
           });
         </script>
 
-        <script type="module" src="/components/modal.js"></script>
+        <script type="module" src="/assets/components/modal.js"></script>
         <component-modal></component-modal>
 
         <noscript>

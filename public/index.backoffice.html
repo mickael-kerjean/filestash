@@ -8,23 +8,23 @@
         <title>Admin Console</title>
     </head>
     <body>
-        <script type="module" src="/admin/components/loader.js"></script>
+        <script type="module" src="/admin/assets/components/loader.js"></script>
         <div role="main" id="app">
             <component-loader delay="500"></component-loader>
         </div>
 
         <script type="module">
-          import main from "/admin/lib/skeleton/index.js";
-          import routes from "/admin/boot/router_backoffice.js";
+          import main from "/admin/assets/lib/skeleton/index.js";
+          import routes from "/admin/assets/boot/router_backoffice.js";
           main(document.getElementById("app"), routes, {
               spinner: `<component-loader></component-loader>`,
-              beforeStart: import("/admin/boot/ctrl_boot_backoffice.js"),
+              beforeStart: import("/admin/assets/boot/ctrl_boot_backoffice.js"),
           });
         </script>
 
-        <script type="module" src="/admin/components/modal.js"></script>
+        <script type="module" src="/admin/assets/components/modal.js"></script>
         <component-modal></component-modal>
-        <script type="module" src="/admin/components/notification.js"></script>
+        <script type="module" src="/admin/assets/components/notification.js"></script>
         <component-notification></component-notification>
 
         <noscript>

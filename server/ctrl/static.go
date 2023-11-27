@@ -41,7 +41,7 @@ func LegacyStaticHandler(_path string) func(*App, http.ResponseWriter, *http.Req
 	}
 }
 
-func LegacyIndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+func LegacyIndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) { // TODO: migrate away
 	url := req.URL.Path
 	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
 		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
@@ -133,49 +133,49 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 		}
 		header := res.Header()
 		preloadScripts := []string{
-			"/admin/boot/router_backoffice.js", "/admin/boot/router_backoffice.js", "/admin/boot/ctrl_boot_backoffice.js", "/admin/boot/common.js",
-			"/admin/pages/adminpage/decorator.js", "/admin/pages/adminpage/decorator_sidemenu.js", "/admin/pages/adminpage/decorator_admin_only.js",
-			"/admin/components/icon.js", "/admin/lib/locales.js", "/admin/lib/animate.js",
-			"/admin/lib/skeleton/router.js", "/admin/lib/skeleton/lifecycle.js",
-			"/admin/lib/vendor/rxjs-shared.min.js", "/admin/lib/vendor/rxjs-ajax.min.js", "/admin/lib/ajax.js",
-			"/admin/lib/rx.js", "/admin/lib/vendor/rxjs.min.js",
+			"/admin/assets/boot/router_backoffice.js", "/admin/assets/boot/router_backoffice.js", "/admin/assets/boot/ctrl_boot_backoffice.js", "/admin/assets/boot/common.js",
+			"/admin/assets/pages/adminpage/decorator.js", "/admin/assets/pages/adminpage/decorator_sidemenu.js", "/admin/assets/pages/adminpage/decorator_admin_only.js",
+			"/admin/assets/components/icon.js", "/admin/assets/lib/locales.js", "/admin/assets/lib/animate.js",
+			"/admin/assets/lib/skeleton/router.js", "/admin/assets/lib/skeleton/lifecycle.js",
+			"/admin/assets/lib/vendor/rxjs-shared.min.js", "/admin/assets/lib/vendor/rxjs-ajax.min.js", "/admin/assets/lib/ajax.js",
+			"/admin/assets/lib/rx.js", "/admin/assets/lib/vendor/rxjs.min.js",
 		}
 		switch url {
 		case "/admin/backend":
 			preloadScripts = append(
 				preloadScripts,
-				"/admin/pages/adminpage/ctrl_backend.js", "/admin/pages/adminpage/ctrl_backend_component_storage.js", "/admin/pages/adminpage/ctrl_backend_component_authentication.js",
-				"/admin/model/config.js", "/admin/model/backend.js",
-				"/admin/pages/adminpage/model_backend.js", "/admin/pages/adminpage/model_auth_middleware.js",
-				"/admin/lib/random.js", "/admin/lib/form.js", "/admin/components/form.js",
-				"/admin/components/skeleton.js", "/admin/pages/adminpage/ctrl_backend_state.js", "/admin/pages/adminpage/component_box-item.js", "/admin/pages/adminpage/helper_form.js",
+				"/admin/assets/pages/adminpage/ctrl_backend.js", "/admin/assets/pages/adminpage/ctrl_backend_component_storage.js", "/admin/assets/pages/adminpage/ctrl_backend_component_authentication.js",
+				"/admin/assets/model/config.js", "/admin/assets/model/backend.js",
+				"/admin/assets/pages/adminpage/model_backend.js", "/admin/assets/pages/adminpage/model_auth_middleware.js",
+				"/admin/assets/lib/random.js", "/admin/assets/lib/form.js", "/admin/assets/components/form.js",
+				"/admin/assets/components/skeleton.js", "/admin/assets/pages/adminpage/ctrl_backend_state.js", "/admin/assets/pages/adminpage/component_box-item.js", "/admin/assets/pages/adminpage/helper_form.js",
 			)
 		case "/admin/settings":
 			preloadScripts = append(
 				preloadScripts,
-				"/admin/pages/adminpage/ctrl_settings.js", "/admin/model/config.js",
-				"/admin/lib/random.js", "/admin/lib/form.js", "/admin/components/form.js",
-				"/admin/components/skeleton.js", "/admin/pages/adminpage/helper_form.js",
+				"/admin/assets/pages/adminpage/ctrl_settings.js", "/admin/assets/model/config.js",
+				"/admin/assets/lib/random.js", "/admin/assets/lib/form.js", "/admin/assets/components/form.js",
+				"/admin/assets/components/skeleton.js", "/admin/assets/pages/adminpage/helper_form.js",
 			)
 		case "/admin/logs":
 			preloadScripts = append(
 				preloadScripts,
-				"/admin/pages/adminpage/ctrl_log.js", "/admin/model/config.js", "/admin/lib/random.js",
-				"/admin/pages/adminpage/helper_form.js", "/admin/pages/adminpage/model_log.js",
-				"/admin/pages/adminpage/ctrl_log_form.js", "/admin/pages/adminpage/ctrl_log_viewer.js", "/admin/pages/adminpage/ctrl_log_audit.js",
-				"/admin/lib/form.js", "/admin/components/form.js", "/admin/components/skeleton.js",
+				"/admin/assets/pages/adminpage/ctrl_log.js", "/admin/assets/model/config.js", "/admin/assets/lib/random.js",
+				"/admin/assets/pages/adminpage/helper_form.js", "/admin/assets/pages/adminpage/model_log.js",
+				"/admin/assets/pages/adminpage/ctrl_log_form.js", "/admin/assets/pages/adminpage/ctrl_log_viewer.js", "/admin/assets/pages/adminpage/ctrl_log_audit.js",
+				"/admin/assets/lib/form.js", "/admin/assets/components/form.js", "/admin/assets/components/skeleton.js",
 			)
 		case "/admin/about":
-			preloadScripts = append(preloadScripts, "/admin/pages/adminpage/ctrl_about.js")
+			preloadScripts = append(preloadScripts, "/admin/assets/pages/adminpage/ctrl_about.js")
 		default:
-			preloadScripts = append(preloadScripts, "/admin/pages/ctrl_adminpage.js")
+			preloadScripts = append(preloadScripts, "/admin/assets/pages/ctrl_adminpage.js")
 		}
 		preloadScripts = append(
 			preloadScripts,
-			"/admin/pages/ctrl_error.js", "/admin/pages/adminpage/ctrl_login.js", "/admin/lib/dom.js", "/admin/lib/error.js",
-			"/admin/pages/adminpage/animate.js", "/admin/helpers/log.js", "/admin/helpers/loader.js",
-			"/admin/pages/adminpage/model_config.js", "/admin/pages/adminpage/model_admin_session.js", "/admin/pages/adminpage/model_release.js",
-			"/admin/pages/adminpage/model_audit.js",
+			"/admin/assets/pages/ctrl_error.js", "/admin/assets/pages/adminpage/ctrl_login.js", "/admin/assets/lib/dom.js", "/admin/assets/lib/error.js",
+			"/admin/assets/pages/adminpage/animate.js", "/admin/assets/helpers/log.js", "/admin/assets/helpers/loader.js",
+			"/admin/assets/pages/adminpage/model_config.js", "/admin/assets/pages/adminpage/model_admin_session.js", "/admin/assets/pages/adminpage/model_release.js",
+			"/admin/assets/pages/adminpage/model_audit.js",
 		)
 		for _, href := range preloadScripts {
 			header.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, href))
@@ -186,6 +186,33 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 		return
 	}
 	ServeFile(res, req, WWWPublic, strings.TrimPrefix(req.URL.Path, "/admin/"))
+}
+
+func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	url := req.URL.Path
+	if url != "/" && strings.HasPrefix(url, "/s/") == false &&
+		strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
+		url != "/login" && url != "/logout" && strings.HasPrefix(url, "/tags") == false {
+		NotFoundHandler(ctx, res, req)
+		return
+	}
+	ua := req.Header.Get("User-Agent")
+	if strings.Contains(ua, "MSIE ") || strings.Contains(ua, "Trident/") || strings.Contains(ua, "Edge/") {
+		// Microsoft is behaving on many occasion differently than Firefox / Chrome.
+		// I have neither the time / motivation for it to work properly
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte(
+			Page(`
+                  <h1>Internet explorer is not supported</h1>
+                  <p>
+                    We don't support IE / Edge at this time
+                    <br>
+                    Please use either Chromium, Firefox or Chrome
+                  </p>
+                `)))
+		return
+	}
+	ServeFile(res, req, WWWPublic, "index.frontoffice.html")
 }
 
 func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
