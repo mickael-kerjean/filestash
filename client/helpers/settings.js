@@ -13,7 +13,7 @@ export function settings_put(key, value) {
 }
 
 function save(d) {
-    setInterval(() => {
+    setTimeout(() => {
         window.localStorage.setItem("settings", JSON.stringify(d));
     }, 500);
 }
