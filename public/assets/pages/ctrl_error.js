@@ -8,12 +8,14 @@ import { AjaxError, ApplicationError } from "../lib/error.js";
 
 import "../components/icon.js";
 
-export default function(err) {
-    return async function(render) {
+const css = await CSS(import.meta.url, "ctrl_error.css")
+
+export default function(render) {
+    return async function(err) {
         const [msg, trace] = processError(err);
         const $page = createElement(`
             <div>
-                <style>${await CSS(import.meta.url, "ctrl_error.css")}</style>
+                <style>${css}</style>
                 <a href="/" class="backnav">
                     <component-icon name="arrow_left"></component-icon>
                     home

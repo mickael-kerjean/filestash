@@ -45,7 +45,7 @@ export default async function(render) {
                 if (err instanceof AjaxError) {
                     switch (err.code()) {
                     case "INTERNAL_SERVER_ERROR":
-                        ctrlError(err)(render);
+                        ctrlError(render)(err);
                         return rxjs.EMPTY;
                     case "FORBIDDEN":
                         return rxjs.of(false);

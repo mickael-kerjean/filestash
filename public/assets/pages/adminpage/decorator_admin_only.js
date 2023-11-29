@@ -1,5 +1,4 @@
 import rxjs, { effect } from "../../lib/rx.js";
-import { AjaxError } from "../../lib/error.js";
 import ctrlError from "../ctrl_error.js";
 
 import ctrlLogin from "./ctrl_login.js";

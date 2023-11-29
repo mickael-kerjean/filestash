@@ -36,7 +36,7 @@ export default async function(render) {
             throw new ApplicationError("INTERNAL_ERROR", "Assumption failed");
         }),
         rxjs.tap((ctrl) => ctrl(createRender(qs($page, "[data-bind=\"multistep-form\"]")))),
-        rxjs.catchError((err) => ctrlError(err)(render)),
+        rxjs.catchError(ctrlError(render)),
     ));
 };
 
