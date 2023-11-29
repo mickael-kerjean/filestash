@@ -1,10 +1,11 @@
-import { createElement } from "../../lib/skeleton/index.js";
+import { createElement, createRender } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation } from "../../lib/rx.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 import { generateSkeleton } from "../../components/skeleton.js";
 import { get as getConfig } from "../../model/config.js";
+import ctrlError from "../ctrl_error.js";
 
 import { get as getAdminConfig, save as saveConfig, initConfig } from "./model_config.js";
 import { renderLeaf, useForm$, formObjToJSON$ } from "./helper_form.js";
@@ -60,6 +61,7 @@ export default AdminHOC(async function(render) {
         )),
         reshapeConfigBeforeSave,
         saveConfig(),
+        rxjs.catchError(ctrlError(createRender(qs(document.body, "[role=\"main\"]")))),
     ));
 });
 

@@ -28,8 +28,6 @@ export default function(render) {
     effect(getState$().pipe(
         rxjs.map(({ error }) => error),
         rxjs.filter((error) => !!error),
-        rxjs.map(ctrlError),
-        rxjs.tap((fn) => fn(render))
     ));
 
     // feature2: render the filesystem
