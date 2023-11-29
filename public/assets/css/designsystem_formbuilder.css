@@ -26,6 +26,10 @@
     border-radius: 2px;
     box-sizing: border-box;
 }
+.formbuilder > label > img {
+    max-height: 110px;
+    width: 100%;
+}
 .formbuilder .fileupload-image object {
     background: var(--bg-color);
     height: 300px;

@@ -1,11 +1,11 @@
-import type { Observable, Observer } from "rx-core";
+import type { Observer } from "rx-core";
 
 import {
-    fromEvent, startWith,
+    Observable, fromEvent, startWith,
     catchError, tap, first, of,
     map, mapTo, filter, mergeMap, EMPTY, empty,
     switchMapTo, switchMap,
-    BehaviorSubject, Subject,
+    BehaviorSubject, Subject, ReplaySubject,
     pipe, share, toArray, distinctUntilChanged, from,
     combineLatest, shareReplay, repeat, interval, merge,
     debounceTime, delay, concatMap, distinct, scan, throwError,
@@ -16,7 +16,9 @@ import * as rxajax from "./vendor/rxjs-ajax.min.js";
 declare const rxjs: {
     of: typeof of,
     from: typeof from,
+    Observable: typeof Observable,
     BehaviorSubject: typeof BehaviorSubject,
+    ReplaySubject: typeof ReplaySubject,
     Subject: typeof Subject,
     catchError: typeof catchError,
     combineLatest: typeof combineLatest,
