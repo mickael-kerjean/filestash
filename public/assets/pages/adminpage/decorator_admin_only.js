@@ -8,14 +8,8 @@ export default function AdminOnly(ctrlWrapped) {
     return (render) => {
         effect(isAdmin$().pipe(
             rxjs.map((isAdmin) => isAdmin ? ctrlWrapped : ctrlLogin),
-            rxjs.catchError((err) => {
-                if (err instanceof AjaxError && err.code() === "INTERNAL_SERVER_ERROR") {
-                    ctrlError(err)(render);
-                    return rxjs.EMPTY;
-                }
-                return rxjs.of(ctrlError(err));
-            }),
             rxjs.tap((ctrl) => ctrl(render)),
+            rxjs.catchError(ctrlError(render)),
         ));
     };
 }

@@ -54,6 +54,7 @@
     color: white;
     text-transform: uppercase;
 }
+
 .component_page_connection_form form .third-party {
     text-align: center;
 }
@@ -69,17 +70,6 @@
 }
 .component_page_connection_form .component_loader {
     margin: 45px 0;
-}
-
-.component_page_connection_form.form-appear {
-    opacity: 0;
-    transform: translateX(5px);
-}
-
-.component_page_connection_form.form-appear.form-appear-active {
-    opacity: 1;
-    transform: translateX(0);
-    transition: transform 0.25s ease-out, opacity 0.5s ease-out;
 }
 
 .scroll-x {

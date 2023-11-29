@@ -45,8 +45,7 @@ export default async function(render) {
                 if (err instanceof AjaxError) {
                     switch (err.code()) {
                     case "INTERNAL_SERVER_ERROR":
-                        ctrlError(render)(err);
-                        return rxjs.EMPTY;
+                        return rxjs.throwError(err);
                     case "FORBIDDEN":
                         return rxjs.of(false);
                     }
@@ -61,7 +60,8 @@ export default async function(render) {
         rxjs.mapTo(["name", "arrow_right"]), applyMutation(qs($form, "component-icon"), "setAttribute"),
         rxjs.mapTo(""), stateMutation(qs($form, "[name=\"password\"]"), "value"),
         rxjs.mapTo(["error"]), applyMutation(qs($form, ".input_group"), "classList", "add"),
-        rxjs.delay(300), applyMutation(qs($form, ".input_group"), "classList", "remove")
+        rxjs.delay(300), applyMutation(qs($form, ".input_group"), "classList", "remove"),
+        rxjs.catchError(ctrlError(render)),
     ));
 
     // feature: autofocus

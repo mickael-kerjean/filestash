@@ -1,7 +1,6 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
 import rxjs, { effect } from "../lib/rx.js";
 import { CSS } from "../helpers/loader.js";
-import ctrlError from "./ctrl_error.js";
 
 import { getState$ } from "./filespage/state.js";
 import componentFilesystem from "./filespage/filesystem.js";
