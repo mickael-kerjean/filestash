@@ -1,4 +1,4 @@
-import { createElement } from "../lib/skeleton/index.js";
+import { createElement, createRender } from "../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation } from "../lib/rx.js";
 import { qs } from "../lib/dom.js";
 import t from "../lib/locales.js";
@@ -7,7 +7,7 @@ import { AjaxError, ApplicationError } from "../lib/error.js";
 
 import "../components/icon.js";
 
-export default function(render) {
+export default function(render = createRender(qs(document.body, "[role=\"main\"]"))) {
     return async function(err) {
         const [msg, trace] = processError(err);
         const $page = createElement(`
@@ -39,7 +39,10 @@ export default function(render) {
         ));
 
         // feature: refresh button
-        effect(rxjs.fromEvent(qs($page, "button[data-bind=\"refresh\"]"), "click").pipe(
+        const shouldHideRefreshButton = location.pathname === "/";
+        const $refresh = qs($page, "button[data-bind=\"refresh\"]");
+        if (shouldHideRefreshButton) $refresh.remove();
+        else effect(rxjs.fromEvent($refresh, "click").pipe(
             rxjs.tap(() => location.reload())
         ));
 

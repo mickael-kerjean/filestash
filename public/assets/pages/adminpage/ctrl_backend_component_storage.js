@@ -1,9 +1,10 @@
-import { createElement } from "../../lib/skeleton/index.js";
+import { createElement, createRender } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutations, onClick } from "../../lib/rx.js";
 import { createForm } from "../../lib/form.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { formTmpl } from "../../components/form.js";
 import { generateSkeleton } from "../../components/skeleton.js";
+import ctrlError from "../ctrl_error.js";
 
 import { initStorage, getState, getBackendAvailable, getBackendEnabled, addBackendEnabled, removeBackendEnabled } from "./ctrl_backend_state.js";
 import { save as saveConfig } from "./model_config.js";
@@ -123,4 +124,5 @@ const saveConnections = () => rxjs.pipe(
         return config;
     }))),
     saveConfig(),
+    rxjs.catchError(ctrlError()),
 );

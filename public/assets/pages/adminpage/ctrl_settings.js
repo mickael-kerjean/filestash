@@ -61,7 +61,7 @@ export default AdminHOC(async function(render) {
         )),
         reshapeConfigBeforeSave,
         saveConfig(),
-        rxjs.catchError(ctrlError(createRender(qs(document.body, "[role=\"main\"]")))),
+        rxjs.catchError(ctrlError()),
     ));
 });
 

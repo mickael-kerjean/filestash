@@ -45,7 +45,6 @@
 }
 .component_page_connection_form form .advanced_form {
     max-height: 156px;
-    overflow-y: auto;
     margin-top: 5px;
     padding-right: 10px;
 }

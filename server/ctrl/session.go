@@ -409,7 +409,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		Log.Debug("session::authMiddleware 'backend connection failed %+v - %s'", session, err.Error())
 		url := "/?error=" + ErrNotValid.Error() + "&trace=backend error - " + err.Error()
 		if IsATranslatedError(err) {
-			url = "/?error=" + err.Error()
+			url = "/?error=" + err.Error() + "&trace=backend error - " + err.Error()
 		}
 		http.Redirect(res, req, url, http.StatusTemporaryRedirect)
 		return

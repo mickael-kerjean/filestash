@@ -7,16 +7,20 @@ import { createForm } from "../../lib/form.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
 import t from "../../lib/locales.js";
 import { formTmpl } from "../../components/form.js";
+import notification from "../../components/notification.js";
 import { CSS } from "../../helpers/loader.js";
 import { createSession } from "../../model/session.js";
 
 import ctrlError from "../ctrl_error.js";
 import config$ from "./model_config.js";
 import backend$ from "./model_backend.js";
-import { setCurrentBackend, getCurrentBackend } from "./ctrl_form_state.js";
+import { setCurrentBackend, getCurrentBackend, getURLParams } from "./ctrl_form_state.js";
 
 const connections$ = config$.pipe(
-    rxjs.map(({ connections }) => connections || []),
+    rxjs.map(({ connections = [], auth = [] }) => connections.map((conn) => {
+        conn.middleware = auth.indexOf(conn.label) >= 0;
+        return conn;
+    })),
     rxjs.shareReplay(1),
 );
 
@@ -25,9 +29,7 @@ export default async function(render) {
         <div class="no-select component_page_connection_form">
             <style>${await CSS(import.meta.url, "ctrl_form.css")}</style>
             <div role="navigation" class="buttons scroll-x box"></div>
-            <div class="box">
-                <form></form>
-            </div>
+            <div data-bind="form" class="box hidden"><form></form></div>
         </div>
     `);
     render(transition($page, {
@@ -39,10 +41,12 @@ export default async function(render) {
     }));
 
     // feature1: create navigation buttons to select storage
+    const $nav = qs($page, "[role=\"navigation\"]");
     effect(connections$.pipe(
         rxjs.map((conns) => conns.map((conn, i) => ({ ...conn, n: i }))),
         rxjs.map((conns) => conns.map(({ label, n }) => createElement(`<button data-current="${n}">${safe(label)}</button>`))),
-        applyMutations(qs($page, "[role=\"navigation\"]"), "appendChild"),
+        applyMutations($nav, "appendChild"),
+        rxjs.tap(() => animate($nav)),
     ));
 
     // feature2: select a default storage among all the available ones
@@ -58,7 +62,13 @@ export default async function(render) {
 
     // feature3: create the storage forms
     const formSpecs$ = connections$.pipe(rxjs.mergeMap((conns) => backend$.pipe(
-        rxjs.map((backendSpecs) => conns.map(({ type }) => backendSpecs[type])),
+        rxjs.map((backendSpecs) => conns.map(({ type, middleware, label }) => {
+            if (middleware) return { // admin has set this storage as auth middleware
+                middleware: { type: "hidden" },
+                label: { type: "hidden", value: label },
+            };
+            return backendSpecs[type];
+        })),
     )));
     effect(getCurrentBackend().pipe(
         rxjs.mergeMap((n) => formSpecs$.pipe(
@@ -76,9 +86,17 @@ export default async function(render) {
                 return createElement("<label></label>");
             }
         }))),
-        applyMutation(qs($page, "form"), "replaceChildren"),
-        rxjs.tap(() => animate($page.querySelector("form > div"), { time: 200, keyframes: slideYIn(2) })),
-        rxjs.tap(() => qs($page, "form").appendChild(createElement(`<button class="emphasis full-width">${t("CONNECT")}</button>`))),
+        applyMutation(qs($page, "[data-bind=\"form\"] form"), "replaceChildren"),
+        rxjs.tap(($innerForm) => $innerForm.parentElement.appendChild(createElement(`<button class="emphasis full-width">${t("CONNECT")}</button>`))),
+        rxjs.tap(($innerForm) => {
+            const $box = $innerForm.parentElement.parentElement;
+            let $animationTarget = $innerForm;
+            if ($box.classList.contains("hidden")) { // first load
+                $box.classList.remove("hidden");
+                $animationTarget = $box;
+            }
+            animate($animationTarget, { time: 200, keyframes: slideYIn(2) });
+        }),
     ));
 
     // feature4: interaction with the nav buttons
@@ -104,16 +122,18 @@ export default async function(render) {
     ));
 
     // feature6: form submission
+    const $loader = createElement(`<component-loader></component-loader>`);
+    const toggleLoader = (hide) => {
+        if (hide) {
+            $page.classList.add("hidden");
+            $page.parentElement.appendChild($loader);
+        } else {
+            $loader.remove();
+            $page.classList.remove("hidden");
+        }
+    };
     effect(rxjs.merge(
-        // 6.a submit when url has a type key
-        rxjs.of([...new URLSearchParams(location.search)]).pipe(
-            rxjs.filter((arr) => arr.find(([key, _]) => key === "type")),
-            rxjs.map((arr) => arr.reduce((acc, el) => {
-                acc[el[0]] = el[1]
-                return acc;
-            }, {})),
-        ),
-        // 6.b submit on pressing the submit button in the form
+        // 6.a form submission event handler
         rxjs.fromEvent(qs($page, "form"), "submit").pipe(
             preventDefault(),
             rxjs.map((e) => new FormData(e.target)),
@@ -125,38 +145,70 @@ export default async function(render) {
                 return json;
             }),
         ),
+        // 6.b formatted URL in the like of type=xxx&etc=etc
+        rxjs.of(getURLParams()).pipe(
+            rxjs.filter(({ type }) => !!type),
+            rxjs.mergeMap((urlParams) => connections$.pipe(
+                rxjs.map((conns) => conns.filter(({ middleware, type }) => middleware !== true && type === urlParams["type"])),
+                rxjs.mergeMap((conns) => {
+                    if (conns.length === 0) return rxjs.EMPTY;
+                    return rxjs.of(urlParams);
+                }),
+            )),
+        ),
+        // 6.c auto submit when it's the only choice available
+        connections$.pipe(
+            rxjs.filter((conns) => conns.length === 1),
+            rxjs.map((conns) => conns[0]),
+            rxjs.filter(({ middleware }) => middleware),
+        ),
     ).pipe(
         rxjs.mergeMap((formData) => { // CASE 1: authentication middleware flow
-            // TODO
-            return rxjs.of(formData);
+            if (!("middleware" in formData)) return rxjs.of(formData);
+            let url = "/api/session/auth/?action=redirect";
+            url += "&label=" + formData["label"];
+            const p = getURLParams();
+            if (Object.keys(p).length > 0) {
+                url += "&state=" + btoa(JSON.stringify(p));
+            }
+            location.href = url
+            return rxjs.EMPTY;
         }),
         rxjs.mergeMap((formData) => { // CASE 2: oauth2 related backends like dropbox and gdrive
             if (!("oauth2" in formData)) return rxjs.of(formData);
             return new rxjs.Observable((subscriber) => {
                 const u = new URL(location.toString());
                 u.pathname = formData["oauth2"];
-                const _next = new URLSearchParams(location.search).get("next");
+                const _next = getURLParams()["next"];
                 if (_next) u.searchParams.set("next", _next);
                 subscriber.next(u.toString());
             }).pipe(
-                rxjs.tap((a) => console.log(a)),
+                rxjs.tap(() => toggleLoader(true)),
                 rxjs.mergeMap((url) => ajax({ url, responseType: "json" })),
-                // TODO: loading
                 rxjs.tap(({ responseJSON }) => location.href = responseJSON.result),
-                rxjs.catchError(ctrlError(render)),
+                rxjs.catchError(ctrlError()),
                 rxjs.mergeMap(() => rxjs.EMPTY),
             );
         }),
         rxjs.mergeMap((formData) => { // CASE 3: regular login
-            console.log(formData);
-            return createSession(formData).pipe(
-                rxjs.tap(() => navigate("/")), // TODO: home and next redirect
+            delete formData["label"];
+            delete formData["middleware"];
+            return rxjs.of(null).pipe(
+                rxjs.tap(() => toggleLoader(true)),
+                rxjs.mergeMap(() => createSession(formData)),
+                rxjs.tap(({ responseJSON }) => {
+                    let redirectURL = "/files/";
+                    const GET = getURLParams();
+                    if (GET["next"]) redirectURL = GET["next"];
+                    else if (responseJSON.result) redirectURL = "/files" + responseJSON.result;
+                    navigate(redirectURL);
+                }),
+                rxjs.catchError((err) => {
+                    toggleLoader(false);
+                    notification.error(t(err && err.message));
+                    return rxjs.EMPTY;
+                })
             );
-            // return rxjs.EMPTY;
         }),
     ));
-
-
-    // TODO submit when there's only 1 backend defined through auth. middleware
-    // feature: clear the cache
 }

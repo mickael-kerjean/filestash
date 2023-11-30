@@ -24,7 +24,7 @@ export default async function(render) {
     // feature1: forkme & poweredby button
     ctrlForkme(createRender(qs($page, "[data-bind=\"component_forkme\"]")));
     ctrlPoweredby(createRender(qs($page, "[data-bind=\"component_poweredby\"]")));
-    await new Promise((done) => setTimeout(done, 300));
+    await new Promise((done) => setTimeout(done, 250));
 
     // feature2: connection form
     ctrlForm(createRender(qs($page, "[data-bind=\"component_form\"]")));

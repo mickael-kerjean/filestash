@@ -15,6 +15,7 @@ export function animate($node, opts = {}) {
 
     if (!$node) return Promise.resolve();
     else if (typeof $node.animate !== "function") return Promise.resolve();
+    else if (window.matchMedia(`(prefers-reduced-motion: reduce)`) === true || window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true) return Promise.resolve();
 
     return new Promise((done) => {
         $node.animate(keyframes, {
