@@ -1,0 +1,27 @@
+version: '2'
+services:
+  app:
+    container_name: filestash
+    #image: machines/filestash
+    image: textrix/filestash
+    restart: always
+    environment:
+    - APPLICATION_URL=disk.dedyn.io
+    #- GDRIVE_CLIENT_ID=<gdrive_client>
+    #- GDRIVE_CLIENT_SECRET=<gdrive_secret>
+    #- DROPBOX_CLIENT_ID=<dropbox_key>
+    #- ONLYOFFICE_URL=http://onlyoffice
+    ports:
+      - "8334:8334"
+    volumes:
+      - filestash:/app/data/state/
+
+#  onlyoffice:
+#    container_name: filestash_oods
+#    image: onlyoffice/documentserver
+#    restart: always
+#    security_opt:
+#      - seccomp:unconfined
+
+volumes:
+  filestash: {}
