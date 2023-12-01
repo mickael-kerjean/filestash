@@ -29,7 +29,7 @@
     },
     "input": ["pages/ctrl_boot.d.ts", "pages/*.js"],
     "exclude": [
-        "**/*.test.js", "worker/sw_cache.js",
+        "**/*.test.js", "assets/worker/sw_cache.js",
         "coverage", "jest.setup.js"
     ]
 }

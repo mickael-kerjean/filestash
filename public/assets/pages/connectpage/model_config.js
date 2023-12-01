@@ -6,5 +6,5 @@ export default ajax({
     responseType: "json"
 }).pipe(
     rxjs.map(({ responseJSON }) => responseJSON.result),
-    rxjs.share()
+    rxjs.shareReplay(1),
 );

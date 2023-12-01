@@ -29,6 +29,9 @@ button.light {
 button.large {
     width: 100%;
 }
+button[disabled] {
+    opacity: 0.9;
+}
 
 .touch-no button.dark:hover, .touch-no button.emphasis:hover, .touch-no button.primary:hover {
   filter: brightness(95%);

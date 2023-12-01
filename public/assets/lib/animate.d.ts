@@ -12,7 +12,7 @@ type AnimationFrames = {
     height?: string;
 };
 
-export function transition($node: HTMLElement, opts: TransitionEnter | TransitionLeave): HTMLElement;
+export function transition($node: HTMLElement, opts?: TransitionEnter | TransitionLeave): HTMLElement;
 
 export function animate($node: HTMLElement | null, opts: {
     time: number;

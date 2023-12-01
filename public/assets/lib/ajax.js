@@ -7,7 +7,6 @@ export default function(opts) {
     if (!opts.headers) opts.headers = {};
     opts.headers["X-Requested-With"] = "XmlHttpRequest";
     return ajax({ withCredentials: true, ...opts, responseType: "text" }).pipe(
-        rxjs.catchError((err) => rxjs.throwError(processError(err.xhr, err))),
         rxjs.map((res) => {
             const result = res.xhr.responseText;
             if (opts.responseType === "json") {
@@ -18,7 +17,8 @@ export default function(opts) {
                 res.responseJSON = json;
             }
             return res;
-        })
+        }),
+        rxjs.catchError((err) => rxjs.throwError(processError(err.xhr, err))),
     );
 }
 

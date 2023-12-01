@@ -1,19 +1,18 @@
-import { createElement } from "../lib/skeleton/index.js";
+import { createElement, createRender } from "../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation } from "../lib/rx.js";
 import { qs } from "../lib/dom.js";
 import t from "../lib/locales.js";
-import { CSS } from "../helpers/loader.js";
 
 import { AjaxError, ApplicationError } from "../lib/error.js";
 
 import "../components/icon.js";
 
-export default function(err) {
-    return async function(render) {
+export default function(render = createRender(qs(document.body, "[role=\"main\"]"))) {
+    return async function(err) {
         const [msg, trace] = processError(err);
         const $page = createElement(`
             <div>
-                <style>${await CSS(import.meta.url, "ctrl_error.css")}</style>
+                <style>${css}</style>
                 <a href="/" class="backnav">
                     <component-icon name="arrow_left"></component-icon>
                     home
@@ -40,7 +39,10 @@ export default function(err) {
         ));
 
         // feature: refresh button
-        effect(rxjs.fromEvent(qs($page, "button[data-bind=\"refresh\"]"), "click").pipe(
+        const shouldHideRefreshButton = location.pathname === "/";
+        const $refresh = qs($page, "button[data-bind=\"refresh\"]");
+        if (shouldHideRefreshButton) $refresh.remove();
+        else effect(rxjs.fromEvent($refresh, "click").pipe(
             rxjs.tap(() => location.reload())
         ));
 
@@ -72,3 +74,56 @@ trace:   ${err.stack || "N/A"}`;
     }
     return [msg, trace.trim()];
 }
+
+
+const css = `
+.error-page {
+  width: 80%;
+  max-width: 600px;
+  margin: 50px auto 0 auto;
+  flex-direction: column;
+}
+.error-page h1 {
+    margin: 5px 0;
+    font-size: 3.1em;
+}
+.error-page h2 {
+    margin: 10px 0;
+    font-weight: normal;
+    font-weight: 100;
+}
+.error-page code {
+    margin-top: 5px;
+    display: block;
+    padding: 10px;
+    overflow-x: auto;
+    background: #e2e2e2;
+    color: var(--dark);
+    border-radius: 3px;
+}
+.error-page pre {
+    margin: 0;
+}
+.error-page p {
+    font-style: italic;
+    margin-bottom: 5px;
+}
+.error-page a {
+    border-bottom: 1px dashed;
+}
+
+.backnav {
+  font-weight: 100;
+  display: inline-block;
+  padding: 10px 5px;
+}
+.backnav .component_icon {
+    height: 23px;
+    margin-right: -3px;
+    vertical-align: middle;
+}
+
+.dark-mode .error-page, .dark-mode .backnav {
+    color: rgba(255, 255, 255, 0.8);
+}
+`

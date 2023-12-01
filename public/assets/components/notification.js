@@ -25,7 +25,7 @@ class NotificationComponent extends window.HTMLElement {
         this.buffer.push({ message, type });
         if (this.buffer.length !== 1) {
             const $close = this.querySelector(".close");
-            if (!($close instanceof window.HTMLElement) || !$close.onclick) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: notification close button missing");
+            if (!($close instanceof window.HTMLElement) || !$close.onclick) return;
             $close.onclick(new window.MouseEvent("mousedown"));
             return;
         }

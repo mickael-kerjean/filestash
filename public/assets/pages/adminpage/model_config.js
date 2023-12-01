@@ -35,6 +35,11 @@ export function save() {
             method: "POST",
             responseType: "json",
             body: formData,
-        }).pipe(rxjs.tap(() => isSaving$.next(false)))),
+        })),
+        rxjs.tap(() => isSaving$.next(false)),
+        rxjs.catchError((err) => {
+            isSaving$.next(false);
+            return rxjs.throwError(err);
+        }),
     );
 }

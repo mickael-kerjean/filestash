@@ -67,7 +67,7 @@ async function createFormNodes(node, { renderNode, renderLeaf, renderInput, path
                 // initialise the dom structure
                 const $container = window.document.createElement("div");
                 $container.classList.add("advanced_form");
-                $container.style.setProperty("overflow", "hidden");
+                $container.style.setProperty("overflow-x", "hidden");
                 for (const k of Object.keys(node)) {
                     if (typeof node[k] !== "object") continue;
                     else if (!node[k].id) continue;

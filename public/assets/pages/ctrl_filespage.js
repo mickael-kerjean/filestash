@@ -1,7 +1,6 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
 import rxjs, { effect } from "../lib/rx.js";
 import { CSS } from "../helpers/loader.js";
-import ctrlError from "./ctrl_error.js";
 
 import { getState$ } from "./filespage/state.js";
 import componentFilesystem from "./filespage/filesystem.js";
@@ -29,8 +28,6 @@ export default function(render) {
     effect(getState$().pipe(
         rxjs.map(({ error }) => error),
         rxjs.filter((error) => !!error),
-        rxjs.map(ctrlError),
-        rxjs.tap((fn) => fn(render))
     ));
 
     // feature2: render the filesystem

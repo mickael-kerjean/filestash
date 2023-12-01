@@ -1,4 +1,4 @@
-import { createElement } from "../../lib/skeleton/index.js";
+import { createElement, createRender } from "../../lib/skeleton/index.js";
 import rxjs, { effect, stateMutation } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 
@@ -52,7 +52,7 @@ export default function(ctrl) {
         render($page);
 
         // feature: setup the childrens
-        ctrl(($node) => qs($page, "[data-bind=\"admin\"]").appendChild($node));
+        ctrl(createRender(qs($page, "[data-bind=\"admin\"]")));
 
         // feature: display the release version
         effect(getRelease().pipe(

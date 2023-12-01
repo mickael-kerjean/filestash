@@ -1,4 +1,4 @@
-const settings = JSON.parse(window.localStorage.getItem("settings")) || {};
+const settings = JSON.parse(window.localStorage.getItem("settings") || "null") || {};
 
 export function settings_get(key) {
     if (settings[key] === undefined) {
@@ -9,11 +9,7 @@ export function settings_get(key) {
 
 export function settings_put(key, value) {
     settings[key] = value;
-    save(settings);
-}
-
-function save(d) {
     setTimeout(() => {
-        window.localStorage.setItem("settings", JSON.stringify(d));
-    }, 500);
+        window.localStorage.setItem("settings", JSON.stringify(settings));
+    }, 0);
 }
