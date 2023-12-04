@@ -22,8 +22,8 @@ export default function(render = createRender(qs(document.body, "[role=\"main\"]
                         <h1>${t("Oops!")}</h1>
                         <h2>${t(msg)}</h2>
                         <p>
-                            <button class="light" data-bind="details">More details</button>
-                            <button class="primary" data-bind="refresh">Refresh</button>
+                            <button class="light" data-bind="details">${t("More details")}</button>
+                            <button class="primary" data-bind="refresh">${t("Refresh")}</button>
                             <pre class="hidden"><code>${trace}</code></pre>
                         </p>
                     </div>

@@ -1,16 +1,13 @@
 import { createElement } from "../lib/skeleton/index.js";
+import WithShell from "../components/decorator_shell_filemanager.js"
 
 import "../components/breadcrumb.js";
 
-export default function(render) {
-    const currentPath = decodeURIComponent(location.pathname).replace(new RegExp("/view"), "");
+export default WithShell(function(render) {
     const $page = createElement(`
-        <div class="component_page_filespage">
-            <div is="component-breadcrumb" path="${currentPath}" animateOut="test"></div>
-            <div class="page_container">
+        <div class="component_page_viewerpage">
                 viewerpage - TODO
-            </div>
         </div>
     `);
     render($page);
-}
+})

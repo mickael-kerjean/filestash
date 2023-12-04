@@ -49,21 +49,21 @@
 }
 
 :root {
-    --bg-color: #fafafa;
+    --bg-color: #fafafa; /*#fafafa;*/
     --color: #57595A;
     --emphasis: #466372;
     --primary: #9AD1ED;
     --emphasis-primary: #c5e2f1;
     --emphasis-secondary: #466372;
     --light: #909090;
-    --super-light:  #f9fafc;
+    --super-light:  #fafafa;
     --error: #f26d6d;
     --success: #63d9b1;
     --dark: #313538;
 }
 
 html {
-    font-family: "Roboto", sans-serif;
+    font-family: system-ui, sans-serif;
     -webkit-text-size-adjust:100%;
 }
 body {

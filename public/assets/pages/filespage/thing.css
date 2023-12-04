@@ -109,8 +109,8 @@
 
 /* GRID & LIST VIEW */
 .list {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 50%);
 }
 .list > .component_thing {
     width: 100%;
@@ -119,60 +119,60 @@
     margin: 0px 0 2px 0;
 }
 .list > .component_thing.view-grid {
-    width: 25%;
+    width: 100%;
     text-align: center;
     transition: 0.1s ease transform;
 }
 .list > .component_thing.view-grid .box {
-    height: 160px;
+    height: 156px;
 }
-@media (max-width: 699px) {
-    .list > .component_thing.view-grid {
-        width: 33.33%;
-    }
-    .list > .component_thing.view-grid .box {
-        height: 200px;
-    }
-}
-@media (max-width: 670px) {
-    .list > .component_thing.view-grid .box {
-        height: 170px;
-    }
-}
-@media (max-width: 550px) {
-    .list > .component_thing.view-grid {
-        width: 50%;
-    }
-    .list > .component_thing.view-grid .box {
-        height: 200px;
-    }
-}
-@media (max-width: 480px) {
-    .list > .component_thing.view-grid .box {
-        height: 170px;
-    }
-}
-@media (max-width: 400px) {
-    .list > .component_thing.view-grid .box {
-        height: 140px;
-    }
-    .list > .component_thing.view-grid .box .info_extension {
-        font-size: 0.8em !important;
-        padding: 3px 10px;
-    }
-}
-@media (max-width: 340px) {
-    .list > .component_thing.view-grid .box {
-        height: 130px;
-    }
-}
+/* @media (max-width: 699px) { */
+/*     .list > .component_thing.view-grid { */
+/*         width: 33.33%; */
+/*     } */
+/*     .list > .component_thing.view-grid .box { */
+/*         height: 200px; */
+/*     } */
+/* } */
+/* @media (max-width: 670px) { */
+/*     .list > .component_thing.view-grid .box { */
+/*         height: 170px; */
+/*     } */
+/* } */
+/* @media (max-width: 550px) { */
+/*     .list > .component_thing.view-grid { */
+/*         width: 50%; */
+/*     } */
+/*     .list > .component_thing.view-grid .box { */
+/*         height: 200px; */
+/*     } */
+/* } */
+/* @media (max-width: 480px) { */
+/*     .list > .component_thing.view-grid .box { */
+/*         height: 170px; */
+/*     } */
+/* } */
+/* @media (max-width: 400px) { */
+/*     .list > .component_thing.view-grid .box { */
+/*         height: 140px; */
+/*     } */
+/*     .list > .component_thing.view-grid .box .info_extension { */
+/*         font-size: 0.8em !important; */
+/*         padding: 3px 10px; */
+/*     } */
+/* } */
+/* @media (max-width: 340px) { */
+/*     .list > .component_thing.view-grid .box { */
+/*         height: 130px; */
+/*     } */
+/* } */
 .list > .component_thing.view-grid .box {
     margin: 2px;
     padding: 0;
     position: relative;
     border-width: 0;
     box-sizing: border-box;
-    border: 2px solid rgba(100, 100, 100, 0.1);
+    border: 2px solid rgba(100, 100, 100, 0.05);
     border-radius: 5px;
 }
 .list > .component_thing.view-grid .box > span > img {

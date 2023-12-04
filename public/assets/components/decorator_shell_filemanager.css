@@ -1,0 +1,63 @@
+.component_filemanager_shell {
+    display: flex;
+    height: 100%;
+}
+.component_filemanager_shell .component_sidebar {
+    width: 240px;
+    padding: 10px;
+}
+.component_filemanager_shell .component_sidebar > h3 {
+    padding-left: 10px;
+    margin-bottom: 5px;
+    color: var(--light);
+    font-size: 1rem;
+}
+.component_filemanager_shell .component_sidebar > div {
+    background: rgba(0,0,0,0.1);
+    padding-left: 10px;
+    width: 90%;
+    height: 50px;
+    margin: 0 auto;
+}
+.component_filemanager_shell [is="component-breadcrumb"]:hover ~ [data-bind="filemanager-children"],
+.component_filemanager_shell [data-bind="sidebar"]:hover ~ div > [data-bind="filemanager-children"] {
+    border-color: rgba(100, 100, 100, 0.1);
+}
+
+.component_filemanager_shell [data-bind="filemanager-children"] {
+    border-top: 2px solid rgba(0,0,0,0.02);
+    border-left: 2px solid rgba(0,0,0,0.02);
+    transition: 1000ms ease border-color;
+    border-top-left-radius: 15px;
+    display: flex;
+    height: 100%;
+    overflow: hidden;
+    background: white;
+    padding-top: 20px;
+}
+
+
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] {
+    border-top-left-radius: 0;
+    border-left: none;
+}
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [is="component-breadcrumb"] > .component_breadcrumb,
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] > div {
+    width: 95%;
+    margin: 0 auto;
+    max-width: 820px;
+}
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component-breadcrumb"] {
+    background: white;
+}
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] {
+    background: var(--bg-color);
+}
+.component_filemanager_shell .component_filesystem {
+    padding: 15px;
+}
+
+.component_filemanager_shell [data-bind="filemanager-children"] > div,
+.component_filemanager_shell [is="component-breadcrumb"] {
+    max-width: 2100px;
+}

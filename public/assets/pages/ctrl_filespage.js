@@ -1,24 +1,21 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
 import rxjs, { effect } from "../lib/rx.js";
+import { qs } from "../lib/dom.js";
 import { CSS } from "../helpers/loader.js";
+import WithShell from "../components/decorator_shell_filemanager.js"
 
-import { getState$ } from "./filespage/state.js";
-import componentFilesystem from "./filespage/filesystem.js";
+import { getState$ } from "./filespage/ctrl_filesystem_state.js";
+import componentFilesystem from "./filespage/ctrl_filesystem.js";
+import componentSubmenu from "./filespage/ctrl_submenu.js";
 
 import "../components/breadcrumb.js";
 
-export default function(render) {
-    const currentPath = decodeURIComponent(location.pathname).replace(new RegExp("/files"), "");
+export default WithShell(function(render) {
     const $page = createElement(`
         <div class="component_page_filespage">
-            <div is="component-breadcrumb" path="${currentPath}"></div>
-            <div class="page_container">
-                <div class="scroll-y">
-                    <div is="frequent-access"></div>
-                    <div is="component-submenu"></div>
-                    <div is="component-filesystem"></div>
-                </div>
-            </div>
+            <div is="frequent_access" class="hidden"></div>
+            <div is="component_submenu" class="hidden"></div>
+            <div is="component_filesystem"></div>
             <style>${css}</style>
         </div>
     `);
@@ -31,7 +28,10 @@ export default function(render) {
     ));
 
     // feature2: render the filesystem
-    componentFilesystem(createRender($page.querySelector("[is=\"component-filesystem\"]")));
-}
+    componentFilesystem(createRender(qs($page, "[is=\"component_filesystem\"]")));
+
+    // feature3: render the menubar
+    componentSubmenu(createRender(qs($page, "[is=\"component_submenu\"]")))
+});
 
 const css = await CSS(import.meta.url, "ctrl_filespage.css");

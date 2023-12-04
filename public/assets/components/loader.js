@@ -42,10 +42,25 @@ class Loader extends window.HTMLElement {
     }
 }
 
+
+// function tap(sideEffectFn) {
+//     return (source) => {
+//         // TODO: use source.lift
+//         console.log("SOURCE", source)
+//         source.lift({
+//             call: (subscriber, source) => {
+//                 console.log(source, subscriber);
+//                 return subscriber;
+//             },
+//         })
+//     }
+// }
+const tap = rxjs.tap;
+
 customElements.define("component-loader", Loader);
 
 export default createElement("<component-loader></component-loader>");
 export function toggle($node, show = false) {
-    if (show === true) return rxjs.tap(() => $node.appendChild(createElement("<component-loader></component-loader>")));
-    else return rxjs.tap(() => $node.querySelector("component-loader")?.remove());
+    if (show === true) return tap(() => $node.appendChild(createElement("<component-loader></component-loader>")));
+    else return tap(() => $node.querySelector("component-loader")?.remove());
 }

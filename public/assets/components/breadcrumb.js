@@ -16,7 +16,6 @@ class ComponentBreadcrumb extends HTMLDivElement {
             </a>
         `;
         const paths = (this.getAttribute("path") || "").replace(new RegExp("/$"), "").split("/");
-        console.log(paths);
         const htmlPathChunks = paths.map((chunk, idx) => {
             const label = idx === 0 ? "Filestash" : chunk;
             const link = paths.slice(0, idx + 1).join("/") + "/";
