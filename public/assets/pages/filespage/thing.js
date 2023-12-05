@@ -37,28 +37,17 @@ export function createThing({
     link = "",
     // permissions = {}
 }) {
-    const $thing = $get();
-    if ($thing instanceof HTMLElement) {
-        const $label = $thing.querySelector(".component_filename .file-details > span");
-        if ($label instanceof HTMLElement) $label.textContent = name;
-        $thing?.querySelector("a")?.setAttribute("href", link);
-    }
-    return $thing;
-}
+    const $thing = $tmpl.cloneNode(true);
+    if (!$thing instanceof window.HTMLElement) throw new Error("assertion failed: $thing must be an HTMLELement");
+    const $label = $thing.querySelector(".component_filename .file-details > span");
+    if (!$label instanceof window.HTMLElement) throw new Error("assertion failed: $label must be an HTMLELement");
 
-function $get() {
-    // the very first implementation was:
-    return $tmpl.cloneNode(true);
-    // the major issue was cloneNode is slow and would often make us miss an animationFrame. A much more
-    // efficient approach is to use a ring buffer of node we reuse as we scroll around
-    if (bufferIdx >= $tmplBuffer.length) bufferIdx = 0;
-    const $node = $tmplBuffer[bufferIdx];
-    bufferIdx += 1;
-    // console.log($node);
-    return $node;
-}
-let $tmplBuffer = [];
-let bufferIdx = 0;
-export function allocateMemory(size) {
-    $tmplBuffer = Array.apply(null, {length: size}).map(() => $tmpl.cloneNode(true))
+    $label.textContent = name;
+    $thing.querySelector(".component_checkbox").onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("CLICK");
+    }
+    $thing.querySelector("a").setAttribute("href", link);
+    return $thing;
 }

@@ -7,7 +7,7 @@ import { ApplicationError } from "../../lib/error.js";
 import { toggle as toggleLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
-import { createThing, allocateMemory, css } from "./thing.js";
+import { createThing, css } from "./thing.js";
 import { handleError, getFiles } from "./ctrl_filesystem_state.js";
 import { ls } from "./model_files.js";
 
@@ -37,12 +37,17 @@ export default async function(render) {
             files: new Array(400).fill(1),
         }), 1000))),
         toggleLoader($page, false),
-        rxjs.mergeMap(({ files }) => {
-            const BLOCK_SIZE = 8;
-            const COLUMN_PER_ROW = 2;
+        rxjs.mergeMap(({ files }) => { // STEP1: setup the list of files
             const FILE_HEIGHT = 160;
-            const size = Math.min(files.length, BLOCK_SIZE * COLUMN_PER_ROW);
-            allocateMemory(BLOCK_SIZE * COLUMN_PER_ROW);
+            const BLOCK_SIZE = Math.ceil(document.body.clientHeight / FILE_HEIGHT) + 1;
+            // const BLOCK_SIZE = 7;
+            const COLUMN_PER_ROW = 2;
+            const VIRTUAL_SCROLL_MINIMUM_TRIGGER = 10;
+            let size = files.length;
+            if (size > VIRTUAL_SCROLL_MINIMUM_TRIGGER) {
+                size = BLOCK_SIZE * COLUMN_PER_ROW;
+            }
+            const $list = qs($page, ".list");
             const $fs = document.createDocumentFragment();
             for (let i = 0; i < size; i++) {
                 $fs.appendChild(createThing({
@@ -51,43 +56,56 @@ export default async function(render) {
                     link: "/view/test.txt",
                 }));
             }
-            const $list = qs($page, ".list");
+            animate($list, { time: 200, keyframes: slideYIn(5) });
+            $list.appendChild($fs);
+
+            /////////////////////////////////////////
+            // CASE 1: virtual scroll isn't enabled
+            if (files.length <= VIRTUAL_SCROLL_MINIMUM_TRIGGER) {
+                return rxjs.EMPTY;
+            }
+
+            /////////////////////////////////////////
+            // CASE 2: with virtual scroll
             const $listBefore = qs($page, ".ifscroll-before");
             const $listAfter = qs($page, ".ifscroll-after");
-
-            const height = (Math.floor(files.length / COLUMN_PER_ROW) - BLOCK_SIZE) * FILE_HEIGHT;
+            const height = (Math.ceil(files.length / COLUMN_PER_ROW) - BLOCK_SIZE) * FILE_HEIGHT;
+            if (height > 33554400) {
+                console.log(`maximum CSS height reached, requested height ${height} is too large`);
+            }
             const setHeight = (size) => {
+                if (size < 0 || size > height) throw new ApplicationError(
+                    "INTERNAL ERROR",
+                    `assertion on size failed: size[${size}] height[${height}]`
+                );
                 $listBefore.style.height = `${size}px`;
                 $listAfter.style.height = `${height - size}px`;
             };
             setHeight(0);
-            animate($list, { time: 200, keyframes: slideYIn(5) });
-            $list.appendChild($fs);
-            if (files.length === size) return rxjs.EMPTY;
+            const top = ($node) => $node.getBoundingClientRect().top;
             return rxjs.of({
                 files,
                 currentState: 0,
-                BLOCK_SIZE, COLUMN_PER_ROW, FILE_HEIGHT,
-                setHeight,
                 $list,
+                setHeight,
+                FILE_HEIGHT, BLOCK_SIZE, COLUMN_PER_ROW,
+                MARGIN: 35, // TODO: top($list) - top($list.closest(".scroll-y"));
             });
         }),
         rxjs.mergeMap(({
             files,
             BLOCK_SIZE, COLUMN_PER_ROW, FILE_HEIGHT,
+            MARGIN,
             currentState,
             height, setHeight,
             $list,
-        }) => rxjs.fromEvent(
-            $page.parentElement.parentElement.parentElement,
-            "scroll", { passive: true },
-        ).pipe(
-            rxjs.map((e) => Math.min(
-                Math.ceil(Math.max(0, e.target.scrollTop) / FILE_HEIGHT),
-                // cap state value when BLOCK_SIZE is larger than minimum value. This is to
-                // prevent issues when scrolling fast to the bottom (aka diff > 1)
-                Math.ceil(files.length / COLUMN_PER_ROW) - BLOCK_SIZE,
-            )),
+        }) => rxjs.fromEvent($page.closest(".scroll-y"), "scroll", { passive: true }).pipe(
+            rxjs.map((e) => {
+                // 0-------------0-----------1-----------2-----------3 ....
+                //    [padding]     $block1     $block2     $block3    ....
+                const nextState = Math.floor((e.target.scrollTop - MARGIN) / FILE_HEIGHT);
+                return Math.max(nextState, 0);
+            }),
             rxjs.distinctUntilChanged(),
             rxjs.debounce(() => new rxjs.Observable((observer) => {
                 const id = requestAnimationFrame(() => observer.next());
@@ -97,31 +115,32 @@ export default async function(render) {
                 // STEP1: calculate the virtual scroll paramameters
                 let diff = nextState - currentState;
                 const diffSgn = Math.sign(diff);
-                if (Math.abs(diff) > BLOCK_SIZE) diff = diffSgn * BLOCK_SIZE; // fast scroll
+                if (Math.abs(diff) > BLOCK_SIZE) { // diff is bound by BLOCK_SIZE
+                    // we can't be moving more than what is on the screen
+                    diff = diffSgn * BLOCK_SIZE;
+                }
                 let fileStart = nextState * COLUMN_PER_ROW;
                 if (diffSgn > 0) { // => scroll down
-                    // eg: files[15] BLOCK_SIZE=1 COLUMN_PER_ROW=1
-                    // -----------[currentState:0]--------------------------[nextState:5]---------
-                    // -----------[fileStart=5+1=6]
                     fileStart += BLOCK_SIZE * COLUMN_PER_ROW;
-                    // -----------[fileStart=6-min(5,1)=5]
                     fileStart -= Math.min(diff, BLOCK_SIZE) * COLUMN_PER_ROW;
                 }
                 let fileEnd = fileStart + diffSgn * diff * COLUMN_PER_ROW;
-
-                if (fileStart >= files.length) throw new ApplicationError(
-                    "INTERNAL_ERROR",
-                    `assert failed in virtual scroll range[${fileStart}:${fileEnd}] length[${files.length}]`,
-                ); else if (fileEnd > files.length) {
+                if (fileStart >= files.length) { // occur when BLOCK_SIZE is larger than its absolute minimum
+                    return;
+                }
+                else if (fileEnd > files.length) {
                     // occur when files.length isn't a multiple of COLUMN_PER_ROW and
-                    // we've scrolled to the bottom of the list
-                    nextState = Math.ceil(files.length / COLUMN_PER_ROW) - BLOCK_SIZE - 1;
-                    fileEnd = files.length;
-                    do {
+                    // we've scrolled to the bottom of the list already
+                    nextState = Math.ceil(files.length / COLUMN_PER_ROW) - BLOCK_SIZE;
+                    fileEnd = files.length - 1;
+                    for (let i=0; i<COLUMN_PER_ROW; i++) {
                         // add some padding to fileEnd to balance the list to the
                         // nearest COLUMN_PER_ROW
                         fileEnd += 1;
-                    } while (fileEnd % COLUMN_PER_ROW !== 0);
+                        if (fileEnd % COLUMN_PER_ROW === 0) {
+                            break
+                        }
+                    }
                 }
 
                 // STEP2: create the new elements
@@ -139,8 +158,6 @@ export default async function(render) {
                     }));
                     n += 1;
                 }
-                // console.log(`n[${n}] state[${currentState} -> ${nextState}] files[${fileStart}:${fileEnd}]`)
-                if (n === 0) return;
 
                 // STEP3: update the DOM
                 if (diffSgn > 0) { // scroll down
@@ -156,12 +173,4 @@ export default async function(render) {
         )),
         rxjs.catchError(ctrlError()),
     ));
-
-    // feature2: fs in "search" mode
-    // TODO
-}
-
-function isInViewport(element) {
-    const rect = element.getBoundingClientRect();
-    return rect.bottom > 0;
 }
