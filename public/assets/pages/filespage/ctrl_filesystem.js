@@ -115,7 +115,7 @@ export default async function(render) {
                 ); else if (fileEnd > files.length) {
                     // occur when files.length isn't a multiple of COLUMN_PER_ROW and
                     // we've scrolled to the bottom of the list
-                    nextState = Math.floor(files.length / COLUMN_PER_ROW) - BLOCK_SIZE;
+                    nextState = Math.ceil(files.length / COLUMN_PER_ROW) - BLOCK_SIZE - 1;
                     fileEnd = files.length;
                     do {
                         // add some padding to fileEnd to balance the list to the
@@ -140,15 +140,13 @@ export default async function(render) {
                     n += 1;
                 }
                 // console.log(`n[${n}] state[${currentState} -> ${nextState}] files[${fileStart}:${fileEnd}]`)
+                if (n === 0) return;
 
                 // STEP3: update the DOM
                 if (diffSgn > 0) { // scroll down
-                    // console.log("DOWN", n);
-                    // // if (!isInViewport($list.firstChild)) // TODO
                     $list.appendChild($fs);
                     for (let i = 0; i < n; i++) $list.firstChild.remove();
                 } else { // scroll up
-                    // console.log("UP", n)
                     $list.insertBefore($fs, $list.firstChild);
                     for (let i = 0; i < n; i++) $list.lastChild.remove();
                 }
