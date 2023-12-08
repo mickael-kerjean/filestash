@@ -1,5 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import { CSS } from "../../helpers/loader.js";
+import { addSelection } from "./model_files.js";
 
 const $tmpl = createElement(`
     <div class="component_thing view-grid not-selected" draggable="true">
@@ -31,7 +32,7 @@ export const css = CSS(import.meta.url, "thing.css");
 // drag and drop on other folders and many other non obvious stuff
 export function createThing({
     name = null,
-    // type = "N/A",
+    type = "N/A",
     // size = 0,
     // time = null,
     link = "",
@@ -43,11 +44,11 @@ export function createThing({
     if (!$label instanceof window.HTMLElement) throw new Error("assertion failed: $label must be an HTMLELement");
 
     $label.textContent = name;
-    $thing.querySelector(".component_checkbox").onclick = (e) => {
+    $thing.querySelector("a").setAttribute("href", link);
+    $thing.querySelector(".component_checkbox").onclick = function(e) {
         e.preventDefault();
         e.stopPropagation();
-        console.log("CLICK");
+        addSelection(name, type);
     }
-    $thing.querySelector("a").setAttribute("href", link);
     return $thing;
 }

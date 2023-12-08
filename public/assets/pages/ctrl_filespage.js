@@ -14,7 +14,7 @@ export default WithShell(function(render) {
     const $page = createElement(`
         <div class="component_page_filespage">
             <div is="frequent_access" class="hidden"></div>
-            <div is="component_submenu" class="hidden"></div>
+            <div is="component_submenu"></div>
             <div is="component_filesystem"></div>
             <style>${css}</style>
         </div>

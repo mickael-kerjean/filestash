@@ -1,10 +1,11 @@
 .component_filemanager_shell {
     display: flex;
     height: 100%;
+    background: white;
 }
 .component_filemanager_shell .component_sidebar {
     width: 240px;
-    padding: 10px;
+    padding: 20px;
 }
 .component_filemanager_shell .component_sidebar > h3 {
     padding-left: 10px;
@@ -25,39 +26,49 @@
 }
 
 .component_filemanager_shell [data-bind="filemanager-children"] {
-    border-top: 2px solid rgba(0,0,0,0.02);
-    border-left: 2px solid rgba(0,0,0,0.02);
+    border-top: 2px solid rgba(0,0,0,0.02);;
+    border-left: 2px solid rgba(0,0,0,0.02);;
+    border-right: 2px solid rgba(0,0,0,0.02);;
     transition: 1000ms ease border-color;
-    border-top-left-radius: 15px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 10px;
     display: flex;
     height: 100%;
     overflow: hidden;
-    background: white;
-    padding-top: 20px;
 }
-
 
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] {
     border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    transition: 0.5s ease border-top-left-radius, 0.5s ease border-top-right-radius;
     border-left: none;
+    border-right: none;
+}
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"].scrolling {
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
 }
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [is="component-breadcrumb"] > .component_breadcrumb,
-.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] > div {
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] .container {
     width: 95%;
     margin: 0 auto;
     max-width: 820px;
 }
-.component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component-breadcrumb"] {
-    background: white;
-}
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] {
     background: var(--bg-color);
 }
-.component_filemanager_shell .component_filesystem {
-    padding: 15px;
+
+.component_filemanager_shell [data-bind="filemanager-children"] .container,
+.component_filemanager_shell [is="component-breadcrumb"] .container {
+    max-width: 2100px;
 }
 
-.component_filemanager_shell [data-bind="filemanager-children"] > div,
-.component_filemanager_shell [is="component-breadcrumb"] {
-    max-width: 2100px;
+.component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_filesystem"],
+.component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_submenu"] .component_submenu{
+    padding: 0 30px;
+}
+
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_filesystem"],
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_submenu"] .component_submenu {
+    padding: 0px;
 }

@@ -60,7 +60,7 @@ class ComponentBreadcrumb extends HTMLDivElement {
 
     async render({ htmlLogout, htmlPathChunks }) {
         this.innerHTML = `
-        <div class="component_breadcrumb" role="navigation">
+        <div class="component_breadcrumb container" role="navigation">
             <style>${css}</style>
             <div class="breadcrumb no-select">
                 <div class="ul">

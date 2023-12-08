@@ -110,7 +110,7 @@
 /* GRID & LIST VIEW */
 .list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 50%);
+    grid-template-columns: repeat(auto-fill, 25%);
 }
 .list > .component_thing {
     width: 100%;

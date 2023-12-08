@@ -1,5 +1,22 @@
+import { onDestroy } from "../../lib/skeleton/index.js";
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
+
+const selection$ = new rxjs.BehaviorSubject([]);
+
+onDestroy(() => selection$.next([]));
+
+export function addSelection(name, type) {
+    selection$.next(selection$.value.concat({ name, type }));
+}
+
+export function clearSelection() {
+    selection$.next([]);
+}
+
+export function getSelection$() {
+    return selection$.asObservable();
+}
 
 export function ls() {
     return rxjs.pipe(

@@ -13,18 +13,13 @@ import { ls } from "./model_files.js";
 
 export default async function(render) {
     const $page = createElement(`
-        <div class="component_filesystem">
-            <div class="ifscroll-before">
-                <div></div><div></div>
-                <div></div><div></div>
-            </div>
+        <div class="component_filesystem container">
+            <div class="ifscroll-before"></div>
             <div class="list"></div>
-            <div class="ifscroll-after">
-                <div></div><div></div>
-                <div></div><div></div>
-            </div>
+            <div class="ifscroll-after"></div>
             <style>${await css}</style>
             <style>${await CSS(import.meta.url, "ctrl_filesystem.css")}</style>
+            <br>
         </div>
     `);
     render($page);
@@ -34,15 +29,15 @@ export default async function(render) {
     effect(rxjs.of(path).pipe(
         toggleLoader($page, true),
         rxjs.mergeMap(() => new Promise((done) => setTimeout(() => done({
-            files: new Array(400).fill(1),
+            files: new Array(100).fill(1),
         }), 1000))),
         toggleLoader($page, false),
         rxjs.mergeMap(({ files }) => { // STEP1: setup the list of files
             const FILE_HEIGHT = 160;
-            const BLOCK_SIZE = Math.ceil(document.body.clientHeight / FILE_HEIGHT) + 1;
-            // const BLOCK_SIZE = 7;
-            const COLUMN_PER_ROW = 2;
-            const VIRTUAL_SCROLL_MINIMUM_TRIGGER = 10;
+            // const BLOCK_SIZE = Math.ceil(document.body.clientHeight / FILE_HEIGHT) + 1;
+            const BLOCK_SIZE = 10;
+            const COLUMN_PER_ROW = 4;
+            const VIRTUAL_SCROLL_MINIMUM_TRIGGER = 20;
             let size = files.length;
             if (size > VIRTUAL_SCROLL_MINIMUM_TRIGGER) {
                 size = BLOCK_SIZE * COLUMN_PER_ROW;
