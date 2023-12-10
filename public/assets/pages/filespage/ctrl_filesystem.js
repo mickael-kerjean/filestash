@@ -7,7 +7,7 @@ import { ApplicationError } from "../../lib/error.js";
 import { toggle as toggleLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
-import { createThing, css } from "./thing.js";
+import { createThing } from "./thing.js";
 import { handleError, getFiles } from "./ctrl_filesystem_state.js";
 import { ls } from "./model_files.js";
 
@@ -17,8 +17,6 @@ export default async function(render) {
             <div class="ifscroll-before"></div>
             <div class="list"></div>
             <div class="ifscroll-after"></div>
-            <style>${await css}</style>
-            <style>${await CSS(import.meta.url, "ctrl_filesystem.css")}</style>
             <br>
         </div>
     `);

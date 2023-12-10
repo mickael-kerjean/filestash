@@ -44,6 +44,8 @@ async function load(route, opts) {
             ? require("../.." + route)
             : await import("../.." + route);
 
+        if (typeof module.init === "function") await module.init();
+
         clearTimeout(spinnerID);
         if (typeof module.default !== "function") {
             console.error(module, module.default);

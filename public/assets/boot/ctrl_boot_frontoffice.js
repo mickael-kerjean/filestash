@@ -1,5 +1,5 @@
 import rxjs, { ajax } from "../lib/rx.js";
-import { loadScript } from "../helpers/loader.js";
+import { loadJS } from "../helpers/loader.js";
 // import { setup_cache } from "../helpers/cache.js";
 import { report } from "../helpers/log.js";
 
@@ -7,7 +7,7 @@ export default async function main() {
     try {
         await Promise.all([ // procedure with no outside dependencies
             setup_translation(),
-            setup_xdg_open(),
+            // setup_xdg_open(),
             // setup_cache(), // TODO: dependency on session
             setup_device(),
             // setup_sw(), // TODO
@@ -89,7 +89,7 @@ function setup_translation() {
 
 async function setup_xdg_open() {
     window.overrides = {};
-    await loadScript("/overrides/xdg-open.js");
+    await loadJS("/overrides/xdg-open.js");
 }
 
 async function setup_device() {

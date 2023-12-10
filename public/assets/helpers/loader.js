@@ -2,9 +2,11 @@ import { get as getRelease } from "../pages/adminpage/model_release.js";
 
 let version = null;
 
-export async function loadScript(url) {
+export async function loadJS(baseURL, path) {
     const $script = document.createElement("script");
-    $script.setAttribute("src", url);
+    const link = new URL(path, baseURL);
+    $script.setAttribute("src", link.toString());
+    if (document.head.querySelector(`[src="${link.toString()}"]`)) return Promise.resolve();
     document.head.appendChild($script);
     return new Promise((done) => {
         $script.onload = done;
@@ -12,18 +14,31 @@ export async function loadScript(url) {
     });
 }
 
-export async function CSS(baseURL, ...arrayOfFilenames) {
-    const sheets = await Promise.all(arrayOfFilenames.map((filename) => loadSingleCSS(baseURL, filename)));
-    return sheets.join("\n\n");
+export async function loadCSS(baseURL, path) {
+    const $style = document.createElement("link");
+    const link = new URL(path, baseURL);
+    $style.setAttribute("href", link.toString());
+    $style.setAttribute("rel", "stylesheet");
+    if (document.head.querySelector(`[href="${link.toString()}"]`)) return Promise.resolve();
+    document.head.appendChild($style);
+    return new Promise((done) => {
+        $style.onload = done;
+        $style.onerror = done;
+    });
 }
 
-async function loadSingleCSS(baseURL, filename) {
-    const res = await fetch(baseURL.replace(/(.*)\/[^\/]+$/, "$1/") + `${filename}?version=${version}`, {
+export async function loadCSSInline(baseURL, filename) {
+    const res = await fetch(new URL(filename, baseURL).pathname + `?version=${version}`, {
         cache: "force-cache",
     });
     if (res.status !== 200) return `/* ERROR: ${res.status} */`;
     else if (!res.headers.get("Content-Type")?.startsWith("text/css")) return `/* ERROR: wrong type, got "${res.headers?.get("Content-Type")}"*/`;
     return await res.text();
+}
+
+export async function CSS(baseURL, ...arrayOfFilenames) {
+    const sheets = await Promise.all(arrayOfFilenames.map((filename) => loadCSSInline(baseURL, filename)));
+    return sheets.join("\n\n");
 }
 
 export async function init() {

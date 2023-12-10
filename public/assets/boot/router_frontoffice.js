@@ -8,13 +8,6 @@ const routes = {
     // /tags/.* -> "pages/ctrl_tags.js",
     // /s/.* -> "/pages/ctrl_share.js",
 
-    "/admin/backend": "/pages/adminpage/ctrl_backend.js",
-    "/admin/settings": "/pages/adminpage/ctrl_settings.js",
-    "/admin/logs": "/pages/adminpage/ctrl_logger.js",
-    "/admin/about": "/pages/adminpage/ctrl_about.js",
-    "/admin/setup": "/pages/adminpage/ctrl_setup.js",
-    "/admin/": "/pages/ctrl_adminpage.js",
-
     "": "/pages/ctrl_notfound.js",
 };
 

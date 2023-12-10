@@ -1,0 +1,7 @@
+.component_page_viewerpage {
+    width: 100%;
+    display: flex;
+}
+.component_page_viewerpage > div {
+    width: 100%;
+}

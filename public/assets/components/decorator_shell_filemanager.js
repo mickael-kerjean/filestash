@@ -1,6 +1,6 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
 import { qs } from "../lib/dom.js";
-import { CSS } from "../helpers/loader.js";
+import { loadCSS } from "../helpers/loader.js";
 
 export default function(ctrl) {
     const $page = createElement(`
@@ -27,7 +27,6 @@ export default function(ctrl) {
     }
 }
 
-
 async function ctrlSidebar(render) {
     // Quick Access:
     // - home folders
@@ -48,8 +47,6 @@ async function ctrlSidebar(render) {
 
             <h3>Tags</h3>
             <div></div>
-
-            <style>${await CSS(import.meta.url, "decorator_shell_filemanager.css")}</style>
         </div>
     `);
     render($comp);

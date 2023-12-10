@@ -1,7 +1,7 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
 import rxjs, { effect } from "../lib/rx.js";
 import { qs } from "../lib/dom.js";
-import { CSS } from "../helpers/loader.js";
+import { loadCSS } from "../helpers/loader.js";
 import WithShell from "../components/decorator_shell_filemanager.js"
 
 import { getState$ } from "./filespage/ctrl_filesystem_state.js";
@@ -16,7 +16,6 @@ export default WithShell(function(render) {
             <div is="frequent_access" class="hidden"></div>
             <div is="component_submenu"></div>
             <div is="component_filesystem"></div>
-            <style>${css}</style>
         </div>
     `);
     render($page);
@@ -34,4 +33,12 @@ export default WithShell(function(render) {
     componentSubmenu(createRender(qs($page, "[is=\"component_submenu\"]")))
 });
 
-const css = await CSS(import.meta.url, "ctrl_filespage.css");
+export function init() {
+    return Promise.all([
+        loadCSS(import.meta.url, "./ctrl_filespage.css"),
+        loadCSS(import.meta.url, "../components/decorator_shell_filemanager.css"),
+        loadCSS(import.meta.url, "./filespage/ctrl_filesystem.css"),
+        loadCSS(import.meta.url, "./filespage/thing.css"),
+        loadCSS(import.meta.url, "./filespage/ctrl_submenu.css"),
+    ]);
+}

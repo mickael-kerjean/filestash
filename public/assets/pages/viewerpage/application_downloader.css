@@ -1,0 +1,26 @@
+body:not(.dark-mode) .component_filedownloader {
+    background: #525659;
+}
+
+.component_filedownloader {
+    text-align: center;
+}
+
+.component_filedownloader .download_button {
+    background: var(--dark);
+    border-radius: 3px;
+    display: inline-block;
+    color: rgba(255,255,255,0.4);
+    margin-top: 50px;
+    text-transform: uppercase;
+    font-weight: bold;
+    box-shadow: rgba(0,0,0,.14) 0px 4px 5px 0px, rgba(0,0,0,.12) 0px 1px 10px 0px, rgba(0,0,0,.2) 0px 2px 4px -1px;
+}
+.component_filedownloader .download_button > * {
+    display: inline-block;
+    padding: 15px 20px;
+}
+.component_filedownloader component-icon img {
+    height: 20px;
+    float: right;
+}
