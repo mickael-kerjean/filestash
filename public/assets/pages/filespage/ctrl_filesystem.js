@@ -1,7 +1,7 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import { animate, slideYIn } from "../../lib/animate.js";
 import rxjs, { effect } from "../../lib/rx.js";
-import { CSS } from "../../helpers/loader.js";
+import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
 import { toggle as toggleLoader } from "../../components/loader.js";
@@ -26,27 +26,26 @@ export default async function(render) {
     const path = location.pathname.replace(new RegExp("^/files"), "");
     effect(rxjs.of(path).pipe(
         toggleLoader($page, true),
-        rxjs.mergeMap(() => new Promise((done) => setTimeout(() => done({
-            files: new Array(100).fill(1),
-        }), 1000))),
+        ls(),
         toggleLoader($page, false),
-        rxjs.mergeMap(({ files }) => { // STEP1: setup the list of files
+        rxjs.mergeMap(({ files, path }) => { // STEP1: setup the list of files
             const FILE_HEIGHT = 160;
-            // const BLOCK_SIZE = Math.ceil(document.body.clientHeight / FILE_HEIGHT) + 1;
-            const BLOCK_SIZE = 10;
+            const BLOCK_SIZE = Math.ceil(document.body.clientHeight / FILE_HEIGHT) + 1;
+            // const BLOCK_SIZE = 6;
             const COLUMN_PER_ROW = 4;
-            const VIRTUAL_SCROLL_MINIMUM_TRIGGER = 20;
+            const VIRTUAL_SCROLL_MINIMUM_TRIGGER = 50;
             let size = files.length;
             if (size > VIRTUAL_SCROLL_MINIMUM_TRIGGER) {
-                size = BLOCK_SIZE * COLUMN_PER_ROW;
+                size = Math.min(files.length, BLOCK_SIZE * COLUMN_PER_ROW);
             }
             const $list = qs($page, ".list");
             const $fs = document.createDocumentFragment();
             for (let i = 0; i < size; i++) {
+                const file = files[i];
                 $fs.appendChild(createThing({
-                    name: `file ${i}`,
-                    type: "file",
-                    link: "/view/test.txt",
+                    name: file.name,
+                    type: file.type,
+                    link: createLink(file, path),
                 }));
             }
             animate($list, { time: 200, keyframes: slideYIn(5) });
@@ -77,7 +76,7 @@ export default async function(render) {
             setHeight(0);
             const top = ($node) => $node.getBoundingClientRect().top;
             return rxjs.of({
-                files,
+                files, path,
                 currentState: 0,
                 $list,
                 setHeight,
@@ -86,7 +85,7 @@ export default async function(render) {
             });
         }),
         rxjs.mergeMap(({
-            files,
+            files, path,
             BLOCK_SIZE, COLUMN_PER_ROW, FILE_HEIGHT,
             MARGIN,
             currentState,
@@ -142,12 +141,13 @@ export default async function(render) {
                 for (let i = fileStart; i < fileEnd; i++) {
                     const file = files[i];
                     if (file === undefined) $fs.appendChild(createThing({
-                        name: "dummy",
+                        type: "hidden",
                     }))
                     else $fs.appendChild(createThing({
-                        name: `file - ${i}`,
-                        type: "file",
-                        link: "/view/test.txt",
+                        name: file.name,
+                        // name: `file ${i}`,
+                        type: file.type,
+                        link: createLink(file, path),
                     }));
                     n += 1;
                 }
@@ -166,4 +166,18 @@ export default async function(render) {
         )),
         rxjs.catchError(ctrlError()),
     ));
+}
+
+export function init() {
+    return Promise.all([
+        loadCSS(import.meta.url, "./ctrl_filesystem.css"),
+        loadCSS(import.meta.url, "./thing.css"),
+    ]);
+}
+
+function createLink(file, path) {
+    if (file.type === "file") {
+        return "/view" + path + file.name;
+    }
+    return "/files" + path + file.name + "/";
 }

@@ -5,7 +5,7 @@ export function getFilename() {
 }
 
 export function getDownloadUrl() {
-    return "/api/files/cat?path=" + prepare(getCurrentPath().replace(/%23/g, "#"));
+    return "/api/files/cat?path=" + getCurrentPath().replace(/%23/g, "#");
 }
 
 function getCurrentPath() {

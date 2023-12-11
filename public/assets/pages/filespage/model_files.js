@@ -23,13 +23,20 @@ export function ls() {
         rxjs.mergeMap((path) => ajax({
             url: `/api/files/ls?path=${path}`,
             responseType: "json"
-        })),
-        rxjs.map(({ responseJSON }) => ({ files: responseJSON.results }))
+        }).pipe(rxjs.map(({ responseJSON }) => ({
+            files: responseJSON.results.sort(sortByDefault),
+            path,
+        })))),
     );
 }
 
-// function repeat(element, times) {
-//     const result = Array(times);
-//     for (let i = 0; i < times; i++) result[i] = element;
-//     return result;
-// }
+const sortByDefault = (fileA, fileB) => {
+    if (fileA.type !== fileB.type) {
+        if (fileA.type === "file") return +1;
+        return -1;
+    }
+    // if (fileA.name < fileB.name) {
+    //     return -1
+    // }
+    return 0;
+};

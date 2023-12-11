@@ -2,10 +2,14 @@ import { get as getRelease } from "../pages/adminpage/model_release.js";
 
 let version = null;
 
-export async function loadJS(baseURL, path) {
+export async function loadJS(baseURL, path, opts = {}) {
     const $script = document.createElement("script");
     const link = new URL(path, baseURL);
     $script.setAttribute("src", link.toString());
+    for (let key in opts) {
+        $script.setAttribute(key, opts[key]);
+    }
+    if (typeof type === "string") ;
     if (document.head.querySelector(`[src="${link.toString()}"]`)) return Promise.resolve();
     document.head.appendChild($script);
     return new Promise((done) => {

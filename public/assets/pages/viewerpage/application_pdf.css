@@ -1,0 +1,12 @@
+.component_page_viewerpage .component_pdfviewer {
+    display: flex;
+    flex-direction: column;
+}
+.component_page_viewerpage .component_pdfviewer [data-bind="pdf"] {
+    overflow-y: scroll;
+    flex: 1 1 auto;
+}
+.component_page_viewerpage .component_pdfviewer [data-bind="pdf"] component-icon[name="loading"] {
+    padding-top: 75px;
+    display: block;
+}

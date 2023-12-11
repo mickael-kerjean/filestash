@@ -1,6 +1,7 @@
 import { onDestroy, createElement, createRender, createFragment } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation, onClick } from "../../lib/rx.js";
 import { animate } from "../../lib/animate.js";
+import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { getSelection$, clearSelection } from "./model_files.js";
 
@@ -12,6 +13,7 @@ export default async function(render) {
     effect(rxjs.fromEvent($scroll, "scroll", { passive: true }).pipe(
         rxjs.map((e) => e.target.scrollTop > 30),
         rxjs.distinctUntilChanged(),
+        rxjs.startWith(false),
         rxjs.tap((scrolling) => scrolling ?
                  $scroll.classList.add("scrolling") :
                  $scroll.classList.remove("scrolling")),
@@ -74,4 +76,8 @@ export default async function(render) {
             ),
         )),
     ));
+}
+
+export function init() {
+    return loadCSS(import.meta.url, "./ctrl_submenu.css");
 }
