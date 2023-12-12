@@ -5,12 +5,6 @@ export default async function(render) {
     const $page = createElement(`<div></div>`);
     render($page);
 
-    await Promise.all([
-        loadCSS(import.meta.url, "../../lib/vendor/codemirror/lib/codemirror.css"),
-        loadJS(import.meta.url, "../../lib/vendor/codemirror/lib/codemirror.js"),
-        loadCSS(import.meta.url, "./application_codemirror.css"),
-    ]);
-
     const editor = window.CodeMirror($page, {
         value: "Hello WOrld",
         lineNumbers: true,
@@ -27,4 +21,12 @@ export default async function(render) {
         matchTags: { bothTags: true },
         autoCloseTags: true,
     });
+}
+
+export function init() {
+    return Promise.all([
+        loadCSS(import.meta.url, "../../lib/vendor/codemirror/lib/codemirror.css"),
+        loadJS(import.meta.url, "../../lib/vendor/codemirror/lib/codemirror.js"),
+        loadCSS(import.meta.url, "./application_codemirror.css"),
+    ]);
 }

@@ -19,21 +19,17 @@ export default async function(render) {
     `);
     render($page);
 
+    const $link = qs($page, "a");
+    const $loading = qs($page, "component-icon");
     const setLoading = (isLoading) => {
-        const $link = qs($page, ".download_button > a");
-        const $loading = qs($page, "component-icon");
-        if (isLoading) {
-            $link.classList.add("hidden");
-            $loading.classList.remove("hidden");
-        } else {
-            $link.classList.remove("hidden");
-            $loading.classList.add("hidden");
-        }
+        isLoading ? $loading.classList.remove("hidden") : $loading.classList.add("hidden");
+        isLoading ? $link.classList.add("hidden") : $link.classList.remove("hidden");
     };
-
-    effect(rxjs.fromEvent(qs($page, "a"), "click").pipe(
-        rxjs.tap(() => setLoading(true)),
-        rxjs.tap(() => document.cookie = "download=yes; path=/; max-age=10;"),
+    effect(rxjs.fromEvent($link, "click").pipe(
+        rxjs.tap(() => {
+            setLoading(true);
+            document.cookie = "download=yes; path=/; max-age=10;";
+        }),
         rxjs.mergeMap(() => new Promise((done) => {
             const id = setInterval(() => {
                 if (/download=yes/.test(document.cookie)) return;
