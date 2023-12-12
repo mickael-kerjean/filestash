@@ -12,11 +12,10 @@ import { getFilename, getDownloadUrl } from "./common.js";
 import "../../components/menubar.js";
 import "../../components/icon.js";
 
-// const hasNativePDF = "application/pdf" in navigator.mimeTypes;
-const hasNativePDF = true
+const hasNativePDF = () => "application/pdf" in window.navigator.mimeTypes;
 
 export default async function(render) {
-    const ctrl = hasNativePDF ? ctrlPDFNative : ctrlPDFJs;
+    const ctrl = hasNativePDF() ? ctrlPDFNative : ctrlPDFJs;
     ctrl(render);
 }
 
@@ -56,7 +55,7 @@ async function ctrlPDFJs(render) {
     const $container = qs($page, `[data-bind="pdf"]`);
     const createBr = () => $container.appendChild(document.createElement("br"));
     const removeLoader = createLoader($container);
-    effect(rxjs.from(pdfjsLib.getDocument(getDownloadUrl()).promise).pipe(
+    effect(rxjs.from(window.pdfjsLib.getDocument(getDownloadUrl()).promise).pipe(
         removeLoader,
         rxjs.mergeMap(async (pdf) => {
             createBr();
@@ -72,11 +71,12 @@ async function ctrlPDFJs(render) {
 	            $canvas.height = viewport.height;
 	            $canvas.width = viewport.width;
                 $container.appendChild($canvas);
+                if (window.env === "test") $canvas.getContext = () => null;
 	            await page.render({
 		            canvasContext: $canvas.getContext("2d"),
 		            viewport: viewport,
 	            });
-                if (i % 2 === 0) await new Promise((done) => requestAnimationFrame(done));
+                await new Promise((done) => window.requestAnimationFrame(done));
             }
             createBr();
         }),
@@ -88,10 +88,10 @@ export function init() {
     const deps = [
         loadCSS(import.meta.url, "./application_pdf.css"),
     ];
-    if (!hasNativePDF) {
+    if (!hasNativePDF()) {
         deps.push(loadJS(import.meta.url, "../../lib/vendor/pdfjs/pdf.js", { type: "module" }));
         deps.push(loadJS(import.meta.url, "../../lib/vendor/pdfjs/pdf.worker.js", { type: "module" }).then(() => {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = join(import.meta.url, "../../lib/vendor/pdfjs/pdf.worker.js");
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = join(import.meta.url, "../../lib/vendor/pdfjs/pdf.worker.js");
         }));
     }
     return Promise.all(deps);

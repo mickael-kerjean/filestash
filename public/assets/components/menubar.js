@@ -1,7 +1,7 @@
 import { createElement } from "../lib/skeleton/index.js";
 import { loadCSS } from "../helpers/loader.js";
 
-export default class ComponentMenubar extends HTMLElement {
+export default class ComponentMenubar extends window.HTMLElement {
     constructor() {
         super();
 
