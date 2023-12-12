@@ -1,10 +1,16 @@
 .component_page_viewerpage .component_pdfviewer {
     display: flex;
     flex-direction: column;
+    background: #525659;
+    text-align:center;
 }
 .component_page_viewerpage .component_pdfviewer [data-bind="pdf"] {
     overflow-y: scroll;
     flex: 1 1 auto;
+}
+.component_page_viewerpage .component_pdfviewer [data-bind="pdf"] embed {
+    width:100%;
+    height:100%;
 }
 .component_page_viewerpage .component_pdfviewer [data-bind="pdf"] component-icon[name="loading"] {
     padding-top: 75px;

@@ -1,5 +1,6 @@
 import { createElement } from "../lib/skeleton/index.js";
-import rxjs from "../lib/rx.js";
+import rxjs, { effect } from "../lib/rx.js";
+import { animate, opacityIn } from "../lib/animate.js";
 
 class Loader extends window.HTMLElement {
     constructor() {
@@ -42,25 +43,27 @@ class Loader extends window.HTMLElement {
     }
 }
 
-
-// function tap(sideEffectFn) {
-//     return (source) => {
-//         // TODO: use source.lift
-//         console.log("SOURCE", source)
-//         source.lift({
-//             call: (subscriber, source) => {
-//                 console.log(source, subscriber);
-//                 return subscriber;
-//             },
-//         })
-//     }
-// }
-const tap = rxjs.tap;
-
 customElements.define("component-loader", Loader);
 
+export function createLoader($parent, opts = {}) {
+    const { wait = 500 } = opts
+    const cancel = effect(new rxjs.Observable((observer) => {
+        const $icon = createElement(`<component-icon name="loading"></component-icon>`);
+        const id = window.setTimeout(() => {
+            $parent.appendChild($icon);
+            animate($icon, { time: 1000, keyframes: opacityIn() });
+        }, wait);
+        return () => {
+            clearTimeout(id);
+            $icon.remove();
+        };
+    }));
+    return rxjs.tap(() => cancel());
+}
+
+// > after this should be deprecated
 export default createElement("<component-loader></component-loader>");
 export function toggle($node, show = false) {
-    if (show === true) return tap(() => $node.appendChild(createElement("<component-loader></component-loader>")));
-    else return tap(() => $node.querySelector("component-loader")?.remove());
+    if (show === true) return rxjs.tap(() => $node.appendChild(createElement("<component-loader></component-loader>")));
+    else return rxjs.tap(() => $node.querySelector("component-loader")?.remove());
 }
