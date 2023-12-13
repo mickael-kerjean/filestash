@@ -1,5 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
+import { transition, slideYIn } from "../../lib/animate.js";
 import { qs } from "../../lib/dom.js";
 import { loadCSS } from "../../helpers/loader.js";
 import t from "../../lib/locales.js";
@@ -17,7 +18,7 @@ export default async function(render) {
             </div>
         </div>
     `);
-    render($page);
+    render(transition($page, { timeEnter: 100, enter: slideYIn(2) }));
 
     const $link = qs($page, "a");
     const $loading = qs($page, "component-icon");

@@ -4,7 +4,7 @@ import rxjs, { effect } from "../../lib/rx.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
-import { toggle as toggleLoader } from "../../components/loader.js";
+import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
 import { createThing } from "./thing.js";
@@ -22,12 +22,13 @@ export default async function(render) {
     `);
     render($page);
 
+
     // feature: virtual scrolling
+    const removeLoader = createLoader($page);
     const path = location.pathname.replace(new RegExp("^/files"), "");
     effect(rxjs.of(path).pipe(
-        toggleLoader($page, true),
         ls(),
-        toggleLoader($page, false),
+        removeLoader,
         rxjs.mergeMap(({ files, path }) => { // STEP1: setup the list of files
             const FILE_HEIGHT = 160;
             const BLOCK_SIZE = Math.ceil(document.body.clientHeight / FILE_HEIGHT) + 1;

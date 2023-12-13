@@ -1,4 +1,6 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
+import { onDestroy } from "../lib/skeleton/lifecycle.js";
+import { animate, slideYOut } from "../lib/animate.js";
 import { qs } from "../lib/dom.js";
 import { loadCSS } from "../helpers/loader.js";
 
@@ -21,8 +23,17 @@ export default function(ctrl) {
         qs($page, `[is="component-breadcrumb"]`).setAttribute("path", urlToPath(location.pathname));
 
         // feature2: setup the childrens
-        ctrl(createRender(qs($page, `[data-bind="filemanager-children"]`)));
+        const $main = qs($page, `[data-bind="filemanager-children"]`);
+        $main.classList.remove("hidden");
+        ctrl(createRender($main));
         ctrlSidebar(createRender(qs($page, `[data-bind="sidebar"]`)));
+
+        onDestroy(async () => {
+            if ((history.state.previous || "").startsWith("/view/") && location.pathname.startsWith("/files/")) {
+                await animate($main, { time: 100, keyframes: slideYOut(20), fill: "none" });
+                $main.classList.add("hidden");
+            }
+        });
     }
 }
 

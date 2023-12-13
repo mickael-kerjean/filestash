@@ -48,7 +48,18 @@ customElements.define("component-loader", Loader);
 export function createLoader($parent, opts = {}) {
     const { wait = 500 } = opts
     const cancel = effect(new rxjs.Observable((observer) => {
-        const $icon = createElement(`<component-icon name="loading"></component-icon>`);
+        const $icon = createElement(`
+            <div class="component_loader">
+                <style>
+                    .component_loader {
+                        display: block;
+                        text-align: center;
+                        margin-top: 25px;
+                    }
+                </style>
+                <component-icon name="loading"></component-icon>
+            </div>
+        `);
         const id = window.setTimeout(() => {
             $parent.appendChild($icon);
             animate($icon, { time: 1000, keyframes: opacityIn() });

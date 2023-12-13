@@ -3,7 +3,7 @@
 }
 .component_thing:hover .box, .component_thing .highlight.box {
     transition: 0.1s ease-out background;
-    background: rgba(0, 0, 0, 0.07);
+    background: var(--border);
     border-color: var(--super-light);
     border-radius: 5px;
 }
@@ -172,7 +172,7 @@
     position: relative;
     border-width: 0;
     box-sizing: border-box;
-    border: 2px solid rgba(100, 100, 100, 0.05);
+    border: 2px solid var(--border);
     border-radius: 5px;
 }
 .list > .component_thing.view-grid .box > span > img {
@@ -280,7 +280,7 @@
     transform: scale(0.6);
 }
 .list > .component_thing.view-grid.not-selected .box:hover .image_layer {
-    background: rgba(242, 242, 242, 0.7);
+    background: var(--border);
 }
 .list > .component_thing.view-grid.not-selected .box.preview:hover .component_filename {
     opacity: 1;

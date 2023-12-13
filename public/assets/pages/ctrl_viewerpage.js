@@ -6,6 +6,7 @@ import { loadCSS } from "../helpers/loader.js";
 import WithShell from "../components/decorator_shell_filemanager.js";
 import { get as getConfig } from "../model/config.js";
 
+import ctrlError from "./ctrl_error.js";
 import { opener } from "./viewerpage/mimetype.js";
 import { getCurrentPath } from "./viewerpage/common.js";
 
@@ -22,6 +23,8 @@ function loadModule(appName) {
         return import("./viewerpage/application_codemirror.js");
     case "pdf":
         return import("./viewerpage/application_pdf.js");
+    case "image":
+        return import("./viewerpage/application_image.js");
     case "download":
         return import("./viewerpage/application_downloader.js");
     default:
@@ -37,6 +40,7 @@ export default WithShell(async function(render) {
         rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
         rxjs.mergeMap(([opener]) => loadModule(opener)),
         rxjs.map((module) => module.default(createRender($page))),
+        rxjs.catchError(ctrlError()),
     ));
 })
 
@@ -48,6 +52,7 @@ export async function init() {
             rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
             rxjs.mergeMap(([opener]) => loadModule(opener)),
             rxjs.mergeMap((module) => typeof module.init === "function"? module.init() : rxjs.EMPTY),
+            rxjs.catchError(() => rxjs.EMPTY),
         ).toPromise(),
     ]);
 }

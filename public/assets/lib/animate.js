@@ -11,7 +11,7 @@ export function transition($node, opts = {}) {
 }
 
 export function animate($node, opts = {}) {
-    const { time = 250, keyframes = opacityIn() } = opts;
+    const { time = 250, keyframes = opacityIn(), fill = "forwards" } = opts;
 
     if (!$node) return Promise.resolve();
     else if (typeof $node.animate !== "function") return Promise.resolve();
@@ -20,7 +20,7 @@ export function animate($node, opts = {}) {
     return new Promise((done) => {
         $node.animate(keyframes, {
             duration: time,
-            fill: "forwards"
+            fill,
         }).onfinish = done;
     });
 }

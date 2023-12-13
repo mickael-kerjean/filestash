@@ -2,7 +2,7 @@
     position: sticky;
     top: 0;
     z-index: 3;
-    padding: 5px 0 5px 0;
+    padding: 8px 0;
     backdrop-filter: blur(10px);
     transition: 0.2s ease box-shadow;
 }
@@ -32,14 +32,15 @@
 }
 [is="component_submenu"] .component_submenu .action.left button,
 [is="component_submenu"] .component_submenu .action.right:hover{
-    background: rgba(230,230,230, 0.8);
-
+    background: var(--border);
 }
 [is="component_submenu"] .component_submenu .action button:hover {
-    background: rgba(0,0,0,.1);
+    filter: brightness(0.9);
+    background: var(--border);
 }
 [is="component_submenu"] .component_submenu .action button:active {
-    background: rgba(0,0,0,.15);
+    filter: brightness(0.75);
+    background: var(--border);
 }
 
 [is="component_submenu"] .component_submenu .action.right {
