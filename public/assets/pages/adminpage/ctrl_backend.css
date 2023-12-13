@@ -35,8 +35,8 @@
     text-transform: uppercase;
     border-radius: 2px;
 
-    background: rgba(0, 0, 0, 0.05);
-    border: 2px solid rgba(0, 0, 0, 0.05);
+    background: var(--border);
+    border: 2px solid var(--border);
 }
 @media (max-width: 900px) {
     .component_dashboard .box-container .box-item > div {

@@ -21,9 +21,6 @@
 .component_breadcrumb .breadcrumb .ul div, .component_breadcrumb .breadcrumb .ul .li {
     display: inline-block;
 }
-/* .component_breadcrumb:hover .breadcrumb { */
-/*     border-bottom: 2px solid rgba(100, 100, 100, 0.1); */
-/* } */
 .component_breadcrumb .component_logout {
     float: right;
     display: inline-block;
@@ -81,6 +78,9 @@
 }
 .component_breadcrumb .component_separator img {
     vertical-align: middle;
+}
+.dark-mode .component_breadcrumb .component_separator img {
+    filter: brightness(0.5) invert(1);
 }
 
 body.touch-no .component_path-element-wrapper a.label:hover {
@@ -157,10 +157,9 @@ body.touch-yes ul span::-webkit-scrollbar-thumb {
     }
     100% {
         transform: scale(1);
-    } }
-.dark-mode .component_breadcrumb .breadcrumb {
-    background: rgba(0, 0, 0, 0.07);
+    }
 }
+
 .dark-mode .component_breadcrumb .component_path-element .label {
     color: #f1f1f1;
     opacity: 0.7;

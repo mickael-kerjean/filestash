@@ -1,6 +1,9 @@
 body:not(.dark-mode) .component_filedownloader {
     background: #525659;
 }
+body.dark-mode .component_filedownloader {
+    background: var(--bg-color);
+}
 
 .component_filedownloader {
     text-align: center;
@@ -10,7 +13,7 @@ body:not(.dark-mode) .component_filedownloader {
     background: var(--dark);
     border-radius: 3px;
     display: inline-block;
-    color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.6);
     margin-top: 50px;
     text-transform: uppercase;
     font-weight: bold;

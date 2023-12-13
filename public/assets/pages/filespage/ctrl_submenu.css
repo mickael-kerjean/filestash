@@ -42,14 +42,19 @@
     filter: brightness(0.75);
     background: var(--border);
 }
-
 [is="component_submenu"] .component_submenu .action.right {
     float: right;
     border-radius: 5px;
 }
 
 
-
+.dark-mode [is="component_submenu"] .component_submenu .action button img {
+    filter: brightness(70%) invert(1);
+}
+.dark-mode [is="component_submenu"] .component_submenu .action button {
+    color: var(--light);
+    font-weight: bold;
+}
 
 
 

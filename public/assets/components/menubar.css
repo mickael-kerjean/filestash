@@ -51,7 +51,7 @@ google-cast-launcher {
 }
 
 .dark-mode .component_menubar {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-color);
 }
 .dark-mode .component_menubar .component_container {
     color: inherit;

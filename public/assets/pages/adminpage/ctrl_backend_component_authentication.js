@@ -76,6 +76,7 @@ export default async function(render) {
                 type: cfg?.middleware?.identity_provider?.type?.value,
                 params: JSON.parse(cfg?.middleware?.identity_provider?.params?.value || "{}"),
             })),
+            rxjs.catchError(() => rxjs.of({})),
             rxjs.map((idpState) => [availableSpecs, idpState]),
         )),
         rxjs.concatMap(async([
@@ -227,6 +228,7 @@ export default async function(render) {
         rxjs.mergeMap((spec) => getAdminConfig().pipe(
             rxjs.first(),
             rxjs.map((cfg) => JSON.parse(cfg?.middleware?.attribute_mapping?.params?.value || "{}")),
+            rxjs.catchError(() => rxjs.of({})),
             rxjs.map((cfg) => {
                 // transform the form state from legacy format (= an object struct which was replicating the spec object)
                 // to the new format which leverage the dom (= or the input name attribute to be precise) to store the entire schema

@@ -72,3 +72,7 @@
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_submenu"] .component_submenu {
     padding: 0px;
 }
+
+body.dark-mode .component_filemanager_shell {
+    background: #2b2d30;
+}

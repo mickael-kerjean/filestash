@@ -122,8 +122,4 @@ const css = `
     margin-right: -3px;
     vertical-align: middle;
 }
-
-.dark-mode .error-page, .dark-mode .backnav {
-    color: rgba(255, 255, 255, 0.8);
-}
-`
+`;

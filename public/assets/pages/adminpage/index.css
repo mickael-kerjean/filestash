@@ -66,6 +66,7 @@
     position: sticky;
     background: rgba(253, 253, 252, 0.9);
     backdrop-filter: saturate(180%) blur(20px);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     z-index: 2;
     top: 0;
 }
@@ -128,7 +129,7 @@
 .component_page_admin .formbuilder h2 ~ div > div > label,
 .component_page_admin .formbuilder h2 ~ div > div > div > label {
     display: block;
-    border-bottom: 2px dashed rgba(100, 100, 100, 0.1);
+    border-bottom: 2px dashed var(--border);
     margin-bottom: 15px;
     padding-bottom: 5px;
     margin-top: 15px;
@@ -136,8 +137,8 @@
 .component_page_admin .formbuilder .component_input,
 .component_page_admin .formbuilder .component_textarea,
 .component_page_admin .formbuilder .component_select {
-    background: rgba(0, 0, 0, 0.05);
-    border: 2px solid rgba(0, 0, 0, 0.05);
+    background: var(--border);
+    border: 2px solid var(--border);
     border-radius: 3px;
     padding-left: 5px;
 }

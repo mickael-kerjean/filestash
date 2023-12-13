@@ -7,7 +7,7 @@ button {
   cursor: pointer;
   font-size: inherit;
   border-radius: 3px;
-  color: inherit;
+  color: rgba(0,0,0,0.6);
   background: inherit;
 }
 button.primary {
