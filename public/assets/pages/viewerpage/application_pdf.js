@@ -7,7 +7,7 @@ import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { join } from "../../lib/path.js";
 import ctrlError from "../ctrl_error.js";
 
-import { getFilename, getDownloadUrl } from "./common.js";
+import { transition, getFilename, getDownloadUrl } from "./common.js";
 
 import "../../components/menubar.js";
 import "../../components/icon.js";
@@ -38,8 +38,8 @@ function ctrlPDFNative(render) {
     effect(onLoad(qs($page, "embed")).pipe(
         removeLoader,
         rxjs.tap(($embed) => $embed.classList.remove("hidden")),
-        rxjs.tap(($embed) => animate($embed, { time: 200, keyframes: opacityIn() })),
-        rxjs.catchError(ctrlError),
+        rxjs.tap(($embed) => transition($embed)),
+        rxjs.catchError(ctrlError()),
     ));
 
 
@@ -82,7 +82,8 @@ async function ctrlPDFJs(render) {
             }
             createBr();
         }),
-        rxjs.catchError(ctrlError),
+        rxjs.tap(() => transition($container)),
+        rxjs.catchError(ctrlError()),
     ));
 }
 
