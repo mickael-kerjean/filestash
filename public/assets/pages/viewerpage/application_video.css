@@ -1,0 +1,189 @@
+body:not(.dark-mode) .component_videoplayer {
+    background: #525659;
+}
+
+.component_videoplayer {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+}
+.component_videoplayer .video_container {
+    display: flex;
+    flex: 1;
+    text-align: center;
+    overflow: hidden;
+    padding: 15px 10px 65px 10px;
+    height: 100%;
+    box-sizing: border-box;
+}
+.component_videoplayer .video_container > span {
+    display: flex;
+    flex: 1;
+    text-align: center;
+    overflow: hidden;
+    height: 100%;
+    box-sizing: border-box;
+}
+.component_videoplayer .video_container .video_screen {
+    background: black;
+    box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+    position: relative;
+    border-radius: 3px;
+    margin: auto;
+    position: relative;
+    width: 800px;
+}
+.component_videoplayer .video_container .video_screen .video_wrapper {
+    height: 450px;
+}
+.component_videoplayer .video_container .video_screen .loader {
+    position: absolute;
+    top: 30%;
+    width: 100%;
+}
+.component_videoplayer .video_container .video_screen.is-casting-yes .videoplayer_control, .component_videoplayer .video_container .video_screen.video-state-pause .videoplayer_control, .component_videoplayer .video_container .video_screen.video-state-buffer .videoplayer_control, .component_videoplayer .video_container .video_screen.video-state-play:hover .videoplayer_control {
+    opacity: 1;
+    transition: 0.1s opacity ease;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control {
+    transition: 0.5s opacity ease;
+    opacity: 0;
+    display: flex;
+    text-align: left;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAADCCAYAAACIaaiTAAAAAXNSR0IArs4c6QAAARJJREFUOE9lyNdHBQAAhfHb3nvvuu2997jNe29TJJEkkkgSSSSJJJJEEkkiifRH5jsP56Xz8PM5gcC/xfCIWBNHiXiTQIlEk0SJZJNCiVRIM+mUyDCZlMgy2ZTIMbmUyDP5lCgwhZQoMsWUKDGllCgz5ZSogEpTRYlqU0OJoKmlRJ2pp0SDaaREk2mmRItppUSbaadEh+mkRBd0mx5K9Jo+SvSbAUoMmiFKDJsRSoyaMUqMmwlKhMwkJabMNCVmYNbMUSJsIpSImnlKLJhFSiyZZWoFVmEN1mEDNmELtmEHdmEP9uEADuEIjuEETuEMzuECLuEKruEGbuEO7uEBHuEJnuEFXuEN3uEDPuELvuEHfv8AoRErEi7Uc8UAAAAASUVORK5CYII=);
+    background-repeat: repeat-x;
+    background-size: contain;
+    padding: 0 0 7px 0;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control img {
+    cursor: pointer;
+    width: 25px;
+    filter: brightness(0) invert(1);
+    padding: 5px 5px 5px 10px;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control input[type="range"] {
+    width: 60px;
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+    background: transparent;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    border: none;
+    border-radius: 50%;
+    background: white;
+    margin-top: -5px;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control input[type="range"]::-moz-range-thumb {
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    border: none;
+    border-radius: 50%;
+    background: white;
+    margin-top: -5px;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 2px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 2px;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control input[type="range"]::-moz-range-track {
+    width: 100%;
+    height: 2px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 2px;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control .timecode {
+    color: white;
+    margin: auto 0;
+    padding-left: 10px;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control .timecode .hint {
+    position: absolute;
+    top: -40px;
+    margin-left: -23px;
+    font-size: 0.9rem;
+    background: #f1f1f155;
+    border-radius: 3px;
+    padding: 2px 5px;
+    background: var(--dark);
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control .progress {
+    position: absolute;
+    width: 100%;
+    top: -20px;
+    height: 20px;
+    cursor: pointer;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control .progress .progress-active, .component_videoplayer .video_container .video_screen .videoplayer_control .progress .progress-buffer, .component_videoplayer .video_container .video_screen .videoplayer_control .progress .progress-placeholder {
+    top: 10px;
+    position: absolute;
+    height: 4px;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control .progress .progress-active {
+    background: var(--primary);
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control .progress .progress-active .thumb {
+    display: none;
+    float: right;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    margin-top: 0px;
+    position: relative;
+    left: 3px;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control .progress .progress-buffer {
+    background: #e2e2e244;
+}
+.component_videoplayer .video_container .video_screen .videoplayer_control .progress .progress-placeholder {
+    background: #e2e2e222;
+    width: 100%;
+}
+.component_videoplayer .video_container video {
+    width: 100%;
+    height: 100%;
+}
+
+.component_videoplayer .video_container .video_screen .videoplayer_control:hover .progress .progress-active .thumb {
+    display: block;
+}
+
+.video-enter, .video-appear {
+    opacity: 0;
+}
+
+.video-enter.video-enter-active, .video-appear.video-appear-active {
+    transition: top .3s,right .3s,bottom .3s,left .3s,max-width .3s,max-height .3s;
+    -webkit-animation-name: zoomIn;
+    animation-name: zoomIn;
+    animation-duration: .3s;
+    -webkit-animation-timing-function: cubic-bezier(0.51, 0.92, 0.24, 1.15);
+    animation-timing-function: cubic-bezier(0.51, 0.92, 0.24, 1.15);
+    opacity: 1;
+}
+
+@keyframes zoomIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

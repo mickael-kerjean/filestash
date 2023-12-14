@@ -1,4 +1,5 @@
 [is="component_submenu"] {
+    margin-top: 20px;
     position: sticky;
     top: 0;
     z-index: 3;
@@ -54,6 +55,9 @@
 .dark-mode [is="component_submenu"] .component_submenu .action button {
     color: var(--light);
     font-weight: bold;
+}
+.dark-mode .scrolling [is="component_submenu"] {
+    background: var(--bg-color);
 }
 
 

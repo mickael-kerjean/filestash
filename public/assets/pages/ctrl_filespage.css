@@ -4,9 +4,7 @@
     height: auto;
     min-height: 100%;
     width: 100%;
-    align-self: flex-start;
     background: var(--bg-color);
-    padding-top: 20px;
     box-sizing: border-box;
 }
 

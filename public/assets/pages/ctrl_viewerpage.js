@@ -27,6 +27,16 @@ function loadModule(appName) {
         return import("./viewerpage/application_image.js");
     case "download":
         return import("./viewerpage/application_downloader.js");
+    case "form":
+        return import("./viewerpage/application_form.js");
+    case "audio":
+        return import("./viewerpage/application_audio.js");
+    case "video":
+        return import("./viewerpage/application_video.js");
+    case "ebook":
+        return import("./viewerpage/application_ebook.js");
+    case "appframe":
+        return import("./viewerpage/application_iframe.js");
     default:
         throw new ApplicationError("Internal Error", `Unknown opener app "${appName}" at "${getCurrentPath()}"`);
     }
@@ -38,10 +48,12 @@ export default WithShell(async function(render) {
 
     effect(mime$.pipe(
         rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
-        rxjs.mergeMap(([opener]) => loadModule(opener)),
-        rxjs.map((module) => module.default(createRender($page))),
+        rxjs.mergeMap(([opener, options]) => rxjs.from(loadModule(opener)).pipe(
+            rxjs.map((module) => module.default(createRender($page), options)),
+        )),
         rxjs.catchError(ctrlError()),
     ));
+
 })
 
 export async function init() {

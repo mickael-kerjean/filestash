@@ -11,7 +11,7 @@ export default function(ctrl) {
             <div data-bind="sidebar" class="hidden"></div>
             <div style="width:100%;display: flex; flex-direction: column;">
                 <div is="component-breadcrumb" path="${urlToPath(history.state.previous)}"></div>
-                <div class="scroll-y" data-bind="filemanager-children"></div>
+                <div data-bind="filemanager-children"></div>
             </div>
         </div>
     `);

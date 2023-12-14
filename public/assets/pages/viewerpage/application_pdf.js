@@ -39,8 +39,10 @@ function ctrlPDFNative(render) {
         removeLoader,
         rxjs.tap(($embed) => $embed.classList.remove("hidden")),
         rxjs.tap(($embed) => animate($embed, { time: 200, keyframes: opacityIn() })),
-        rxjs.catchError(ctrlError(render)),
+        rxjs.catchError(ctrlError),
     ));
+
+
 }
 
 async function ctrlPDFJs(render) {
@@ -80,7 +82,7 @@ async function ctrlPDFJs(render) {
             }
             createBr();
         }),
-        rxjs.catchError(ctrlError(render)),
+        rxjs.catchError(ctrlError),
     ));
 }
 
