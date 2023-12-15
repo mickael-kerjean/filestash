@@ -1,6 +1,4 @@
 .component_page_viewerpage .component_pdfviewer {
-    display: flex;
-    flex-direction: column;
     background: #525659;
     text-align:center;
 }

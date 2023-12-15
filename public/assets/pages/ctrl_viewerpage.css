@@ -4,4 +4,6 @@
 }
 .component_page_viewerpage > div {
     width: 100%;
+    display: flex;
+    flex-direction: column;
 }

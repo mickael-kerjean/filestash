@@ -3,11 +3,6 @@ body:not(.dark-mode) .component_formviewer {
 
 .component_formviewer {
     background: #525659;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    width: 100%;
-    color: var(--color);
 }
 .component_formviewer > .formviewer_container {
     padding-top: 20px;

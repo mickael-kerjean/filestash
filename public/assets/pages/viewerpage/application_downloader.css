@@ -6,6 +6,7 @@ body.dark-mode .component_filedownloader {
 }
 
 .component_filedownloader {
+    display: block!important;
     text-align: center;
 }
 
