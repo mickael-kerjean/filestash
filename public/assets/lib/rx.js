@@ -1,4 +1,5 @@
 import { onDestroy } from "./skeleton/index.js";
+import assert from "./assert.js";
 import * as rxjs from "./vendor/rxjs.min.js";
 
 // https://github.com/ReactiveX/rxjs/issues/4416#issuecomment-620847759
@@ -20,19 +21,19 @@ const getFn = (obj, arg0, ...args) => {
 };
 
 export function applyMutation($node, ...keys) {
-    if (!$node) throw new Error("undefined node");
+    assert.type($node, window.HTMLElement);
     const execute = getFn($node, ...keys);
     return rxjs.tap((val) => Array.isArray(val) ? execute(...val) : execute(val));
 }
 
 export function applyMutations($node, ...keys) {
-    if (!$node) throw new Error("undefined node");
+    assert.type($node, window.HTMLElement);
     const execute = getFn($node, ...keys);
     return rxjs.tap((vals) => vals.forEach((val) => execute(val)));
 }
 
 export function stateMutation($node, attr) {
-    if (!$node) throw new Error("undefined node");
+    assert.type($node, window.HTMLElement);
     return rxjs.tap((val) => $node[attr] = val);
 }
 
@@ -41,12 +42,14 @@ export function preventDefault() {
 }
 
 export function onClick($node) {
-    if (!$node) throw new Error("undefined node");
-    return rxjs.fromEvent($node, "click").pipe(rxjs.map(() => $node));
+    assert.type($node, window.HTMLElement);
+    return rxjs.fromEvent($node, "click").pipe(
+        rxjs.map(() => $node)
+    );
 }
 
 export function onLoad($node) {
-    if (!$node) throw new Error("undefined node");
+    assert.type($node, window.HTMLElement);
     return new rxjs.Observable((observer) => {
         $node.onload = () => {
             observer.next($node);
