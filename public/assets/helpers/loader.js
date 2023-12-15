@@ -4,7 +4,7 @@ let version = null;
 
 export async function loadJS(baseURL, path, opts = {}) {
     const $script = document.createElement("script");
-    const link = new URL(path, baseURL);
+    const link = new URL(path, baseURL) + "?version=" + version;
     $script.setAttribute("src", link.toString());
     for (let key in opts) {
         $script.setAttribute(key, opts[key]);
@@ -20,7 +20,7 @@ export async function loadJS(baseURL, path, opts = {}) {
 
 export async function loadCSS(baseURL, path) {
     const $style = document.createElement("link");
-    const link = new URL(path, baseURL);
+    const link = new URL(path, baseURL) + "?version=" + version;
     $style.setAttribute("href", link.toString());
     $style.setAttribute("rel", "stylesheet");
     if (document.head.querySelector(`[href="${link.toString()}"]`)) return Promise.resolve();

@@ -1,7 +1,9 @@
 import rxjs, { ajax } from "../lib/rx.js";
 import { loadJS } from "../helpers/loader.js";
 // import { setup_cache } from "../helpers/cache.js";
+import { init as setup_loader } from "../helpers/loader.js";
 import { report } from "../helpers/log.js";
+
 
 export default async function main() {
     try {
@@ -12,6 +14,7 @@ export default async function main() {
             setup_device(),
             // setup_sw(), // TODO
             setup_blue_death_screen(),
+            setup_loader(),
             setup_history(),
         ]);
         // await Config.refresh()

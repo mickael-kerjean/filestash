@@ -1,6 +1,5 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, onLoad } from "../../lib/rx.js";
-import { animate, opacityIn } from "../../lib/animate.js";
 import { qs } from "../../lib/dom.js";
 import { createLoader } from "../../components/loader.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
@@ -82,7 +81,6 @@ async function ctrlPDFJs(render) {
             }
             createBr();
         }),
-        rxjs.tap(() => transition($container)),
         rxjs.catchError(ctrlError()),
     ));
 }
