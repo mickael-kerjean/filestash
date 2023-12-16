@@ -20,7 +20,7 @@ const mime$ = getConfig().pipe(
 function loadModule(appName) {
     switch(appName) {
     case "editor":
-        return import("./viewerpage/application_codemirror.js");
+        return import("./viewerpage/application_editor.js");
     case "pdf":
         return import("./viewerpage/application_pdf.js");
     case "image":

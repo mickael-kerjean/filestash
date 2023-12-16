@@ -77,6 +77,6 @@ export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "../../lib/vendor/codemirror/lib/codemirror.css"),
         loadJS(import.meta.url, "../../lib/vendor/codemirror/lib/codemirror.js"),
-        loadCSS(import.meta.url, "./application_codemirror.css"),
+        loadCSS(import.meta.url, "./application_editor.css"),
     ]);
 }
