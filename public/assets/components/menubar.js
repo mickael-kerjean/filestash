@@ -1,4 +1,5 @@
 import { createElement } from "../lib/skeleton/index.js";
+import { basename } from "../lib/path.js";
 import { loadCSS } from "../helpers/loader.js";
 
 export default class ComponentMenubar extends window.HTMLElement {
@@ -9,7 +10,9 @@ export default class ComponentMenubar extends window.HTMLElement {
         this.innerHTML = `
             <div class="component_container">
                 <span>
-                    <div class="titlebar" style="letter-spacing: 0.3px;">getting_started.pdf</div>
+                    <div class="titlebar">
+                        ${basename(decodeURIComponent(location.pathname + location.hash)) || "&nbsp;"}
+                    </div>
                     <div class="action-item no-select"></div>
                 </span>
             </div>

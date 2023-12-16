@@ -39,6 +39,7 @@ google-cast-launcher {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    letter-spacing: 0.3px;
 }
 .component_menubar .action-item .component_icon {
     height: 19px;
