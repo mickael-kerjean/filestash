@@ -17,7 +17,7 @@ export default async function(render) {
     const $page = createElement(`
         <div class="component_ide">
             <component-menubar class="hidden"></component-menubar>
-            <div class="component_editor scroll-y"></div>
+            <div class="component_editor"></div>
         </div>
     `);
     render($page);

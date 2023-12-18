@@ -1,18 +1,10 @@
-.component_ebookviewer {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    width: 100%;
-    flex-grow: 1;
-}
 .component_ebookviewer .ebookviewer_container {
     display: flex;
     flex-grow: 1;
     min-height: 0;
 }
 .component_ebookviewer .ebookviewer_container .epub-container {
-    background: var(--super-light);
-    padding-top: 50px;
+    padding-top: 20px;
     padding-bottom: 50px;
     box-sizing: border-box;
     overflow-x: hidden !important;

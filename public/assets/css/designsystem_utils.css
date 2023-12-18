@@ -3,12 +3,12 @@
 }
 
 .hidden{
-    position:absolute;
-    left:-10000px;
-    top:auto;
-    width:1px;
-    height:1px;
-    overflow:hidden;
+    position:absolute!important;
+    left:-10000px!important;
+    top:auto!important;
+    width:1px!important;
+    height:1px!important;
+    overflow:hidden!important;
 }
 
 .no-select {

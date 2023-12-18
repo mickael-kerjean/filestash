@@ -174,6 +174,11 @@ body:not(.dark-mode) .component_imageviewer .component_image_container, body:not
 .component_imageviewer .component_image_container img[srcset].idle {
     transition: 0.2s ease transform;
 }
+.component_imageviewer .component_image_container img.error {
+    filter: contrast(0.8);
+    width: 160px;
+    margin: 0 auto;
+}
 
 .component_imageviewer .loader, .component_imageviewer .loader > span {
     height: 100%;
@@ -191,42 +196,7 @@ body:not(.dark-mode) .component_imageviewer .component_image_container, body:not
 }
 
 .component_imageviewer .error {
-    display: flex;
-    height: 100%;
     color: var(--dark);
-    font-size: 1.5em;
-    font-style: italic;
-}
-.component_imageviewer .error .label {
-    text-shadow: 1px 1px 5px rgba(255, 255, 255, 0.1);
-    display: block;
-    margin: auto;
-}
-
-.image-enter, .image-appear {
-    opacity: 0;
-}
-
-.image-enter.image-enter-active, .image-appear.image-appear-active {
-    transition: top .3s,right .3s,bottom .3s,left .3s,max-width .3s,max-height .3s;
-    -webkit-animation-name: zoomIn;
-    animation-name: zoomIn;
-    animation-duration: .3s;
-    -webkit-animation-timing-function: cubic-bezier(0.51, 0.92, 0.24, 1.15);
-    animation-timing-function: cubic-bezier(0.51, 0.92, 0.24, 1.15);
-    opacity: 1;
-}
-
-@keyframes zoomIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.97);
-    }
-    1% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+    font-size: 1.3em;
+    margin-top: 10px;
 }

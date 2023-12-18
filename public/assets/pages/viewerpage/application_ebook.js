@@ -28,7 +28,7 @@ export default function(render) {
                 replacements: "blobUrl",
             });
             const rendition = book.renderTo($epub, {
-                width: "100%", height: "100%",
+                height: "100%", width: "100%",
                 flow: "scrolled-doc",
                 method: "continuous",
                 allowScriptedContent: false,
@@ -58,7 +58,6 @@ export default function(render) {
             rxjs.fromEvent(document, "keydown"),
             rendition$.pipe(rxjs.mergeMap(() => rxjs.fromEvent(qs(document, "iframe").contentDocument.body, "keydown"))),
         )),
-        rxjs.tap((a) => console.log(a.code)),
         rxjs.map((e) => {
             switch(e.code) {
             case "Space": return (r) => r.next();
