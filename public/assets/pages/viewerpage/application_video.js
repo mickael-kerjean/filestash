@@ -1,5 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
+import { animate, slideYIn } from "../../lib/animate.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
@@ -10,8 +11,10 @@ import Hls from "../../lib/vendor/hlsjs/hls.js";
 import ctrlError from "../ctrl_error.js";
 
 import { transition, getDownloadUrl } from "./common.js";
+import { ICON } from "./common_icon.js";
+import { menubarDownload, buildMenubar } from "./common_menubar.js";
+import { render as renderMenubar } from "../../components/menubar.js";
 
-import "../../components/menubar.js";
 import "../../components/icon.js";
 
 const STATUS_PLAYING = "PLAYING";
@@ -45,13 +48,14 @@ export default function(render, { mime }) {
                                 </div>
                                 <div class="progress-placeholder"></div>
                             </div>
-                            <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNmY2ZiIgc3Ryb2tlLXdpZHRoPSIyLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHBhdGggZD0iTSA4LjkyODE3MjQsMi41OTk4MDI5IEMgOC4yMjE2MTQ5LDIuMTUzMjg3MyA3LjA3MjExNDMsMi4zOTIwOTE4IDcuMDcxODI3NywzLjQwMDE5NzEgbCAtMC4wMDQ4OSwxNy4yMDUwNDU5IGMgLTIuODg5ZS00LDEuMDE1NzE1IDEuMjEyMTk3OSwxLjE2MDM3MiAxLjg2NjEzMDcsMC43ODk1MTMgQyAyMy45NzU3NCw4LjcyODk4NTYgMjMuOTMwMTUyLDE0LjEwNDQ2MyA4LjkyODE1ODQsMi41OTk4MDI5IFoiIC8+Cjwvc3ZnPgo=" alt="play">
-                            <img class="component_icon hidden" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgZmlsbD0iIzZmNmY2ZiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNIDMyMCw4MS45ODc4NjggViA0MjcuNzY5MzEgYyAwLDkuMzQzMzYgNy42NDQ2LDE2Ljk4Nzg4IDE2Ljk4NzksMTYuOTg3ODggaCAyNS45NzU3IGMgOS4zNDMzLDAgMTYuOTg3OCwtNy42NDQ1MiAxNi45ODc4LC0xNi45ODc4OCBWIDgxLjk4Nzg2OCBDIDM3OS45NTE0LDcyLjY0NDUzNiAzNzIuMzA2OSw2NSAzNjIuOTYzNiw2NSBIIDMzNi45ODc5IEMgMzI3LjY0NDYsNjUgMzIwLDcyLjY0NDUzNiAzMjAsODEuOTg3ODY4IFoiIC8+CiAgPHBhdGggZD0iTSAxNTAsODEuOTg3ODY4IFYgNDI3Ljc2OTMxIGMgMCw5LjM0MzM2IDcuNjQ0NTUsMTYuOTg3ODggMTYuOTg3NzksMTYuOTg3ODggaCAyNS45NzU1MiBjIDkuMzQzMjQsMCAxNi45ODc2OSwtNy42NDQ1MiAxNi45ODc2OSwtMTYuOTg3ODggViA4MS45ODc4NjggQyAyMDkuOTUxLDcyLjY0NDUzNiAyMDIuMzA2NTUsNjUgMTkyLjk2MzMxLDY1IEggMTY2Ljk4Nzc5IEMgMTU3LjY0NDU1LDY1IDE1MCw3Mi42NDQ1MzYgMTUwLDgxLjk4Nzg2OCBaIiAvPgo8L3N2Zz4K" alt="pause">
+                            <img class="component_icon" draggable="false" src="${ICON.PLAY}" alt="play">
+                            <img class="component_icon hidden" draggable="false" src="${ICON.PAUSE}" alt="pause">
                             <component-icon name="loading" class="hidden"></component-icon>
 
-                            <img class="component_icon hidden" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNmY2ZiIgc3Ryb2tlLXdpZHRoPSIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxwYXRoIGQ9Im0gMjEuOTgzODgzLDE0Ljg4Mzg4MyAtNiwtNS45OTk5OTk1IG0gNiwwIC02LDUuOTk5OTk5NSIgLz4KICA8cGF0aCBkPSJNIDEuMTI1MzM1NiwxNS4yMTc4OTcgViA4Ljc4MTAzMjggYyAwLC0wLjYyNDIyMDUgMC40ODcxOTY3LC0xLjEzMDk5MTcgMS4wODc0OTIzLC0xLjEzMDk5MTcgSCA2LjExMjU3NDggQSAxLjA2NTc0MjIsMS4wNjU3NDIyIDAgMCAwIDYuODgxNDMxOCw3LjMxODM1NjIgTCAxMC4xNDM5MDksMy42MzM5MzI4IGMgMC42ODUxMiwtMC43MTMzOTUgMS44NTYzNDUsLTAuMjA3NzExMSAxLjg1NjM0NSwwLjgwMDM5NDIgdiAxNS4xMzEzNjggYyAwLDEuMDE1NzE1IC0xLjE4NTM2MiwxLjUxNzA0NSAtMS44NjYxMzEsMC43ODk1MTMgTCA2Ljg4MjUxOSwxNi42OTE0NSBBIDEuMDY1NzQyMiwxLjA2NTc0MjIgMCAwIDAgNi4xMDM4NzQ4LDE2LjM0OTk3NSBIIDIuMjEyODI3OSBjIC0wLjYwMDI5NTYsMCAtMS4wODc0OTIzLC0wLjUwNjc2OCAtMS4wODc0OTIzLC0xLjEzMjA3OCB6IiAvPgo8L3N2Zz4K" alt="volume_mute">
-                            <img class="component_icon hidden" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNmY2ZiIgc3Ryb2tlLXdpZHRoPSIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxwYXRoIGQ9Im0gMTYuMzUwMjI1LDguMTkzNzg3IGMgMS40NDk2MjYsMS45MzM1NTkgMS40NDk2MjYsNS42Nzg4ODQgMCw3LjYxMjQ0NiIgLz4KICA8cGF0aCBkPSJNIDEuMTI1MzM1NiwxNS4yMTc4OTcgViA4Ljc4MTAzMjggYyAwLC0wLjYyNDIyMDUgMC40ODcxOTY3LC0xLjEzMDk5MTcgMS4wODc0OTIzLC0xLjEzMDk5MTcgSCA2LjExMjU3NDggQSAxLjA2NTc0MjIsMS4wNjU3NDIyIDAgMCAwIDYuODgxNDMxOCw3LjMxODM1NjIgTCAxMC4xNDM5MDksMy42MzM5MzI4IGMgMC42ODUxMiwtMC43MTMzOTUgMS44NTYzNDUsLTAuMjA3NzExMSAxLjg1NjM0NSwwLjgwMDM5NDIgdiAxNS4xMzEzNjggYyAwLDEuMDE1NzE1IC0xLjE4NTM2MiwxLjUxNzA0NSAtMS44NjYxMzEsMC43ODk1MTMgTCA2Ljg4MjUxOSwxNi42OTE0NSBBIDEuMDY1NzQyMiwxLjA2NTc0MjIgMCAwIDAgNi4xMDM4NzQ4LDE2LjM0OTk3NSBIIDIuMjEyODI3OSBjIC0wLjYwMDI5NTYsMCAtMS4wODc0OTIzLC0wLjUwNjc2OCAtMS4wODc0OTIzLC0xLjEzMjA3OCB6IiAvPgo8L3N2Zz4K" alt="volume_low">
-                            <img class="component_icon hidden" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNmY2ZiIgc3Ryb2tlLXdpZHRoPSIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxwYXRoIGQ9Im0gMTYuMzUwMjI1LDguMTkzNzg3IGMgMS40NDk2MjYsMS45MzM1NTkgMS40NDk2MjYsNS42Nzg4ODQgMCw3LjYxMjQ0NiIgLz4KICA8cGF0aCBkPSJtIDE5LjYxMjcwMyw0LjM4NzU2NDQgYyA0LjMzNjkxOSw0LjE0MTE3MDQgNC4zNjMwMTQsMTEuMTEwOTA4NiAwLDE1LjIyNDg4NzYiIC8+CiAgPHBhdGggZD0iTSAxLjEyNTMzNTYsMTUuMjE3ODk3IFYgOC43ODEwMzI4IGMgMCwtMC42MjQyMjA1IDAuNDg3MTk2NywtMS4xMzA5OTE3IDEuMDg3NDkyMywtMS4xMzA5OTE3IEggNi4xMTI1NzQ4IEEgMS4wNjU3NDIyLDEuMDY1NzQyMiAwIDAgMCA2Ljg4MTQzMTgsNy4zMTgzNTYyIEwgMTAuMTQzOTA5LDMuNjMzOTMyOCBjIDAuNjg1MTIsLTAuNzEzMzk1IDEuODU2MzQ1LC0wLjIwNzcxMTEgMS44NTYzNDUsMC44MDAzOTQyIHYgMTUuMTMxMzY4IGMgMCwxLjAxNTcxNSAtMS4xODUzNjIsMS41MTcwNDUgLTEuODY2MTMxLDAuNzg5NTEzIEwgNi44ODI1MTksMTYuNjkxNDUgQSAxLjA2NTc0MjIsMS4wNjU3NDIyIDAgMCAwIDYuMTAzODc0OCwxNi4zNDk5NzUgSCAyLjIxMjgyNzkgYyAtMC42MDAyOTU2LDAgLTEuMDg3NDkyMywtMC41MDY3NjggLTEuMDg3NDkyMywtMS4xMzIwNzggeiIgLz4KPC9zdmc+Cg==" alt="volume">
+                            <img class="component_icon hidden" draggable="false" src="${ICON.VOLUME_MUTE}" alt="volume_mute">
+                            <img class="component_icon hidden" draggable="false" src="${ICON.VOLUME_LOW}" alt="volume_low">
+                            <img class="component_icon hidden" draggable="false" src="${ICON.VOLUME_NORMAL}" alt="volume">
+
                             <input type="range" min="0" max="100" value="13">
                             <span class="timecode">
                                 <div class="current"></div>
@@ -162,10 +166,25 @@ export default function(render, { mime }) {
             hls.attachMedia($video);
         }),
         rxjs.mergeMap(() => rxjs.fromEvent($video, "loadeddata")),
-        rxjs.tap(() => {
-            qs($page, ".loader").classList.add("hidden");
-            qs($page, ".videoplayer_control").classList.remove("hidden");
+        rxjs.mergeMap(() => {
+            const $loader = qs($page, ".loader");
+            $loader.replaceChildren(createElement(`<img style="height:170px;cursor:pointer;filter:brightness(0.5) invert(1);" src="${ICON.PLAY}" />`));
+            animate($loader, { time: 150, keyframes: [
+                { transform: "scale(0.7)" },
+                { transform: "scale(1)" },
+            ]});
             setSeek(0);
+            return rxjs.fromEvent($loader, "click").pipe(rxjs.mapTo($loader));
+        }),
+        // rxjs.tap(() => renderMenubar(buildMenubar(
+        //     menubarDownload(),
+        // ))),
+        rxjs.tap(($loader) => {
+            $loader.classList.add("hidden")
+            const $control = qs($page, ".videoplayer_control");
+            $control.classList.remove("hidden");
+            animate($control, { time: 300, keyframes: slideYIn(5) })
+            setStatus(STATUS_PLAYING);
         }),
         rxjs.share(),
     );
@@ -224,7 +243,7 @@ export default function(render, { mime }) {
     // feature5: player control - seek
     effect(setup$.pipe(
         rxjs.switchMap(() => rxjs.fromEvent(qs($page, ".progress"), "click").pipe(
-            rxjs.map((e) => {
+            rxjs.map((e) => { // TODO: use onClick instead?
                 let $progress = e.target;
                 if (e.target.classList.contains("progress") == false) {
                     $progress = e.target.parentElement;
@@ -321,7 +340,6 @@ export default function(render, { mime }) {
             };
             const $container = qs($page, `[data-bind="progress-buffer"]`);
             if ($video.buffered.length !== $container.children.length ) {
-                console.log("RESET");
                 $container.innerHTML = "";
                 const $fragment = document.createDocumentFragment();
                 Array.apply(null, { length: $video.buffered.length })

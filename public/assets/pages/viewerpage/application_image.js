@@ -61,13 +61,12 @@ export default function(render) {
                     rxjs.catchError(ctrlError()),
                 );
             }
-            console.log(err)
             return ctrlError()(err);
         }),
     ));
 
-    // componentMetadata(createRender(qs($page, ".images_aside")));
-    // componentPager(createRender(qs($page, ".component_pager")));
+    componentMetadata(createRender(qs($page, ".images_aside")));
+    componentPager(createRender(qs($page, ".component_pager")));
 }
 
 export function init() {

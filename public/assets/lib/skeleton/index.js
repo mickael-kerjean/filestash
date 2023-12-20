@@ -67,9 +67,7 @@ export function createFragment(str) {
     const $n = window.document.createElement("div");
     $n.innerHTML = str;
     const $doc = document.createDocumentFragment();
-    for (let i=0; i<$n.children.length; i++) {
-        $doc.appendChild($n.children[i].cloneNode(true));
-    }
+    for (let i=0; i<$n.children.length; i++) $doc.appendChild($n.children[i].cloneNode(true));
     $n.remove();
     return $doc;
 }

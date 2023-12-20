@@ -75,3 +75,11 @@ google-cast-launcher {
     transition: all 0.25s ease-out;
     transition-delay: 0.30s;
 }
+
+
+/* icons in additional menu */
+.component_menubar .action-item [is="component-dropdown"] .dropdown_button {
+    border: none;
+    padding: 2px 0px;
+    margin: 0;
+}

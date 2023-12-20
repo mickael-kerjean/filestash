@@ -174,11 +174,6 @@ body:not(.dark-mode) .component_imageviewer .component_image_container, body:not
 .component_imageviewer .component_image_container img[srcset].idle {
     transition: 0.2s ease transform;
 }
-.component_imageviewer .component_image_container img.error {
-    filter: contrast(0.8);
-    width: 160px;
-    margin: 0 auto;
-}
 
 .component_imageviewer .loader, .component_imageviewer .loader > span {
     height: 100%;
@@ -199,4 +194,11 @@ body:not(.dark-mode) .component_imageviewer .component_image_container, body:not
     color: var(--dark);
     font-size: 1.3em;
     margin-top: 10px;
+}
+
+
+.component_imageviewer .component_image_container img.error {
+    filter: contrast(0.8);
+    width: 160px;
+    margin: 0 auto;
 }

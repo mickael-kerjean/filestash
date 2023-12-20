@@ -3,6 +3,7 @@
   bottom: 20px;
   right: 20px;
   z-index: 2;
+  background: transparent;
 }
 .component_fab .content {
     height: 25px;
