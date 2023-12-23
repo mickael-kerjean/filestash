@@ -1,20 +1,3 @@
-/* chromecast */
-:root {
-    --disconnected-color: #F2F2F2;
-    --connected-color: var(--primary);
-}
-
-google-cast-launcher {
-    display: inline-block;
-    height: 23px;
-    width: 23px;
-    cursor: pointer;
-    padding: 0 5px;
-    position: relative;
-    top: 1px;
-    cursor: pointer;
-}
-
 .component_menubar {
     background: var(--dark);
     color: #f1f1f1;
@@ -63,23 +46,26 @@ google-cast-launcher {
     width: 21px;
 }
 
-.menubar-appear {
-    display: inline-block;
-    opacity: 0;
-    transform: translateY(2px);
-}
-
-.menubar-appear.menubar-appear-active {
-    opacity: 1;
-    transform: translateY(0px);
-    transition: all 0.25s ease-out;
-    transition-delay: 0.30s;
-}
-
-
 /* icons in additional menu */
 .component_menubar .action-item [is="component-dropdown"] .dropdown_button {
     border: none;
     padding: 2px 0px;
     margin: 0;
+}
+
+/* chromecast */
+:root {
+    --disconnected-color: #F2F2F2;
+    --connected-color: var(--primary);
+}
+
+google-cast-launcher {
+    display: inline-block;
+    height: 23px;
+    width: 23px;
+    cursor: pointer;
+    padding: 0 5px;
+    position: relative;
+    top: 1px;
+    cursor: pointer;
 }

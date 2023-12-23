@@ -28,7 +28,8 @@ export default function(render) {
                 replacements: "blobUrl",
             });
             const rendition = book.renderTo($epub, {
-                height: "100%", width: "100%",
+                height: "100%",
+                width: "100%",
                 flow: "scrolled-doc",
                 method: "continuous",
                 allowScriptedContent: false,

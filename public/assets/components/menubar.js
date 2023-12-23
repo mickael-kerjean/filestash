@@ -1,9 +1,8 @@
 import { createElement } from "../lib/skeleton/index.js";
+import { animate, slideYIn } from "../lib/animate.js";
 import { basename } from "../lib/path.js";
 import assert from "../lib/assert.js";
 import { loadCSS } from "../helpers/loader.js";
-
-await loadCSS(import.meta.url, "./menubar.css");
 
 import "./dropdown.js";
 
@@ -24,6 +23,19 @@ export default class ComponentMenubar extends window.HTMLElement {
                 </span>
             </div>
         `;
+    }
+
+    async connectedCallback() {
+        await loadCSS(import.meta.url, "./menubar.css");
+        const $title = this.querySelector(".titlebar");
+        $title.style.opacity = 0;
+        this.timeoutID = setTimeout(() => {
+            animate($title, { time: 250, keyframes: slideYIn(2) });
+        }, 300);
+    }
+
+    disconnectedCallback() {
+        clearTimeout(this.timeoutID);
     }
 
     render($fragment) {

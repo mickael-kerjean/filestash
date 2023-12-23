@@ -1,8 +1,9 @@
-body:not(.dark-mode) .component_imageviewer .component_image_container, body:not(.dark-mode) .component_imageviewer .component_image_container .fullscreen .component_pager .wrapper > span {
+.component_imageviewer .component_image_container,
+body:not(.dark-mode) .component_imageviewer .component_image_container .fullscreen .component_pager .wrapper > span {
     background: #525659;
 }
 
-.component_imageviewer, .component_imageviewer .component_image_container > .images_wrapper, .component_imageviewer .component_image_container > .images_wrapper > span, .component_imageviewer .component_image_container > .images_wrapper > span > div {
+.component_imageviewer, .component_imageviewer .component_image_container > .images_wrapper {
     flex: 1;
     display: flex;
     overflow: hidden;
@@ -27,7 +28,7 @@ body:not(.dark-mode) .component_imageviewer .component_image_container, body:not
 .component_imageviewer .component_image_container.fullscreen .component_pager .wrapper > span {
     background: var(--dark);
 }
-.component_imageviewer .component_image_container.fullscreen img[srcset] {
+.component_imageviewer .component_image_container.fullscreen img.photo {
     background: var(--color);
 }
 @media screen and (max-height: 410px) {
@@ -162,7 +163,7 @@ body:not(.dark-mode) .component_imageviewer .component_image_container, body:not
 .component_imageviewer .component_image_container .images_aside .content .more_container .meta_key .value {
     color: var(--bg-color);
 }
-.component_imageviewer .component_image_container img[srcset] {
+.component_imageviewer .component_image_container img.photo:not(.error) {
     margin: auto;
     max-height: 100%;
     max-width: 100%;
@@ -171,7 +172,7 @@ body:not(.dark-mode) .component_imageviewer .component_image_container, body:not
     box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
     border-radius: 2px;
 }
-.component_imageviewer .component_image_container img[srcset].idle {
+.component_imageviewer .component_image_container img.photo.idle {
     transition: 0.2s ease transform;
 }
 
@@ -195,7 +196,6 @@ body:not(.dark-mode) .component_imageviewer .component_image_container, body:not
     font-size: 1.3em;
     margin-top: 10px;
 }
-
 
 .component_imageviewer .component_image_container img.error {
     filter: contrast(0.8);

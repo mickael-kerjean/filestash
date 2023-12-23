@@ -9,7 +9,7 @@ export default async function main() {
     try {
         await Promise.all([ // procedure with no outside dependencies
             setup_translation(),
-            // setup_xdg_open(),
+            setup_xdg_open(),
             // setup_cache(), // TODO: dependency on session
             setup_device(),
             // setup_sw(), // TODO
@@ -92,7 +92,7 @@ function setup_translation() {
 
 async function setup_xdg_open() {
     window.overrides = {};
-    await loadJS("/overrides/xdg-open.js");
+    return loadJS(import.meta.url, "/overrides/xdg-open.js");
 }
 
 async function setup_device() {

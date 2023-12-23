@@ -18,21 +18,21 @@ export default function(render) {
     const $page = createElement(`
         <div class="component_formviewer">
             <component-menubar></component-menubar>
-            <div class="formviewer_container">
+            <div class="formviewer_container hidden">
                 <form class="sticky box"></form>
             </div>
             <button is="component-fab"></button>
         </div>
     `);
     render($page);
-    transition(qs($page, ".formviewer_container"));
 
-    const file$ = new rxjs.ReplaySubject(1);
+    const $container = qs($page, ".formviewer_container");
     const $fab = qs($page, `[is="component-fab"]`);
     const formState = () => [...new FormData(qs($page, "form"))].reduce((acc, el) => {
         acc[el[0]] = el[1];
         return acc;
     }, {});
+    const file$ = new rxjs.ReplaySubject(1);
 
     // feature1: setup the dom
     effect(getFile$().pipe(
@@ -55,6 +55,10 @@ export default function(render) {
             `),
         }))).pipe(
             applyMutation(qs($page, "form"), "replaceChildren"),
+            rxjs.tap(() => {
+                $container.classList.remove("hidden");
+                transition($container);
+            }),
             rxjs.mapTo(formSpec),
         )),
         rxjs.tap((formSpec) => file$.next(formObjToJSON(formSpec))),

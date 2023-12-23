@@ -11,6 +11,7 @@ import Hls from "../../lib/vendor/hlsjs/hls.js";
 import ctrlError from "../ctrl_error.js";
 
 import { transition, getDownloadUrl } from "./common.js";
+import { formatTimecode } from "./common_player.js";
 import { ICON } from "./common_icon.js";
 import { menubarDownload, buildMenubar } from "./common_menubar.js";
 import { render as renderMenubar } from "../../components/menubar.js";
@@ -366,10 +367,4 @@ export function init() {
     ]).then(async () => {
         if (typeof window.overrides["video-map-sources"] !== "function") window.overrides["video-map-sources"] = (s) => (s);
     });
-}
-
-function formatTimecode(seconds) {
-    return String(parseInt(seconds / 60)).padStart(2, "0") +
-        ":"+
-        String(parseInt(seconds % 60)).padStart(2, "0");
 }

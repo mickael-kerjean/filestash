@@ -6,7 +6,6 @@ body:not(.dark-mode) .component_appframe {
     text-align: center;
     width: 100%;
 }
-
 .component_appframe iframe {
     width: 100%;
     height: 100%;

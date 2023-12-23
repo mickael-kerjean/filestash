@@ -17,11 +17,13 @@ export default async function(render) {
     const $page = createElement(`
         <div class="component_ide">
             <component-menubar class="hidden"></component-menubar>
-            <div class="component_editor"></div>
+            <div class="component_editor hidden"></div>
         </div>
     `);
     render($page);
 
+    const $editor = qs($page, ".component_editor");
+    const $menubar = qs($page, "component-menubar");
     const content$ = ajax(getDownloadUrl()).pipe(
         rxjs.map(({ response }) => response),
         rxjs.shareReplay(),
@@ -33,7 +35,7 @@ export default async function(render) {
         ajax("/about").pipe(rxjs.delay(TIME_BEFORE_ABORT_EDIT), rxjs.map(() => null)),
     ).pipe(
         rxjs.mergeMap((content) => {
-            if (content === null || has_binary(content)) {
+            // if (content === null || has_binary(content)) {
                 return rxjs.from(initDownloader()).pipe(
                     removeLoader,
                     rxjs.mergeMap(() => {
@@ -41,12 +43,13 @@ export default async function(render) {
                         return rxjs.EMPTY;
                     }),
                 );
-            }
+            // }
             return rxjs.of(content);
         }),
         removeLoader,
         rxjs.tap((content) => {
-            window.CodeMirror(qs($page, ".component_editor"), {
+            $editor.classList.remove("hidden");
+            window.CodeMirror($editor, {
                 value: content,
                 lineNumbers: true,
                 // mode: mode,
@@ -62,8 +65,8 @@ export default async function(render) {
                 matchTags: { bothTags: true },
                 autoCloseTags: true,
             });
-            transition(qs($page, ".component_editor"));
-            qs($page, "component-menubar").classList.remove("hidden");
+            transition($editor);
+            $menubar.classList.remove("hidden");
         }),
         rxjs.catchError(ctrlError()),
     ))
