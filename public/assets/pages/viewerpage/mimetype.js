@@ -10,7 +10,7 @@ export function opener(file = "", mimes) {
     }
 
     if (type === "text") {
-        return ["editor", null];
+        return ["editor", { mime }];
     } else if (mime === "application/pdf") {
         return ["pdf", { mime }];
     } else if (type === "image") {
@@ -26,6 +26,8 @@ export function opener(file = "", mimes) {
         return ["video", { mime }];
     } else if(["application/epub+zip"].indexOf(mime) !== -1) {
         return ["ebook", { mime }];
+    } else if (type === "model" || ["application/object", "application/fbx"].indexOf(mime) !== -1) {
+        return ["3d", { mime }];
     } else if (type === "application") {
         return ["download", { mime }];
     }

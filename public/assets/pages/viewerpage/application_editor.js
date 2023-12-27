@@ -35,7 +35,7 @@ export default async function(render) {
         ajax("/about").pipe(rxjs.delay(TIME_BEFORE_ABORT_EDIT), rxjs.map(() => null)),
     ).pipe(
         rxjs.mergeMap((content) => {
-            // if (content === null || has_binary(content)) {
+            if (content === null || has_binary(content)) {
                 return rxjs.from(initDownloader()).pipe(
                     removeLoader,
                     rxjs.mergeMap(() => {
@@ -43,7 +43,7 @@ export default async function(render) {
                         return rxjs.EMPTY;
                     }),
                 );
-            // }
+            }
             return rxjs.of(content);
         }),
         removeLoader,

@@ -35,6 +35,8 @@ function loadModule(appName) {
         return import("./viewerpage/application_video.js");
     case "ebook":
         return import("./viewerpage/application_ebook.js");
+    case "3d":
+        return import("./viewerpage/application_3d.js");
     case "appframe":
         return import("./viewerpage/application_iframe.js");
     default:
