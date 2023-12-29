@@ -167,6 +167,9 @@ export default function(render, { mime }) {
             hls.attachMedia($video);
         }),
         rxjs.mergeMap(() => rxjs.fromEvent($video, "loadeddata")),
+        // rxjs.tap(() => renderMenubar(buildMenubar(
+        //     menubarDownload(),
+        // ))),
         rxjs.mergeMap(() => {
             const $loader = qs($page, ".loader");
             $loader.replaceChildren(createElement(`<img style="height:170px;cursor:pointer;filter:brightness(0.5) invert(1);" src="${ICON.PLAY}" />`));
@@ -177,9 +180,6 @@ export default function(render, { mime }) {
             setSeek(0);
             return rxjs.fromEvent($loader, "click").pipe(rxjs.mapTo($loader));
         }),
-        // rxjs.tap(() => renderMenubar(buildMenubar(
-        //     menubarDownload(),
-        // ))),
         rxjs.tap(($loader) => {
             $loader.classList.add("hidden")
             const $control = qs($page, ".videoplayer_control");

@@ -18,6 +18,26 @@ export function getSelection$() {
     return selection$.asObservable();
 }
 
+// export function ls() {
+//     return rxjs.from(new Error("missing cache")).pipe(
+//         rxjs.catchError(() => rxjs.of({ files: null })),
+//         rxjs.mergeMap(({ files: filesInCache }) => ajax({
+//             url: `/api/files/ls?path=${path}`,
+//             responseType: "json"
+//         }).pipe(
+//             rxjs.map(({ responseJSON }) => responseJSON),
+//             rxjs.filter(({ filesInRemote }) => {
+//                 if (!Array.isArray(filesInCache)) return true;
+//                 if (filesInCache.length != filesInRemote.length) return true;
+//                 for (let i=0; i<filesInCache.length; i++) {
+//                     if (filesInCache[i].name !== filesInRemote[i].name) return true;
+//                 }
+//                 return false;
+//             }),
+//         )),
+//     )
+// }
+
 export function ls() {
     return rxjs.pipe(
         rxjs.mergeMap((path) => ajax({

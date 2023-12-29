@@ -1,45 +1,334 @@
 .component_editor {
-    overflow-y: auto;
-    flex-direction: column;
-    flex: 1;
+    display: flex;
+    flex-grow: 1;
+    min-height: 0;
     width: 100%;
+}
+.component_editor > div {
+    width: 100%;
+    position: relative;
+}
+.component_editor > div #editor {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
 }
 
 .CodeMirror {
     width: 100%;
     height: 100%;
+    color: #3b4045;
     background: var(--bg-color);
+}
+
+.CodeMirror-sizer > div {
+    padding-top: 4px;
+    padding-bottom: 5px;
+}
+
+.CodeMirror-scroll {
+    -webkit-overflow-scrolling: touch;
+}
+
+.CodeMirror-foldmarker {
+    padding: 5px;
+}
+
+/* HIDE LINE NUMBERS ON MOBILE */
+@media screen and (max-width: 400px) {
+    .CodeMirror-sizer {
+        margin-left: 0 !important;
+    }
+    .CodeMirror-gutters {
+        display: none;
+    }
+    .CodeMirror-gutter-wrapper {
+        display: none;
+    }
+}
+
+.CodeMirror-linenumber {
+    cursor: pointer;
+}
+
+/* SEARCH */
+.CodeMirror-dialog {
+    position: fixed;
+    left: 0;
+    right: 0;
+    background: #525659;
+    z-index: 15;
+    padding: 5px .8em;
+    overflow: hidden;
+    color: #e2e2e2;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+}
+
+.CodeMirror-dialog-top {
+    border-bottom: 1px solid #eee;
+    bottom: 0;
+}
+
+.CodeMirror-dialog-bottom {
+    border-top: 1px solid #eee;
+    bottom: 0;
+}
+
+.CodeMirror-dialog input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 20em;
+    color: white;
+}
+
+.CodeMirror-dialog button {
+    font-size: 70%;
+}
+
+/* Font stuff */
+.CodeMirror {
     font-size: 16px;
-    font-family: "Source Code Pro", monospace;
+    font-family: 'Source Code Pro', monospace;
 }
-.CodeMirror-scroll { -webkit-overflow-scrolling: touch; }
 
+.cm-s-default .cm-header {
+    font-size: 18px;
+}
 
-@font-face {
-    font-family: "Source Code Pro";
-    font-style: normal;
-    font-weight: 400;
-    src: local("Source Code Pro"), local("SourceCodePro-Regular"), url(/assets/fonts/SourceCodePro-Regular-400-latin-ext.woff2) format("woff2");
-    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+.cm-s-default .cm-header.cm-level1 {
+    font-size: 19px;
 }
-@font-face {
-    font-family: "Source Code Pro";
-    font-style: normal;
-    font-weight: 400;
-    src: local("Source Code Pro"), local("SourceCodePro-Regular"), url(/assets/fonts/SourceCodePro-Regular-400-latin.woff2) format("woff2");
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+
+@media only screen and (max-width: 600px) {
+    .CodeMirror {
+        font-size: 14px;
+    }
+    .cm-s-default .cm-header {
+        font-size: 15px;
+    }
+    .cm-s-default .cm-header.cm-level1 {
+        font-size: 16px;
+    }
 }
-@font-face {
-    font-family: "Source Code Pro";
-    font-style: normal;
+
+/* Make things more confy */
+.CodeMirror .CodeMirror-code {
+    line-height: 1.3em;
+}
+.CodeMirror .CodeMirror-code > div {
+    clear: both;
+}
+
+.CodeMirror[mode="orgmode"] .CodeMirror-code {
+    line-height: 1.5em;
+}
+
+.CodeMirror .CodeMirror-line {
+    padding-left: 10%;
+    padding-right: 0;
+    max-width: 950px;
+}
+@media screen and (max-width: 1150px) {
+    .CodeMirror .CodeMirror-line {
+        padding-left: 8%;
+        padding-right: 0;
+    }
+}
+@media screen and (max-width: 900px) {
+    .CodeMirror .CodeMirror-line {
+        padding-left: 5%;
+        padding-right: 0;
+    }
+}
+@media screen and (max-width: 800px) {
+    .CodeMirror .CodeMirror-line {
+        padding-left: 2%;
+        padding-right: 0;
+    }
+}
+.CodeMirror .CodeMirror-linenumber {
+    color: var(--color);
+    opacity: 0.6;
+}
+
+.CodeMirror .CodeMirror-gutters {
+    box-shadow: none;
+    background-color: inherit;
+    border-right: none;
+}
+
+/* Widget stuff */
+.CodeMirror-linewidget img {
+    cursor: pointer;
+    margin: 10px;
+    height: 300px;
+    max-width: 80%;
+    text-align: center;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+    background: var(--dark);
+}
+
+/* Code Highlight Theme */
+.cm-s-default .cm-header {
+    color: #3E7AA6;
+    line-height: 1em;
     font-weight: 600;
-    src: local("Source Code Pro Semibold"), local("SourceCodePro-Semibold"), url(/assets/fonts/SourceCodePro-Semibold-600-latin-ext.woff2) format("woff2");
-    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
-@font-face {
-    font-family: "Source Code Pro";
-    font-style: normal;
-    font-weight: 600;
-    src: local("Source Code Pro Semibold"), local("SourceCodePro-Semibold"), url(/assets/fonts/SourceCodePro-Semibold-600-latin.woff2) format("woff2");
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+
+.cm-header.cm-level1 {
+    color: #376e95;
+}
+
+.cm-s-default .cm-keyword {
+    color: var(--emphasis-secondary);
+}
+
+.cm-s-default .cm-header.cm-org-level-star {
+    color: #6f6f6f;
+    vertical-align: baseline;
+    display: inline-block;
+    padding-left: 5px;
+    margin-left: -5px;
+    cursor: pointer;
+}
+
+.cm-s-default .cm-header.cm-org-todo {
+    color: #FF8355;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.cm-s-default .cm-header.cm-org-done {
+    color: #3BB27C;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.cm-s-default .cm-header.cm-org-priority {
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.cm-s-default .cm-org-toggle {
+    cursor: pointer;
+    background: var(--light);
+    color: var(--super-light);
+    border-radius: 3px;
+    font-weight: bold;
+    padding-bottom: 2px;
+    vertical-align: text-bottom;
+    opacity: 0.7;
+}
+
+.cm-s-default .cm-void {
+    display: inline-block;
+    max-width: 10px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.cm-s-default .cm-header.cm-comment {
+    font-weight: normal;
+    font-size: 0.9em !important;
+    float: right;
+    display: inline-block;
+    color: var(--emphasis);
+    line-height: 23px;
+}
+
+pre.CodeMirror-line {
+    clear: right;
+}
+
+.cm-s-default .cm-link {
+    color: var(--emphasis);
+}
+
+.cm-s-default .cm-strong {
+    color: var(--emphasis);
+}
+
+.cm-s-default .cm-org-url, .cm-s-default .cm-org-image {
+    color: var(--emphasis) !important;
+    border-bottom: 1px dashed var(--light);
+    cursor: pointer;
+}
+
+.cm-s-default .cm-variable-3 {
+    color: #085;
+}
+
+.cm-s-default .cm-comment {
+    color: var(--light);
+}
+
+.cm-s-default .cm-string, .cm-s-default .cm-string-2 {
+    color: #c41a16;
+}
+
+.cm-s-default .cm-def {
+    color: #445588;
+}
+
+.cm-s-default .cm-quote {
+    color: var(--dark);
+}
+
+.CodeMirror-gutters {
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.1);
+}
+
+.CodeMirror-foldmarker {
+    padding-left: 5px;
+    color: var(--color);
+    text-shadow: 1px 1px 10px var(--color);
+}
+
+span.CodeMirror-matchingbracket,
+span.CodeMirror-matchingtag {
+    background: rgba(0, 0, 0, 0.1);
+    color: inherit !important;
+}
+
+/* BUGFIX */
+.CodeMirror-cursor {
+    min-width: 1px !important;
+}
+
+/* DAR MODE THEME */
+.dark-mode .CodeMirror {
+    background: #242424;
+}
+.dark-mode .CodeMirror, .dark-mode .CodeMirror .CodeMirror-linenumber, .dark-mode .CodeMirror .cm-variable-2, .dark-mode .CodeMirror .cm-variable-3, .dark-mode .CodeMirror .cm-number, .dark-mode .CodeMirror .cm-quote {
+    color: #f6f3e8;
+}
+.dark-mode .CodeMirror .cm-string, .dark-mode .CodeMirror .cm-string-2 {
+    color: #95e454;
+}
+.dark-mode .CodeMirror .cm-atom {
+    color: #e5786d;
+}
+.dark-mode .CodeMirror .cm-keyword, .dark-mode .CodeMirror .cm-meta, .dark-mode .CodeMirror .cm-header, .dark-mode .CodeMirror .cm-property {
+    color: #8ac6f2;
+}
+.dark-mode .CodeMirror .cm-def, .dark-mode .CodeMirror .cm-tag, .dark-mode .CodeMirror .cm-attribute, .dark-mode .CodeMirror .cm-builtin, .dark-mode .CodeMirror .cm-qualifier {
+    color: #cae682;
+}
+.dark-mode .CodeMirror .cm-comment {
+    color: #99968b;
+}
+.dark-mode .CodeMirror .CodeMirror-cursor {
+    background-color: #99968b;
+}
+.dark-mode .CodeMirror .CodeMirror-selected {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+.dark-mode .CodeMirror .cm-error {
+    color: var(--error);
+}
+.dark-mode .CodeMirror .cm-org-url, .dark-mode .CodeMirror .cm-link, .dark-mode .CodeMirror .cm-org-image, .dark-mode .CodeMirror .cm-url {
+    color: #ccaa8f !important;
 }

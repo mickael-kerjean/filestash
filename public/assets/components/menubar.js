@@ -18,7 +18,7 @@ export default class ComponentMenubar extends window.HTMLElement {
                         ${basename(decodeURIComponent(location.pathname + location.hash)) || "&nbsp;"}
                     </div>
                     <div class="action-item no-select">
-                        <div is="component-dropdown"></div>
+                        <!--<div is="component-dropdown"></div>-->
                     </div>
                 </span>
             </div>
@@ -39,7 +39,9 @@ export default class ComponentMenubar extends window.HTMLElement {
     }
 
     render($fragment) {
-        this.querySelector(".action-item").appendChild($fragment);
+        const $item = this.querySelector(".action-item");
+        $item.replaceChildren($fragment);
+        animate($item, { time: 250, keyframes: slideYIn(2) });
     }
 }
 

@@ -4,13 +4,20 @@ import { qs } from "../../lib/dom.js";
 import { onDestroy } from "../../lib/skeleton/lifecycle.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
+import Chromecast from "../../lib/chromecast.js";
 import assert from "../../lib/assert.js";
+import { basename, extname } from "../../lib/path.js";
 
 import ctrlError from "../ctrl_error.js";
+import { render as renderMenubar } from "../../components/menubar.js";
+import { menubarDownload, menubarChromecast, buildMenubar } from "./common_menubar.js";
 
 import { ICON } from "./common_icon.js";
 import { formatTimecode } from "./common_player.js";
 import { transition, getDownloadUrl } from "./common.js";
+
+import { getSession } from "../../model/session.js";
+import { get as getConfig } from "../../model/config.js";
 
 import "../../components/menubar.js";
 
@@ -18,7 +25,7 @@ const STATUS_PLAYING = "PLAYING";
 const STATUS_PAUSED = "PAUSED";
 const STATUS_BUFFERING = "BUFFERING";
 
-export default function(render) {
+export default function(render, { mime }) {
     const $page = createElement(`
         <div class="component_audioplayer">
             <component-menubar></component-menubar>
@@ -268,6 +275,9 @@ export default function(render) {
                 case "KeyL":
                     setSeek(Math.min(wavesurfer.getDuration(), currentTime(wavesurfer) + 10), wavesurfer);
                     break;
+                case "KeyF":
+                    chromecastLoader();
+                    break;
                 case "KeyJ":
                     setSeek(Math.max(0, currentTime(wavesurfer) - 10), wavesurfer);
                     break;
@@ -305,11 +315,70 @@ export default function(render) {
             }),
         )),
     ));
+
+    // feature9: setup chromecast
+    effect(ready$.pipe(
+        rxjs.tap(() => renderMenubar(buildMenubar(
+            menubarChromecast(),
+            menubarDownload(),
+        ))),
+    ));
+    // effect(rxjs.combineLatest(
+    //     setup$,
+    //     getSession(),
+    //     getConfig(),
+    // ).pipe(
+    //     rxjs.mergeMap(async ([wavesurfer, user, config]) => {
+    //         if (!Chromecast.isAvailable()) return;
+    //         const filename = basename(decodeURIComponent(location.pathname));
+    //         // const link = Chromecast.createLink(getDownloadUrl());
+    //         const media = new chrome.cast.media.MediaInfo(
+    //             getDownloadUrl(),
+    //             mime,
+    //         );
+    //         media.metadata = new chrome.cast.media.MusicTrackMediaMetadata()
+    //         media.metadata.title = "test";
+    //         media.metadata.title = filename.substr(0, filename.lastIndexOf(extname(filename)));
+    //         media.metadata.subtitle = config.name;
+    //         media.metadata.albumName = config.name;
+    //         media.metadata.images = [
+    //             new chrome.cast.Image(origin + "/assets/icons/music.png"),
+    //         ];
+    //         wavesurfer.setMute(true);
+    //         wavesurfer.pause();
+
+    //         const session = Chromecast.session();
+    //         if (!session) return
+    //         setVolume(session.getVolume() * 100);
+
+    //         const req = await Chromecast.createRequest(media, user.authorization);
+    //         return session.loadMedia(req);
+    //         // .catch((err) => {
+    //         //     console.error(err);
+    //         //     notify.send(t("Cannot establish a connection"), "error");
+    //         //     setIsChromecast(false);
+    //         //     setIsLoading(false);
+    //         // });
+    //     }),
+    // ));
 }
 
 export function init() {
     return Promise.all([
+        setup_chromecast(),
         loadJS(import.meta.url, "../../lib/vendor/wavesurfer.js"),
         loadCSS(import.meta.url, "./application_audio.css"),
     ]);
+}
+
+function setup_chromecast() {
+    if (!("chrome" in window)) {
+        return Promise.resolve();
+	} else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        return Promise.resolve();
+    }
+    // if (!CONFIG.enable_chromecast) {
+    //     return Promise.resolve();
+    // } else
+    return Chromecast.init();
 }

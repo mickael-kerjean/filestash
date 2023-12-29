@@ -16,7 +16,7 @@ export function getFile$() {
 export function saveFile$() {
     return rxjs.pipe(
         rxjs.delay(2000),
-        rxjs.tap((content) => console.log("SAVED", content)),
+        rxjs.tap((content) => console.log("SAVED")),
     );
 }
 
