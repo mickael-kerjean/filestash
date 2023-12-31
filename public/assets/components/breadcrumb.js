@@ -1,7 +1,7 @@
 import { animate, slideYOut, slideYIn, slideXIn, opacityOut } from "../lib/animate.js";
 import { loadCSS } from "../helpers/loader.js";
 
-class ComponentBreadcrumb extends HTMLDivElement {
+class ComponentBreadcrumb extends window.HTMLDivElement {
 
     constructor() {
         super();
