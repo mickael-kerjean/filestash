@@ -111,16 +111,19 @@ export default async function(render) {
         rxjs.mergeMap((editor) => content$.pipe(rxjs.map((oldContent) => [editor, editor.getValue(), oldContent]))),
         rxjs.tap(async ([editor, newContent = "", oldContent = ""]) => {
             if ($fab.disabled) return;
-            else if (newContent === oldContent) {
+            const $breadcrumb = qs(document.body, `[is="component-breadcrumb"]`);
+            if (newContent === oldContent) {
                 await animate($fab, { time: 100, keyframes: opacityOut() });
                 $fab.classList.add("hidden");
+                $breadcrumb.removeAttribute("indicator");
                 return
             }
+            $breadcrumb.setAttribute("indicator", "true");
             const shouldAnimate = $fab.classList.contains("hidden");
             $fab.classList.remove("hidden");
             $fab.render($ICON.SAVING);
             $fab.onclick = () => CodeMirror.commands.save(editor);
-            // TODO: breadcrumb saving hint *
+
             if (shouldAnimate) await animate($fab, { time: 100, keyframes: slideXIn(40) });
         }),
     ));

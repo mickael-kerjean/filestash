@@ -1,7 +1,5 @@
-import { animate, slideYOut, slideYIn } from "../lib/animate.js";
-import { CSS } from "../helpers/loader.js";
-
-const css = await CSS(import.meta.url, "breadcrumb.css");
+import { animate, slideYOut, slideYIn, slideXIn, opacityOut } from "../lib/animate.js";
+import { loadCSS } from "../helpers/loader.js";
 
 class ComponentBreadcrumb extends HTMLDivElement {
 
@@ -11,35 +9,42 @@ class ComponentBreadcrumb extends HTMLDivElement {
             this.disabled = true;
             return;
         }
+        this.__init();
+    }
 
+    async __init() {
         this.innerHTML = `
         <div class="component_breadcrumb container" role="navigation">
-            <style>${css}</style>
             <div class="breadcrumb no-select">
                 <div class="ul">
-                    <div class="li component_logout">
-                        ${this._htmlLogout()}
-                    </div>
                     <span data-bind="path"></span>
+                    <div class="li component_logout">${this.__htmlLogout()}</div>
                 </div>
             </div>
         </div>`;
     }
 
-    attributeChangedCallback(name, previousPath, path) {
+    attributeChangedCallback(name, oldValue, newValue) {
         if (this.disabled === true) return;
-        if (name !== "path") throw new Error("component::breadcrumb.js unknow attribute name: "+ name);
-        if (path == "") return;
-        this.render({ path, previous: previousPath || null })
+        else if (oldValue === newValue) return;
+
+        switch (name) {
+        case "path":
+            if (newValue == "") return;
+            return this.renderPath({ path: newValue, previous: oldValue || null });
+        case "indicator":
+            return this.renderIndicator()
+        }
+        throw new Error("component::breadcrumb.js unknow attribute name: "+ name)
     }
 
     static get observedAttributes() {
-        return ["path"];
+        return ["path", "indicator"];
     }
 
-    async render({ path = "", previous }) {
-        path = this._normalised(path);
-        previous = this._normalised(previous);
+    async renderPath({ path = "", previous }) {
+        path = this.__normalised(path);
+        previous = this.__normalised(previous);
         let pathChunks = path.split("/");
 
         // STEP1: leaving animation on elements that will be removed
@@ -60,15 +65,11 @@ class ComponentBreadcrumb extends HTMLDivElement {
         this.querySelector(`[data-bind="path"]`).innerHTML = pathChunks.map((chunk, idx) => {
             const label = idx === 0 ? "Filestash" : chunk;
             const link = pathChunks.slice(0, idx + 1).join("/") + "/";
-            // const minify = (function() {
-            //     if (idx === 0) return false;
-            //     else if (paths.length <= (document.body.clientWidth > 800 ? 5 : 4)) return false;
-            //     else if (idx > paths.length - (document.body.clientWidth > 1000 ? 4 : 3)) return false;
-            //     return true;
-            // }());
             const limitSize = (word, highlight = false) => {
-                if (highlight === true && word.length > 30) { return word.substring(0, 12).trim() + "..." +
-                    word.substring(word.length - 10, word.length).trim(); }
+                if (highlight === true && word.length > 30) {
+                    return word.substring(0, 12).trim() + "..." +
+                        word.substring(word.length - 10, word.length).trim();
+                }
                 else if (word.length > 27) return word.substring(0, 20).trim() + "...";
                 return word;
             };
@@ -77,17 +78,34 @@ class ComponentBreadcrumb extends HTMLDivElement {
                 <div class="component_path-element n${idx}">
                     <div class="li component_path-element-wrapper">
                         <div class="label">
-                            <div>${limitSize(label)}</div>
-                            <span></span>
+                            <div>${limitSize(label)}</div><span></span>
                         </div>
                     </div>
                 </div>`;
+
+            const minify = (() => {
+                if (idx === 0) return false;
+                else if (pathChunks.length <= (document.body.clientWidth > 800 ? 5 : 4)) return false;
+                else if (idx > pathChunks.length - (document.body.clientWidth > 1000 ? 4 : 3)) return false;
+                return true;
+            })();
+
+            const tmpl = (() => {
+                if (minify) return `
+                    ...
+                    <span class="title">
+                        ${limitSize(label, true)}
+                    </span>
+                `;
+                return `<div>${limitSize(label)}</div>`
+            })();
+
             return `
                 <div class="component_path-element n${idx}">
                     <div class="li component_path-element-wrapper">
                         <div>
                             <a class="label" href="/files${link}" data-link>
-                                <div>${limitSize(label)}</div>
+                                ${tmpl}
                             </a>
                             <div class="component_separator">
                                 <img alt="path_separator" width="16" height="16" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAA30lEQVQ4T63T7Q2CMBAG4OuVPdQNcAPdBCYwDdclCAQ3ACfRDXQDZQMHgNRcAoYApfWjv0jIPX3b3gn4wxJjI03TUAhRBkGwV0o9ffaYIEVRrJumuQHA3ReaILxzl+bCkNZ660ozi/QQIl4BoCKieAmyIlyU53lkjCld0CIyhIwxSmt9nEvkRLgoyzIuPggh4iRJqjHkhXTQAwBWUsqNUoq/38sL+TlJf7lf38ngdU5EFNme2adPFgGGrR2LiGcAqIko/LhjeXbatuVOraWUO58hnJ1iRKx8AetxXPHH/1+y62USursaSgAAAABJRU5ErkJggg==">
@@ -110,7 +128,29 @@ class ComponentBreadcrumb extends HTMLDivElement {
         }
     }
 
-    _htmlLogout() {
+    async renderIndicator() {
+        let state = this.hasAttribute("indicator");
+        if (state && this.getAttribute("indicator") !== "false") state = true;
+
+        const $indicator = this.querySelector(`[data-bind="path"]`)
+              .lastChild
+              .querySelector("span");
+
+        if (state) {
+            $indicator.style.opacity = 1;
+            $indicator.innerHTML = `<div class="component_saving">*</div>`;
+            await animate($indicator, { time: 500, keyframes: [
+                { transform: "scale(0)", offset: 0 },
+                { transform: "scale(1.5)", offset: 0.3 },
+                { transform: "scale(1)", offset: 1 },
+            ], fill: "none"});
+        } else {
+            $indicator.style.opacity = 0;
+            await animate($indicator, { time: 200, keyframes: opacityOut(), fill: "none" });
+        }
+    }
+
+    __htmlLogout() {
         if (window.self !== window.top) return ""; // no logout button from an iframe
         return `
             <a href="/logout" data-link>
@@ -119,11 +159,15 @@ class ComponentBreadcrumb extends HTMLDivElement {
         `;
     }
 
-    _normalised(path) {
+    __normalised(path) {
         if (path === null) return null;
         else if (path.endsWith("/") === false) return path;
         return path.replace(new RegExp("/$"), "");
     }
+}
+
+export function init() {
+    return loadCSS(import.meta.url, "./breadcrumb.css");
 }
 
 customElements.define("component-breadcrumb", ComponentBreadcrumb, { extends: "div" });

@@ -52,7 +52,7 @@
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] .container {
     width: 95%;
     margin: 0 auto;
-    max-width: 820px;
+    max-width: 815px;
 }
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] {
     background: var(--bg-color);
