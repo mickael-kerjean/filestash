@@ -3,7 +3,7 @@ import rxjs, { effect } from "../lib/rx.js";
 import { ApplicationError } from "../lib/error.js";
 import { basename } from "../lib/path.js";
 import { loadCSS } from "../helpers/loader.js";
-import WithShell from "../components/decorator_shell_filemanager.js";
+import WithShell, { init as initShell } from "../components/decorator_shell_filemanager.js";
 import { get as getConfig } from "../model/config.js";
 
 import ctrlError from "./ctrl_error.js";
@@ -61,7 +61,7 @@ export default WithShell(async function(render) {
 export async function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_viewerpage.css"),
-        loadCSS(import.meta.url, "../components/decorator_shell_filemanager.css"),
+        initShell(),
         mime$.pipe(
             rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
             rxjs.mergeMap(([opener]) => loadModule(opener)),

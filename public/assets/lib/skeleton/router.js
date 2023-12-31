@@ -9,7 +9,12 @@ export async function init($root) {
     });
 }
 
-export function navigate(href) {
+export async function navigate(href) {
+    if (typeof window.history.block === "function") {
+        const block = await window.history.block(href);
+        if (block) return;
+    }
+    delete window.history.block;
     window.history.pushState({
         ...window.history,
         previous: window.location.pathname,

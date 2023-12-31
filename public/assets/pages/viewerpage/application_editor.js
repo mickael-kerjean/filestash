@@ -3,6 +3,7 @@ import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideXIn, opacityOut } from "../../lib/animate.js";
 import { qs } from "../../lib/dom.js";
 import { createLoader } from "../../components/loader.js";
+import modal from "../../components/modal.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import ajax from "../../lib/ajax.js";
 import { extname } from "../../lib/path.js";
@@ -71,7 +72,7 @@ export default async function(render) {
             const editor = window.CodeMirror($editor, {
                 value: content,
                 lineNumbers: true,
-                mode,
+                mode: CodeMirror.__mode,
                 keyMap: ["emacs", "vim"].indexOf(config["editor"]) === -1 ? "sublime" : config["editor"],
                 lineWrapping: true,
                 readOnly: !/PUT/.test(acl),
@@ -134,6 +135,7 @@ export default async function(render) {
             CodeMirror.commands.save = (cm) => observer.next(cm);
         })),
         rxjs.mergeMap((cm) => {
+            $fab.classList.remove("hidden");
             $fab.render($ICON.LOADING)
             $fab.disabled = true;
             return rxjs.of(cm.getValue()).pipe(
@@ -146,6 +148,35 @@ export default async function(render) {
         }),
         rxjs.catchError(ctrlError()),
     ));
+
+    // feature5: save on exit
+    effect(setup$.pipe(
+        rxjs.tap((cm) => window.history.block = async (href) => {
+            const block = qs(document.body, `[is="component-breadcrumb"]`).hasAttribute("indicator");
+            if (block === false) return false;
+
+            // confirm.now(
+            //     <div style={{ textAlign: "center", paddingBottom: "5px" }}>
+            //         { t("Do you want to save the changes ?") }
+            //     </div>,
+            //     () =>{
+            //         return this.save()
+            //             .then(() => this.props.history.push(nextLocation));
+            //     },
+            //     () => {
+            //         this.props.needSavingUpdate(false)
+            //             .then(() => this.props.history.push(nextLocation));
+            //     },
+            // );
+            return new Promise((done) => {
+                modal.open(createElement(`
+                <div style="text-align:center;padding-bottom:5px;">
+                    Do you want to save the changes ?
+                </div>
+            `, { onQuit: () => {done(false)} }));
+            })
+        }),
+    ))
 }
 
 function has_binary(str) {
@@ -233,8 +264,8 @@ function loadMode(ext) {
     else if (ext === "diff" || ext === "patch") mode = "diff";
     else if (ext === "sparql") mode = "sparql";
     else if (ext === "properties") mode = "properties";
-    else if (ext === "c" || ext === "cpp" || ext === "java" ||
-             ext === "h") mode = "clike";
+    else if (ext === "c" || ext === "cpp" || ext === "h") mode = "clike";
+    else if (ext === "java") mode = "java";
 
     return before.then(() => loadJS(import.meta.url, `./application_editor/${mode}.js`, { type: "module" }))
         .catch(() => loadJS(import.meta.url, "./application_editor/text.js", { type: "module" }))

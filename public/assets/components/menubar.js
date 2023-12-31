@@ -31,7 +31,7 @@ export default class ComponentMenubar extends window.HTMLElement {
         $title.style.opacity = 0;
         this.timeoutID = setTimeout(() => {
             animate($title, { time: 250, keyframes: slideYIn(2) });
-        }, 300);
+        }, 100);
     }
 
     disconnectedCallback() {

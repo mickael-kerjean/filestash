@@ -22,7 +22,6 @@ export default async function(render) {
     `);
     render($page);
 
-
     // feature: virtual scrolling
     const removeLoader = createLoader($page);
     const path = location.pathname.replace(new RegExp("^/files"), "");

@@ -1,3 +1,3 @@
 import "../../../lib/vendor/codemirror/mode/clike/clike.js";
-CodeMirror.__mode = "clike";
+CodeMirror.__mode = "text/x-c++src";
 export default CodeMirror;
