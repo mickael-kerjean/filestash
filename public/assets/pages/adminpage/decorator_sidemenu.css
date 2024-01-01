@@ -11,7 +11,7 @@
 .component_menu_sidebar h2 {
     font-family: "Source Code Pro", monospace;
     color: white;
-    font-weight: 300;
+    font-weight: normal;
     font-size: 1.5rem;
     line-height: 1.5rem;
     margin: 25px 0 40px 0;
