@@ -137,8 +137,8 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 			"/admin/assets/pages/adminpage/decorator.js", "/admin/assets/pages/adminpage/decorator_sidemenu.js", "/admin/assets/pages/adminpage/decorator_admin_only.js",
 			"/admin/assets/components/icon.js", "/admin/assets/lib/locales.js", "/admin/assets/lib/animate.js",
 			"/admin/assets/lib/skeleton/router.js", "/admin/assets/lib/skeleton/lifecycle.js",
-			"/admin/assets/lib/vendor/rxjs-shared.min.js", "/admin/assets/lib/vendor/rxjs-ajax.min.js", "/admin/assets/lib/ajax.js",
-			"/admin/assets/lib/rx.js", "/admin/assets/lib/vendor/rxjs.min.js",
+			"/admin/assets/lib/vendor/rxjs/rxjs-shared.min.js", "/admin/assets/lib/vendor/rxjs/rxjs-ajax.min.js", "/admin/assets/lib/ajax.js",
+			"/admin/assets/lib/rx.js", "/admin/assets/lib/vendor/rxjs/rxjs.min.js",
 		}
 		switch url {
 		case "/admin/backend":
