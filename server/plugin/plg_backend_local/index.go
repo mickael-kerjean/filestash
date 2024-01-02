@@ -46,7 +46,11 @@ func (this Local) LoginForm() Form {
 }
 
 func (this Local) Home() (string, error) {
-	return os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "/", nil
+	}
+	return home, nil
 }
 
 func (this Local) Ls(path string) ([]os.FileInfo, error) {
