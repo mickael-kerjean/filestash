@@ -77,6 +77,27 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	var perms Metadata = Metadata{}
+	if obj, ok := ctx.Backend.(interface{ Meta(path string) Metadata }); ok {
+		perms = obj.Meta(path)
+	}
+	if model.CanEdit(ctx) == false {
+		perms.CanCreateFile = NewBool(false)
+		perms.CanCreateDirectory = NewBool(false)
+		perms.CanRename = NewBool(false)
+		perms.CanMove = NewBool(false)
+		perms.CanDelete = NewBool(false)
+	}
+	if model.CanUpload(ctx) == false {
+		perms.CanCreateDirectory = NewBool(false)
+		perms.CanRename = NewBool(false)
+		perms.CanMove = NewBool(false)
+		perms.CanDelete = NewBool(false)
+	}
+	if model.CanShare(ctx) == false {
+		perms.CanShare = NewBool(false)
+	}
+
 	entries, err := ctx.Backend.Ls(path)
 	if err != nil {
 		Log.Debug("ls::backend '%s'", err.Error())
@@ -106,28 +127,6 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 				return "directory"
 			}(entries[i].Mode()),
 		}
-	}
-
-	var perms Metadata = Metadata{}
-	if obj, ok := ctx.Backend.(interface{ Meta(path string) Metadata }); ok {
-		perms = obj.Meta(path)
-	}
-
-	if model.CanEdit(ctx) == false {
-		perms.CanCreateFile = NewBool(false)
-		perms.CanCreateDirectory = NewBool(false)
-		perms.CanRename = NewBool(false)
-		perms.CanMove = NewBool(false)
-		perms.CanDelete = NewBool(false)
-	}
-	if model.CanUpload(ctx) == false {
-		perms.CanCreateDirectory = NewBool(false)
-		perms.CanRename = NewBool(false)
-		perms.CanMove = NewBool(false)
-		perms.CanDelete = NewBool(false)
-	}
-	if model.CanShare(ctx) == false {
-		perms.CanShare = NewBool(false)
 	}
 
 	etagValue := base64.StdEncoding.EncodeToString(etagger.Sum(nil))

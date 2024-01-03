@@ -9,7 +9,6 @@ import (
 	"github.com/vmware/go-nfs-client/nfs/xdr"
 	"io"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -20,6 +19,8 @@ type NfsShare struct {
 	v     *nfs.Target
 	auth  rpc.Auth
 	ctx   context.Context
+	uid   uint32
+	gid   uint32
 }
 
 func init() {
@@ -29,24 +30,12 @@ func init() {
 
 func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) {
 	if params["hostname"] == "" {
-		params["hostname"] = "localhost"
+		return nil, ErrNotFound
 	}
 	var (
 		uid uint32 = 1000
 		gid uint32 = 1000
 	)
-	if user, err := user.Current(); err == nil {
-		params["target"] = user.HomeDir
-		if _uid, err := strconv.Atoi(user.Uid); err == nil {
-			uid = uint32(_uid)
-		}
-		if _gid, err := strconv.Atoi(user.Gid); err == nil {
-			gid = uint32(_gid)
-		}
-	}
-	if mn, err := os.Hostname(); err == nil && params["machine_name"] == "" {
-		params["machine_name"] = mn
-	}
 	if params["uid"] != "" {
 		if _uid, err := strconv.Atoi(params["uid"]); err == nil {
 			uid = uint32(_uid)
@@ -57,18 +46,19 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 			gid = uint32(_gid)
 		}
 	}
-	auth := rpc.NewAuthUnix(params["machine_name"], uid, gid)
-
+	if params["machine_name"] == "" {
+		params["machine_name"] = "filestash"
+	}
+	auth := rpc.NewAuthUnix(params["machine_name"], uid, gid).Auth()
 	mount, err := nfs.DialMount(params["hostname"])
 	if err != nil {
 		return nil, err
 	}
-	authenticator := auth.Auth()
-	v, err := mount.Mount(params["target"], authenticator)
+	v, err := mount.Mount(params["target"], auth)
 	if err != nil {
 		return nil, err
 	}
-	return NfsShare{mount, v, authenticator, app.Context}, nil
+	return NfsShare{mount, v, auth, app.Context, uid, gid}, nil
 }
 
 func (this NfsShare) LoginForm() Form {
@@ -114,6 +104,35 @@ func (this NfsShare) LoginForm() Form {
 				Placeholder: "machine name",
 			},
 		},
+	}
+}
+
+func (this NfsShare) Meta(path string) Metadata {
+	f, _, err := this.v.Lookup(strings.TrimSuffix(path, "/"))
+	if err != nil {
+		return Metadata{}
+	} else if f == nil {
+		return Metadata{}
+	}
+	fattr, ok := f.(*nfs.Fattr)
+	if ok == false {
+		return Metadata{}
+	}
+
+	if fattr == nil { // happen on the root of the share
+		return Metadata{}
+	} else if fattr.UID == this.uid || fattr.GID == this.gid {
+		return Metadata{}
+	}
+	return Metadata{
+		CanSee:             NewBool(false),
+		CanCreateFile:      NewBool(false),
+		CanCreateDirectory: NewBool(false),
+		CanRename:          NewBool(false),
+		CanMove:            NewBool(false),
+		CanUpload:          NewBool(false),
+		CanDelete:          NewBool(false),
+		CanShare:           NewBool(false),
 	}
 }
 
