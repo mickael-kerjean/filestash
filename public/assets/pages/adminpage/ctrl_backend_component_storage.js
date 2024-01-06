@@ -1,5 +1,5 @@
 import { createElement, createRender } from "../../lib/skeleton/index.js";
-import rxjs, { effect, applyMutations, onClick } from "../../lib/rx.js";
+import rxjs, { effect, applyMutations, applyMutation, onClick } from "../../lib/rx.js";
 import { createForm } from "../../lib/form.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { formTmpl } from "../../components/form.js";
@@ -89,16 +89,20 @@ export default async function(render) {
                 return $fieldset;
             },
         }))))),
-        rxjs.map((nodeList) => {
-            if (nodeList.length === 0) { return [createElement(`
+        rxjs.tap(() => $enabled.innerHTML = ""),
+        rxjs.mergeMap((nodeList) => {
+            if (nodeList.length === 0) return rxjs.of(createElement(`
                 <div class="alert">
                     You need to select at least 1 storage backend
                 </div>
-            `)]; }
-            return nodeList;
+            `)).pipe(
+                applyMutation($enabled, "appendChild"),
+                rxjs.mergeMap(() => rxjs.EMPTY),
+            );
+            return rxjs.of(nodeList).pipe(
+                applyMutations($enabled, "appendChild"),
+            );
         }),
-        rxjs.tap(() => $enabled.innerHTML = ""),
-        applyMutations($enabled, "appendChild"),
         rxjs.share(),
     );
     effect(setupForm$);
