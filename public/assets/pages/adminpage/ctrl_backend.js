@@ -5,6 +5,7 @@ import { CSS } from "../../helpers/loader.js";
 import transition from "./animate.js";
 import AdminHOC from "./decorator.js";
 import { initConfig } from "./model_config.js";
+import { initStorage } from "./ctrl_backend_state.js";
 import componentStorageBackend from "./ctrl_backend_component_storage.js";
 import componentAuthenticationMiddleware from "./ctrl_backend_component_authentication.js";
 
@@ -18,6 +19,7 @@ export default AdminHOC(async function(render) {
     `);
     render(transition($page));
     await initConfig();
+    await initStorage();
 
     componentStorageBackend(createRender(qs($page, "[data-bind=\"backend\"]")));
     componentAuthenticationMiddleware(createRender(qs($page, "[data-bind=\"authentication_middleware\"]")));
