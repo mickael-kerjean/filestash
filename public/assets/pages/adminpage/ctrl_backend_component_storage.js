@@ -23,13 +23,16 @@ export default async function(render) {
     `);
     render($page);
 
+    const $available = qs($page, `[data-bind="backend-available"]`);
+    const $enabled = qs($page, `[data-bind="backend-enabled"]`);
+
     // feature: setup the buttons
     const init$ = getBackendAvailable().pipe(
-        rxjs.tap(() => qs($page, "[data-bind=\"backend-available\"]").innerHTML = ""),
+        rxjs.tap(() => $available.innerHTML = ""),
         rxjs.mergeMap((specs) => Promise.all(Object.keys(specs).map((label) => createElement(`
             <div is="box-item" data-label="${label}"></div>
         `)))),
-        applyMutations(qs($page, "[data-bind=\"backend-available\"]"), "appendChild"),
+        applyMutations($available, "appendChild"),
         rxjs.share(),
     );
     effect(init$);
@@ -94,8 +97,8 @@ export default async function(render) {
             `)]; }
             return nodeList;
         }),
-        rxjs.tap(() => qs($page, "[data-bind=\"backend-enabled\"]").innerHTML = ""),
-        applyMutations(qs($page, "[data-bind=\"backend-enabled\"]"), "appendChild"),
+        rxjs.tap(() => $enabled.innerHTML = ""),
+        applyMutations($enabled, "appendChild"),
         rxjs.share(),
     );
     effect(setupForm$);
