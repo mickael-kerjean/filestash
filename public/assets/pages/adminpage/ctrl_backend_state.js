@@ -7,7 +7,7 @@ import { formObjToJSON$ } from "./helper_form.js";
 
 export { getBackends as getBackendAvailable } from "./model_backend.js";
 
-const backendsEnabled$ = new rxjs.BehaviorSubject([]);
+const backendsEnabled$ = new rxjs.ReplaySubject(1);
 
 export async function initStorage() {
     return await getConfig().pipe(
@@ -21,32 +21,40 @@ export function getBackendEnabled() {
 }
 
 export function addBackendEnabled(type) {
-    const existingLabels = new Set();
-    backendsEnabled$.value.forEach((obj) => {
-        existingLabels.add(obj.label.toLowerCase());
-    });
+    return backendsEnabled$.pipe(
+        rxjs.first(),
+        rxjs.map((backends) => {
+            const existingLabels = new Set();
+            backends.forEach((obj) => {
+                existingLabels.add(obj.label.toLowerCase());
+            });
 
-    let label = ""; let i = 1;
-    while (true) {
-        label = type + (i === 1 ? "" : ` ${i}`);
-        if (existingLabels.has(label) === false) break;
-        i += 1;
-    }
+            let label = ""; let i = 1;
+            while (true) {
+                label = type + (i === 1 ? "" : ` ${i}`);
+                if (existingLabels.has(label) === false) break;
+                i += 1;
+            }
 
-    const b = backendsEnabled$.value.concat({ type, label });
-    backendsEnabled$.next(b);
-    return b;
+            const b = backends.concat({ type, label });
+            backendsEnabled$.next(b);
+            return b;
+        }),
+    );
 }
 
 export function removeBackendEnabled(labelToRemove) {
-    const b = backendsEnabled$.value.filter(({ label }) => {
-        return label !== labelToRemove;
-    });
-    backendsEnabled$.next(b);
-    return b;
+    return backendsEnabled$.pipe(
+        rxjs.first(),
+        rxjs.map((backends) => {
+            const b = backends.filter(({ label }) => label !== labelToRemove);
+            backendsEnabled$.next(b);
+            return b;
+        }),
+    );
 }
 
-const middlewareEnabled$ = new rxjs.BehaviorSubject(null);
+const middlewareEnabled$ = new rxjs.ReplaySubject(1);
 
 export async function initMiddleware() {
     return await getAdminConfig().pipe(

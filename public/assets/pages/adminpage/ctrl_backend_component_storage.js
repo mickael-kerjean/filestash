@@ -56,7 +56,7 @@ export default async function(render) {
     effect(init$.pipe(
         rxjs.mergeMap(($nodes) => $nodes),
         rxjs.mergeMap(($node) => onClick($node)),
-        rxjs.map(($node) => addBackendEnabled($node.getAttribute("data-label"))),
+        rxjs.mergeMap(($node) => addBackendEnabled($node.getAttribute("data-label"))),
         saveConnections(),
     ));
 
@@ -106,7 +106,7 @@ export default async function(render) {
         rxjs.mergeMap(($nodes) => $nodes),
         rxjs.mergeMap(($node) => onClick($node.querySelector(".icons"))),
         rxjs.map(($node) => qs($node.parentElement, "input").value),
-        rxjs.map((label) => removeBackendEnabled(label)),
+        rxjs.mergeMap((label) => removeBackendEnabled(label)),
         saveConnections(),
     ));
 
