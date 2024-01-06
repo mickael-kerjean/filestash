@@ -211,4 +211,11 @@ export default async function(render) {
             );
         }),
     ));
+
+    // feature7: empty connection handling
+    effect(connections$.pipe(
+        rxjs.filter((conns) => conns.length === 0),
+        rxjs.mergeMap((a) => Promise.reject(new Error("no backend selected"))),
+        rxjs.catchError(ctrlError()),
+    ));
 }

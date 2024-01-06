@@ -3,7 +3,6 @@ import rxjs from "../../lib/rx.js";
 const currentBackend$ = new rxjs.ReplaySubject(1);
 
 export function setCurrentBackend(n) {
-    console.log("SET: ", n);
     currentBackend$.next(n);
 }
 
