@@ -135,7 +135,10 @@ func (this Nfs4Share) Cat(path string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	pr, pw := io.Pipe()
-	go this.client.ReadFileAll(path, pw)
+	go func() {
+		_, _ = this.client.ReadFileAll(path, pw)
+		pw.Close()
+	}()
 	return pr, nil
 }
 
@@ -145,9 +148,9 @@ func (this Nfs4Share) Mkdir(path string) error {
 
 func (this Nfs4Share) Rm(path string) error {
 	if strings.HasSuffix(path, "/") {
-		return ErrNotImplemented
+		return nfs4.RemoveRecursive(this.client, path)
 	}
-	return nfs4.RemoveRecursive(this.client, path)
+	return this.client.DeleteFile(path)
 }
 
 func (this Nfs4Share) Mv(from string, to string) error {
