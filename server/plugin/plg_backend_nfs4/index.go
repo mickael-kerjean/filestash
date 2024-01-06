@@ -77,7 +77,7 @@ func (this Nfs4Share) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"nfs_uid", "nfs_gid", "nfs_machinename"},
+				Target:      []string{"nfs_uid", "nfs_gid", "nfs_machinename", "nfs_chroot"},
 			},
 			FormElement{
 				Id:          "nfs_uid",
@@ -96,6 +96,12 @@ func (this Nfs4Share) LoginForm() Form {
 				Name:        "machine_name",
 				Type:        "text",
 				Placeholder: "machine name",
+			},
+			FormElement{
+				Id:          "nfs_chroot",
+				Name:        "path",
+				Type:        "text",
+				Placeholder: "chroot",
 			},
 		},
 	}
