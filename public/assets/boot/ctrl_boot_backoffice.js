@@ -23,13 +23,6 @@ main();
 async function setup_device() {
     const className = "ontouchstart" in window ? "touch-yes" : "touch-no";
     document.body.classList.add(className);
-
-    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        document.body.classList.add("dark-mode");
-    }
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(e) {
-        e.matches ? document.body.classList.add("dark-mode") : document.body.classList.remove("dark-mode");
-    });
 }
 
 async function setup_blue_death_screen() {
