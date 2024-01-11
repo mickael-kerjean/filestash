@@ -65,6 +65,9 @@ RUN apt-get update > /dev/null && \
 
 RUN useradd filestash && \
     chown -R filestash:filestash /app/ && \
+    find /app/data/ -type d -exec chmod 770 {} \; && \
+    find /app/data/ -type f -exec chmod 760 {} \; && \
+    chmod 730 /app/filestash && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
