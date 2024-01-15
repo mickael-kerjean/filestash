@@ -48,7 +48,9 @@ export function formObjToJSON$() {
         Object.keys(obj).forEach((key) => {
             const t = obj[key];
             if ("label" in t && "type" in t && "default" in t && "value" in t) {
-                obj[key] = obj[key].value;
+                let value = obj[key].value;
+                if (t.type === "number") value = parseInt(value);
+                obj[key] = value;
             } else {
                 obj[key] = formObjToJSON(obj[key], level + 1);
             }
