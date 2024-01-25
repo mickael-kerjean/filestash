@@ -468,6 +468,7 @@ func (this S3Backend) Touch(path string) error {
 		ContentLength: aws.Int64(0),
 		Bucket:        aws.String(p.bucket),
 		Key:           aws.String(p.path),
+		ContentType:   aws.String(GetMimeType(path)),
 	}
 	if this.params["encryption_key"] != "" {
 		input.SSECustomerAlgorithm = aws.String("AES256")
@@ -484,9 +485,10 @@ func (this S3Backend) Save(path string, file io.Reader) error {
 	}
 	uploader := s3manager.NewUploader(this.createSession(p.bucket))
 	input := s3manager.UploadInput{
-		Body:   file,
-		Bucket: aws.String(p.bucket),
-		Key:    aws.String(p.path),
+		Body:        file,
+		Bucket:      aws.String(p.bucket),
+		Key:         aws.String(p.path),
+		ContentType: aws.String(GetMimeType(path)),
 	}
 	if this.params["encryption_key"] != "" {
 		input.SSECustomerAlgorithm = aws.String("AES256")
