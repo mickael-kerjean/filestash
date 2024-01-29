@@ -83,7 +83,7 @@ export function getState() {
         formObjToJSON$(),
         rxjs.map((config) => { // connections
             const connections = [];
-            const formData = new FormData(qs(document.body, "[data-bind=\"backend-enabled\"]"));
+            const formData = new FormData(qs(document.body, `[data-bind="backend-enabled"]`));
             for (const [type, label] of formData.entries()) {
                 connections.push({ type, label });
             }
@@ -92,7 +92,7 @@ export function getState() {
         }),
         rxjs.map((config) => { // middleware
             const authType = document
-                .querySelector("[data-bind=\"authentication_middleware\"] [is=\"box-item\"].active")
+                .querySelector(`[data-bind="authentication_middleware"] [is="box-item"].active`)
                 ?.getAttribute("data-label");
 
             config.middleware = {
@@ -101,7 +101,7 @@ export function getState() {
             };
             if (!authType) return config;
 
-            const $formIDP = document.querySelector("[data-bind=\"idp\"]");
+            const $formIDP = document.querySelector(`[data-bind="idp"]`);
             if (!($formIDP instanceof window.HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: idp isn't a form");
             let formValues = [...new FormData($formIDP)];
             config.middleware.identity_provider = {
@@ -121,7 +121,7 @@ export function getState() {
                 ),
             };
 
-            const $formAM = document.querySelector("[data-bind=\"attribute-mapping\"]");
+            const $formAM = document.querySelector(`[data-bind="attribute-mapping"]`);
             if (!($formAM instanceof window.HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: attribute mapping isn't a form");
             formValues = [...new FormData($formAM)];
             config.middleware.attribute_mapping = {

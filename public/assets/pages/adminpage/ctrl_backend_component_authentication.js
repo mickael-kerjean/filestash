@@ -51,7 +51,7 @@ export default async function(render) {
     effect(init$.pipe(
         rxjs.concatMap(() => getMiddlewareEnabled()),
         rxjs.filter((backend) => !!backend),
-        rxjs.tap((backend) => qsa($page, "[is=\"box-item\"]").forEach(($button) => {
+        rxjs.tap((backend) => qsa($page, `[is="box-item"]`).forEach(($button) => {
             $button.getAttribute("data-label") === backend
                 ? $button.classList.add("active")
                 : $button.classList.remove("active");
@@ -98,7 +98,7 @@ export default async function(render) {
             }
             return idps;
         }),
-        applyMutations(qs($page, "[data-bind=\"idp\"]"), "appendChild"),
+        applyMutations(qs($page, `[data-bind="idp"]`), "appendChild"),
         rxjs.share(),
     );
     effect(setupIDPForm$);
@@ -107,12 +107,12 @@ export default async function(render) {
     effect(setupIDPForm$.pipe(
         rxjs.concatMap(() => getMiddlewareEnabled()),
         rxjs.tap((currentMiddleware) => {
-            qsa($page, "[data-bind=\"idp\"] .formbuilder").forEach(($node) => {
+            qsa($page, `[data-bind="idp"] .formbuilder`).forEach(($node) => {
                 $node.getAttribute("id") === currentMiddleware
                     ? $node.classList.remove("hidden")
                     : $node.classList.add("hidden");
             });
-            const $attrMap = qs($page, "[data-bind=\"attribute-mapping\"]");
+            const $attrMap = qs($page, `[data-bind="attribute-mapping"]`);
             currentMiddleware
                 ? $attrMap.classList.remove("hidden")
                 : $attrMap.classList.add("hidden");
@@ -154,7 +154,7 @@ export default async function(render) {
             }),
         )),
         rxjs.concatMap(async(specs) => await createForm(specs, formTmpl({}))),
-        applyMutation(qs($page, "[data-bind=\"attribute-mapping\"]"), "replaceChildren"),
+        applyMutation(qs($page, `[data-bind="attribute-mapping"]`), "replaceChildren"),
         rxjs.share(),
     );
     effect(setupAMForm$);
@@ -163,14 +163,14 @@ export default async function(render) {
     effect(setupAMForm$.pipe(
         rxjs.switchMap(() => rxjs.merge(
             getBackendEnabled(),
-            rxjs.fromEvent(qs(document.body, "[data-bind=\"backend-enabled\"]"), "input").pipe(
+            rxjs.fromEvent(qs(document.body, `[data-bind="backend-enabled"]`), "input").pipe(
                 rxjs.debounceTime(500),
                 rxjs.mergeMap(() => getState().pipe(rxjs.map(({ connections }) => connections))),
             ),
         )),
         rxjs.map((connections) => connections.map(({ label }) => label)),
         rxjs.tap((datalist) => {
-            const $input = $page.querySelector("[name=\"attribute_mapping.related_backend\"]");
+            const $input = $page.querySelector(`[name="attribute_mapping.related_backend"]`);
             if (!$input) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing related backend");
             $input.setAttribute("datalist", datalist.join(","));
             // @ts-ignore
@@ -182,16 +182,16 @@ export default async function(render) {
     effect(setupAMForm$.pipe(
         rxjs.switchMap(() => rxjs.merge(
             // case 1: user is typing in the related backend field
-            rxjs.fromEvent(qs($page, "[name=\"attribute_mapping.related_backend\"]"), "input").pipe(
+            rxjs.fromEvent(qs($page, `[name="attribute_mapping.related_backend"]`), "input").pipe(
                 rxjs.map((e) => e.target.value),
             ),
             // case 2: user is adding / removing a storage backend
             getBackendEnabled().pipe(
-                rxjs.map(() => qs($page, "[name=\"attribute_mapping.related_backend\"]").value)
+                rxjs.map(() => qs($page, `[name=\"attribute_mapping.related_backend"]`).value)
             ),
             // case 3: user is changing the storage backend label
-            rxjs.fromEvent(qs(document.body, "[data-bind=\"backend-enabled\"]"), "input").pipe(
-                rxjs.map(() => qs($page, "[name=\"attribute_mapping.related_backend\"]").value),
+            rxjs.fromEvent(qs(document.body, `[data-bind="backend-enabled"]`), "input").pipe(
+                rxjs.map(() => qs($page, `[name="attribute_mapping.related_backend"]`).value),
             ),
         )),
         rxjs.map((value) => value.split(",").map((val) => (val || "").trim()).filter((t) => !!t)),
@@ -247,7 +247,7 @@ export default async function(render) {
         rxjs.tap(($node) => {
             /** @type { Element | undefined} */
             let $relatedBackendField;
-            $page.querySelectorAll("[data-bind=\"attribute-mapping\"] fieldset").forEach(($el, i) => {
+            $page.querySelectorAll(`[data-bind="attribute-mapping"] fieldset`).forEach(($el, i) => {
                 if (i === 0) $relatedBackendField = $el;
                 else $el.remove();
             });
