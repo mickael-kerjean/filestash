@@ -7,7 +7,7 @@ import { formTmpl } from "../../components/form.js";
 import { generateSkeleton } from "../../components/skeleton.js";
 
 import {
-    initMiddleware, getState,
+    getState,
     getMiddlewareAvailable, getMiddlewareEnabled, toggleMiddleware,
     getBackendAvailable, getBackendEnabled,
 } from "./ctrl_backend_state.js";
@@ -30,7 +30,6 @@ export default async function(render) {
         </div>
     `);
     render($page);
-    await initMiddleware();
 
     // feature: setup the buttons
     const init$ = getMiddlewareAvailable().pipe(

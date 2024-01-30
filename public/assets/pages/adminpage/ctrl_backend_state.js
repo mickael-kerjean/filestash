@@ -7,7 +7,7 @@ import { formObjToJSON$ } from "./helper_form.js";
 
 export { getBackends as getBackendAvailable } from "./model_backend.js";
 
-const backendsEnabled$ = new rxjs.ReplaySubject(1);
+const backendsEnabled$ = new rxjs.BehaviorSubject();
 
 export async function initStorage() {
     return await getConfig().pipe(
