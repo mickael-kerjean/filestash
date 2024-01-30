@@ -9,9 +9,11 @@ const adminSession$ = rxjs.merge(
         rxjs.startWith(null),
         rxjs.mergeMap(() => ajax({ url: "/admin/api/session", responseType: "json" })),
         rxjs.map(({ responseJSON }) => responseJSON.result),
-        rxjs.distinctUntilChanged(),
     )
-).pipe(rxjs.shareReplay(1));
+).pipe(
+    rxjs.distinctUntilChanged(),
+    rxjs.shareReplay(1)
+);
 
 export function isAdmin$() {
     return adminSession$;

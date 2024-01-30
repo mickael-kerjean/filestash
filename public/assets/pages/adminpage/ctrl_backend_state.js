@@ -12,7 +12,10 @@ const backendsEnabled$ = new rxjs.BehaviorSubject();
 export async function initStorage() {
     return await getConfig().pipe(
         rxjs.map(({ connections }) => connections),
-        rxjs.tap((connections) => backendsEnabled$.next(Array.isArray(connections) ? connections : [])),
+        rxjs.tap((connections) => {
+            if (backendsEnabled$.value !== undefined) return;
+            backendsEnabled$.next(Array.isArray(connections) ? connections : [])
+        }),
     ).toPromise();
 }
 
