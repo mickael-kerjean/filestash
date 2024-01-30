@@ -2,9 +2,12 @@ package plg_search_sqlitefts
 
 import (
 	"container/heap"
-	. "github.com/mickael-kerjean/filestash/server/common"
+	"context"
 	"path/filepath"
+	"reflect"
 	"sync"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 var SProc SearchProcess = SearchProcess{
@@ -60,6 +63,13 @@ func (this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
 	}
 	// instantiate the new indexer
 	s := NewSearchIndexer(id, app.Backend)
+	v := reflect.ValueOf(app.Backend).Elem().FieldByName("Context")
+	if v.IsValid() && v.CanSet() {
+		// prevent context expiration which is often default as r.Context()
+		// as we need to make queries outside the scope of a normal http request
+		v.Set(reflect.ValueOf(context.Background()))
+	}
+
 	heap.Push(&s.FoldersUnknown, &Document{
 		Type:        "directory",
 		Path:        path,
