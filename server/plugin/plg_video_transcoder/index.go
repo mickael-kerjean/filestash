@@ -2,11 +2,9 @@ package plg_video_transcoder
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/middleware"
 	"io"
 	"math"
 	"net/http"
@@ -15,6 +13,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gorilla/mux"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/middleware"
 )
 
 const (
@@ -180,7 +182,7 @@ func hls_transcode(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	cmd := exec.Command("ffmpeg", []string{
+	cmd := exec.CommandContext(req.Context(), "ffmpeg", []string{
 		"-timelimit", "30",
 		"-ss", fmt.Sprintf("%d.00", startTime),
 		"-i", cachePath,
@@ -210,12 +212,12 @@ func hls_transcode(ctx *App, res http.ResponseWriter, req *http.Request) {
 		"pipe:out%03d.ts",
 	}...)
 
-	var str bytes.Buffer
+	var buffer bytes.Buffer
 	cmd.Stdout = res
-	cmd.Stderr = &str
+	cmd.Stderr = &buffer
 	err = cmd.Run()
 	if err != nil {
-		Log.Error("plg_video_transcoder::ffmpeg::run '%s' - %s", err.Error(), str.String())
+		Log.Error("plg_video_transcoder::ffmpeg::run '%s' - %s", err.Error(), base64.StdEncoding.EncodeToString(buffer.Bytes()))
 	}
 }
 
