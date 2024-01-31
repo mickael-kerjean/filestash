@@ -57,15 +57,14 @@ func LegacyIndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) { 
 		// Microsoft is behaving on many occasion differently than Firefox / Chrome.
 		// I have neither the time / motivation for it to work properly
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(
-			Page(`
-                  <h1>Internet explorer is not supported</h1>
-                  <p>
-                    We don't support IE / Edge at this time
-                    <br>
-                    Please use either Chromium, Firefox or Chrome
-                  </p>
-                `)))
+		res.Write([]byte(Page(`
+			<h1>Internet explorer is not supported</h1>
+			<p>
+				We don't support IE / Edge at this time
+				<br>
+				Please use either Chromium, Firefox or Chrome
+			</p>
+		`)))
 		return
 	}
 	LegacyServeFile(res, req, "/index.html")
@@ -201,15 +200,14 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		// Microsoft is behaving on many occasion differently than Firefox / Chrome.
 		// I have neither the time / motivation for it to work properly
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(
-			Page(`
-                  <h1>Internet explorer is not supported</h1>
-                  <p>
-                    We don't support IE / Edge at this time
-                    <br>
-                    Please use either Chromium, Firefox or Chrome
-                  </p>
-                `)))
+		res.Write([]byte(Page(`
+			<h1>Internet explorer is not supported</h1>
+			<p>
+				We don't support IE / Edge at this time
+				<br>
+				Please use either Chromium, Firefox or Chrome
+			</p>
+		`)))
 		return
 	}
 	ServeFile(res, req, WWWPublic, "index.frontoffice.html")
