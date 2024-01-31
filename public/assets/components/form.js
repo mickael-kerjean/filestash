@@ -8,7 +8,8 @@ export function formTmpl(options = {}) {
     const {
         autocomplete = true,
         renderNode = null,
-        renderLeaf = null
+        renderLeaf = null,
+        renderInput = $renderInput({ autocomplete }),
     } = options;
     return {
         renderNode: (opts) => {
@@ -35,7 +36,7 @@ export function formTmpl(options = {}) {
                 </label>
             `);
         },
-        renderInput: $renderInput({ autocomplete }),
+        renderInput,
         formatLabel: format
     };
 };
