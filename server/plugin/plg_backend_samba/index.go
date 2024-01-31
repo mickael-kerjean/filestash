@@ -41,21 +41,19 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	if c != nil {
 		return c.(*Samba), nil
 	}
-	conn, err := net.DialTimeout(
-		"tcp",
-		fmt.Sprintf(
-			"%s:%s",
-			params["host"],
-			func() string {
-				if params["port"] == "" {
-					return "445"
-				}
-				return params["port"]
-			}(),
-		),
-		10*time.Second,
+	host := fmt.Sprintf(
+		"%s:%s",
+		params["host"],
+		func() string {
+			if params["port"] == "" {
+				return "445"
+			}
+			return params["port"]
+		}(),
 	)
+	conn, err := net.DialTimeout("tcp", host, 10*time.Second)
 	if err != nil {
+		Log.Debug("plg_backend_samba::netdial host[%s] err[%s]", host, err.Error())
 		return nil, err
 	}
 
@@ -73,11 +71,13 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		},
 	}).Dial(conn)
 	if err != nil {
+		Log.Debug("plg_backend_samba::smbdial host[%s] err[%s] username[%s] domain[%s]", host, err.Error(), params["username"], params["domain"])
 		return nil, err
 	}
 	if params["share"] == "" {
 		names, err := s.session.ListSharenames()
 		if err != nil {
+			Log.Debug("plg_backend_samba::list host[%s] err[%s]", host, err.Error())
 			return nil, err
 		}
 		for _, name := range names {
