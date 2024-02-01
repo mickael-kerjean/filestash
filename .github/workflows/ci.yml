@@ -24,7 +24,7 @@ jobs:
 
   build_backend:
     needs: build_frontend
-    runs-on: ubuntu-21.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v4
