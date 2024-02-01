@@ -17,7 +17,7 @@ jobs:
       run: npm install
     - name: Build
       run: make build_frontend
-    - uses: actions/upload-artifact@master
+    - uses: actions/upload-artifact@v3
       with:
         name: build-frontend
         path: server/ctrl/static/www/
@@ -44,7 +44,7 @@ jobs:
       run: |
         make build_init
         make build_backend
-    - uses: actions/upload-artifact@master
+    - uses: actions/upload-artifact@v3
       with:
         name: build
         path: dist
