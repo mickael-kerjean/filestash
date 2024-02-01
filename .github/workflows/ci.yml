@@ -56,11 +56,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Clone test repo
-      uses: actions/checkout@v3
+    - uses: actions/download-artifact@v4
       with:
-        repository: mickael-kerjean/filestash-test
-        ssh-key: ${{ secrets.DEPLOY_KEY_FILESTASH_TEST }}
+        name: test
         path: test
     - uses: actions/setup-node@v3
       with:
@@ -114,6 +112,7 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: test
+        path: test
     - uses: actions/download-artifact@v4
       with:
         name: build-frontend
