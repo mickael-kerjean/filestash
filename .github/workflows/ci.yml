@@ -24,7 +24,7 @@ jobs:
 
   build_backend:
     needs: build_frontend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v4
@@ -124,6 +124,8 @@ jobs:
     - name: Setup
       run: |
         sudo apt-get install -y poppler-utils
+        ls -lah
+        ls -lah test
         cp ./test/assets/* /tmp/
         mkdir server/ctrl/static/www/ && touch server/ctrl/static/www/index.html
         make build_init
