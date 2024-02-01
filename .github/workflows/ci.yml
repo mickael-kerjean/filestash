@@ -17,7 +17,7 @@ jobs:
       run: npm install
     - name: Build
       run: make build_frontend
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: build-frontend
         path: server/ctrl/static/www/
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: build-frontend
         path: server/ctrl/static/www/
@@ -44,7 +44,7 @@ jobs:
       run: |
         make build_init
         make build_backend
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: build
         path: dist
@@ -102,7 +102,7 @@ jobs:
         repository: mickael-kerjean/filestash-test
         ssh-key: ${{ secrets.DEPLOY_KEY_FILESTASH_TEST }}
         path: test
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: build-frontend
         path: server/ctrl/static/www/
@@ -127,7 +127,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
      - name: Init
-       uses: actions/download-artifact@v3
+       uses: actions/download-artifact@v4
        with:
          name: build
      - name: Run
@@ -161,7 +161,7 @@ jobs:
   #       ssh-key: ${{ secrets.DEPLOY_KEY_FILESTASH_TEST }}
   #       path: test
   #   - name: Restore Build
-  #     uses: actions/download-artifact@v3
+  #     uses: actions/download-artifact@v4
   #     with:
   #       name: build
   #   - name: Setup
