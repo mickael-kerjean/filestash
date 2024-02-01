@@ -142,8 +142,23 @@ jobs:
          cat access.log | grep -vz "WARN"
          cat access.log | grep -vz "ERR"
 
+  test_e2e_prepare:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Clone test repo
+      uses: actions/checkout@v3
+      with:
+        repository: mickael-kerjean/filestash-test
+        ssh-key: ${{ secrets.DEPLOY_KEY_FILESTASH_TEST }}
+        path: test
+    - uses: actions/upload-artifact@v4
+      with:
+        name: test
+        path: test
+
   test_e2e:
-    needs: [test_smoke]
+    needs: [test_smoke, test_e2e_prepare]
     runs-on: ubuntu-latest
     container:
       image: machines/puppeteer
@@ -154,12 +169,10 @@ jobs:
         CI: true
     steps:
     - uses: actions/checkout@v3
-    - name: Clone test repo
-      uses: actions/checkout@v3
+    - name: get back test repo
+      uses: actions/download-artifact@v4
       with:
-        repository: mickael-kerjean/filestash-test
-        ssh-key: ${{ secrets.DEPLOY_KEY_FILESTASH_TEST }}
-        path: test
+        name: test
     - name: Restore Build
       uses: actions/download-artifact@v4
       with:
@@ -178,7 +191,7 @@ jobs:
 
   release_docker_amd64:
     # if: github.ref == 'refs/heads/master'
-    needs: [ test_backend, test_frontend, test_smoke ]
+    needs: [ test_backend, test_frontend, test_e2e ]
     runs-on: ubuntu-latest
     steps:
     - name: Init
@@ -195,7 +208,7 @@ jobs:
 
   release_docker_arm64:
     if: github.ref == 'refs/heads/master'
-    needs: [ test_backend, test_frontend, test_smoke ]
+    needs: [ test_backend, test_frontend, test_e2e ]
     runs-on: ubuntu-latest
     steps:
     - name: Init
