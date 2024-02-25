@@ -1,9 +1,7 @@
 import rxjs, { ajax } from "../lib/rx.js";
-import { loadJS } from "../helpers/loader.js";
 // import { setup_cache } from "../helpers/cache.js";
-import { init as setup_loader } from "../helpers/loader.js";
+import { init as setup_loader, loadJS } from "../helpers/loader.js";
 import { report } from "../helpers/log.js";
-
 
 export default async function main() {
     try {

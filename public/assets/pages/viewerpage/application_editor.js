@@ -72,7 +72,7 @@ export default async function(render) {
             const editor = window.CodeMirror($editor, {
                 value: content,
                 lineNumbers: true,
-                mode: CodeMirror.__mode,
+                mode: window.CodeMirror.__mode,
                 keyMap: ["emacs", "vim"].indexOf(config["editor"]) === -1 ? "sublime" : config["editor"],
                 lineWrapping: true,
                 readOnly: !/PUT/.test(acl),
@@ -110,20 +110,20 @@ export default async function(render) {
     effect(setup$.pipe(
         rxjs.switchMap((editor) => new rxjs.Observable((observer) => editor.on("change", (cm) => observer.next(cm)))),
         rxjs.mergeMap((editor) => content$.pipe(rxjs.map((oldContent) => [editor, editor.getValue(), oldContent]))),
-        rxjs.tap(async ([editor, newContent = "", oldContent = ""]) => {
+        rxjs.tap(async([editor, newContent = "", oldContent = ""]) => {
             if ($fab.disabled) return;
             const $breadcrumb = qs(document.body, `[is="component-breadcrumb"]`);
             if (newContent === oldContent) {
                 await animate($fab, { time: 100, keyframes: opacityOut() });
                 $fab.classList.add("hidden");
                 $breadcrumb.removeAttribute("indicator");
-                return
+                return;
             }
             $breadcrumb.setAttribute("indicator", "true");
             const shouldAnimate = $fab.classList.contains("hidden");
             $fab.classList.remove("hidden");
             $fab.render($ICON.SAVING);
-            $fab.onclick = () => CodeMirror.commands.save(editor);
+            $fab.onclick = () => window.CodeMirror.commands.save(editor);
 
             if (shouldAnimate) await animate($fab, { time: 100, keyframes: slideXIn(40) });
         }),
@@ -132,11 +132,11 @@ export default async function(render) {
     // feature4: save
     effect(setup$.pipe(
         rxjs.mergeMap((editor) => new rxjs.Observable((observer) => {
-            CodeMirror.commands.save = (cm) => observer.next(cm);
+            window.CodeMirror.commands.save = (cm) => observer.next(cm);
         })),
         rxjs.mergeMap((cm) => {
             $fab.classList.remove("hidden");
-            $fab.render($ICON.LOADING)
+            $fab.render($ICON.LOADING);
             $fab.disabled = true;
             return rxjs.of(cm.getValue()).pipe(
                 saveFile$(),
@@ -151,7 +151,7 @@ export default async function(render) {
 
     // feature5: save on exit
     effect(setup$.pipe(
-        rxjs.tap((cm) => window.history.block = async (href) => {
+        rxjs.tap((cm) => window.history.block = async(href) => {
             const block = qs(document.body, `[is="component-breadcrumb"]`).hasAttribute("indicator");
             if (block === false) return false;
 
@@ -173,10 +173,10 @@ export default async function(render) {
                 <div style="text-align:center;padding-bottom:5px;">
                     Do you want to save the changes ?
                 </div>
-            `, { onQuit: () => {done(false)} }));
-            })
+            `, { onQuit: () => { done(false); } }));
+            });
         }),
-    ))
+    ));
 }
 
 function has_binary(str) {

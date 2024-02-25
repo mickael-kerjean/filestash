@@ -1,1 +1,1 @@
-export default CodeMirror;
+export default window.CodeMirror;

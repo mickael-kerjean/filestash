@@ -1,7 +1,7 @@
 class ChromecastManager {
     init() {
         // TODO: additional rules for setup
-        let src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
+        const src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
         if (document.head.querySelector(`script[src="${src}"]`)) return Promise.resolve();
 
         return new Promise((done) => {
@@ -9,13 +9,13 @@ class ChromecastManager {
             script.src = src;
             script.onerror = () => done();
             window["__onGCastApiAvailable"] = function(isAvailable) {
-                if (isAvailable) cast.framework.CastContext.getInstance().setOptions({
-                    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-                    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+                if (isAvailable) window.cast.framework.CastContext.getInstance().setOptions({
+                    receiverApplicationId: window.chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+                    autoJoinPolicy: window.chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
                 });
                 done();
             };
-            document.head.appendChild(script)
+            document.head.appendChild(script);
         });
     }
 
@@ -45,20 +45,22 @@ class ChromecastManager {
         // url. Once we have that app, the authorisation will come from a customData field
         // of a chrome.cast.media.LoadRequest
         const target = new URL(mediaInfo.contentId);
-        target.searchParams.append("authorization", Session.authorization);
+        target.searchParams.append("authorization", window.Session.authorization);
         mediaInfo.contentId = target.toString();
-        return new chrome.cast.media.LoadRequest(mediaInfo);
+        return new window.chrome.cast.media.LoadRequest(mediaInfo);
     }
 
     context() {
-        if (!this.isAvailable()) return
+        if (!this.isAvailable()) return;
         return window.cast.framework.CastContext.getInstance();
     }
+
     session() {
         const context = this.context();
         if (!context) return;
         return context.getCurrentSession();
     }
+
     media() {
         const session = this.session();
         if (!session) return;

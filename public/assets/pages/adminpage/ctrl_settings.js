@@ -1,4 +1,4 @@
-import { createElement, createRender } from "../../lib/skeleton/index.js";
+import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation } from "../../lib/rx.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { createForm, mutateForm } from "../../lib/form.js";

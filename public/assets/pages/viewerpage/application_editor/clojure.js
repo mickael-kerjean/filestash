@@ -1,3 +1,3 @@
 import "../../../lib/vendor/codemirror/mode/clojure/clojure.js";
-CodeMirror.__mode = "clojure";
-export default CodeMirror;
+window.CodeMirror.__mode = "clojure";
+export default window.CodeMirror;

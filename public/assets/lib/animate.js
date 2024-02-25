@@ -20,7 +20,8 @@ export function animate($node, opts = {}) {
     return new Promise((done) => {
         $node.animate(keyframes, {
             duration: time,
-            fill, easing,
+            fill,
+            easing,
         }).onfinish = done;
     });
 }

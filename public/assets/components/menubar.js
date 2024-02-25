@@ -1,4 +1,3 @@
-import { createElement } from "../lib/skeleton/index.js";
 import { animate, slideYIn } from "../lib/animate.js";
 import { basename } from "../lib/path.js";
 import assert from "../lib/assert.js";
@@ -10,7 +9,7 @@ export default class ComponentMenubar extends window.HTMLElement {
     constructor() {
         super();
 
-        this.classList.add("component_menubar")
+        this.classList.add("component_menubar");
         this.innerHTML = `
             <div class="component_container">
                 <span>

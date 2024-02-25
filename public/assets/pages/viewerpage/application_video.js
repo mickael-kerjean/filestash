@@ -13,8 +13,8 @@ import ctrlError from "../ctrl_error.js";
 import { transition, getDownloadUrl } from "./common.js";
 import { formatTimecode } from "./common_player.js";
 import { ICON } from "./common_icon.js";
-import { menubarDownload, buildMenubar } from "./common_menubar.js";
-import { render as renderMenubar } from "../../components/menubar.js";
+// import { menubarDownload, buildMenubar } from "./common_menubar.js";
+// import { render as renderMenubar } from "../../components/menubar.js";
 
 import "../../components/icon.js";
 
@@ -122,7 +122,7 @@ export default function(render, { mime }) {
         }
     };
     const setStatus = (status) => {
-        switch(status) {
+        switch (status) {
         case "PLAYING":
             $control.play.classList.add("hidden");
             $control.pause.classList.remove("hidden");
@@ -144,9 +144,9 @@ export default function(render, { mime }) {
             assert.fail(status);
         }
     };
-    const setSeek = (newTime, shouldSet = false)  => {
+    const setSeek = (newTime, shouldSet = false) => {
         if (shouldSet) $video.currentTime = newTime;
-        const width = 100 * (newTime / $video.duration)
+        const width = 100 * (newTime / $video.duration);
         qs($page, ".progress .progress-active").style.width = `${width}%`;
         if (!isNaN($video.duration)) {
             qs($page, ".timecode .current").textContent = formatTimecode($video.currentTime) + " / " + formatTimecode($video.duration);
@@ -173,25 +173,28 @@ export default function(render, { mime }) {
         rxjs.mergeMap(() => {
             const $loader = qs($page, ".loader");
             $loader.replaceChildren(createElement(`<img style="height:170px;cursor:pointer;filter:brightness(0.5) invert(1);" src="${ICON.PLAY}" />`));
-            animate($loader, { time: 150, keyframes: [
-                { transform: "scale(0.7)" },
-                { transform: "scale(1)" },
-            ]});
+            animate($loader, {
+                time: 150,
+                keyframes: [
+                    { transform: "scale(0.7)" },
+                    { transform: "scale(1)" },
+                ],
+            });
             setSeek(0);
             return rxjs.fromEvent($loader, "click").pipe(rxjs.mapTo($loader));
         }),
         rxjs.tap(($loader) => {
-            $loader.classList.add("hidden")
+            $loader.classList.add("hidden");
             const $control = qs($page, ".videoplayer_control");
             $control.classList.remove("hidden");
-            animate($control, { time: 300, keyframes: slideYIn(5) })
+            animate($control, { time: 300, keyframes: slideYIn(5) });
             setStatus(STATUS_PLAYING);
         }),
         rxjs.share(),
     );
     effect(setup$);
     effect(setup$.pipe(rxjs.mergeMap(() => rxjs.fromEvent($video, "error").pipe(rxjs.tap(() => {
-        console.error(err);
+        // console.error(err);
         // notify.send(t("Not supported"), "error");
         // setIsPlaying(false);
         // setIsLoading(false);
@@ -235,7 +238,7 @@ export default function(render, { mime }) {
             $hint.style.left = x;
             $hint.textContent = formatTimecode(time);
         }),
-    ))
+    ));
     effect(setup$.pipe(
         rxjs.switchMap(() => rxjs.fromEvent(qs($page, ".progress"), "mouseleave")),
         rxjs.tap(() => $hint.classList.add("hidden")),
@@ -246,7 +249,7 @@ export default function(render, { mime }) {
         rxjs.switchMap(() => rxjs.fromEvent(qs($page, ".progress"), "click").pipe(
             rxjs.map((e) => { // TODO: use onClick instead?
                 let $progress = e.target;
-                if (e.target.classList.contains("progress") == false) {
+                if (e.target.classList.contains("progress") === false) {
                     $progress = e.target.parentElement;
                 }
                 const rec = $progress.getBoundingClientRect();
@@ -266,7 +269,7 @@ export default function(render, { mime }) {
     effect(setup$.pipe(
         rxjs.switchMap(() => rxjs.fromEvent(document, "keydown").pipe(rxjs.map((e) => e.code))),
         rxjs.tap((code) => {
-            switch(code) {
+            switch (code) {
             case "Space":
             case "KeyK":
                 setStatus($video.paused ? STATUS_PLAYING : STATUS_PAUSED);
@@ -340,7 +343,7 @@ export default function(render, { mime }) {
                 return $video.buffered.start(i) / $video.duration * 100;
             };
             const $container = qs($page, `[data-bind="progress-buffer"]`);
-            if ($video.buffered.length !== $container.children.length ) {
+            if ($video.buffered.length !== $container.children.length) {
                 $container.innerHTML = "";
                 const $fragment = document.createDocumentFragment();
                 Array.apply(null, { length: $video.buffered.length })
@@ -349,8 +352,7 @@ export default function(render, { mime }) {
                     `)));
                 $container.appendChild($fragment);
             }
-
-            for (let i=0;i<$video.buffered.length;i++) {
+            for (let i=0; i<$video.buffered.length; i++) {
                 $container.children[i].style.left = calcLeft(i) + "%";
                 $container.children[i].style.width = calcWidth(i) + "%";
             }
@@ -364,7 +366,7 @@ export function init() {
         loadCSS(import.meta.url, "./application_video.css"),
         loadCSS(import.meta.url, "./component_pager.css"),
         loadJS(import.meta.url, "/overrides/video-transcoder.js"),
-    ]).then(async () => {
+    ]).then(async() => {
         if (typeof window.overrides["video-map-sources"] !== "function") window.overrides["video-map-sources"] = (s) => (s);
     });
 }

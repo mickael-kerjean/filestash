@@ -9,7 +9,7 @@ import ctrlError from "../ctrl_error.js";
 import { transition, getDownloadUrl } from "./common.js";
 
 import componentMetadata from "./application_image_metadata.js";
-import componentPager, { init as initPager} from "./component_pager.js";
+import componentPager, { init as initPager } from "./component_pager.js";
 
 import "../../components/menubar.js";
 
@@ -36,13 +36,14 @@ export default function(render) {
         rxjs.tap(($node) => {
             $node.classList.remove("hidden");
             animate($node, {
-                time: 300, easing: "cubic-bezier(.51,.92,.24,1.15)",
+                time: 300,
+                easing: "cubic-bezier(.51,.92,.24,1.15)",
                 keyframes: [
                     { opacity: 0, transform: "scale(.97)" },
                     { opacity: 1 },
-	                { opacity: 1, transform: "scale(1)" },
+                    { opacity: 1, transform: "scale(1)" },
                 ],
-            })
+            });
         }),
         rxjs.catchError((err) => {
             if (err.target instanceof window.HTMLElement && err.type === "error") {
@@ -73,5 +74,5 @@ export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_image.css"),
         initPager(), // initMetadata(),
-    ])
+    ]);
 }

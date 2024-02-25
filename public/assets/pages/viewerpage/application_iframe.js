@@ -17,13 +17,13 @@ export default function(render, opts = {}) {
     effect(rxjs.fromEvent(window, "message").pipe(
         rxjs.filter((event) => event.origin === location.origin),
         rxjs.tap((event) => { // TODO: notification
-            switch(event.data.type) {
+            switch (event.data.type) {
             case "notify::info":
-                notify.send(t(event.data.message), "info");
+                // notify.send(t(event.data.message), "info");
                 break;
             case "notify::error":
-                notify.send(t(event.data.message), "error");
-                break
+                // notify.send(t(event.data.message), "error");
+                break;
             }
         }),
     ));

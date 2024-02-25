@@ -6,7 +6,7 @@ export async function loadJS(baseURL, path, opts = {}) {
     const $script = document.createElement("script");
     const link = new URL(path, baseURL) + "?version=" + version;
     $script.setAttribute("src", link.toString());
-    for (let key in opts) {
+    for (const key in opts) {
         $script.setAttribute(key, opts[key]);
     }
     if (typeof type === "string") ;

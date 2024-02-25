@@ -3,7 +3,6 @@ export const org_cycle = (cm) => {
     isFold(cm, pos) ? unfold(cm, pos) : fold(cm, pos);
 };
 
-
 const state = {
     stab: "CONTENT",
 };
@@ -29,7 +28,6 @@ export const org_shifttab = (cm) => {
     return state.stab;
 };
 
-
 function set_folding_mode(cm, mode) {
     if (mode === "OVERVIEW") {
         folding_mode_overview(cm);
@@ -43,7 +41,7 @@ function set_folding_mode(cm, mode) {
     function folding_mode_overview(cm) {
         cm.operation(function() {
             for (let i = cm.firstLine(), e = cm.lastLine(); i <= e; i++) {
-                fold(cm, CodeMirror.Pos(i, 0));
+                fold(cm, window.CodeMirror.Pos(i, 0));
             }
         });
     }
@@ -51,15 +49,15 @@ function set_folding_mode(cm, mode) {
         cm.operation(function() {
             let previous_header = null;
             for (let i = cm.firstLine(), e = cm.lastLine(); i <= e; i++) {
-                fold(cm, CodeMirror.Pos(i, 0));
-                if (/header/.test(cm.getTokenTypeAt(CodeMirror.Pos(i, 0))) === true) {
+                fold(cm, window.CodeMirror.Pos(i, 0));
+                if (/header/.test(cm.getTokenTypeAt(window.CodeMirror.Pos(i, 0))) === true) {
                     const level = cm.getLine(i).replace(/^(\*+).*/, "$1").length;
                     if (previous_header && level > previous_header.level) {
-                        unfold(cm, CodeMirror.Pos(previous_header.line, 0));
+                        unfold(cm, window.CodeMirror.Pos(previous_header.line, 0));
                     }
                     previous_header = {
                         line: i,
-                        level: level,
+                        level,
                     };
                 }
             }
@@ -68,14 +66,13 @@ function set_folding_mode(cm, mode) {
     function folding_mode_all(cm) {
         cm.operation(function() {
             for (let i = cm.firstLine(), e = cm.lastLine(); i <= e; i++) {
-                if (/header/.test(cm.getTokenTypeAt(CodeMirror.Pos(i, 0))) === true) {
-                    unfold(cm, CodeMirror.Pos(i, 0));
+                if (/header/.test(cm.getTokenTypeAt(window.CodeMirror.Pos(i, 0))) === true) {
+                    unfold(cm, window.CodeMirror.Pos(i, 0));
                 }
             }
         });
     }
 }
-
 
 /*
  * Promote heading or move table column to left.
@@ -177,18 +174,17 @@ export const org_meta_return = (cm) => {
         rearrange_list(cm, line);
     } else if (p = isTitle(cm, line)) {
         const tmp = previousOfType(cm, "title", line);
-        const level = tmp && tmp.level || 1;
-        cm.replaceRange("\n"+"*".repeat(level)+" ", { line: line, ch: content.length });
+        const level = (tmp && tmp.level) || 1;
+        cm.replaceRange("\n"+"*".repeat(level)+" ", { line, ch: content.length });
         cm.setCursor({ line: line+1, ch: level+1 });
     } else if (content.trim() === "") {
-        cm.replaceRange("* ", { line: line, ch: 0 });
-        cm.setCursor({ line: line, ch: 2 });
+        cm.replaceRange("* ", { line, ch: 0 });
+        cm.setCursor({ line, ch: 2 });
     } else {
-        cm.replaceRange("\n\n* ", { line: line, ch: content.length });
+        cm.replaceRange("\n\n* ", { line, ch: content.length });
         cm.setCursor({ line: line + 2, ch: 2 });
     }
 };
-
 
 const TODO_CYCLES = ["TODO", "DONE", ""];
 /*
@@ -210,8 +206,8 @@ export const org_shiftleft = (cm) => {
     params["status"] = cycles[cycles.indexOf(params["status"]) + 1];
     cm.replaceRange(
         makeTitle(params),
-        { line: line, ch: 0 },
-        { line: line, ch: content.length },
+        { line, ch: 0 },
+        { line, ch: content.length },
     );
 };
 /*
@@ -234,8 +230,8 @@ export const org_shiftright = (cm) => {
         params["status"] = cycles[cycles.indexOf(params["status"]) + 1];
         cm.replaceRange(
             makeTitle(params),
-            { line: line, ch: 0 },
-            { line: line, ch: content.length },
+            { line, ch: 0 },
+            { line, ch: content.length },
         );
     });
 };
@@ -262,19 +258,18 @@ export const org_insert_todo_heading = (cm) => {
             cm.setCursor({ line: p.end+1, ch: level*3+7 });
             rearrange_list(cm, line);
         } else if (p = isTitle(cm, line)) {
-            const level = p && p.level || 1;
-            cm.replaceRange("\n"+"*".repeat(level)+" TODO ", { line: line, ch: content.length });
+            const level = (p && p.level) || 1;
+            cm.replaceRange("\n"+"*".repeat(level)+" TODO ", { line, ch: content.length });
             cm.setCursor({ line: line+1, ch: level+6 });
         } else if (content.trim() === "") {
-            cm.replaceRange("* TODO ", { line: line, ch: 0 });
-            cm.setCursor({ line: line, ch: 7 });
+            cm.replaceRange("* TODO ", { line, ch: 0 });
+            cm.setCursor({ line, ch: 7 });
         } else {
-            cm.replaceRange("\n\n* TODO ", { line: line, ch: content.length });
+            cm.replaceRange("\n\n* TODO ", { line, ch: content.length });
             cm.setCursor({ line: line + 2, ch: 7 });
         }
     });
 };
-
 
 /*
  * Move subtree up or move table row up.
@@ -347,7 +342,6 @@ export const org_metadown = (cm) => {
     });
 };
 
-
 export const org_shiftmetaright = function(cm) {
     cm.operation(() => {
         const line = cm.getCursor().line;
@@ -378,7 +372,6 @@ export const org_shiftmetaleft = function(cm) {
         }
     });
 };
-
 
 function makeTitle(p) {
     let content = "*".repeat(p["level"])+" ";
@@ -421,7 +414,7 @@ function isItemList(cm, line) {
         level: padding / 2,
         content: content.trimLeft().replace(/^\s*\-\s(.*)$/, "$1"),
         start: line,
-        end: function(_cm, _line) {
+        end: (function(_cm, _line) {
             let line_candidate = _line;
             let content = null;
             do {
@@ -437,7 +430,7 @@ function isItemList(cm, line) {
                 }
             } while (_line <= _cm.lineCount());
             return line_candidate;
-        }(cm, line),
+        }(cm, line)),
     };
 
     function findRootLine(_cm, _line) {
@@ -467,7 +460,7 @@ function isNumberedList(cm, line) {
         level: padding / 3,
         content: content.trimLeft().replace(/^[0-9]+[\.\)]\s(.*)$/, "$1"),
         start: line,
-        end: function(_cm, _line) {
+        end: (function(_cm, _line) {
             let line_candidate = _line;
             let content = null;
             do {
@@ -483,7 +476,7 @@ function isNumberedList(cm, line) {
                 }
             } while (_line <= _cm.lineCount());
             return line_candidate;
-        }(cm, line),
+        }(cm, line)),
         // specific
         n: parseInt(content.trimLeft().replace(/^([0-9]+).*$/, "$1")),
         separator: content.trimLeft().replace(/^[0-9]+([\.\)]).*$/, "$1"),
@@ -514,7 +507,7 @@ function isTitle(cm, line, level) {
         level: reference_level,
         content: match[3],
         start: line,
-        end: function(_cm, _line) {
+        end: (function(_cm, _line) {
             let line_candidate = _line;
             let content = null;
             do {
@@ -524,7 +517,7 @@ function isTitle(cm, line, level) {
                 const match = content.match(/^(\*+)\s.*/);
                 if (
                     match && match[1] &&
-                    ( match[1].length === reference_level || match[1].length < reference_level)
+                    (match[1].length === reference_level || match[1].length < reference_level)
                 ) {
                     break;
                 } else {
@@ -533,7 +526,7 @@ function isTitle(cm, line, level) {
                 }
             } while (_line <= _cm.lineCount());
             return line_candidate;
-        }(cm, line),
+        }(cm, line)),
         // specific
         status: match[2].trim(),
     };
@@ -566,7 +559,6 @@ function rearrange_list(cm, line) {
             }
         }
 
-
         if (p = (isNumberedList(cm, i) || isItemList(cm, i))) {
             // rearrange spacing levels in list
             if (last_p) {
@@ -581,7 +573,6 @@ function rearrange_list(cm, line) {
                 }
             }
         }
-
 
         last_p = p;
         // we can process content block instead of line
@@ -607,13 +598,13 @@ function rearrange_list(cm, line) {
         let i;
         for (i=range[0]; i<=range[1]; i++) {
             content = cm.getLine(i).trimLeft();
-            const n_spaces = function(_level, _line, _type) {
+            const n_spaces = (function(_level, _line, _type) {
                 let spaces = _level * 3;
                 if (_line > 0) {
                     spaces += _type === "numbered" ? 3 : 2;
                 }
                 return spaces;
-            }(level, i - range[0], type);
+            }(level, i - range[0], type));
 
             content = " ".repeat(n_spaces) + content;
             cm.replaceRange(
@@ -629,8 +620,8 @@ function rearrange_list(cm, line) {
         const new_content = content.replace(/[0-9]+\./, level+".");
         cm.replaceRange(
             new_content,
-            { line: line, ch: 0 },
-            { line: line, ch: content.length },
+            { line, ch: 0 },
+            { line, ch: content.length },
         );
     }
 
@@ -720,9 +711,9 @@ export function unfold(cm, start) {
 }
 export function isFold(cm, start) {
     const line = start.line;
-    const marks = cm.findMarks(CodeMirror.Pos(line, 0), CodeMirror.Pos(line + 1, 0));
+    const marks = cm.findMarks(window.CodeMirror.Pos(line, 0), window.CodeMirror.Pos(line + 1, 0));
     for (let i = 0; i < marks.length; ++i) {
-        if (marks[i].__isFold && marks[i].find().from.line == line) return marks[i];
+        if (marks[i].__isFold && marks[i].find().from.line === line) return marks[i];
     }
     return false;
 }

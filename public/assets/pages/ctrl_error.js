@@ -75,7 +75,6 @@ trace:   ${err.stack || "N/A"}`;
     return [msg, trace.trim()];
 }
 
-
 const css = `
 .error-page {
   width: 80%;

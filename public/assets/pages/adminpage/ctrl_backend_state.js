@@ -14,7 +14,7 @@ export async function initStorage() {
         rxjs.map(({ connections }) => connections),
         rxjs.tap((connections) => {
             if (backendsEnabled$.value !== undefined) return;
-            backendsEnabled$.next(Array.isArray(connections) ? connections : [])
+            backendsEnabled$.next(Array.isArray(connections) ? connections : []);
         }),
     ).toPromise();
 }

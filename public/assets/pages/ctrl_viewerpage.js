@@ -18,7 +18,7 @@ const mime$ = getConfig().pipe(
 );
 
 function loadModule(appName) {
-    switch(appName) {
+    switch (appName) {
     case "editor":
         return import("./viewerpage/application_editor.js");
     case "pdf":
@@ -55,8 +55,7 @@ export default WithShell(async function(render) {
         )),
         rxjs.catchError(ctrlError()),
     ));
-
-})
+});
 
 export async function init() {
     return Promise.all([

@@ -1,3 +1,3 @@
 import "./clike.js";
-CodeMirror.__mode = "text/x-java";
-export default CodeMirror;
+window.CodeMirror.__mode = "text/x-java";
+export default window.CodeMirror;

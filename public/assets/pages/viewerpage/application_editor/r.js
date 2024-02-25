@@ -1,3 +1,3 @@
 import "../../../lib/vendor/codemirror/mode/r/r.js";
-CodeMirror.__mode = "r";
-export default CodeMirror;
+window.CodeMirror.__mode = "r";
+export default window.CodeMirror;

@@ -1,3 +1,3 @@
 import "../../../lib/vendor/codemirror/mode/sql/sql.js";
-CodeMirror.__mode = "sql";
-export default CodeMirror;
+window.CodeMirror.__mode = "sql";
+export default window.CodeMirror;

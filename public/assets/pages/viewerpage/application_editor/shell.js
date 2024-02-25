@@ -1,3 +1,3 @@
 import "../../../lib/vendor/codemirror/mode/shell/shell.js";
-CodeMirror.__mode = "shell";
-export default CodeMirror;
+window.CodeMirror.__mode = "shell";
+export default window.CodeMirror;

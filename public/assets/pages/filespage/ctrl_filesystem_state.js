@@ -36,4 +36,4 @@ export const onSearch = () => {
     console.log("SEARCH");
 };
 
-export const getFiles = (n) => {}
+export const getFiles = (n) => {};

@@ -6,7 +6,8 @@ import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { join } from "../../lib/path.js";
 import ctrlError from "../ctrl_error.js";
 
-import { transition, getFilename, getDownloadUrl } from "./common.js";
+import { transition, getDownloadUrl } from "./common.js";
+import { buildMenubar, menubarDownload } from "./common_menubar.js";
 
 import "../../components/menubar.js";
 import "../../components/icon.js";
@@ -16,6 +17,7 @@ const hasNativePDF = () => "application/pdf" in window.navigator.mimeTypes;
 export default async function(render) {
     const ctrl = hasNativePDF() ? ctrlPDFNative : ctrlPDFJs;
     ctrl(render);
+    buildMenubar(menubarDownload());
 }
 
 function ctrlPDFNative(render) {
@@ -40,8 +42,6 @@ function ctrlPDFNative(render) {
         rxjs.tap(($embed) => transition($embed)),
         rxjs.catchError(ctrlError()),
     ));
-
-
 }
 
 async function ctrlPDFJs(render) {
@@ -58,7 +58,7 @@ async function ctrlPDFJs(render) {
     const removeLoader = createLoader($container);
     effect(rxjs.from(window.pdfjsLib.getDocument(getDownloadUrl()).promise).pipe(
         removeLoader,
-        rxjs.mergeMap(async (pdf) => {
+        rxjs.mergeMap(async(pdf) => {
             createBr();
             for (let i=0; i<pdf.numPages; i++) {
                 const page = await pdf.getPage(i + 1);
@@ -69,14 +69,14 @@ async function ctrlPDFJs(render) {
                     ) / page.getViewport({ scale: 1 }).width,
                 });
                 const $canvas = document.createElement("canvas");
-	            $canvas.height = viewport.height;
-	            $canvas.width = viewport.width;
+                $canvas.height = viewport.height;
+                $canvas.width = viewport.width;
                 $container.appendChild($canvas);
                 if (window.env === "test") $canvas.getContext = () => null;
-	            await page.render({
-		            canvasContext: $canvas.getContext("2d"),
-		            viewport: viewport,
-	            });
+                await page.render({
+                    canvasContext: $canvas.getContext("2d"),
+                    viewport,
+                });
                 await new Promise((done) => window.requestAnimationFrame(done));
             }
             createBr();

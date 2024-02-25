@@ -23,8 +23,8 @@ export default function(render) {
 
     // feature1: setup the dom
     const setup$ = rxjs.of(qs($page, `[data-bind="epub"]`)).pipe(
-        rxjs.mergeMap(async ($epub) => {
-            const book = new ePub.Book({
+        rxjs.mergeMap(async($epub) => {
+            const book = new window.ePub.Book({
                 replacements: "blobUrl",
             });
             const rendition = book.renderTo($epub, {
@@ -60,7 +60,7 @@ export default function(render) {
             rendition$.pipe(rxjs.mergeMap(() => rxjs.fromEvent(qs(document, "iframe").contentDocument.body, "keydown"))),
         )),
         rxjs.map((e) => {
-            switch(e.code) {
+            switch (e.code) {
             case "Space": return (r) => r.next();
             case "ArrowRight": return (r) => r.next();
             case "PageDown": return (r) => r.next();
@@ -69,10 +69,12 @@ export default function(render) {
             }
             return null;
         }),
-        rxjs.mergeMap((fn) => fn === null ? rxjs.EMPTY : rendition$.asObservable().pipe(
-            rxjs.first(),
-            rxjs.tap((rendition) => fn(rendition))
-        )),
+        rxjs.mergeMap((fn) => fn === null
+            ? rxjs.EMPTY
+            : rendition$.asObservable().pipe(
+                rxjs.first(),
+                rxjs.tap((rendition) => fn(rendition))
+            )),
         rxjs.catchError(ctrlError()),
     ));
 }

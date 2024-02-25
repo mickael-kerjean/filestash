@@ -6,7 +6,7 @@ import { join } from "../../lib/path.js";
 import { createLoader } from "../../components/loader.js";
 import { getDownloadUrl } from "./common.js";
 
-import * as THREE from "../../lib/vendor/three/three.module.js"
+import * as THREE from "../../lib/vendor/three/three.module.js";
 import { OrbitControls } from "../../lib/vendor/three/OrbitControls.js";
 import { GLTFLoader } from "../../lib/vendor/three/GLTFLoader.js";
 import { OBJLoader } from "../../lib/vendor/three/OBJLoader.js";
@@ -70,15 +70,15 @@ export default function(render, { mime }) {
             // resize handler
             const onResize = () => {
                 camera.aspect = $page.clientWidth / $page.clientHeight;
-			    camera.updateProjectionMatrix();
+                camera.updateProjectionMatrix();
                 renderer.setSize($page.clientWidth, $page.clientHeight);
             };
             window.addEventListener("resize", onResize);
             onDestroy(() => window.removeEventListener("resize", onResize));
 
             return rxjs.animationFrames().pipe(rxjs.tap(() => {
-	            controls.update();
-	            renderer.render(scene, camera);
+                controls.update();
+                renderer.render(scene, camera);
             }));
         }),
         rxjs.catchError(ctrlError()),
@@ -87,7 +87,7 @@ export default function(render, { mime }) {
 
 function getLoader(mime) {
     const identity = (s) => s;
-    switch(mime) {
+    switch (mime) {
     case "application/object":
         return [new OBJLoader(), identity];
     case "model/3dm":

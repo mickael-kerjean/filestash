@@ -1,8 +1,7 @@
-import { animate, slideYOut, slideYIn, slideXIn, opacityOut } from "../lib/animate.js";
+import { animate, slideYOut, slideYIn, opacityOut } from "../lib/animate.js";
 import { loadCSS } from "../helpers/loader.js";
 
 class ComponentBreadcrumb extends window.HTMLDivElement {
-
     constructor() {
         super();
         if (new window.URL(location.href).searchParams.get("nav") === "false") {
@@ -30,12 +29,12 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
 
         switch (name) {
         case "path":
-            if (newValue == "") return;
+            if (newValue === "") return;
             return this.renderPath({ path: newValue, previous: oldValue || null });
         case "indicator":
-            return this.renderIndicator()
+            return this.renderIndicator();
         }
-        throw new Error("component::breadcrumb.js unknow attribute name: "+ name)
+        throw new Error("component::breadcrumb.js unknow attribute name: "+ name);
     }
 
     static get observedAttributes() {
@@ -45,7 +44,7 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
     async renderPath({ path = "", previous }) {
         path = this.__normalised(path);
         previous = this.__normalised(previous);
-        let pathChunks = path.split("/");
+        const pathChunks = path.split("/");
 
         // STEP1: leaving animation on elements that will be removed
         if (previous !== null && previous.indexOf(path) >= 0) {
@@ -97,7 +96,7 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
                         ${limitSize(label, true)}
                     </span>
                 `;
-                return `<div>${limitSize(label)}</div>`
+                return `<div>${limitSize(label)}</div>`;
             })();
 
             return `
@@ -133,17 +132,21 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
         if (state && this.getAttribute("indicator") !== "false") state = true;
 
         const $indicator = this.querySelector(`[data-bind="path"]`)
-              .lastChild
-              .querySelector("span");
+            .lastChild
+            .querySelector("span");
 
         if (state) {
             $indicator.style.opacity = 1;
             $indicator.innerHTML = `<div class="component_saving">*</div>`;
-            await animate($indicator, { time: 500, keyframes: [
-                { transform: "scale(0)", offset: 0 },
-                { transform: "scale(1.5)", offset: 0.3 },
-                { transform: "scale(1)", offset: 1 },
-            ], fill: "none"});
+            await animate($indicator, {
+                time: 500,
+                keyframes: [
+                    { transform: "scale(0)", offset: 0 },
+                    { transform: "scale(1.5)", offset: 0.3 },
+                    { transform: "scale(1)", offset: 1 },
+                ],
+                fill: "none"
+            });
         } else {
             $indicator.style.opacity = 0;
             await animate($indicator, { time: 200, keyframes: opacityOut(), fill: "none" });

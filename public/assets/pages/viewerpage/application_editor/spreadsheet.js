@@ -1,3 +1,3 @@
 import "../../../lib/vendor/codemirror/mode/spreadsheet/spreadsheet.js";
-CodeMirror.__mode = "spreadsheet";
-export default CodeMirror;
+window.CodeMirror.__mode = "spreadsheet";
+export default window.CodeMirror;

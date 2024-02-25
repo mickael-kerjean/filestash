@@ -6,7 +6,6 @@ import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
 import Chromecast from "../../lib/chromecast.js";
 import assert from "../../lib/assert.js";
-import { basename, extname } from "../../lib/path.js";
 
 import ctrlError from "../ctrl_error.js";
 import { render as renderMenubar } from "../../components/menubar.js";
@@ -16,14 +15,9 @@ import { ICON } from "./common_icon.js";
 import { formatTimecode } from "./common_player.js";
 import { transition, getDownloadUrl } from "./common.js";
 
-import { getSession } from "../../model/session.js";
-import { get as getConfig } from "../../model/config.js";
-
-import "../../components/menubar.js";
-
 const STATUS_PLAYING = "PLAYING";
 const STATUS_PAUSED = "PAUSED";
-const STATUS_BUFFERING = "BUFFERING";
+// const STATUS_BUFFERING = "BUFFERING";
 
 export default function(render, { mime }) {
     const $page = createElement(`
@@ -80,7 +74,7 @@ export default function(render, { mime }) {
     const currentTime$ = new rxjs.BehaviorSubject([
         0, // starting time - does change when seeking to another point
         0, // offset to align the audio context currentTime. otherwise when seeking, the
-           // currentTime keep growing and progress bar goes haywire
+        // currentTime keep growing and progress bar goes haywire
     ]);
     const currentTime = (wavesurfer) => {
         return currentTime$.value[0] + (wavesurfer.backend.ac.currentTime - currentTime$.value[1]);
@@ -125,7 +119,7 @@ export default function(render, { mime }) {
         default:
             assert.fail(status);
         }
-    }
+    };
     const setSeek = (newTime, wavesurfer) => {
         currentTime$.next([newTime, wavesurfer.backend.ac.currentTime]);
         wavesurfer.backend.source.stop(0);
@@ -137,7 +131,7 @@ export default function(render, { mime }) {
 
     // feature1: setup the dom
     const setup$ = rxjs.of(qs($page, "#waveform")).pipe(
-        rxjs.mergeMap(($node) => Promise.resolve(WaveSurfer.create({
+        rxjs.mergeMap(($node) => Promise.resolve(window.WaveSurfer.create({
             container: $node,
             interact: false,
 
@@ -151,13 +145,13 @@ export default function(render, { mime }) {
         rxjs.tap((wavesurfer) => {
             wavesurfer.load(getDownloadUrl());
             wavesurfer.on("error", (err) => { // TODO: one liner to check
-                throw new Error(err)
+                throw new Error(err);
             });
             wavesurfer.on("ready", () => {
                 $control.main.classList.remove("hidden");
                 qs($control.main, "#totalDuration").textContent = formatTimecode(wavesurfer.getDuration());
             });
-            onDestroy(() => wavesurfer.destroy())
+            onDestroy(() => wavesurfer.destroy());
         }),
         rxjs.catchError(ctrlError()),
         rxjs.shareReplay(1),
@@ -188,7 +182,7 @@ export default function(render, { mime }) {
             wavesurfer.on("ready", () => observer.next(wavesurfer));
         })),
         rxjs.share(),
-    )
+    );
     effect(ready$.pipe(rxjs.tap((wavesurfer) => {
         wavesurfer.backend.createSource();
         wavesurfer.backend.startPosition = 0;
@@ -207,7 +201,7 @@ export default function(render, { mime }) {
         rxjs.mergeMap((status) => setup$.pipe(rxjs.tap((wavesurfer) => setStatus(status, wavesurfer)))),
         rxjs.switchMap((wavesurfer) => rxjs.animationFrames().pipe(
             rxjs.tap(() => {
-                const _currentTime = currentTime(wavesurfer)
+                const _currentTime = currentTime(wavesurfer);
                 const percent = _currentTime / wavesurfer.getDuration();
                 if (percent > 1) return;
                 wavesurfer.drawer.progress(percent);
@@ -254,12 +248,13 @@ export default function(render, { mime }) {
         rxjs.switchMap((wavesurfer) => rxjs.fromEvent(document, "keydown").pipe(
             rxjs.map((e) => e.code),
             rxjs.tap((code) => {
-                switch(code) {
+                switch (code) {
                 case "Space":
                 case "KeyK":
                     setStatus(
-                        wavesurfer.backend.ac.state === "suspended" ?
-                            STATUS_PLAYING : STATUS_PAUSED,
+                        wavesurfer.backend.ac.state === "suspended"
+                            ? STATUS_PLAYING
+                            : STATUS_PAUSED,
                         wavesurfer,
                     );
                     break;
@@ -276,7 +271,7 @@ export default function(render, { mime }) {
                     setSeek(Math.min(wavesurfer.getDuration(), currentTime(wavesurfer) + 10), wavesurfer);
                     break;
                 case "KeyF":
-                    chromecastLoader();
+                    // chromecastLoader();
                     break;
                 case "KeyJ":
                     setSeek(Math.max(0, currentTime(wavesurfer) - 10), wavesurfer);
@@ -374,7 +369,7 @@ export function init() {
 function setup_chromecast() {
     if (!("chrome" in window)) {
         return Promise.resolve();
-	} else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    } else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
         return Promise.resolve();
     }
     // if (!CONFIG.enable_chromecast) {

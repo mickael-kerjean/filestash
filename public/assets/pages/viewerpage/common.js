@@ -36,6 +36,6 @@ export function getCurrentPath() {
 //     return encodeURIComponent(decodeURIComponent(path.replace(/%/g, "%25")));
 // }
 
-function appendShareToUrl() {
-    // TODO
-}
+// function appendShareToUrl() {
+//     // TODO
+// }

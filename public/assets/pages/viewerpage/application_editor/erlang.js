@@ -1,3 +1,3 @@
 import "../../../lib/vendor/codemirror/mode/erlang/erlang.js";
-CodeMirror.__mode = "erlang";
-export default CodeMirror;
+window.CodeMirror.__mode = "erlang";
+export default window.CodeMirror;

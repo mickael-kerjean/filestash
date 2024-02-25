@@ -12,7 +12,7 @@ export function menubarDownload() {
     `);
     $fragment.querySelector(".download-button").onclick = () => {
         console.log("CLICK");
-    }
+    };
     return $fragment;
 }
 

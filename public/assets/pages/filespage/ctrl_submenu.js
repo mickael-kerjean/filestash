@@ -1,4 +1,4 @@
-import { onDestroy, createElement, createRender, createFragment } from "../../lib/skeleton/index.js";
+import { onDestroy, createElement, createFragment } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation, onClick } from "../../lib/rx.js";
 import { animate } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
@@ -11,14 +11,14 @@ export default async function(render) {
     const $page = createElement(`<div class="component_submenu container"></div>`);
     render($page);
 
-    const $scroll = $page.closest(".scroll-y")
+    const $scroll = $page.closest(".scroll-y");
     effect(rxjs.fromEvent($scroll, "scroll", { passive: true }).pipe(
         rxjs.map((e) => e.target.scrollTop > 30),
         rxjs.distinctUntilChanged(),
         rxjs.startWith(false),
-        rxjs.tap((scrolling) => scrolling ?
-                 $scroll.classList.add("scrolling") :
-                 $scroll.classList.remove("scrolling")),
+        rxjs.tap((scrolling) => scrolling
+            ? $scroll.classList.add("scrolling")
+            : $scroll.classList.remove("scrolling")),
     ));
 
     onDestroy(() => clearSelection());

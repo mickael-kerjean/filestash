@@ -46,7 +46,7 @@ class Loader extends window.HTMLElement {
 customElements.define("component-loader", Loader);
 
 export function createLoader($parent, opts = {}) {
-    const { wait = 500 } = opts
+    const { wait = 500 } = opts;
     const cancel = effect(new rxjs.Observable((observer) => {
         const $icon = createElement(`
             <div class="component_loader">

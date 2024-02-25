@@ -8,7 +8,7 @@ import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
 import { createThing } from "./thing.js";
-import { handleError, getFiles } from "./ctrl_filesystem_state.js";
+// import { handleError, getFiles } from "./ctrl_filesystem_state.js";
 import { ls } from "./model_files.js";
 
 export default async function(render) {
@@ -51,13 +51,13 @@ export default async function(render) {
             animate($list, { time: 200, keyframes: slideYIn(5) });
             $list.appendChild($fs);
 
-            /////////////////////////////////////////
+            /// //////////////////////////////////////
             // CASE 1: virtual scroll isn't enabled
             if (files.length <= VIRTUAL_SCROLL_MINIMUM_TRIGGER) {
                 return rxjs.EMPTY;
             }
 
-            /////////////////////////////////////////
+            /// //////////////////////////////////////
             // CASE 2: with virtual scroll
             const $listBefore = qs($page, ".ifscroll-before");
             const $listAfter = qs($page, ".ifscroll-after");
@@ -74,13 +74,16 @@ export default async function(render) {
                 $listAfter.style.height = `${height - size}px`;
             };
             setHeight(0);
-            const top = ($node) => $node.getBoundingClientRect().top;
+            // const top = ($node) => $node.getBoundingClientRect().top;
             return rxjs.of({
-                files, path,
+                files,
+                path,
                 currentState: 0,
                 $list,
                 setHeight,
-                FILE_HEIGHT, BLOCK_SIZE, COLUMN_PER_ROW,
+                FILE_HEIGHT,
+                BLOCK_SIZE,
+                COLUMN_PER_ROW,
                 MARGIN: 35, // TODO: top($list) - top($list.closest(".scroll-y"));
             });
         }),
@@ -130,7 +133,7 @@ export default async function(render) {
                         // nearest COLUMN_PER_ROW
                         fileEnd += 1;
                         if (fileEnd % COLUMN_PER_ROW === 0) {
-                            break
+                            break;
                         }
                     }
                 }
@@ -142,7 +145,7 @@ export default async function(render) {
                     const file = files[i];
                     if (file === undefined) $fs.appendChild(createThing({
                         type: "hidden",
-                    }))
+                    }));
                     else $fs.appendChild(createThing({
                         name: file.name,
                         // name: `file ${i}`,

@@ -24,7 +24,7 @@ export function opener(file = "", mimes) {
         return ["form", { mime }];
     } else if (type === "video" || mime === "application/ogg") {
         return ["video", { mime }];
-    } else if(["application/epub+zip"].indexOf(mime) !== -1) {
+    } else if (["application/epub+zip"].indexOf(mime) !== -1) {
         return ["ebook", { mime }];
     } else if (type === "model" || ["application/object", "application/fbx"].indexOf(mime) !== -1) {
         return ["3d", { mime }];

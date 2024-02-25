@@ -1,3 +1,3 @@
 import "../../../lib/vendor/codemirror/mode/php/php.js";
-CodeMirror.__mode = "php";
-export default CodeMirror;
+window.CodeMirror.__mode = "php";
+export default window.CodeMirror;

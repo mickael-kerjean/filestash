@@ -1,3 +1,3 @@
 import "../../../lib/vendor/codemirror/mode/lua/lua.js";
-CodeMirror.__mode = "lua";
-export default CodeMirror;
+window.CodeMirror.__mode = "lua";
+export default window.CodeMirror;

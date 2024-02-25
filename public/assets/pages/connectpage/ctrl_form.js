@@ -55,7 +55,7 @@ export default async function(render) {
             let n = parseInt(settings_get("login_tab"));
             if (Number.isNaN(n)) n = (conns.length || 0) / 2 - 1;
             if (n < 0 || n >= conns.length) n = 0;
-            return n
+            return n;
         }),
         rxjs.tap((current) => setCurrentBackend(Math.round(current))),
     ));
@@ -171,7 +171,7 @@ export default async function(render) {
             if (Object.keys(p).length > 0) {
                 url += "&state=" + btoa(JSON.stringify(p));
             }
-            location.href = url
+            location.href = url;
             return rxjs.EMPTY;
         }),
         rxjs.mergeMap((formData) => { // CASE 2: oauth2 related backends like dropbox and gdrive

@@ -29,13 +29,13 @@ export default function(ctrl) {
         ctrl(createRender($main));
         ctrlSidebar(createRender(qs($page, `[data-bind="sidebar"]`)));
 
-        onDestroy(async () => {
+        onDestroy(async() => {
             if ((history.state.previous || "").startsWith("/view/") && location.pathname.startsWith("/files/")) {
                 await animate($main, { time: 100, keyframes: slideYOut(20), fill: "none" });
                 $main.classList.add("hidden");
             }
         });
-    }
+    };
 }
 
 async function ctrlSidebar(render) {
