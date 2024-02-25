@@ -18,16 +18,15 @@ export default async function(render) {
             <div data-bind="component_poweredby"></div>
         </div>
     `);
-
     render($page);
 
     // feature1: forkme & poweredby button
-    ctrlForkme(createRender(qs($page, "[data-bind=\"component_forkme\"]")));
-    ctrlPoweredby(createRender(qs($page, "[data-bind=\"component_poweredby\"]")));
+    ctrlForkme(createRender(qs($page, `[data-bind="component_forkme"]`)));
+    ctrlPoweredby(createRender(qs($page, `[data-bind="component_poweredby"]`)));
     await new Promise((done) => setTimeout(done, 250));
 
     // feature2: connection form
-    ctrlForm(createRender(qs($page, "[data-bind=\"component_form\"]")));
+    ctrlForm(createRender(qs($page, `[data-bind="component_form"]`)));
 
     // feature3: center the form
     effect(rxjs.fromEvent(window, "resize").pipe(
@@ -40,6 +39,6 @@ export default async function(render) {
             return size;
         }),
         rxjs.map((size) => ["padding-top", `${size}px`]),
-        applyMutation(qs($page, "[data-bind=\"centerthis\"]"), "style", "setProperty")
+        applyMutation(qs($page, `[data-bind="centerthis"]`), "style", "setProperty")
     ));
 }
