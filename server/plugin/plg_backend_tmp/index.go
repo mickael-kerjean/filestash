@@ -50,7 +50,7 @@ func (this TmpStorage) Init(params map[string]string, app *App) (IBackend, error
 	}
 	os.MkdirAll(p, 0755)
 	params["path"] = p
-	return TmpStorage{}, nil
+	return &TmpStorage{}, nil
 }
 
 func (this TmpStorage) LoginForm() Form {
