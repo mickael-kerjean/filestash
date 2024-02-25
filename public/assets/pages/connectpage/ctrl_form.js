@@ -28,7 +28,7 @@ export default async function(render) {
     const $page = createElement(`
         <div class="no-select component_page_connection_form">
             <style>${await CSS(import.meta.url, "ctrl_form.css")}</style>
-            <div role="navigation" class="buttons scroll-x box"></div>
+            <div role="navigation" class="buttons scroll-x box hidden"></div>
             <div data-bind="form" class="box hidden"><form></form></div>
         </div>
     `);
@@ -46,6 +46,7 @@ export default async function(render) {
         rxjs.map((conns) => conns.map((conn, i) => ({ ...conn, n: i }))),
         rxjs.map((conns) => conns.map(({ label, n }) => createElement(`<button data-current="${n}">${safe(label)}</button>`))),
         applyMutations($nav, "appendChild"),
+        rxjs.tap((conns = []) => { if (conns.length > 1) $nav.classList.remove("hidden") }),
         rxjs.tap(() => animate($nav)),
     ));
 
