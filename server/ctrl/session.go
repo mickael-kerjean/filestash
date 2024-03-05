@@ -5,16 +5,18 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/middleware"
-	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"text/template"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/middleware"
+	"github.com/mickael-kerjean/filestash/server/model"
+
+	"github.com/gorilla/mux"
 )
 
 type Session struct {
@@ -384,10 +386,12 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 				Parse(str)
 			mappingToUse[k] = str
 			if err != nil {
+				Log.Debug("session::authMiddleware 'template creation failed %s'", err.Error())
 				continue
 			}
 			var b bytes.Buffer
 			if err = tmpl.Execute(&b, tb); err != nil {
+				Log.Debug("session::authMiddleware 'template execution failed %s'", err.Error())
 				continue
 			}
 			mappingToUse[k] = b.String()
