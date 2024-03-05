@@ -1,7 +1,0 @@
-issues:
-  exclude-rules:
-    - path: /*_example_test.go
-      linters:
-        - errcheck
-        - forbidigo
-

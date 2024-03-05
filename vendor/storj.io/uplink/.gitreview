@@ -1,4 +1,0 @@
-[gerrit]
-host=review.dev.storj.io
-project=storj/uplink
-defaultbranch=main
