@@ -55,7 +55,7 @@
     max-width: 815px;
 }
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] {
-    background: var(--bg-color);
+    background: rgba(100,100,100,.05);
 }
 
 .component_filemanager_shell [data-bind="filemanager-children"] .container,

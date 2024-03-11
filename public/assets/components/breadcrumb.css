@@ -98,7 +98,7 @@ body.touch-yes [is="component-breadcrumb"] .ul span::-webkit-scrollbar-thumb {
 }
 
 body.touch-no .component_path-element-wrapper a.label:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: var(--border);
 }
 body.touch-no .component_path-element-wrapper a.label:hover span.title {
     opacity: 1;

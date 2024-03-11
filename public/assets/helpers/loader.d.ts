@@ -4,4 +4,6 @@ export function CSS(baseURL: string, ...arrayOfFilenames: string[]): Promise<str
 
 export function loadSingleCSS(baseURL: string, filename: string): Promise<string>;
 
+export function loadJS(baseURL: string, path: string, opts?: object): Promise<string>;
+
 export function init(): Promise<void>;

@@ -6,6 +6,7 @@ import { qs } from "../../lib/dom.js";
 import { getSelection$, clearSelection } from "./model_files.js";
 
 import "../../components/dropdown.js";
+import "../../components/icon.js";
 
 export default async function(render) {
     const $page = createElement(`<div class="component_submenu container"></div>`);
@@ -22,12 +23,14 @@ export default async function(render) {
     ));
 
     onDestroy(() => clearSelection());
+
+    // feature1: layout base case
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 0),
-        rxjs.mapTo(createFragment(`
+        rxjs.map(() => createFragment(`
             <div class="action left no-select" style="margin-left:2px;">
-                <button>New File</button>
-                <button>New Folder</button>
+                <button data-action="new-file">New File</button>
+                <button data-action="new-folder">New Folder</button>
             </div>
             <div class="action right no-select" style="margin-right:2px;">
                 <button>
@@ -54,21 +57,22 @@ export default async function(render) {
         applyMutation($page, "replaceChildren"),
     ));
 
+    // feature2: update when selection is preset
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length > 0),
         rxjs.tap((selections) => selections.length === 1 && animate($page)),
         rxjs.map((selections) => createFragment(`
             <div class="action left">
-                <button>Download</button>
-                <button>Share</button>
-                <button>Embed</button>
-                <button>Tag</button>
-                <button>Rename</button>
-                <button>Delete</button>
+                <button data-action="download">Download</button>
+                <button data-action="share">Share</button>
+                <button data-action="embed">Embed</button>
+                <button data-action="tag">Tag</button>
+                <button data-action="rename">Rename</button>
+                <button data-action="delete">Delete</button>
             </div>
             <div class="action right">
                 <button data-bind="clear">
-                    ${selections.length} x
+                    ${selections.length} <component-icon name="close"></component-icon>
                 </button>
             </div>
         `)),
