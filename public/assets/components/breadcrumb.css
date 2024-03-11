@@ -12,6 +12,7 @@
     margin: 0;
     width: 100%;
     box-sizing: border-box;
+    padding: 2px 0;
 }
 .component_breadcrumb .breadcrumb .ul > span {
     display: block;
@@ -35,7 +36,7 @@
 }
 .component_breadcrumb .component_path-element .label {
     color: rgba(0, 0, 0, 0.75);
-    padding: 4px 5px;
+    padding: 2px 5px;
 }
 .component_breadcrumb .component_path-element .label span { display: inline-block; }
 .component_breadcrumb .component_path-element a.label {
