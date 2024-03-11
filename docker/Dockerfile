@@ -42,20 +42,21 @@ RUN apt-get update > /dev/null && \
     export CTAN_REPO="http://mirror.las.iastate.edu/tex-archive/systems/texlive/tlnet" && \
     curl -sL "https://yihui.name/gh/tinytex/tools/install-unx.sh" | sh && \
     mv ~/.TinyTeX /usr/share/tinytex && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasy && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install ulem && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install marvosym && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install wasysym && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install xcolor && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install listings && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install parskip && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install float && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install wrapfig && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install sectsty && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install capt-of && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install epstopdf-pkg && \
-    /usr/share/tinytex/bin/x86_64-linux/tlmgr install cm-super && \
-    ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex && \
+    FS_ARCH=$(uname -m) && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install wasy && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install ulem && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install marvosym && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install wasysym && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install xcolor && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install listings && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install parskip && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install float && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install wrapfig && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install sectsty && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install capt-of && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install epstopdf-pkg && \
+    /usr/share/tinytex/bin/${FS_ARCH}-linux/tlmgr install cm-super && \
+    ln -s /usr/share/tinytex/bin/${FS_ARCH}-linux/pdflatex /usr/local/bin/pdflatex && \
     apt-get purge -y --auto-remove perl wget && \
     # Cleanup
     find /usr/share/ -name 'doc' | xargs rm -rf && \
