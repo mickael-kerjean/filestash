@@ -75,9 +75,14 @@ export function getMiddlewareEnabled() {
 }
 
 export function toggleMiddleware(type) {
-    const newValue = middlewareEnabled$.value === type ? null : type;
-    middlewareEnabled$.next(newValue);
-    return newValue;
+    return middlewareEnabled$.pipe(
+        rxjs.first(),
+        rxjs.map((oldValue) => {
+            const newValue = oldValue === type ? null : type;
+            middlewareEnabled$.next(newValue);
+            return newValue;
+        }),
+    );
 }
 
 export function getState() {

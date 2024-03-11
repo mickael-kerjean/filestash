@@ -61,7 +61,7 @@ export default async function(render) {
     effect(init$.pipe(
         rxjs.mergeMap(($nodes) => $nodes),
         rxjs.mergeMap(($node) => onClick($node)),
-        rxjs.map(($node) => toggleMiddleware($node.getAttribute("data-label"))),
+        rxjs.mergeMap(($node) => toggleMiddleware($node.getAttribute("data-label"))),
         saveMiddleware(),
     ));
 
