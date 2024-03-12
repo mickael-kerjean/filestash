@@ -11,10 +11,9 @@ import (
 )
 
 func init() {
-	domain := Config.Get("general.host").String()
-	port := Config.Get("general.port").Int()
-
 	Hooks.Register.Starter(func(r *mux.Router) {
+		domain := Config.Get("general.host").String()
+		port := Config.Get("general.port").Int()
 		Log.Info("[https] starting ...%s", domain)
 		srv := &http.Server{
 			Addr:         fmt.Sprintf(":%d", port),

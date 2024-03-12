@@ -25,6 +25,7 @@ func init() {
 			return f
 		}).Int()) * time.Millisecond
 	}
-	SEARCH_TIMEOUT()
-
+	Hooks.Register.Onload(func() {
+		SEARCH_TIMEOUT()
+	})
 }

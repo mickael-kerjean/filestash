@@ -37,7 +37,6 @@ func init() {
 			return f
 		}).Bool()
 	}
-	SEARCH_ENABLE()
 	SEARCH_PROCESS_MAX = func() int {
 		return Config.Get("features.search.process_max").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -52,7 +51,6 @@ func init() {
 			return f
 		}).Int()
 	}
-	SEARCH_PROCESS_MAX()
 	SEARCH_PROCESS_PAR = func() int {
 		return Config.Get("features.search.process_par").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -67,7 +65,6 @@ func init() {
 			return f
 		}).Int()
 	}
-	SEARCH_PROCESS_PAR()
 	SEARCH_REINDEX = func() int {
 		return Config.Get("features.search.reindex_time").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -82,7 +79,6 @@ func init() {
 			return f
 		}).Int()
 	}
-	SEARCH_REINDEX()
 	CYCLE_TIME = func() int {
 		return Config.Get("features.search.cycle_time").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -97,7 +93,6 @@ func init() {
 			return f
 		}).Int()
 	}
-	CYCLE_TIME()
 	MAX_INDEXING_FSIZE = func() int {
 		return Config.Get("features.search.max_size").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -112,7 +107,6 @@ func init() {
 			return f
 		}).Int()
 	}
-	MAX_INDEXING_FSIZE()
 	INDEXING_EXT = func() string {
 		return Config.Get("features.search.indexer_ext").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -127,32 +121,41 @@ func init() {
 			return f
 		}).String()
 	}
-	INDEXING_EXT()
 
-	onChange := Config.ListenForChange()
-	runner := func() {
-		startSearch := false
-		for {
-			if SEARCH_ENABLE() == false {
-				select {
-				case <-onChange.Listener:
-					startSearch = SEARCH_ENABLE()
+	Hooks.Register.Onload(func() {
+		SEARCH_ENABLE()
+		SEARCH_PROCESS_MAX()
+		SEARCH_PROCESS_PAR()
+		SEARCH_REINDEX()
+		CYCLE_TIME()
+		MAX_INDEXING_FSIZE()
+		INDEXING_EXT()
+
+		onChange := Config.ListenForChange()
+		runner := func() {
+			startSearch := false
+			for {
+				if SEARCH_ENABLE() == false {
+					select {
+					case <-onChange.Listener:
+						startSearch = SEARCH_ENABLE()
+					}
+					if startSearch == false {
+						continue
+					}
 				}
-				if startSearch == false {
+				sidx := SProc.Peek()
+				if sidx == nil {
+					time.Sleep(5 * time.Second)
 					continue
 				}
+				sidx.mu.Lock()
+				sidx.Execute()
+				sidx.mu.Unlock()
 			}
-			sidx := SProc.Peek()
-			if sidx == nil {
-				time.Sleep(5 * time.Second)
-				continue
-			}
-			sidx.mu.Lock()
-			sidx.Execute()
-			sidx.mu.Unlock()
 		}
-	}
-	for i := 0; i < SEARCH_PROCESS_PAR(); i++ {
-		go runner()
-	}
+		for i := 0; i < SEARCH_PROCESS_PAR(); i++ {
+			go runner()
+		}
+	})
 }

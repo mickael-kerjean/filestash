@@ -37,7 +37,7 @@ func generateNewPrivateKey() (*rsa.PrivateKey, []byte, error) {
 }
 
 func pullPrivateKeyFromFS() (*rsa.PrivateKey, []byte, error) {
-	file, err := os.OpenFile(keyPEMPath, os.O_RDONLY, os.ModePerm)
+	file, err := os.OpenFile(keyPEMPath(), os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -56,7 +56,7 @@ func pullPrivateKeyFromFS() (*rsa.PrivateKey, []byte, error) {
 }
 
 func savePrivateKeyToFS(privatePEM []byte) error {
-	file, err := os.OpenFile(keyPEMPath, os.O_WRONLY|os.O_CREATE, 0600)
+	file, err := os.OpenFile(keyPEMPath(), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -69,5 +69,5 @@ func savePrivateKeyToFS(privatePEM []byte) error {
 }
 
 func clearPrivateKey() {
-	os.Remove(keyPEMPath)
+	os.Remove(keyPEMPath())
 }

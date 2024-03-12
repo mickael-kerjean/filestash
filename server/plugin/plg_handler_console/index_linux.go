@@ -8,11 +8,6 @@ import (
 	_ "embed"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/creack/pty"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"golang.org/x/crypto/bcrypt"
 	"io"
 	"net/http"
 	"os"
@@ -21,6 +16,13 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+
+	"github.com/creack/pty"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
+	"golang.org/x/crypto/bcrypt"
 )
 
 //go:embed src/app.css
@@ -47,18 +49,19 @@ var console_enable = func() bool {
 }
 
 func init() {
-	console_enable()
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error {
+	Hooks.Register.Onload(func() {
 		if console_enable() == false {
-			return nil
+			return
 		}
-		r.PathPrefix("/admin/tty/").Handler(
-			AuthBasic(
-				func() (string, string) { return "admin", Config.Get("auth.admin").String() },
-				TTYHandler("/admin/tty/"),
-			),
-		)
-		return nil
+		Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error {
+			r.PathPrefix("/admin/tty/").Handler(
+				AuthBasic(
+					func() (string, string) { return "admin", Config.Get("auth.admin").String() },
+					TTYHandler("/admin/tty/"),
+				),
+			)
+			return nil
+		})
 	})
 }
 

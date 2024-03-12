@@ -195,7 +195,7 @@ func (this Mysql) Ls(path string) ([]os.FileInfo, error) {
 		}
 
 		rows, err := this.db.Query(fmt.Sprintf(
-			"SELECT CONCAT(%s) as filename %sFROM %s.%s %s LIMIT 15000",
+			"SELECT CONCAT(%s) as filename %sFROM %s.%s %s LIMIT 500000",
 			func() string {
 				q := strings.Join(extractNamePlus(sqlFields.Select), ", ' - ', ")
 				if len(sqlFields.Esthetics) != 0 {

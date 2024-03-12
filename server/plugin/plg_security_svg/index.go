@@ -8,8 +8,12 @@ import (
 	"regexp"
 )
 
+var (
+	disable_svg func() bool
+)
+
 func init() {
-	disable_svg := func() bool {
+	disable_svg = func() bool {
 		return Config.Get("features.protection.disable_svg").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
@@ -23,22 +27,25 @@ func init() {
 			return f
 		}).Bool()
 	}
-	disable_svg()
-
-	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
-		if GetMimeType(req.URL.Query().Get("path")) != "image/svg+xml" {
-			return reader, nil
-		} else if disable_svg() == true {
-			return reader, ErrNotAllowed
+	Hooks.Register.Onload(func() {
+		if disable_svg() == false {
+			return
 		}
+		Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+			if GetMimeType(req.URL.Query().Get("path")) != "image/svg+xml" {
+				return reader, nil
+			} else if disable_svg() == true {
+				return reader, ErrNotAllowed
+			}
 
-		// XSS
-		(*res).Header().Set("Content-Security-Policy", "script-src 'none'; default-src 'none'; img-src 'self'")
-		// XML bomb
-		txt, _ := ioutil.ReadAll(reader)
-		if regexp.MustCompile("(?is)entity").Match(txt) {
-			txt = []byte("")
-		}
-		return NewReadCloserFromBytes(txt), nil
+			// XSS
+			(*res).Header().Set("Content-Security-Policy", "script-src 'none'; default-src 'none'; img-src 'self'")
+			// XML bomb
+			txt, _ := ioutil.ReadAll(reader)
+			if regexp.MustCompile("(?is)entity").Match(txt) {
+				txt = []byte("")
+			}
+			return NewReadCloserFromBytes(txt), nil
+		})
 	})
 }

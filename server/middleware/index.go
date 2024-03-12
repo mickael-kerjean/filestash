@@ -9,6 +9,19 @@ import (
 	"time"
 )
 
+var telemetry = Telemetry{Data: make([]LogEntry, 0)}
+
+func init() {
+	Hooks.Register.Onload(func() {
+		go func() {
+			for {
+				time.Sleep(10 * time.Second)
+				telemetry.Flush()
+			}
+		}()
+	})
+}
+
 type Middleware func(func(*App, http.ResponseWriter, *http.Request)) func(*App, http.ResponseWriter, *http.Request)
 
 func NewMiddlewareChain(fn func(*App, http.ResponseWriter, *http.Request), m []Middleware, app App) http.HandlerFunc {
@@ -108,7 +121,7 @@ func Logger(ctx App, res http.ResponseWriter, req *http.Request) {
 			RequestID: func() string {
 				defer func() string {
 					if r := recover(); r != nil {
-						Log.Debug("middleware::index get header '%s'", r)
+						return "oops"
 					}
 					return "null"
 				}()
@@ -160,15 +173,4 @@ func (this *Telemetry) Flush() {
 		return
 	}
 	resp.Body.Close()
-}
-
-var telemetry Telemetry = Telemetry{Data: make([]LogEntry, 0)}
-
-func init() {
-	go func() {
-		for {
-			time.Sleep(10 * time.Second)
-			telemetry.Flush()
-		}
-	}()
 }

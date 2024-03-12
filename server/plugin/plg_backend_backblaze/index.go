@@ -6,21 +6,20 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
-var (
-	BackblazeCachePath string = "data/cache/tmp/"
-	BackblazeCache     AppCache
-)
+var BackblazeCache AppCache
 
 type Backblaze struct {
 	params      map[string]string
@@ -41,9 +40,6 @@ type BackblazeError struct {
 func init() {
 	Backend.Register("backblaze", Backblaze{})
 	BackblazeCache = NewAppCache()
-	cachePath := GetAbsolutePath(BackblazeCachePath)
-	os.RemoveAll(cachePath)
-	os.MkdirAll(cachePath, os.ModePerm)
 }
 
 func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error) {
@@ -429,7 +425,10 @@ func (this Backblaze) Save(path string, file io.Reader) error {
 		ContentLength int64
 		Sha1          []byte
 	}{}
-	backblazeFileDetail.path = GetAbsolutePath(BackblazeCachePath + "data_" + QuickString(20) + ".dat")
+	backblazeFileDetail.path = filepath.Join(
+		GetAbsolutePath(TMP_PATH),
+		"data_"+QuickString(20)+".dat",
+	)
 	f, err := os.OpenFile(backblazeFileDetail.path, os.O_CREATE|os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return err

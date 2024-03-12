@@ -19,40 +19,53 @@ import (
 
 const SYNCTHING_URI = "/admin/syncthing"
 
+var (
+	plugin_enable func() bool
+	server_url    func() string
+)
+
 func init() {
-	plugin_enable := Config.Get("features.syncthing.enable").Schema(func(f *FormElement) *FormElement {
-		if f == nil {
-			f = &FormElement{}
-		}
-		f.Name = "enable"
-		f.Type = "enable"
-		f.Target = []string{"syncthing_server_url"}
-		f.Description = "Enable/Disable integration with the syncthing server. This will make your syncthing server available at `/admin/syncthing`"
-		f.Default = false
-		if u := os.Getenv("SYNCTHING_URL"); u != "" {
-			f.Default = true
-		}
-		return f
-	}).Bool()
-	Config.Get("features.syncthing.server_url").Schema(func(f *FormElement) *FormElement {
-		if f == nil {
-			f = &FormElement{}
-		}
-		f.Id = "syncthing_server_url"
-		f.Name = "server_url"
-		f.Type = "text"
-		f.Description = "Location of your Syncthing server"
-		f.Default = ""
-		f.Placeholder = "Eg: http://127.0.0.1:8080"
-		if u := os.Getenv("SYNCTHING_URL"); u != "" {
-			f.Default = u
-			f.Placeholder = fmt.Sprintf("Default: '%s'", u)
-		}
-		return f
+	plugin_enable = func() bool {
+		return Config.Get("features.syncthing.enable").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Name = "enable"
+			f.Type = "enable"
+			f.Target = []string{"syncthing_server_url"}
+			f.Description = "Enable/Disable integration with the syncthing server. This will make your syncthing server available at `/admin/syncthing`"
+			f.Default = false
+			if u := os.Getenv("SYNCTHING_URL"); u != "" {
+				f.Default = true
+			}
+			return f
+		}).Bool()
+	}
+	server_url = func() string {
+		return Config.Get("features.syncthing.server_url").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "syncthing_server_url"
+			f.Name = "server_url"
+			f.Type = "text"
+			f.Description = "Location of your Syncthing server"
+			f.Default = ""
+			f.Placeholder = "Eg: http://127.0.0.1:8080"
+			if u := os.Getenv("SYNCTHING_URL"); u != "" {
+				f.Default = u
+				f.Placeholder = fmt.Sprintf("Default: '%s'", u)
+			}
+			return f
+		}).String()
+	}
+	Hooks.Register.Onload(func() {
+		plugin_enable()
+		server_url()
 	})
 
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error {
-		if plugin_enable == false {
+		if plugin_enable() == false {
 			return nil
 		}
 		r.HandleFunc(SYNCTHING_URI, func(res http.ResponseWriter, req *http.Request) {
@@ -121,7 +134,7 @@ func SyncthingProxyHandler(res http.ResponseWriter, req *http.Request) {
 		}
 		return "http"
 	}())
-	u, err := url.Parse(Config.Get("features.syncthing.server_url").String())
+	u, err := url.Parse(server_url())
 	if err != nil {
 		SendErrorResult(res, err)
 		return

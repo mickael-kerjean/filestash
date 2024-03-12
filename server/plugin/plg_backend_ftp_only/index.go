@@ -1,17 +1,18 @@
 package plg_backend_ftp_only
 
 import (
-	"crypto/tls"
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	//"github.com/secsy/goftp" <- FTP issue with microsoft FTP
-	"github.com/prasad83/goftp"
 	"io"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+
+	//"github.com/secsy/goftp" <- FTP issue with microsoft FTP
+	"github.com/prasad83/goftp"
 )
 
 var FtpCache AppCache

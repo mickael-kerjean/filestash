@@ -27,6 +27,11 @@ func start(routes *mux.Router) {
 		os.Exit(1)
 		return
 	}
+	InitConfig()
+	InitPluginList(embed.EmbedPluginList)
+	for _, fn := range Hooks.Get.Onload() {
+		fn()
+	}
 	var wg sync.WaitGroup
 	for _, obj := range Hooks.Get.Starter() {
 		wg.Add(1)
@@ -35,11 +40,5 @@ func start(routes *mux.Router) {
 			wg.Done()
 		}()
 	}
-	go func() {
-		InitPluginList(embed.EmbedPluginList)
-		for _, fn := range Hooks.Get.Onload() {
-			go fn()
-		}
-	}()
 	wg.Wait()
 }

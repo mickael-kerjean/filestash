@@ -17,8 +17,6 @@ import (
 	"time"
 )
 
-const GitCachePath = "data/cache/git/"
-
 var GitCache AppCache
 
 type Git struct {
@@ -29,9 +27,6 @@ func init() {
 	Backend.Register("git", Git{})
 
 	GitCache = NewAppCache()
-	cachePath := GetAbsolutePath(GitCachePath)
-	os.RemoveAll(cachePath)
-	os.MkdirAll(cachePath, os.ModePerm)
 	GitCache.OnEvict(func(key string, value interface{}) {
 		g := value.(*Git)
 		g.Close()
@@ -94,7 +89,10 @@ func (git Git) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 
 	hash := GenerateID(app)
-	p.basePath = GetAbsolutePath(GitCachePath + "repo_" + hash + "/")
+	p.basePath = filepath.Join(
+		GetAbsolutePath(TMP_PATH),
+		"git_"+hash,
+	) + "/"
 
 	repo, err := g.git.open(p, p.basePath)
 	g.git.repo = repo

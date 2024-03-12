@@ -9,26 +9,37 @@ package plg_starter_http2
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/common/ssl"
-	"golang.org/x/crypto/acme/autocert"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/common/ssl"
+
+	"github.com/gorilla/mux"
+	"golang.org/x/crypto/acme/autocert"
 )
 
-var SSL_PATH string = GetAbsolutePath(CERT_PATH, "ssl")
+var (
+	SSL_PATH    string
+	config_port func() int
+)
 
 func init() {
-	os.MkdirAll(SSL_PATH, os.ModePerm)
-	domain := Config.Get("general.host").String()
+	config_port = func() int {
+		return Config.Get("general.port").Int()
+	}
+	Hooks.Register.Onload(func() {
+		SSL_PATH = filepath.Join(GetAbsolutePath(CERT_PATH), "ssl")
+		os.MkdirAll(SSL_PATH, os.ModePerm)
+	})
 
 	Hooks.Register.Starter(func(r *mux.Router) {
+		domain := Config.Get("general.host").String()
 		Log.Info("[https] starting ...%s", domain)
 		srv := &http.Server{
-			Addr:      fmt.Sprintf(":https"),
+			Addr:      fmt.Sprintf(":%d", config_port()),
 			Handler:   r,
 			TLSConfig: &DefaultTLSConfig,
 			ErrorLog:  NewNilLogger(),
@@ -56,29 +67,32 @@ func init() {
 			srv.TLSConfig.GetCertificate = mngr.GetCertificate
 		}
 
-		go ensureAppHasBooted("https://127.0.0.1/about", fmt.Sprintf("[https] started"))
 		go func() {
-			if err := srv.ListenAndServeTLS("", ""); err != nil {
-				Log.Error("[https]: listen_serve %v", err)
+			srv = &http.Server{
+				Addr:         fmt.Sprintf(":http"),
+				ReadTimeout:  5 * time.Second,
+				WriteTimeout: 5 * time.Second,
+				Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+					w.Header().Set("Connection", "close")
+					http.Redirect(
+						w,
+						req,
+						"https://"+req.Host+req.URL.String(),
+						http.StatusMovedPermanently,
+					)
+				}),
+			}
+			if err := srv.ListenAndServe(); err != nil {
 				return
 			}
 		}()
-		srv := http.Server{
-			Addr:         fmt.Sprintf(":http"),
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 5 * time.Second,
-			Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				w.Header().Set("Connection", "close")
-				http.Redirect(
-					w,
-					req,
-					"https://"+req.Host+req.URL.String(),
-					http.StatusMovedPermanently,
-				)
-			}),
-		}
-		if err := srv.ListenAndServe(); err != nil {
-			Log.Error("[https]: http_redirect %v", err)
+
+		go ensureAppHasBooted(
+			fmt.Sprintf("https://127.0.0.1:%d/about", config_port()),
+			fmt.Sprintf("[https] started"),
+		)
+		if err := srv.ListenAndServeTLS("", ""); err != nil {
+			Log.Error("[https]: listen_serve %v", err)
 			return
 		}
 	})

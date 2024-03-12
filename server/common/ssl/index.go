@@ -2,14 +2,20 @@ package ssl
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"os"
 )
 
-var keyPEMPath string = GetAbsolutePath(CERT_PATH, "key.pem")
-var certPEMPath string = GetAbsolutePath(CERT_PATH, "cert.pem")
+var (
+	keyPEMPath  func() string
+	certPEMPath func() string
+)
 
 func init() {
-	os.MkdirAll(GetAbsolutePath(CERT_PATH), os.ModePerm)
+	keyPEMPath = func() string {
+		return GetAbsolutePath(CERT_PATH, "key.pem")
+	}
+	certPEMPath = func() string {
+		return GetAbsolutePath(CERT_PATH, "cert.pem")
+	}
 }
 
 func Clear() {

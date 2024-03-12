@@ -40,7 +40,7 @@ func generateNewCertificate(root *x509.Certificate, key *rsa.PrivateKey) (*x509.
 }
 
 func pullCertificateFromFS() (*x509.Certificate, []byte, error) {
-	file, err := os.OpenFile(certPEMPath, os.O_RDONLY, os.ModePerm)
+	file, err := os.OpenFile(certPEMPath(), os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -58,7 +58,7 @@ func pullCertificateFromFS() (*x509.Certificate, []byte, error) {
 }
 
 func saveCertificateToFS(certPEM []byte) error {
-	file, err := os.OpenFile(certPEMPath, os.O_WRONLY|os.O_CREATE, 0600)
+	file, err := os.OpenFile(certPEMPath(), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -69,5 +69,5 @@ func saveCertificateToFS(certPEM []byte) error {
 }
 
 func clearCert() {
-	os.Remove(certPEMPath)
+	os.Remove(certPEMPath())
 }

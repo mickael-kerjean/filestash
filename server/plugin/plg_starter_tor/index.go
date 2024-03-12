@@ -7,15 +7,16 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 )
 
-var TOR_PATH string = GetAbsolutePath(CERT_PATH, "tor")
+var (
+	enable_plugin func() bool
+	tor_url       func() string
+)
 
 func init() {
-	os.MkdirAll(TOR_PATH, os.ModePerm)
-	enable_tor := func() bool {
+	enable_plugin = func() bool {
 		return Config.Get("features.server.tor_enable").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
@@ -29,29 +30,37 @@ func init() {
 			return f
 		}).Bool()
 	}
-	enable_tor()
-	Config.Get("features.server.tor_url").Schema(func(f *FormElement) *FormElement {
-		if f == nil {
-			f = &FormElement{}
-		}
-		f.Id = "tor_url"
-		f.Name = "tor_url"
-		f.Type = "text"
-		f.Target = []string{}
-		f.Description = "Your onion site"
-		f.ReadOnly = true
-		f.Placeholder = "LOADING... Refresh the page in a few seconds"
-		return f
-	})
+	tor_url = func() string {
+		return Config.Get("features.server.tor_url").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "tor_url"
+			f.Name = "tor_url"
+			f.Type = "text"
+			f.Target = []string{}
+			f.Description = "Your onion site"
+			f.ReadOnly = true
+			f.Placeholder = "LOADING... Refresh the page in a few seconds"
+			return f
+		}).String()
+	}
 
+	Hooks.Register.Onload(func() {
+		tor_url()
+		enable_plugin()
+	})
 	Hooks.Register.Starter(func(r *mux.Router) {
-		if enable_tor() == false {
+		torPath := GetAbsolutePath(CERT_PATH, "tor")
+		os.MkdirAll(torPath, os.ModePerm)
+
+		if enable_plugin() == false {
 			startTor := false
 			onChange := Config.ListenForChange()
 			for {
 				select {
 				case <-onChange.Listener:
-					startTor = enable_tor()
+					startTor = enable_plugin()
 				}
 				if startTor == true {
 					break
@@ -62,7 +71,7 @@ func init() {
 
 		Log.Info("[tor] starting ...")
 		t, err := tor.Start(nil, &tor.StartConf{
-			DataDir: TOR_PATH,
+			DataDir: torPath,
 		})
 		if err != nil {
 			Log.Error("[tor] Unable to start Tor: %v", err)

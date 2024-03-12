@@ -1,12 +1,13 @@
 package common
 
 import (
-	"github.com/gorilla/mux"
 	"io"
 	"io/fs"
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 type Plugin struct {

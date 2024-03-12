@@ -32,11 +32,6 @@ var (
 )
 
 func init() {
-	FileCache = NewAppCache()
-	cachePath := GetAbsolutePath(TMP_PATH)
-	FileCache.OnEvict(func(key string, value interface{}) {
-		os.RemoveAll(filepath.Join(cachePath, key))
-	})
 	ZipTimeout = func() int {
 		return Config.Get("features.protection.zip_timeout").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -50,7 +45,13 @@ func init() {
 			return f
 		}).Int()
 	}
-	ZipTimeout()
+	FileCache = NewAppCache()
+	FileCache.OnEvict(func(key string, value interface{}) {
+		os.RemoveAll(filepath.Join(GetAbsolutePath(TMP_PATH), key))
+	})
+	Hooks.Register.Onload(func() {
+		ZipTimeout()
+	})
 }
 
 func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {

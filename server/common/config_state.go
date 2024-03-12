@@ -21,16 +21,17 @@ import (
 	"os"
 )
 
-var (
-	configPath          string   = GetAbsolutePath(CONFIG_PATH, "config.json")
-	configKeysToEncrypt []string = []string{
-		"middleware.identity_provider.params",
-		"middleware.attribute_mapping.params",
-	}
-)
+var configKeysToEncrypt []string = []string{
+	"middleware.identity_provider.params",
+	"middleware.attribute_mapping.params",
+}
+
+func configPath() string {
+	return GetAbsolutePath(CONFIG_PATH, "config.json")
+}
 
 func LoadConfig() ([]byte, error) {
-	file, err := os.OpenFile(configPath, os.O_RDONLY, os.ModePerm)
+	file, err := os.OpenFile(configPath(), os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		if os.IsNotExist(err) {
 			os.MkdirAll(GetAbsolutePath(CONFIG_PATH), os.ModePerm)
@@ -70,12 +71,12 @@ func LoadConfig() ([]byte, error) {
 }
 
 func SaveConfig(v []byte) error {
-	file, err := os.Create(configPath)
+	file, err := os.Create(configPath())
 	if err != nil {
 		return fmt.Errorf(
 			"Filestash needs to be able to create/edit its own configuration which it can't at the moment. "+
 				"Change the permission for filestash to create and edit `%s`",
-			configPath,
+			configPath(),
 		)
 	}
 

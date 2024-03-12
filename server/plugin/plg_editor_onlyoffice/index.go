@@ -23,6 +23,10 @@ import (
 var (
 	SECRET_KEY_DERIVATE_FOR_ONLYOFFICE string
 	OnlyOfficeCache                    *cache.Cache
+
+	plugin_enable func() bool
+	server_url    func() string
+	can_download  func() bool
 )
 
 type OnlyOfficeCacheData struct {
@@ -32,7 +36,9 @@ type OnlyOfficeCacheData struct {
 }
 
 func init() {
-	plugin_enable := func() bool {
+	SECRET_KEY_DERIVATE_FOR_ONLYOFFICE = Hash("ONLYOFFICE_"+SECRET_KEY, len(SECRET_KEY))
+	OnlyOfficeCache = cache.New(720*time.Minute, 720*time.Minute)
+	plugin_enable = func() bool {
 		return Config.Get("features.office.enable").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
@@ -47,71 +53,73 @@ func init() {
 			}
 			return f
 		}).Bool()
-	}()
-	Config.Get("features.office.onlyoffice_server").Schema(func(f *FormElement) *FormElement {
-		if f == nil {
-			f = &FormElement{}
-		}
-		f.Id = "onlyoffice_server"
-		f.Name = "onlyoffice_server"
-		f.Type = "text"
-		f.Description = "Location of your OnlyOffice server"
-		f.Default = "http://127.0.0.1:8080"
-		f.Placeholder = "Eg: http://127.0.0.1:8080"
-		if u := os.Getenv("ONLYOFFICE_URL"); u != "" {
-			f.Default = u
-			f.Placeholder = fmt.Sprintf("Default: '%s'", u)
-		}
-		return f
-	})
-	Config.Get("features.office.can_download").Schema(func(f *FormElement) *FormElement {
-		if f == nil {
-			f = &FormElement{}
-		}
-		f.Id = "onlyoffice_can_download"
-		f.Name = "can_download"
-		f.Type = "boolean"
-		f.Description = "Display Download button in onlyoffice"
-		f.Default = true
-		return f
-	})
-
-	if plugin_enable == false {
-		return
+	}
+	server_url = func() string {
+		return Config.Get("features.office.onlyoffice_server").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "onlyoffice_server"
+			f.Name = "onlyoffice_server"
+			f.Type = "text"
+			f.Description = "Location of your OnlyOffice server"
+			f.Default = "http://127.0.0.1:8080"
+			f.Placeholder = "Eg: http://127.0.0.1:8080"
+			if u := os.Getenv("ONLYOFFICE_URL"); u != "" {
+				f.Default = u
+				f.Placeholder = fmt.Sprintf("Default: '%s'", u)
+			}
+			return f
+		}).String()
+	}
+	can_download = func() bool {
+		return Config.Get("features.office.can_download").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "onlyoffice_can_download"
+			f.Name = "can_download"
+			f.Type = "boolean"
+			f.Description = "Display Download button in onlyoffice"
+			f.Default = true
+			return f
+		}).Bool()
 	}
 
-	SECRET_KEY_DERIVATE_FOR_ONLYOFFICE = Hash("ONLYOFFICE_"+SECRET_KEY, len(SECRET_KEY))
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
-		oods := r.PathPrefix("/onlyoffice").Subrouter()
-		oods.PathPrefix("/static/").HandlerFunc(StaticHandler).Methods("GET", "POST")
-		oods.HandleFunc("/event", OnlyOfficeEventHandler).Methods("POST")
-		oods.HandleFunc("/content", FetchContentHandler).Methods("GET")
+	Hooks.Register.Onload(func() {
+		if plugin_enable() == false {
+			return
+		}
+		Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+			oods := r.PathPrefix("/onlyoffice").Subrouter()
+			oods.PathPrefix("/static/").HandlerFunc(StaticHandler).Methods("GET", "POST")
+			oods.HandleFunc("/event", OnlyOfficeEventHandler).Methods("POST")
+			oods.HandleFunc("/content", FetchContentHandler).Methods("GET")
 
-		r.HandleFunc(
-			COOKIE_PATH+"onlyoffice/iframe",
-			NewMiddlewareChain(
-				IframeContentHandler,
-				[]Middleware{SessionStart, LoggedInOnly},
-				*app,
-			),
-		).Methods("GET")
-		return nil
-	})
-	Hooks.Register.XDGOpen(`
-    if(mime === "application/word" || mime === "application/msword" ||
-       mime === "application/vnd.oasis.opendocument.text" || mime === "application/vnd.oasis.opendocument.spreadsheet" ||
-       mime === "application/excel" || mime === "application/vnd.ms-excel" || mime === "application/powerpoint" ||
-       mime === "application/vnd.ms-powerpoint" || mime === "application/vnd.oasis.opendocument.presentation" ) {
+			r.HandleFunc(
+				COOKIE_PATH+"onlyoffice/iframe",
+				NewMiddlewareChain(
+					IframeContentHandler,
+					[]Middleware{SessionStart, LoggedInOnly},
+					*app,
+				),
+			).Methods("GET")
+			return nil
+		})
+		Hooks.Register.XDGOpen(`
+        if(mime === "application/word" || mime === "application/msword" ||
+           mime === "application/vnd.oasis.opendocument.text" || mime === "application/vnd.oasis.opendocument.spreadsheet" ||
+           mime === "application/excel" || mime === "application/vnd.ms-excel" || mime === "application/powerpoint" ||
+           mime === "application/vnd.ms-powerpoint" || mime === "application/vnd.oasis.opendocument.presentation" ) {
               return ["appframe", {"endpoint": "/api/onlyoffice/iframe"}];
-       }
-    `)
-	OnlyOfficeCache = cache.New(720*time.Minute, 720*time.Minute)
+           }
+        `)
+	})
 }
 
 func StaticHandler(res http.ResponseWriter, req *http.Request) {
 	req.URL.Path = strings.TrimPrefix(req.URL.Path, "/onlyoffice/static")
-	oodsLocation := Config.Get("features.office.onlyoffice_server").String()
-	u, err := url.Parse(oodsLocation)
+	u, err := url.Parse(server_url())
 	if err != nil {
 		SendErrorResult(res, err)
 		return
@@ -161,7 +169,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 	if model.CanRead(ctx) == false {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
-	} else if oodsLocation := Config.Get("features.office.onlyoffice_server").String(); oodsLocation == "" {
+	} else if server_url() == "" {
 		res.WriteHeader(http.StatusServiceUnavailable)
 		res.Write([]byte("<p>The Onlyoffice server hasn't been configured</p>"))
 		res.Write([]byte("<style>p {color: white; text-align: center; margin-top: 50px; font-size: 20px; opacity: 0.6; font-family: monospace; } </style>"))
@@ -365,7 +373,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		filetype,
 		key,
 		func() string {
-			if Config.Get("features.office.can_download").Bool() {
+			if can_download() {
 				return "true"
 			}
 			return "false"

@@ -2,15 +2,15 @@ package plg_image_light
 
 import (
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
-)
 
-const ImageCachePath = "data/cache/image/"
+	. "github.com/mickael-kerjean/filestash/server/common"
+)
 
 func init() {
 	plugin_enable := func() bool {
@@ -25,8 +25,6 @@ func init() {
 			return f
 		}).Bool()
 	}
-	plugin_enable()
-
 	thumb_size := func() int {
 		return Config.Get("features.image.thumbnail_size").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -41,8 +39,6 @@ func init() {
 			return f
 		}).Int()
 	}
-	thumb_size()
-
 	thumb_quality := func() int {
 		return Config.Get("features.image.thumbnail_quality").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -57,8 +53,6 @@ func init() {
 			return f
 		}).Int()
 	}
-	thumb_quality()
-
 	thumb_caching := func() int {
 		return Config.Get("features.image.thumbnail_caching").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -73,8 +67,6 @@ func init() {
 			return f
 		}).Int()
 	}
-	thumb_caching()
-
 	image_quality := func() int {
 		return Config.Get("features.image.image_quality").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -89,8 +81,6 @@ func init() {
 			return f
 		}).Int()
 	}
-	image_quality()
-
 	image_caching := func() int {
 		return Config.Get("features.image.image_caching").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -105,11 +95,14 @@ func init() {
 			return f
 		}).Int()
 	}
-	image_caching()
-
-	cachePath := GetAbsolutePath(ImageCachePath)
-	os.RemoveAll(cachePath)
-	os.MkdirAll(cachePath, os.ModePerm)
+	Hooks.Register.Onload(func() {
+		plugin_enable()
+		thumb_size()
+		thumb_quality()
+		thumb_caching()
+		image_quality()
+		image_caching()
+	})
 
 	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
 		if plugin_enable() == false {
@@ -134,7 +127,7 @@ func init() {
 		/////////////////////////
 		// Specify transformation
 		transform := &Transform{
-			Input:   GetAbsolutePath(ImageCachePath + "imagein_" + QuickString(10)),
+			Input:   filepath.Join(GetAbsolutePath(TMP_PATH), "imagein_"+QuickString(10)),
 			Size:    thumb_size(),
 			Crop:    true,
 			Quality: thumb_quality(),

@@ -49,7 +49,7 @@ type FormElement struct {
 	Required    bool        `json:"required"`
 }
 
-func init() {
+func InitConfig() {
 	Config = NewConfiguration()
 	Config.Load()
 	Config.Initialise()

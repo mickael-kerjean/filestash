@@ -2,22 +2,26 @@ package plg_starter_http
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"net/http"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+
+	"github.com/gorilla/mux"
 )
 
 func init() {
-	port := Config.Get("general.port").Int()
-
 	Hooks.Register.Starter(func(r *mux.Router) {
 		Log.Info("[http] starting ...")
+		port := Config.Get("general.port").Int()
 		srv := &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),
 			Handler: r,
 		}
-		go ensureAppHasBooted(fmt.Sprintf("http://127.0.0.1:%d/about", port), fmt.Sprintf("[http] listening on :%d", port))
+		go ensureAppHasBooted(
+			fmt.Sprintf("http://127.0.0.1:%d/about", port),
+			fmt.Sprintf("[http] listening on :%d", port),
+		)
 		if err := srv.ListenAndServe(); err != nil {
 			Log.Error("error: %v", err)
 			return

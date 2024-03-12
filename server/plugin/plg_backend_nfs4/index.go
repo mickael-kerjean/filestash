@@ -154,7 +154,7 @@ func (this Nfs4Share) Rm(path string) error {
 }
 
 func (this Nfs4Share) Mv(from string, to string) error {
-	return ErrNotImplemented
+	return this.client.Rename(from, to)
 }
 
 func (this Nfs4Share) Touch(path string) error {
