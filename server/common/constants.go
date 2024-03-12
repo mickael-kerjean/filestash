@@ -8,18 +8,21 @@ import (
 //go:generate go run ../generator/constants.go
 const (
 	APP_VERSION       = "v0.5"
-	LOG_PATH          = "data/state/log/"
-	CONFIG_PATH       = "data/state/config/"
-	DB_PATH           = "data/state/db/"
-	FTS_PATH          = "data/state/search/"
-	CERT_PATH         = "data/state/certs/"
-	TMP_PATH          = "data/cache/tmp/"
 	COOKIE_NAME_AUTH  = "auth"
 	COOKIE_NAME_PROOF = "proof"
 	COOKIE_NAME_ADMIN = "admin"
 	COOKIE_PATH_ADMIN = "/admin/api/"
 	COOKIE_PATH       = "/api/"
 	URL_SETUP         = "/admin/setup"
+)
+
+var (
+	LOG_PATH    = "data/state/log/"
+	CONFIG_PATH = "data/state/config/"
+	DB_PATH     = "data/state/db/"
+	FTS_PATH    = "data/state/search/"
+	CERT_PATH   = "data/state/certs/"
+	TMP_PATH    = "data/cache/tmp/"
 )
 
 func init() {
