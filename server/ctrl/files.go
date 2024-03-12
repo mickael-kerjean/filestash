@@ -27,12 +27,12 @@ type FileInfo struct {
 }
 
 var (
-	FileCache  AppCache
-	ZipTimeout func() int
+	file_cache  AppCache
+	zip_timeout func() int
 )
 
 func init() {
-	ZipTimeout = func() int {
+	zip_timeout = func() int {
 		return Config.Get("features.protection.zip_timeout").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
@@ -45,12 +45,12 @@ func init() {
 			return f
 		}).Int()
 	}
-	FileCache = NewAppCache()
-	FileCache.OnEvict(func(key string, value interface{}) {
+	file_cache = NewAppCache()
+	file_cache.OnEvict(func(key string, value interface{}) {
 		os.RemoveAll(filepath.Join(GetAbsolutePath(TMP_PATH), key))
 	})
 	Hooks.Register.Onload(func() {
-		ZipTimeout()
+		zip_timeout()
 	})
 }
 
@@ -176,7 +176,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	// use our cache if necessary (range request) when possible
 	if req.Header.Get("range") != "" {
 		ctx.Session["_path"] = path
-		if p := FileCache.Get(ctx.Session); p != nil {
+		if p := file_cache.Get(ctx.Session); p != nil {
 			f, err := os.OpenFile(p.(string), os.O_RDONLY, os.ModePerm)
 			if err == nil {
 				file = f
@@ -260,7 +260,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 				SendErrorResult(res, err)
 				return
 			}
-			FileCache.Set(ctx.Session, tmpPath)
+			file_cache.Set(ctx.Session, tmpPath)
 			if fi, err := f.Stat(); err == nil {
 				contentLength = fi.Size()
 			}
@@ -571,7 +571,7 @@ func FileDownloader(ctx *App, res http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 	var addToZipRecursive func(*App, *zip.Writer, string, string, *[]string) error
 	addToZipRecursive = func(c *App, zw *zip.Writer, backendPath string, zipRoot string, errList *[]string) (err error) {
-		if time.Now().Sub(start) > time.Duration(ZipTimeout())*time.Second {
+		if time.Now().Sub(start) > time.Duration(zip_timeout())*time.Second {
 			Log.Debug("downloader::timeout zip not completed due to timeout")
 			return ErrTimeout
 		}
@@ -676,7 +676,7 @@ func FileExtract(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	c, cancel := context.WithTimeout(ctx.Context, time.Duration(ZipTimeout())*time.Second)
+	c, cancel := context.WithTimeout(ctx.Context, time.Duration(zip_timeout())*time.Second)
 	extractPath := func(base string, path string) (string, error) {
 		base = filepath.Dir(base)
 		path = filepath.Join(base, path)

@@ -22,14 +22,14 @@ import (
 
 var (
 	SECRET_KEY_DERIVATE_FOR_ONLYOFFICE string
-	OnlyOfficeCache                    *cache.Cache
 
-	plugin_enable func() bool
-	server_url    func() string
-	can_download  func() bool
+	onlyoffice_cache *cache.Cache
+	plugin_enable    func() bool
+	server_url       func() string
+	can_download     func() bool
 )
 
-type OnlyOfficeCacheData struct {
+type onlyOfficeCacheData struct {
 	Path string
 	Save func(path string, file io.Reader) error
 	Cat  func(path string) (io.ReadCloser, error)
@@ -37,7 +37,7 @@ type OnlyOfficeCacheData struct {
 
 func init() {
 	SECRET_KEY_DERIVATE_FOR_ONLYOFFICE = Hash("ONLYOFFICE_"+SECRET_KEY, len(SECRET_KEY))
-	OnlyOfficeCache = cache.New(720*time.Minute, 720*time.Minute)
+	onlyoffice_cache = cache.New(720*time.Minute, 720*time.Minute)
 	plugin_enable = func() bool {
 		return Config.Get("features.office.enable").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -312,7 +312,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		return ""
 	}(path)
 	filetype = strings.TrimPrefix(filepath.Ext(filename), ".")
-	OnlyOfficeCache.Set(key, &OnlyOfficeCacheData{path, ctx.Backend.Save, ctx.Backend.Cat}, cache.DefaultExpiration)
+	onlyoffice_cache.Set(key, &onlyOfficeCacheData{path, ctx.Backend.Save, ctx.Backend.Cat}, cache.DefaultExpiration)
 	res.Write([]byte(fmt.Sprintf(`<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -391,13 +391,13 @@ func FetchContentHandler(res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, NewError("unspecified key", http.StatusBadRequest))
 		return
 	}
-	c, found := OnlyOfficeCache.Get(key)
+	c, found := onlyoffice_cache.Get(key)
 	if found == false {
 		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte(`{"error": 1, "message": "missing data fetcher handler"}`))
 		return
 	}
-	cData, valid := c.(*OnlyOfficeCacheData)
+	cData, valid := c.(*onlyOfficeCacheData)
 	if valid == false {
 		res.WriteHeader(http.StatusInternalServerError)
 		res.Write([]byte(`{"error": 1, "message": "invalid cache"}`))
@@ -413,7 +413,7 @@ func FetchContentHandler(res http.ResponseWriter, req *http.Request) {
 	f.Close()
 }
 
-type OnlyOfficeEventObject struct {
+type onlyOfficeEventObject struct {
 	Actions []struct {
 		Type   int    `json: "type"`
 		UserId string `json: "userid" `
@@ -439,7 +439,7 @@ type OnlyOfficeEventObject struct {
 }
 
 func OnlyOfficeEventHandler(res http.ResponseWriter, req *http.Request) {
-	event := OnlyOfficeEventObject{}
+	event := onlyOfficeEventObject{}
 	if err := json.NewDecoder(req.Body).Decode(&event); err != nil {
 		SendErrorResult(res, err)
 		return
@@ -461,13 +461,13 @@ func OnlyOfficeEventHandler(res http.ResponseWriter, req *http.Request) {
 	case 5:
 		Log.Warning("[onlyoffice] undocumented status. %+v", event)
 	case 6: // document is being edited, but the current document state is saved
-		saveObject, found := OnlyOfficeCache.Get(event.Key)
+		saveObject, found := onlyoffice_cache.Get(event.Key)
 		if found == false {
 			res.WriteHeader(http.StatusInternalServerError)
 			res.Write([]byte(`{"error": 1, "message": "doens't know where to store the given data"}`))
 			return
 		}
-		cData, valid := saveObject.(*OnlyOfficeCacheData)
+		cData, valid := saveObject.(*onlyOfficeCacheData)
 		if valid == false {
 			res.WriteHeader(http.StatusInternalServerError)
 			res.Write([]byte(`{"error": 1, "message": "[internal error] invalid save handler"}`))

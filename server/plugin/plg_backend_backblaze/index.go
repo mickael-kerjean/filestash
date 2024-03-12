@@ -19,7 +19,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
-var BackblazeCache AppCache
+var backblaze_cache AppCache
 
 type Backblaze struct {
 	params      map[string]string
@@ -39,7 +39,7 @@ type BackblazeError struct {
 
 func init() {
 	Backend.Register("backblaze", Backblaze{})
-	BackblazeCache = NewAppCache()
+	backblaze_cache = NewAppCache()
 }
 
 func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error) {
@@ -47,7 +47,7 @@ func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error)
 
 	// By default backblaze required quite a few API calls to just find the data that's under a given bucket
 	// This would result in a slow application hence we are caching everyting that's in the hot path
-	if obj := BackblazeCache.Get(params); obj != nil {
+	if obj := backblaze_cache.Get(params); obj != nil {
 		return obj.(*Backblaze), nil
 	}
 
@@ -98,7 +98,7 @@ func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error)
 		this.Buckets[buckets.Buckets[i].BucketName] = buckets.Buckets[i].BucketId
 	}
 	delete(params, "password")
-	BackblazeCache.Set(params, &this)
+	backblaze_cache.Set(params, &this)
 	return this, nil
 }
 
@@ -246,7 +246,7 @@ func (this Backblaze) Rm(path string) error {
 		return ErrNotValid
 	}
 	if p.Prefix == "" {
-		BackblazeCache.Del(this.params) // cache invalidation
+		backblaze_cache.Del(this.params) // cache invalidation
 		res, err := this.request(
 			"POST",
 			this.ApiUrl+"/b2api/v2/b2_delete_bucket",

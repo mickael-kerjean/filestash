@@ -21,11 +21,11 @@ import (
 	"github.com/mickael-kerjean/net/webdav"
 )
 
-var webdavCache AppCache
+var webdav_cache AppCache
 
 func init() {
-	webdavCache = NewQuickCache(20, 10)
-	webdavCache.OnEvict(func(filename string, _ interface{}) {
+	webdav_cache = NewQuickCache(20, 10)
+	webdav_cache.OnEvict(func(filename string, _ interface{}) {
 		os.Remove(filename)
 	})
 }
@@ -239,7 +239,7 @@ func (this WebdavFile) pull_remote_file() *os.File {
 		if reader, err := this.backend.Cat(this.path); err == nil {
 			io.Copy(f, reader)
 			f.Close()
-			webdavCache.SetKey(this.cache+"_reader", nil)
+			webdav_cache.SetKey(this.cache+"_reader", nil)
 			reader.Close()
 			if f, err = os.OpenFile(filename, os.O_RDONLY, os.ModePerm); err == nil {
 				return f
@@ -264,7 +264,7 @@ func (this *WebdavFile) push_to_remote_if_needed() error {
 	if err == nil {
 		if err = os.Rename(this.cache+"_writer", this.cache+"_reader"); err == nil {
 			this.fwrite = nil
-			webdavCache.SetKey(this.cache+"_reader", nil)
+			webdav_cache.SetKey(this.cache+"_reader", nil)
 		}
 	}
 	f.Close()
