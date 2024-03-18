@@ -188,45 +188,45 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 func (f Ftp) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
-			FormElement{
+			{
 				Name:  "type",
 				Type:  "hidden",
 				Value: "ftp",
 			},
-			FormElement{
+			{
 				Name:        "hostname",
 				Type:        "text",
 				Placeholder: "Hostname*",
 			},
-			FormElement{
+			{
 				Name:        "username",
 				Type:        "text",
 				Placeholder: "Username",
 			},
-			FormElement{
+			{
 				Name:        "password",
 				Type:        "password",
 				Placeholder: "Password",
 			},
-			FormElement{
+			{
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
 				Target:      []string{"ftp_path", "ftp_port", "ftp_conn"},
 			},
-			FormElement{
+			{
 				Id:          "ftp_path",
 				Name:        "path",
 				Type:        "text",
 				Placeholder: "Path",
 			},
-			FormElement{
+			{
 				Id:          "ftp_port",
 				Name:        "port",
 				Type:        "number",
 				Placeholder: "Port",
 			},
-			FormElement{
+			{
 				Id:          "ftp_conn",
 				Name:        "conn",
 				Type:        "number",
