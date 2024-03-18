@@ -22,7 +22,7 @@ var (
 	DB_PATH     = "state/db/"
 	FTS_PATH    = "state/search/"
 	LOG_PATH    = "state/log/"
-	TMP_PATH    = "cache/tmp/"
+	TMP_PATH    = "cache/"
 )
 
 func init() {
@@ -39,12 +39,12 @@ func init() {
 	TMP_PATH = filepath.Join(rootPath, TMP_PATH)
 
 	// STEP2: initialise the config
-	os.MkdirAll(filepath.Join(GetCurrentDir(), CERT_PATH), os.ModePerm)
-	os.MkdirAll(filepath.Join(GetCurrentDir(), DB_PATH), os.ModePerm)
-	os.MkdirAll(filepath.Join(GetCurrentDir(), FTS_PATH), os.ModePerm)
-	os.MkdirAll(filepath.Join(GetCurrentDir(), LOG_PATH), os.ModePerm)
-	os.RemoveAll(filepath.Join(GetCurrentDir(), TMP_PATH))
-	os.MkdirAll(filepath.Join(GetCurrentDir(), TMP_PATH), os.ModePerm)
+	os.MkdirAll(GetAbsolutePath(CERT_PATH), os.ModePerm)
+	os.MkdirAll(GetAbsolutePath(DB_PATH), os.ModePerm)
+	os.MkdirAll(GetAbsolutePath(FTS_PATH), os.ModePerm)
+	os.MkdirAll(GetAbsolutePath(LOG_PATH), os.ModePerm)
+	os.RemoveAll(GetAbsolutePath(TMP_PATH))
+	os.MkdirAll(GetAbsolutePath(TMP_PATH), os.ModePerm)
 }
 
 var (

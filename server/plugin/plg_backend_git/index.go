@@ -89,8 +89,8 @@ func (git Git) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 
 	hash := GenerateID(app)
-	p.basePath = filepath.Join(
-		GetAbsolutePath(TMP_PATH),
+	p.basePath = GetAbsolutePath(
+		TMP_PATH,
 		"git_"+hash,
 	) + "/"
 

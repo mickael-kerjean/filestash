@@ -3,15 +3,17 @@ package ctrl
 import (
 	"bytes"
 	"fmt"
-	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/model"
+
+	"github.com/gorilla/mux"
 )
 
 //go:generate sh -c "go run ../generator/emacs-el.go > export_generated.go && go fmt export_generated.go"
@@ -37,7 +39,7 @@ func FileExport(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var tmpPath string = GetAbsolutePath(TMP_PATH) + "/export_" + QuickString(10)
+	var tmpPath string = GetAbsolutePath(TMP_PATH, "/export_"+QuickString(10))
 	var cmd *exec.Cmd
 	var emacsPath string
 	var outPath string
