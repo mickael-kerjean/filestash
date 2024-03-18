@@ -8,14 +8,12 @@ import (
 	"time"
 )
 
-var Log = func() ILogger {
-	l := log{}
-	l.Enable(true)
-	return &l
-}()
-var logfile *os.File
+var (
+	Log     = &log{enable: true}
+	logfile *os.File
+)
 
-func init() {
+func InitLogger() {
 	var err error
 	logfile, err = os.OpenFile(GetAbsolutePath(LOG_PATH, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {

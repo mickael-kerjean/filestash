@@ -27,6 +27,7 @@ func start(routes *mux.Router) {
 		os.Exit(1)
 		return
 	}
+	InitLogger()
 	InitConfig()
 	InitPluginList(embed.EmbedPluginList)
 	for _, fn := range Hooks.Get.Onload() {
