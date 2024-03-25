@@ -54,6 +54,9 @@ body.dark-mode {
 html {
     font-family: "Roboto", sans-serif;
     -webkit-text-size-adjust:100%;
+    font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 body {
     overflow: hidden;
