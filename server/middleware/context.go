@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func BodyParser(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func BodyParser(fn HandlerFunc) HandlerFunc {
 	extractBody := func(req *http.Request) (map[string]interface{}, error) {
 		body := map[string]interface{}{}
 		byt, err := ioutil.ReadAll(req.Body)
@@ -25,14 +25,14 @@ func BodyParser(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App
 		return body, nil
 	}
 
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		var err error
 		if ctx.Body, err = extractBody(req); err != nil {
 			SendErrorResult(res, ErrNotValid)
 			return
 		}
 		fn(ctx, res, req)
-	}
+	})
 }
 
 func GenerateRequestID(prefix string) string {

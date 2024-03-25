@@ -1,12 +1,14 @@
 package ctrl
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
-	"github.com/mickael-kerjean/net/webdav"
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/middleware"
+	"github.com/mickael-kerjean/filestash/server/model"
+	"github.com/mickael-kerjean/net/webdav"
 )
 
 func WebdavHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -53,8 +55,8 @@ func WebdavHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
  * an imbecile and considering we can't even see the source code they are running, the best approach we
  * could go on is: "crap in, crap out" where useless request coming in are identified and answer appropriatly
  */
-func WebdavBlacklist(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func WebdavBlacklist(fn middleware.HandlerFunc) middleware.HandlerFunc {
+	return middleware.HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		base := filepath.Base(req.URL.String())
 
 		if req.Method == "PUT" || req.Method == "MKCOL" {
@@ -125,5 +127,5 @@ func WebdavBlacklist(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx
 			}
 		}
 		fn(ctx, res, req)
-	}
+	})
 }

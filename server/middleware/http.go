@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-func ApiHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func ApiHeaders(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Set("Content-Type", "application/json")
 		header.Set("Cache-Control", "no-cache")
@@ -20,20 +20,20 @@ func ApiHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App
 			header.Set("X-Request-ID", GenerateRequestID("API"))
 		}
 		fn(ctx, res, req)
-	}
+	})
 }
 
-func StaticHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func StaticHeaders(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Set("Content-Type", GetMimeType(filepath.Ext(req.URL.Path)))
 		header.Set("Cache-Control", "max-age=2592000")
 		fn(ctx, res, req)
-	}
+	})
 }
 
-func IndexHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func IndexHeaders(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Set("Content-Type", "text/html")
 		header.Set("Cache-Control", "no-cache")
@@ -65,11 +65,11 @@ func IndexHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 		}
 		// header.Set("Content-Security-Policy", cspHeader)
 		fn(ctx, res, req)
-	}
+	})
 }
 
-func SecureHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func SecureHeaders(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		if Config.Get("general.force_ssl").Bool() {
 			header.Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
@@ -77,11 +77,11 @@ func SecureHeaders(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *
 		header.Set("X-Content-Type-Options", "nosniff")
 		header.Set("X-XSS-Protection", "1; mode=block")
 		fn(ctx, res, req)
-	}
+	})
 }
 
-func SecureOrigin(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func SecureOrigin(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if host := Config.Get("general.host").String(); host != "" {
 			host = strings.TrimPrefix(host, "http://")
 			host = strings.TrimPrefix(host, "https://")
@@ -105,11 +105,11 @@ func SecureOrigin(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 
 		Log.Warning("Intrusion detection: %s - %s", RetrievePublicIp(req), req.URL.String())
 		SendErrorResult(res, ErrNotAllowed)
-	}
+	})
 }
 
-func WithPublicAPI(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func WithPublicAPI(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		apiKey := req.URL.Query().Get("key")
 		if apiKey == "" {
 			fn(ctx, res, req)
@@ -132,13 +132,13 @@ func WithPublicAPI(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *
 			return
 		}
 		fn(ctx, res, req)
-	}
+	})
 }
 
 var limiter = rate.NewLimiter(10, 1000)
 
-func RateLimiter(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func RateLimiter(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if limiter.Allow() == false {
 			Log.Warning("middleware::http::ratelimit too many requests")
 			SendErrorResult(
@@ -148,7 +148,7 @@ func RateLimiter(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *Ap
 			return
 		}
 		fn(ctx, res, req)
-	}
+	})
 }
 
 func EnableCors(req *http.Request, res http.ResponseWriter, host string) error {

@@ -14,18 +14,18 @@ import (
 	"time"
 )
 
-func LoggedInOnly(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func LoggedInOnly(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if ctx.Backend == nil || ctx.Session == nil {
 			SendErrorResult(res, ErrPermissionDenied)
 			return
 		}
 		fn(ctx, res, req)
-	}
+	})
 }
 
-func AdminOnly(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func AdminOnly(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if admin := Config.Get("auth.admin").String(); admin != "" {
 			c, err := req.Cookie(COOKIE_NAME_ADMIN)
 			if err != nil {
@@ -47,11 +47,11 @@ func AdminOnly(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App,
 			}
 		}
 		fn(ctx, res, req)
-	}
+	})
 }
 
-func SessionStart(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func SessionStart(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		var err error
 
 		if ctx.Share, err = _extractShare(req); err != nil {
@@ -72,21 +72,21 @@ func SessionStart(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *A
 			return
 		}
 		fn(ctx, res, req)
-	}
+	})
 }
 
-func SessionTry(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func SessionTry(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		ctx.Share, _ = _extractShare(req)
 		ctx.Authorization = _extractAuthorization(req)
 		ctx.Session, _ = _extractSession(req, ctx)
 		ctx.Backend, _ = _extractBackend(req, ctx)
 		fn(ctx, res, req)
-	}
+	})
 }
 
-func RedirectSharedLoginIfNeeded(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func RedirectSharedLoginIfNeeded(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		share_id := _extractShareId(req)
 		if share_id == "" {
 			if mux.Vars(req)["share"] == "private" {
@@ -103,11 +103,11 @@ func RedirectSharedLoginIfNeeded(fn func(*App, http.ResponseWriter, *http.Reques
 			return
 		}
 		fn(ctx, res, req)
-	}
+	})
 }
 
-func CanManageShare(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx *App, res http.ResponseWriter, req *http.Request) {
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+func CanManageShare(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		share_id := mux.Vars(req)["share"]
 		if share_id == "" {
 			Log.Debug("middleware::session::share 'invalid share id'")
@@ -167,7 +167,7 @@ func CanManageShare(fn func(*App, http.ResponseWriter, *http.Request)) func(ctx 
 		}
 		SendErrorResult(res, ErrPermissionDenied)
 		return
-	}
+	})
 }
 
 func _extractAuthorization(req *http.Request) (token string) {
