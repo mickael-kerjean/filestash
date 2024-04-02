@@ -51,6 +51,7 @@ func init() {
 			if f == nil {
 				f = &FormElement{}
 			}
+			f.Default = false
 			f.Name = "disable_csp"
 			f.Type = "boolean"
 			f.Description = "Disable the content security policy. Unless you 100% trust the content in your storage and want to execute code running from that storage, you shouldn't have this option checked"
