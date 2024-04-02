@@ -251,7 +251,7 @@ func WelcomePackHandle(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "geo:37.786971,-122.399677", 301)
 	} else if r < 60 {
 		res.Header().Set("Content-Type", "text/html")
-		res.Write([]byte(`<html><sript>alert("WAZAAAA");</script></html>`))
+		res.Write([]byte(`<html><script>alert("WAZAAAA");</script></html>`))
 	} else if r < 65 {
 		res.Header().Set("Content-Type", "text/html")
 		res.Write([]byte(`<html><head><script>do { console.log("WAZAAAA"); } while(true);</script></head><body></body></html>`))
