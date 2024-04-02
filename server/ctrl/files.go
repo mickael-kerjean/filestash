@@ -29,6 +29,7 @@ type FileInfo struct {
 var (
 	file_cache  AppCache
 	zip_timeout func() int
+	disable_csp func() bool
 )
 
 func init() {
@@ -45,12 +46,24 @@ func init() {
 			return f
 		}).Int()
 	}
+	disable_csp = func() bool {
+		return Config.Get("features.protection.disable_csp").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Name = "disable_csp"
+			f.Type = "boolean"
+			f.Description = "Disable the content security policy. Unless you 100% trust the content in your storage and want to execute code running from that storage, you shouldn't have this option checked"
+			return f
+		}).Bool()
+	}
 	file_cache = NewAppCache()
 	file_cache.OnEvict(func(key string, value interface{}) {
 		os.RemoveAll(filepath.Join(GetAbsolutePath(TMP_PATH), key))
 	})
 	Hooks.Register.Onload(func() {
 		zip_timeout()
+		disable_csp()
 	})
 }
 
@@ -296,10 +309,10 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// publish headers
-	if contentLength != -1 {
+	if contentLength >= 0 {
 		header.Set("Content-Length", fmt.Sprintf("%d", contentLength))
 	}
-	if header.Get("Content-Security-Policy") == "" {
+	if disable_csp() == false {
 		header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; font-src data:; script-src-elem 'self'")
 	}
 	if fname := query.Get("name"); fname != "" {
