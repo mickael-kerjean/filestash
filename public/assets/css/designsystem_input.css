@@ -16,8 +16,8 @@
   border-bottom: 2px solid rgba(70, 99, 114, 0.1);
   transition: border-color 0.2s ease-out;
 }
-.component_input:focus, .component_select:focus {
-    border-color: var(--emphasis-primary);
+.component_input:focus, .component_select:focus, .component_input:focus ~ component-icon img {
+    border-color: var(--emphasis-primary)!important;
 }
 
 input.component_input[readonly], textarea.component_textarea[readonly] {
