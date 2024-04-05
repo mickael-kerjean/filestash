@@ -4,6 +4,9 @@
     box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
     background: white;
 }
+.component_page_connection_form .formbuilder:not(:empty) {
+    margin: 5px 0 10px 0;
+}
 .component_page_connection_form div.buttons {
     display: flex;
     margin: 0px 0px 15px 0px;
@@ -49,7 +52,6 @@
     padding-right: 10px;
 }
 .component_page_connection_form form button.emphasis {
-    margin-top: 10px;
     color: white;
     text-transform: uppercase;
 }

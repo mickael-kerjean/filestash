@@ -68,7 +68,8 @@ export default async function(render) {
                 middleware: { type: "hidden" },
                 label: { type: "hidden", value: label },
             };
-            return backendSpecs[type];
+            const emptyForm = {};
+            return backendSpecs[type] || {};
         })),
     )));
     effect(getCurrentBackend().pipe(
