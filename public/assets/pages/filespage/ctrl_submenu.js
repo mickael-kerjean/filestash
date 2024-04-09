@@ -1,12 +1,25 @@
-import { onDestroy, createElement, createFragment } from "../../lib/skeleton/index.js";
-import rxjs, { effect, applyMutation, onClick } from "../../lib/rx.js";
+import { onDestroy, createElement, createFragment, nop } from "../../lib/skeleton/index.js";
+import rxjs, { effect, applyMutation, onClick, preventDefault } from "../../lib/rx.js";
 import { animate } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { getSelection$, clearSelection } from "./model_files.js";
+import { setAction } from "./model_action.js";
+
+import componentShare from "./modal_share.js";
+import componentEmbed from "./modal_embed.js";
+import componentTag from "./modal_tag.js";
+import componentRename from "./modal_rename.js";
+import componentDelete from "./modal_delete.js";
 
 import "../../components/dropdown.js";
 import "../../components/icon.js";
+
+import { createModal } from "../../components/modal.js";
+const modalOpt = {
+    withButtonsRight: "OK",
+    withButtonsLeft: "CANCEL",
+};
 
 export default async function(render) {
     const $page = createElement(`
@@ -48,11 +61,17 @@ export default async function(render) {
         `)),
         applyMutation($page, "replaceChildren"),
         rxjs.mergeMap(() => rxjs.merge(
-            onClick(qs($page, `[data-action="new-file"]`)).pipe(rxjs.mapTo("NEW_FILE")),
-            onClick(qs($page, `[data-action="new-folder"]`)).pipe(rxjs.mapTo("NEW_FOLDER")),
+            rxjs.merge(
+                onClick(qs($page, `[data-action="new-file"]`)).pipe(rxjs.mapTo("NEW_FILE")),
+                onClick(qs($page, `[data-action="new-folder"]`)).pipe(rxjs.mapTo("NEW_FOLDER")),
+            ).pipe(rxjs.mergeMap((actionName) => {
+                $scroll.scrollTo({top: 0, behavior: "smooth"});
+                setAction(actionName);
+                return rxjs.EMPTY;
+            })),
             onClick(qs($page, `[data-action="search"]`)).pipe(rxjs.mapTo("SEARCH")),
             onClick(qs($page, `[data-action="view"]`)).pipe(rxjs.mapTo("VIEW")),
-        ).pipe(rxjs.tap((action) => onMenuSelect(action)))),
+        )),
     ));
 
     // feature2: update when selection is preset
@@ -80,14 +99,25 @@ export default async function(render) {
                 rxjs.tap(() => clearSelection()),
                 rxjs.mergeMap(() => rxjs.EMPTY),
             ),
-            onClick(qs($page, `[data-action="download"]`)).pipe(rxjs.mapTo("DOWNLOAD")),
-            onClick(qs($page, `[data-action="share"]`)).pipe(rxjs.mapTo("SHARE")),
-            onClick(qs($page, `[data-action="embed"]`)).pipe(rxjs.mapTo("EMBED")),
-            onClick(qs($page, `[data-action="tag"]`)).pipe(rxjs.mapTo("TAG")),
-            onClick(qs($page, `[data-action="rename"]`)).pipe(rxjs.mapTo("RENAME")),
-            onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.mapTo("DELETE")),
+            onClick(qs($page, `[data-action="download"]`)).pipe(
+                rxjs.mergeMap(() => rxjs.EMPTY),
+            ),
+            onClick(qs($page, `[data-action="share"]`)).pipe(rxjs.tap(() => {
+                componentShare(createModal(modalOpt));
+            })),
+            onClick(qs($page, `[data-action="embed"]`)).pipe(rxjs.tap(() => {
+                componentEmbed(createModal(modalOpt));
+            })),
+            onClick(qs($page, `[data-action="tag"]`)).pipe(rxjs.tap(() => {
+                componentTag(createModal(modalOpt))
+            })),
+            onClick(qs($page, `[data-action="rename"]`)).pipe(rxjs.tap(() => {
+                componentRename(createModal(modalOpt));
+            })),
+            onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.tap(() => {
+                componentDelete(createModal(modalOpt));
+            })),
         )),
-        rxjs.tap((action) => onMenuSelect(action)),
     ));
 
     // feature3: effect on scroll
@@ -100,11 +130,6 @@ export default async function(render) {
                  ? $scroll.classList.add("scrolling")
                  : $scroll.classList.remove("scrolling")),
     ));
-
-}
-
-function onMenuSelect(action) {
-    console.log(`select "${action}"`);
 }
 
 export function init() {

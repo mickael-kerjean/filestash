@@ -7,6 +7,7 @@ import WithShell, { init as initShell } from "../components/decorator_shell_file
 import { getState$ } from "./filespage/ctrl_filesystem_state.js";
 import componentFilesystem, { init as initFilesystem } from "./filespage/ctrl_filesystem.js";
 import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.js";
+import componentNewItem, { init as initNewItem } from "./filespage/ctrl_newitem.js";
 
 import "../components/breadcrumb.js";
 
@@ -15,6 +16,7 @@ export default WithShell(function(render) {
         <div class="component_page_filespage scroll-y">
             <div is="frequent_access" class="hidden"></div>
             <div is="component_submenu"></div>
+            <div is="component_newitem"></div>
             <div is="component_filesystem"></div>
         </div>
     `);
@@ -31,11 +33,14 @@ export default WithShell(function(render) {
 
     // feature3: render the menubar
     componentSubmenu(createRender(qs($page, "[is=\"component_submenu\"]")));
+
+    // feature4: render the creation menu
+    componentNewItem(createRender(qs($page, "[is=\"component_newitem\"]")));
 });
 
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_filespage.css"),
-        initShell(), initFilesystem(), initSubmenu(),
+        initShell(), initFilesystem(), initSubmenu(), initNewItem(),
     ]);
 }

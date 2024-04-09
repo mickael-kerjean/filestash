@@ -80,4 +80,4 @@ export function createRender($parent) {
     };
 }
 
-export function nop() {}
+export function nop() { Promise.resolve(); }

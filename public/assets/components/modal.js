@@ -5,13 +5,22 @@ import { qs, qsa } from "../lib/dom.js";
 import { ApplicationError } from "../lib/error.js";
 import { CSS } from "../helpers/loader.js";
 
-export default class Modal {
+class Modal {
     static open($node, opts = {}) {
         find().trigger($node, opts);
     }
 }
 
-const createModal = async() => createElement(`
+export default Modal
+
+export function createModal(opts) {
+    return ($node, ok = nop) => {
+        if (ok) opts.onQuit = ok;
+        return Modal.open($node, opts);
+    };
+}
+
+const create = async() => createElement(`
     <div class="component_modal" id="modal-box">
         <style>${await CSS(import.meta.url, "modal.css")}</style>
         <div>
@@ -30,7 +39,7 @@ const createModal = async() => createElement(`
 
 class ModalComponent extends window.HTMLElement {
     async trigger($node, opts = {}) {
-        const $modal = await createModal();
+        const $modal = await create();
         const close$ = new rxjs.Subject();
         const { onQuit = nop, withButtonsLeft = null, withButtonsRight = null } = opts;
 
@@ -44,20 +53,20 @@ class ModalComponent extends window.HTMLElement {
 
             if (currentLabel === null) return $button.remove();
             $button.textContent = currentLabel;
-            $button.onclick = () => close$.next(currentLabel);
+            $button.onclick = () => close$.next({ label: currentLabel, id: i+1 });
         });
         effect(rxjs.fromEvent($modal, "click").pipe(
             rxjs.filter((e) => e.target.getAttribute("id") === "modal-box"),
-            rxjs.tap(() => close$.next()),
+            rxjs.tap(() => close$.next({ id: 0 })),
         ));
         effect(rxjs.fromEvent(window, "keydown").pipe(
             rxjs.filter((e) => e.keyCode === 27),
-            rxjs.tap(() => close$.next()),
+            rxjs.tap(() => close$.next({ id: 0 })),
         ));
 
         // feature: closing the modal
         effect(close$.pipe(
-            rxjs.tap((label) => onQuit(label)),
+            rxjs.tap(onQuit),
             rxjs.tap(() => animate(qs($modal, "div > div"), {
                 time: 200,
                 keyframes: [
