@@ -1,12 +1,10 @@
 package plg_backend_nfs
 
 import (
-	"bufio"
 	"context"
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -15,11 +13,6 @@ import (
 	"github.com/vmware/go-nfs-client/nfs/rpc"
 	"github.com/vmware/go-nfs-client/nfs/util"
 	"github.com/vmware/go-nfs-client/nfs/xdr"
-)
-
-const (
-	DEFAULT_UID = 1000
-	DEFAULT_GID = 1000
 )
 
 type NfsShare struct {
@@ -34,7 +27,6 @@ type NfsShare struct {
 func init() {
 	Backend.Register("nfs", NfsShare{})
 	util.DefaultLogger.SetDebug(false)
-	cacheForEtc = NewAppCache(120, 60)
 }
 
 func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) {
@@ -48,12 +40,15 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 
 	uid := getUid(params["uid"])
 	gid := getGid(params["gid"])
-	auth := rpc.NewAuthUnix(params["machine_name"], uid, gid).Auth()
 	mount, err := nfs.DialMount(params["hostname"])
 	if err != nil {
 		return nil, err
 	}
-	v, err := mount.Mount(params["target"], auth)
+	auth := NewAuth(params["machine_name"], uid, gid)
+	v, err := mount.Mount(
+		params["target"],
+		auth,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -270,62 +265,4 @@ func (this NfsShare) Close() {
 
 func (this NfsShare) nfsPath(path string) string {
 	return strings.TrimSuffix(path, "/")
-}
-
-func getUid(hint string) uint32 {
-	if hint == "" {
-		return DEFAULT_UID
-	} else if _uid, err := strconv.Atoi(hint); err == nil {
-		return uint32(_uid)
-	} else if uid, _, err := extractFromEtcPasswd(hint); err == nil {
-		return uid
-	}
-	return DEFAULT_UID
-}
-func getGid(hint string) uint32 {
-	if hint == "" {
-		return DEFAULT_UID
-	} else if _gid, err := strconv.Atoi(hint); err == nil {
-		return uint32(_gid)
-	} else if _, gid, err := extractFromEtcPasswd(hint); err == nil {
-		return gid
-	}
-	return DEFAULT_GID
-}
-
-var cacheForEtc AppCache
-
-func extractFromEtcPasswd(username string) (uint32, uint32, error) {
-	if v := cacheForEtc.Get(map[string]string{"username": username}); v != nil {
-		inCache := v.([]int)
-		return uint32(inCache[0]), uint32(inCache[1]), nil
-	}
-	f, err := os.OpenFile("/etc/passwd", os.O_RDONLY, os.ModePerm)
-	if err != nil {
-		return DEFAULT_UID, DEFAULT_GID, err
-	}
-	defer f.Close()
-	lines := bufio.NewReader(f)
-	for {
-		line, _, err := lines.ReadLine()
-		if err != nil {
-			break
-		}
-		s := strings.Split(string(line), ":")
-		if len(s) != 7 {
-			continue
-		} else if username == s[0] {
-			u, err := strconv.Atoi(s[2])
-			if err != nil {
-				continue
-			}
-			g, err := strconv.Atoi(s[3])
-			if err != nil {
-				continue
-			}
-			cacheForEtc.Set(map[string]string{"username": username}, []int{u, g})
-			return uint32(u), uint32(g), nil
-		}
-	}
-	return DEFAULT_UID, DEFAULT_GID, ErrNotFound
 }
