@@ -14,11 +14,6 @@ var (
 	cacheForGroup AppCache
 )
 
-const (
-	DEFAULT_UID = 1000
-	DEFAULT_GID = 1000
-)
-
 func init() {
 	cacheForEtc = NewAppCache(120, 60)
 	cacheForGroup = NewAppCache(120, 60)
@@ -49,7 +44,7 @@ func extractUserInfo(uidHint string, gidHint string, gidsHint string) (uint32, u
 		return _uid, _gid, extractFromEtcGroup(uidHint, _gid)
 	}
 	// case 3: base case
-	return DEFAULT_UID, DEFAULT_GID, []uint32{}
+	return 0, 0, []uint32{}
 }
 
 func extractFromEtcPasswd(username string) (uint32, uint32, error) {
@@ -59,7 +54,7 @@ func extractFromEtcPasswd(username string) (uint32, uint32, error) {
 	}
 	f, err := os.OpenFile("/etc/passwd", os.O_RDONLY, os.ModePerm)
 	if err != nil {
-		return DEFAULT_UID, DEFAULT_GID, err
+		return 0, 0, err
 	}
 	defer f.Close()
 	lines := bufio.NewReader(f)
@@ -85,7 +80,7 @@ func extractFromEtcPasswd(username string) (uint32, uint32, error) {
 		cacheForEtc.Set(map[string]string{"username": username}, []int{u, g})
 		return uint32(u), uint32(g), nil
 	}
-	return DEFAULT_UID, DEFAULT_GID, ErrNotFound
+	return 0, 0, ErrNotFound
 }
 
 func extractFromEtcGroup(username string, primary uint32) []uint32 {
