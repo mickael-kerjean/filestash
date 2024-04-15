@@ -88,7 +88,7 @@ func (git Git) Init(params map[string]string, app *App) (IBackend, error) {
 		p.committerEmail = "https://filestash.app"
 	}
 
-	hash := GenerateID(app)
+	hash := GenerateID(params)
 	p.basePath = GetAbsolutePath(
 		TMP_PATH,
 		"git_"+hash,

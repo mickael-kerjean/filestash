@@ -137,7 +137,7 @@ func CanManageShare(fn HandlerFunc) HandlerFunc {
 			SendErrorResult(res, err)
 			return
 		}
-		if s.Backend == GenerateID(ctx) {
+		if s.Backend == GenerateID(ctx.Session) {
 			fn(ctx, res, req)
 			return
 		}
@@ -155,7 +155,7 @@ func CanManageShare(fn HandlerFunc) HandlerFunc {
 			return
 		}
 
-		id := GenerateID(ctx)
+		id := GenerateID(ctx.Session)
 		if s.Backend == id {
 			if s.CanShare == true {
 				fn(ctx, res, req)

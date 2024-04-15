@@ -191,11 +191,10 @@ func verify(something []byte) ([]byte, error) {
 }
 
 // Create a unique ID that can be use to identify different session
-func GenerateID(ctx *App) string {
+func GenerateID(params map[string]string) string {
 	p := ""
-
-	orderedKeys := make([]string, len(ctx.Session))
-	for key, _ := range ctx.Session {
+	orderedKeys := make([]string, len(params))
+	for key, _ := range params {
 		orderedKeys = append(orderedKeys, key)
 	}
 	sort.Strings(orderedKeys)
@@ -206,8 +205,8 @@ func GenerateID(ctx *App) string {
 		case "password":
 		case "path":
 		default:
-			if val := ctx.Session[key]; val != "" {
-				p += key + "=>" + ctx.Session[key] + ", "
+			if val := params[key]; val != "" {
+				p += key + "=>" + params[key] + ", "
 			}
 		}
 	}

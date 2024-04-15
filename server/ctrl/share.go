@@ -17,7 +17,7 @@ func ShareList(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	listOfSharedLinks, err := model.ShareList(
-		GenerateID(ctx),
+		GenerateID(ctx.Session),
 		path,
 	)
 	if err != nil {
@@ -59,7 +59,7 @@ func ShareUpsert(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}(),
 		Backend: func() string {
 			if ctx.Share.Id == "" {
-				return GenerateID(ctx)
+				return GenerateID(ctx.Session)
 			}
 			return ctx.Share.Backend
 		}(),

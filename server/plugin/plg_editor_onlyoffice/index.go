@@ -196,7 +196,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	userId = GenerateID(ctx)
+	userId = GenerateID(ctx.Session)
 	f, err := ctx.Backend.Cat(path)
 	if err != nil {
 		SendErrorResult(res, err)

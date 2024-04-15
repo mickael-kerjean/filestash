@@ -131,7 +131,7 @@ func hls_playlist(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req 
 		return reader, nil
 	}
 
-	cacheName := "vid_" + GenerateID(ctx) + "_" + QuickHash(path, 10) + ".dat"
+	cacheName := "vid_" + GenerateID(ctx.Session) + "_" + QuickHash(path, 10) + ".dat"
 	cachePath := GetAbsolutePath(
 		VideoCachePath,
 		cacheName,

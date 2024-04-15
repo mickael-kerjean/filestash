@@ -67,7 +67,7 @@ func logger(ctx App, res http.ResponseWriter, req *http.Request) {
 				if ctx.Session["type"] == "" {
 					return "null"
 				}
-				return GenerateID(&ctx)
+				return GenerateID(ctx.Session)
 			}(),
 			RequestID: func() string {
 				defer func() string {
