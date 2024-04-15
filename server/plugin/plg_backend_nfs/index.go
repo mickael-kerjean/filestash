@@ -33,18 +33,16 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	if params["hostname"] == "" {
 		return nil, ErrNotFound
 	}
-
 	if params["machine_name"] == "" {
-		params["machine_name"] = "filestash"
+		params["machine_name"] = "Filestash"
 	}
+	uid, gid, gids := extractUserInfo(params["uid"], params["gid"], params["gids"])
 
-	uid := getUid(params["uid"])
-	gid := getGid(params["gid"])
 	mount, err := nfs.DialMount(params["hostname"])
 	if err != nil {
 		return nil, err
 	}
-	auth := NewAuth(params["machine_name"], uid, gid)
+	auth := NewUnixAuth(params["machine_name"], uid, gid, gids)
 	v, err := mount.Mount(
 		params["target"],
 		auth,
@@ -77,31 +75,37 @@ func (this NfsShare) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"nfs_uid", "nfs_gid", "nfs_machinename", "nfs_chroot"},
+				Target:      []string{"nfs_uid", "nfs_gid", "nfs_gids", "nfs_machinename", "nfs_chroot"},
 			},
 			FormElement{
 				Id:          "nfs_uid",
 				Name:        "uid",
 				Type:        "text",
-				Placeholder: "uid",
+				Placeholder: "UID",
 			},
 			FormElement{
 				Id:          "nfs_gid",
 				Name:        "gid",
 				Type:        "text",
-				Placeholder: "gid",
+				Placeholder: "GID",
+			},
+			FormElement{
+				Id:          "nfs_gids",
+				Name:        "gids",
+				Type:        "text",
+				Placeholder: "Auxiliary GIDs",
 			},
 			FormElement{
 				Id:          "nfs_machinename",
 				Name:        "machine_name",
 				Type:        "text",
-				Placeholder: "machine name",
+				Placeholder: "Machine Name",
 			},
 			FormElement{
 				Id:          "nfs_chroot",
 				Name:        "path",
 				Type:        "text",
-				Placeholder: "chroot",
+				Placeholder: "Chroot",
 			},
 		},
 	}
