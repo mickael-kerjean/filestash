@@ -1,8 +1,10 @@
 import { createElement } from "../../lib/skeleton/index.js";
+import rxjs, { effect, onClick } from "../../lib/rx.js";
 import { loadCSS } from "../../helpers/loader.js";
+import { qs } from "../../lib/dom.js";
 
 export default function(render) {
-    render(createElement(`
+    const $page = createElement(`
 <div class="component_upload_queue">
   <h2>CURRENT UPLOAD <div class="count_block">
       <span class="completed">24</span>
@@ -182,7 +184,12 @@ export default function(render) {
     </div>
   </div>
 </div>
-    `))
+    `);
+    render($page);
+
+    effect(onClick(qs($page, "img[alt=\"close\"]")).pipe(
+        rxjs.tap(() => $page.classList.add("hidden")),
+    ));
 }
 
 export function init() {
