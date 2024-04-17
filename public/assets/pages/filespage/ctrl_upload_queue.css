@@ -1,0 +1,91 @@
+.component_upload_queue {
+    position: fixed;
+    bottom: 0;
+    right: 00px;
+    z-index: 999;
+    width: 100%;
+    max-width: 550px;
+    box-shadow: 1px 2px 20px rgba(0, 0, 0, 0.1);
+    background: white;
+    padding: 20px 15px 15px 20px;
+    box-sizing: border-box;
+}
+.component_upload_queue h2 {
+    margin: 0 0 5px 0;
+    font-size: 1.2em;
+    font-weight: 100;
+}
+.component_upload_queue h2 .percent {
+    color: var(--emphasis-primary);
+}
+.component_upload_queue h2 .count_block {
+    display: inline;
+    margin-left: 10px;
+}
+.component_upload_queue h2 .count_block span.grandTotal {
+    font-size: 0.8em;
+    color: var(--emphasis-secondary);
+}
+.component_upload_queue h2 .count_block span.grandTotal:before {
+    content: "/";
+}
+.component_upload_queue h2 .count_block span.completed {
+    color: var(--emphasis-secondary);
+}
+.component_upload_queue h2 .component_icon {
+    cursor: pointer;
+    margin-left: 10px;
+    width: 25px;
+    float: right;
+}
+.component_upload_queue h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.0em;
+    font-weight: 100;
+}
+.component_upload_queue .stats_content {
+    clear: both;
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-size: 0.85em;
+}
+.component_upload_queue .stats_content .error_color {
+    color: var(--error);
+}
+.component_upload_queue .stats_content .todo_color {
+    color: var(--light);
+}
+.component_upload_queue .stats_content .file_row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.component_upload_queue .stats_content .file_row .file_path {
+    padding: 3px 3px 3px 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.component_upload_queue .stats_content .file_row .file_state {
+    padding: 3px 3px 3px 0;
+    display: flex;
+    flex-direction: column;
+    width: 40px;
+}
+.component_upload_queue .stats_content .file_row:hover .file_control img {
+    display: block !important;
+    cursor: pointer;
+}
+.component_upload_queue .stats_content .file_row .file_control {
+    padding: 3px 3px 3px 0;
+    display: flex;
+    flex-direction: column;
+    width: 18px;
+    height: 18px;
+}
+.component_upload_queue .stats_content .file_row .file_control img {
+    display: none;
+}

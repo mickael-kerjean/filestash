@@ -8,6 +8,7 @@ import { getState$ } from "./filespage/ctrl_filesystem_state.js";
 import componentFilesystem, { init as initFilesystem } from "./filespage/ctrl_filesystem.js";
 import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.js";
 import componentNewItem, { init as initNewItem } from "./filespage/ctrl_newitem.js";
+import componentUploadQueue, { init as initUploadQueue } from "./filespage/ctrl_upload_queue.js";
 
 import "../components/breadcrumb.js";
 
@@ -18,6 +19,7 @@ export default WithShell(function(render) {
             <div is="component_submenu"></div>
             <div is="component_newitem"></div>
             <div is="component_filesystem"></div>
+            <div is="component_uploadqueue"></div>
         </div>
     `);
     render($page);
@@ -36,11 +38,15 @@ export default WithShell(function(render) {
 
     // feature4: render the creation menu
     componentNewItem(createRender(qs($page, "[is=\"component_newitem\"]")));
+
+    // feature5: render the upload queue
+    componentUploadQueue(createRender(qs($page, "[is=\"component_uploadqueue\"]")));
 });
 
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_filespage.css"),
-        initShell(), initFilesystem(), initSubmenu(), initNewItem(),
+        initShell(), initFilesystem(),
+        initSubmenu(), initNewItem(), initUploadQueue(),
     ]);
 }
