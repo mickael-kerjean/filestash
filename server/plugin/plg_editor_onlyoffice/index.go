@@ -46,7 +46,7 @@ func init() {
 			f.Name = "enable"
 			f.Type = "enable"
 			f.Target = []string{"onlyoffice_server", "onlyoffice_can_download"}
-			f.Description = "Enable/Disable the office suite to manage word, excel and powerpoint documents. This setting requires a restart to comes into effect"
+			f.Description = "Enable/Disable the office suite to manage word, excel and powerpoint documents."
 			f.Default = false
 			if u := os.Getenv("ONLYOFFICE_URL"); u != "" {
 				f.Default = true
@@ -87,37 +87,41 @@ func init() {
 	}
 
 	Hooks.Register.Onload(func() {
-		if plugin_enable() == false {
-			return
-		}
-		Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
-			oods := r.PathPrefix("/onlyoffice").Subrouter()
-			oods.PathPrefix("/static/").HandlerFunc(StaticHandler).Methods("GET", "POST")
-			oods.HandleFunc("/event", OnlyOfficeEventHandler).Methods("POST")
-			oods.HandleFunc("/content", FetchContentHandler).Methods("GET")
+		plugin_enable()
+		server_url()
+		can_download()
+	})
 
-			r.HandleFunc(
-				COOKIE_PATH+"onlyoffice/iframe",
-				NewMiddlewareChain(
-					IframeContentHandler,
-					[]Middleware{SessionStart, LoggedInOnly},
-					*app,
-				),
-			).Methods("GET")
-			return nil
-		})
-		Hooks.Register.XDGOpen(`
+	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+		oods := r.PathPrefix("/onlyoffice").Subrouter()
+		oods.PathPrefix("/static/").HandlerFunc(StaticHandler).Methods("GET", "POST")
+		oods.HandleFunc("/event", OnlyOfficeEventHandler).Methods("POST")
+		oods.HandleFunc("/content", FetchContentHandler).Methods("GET")
+
+		r.HandleFunc(
+			COOKIE_PATH+"onlyoffice/iframe",
+			NewMiddlewareChain(
+				IframeContentHandler,
+				[]Middleware{SessionStart, LoggedInOnly},
+				*app,
+			),
+		).Methods("GET")
+		return nil
+	})
+	Hooks.Register.XDGOpen(`
         if(mime === "application/word" || mime === "application/msword" ||
            mime === "application/vnd.oasis.opendocument.text" || mime === "application/vnd.oasis.opendocument.spreadsheet" ||
            mime === "application/excel" || mime === "application/vnd.ms-excel" || mime === "application/powerpoint" ||
            mime === "application/vnd.ms-powerpoint" || mime === "application/vnd.oasis.opendocument.presentation" ) {
               return ["appframe", {"endpoint": "/api/onlyoffice/iframe"}];
            }
-        `)
-	})
+   `)
 }
 
 func StaticHandler(res http.ResponseWriter, req *http.Request) {
+	if plugin_enable() == false {
+		return
+	}
 	req.URL.Path = strings.TrimPrefix(req.URL.Path, "/onlyoffice/static")
 	u, err := url.Parse(server_url())
 	if err != nil {
@@ -166,6 +170,9 @@ func StaticHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if plugin_enable() == false {
+		return
+	}
 	if model.CanRead(ctx) == false {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
@@ -386,6 +393,9 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 }
 
 func FetchContentHandler(res http.ResponseWriter, req *http.Request) {
+	if plugin_enable() == false {
+		return
+	}
 	var key string
 	if key = req.URL.Query().Get("key"); key == "" {
 		SendErrorResult(res, NewError("unspecified key", http.StatusBadRequest))
@@ -439,6 +449,9 @@ type onlyOfficeEventObject struct {
 }
 
 func OnlyOfficeEventHandler(res http.ResponseWriter, req *http.Request) {
+	if plugin_enable() == false {
+		return
+	}
 	event := onlyOfficeEventObject{}
 	if err := json.NewDecoder(req.Body).Decode(&event); err != nil {
 		SendErrorResult(res, err)

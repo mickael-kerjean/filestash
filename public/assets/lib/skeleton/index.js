@@ -76,7 +76,9 @@ export function createRender($parent) {
     if (!($parent instanceof window.HTMLElement)) throw new Error(`assert failed: createRender on non HTMLElement`);
     return ($view) => {
         if ($view instanceof window.HTMLElement) $parent.replaceChildren($view);
+        else if ($view instanceof window.DocumentFragment) $parent.replaceChildren($view);
         else throw new Error(`Unknown view type: ${typeof $view}`);
+        return $parent;
     };
 }
 
