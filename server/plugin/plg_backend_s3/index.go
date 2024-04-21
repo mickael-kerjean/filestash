@@ -222,6 +222,7 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 				files = append(files, &File{
 					FName: filepath.Base(*object.Prefix),
 					FType: "directory",
+					FTime: 0,
 				})
 			}
 			return aws.BoolValue(objs.IsTruncated)

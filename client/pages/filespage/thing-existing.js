@@ -323,7 +323,7 @@ class ExistingThingComponent extends React.Component {
                             is_renaming={this.state.is_renaming}
                             onRenameCancel={this.onRenameRequest.bind(this, false)} />
                         <DateTime
-                            show={this.state.icon !== "loading"}
+                            show={this.state.icon !== "loading" || this.props.file.time !== 0}
                             timestamp={this.props.file.time} />
                         <ActionButton
                             onClickRename={this.onRenameRequest.bind(this)}

@@ -91,7 +91,8 @@ func (f File) Mode() os.FileMode {
 }
 func (f File) ModTime() time.Time {
 	if f.FTime == 0 {
-		return time.Now()
+		t := new(time.Time)
+		return *t
 	}
 	return time.Unix(f.FTime, 0)
 }

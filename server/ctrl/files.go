@@ -125,16 +125,20 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 	etagger.Write([]byte(path + strconv.Itoa(len(entries))))
 	for i := 0; i < len(entries); i++ {
 		name := entries[i].Name()
-		modTime := entries[i].ModTime().UnixNano() / int64(time.Millisecond)
-
-		if i < 200 { // etag is generated from a few values to avoid large memory usage
-			etagger.Write([]byte(name + strconv.Itoa(int(modTime))))
-		}
-
 		files[i] = FileInfo{
 			Name: name,
 			Size: entries[i].Size(),
-			Time: modTime,
+			Time: func(mt time.Time) (modTime int64) {
+				if mt.IsZero() == false {
+					modTime = mt.UnixNano() / int64(time.Millisecond)
+
+				}
+				if i < 200 { // etag is generated from a few values to avoid large memory usage
+					etagger.Write([]byte(name + strconv.Itoa(int(modTime))))
+				}
+
+				return modTime
+			}(entries[i].ModTime()),
 			Type: func(mode os.FileMode) string {
 				if mode.IsRegular() {
 					return "file"
