@@ -4,18 +4,8 @@
     <a href="https://github.com/mickael-kerjean/contributors" alt="Contributors">
         <img src="https://img.shields.io/github/contributors/mickael-kerjean/filestash" style="max-width:100%;">
     </a>
-    <a href="https://opencollective.com/filestash" alt="Backers on Open Collective">
-        <img src="https://img.shields.io/opencollective/backers/filestash" style="max-width:100%;">
-    </a>
-    <a href="https://opencollective.com/filestash" alt="Sponsors on Open Collective">
-        <img src="https://img.shields.io/opencollective/sponsors/filestash" style="max-width:100%;">
-    </a>
     <a href="https://hub.docker.com/r/machines/filestash" alt="Docker Hub">
         <img src="https://img.shields.io/docker/pulls/machines/filestash" style="max-width:100%;">
-    </a>
-    <br>
-    <a href="#" alt="Build">
-        <img src="https://github.com/mickael-kerjean/filestash/actions/workflows/ci.yml/badge.svg" style="max-width:100%;">
     </a>
     <a href="https://kiwiirc.com/nextclient/#irc://irc.libera.chat/#filestash?nick=guest??" alt="Chat on IRC">
         <img src="https://img.shields.io/badge/IRC-%23filestash-brightgreen.svg" style="max-width:100%;">
