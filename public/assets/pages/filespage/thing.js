@@ -7,7 +7,7 @@ const IMAGE = {
 };
 
 const $tmpl = createElement(`
-    <div class="component_thing view-grid not-selected" draggable="true">
+    <div class="component_thing not-selected view-grid" draggable="true">
         <a href="__TEMPLATE__" data-link>
             <div class="box">
                 <div class="component_checkbox"><input type="checkbox"><span class="indicator"></span></div>
@@ -35,6 +35,7 @@ const $tmpl = createElement(`
 export function createThing({
     name = null,
     type = "N/A",
+    path = null,
     // size = 0,
     // time = null,
     link = "",
@@ -48,12 +49,42 @@ export function createThing({
     $label.textContent = name;
     $thing.querySelector("a").setAttribute("href", link);
     $thing.querySelector("img").setAttribute("src", (type === "file" ? IMAGE.FILE : IMAGE.FOLDER));
+    $thing.setAttribute("data-droptarget", type === "directory");
     if (type === "hidden") $thing.classList.add("hidden");
 
     $thing.querySelector(".component_checkbox").onclick = function(e) {
         e.preventDefault();
         e.stopPropagation();
         addSelection(name, type);
+    };
+    $thing.ondragstart = (e) => {
+        e.dataTransfer.setData("path", path);
+        $thing.classList.add("hover");
+
+        const crt = $thing.cloneNode(true);
+        $thing.style.opacity = "0.7";
+        const $box = crt.querySelector(".box");
+        crt.style.opacity = "0.2 "
+        crt.style.backgroundColor = "var(--border)";
+        $box.style.backgroundColor = "inherit";
+        $box.style.border = "none";
+        $box.style.borderRadius = "0";
+
+        $thing.closest("[data-target=\"list\"]").appendChild(crt);
+        e.dataTransfer.setDragImage(crt, 0, 0);
+    };
+    $thing.ondragover = (e) => {
+        if ($thing.getAttribute("data-droptarget") !== "true") return;
+
+        e.preventDefault();
+        $thing.classList.add("hover");
+    };
+    $thing.ondragleave = () => {
+        $thing.classList.remove("hover");
+    };
+    $thing.ondrop = (e) => {
+        $thing.classList.remove("hover");
+        console.log("DROPPED!", e.dataTransfer.getData("path"));
     };
     return $thing;
 }

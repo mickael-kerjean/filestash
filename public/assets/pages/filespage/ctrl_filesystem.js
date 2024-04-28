@@ -8,14 +8,14 @@ import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
 import { createThing } from "./thing.js";
-// import { handleError, getFiles } from "./ctrl_filesystem_state.js";
+import { getState$ } from "./ctrl_filesystem_state.js";
 import { ls } from "./model_files.js";
 
 export default async function(render) {
     const $page = createElement(`
         <div class="component_filesystem container">
             <div class="ifscroll-before"></div>
-            <div class="list"></div>
+            <div data-target="list" class="list"></div>
             <div class="ifscroll-after"></div>
             <br>
         </div>
@@ -28,7 +28,19 @@ export default async function(render) {
     effect(rxjs.of(path).pipe(
         ls(),
         removeLoader,
-        rxjs.mergeMap(({ files, path }) => { // STEP1: setup the list of files
+        rxjs.mergeMap(({ files, ...rest }) => getState$().pipe(rxjs.map((p) => {
+            // files = files.sort()
+            if (p.show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
+            return { ...rest, files, ...p };
+        }))),
+        rxjs.mergeMap(({ files, ...rest }) => {
+            if (files.length === 0) {
+                renderEmpty(render);
+                return rxjs.EMPTY;
+            }
+            return rxjs.of({...rest, files });
+        }),
+        rxjs.mergeMap(({ files, path, view }) => { // STEP1: setup the list of files
             const FILE_HEIGHT = 160;
             const BLOCK_SIZE = Math.ceil(document.body.clientHeight / FILE_HEIGHT) + 1;
             // const BLOCK_SIZE = 6;
@@ -38,26 +50,28 @@ export default async function(render) {
             if (size > VIRTUAL_SCROLL_MINIMUM_TRIGGER) {
                 size = Math.min(files.length, BLOCK_SIZE * COLUMN_PER_ROW);
             }
-            const $list = qs($page, ".list");
+            const $list = qs($page, `[data-target="list"]`);
+            $list.closest(".scroll-y").scrollTop = 0;
             const $fs = document.createDocumentFragment();
             for (let i = 0; i < size; i++) {
                 const file = files[i];
                 $fs.appendChild(createThing({
                     name: file.name,
                     type: file.type,
-                    link: createLink(file, path),
+                    ...createLink(file, path),
+                    view,
                 }));
             }
             animate($list, { time: 200, keyframes: slideYIn(5) });
-            $list.appendChild($fs);
+            $list.replaceChildren($fs);
 
-            /// //////////////////////////////////////
+            //////////////////////////////////////
             // CASE 1: virtual scroll isn't enabled
             if (files.length <= VIRTUAL_SCROLL_MINIMUM_TRIGGER) {
                 return rxjs.EMPTY;
             }
 
-            /// //////////////////////////////////////
+            //////////////////////////////////////
             // CASE 2: with virtual scroll
             const $listBefore = qs($page, ".ifscroll-before");
             const $listAfter = qs($page, ".ifscroll-after");
@@ -148,9 +162,8 @@ export default async function(render) {
                     }));
                     else $fs.appendChild(createThing({
                         name: file.name,
-                        // name: `file ${i}`,
                         type: file.type,
-                        link: createLink(file, path),
+                        ...createLink(file, path),
                     }));
                     n += 1;
                 }
@@ -171,6 +184,17 @@ export default async function(render) {
     ));
 }
 
+function renderEmpty(render) {
+    render(createElement(`
+        <div class="error">
+            <p class="empty_image no-select">
+                <img class="component_icon" draggable="false" src="/assets/icons/empty_folder.svg" alt="empty_folder">
+            </p>
+            <p class="label">There is nothing here</p>
+        </div>
+    `));
+}
+
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_filesystem.css"),
@@ -178,9 +202,10 @@ export function init() {
     ]);
 }
 
-function createLink(file, path) {
-    if (file.type === "file") {
-        return "/view" + path + file.name;
-    }
-    return "/files" + path + file.name + "/";
+function createLink(file, filepath) {
+    let path = filepath + file.name;
+    let link = "";
+    if (file.type === "directory") path += "/";
+    link = file.type === "directory" ? "/files" + path : "/view" + path;
+    return { path, link };
 }

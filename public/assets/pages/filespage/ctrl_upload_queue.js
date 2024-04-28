@@ -5,7 +5,7 @@ import { qs } from "../../lib/dom.js";
 
 export default function(render) {
     const $page = createElement(`
-<div class="component_upload_queue">
+<div class="component_upload_queue hidden">
   <h2>CURRENT UPLOAD <div class="count_block">
       <span class="completed">24</span>
       <span class="grandTotal">24</span>

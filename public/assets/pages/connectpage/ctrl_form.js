@@ -189,7 +189,6 @@ export default async function(render) {
                 rxjs.mergeMap((url) => ajax({ url, responseType: "json" })),
                 rxjs.tap(({ responseJSON }) => location.href = responseJSON.result),
                 rxjs.catchError(ctrlError()),
-                rxjs.mergeMap(() => rxjs.EMPTY),
             );
         }),
         rxjs.mergeMap((formData) => { // CASE 3: regular login

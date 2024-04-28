@@ -8,12 +8,13 @@ import { AjaxError, ApplicationError } from "../lib/error.js";
 import "../components/icon.js";
 
 export default function(render = createRender(qs(document.body, "[role=\"main\"]"))) {
-    return async function(err) {
+    return function(err) {
         const [msg, trace] = processError(err);
+
         const $page = createElement(`
             <div>
                 <style>${css}</style>
-                <a href="/" class="backnav">
+                <a href="${calculateBacklink(location.pathname)}" class="backnav">
                     <component-icon name="arrow_left"></component-icon>
                     home
                 </a>
@@ -46,7 +47,7 @@ export default function(render = createRender(qs(document.body, "[role=\"main\"]
             rxjs.tap(() => location.reload())
         ));
 
-        return rxjs.of(err);
+        return rxjs.EMPTY;
     };
 }
 
@@ -122,3 +123,20 @@ const css = `
     vertical-align: middle;
 }
 `;
+
+function calculateBacklink(pathname) {
+    let url = "/";
+    const listPath = pathname.replace(new RegExp("/$"), "").split("/");
+    switch (listPath[1]) {
+    case "view": // in view mode, navigate to current folder
+        listPath[1] = "files";
+        listPath.pop();
+        url = listPath.join("/") + "/";
+        break;
+    case "files": // in file browser mode, navigate to parent folder
+        listPath.pop();
+        url = listPath.join("/") + "/";
+        break;
+    }
+    return url === "/files/" ? "/" : url;
+}

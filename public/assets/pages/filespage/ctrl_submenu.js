@@ -2,7 +2,7 @@ import { createElement, createRender, createFragment, onDestroy, nop } from "../
 import rxjs, { effect, applyMutation, onClick, preventDefault } from "../../lib/rx.js";
 import { animate } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
-import { qs } from "../../lib/dom.js";
+import { qs, qsa } from "../../lib/dom.js";
 import { getSelection$, clearSelection } from "./model_files.js";
 import { setAction } from "./model_action.js";
 
@@ -14,8 +14,10 @@ import componentDelete from "./modal_delete.js";
 
 import "../../components/dropdown.js";
 import "../../components/icon.js";
-
 import { createModal } from "../../components/modal.js";
+
+import { setState } from "./ctrl_filesystem_state.js";
+
 const modalOpt = {
     withButtonsRight: "OK",
     withButtonsLeft: "CANCEL",
@@ -121,6 +123,7 @@ function componentRight(render) {
         MAGNIFYING_GLASS: "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cGF0aCBzdHlsZT0iZmlsbDojNjI2NDY5O2ZpbGwtb3BhY2l0eToxIiBkPSJNNTA1IDQ0Mi43TDQwNS4zIDM0M2MtNC41LTQuNS0xMC42LTctMTctN0gzNzJjMjcuNi0zNS4zIDQ0LTc5LjcgNDQtMTI4QzQxNiA5My4xIDMyMi45IDAgMjA4IDBTMCA5My4xIDAgMjA4czkzLjEgMjA4IDIwOCAyMDhjNDguMyAwIDkyLjctMTYuNCAxMjgtNDR2MTYuM2MwIDYuNCAyLjUgMTIuNSA3IDE3bDk5LjcgOTkuN2M5LjQgOS40IDI0LjYgOS40IDMzLjkgMGwyOC4zLTI4LjNjOS40LTkuNCA5LjQtMjQuNi4xLTM0ek0yMDggMzM2Yy03MC43IDAtMTI4LTU3LjItMTI4LTEyOCAwLTcwLjcgNTcuMi0xMjggMTI4LTEyOCA3MC43IDAgMTI4IDU3LjIgMTI4IDEyOCAwIDcwLjctNTcuMiAxMjgtMTI4IDEyOHoiIC8+Cjwvc3ZnPgo=",
 
         SORT: "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgNTEyIj4KICA8cGF0aCBzdHlsZT0iZmlsbDojNjI2NDY5O2ZpbGwtb3BhY2l0eToxIiBkPSJNNDEgMjg4aDIzOGMyMS40IDAgMzIuMSAyNS45IDE3IDQxTDE3NyA0NDhjLTkuNCA5LjQtMjQuNiA5LjQtMzMuOSAwTDI0IDMyOWMtMTUuMS0xNS4xLTQuNC00MSAxNy00MXptMjU1LTEwNUwxNzcgNjRjLTkuNC05LjQtMjQuNi05LjQtMzMuOSAwTDI0IDE4M2MtMTUuMSAxNS4xLTQuNCA0MSAxNyA0MWgyMzhjMjEuNCAwIDMyLjEtMjUuOSAxNy00MXoiIC8+Cjwvc3ZnPgo=",
+        CHECK: "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cGF0aCBzdHlsZT0iZmlsbDojOTA5MDkwO2ZpbGwtb3BhY2l0eToxIiBkPSJNMTczLjg5OCA0MzkuNDA0bC0xNjYuNC0xNjYuNGMtOS45OTctOS45OTctOS45OTctMjYuMjA2IDAtMzYuMjA0bDM2LjIwMy0zNi4yMDRjOS45OTctOS45OTggMjYuMjA3LTkuOTk4IDM2LjIwNCAwTDE5MiAzMTIuNjkgNDMyLjA5NSA3Mi41OTZjOS45OTctOS45OTcgMjYuMjA3LTkuOTk3IDM2LjIwNCAwbDM2LjIwMyAzNi4yMDRjOS45OTcgOS45OTcgOS45OTcgMjYuMjA2IDAgMzYuMjA0bC0yOTQuNCAyOTQuNDAxYy05Ljk5OCA5Ljk5Ny0yNi4yMDcgOS45OTctMzYuMjA0LS4wMDF6IiAvPgo8L3N2Zz4K",
     };
 
     effect(getSelection$().pipe(
@@ -145,20 +148,15 @@ function componentRight(render) {
             <div class="component_dropdown view sort" data-target="sort">
               <div class="dropdown_container">
                 <ul>
-                  <li>
-                    <div>
-                     Sort By Type <span>
-                        <span style="float: right;">
-                          <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cGF0aCBzdHlsZT0iZmlsbDojOTA5MDkwO2ZpbGwtb3BhY2l0eToxIiBkPSJNMTczLjg5OCA0MzkuNDA0bC0xNjYuNC0xNjYuNGMtOS45OTctOS45OTctOS45OTctMjYuMjA2IDAtMzYuMjA0bDM2LjIwMy0zNi4yMDRjOS45OTctOS45OTggMjYuMjA3LTkuOTk4IDM2LjIwNCAwTDE5MiAzMTIuNjkgNDMyLjA5NSA3Mi41OTZjOS45OTctOS45OTcgMjYuMjA3LTkuOTk3IDM2LjIwNCAwbDM2LjIwMyAzNi4yMDRjOS45OTcgOS45OTcgOS45OTcgMjYuMjA2IDAgMzYuMjA0bC0yOTQuNCAyOTQuNDAxYy05Ljk5OCA5Ljk5Ny0yNi4yMDcgOS45OTctMzYuMjA0LS4wMDF6IiAvPgo8L3N2Zz4K" alt="check">
-                        </span>
-                      </span>
-                    </div>
+                  <li data-target="type">
+                       Sort By Type
+                       <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />
                   </li>
-                  <li>
-                    <div>Sort By Date</div>
+                  <li data-target="date">
+                      Sort By Date
                   </li>
-                  <li>
-                    <div>Sort By Name</div>
+                  <li data-target="name">
+                    Sort By Name
                   </li>
                 </ul>
               </div>
@@ -190,8 +188,32 @@ function componentRight(render) {
                     }
                 }),
             ),
-            onClick(qs($page, `[data-action="sort"]`)).pipe(rxjs.tap(() => {
+            onClick(qs($page, `[data-action="view"]`)).pipe(rxjs.tap(($button) => {
+                const $img = $button.querySelector("img");
+                if ($img.getAttribute("alt") === "list") {
+                    setState("view", "grid");
+                    $img.setAttribute("alt", "grid");
+                    $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.GRID_VIEW);
+                } else {
+                    setState("view", "list");
+                    $img.setAttribute("alt", "list");
+                    $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.LIST_VIEW);
+                }
+            })),
+            onClick(qs($page, `[data-action="sort"]`)).pipe(rxjs.mergeMap(() => {
                 qs($page, `[data-target="sort"]`).classList.toggle("active");
+                const $lis = qsa($page, `.dropdown_container li`);
+                return onClick($lis).pipe(rxjs.tap(($el) => {
+                    setState(
+                        "sort", $el.getAttribute("data-target"),
+                        "order", !!$el.querySelector("img") ? "asc" : "des",
+                    );
+                    [...$lis].map(($li) => {
+                        const $img = $li.querySelector("img");
+                        if ($img) $img.remove();
+                    });
+                    $el.appendChild(createElement(`<img class="component_icon" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />`));
+                }));
             })),
         )),
     ));

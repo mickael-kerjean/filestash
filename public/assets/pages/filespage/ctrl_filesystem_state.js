@@ -1,39 +1,24 @@
-import rxjs from "../../lib/rx.js";
+import rxjs, { effect } from "../../lib/rx.js";
 
 const state$ = new rxjs.BehaviorSubject({
-    search: null,
+    view: "grid",
     sort: null,
-    view: null,
-    acl: {},
-    path: "/",
-    mutation: {},
-    error: null
+    order: null,
+    show_hidden: false,
 });
 
 export const getState$ = () => state$.asObservable();
 
-export const onNewFile = () => {
-    console.log("CLICK NEW FILE");
-};
+export const setState = (...args) => {
+    const obj = { ...state$.value };
+    for (let i=0; i<args.length; i+=2) {
+        obj[args[i]] = args[i+1];
+    }
+    state$.next(obj);
+}
 
-export const handleError = () => {
-    return rxjs.catchError((err) => {
-        if (err) {
-            state$.next({
-                ...state$.value,
-                error: err
-            });
-        }
-        return rxjs.empty();
-    });
-};
-
-export const onNewDirectory = () => {
-    console.log("CLICK NEW DIRECTORY");
-};
-
-export const onSearch = () => {
-    console.log("SEARCH");
-};
-
-export const getFiles = (n) => {};
+effect(rxjs.fromEvent(window, "keydown").pipe(
+    rxjs.tap((e) => e.preventDefault()),
+    rxjs.filter((e) => e.ctrlKey && e.key === "h"),
+    rxjs.tap(() => setState("show_hidden", !state$.value.show_hidden)),
+));

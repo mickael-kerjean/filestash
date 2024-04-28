@@ -94,8 +94,8 @@ export default async function(render) {
             return editor;
         }),
         rxjs.tap((editor) => requestAnimationFrame(() => editor.refresh())),
-        rxjs.share(),
         rxjs.catchError(ctrlError()),
+        rxjs.share(),
     );
     effect(setup$);
 

@@ -40,10 +40,16 @@ export function preventDefault() {
 }
 
 export function onClick($node) {
-    assert.type($node, window.HTMLElement);
-    return rxjs.fromEvent($node, "click").pipe(
-        rxjs.map(() => $node)
+    const sideE = ($node) => {
+        assert.type($node, window.HTMLElement);
+        return rxjs.fromEvent($node, "click").pipe(
+            rxjs.map(() => $node)
+        );
+    };
+    if ($node instanceof window.NodeList) return rxjs.merge(
+        ...[...$node].map(($n) => sideE($n)),
     );
+    return sideE($node);
 }
 
 export function onLoad($node) {

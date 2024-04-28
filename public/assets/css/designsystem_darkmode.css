@@ -5,6 +5,7 @@ body.dark-mode {
 
 
     --border: #303438;
+    --dark: #2b2d30;
 }
 
 body.dark-mode input {
