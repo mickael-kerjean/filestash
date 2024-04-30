@@ -37,6 +37,7 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 		params["machine_name"] = "Filestash"
 	}
 	uid, gid, gids := extractUserInfo(params["uid"], params["gid"], params["gids"])
+	Log.Debug("plg_backend_nfs::userInfo user=%s uid=%d gid=%d gids=%+v", params["uid"], uid, gid, gids)
 
 	mount, err := nfs.DialMount(params["hostname"])
 	if err != nil {
