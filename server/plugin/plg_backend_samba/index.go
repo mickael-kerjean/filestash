@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -37,20 +38,31 @@ type Samba struct {
 }
 
 func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
-	c := SambaCache.Get(params)
-	if c != nil {
+	if c := SambaCache.Get(params); c != nil {
 		return c.(*Samba), nil
 	}
-	host := fmt.Sprintf(
-		"%s:%s",
-		params["host"],
-		func() string {
-			if params["port"] == "" {
-				return "445"
+	if u, err := url.Parse(params["host"]); err == nil {
+		params["host"] = u.Host
+		if params["port"] == "" {
+			params["port"] = u.Port()
+		}
+		if params["share"] == "" {
+			params["share"] = strings.ReplaceAll(u.Path, "/", "")
+		}
+		if u.User != nil {
+			if params["username"] == "" {
+				params["username"] = u.User.Username()
 			}
-			return params["port"]
-		}(),
-	)
+			if params["password"] == "" {
+				params["password"], _ = u.User.Password()
+			}
+		}
+	}
+	if params["port"] == "" {
+		params["port"] = "445"
+	}
+
+	host := fmt.Sprintf("%s:%s", params["host"], params["port"])
 	conn, err := net.DialTimeout("tcp", host, 10*time.Second)
 	if err != nil {
 		Log.Debug("plg_backend_samba::netdial host[%s] err[%s]", host, err.Error())
