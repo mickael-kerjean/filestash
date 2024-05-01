@@ -102,7 +102,15 @@ func extractFromEtcGroup(username string, primary uint32) []uint32 {
 		s := strings.Split(string(line), ":")
 		if len(s) != 4 {
 			continue
-		} else if username != s[3] {
+		}
+		userInGroup := false
+		for _, user := range strings.Split(s[3], ",") {
+			if user == username {
+				userInGroup = true
+				break
+			}
+		}
+		if userInGroup == false {
 			continue
 		}
 		if gid, err := strconv.Atoi(s[2]); err == nil {
@@ -110,6 +118,9 @@ func extractFromEtcGroup(username string, primary uint32) []uint32 {
 			if ugid != primary {
 				gids = append(gids, ugid)
 			}
+		}
+		if len(gids) > 16 { // limit of NFS in AUTH_UNIX
+			gids = gids[len(gids)-16 : len(gids)]
 		}
 		cacheForGroup.Set(map[string]string{"username": username}, gids)
 	}
