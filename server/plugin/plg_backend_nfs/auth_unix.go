@@ -20,7 +20,8 @@ type AuthUnix struct {
 	Gids        []uint32
 }
 
-func NewUnixAuth(machineName string, uid, gid uint32, gids []uint32) rpc.Auth {
+// ref: RFC5531 - page25
+func NewAuthUnix(machineName string, uid, gid uint32, gids []uint32) rpc.Auth {
 	w := new(bytes.Buffer)
 	if len(gids) > 16 { // limit of NFS in AUTH_UNIX
 		gids = gids[len(gids)-16 : len(gids)]

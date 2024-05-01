@@ -22,6 +22,7 @@ type NfsShare struct {
 	ctx   context.Context
 	uid   uint32
 	gid   uint32
+	gids  []uint32
 }
 
 func init() {
@@ -43,7 +44,7 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	if err != nil {
 		return nil, err
 	}
-	auth := NewUnixAuth(params["machine_name"], uid, gid, gids)
+	auth := NewAuthUnix(params["machine_name"], uid, gid, gids)
 	v, err := mount.Mount(
 		params["target"],
 		auth,
@@ -51,7 +52,7 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	if err != nil {
 		return nil, err
 	}
-	return NfsShare{mount, v, auth, app.Context, uid, gid}, nil
+	return NfsShare{mount, v, auth, app.Context, uid, gid, gids}, nil
 }
 
 func (this NfsShare) LoginForm() Form {
@@ -124,9 +125,11 @@ func (this NfsShare) Meta(path string) Metadata {
 		return Metadata{}
 	}
 
-	if fattr == nil { // happen on the root of the share
+	if fattr == nil { // happen at the root
 		return Metadata{}
-	} else if fattr.UID == this.uid || fattr.GID == this.gid {
+	} else if isIn(fattr.UID, []uint32{this.uid}) ||
+		isIn(fattr.GID, []uint32{this.gid}) ||
+		isIn(fattr.GID, this.gids) {
 		return Metadata{}
 	}
 	return Metadata{
@@ -139,6 +142,15 @@ func (this NfsShare) Meta(path string) Metadata {
 		CanDelete:          NewBool(false),
 		CanShare:           NewBool(false),
 	}
+}
+
+func isIn(id uint32, list []uint32) bool {
+	for i, _ := range list {
+		if list[i] == id {
+			return true
+		}
+	}
+	return false
 }
 
 func (this NfsShare) Ls(path string) ([]os.FileInfo, error) {
