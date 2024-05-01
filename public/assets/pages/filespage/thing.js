@@ -71,11 +71,10 @@ export function createThing({
         $box.style.borderRadius = "0";
 
         $thing.closest("[data-target=\"list\"]").appendChild(crt);
-        e.dataTransfer.setDragImage(crt, 0, 0);
+        e.dataTransfer.setDragImage(crt, e.offsetX, -10);
     };
     $thing.ondragover = (e) => {
         if ($thing.getAttribute("data-droptarget") !== "true") return;
-
         e.preventDefault();
         $thing.classList.add("hover");
     };

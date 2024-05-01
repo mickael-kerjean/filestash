@@ -28,10 +28,10 @@ export default async function(render) {
     effect(rxjs.of(path).pipe(
         ls(),
         removeLoader,
-        rxjs.mergeMap(({ files, ...rest }) => getState$().pipe(rxjs.map((p) => {
+        rxjs.mergeMap(({ files, ...rest }) => getState$().pipe(rxjs.map((state) => {
+            if (state.show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
             // files = files.sort()
-            if (p.show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
-            return { ...rest, files, ...p };
+            return { ...rest, files, ...state };
         }))),
         rxjs.mergeMap(({ files, ...rest }) => {
             if (files.length === 0) {
@@ -186,9 +186,9 @@ export default async function(render) {
 
 function renderEmpty(render) {
     render(createElement(`
-        <div class="error">
-            <p class="empty_image no-select">
-                <img class="component_icon" draggable="false" src="/assets/icons/empty_folder.svg" alt="empty_folder">
+        <div class="empty no-select">
+            <p class="empty_image">
+                <img class="component_icon" draggable="false" src="https://demo.filestash.app/assets/icons/empty_folder.svg" alt="empty_folder">
             </p>
             <p class="label">There is nothing here</p>
         </div>

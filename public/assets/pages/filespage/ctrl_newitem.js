@@ -4,7 +4,7 @@ import { qs } from "../../lib/dom.js";
 import { animate } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 
-import { getAction$ } from "./model_action.js";
+import { getAction$, setAction } from "./model_action.js";
 
 export default async function(render) {
     const $node = createElement(`
@@ -64,12 +64,12 @@ export default async function(render) {
 
     // feature2: remove the component
     effect(rxjs.merge(
-        onClick($remove),
-        rxjs.fromEvent(window, "keydown").pipe(
-            rxjs.filter((e) => e.keyCode === 27),
-        ),
-        rxjs.fromEvent($input, "blur").pipe(
-            rxjs.filter(() => !$input.value),
+        rxjs.merge(
+            onClick($remove),
+            rxjs.fromEvent(window, "keydown").pipe(rxjs.filter((e) => e.keyCode === 27)),
+        ).pipe(rxjs.tap(() => setAction(null))),
+        getAction$().pipe(
+            rxjs.filter((actionName) => !actionName),
         ),
     ).pipe(rxjs.tap(async () => {
         await animate($node, {

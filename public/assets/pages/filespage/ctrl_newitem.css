@@ -1,9 +1,11 @@
 .component_newitem {
     overflow: hidden;
 }
-
 .component_newitem .component_thing {
-    margin: 0 2px;
+    margin: 2px;
+}
+.component_newitem .component_thing .box {
+    margin: 0;
 }
 .component_newitem .component_thing .component_action {
     display: block;

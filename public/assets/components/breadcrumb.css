@@ -65,9 +65,9 @@
     letter-spacing: -0.5px;
 }
 .component_breadcrumb .component_path-element .component_path-element-wrapper.highlight a {
-    background: var(--emphasis-primary);
-    border: 2px solid var(--primary);
-    box-sizing: border-box;
+    color: var(--bg-color);
+    background: var(--dark);
+    border-radius: 3px;
 }
 .component_breadcrumb .component_separator img {
     vertical-align: middle;

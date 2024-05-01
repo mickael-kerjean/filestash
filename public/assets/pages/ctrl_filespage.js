@@ -4,7 +4,6 @@ import { qs } from "../lib/dom.js";
 import { loadCSS } from "../helpers/loader.js";
 import WithShell, { init as initShell } from "../components/decorator_shell_filemanager.js";
 
-import { getState$ } from "./filespage/ctrl_filesystem_state.js";
 import componentFilesystem, { init as initFilesystem } from "./filespage/ctrl_filesystem.js";
 import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.js";
 import componentNewItem, { init as initNewItem } from "./filespage/ctrl_newitem.js";
@@ -24,22 +23,16 @@ export default WithShell(function(render) {
     `);
     render($page);
 
-    // feature1: errors
-    effect(getState$().pipe(
-        rxjs.map(({ error }) => error),
-        rxjs.filter((error) => !!error),
-    ));
-
-    // feature2: render the filesystem
+    // feature1: render the filesystem
     componentFilesystem(createRender(qs($page, "[is=\"component_filesystem\"]")));
 
-    // feature3: render the menubar
+    // feature2: render the menubar
     componentSubmenu(createRender(qs($page, "[is=\"component_submenu\"]")));
 
-    // feature4: render the creation menu
+    // feature3: render the creation menu
     componentNewItem(createRender(qs($page, "[is=\"component_newitem\"]")));
 
-    // feature5: render the upload queue
+    // feature4: render the upload queue
     componentUploadQueue(createRender(qs($page, "[is=\"component_uploadqueue\"]")));
 });
 

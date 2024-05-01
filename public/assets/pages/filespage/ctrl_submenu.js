@@ -4,7 +4,7 @@ import { animate } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { getSelection$, clearSelection } from "./model_files.js";
-import { setAction } from "./model_action.js";
+import { getAction$, setAction } from "./model_action.js";
 
 import componentShare from "./modal_share.js";
 import componentEmbed from "./modal_embed.js";
@@ -58,12 +58,16 @@ function componentLeft(render, { $scroll }) {
             onClick(qs($page, `[data-action="new-file"]`)).pipe(rxjs.mapTo("NEW_FILE")),
             onClick(qs($page, `[data-action="new-folder"]`)).pipe(rxjs.mapTo("NEW_FOLDER")),
         )),
-        rxjs.mergeMap((actionName) => {
+        rxjs.mergeMap((actionName) => getAction$().pipe(
+            rxjs.first(),
+            rxjs.map((currentAction) => actionName == currentAction ? null : actionName),
+        )),
+        rxjs.tap((actionName) => {
             $scroll.scrollTo({top: 0, behavior: "smooth"});
             setAction(actionName);
-            return rxjs.EMPTY;
         }),
     ));
+    onDestroy(() => setAction(null));
 
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 1),
@@ -126,6 +130,11 @@ function componentRight(render) {
         CHECK: "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cGF0aCBzdHlsZT0iZmlsbDojOTA5MDkwO2ZpbGwtb3BhY2l0eToxIiBkPSJNMTczLjg5OCA0MzkuNDA0bC0xNjYuNC0xNjYuNGMtOS45OTctOS45OTctOS45OTctMjYuMjA2IDAtMzYuMjA0bDM2LjIwMy0zNi4yMDRjOS45OTctOS45OTggMjYuMjA3LTkuOTk4IDM2LjIwNCAwTDE5MiAzMTIuNjkgNDMyLjA5NSA3Mi41OTZjOS45OTctOS45OTcgMjYuMjA3LTkuOTk3IDM2LjIwNCAwbDM2LjIwMyAzNi4yMDRjOS45OTcgOS45OTcgOS45OTcgMjYuMjA2IDAgMzYuMjA0bC0yOTQuNCAyOTQuNDAxYy05Ljk5OCA5Ljk5Ny0yNi4yMDcgOS45OTctMzYuMjA0LS4wMDF6IiAvPgo8L3N2Zz4K",
     };
 
+    const escape$ = rxjs.fromEvent(window, "keydown").pipe(
+        rxjs.filter(event => event.keyCode === 27),
+        rxjs.share(),
+    );
+
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 0),
         rxjs.map(() => render(createFragment(`
@@ -163,31 +172,7 @@ function componentRight(render) {
             </div>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
-            onClick(qs($page, `[data-action="search"]`)).pipe(
-                rxjs.mergeMap(async () => {
-                    const $input = qs($page, "input");
-                    const $searchImg = qs($page, `img[alt="search"]`);
-                    if ($input.classList.contains("hidden")) {
-                        $page.classList.add("hover");
-                        $input.value = "";
-                        $input.classList.remove("hidden");
-                        $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.CROSS);
-                        await animate($input, {
-                            keyframes: [{width: "0px"}, {width: "180px"}],
-                            time: 200,
-                        });
-                        $input.focus();
-                    } else {
-                        $page.classList.remove("hover");
-                        $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.MAGNIFYING_GLASS);
-                        await animate($input, {
-                            keyframes: [{width: "180px"}, {width: "0px"}],
-                            time: 100,
-                        });
-                        $input.classList.add("hidden");
-                    }
-                }),
-            ),
+            // feature: view button
             onClick(qs($page, `[data-action="view"]`)).pipe(rxjs.tap(($button) => {
                 const $img = $button.querySelector("img");
                 if ($img.getAttribute("alt") === "list") {
@@ -200,6 +185,7 @@ function componentRight(render) {
                     $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.LIST_VIEW);
                 }
             })),
+            // feature: sort button
             onClick(qs($page, `[data-action="sort"]`)).pipe(rxjs.mergeMap(() => {
                 qs($page, `[data-target="sort"]`).classList.toggle("active");
                 const $lis = qsa($page, `.dropdown_container li`);
@@ -214,6 +200,41 @@ function componentRight(render) {
                     });
                     $el.appendChild(createElement(`<img class="component_icon" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />`));
                 }));
+            })),
+            // feature: search box
+            rxjs.merge(
+                rxjs.merge(
+                    onClick(qs($page, `[data-action="search"]`)),
+                    rxjs.fromEvent(window, "keydown").pipe(
+                        rxjs.filter((e) => e.ctrlKey && e.key === "f"),
+                        // rxjs.tap((e) => e.preventDefault()),
+                    ),
+                ).pipe(rxjs.map(($el) => qs($page, "input").classList.contains("hidden"))),
+                escape$.pipe(rxjs.mapTo(false)),
+            ).pipe(rxjs.mergeMap(async (show) => {
+                const $input = qs($page, "input");
+                const $searchImg = qs($page, "img");
+                if (show) {
+                    $page.classList.add("hover");
+                    $input.value = "";
+                    $input.classList.remove("hidden");
+                    $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.CROSS);
+                    $searchImg.setAttribute("alt", "close");
+                    await animate($input, {
+                        keyframes: [{width: "0px"}, {width: "180px"}],
+                        time: 200,
+                    });
+                    $input.focus();
+                } else {
+                    $page.classList.remove("hover");
+                    $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.MAGNIFYING_GLASS);
+                    $searchImg.setAttribute("alt", "search");
+                    await animate($input, {
+                        keyframes: [{width: "180px"}, {width: "0px"}],
+                        time: 100,
+                    });
+                    $input.classList.add("hidden");
+                }
             })),
         )),
     ));

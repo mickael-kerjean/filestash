@@ -102,17 +102,16 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
             return `
                 <div class="component_path-element n${idx}">
                     <div class="li component_path-element-wrapper">
-                        <div>
-                            <a class="label" href="/files${link}" data-link>
-                                ${tmpl}
-                            </a>
-                            <div class="component_separator">
-                                <img alt="path_separator" width="16" height="16" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAA30lEQVQ4T63T7Q2CMBAG4OuVPdQNcAPdBCYwDdclCAQ3ACfRDXQDZQMHgNRcAoYApfWjv0jIPX3b3gn4wxJjI03TUAhRBkGwV0o9ffaYIEVRrJumuQHA3ReaILxzl+bCkNZ660ozi/QQIl4BoCKieAmyIlyU53lkjCld0CIyhIwxSmt9nEvkRLgoyzIuPggh4iRJqjHkhXTQAwBWUsqNUoq/38sL+TlJf7lf38ngdU5EFNme2adPFgGGrR2LiGcAqIko/LhjeXbatuVOraWUO58hnJ1iRKx8AetxXPHH/1+y62USursaSgAAAABJRU5ErkJggg==">
-                            </div>
+                        <a class="label" href="/files${link}" data-link>
+                            ${tmpl}
+                        </a>
+                        <div class="component_separator">
+                            <img alt="path_separator" width="16" height="16" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAA30lEQVQ4T63T7Q2CMBAG4OuVPdQNcAPdBCYwDdclCAQ3ACfRDXQDZQMHgNRcAoYApfWjv0jIPX3b3gn4wxJjI03TUAhRBkGwV0o9ffaYIEVRrJumuQHA3ReaILxzl+bCkNZ660ozi/QQIl4BoCKieAmyIlyU53lkjCld0CIyhIwxSmt9nEvkRLgoyzIuPggh4iRJqjHkhXTQAwBWUsqNUoq/38sL+TlJf7lf38ngdU5EFNme2adPFgGGrR2LiGcAqIko/LhjeXbatuVOraWUO58hnJ1iRKx8AetxXPHH/1+y62USursaSgAAAABJRU5ErkJggg==">
                         </div>
                     </div>
                 </div>`;
         }).join("");
+        this.setupDragDropTarget();
 
         // STEP3: entering animation for elements that got added in
         if (previous !== null && path.indexOf(previous) >= 0) {
@@ -151,6 +150,22 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
             $indicator.style.opacity = 0;
             await animate($indicator, { time: 200, keyframes: opacityOut(), fill: "none" });
         }
+    }
+
+    setupDragDropTarget() {
+        this.querySelectorAll("a.label").forEach(($folder) => {
+            $folder.ondragover = (e) => {
+                e.preventDefault();
+                $folder.parentElement.classList.add("highlight");
+            };
+            $folder.ondragleave = () => {
+                $folder.parentElement.classList.remove("highlight");
+            };
+            $folder.ondrop = (e) => {
+                $folder.parentElement.classList.remove("highlight");
+                console.log("DROP", e.dataTransfer.getData("path"));
+            };
+        });
     }
 
     __htmlLogout() {
