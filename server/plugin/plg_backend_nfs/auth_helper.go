@@ -119,9 +119,6 @@ func extractFromEtcGroup(username string, primary uint32) []uint32 {
 				gids = append(gids, ugid)
 			}
 		}
-		if len(gids) > 16 { // limit of NFS in AUTH_UNIX
-			gids = gids[len(gids)-16 : len(gids)]
-		}
 		cacheForGroup.Set(map[string]string{"username": username}, gids)
 	}
 	return gids

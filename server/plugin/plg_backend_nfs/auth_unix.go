@@ -22,11 +22,14 @@ type AuthUnix struct {
 
 func NewUnixAuth(machineName string, uid, gid uint32, gids []uint32) rpc.Auth {
 	w := new(bytes.Buffer)
+	if len(gids) > 16 { // limit of NFS in AUTH_UNIX
+		gids = gids[len(gids)-16 : len(gids)]
+	}
 	xdr.Write(w, AuthUnix{
 		Stamp:       rand.New(rand.NewSource(time.Now().UnixNano())).Uint32(),
 		Machinename: machineName,
-		Uid:         1000,
-		Gid:         1000,
+		Uid:         uid,
+		Gid:         gid,
 		Gids:        gids,
 	})
 	return rpc.Auth{
