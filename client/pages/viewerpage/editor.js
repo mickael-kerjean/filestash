@@ -211,7 +211,8 @@ export class EditorClass extends React.Component {
         else if (ext === "sparql") mode = "sparql";
         else if (ext === "properties") mode = "properties";
         else if (ext === "c" || ext === "cpp" || ext === "java" || ext === "h") mode = "clike";
-        else mode = "text";
+	else if (ext === "groovy" || ext === "gvy" || ext === "gy" || ext === "gsh") mode = "groovy";
+	else mode = "text";
 
         return import(/* webpackChunkName: "editor" */"./editor/"+mode)
             .catch(() => import("./editor/text"))
