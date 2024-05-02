@@ -48,6 +48,15 @@
     float: right;
     border-radius: 5px;
 }
+[is="component_submenu"] .component_submenu .action.right button[data-bind="clear"] {
+    display: flex;
+    font-size: 0.9rem;
+    background: var(--border);
+    font-weight: bold;
+}
+[is="component_submenu"] .component_submenu .action.right button[data-bind="clear"] img {
+    padding-left: 2px;
+}
 
 /* dark mode */
 .dark-mode [is="component_submenu"] .component_submenu .action button img {

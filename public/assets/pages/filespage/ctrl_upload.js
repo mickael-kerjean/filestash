@@ -1,11 +1,29 @@
-import { createElement } from "../../lib/skeleton/index.js";
+import { createElement, createFragment, createRender } from "../../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../../lib/rx.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 
 export default function(render) {
+    const $page = createFragment(`
+        <div is="component_filezone"></div>
+        <div is="component_upload_queue"></div>
+        <div is="component_upload_fab"></div>
+    `);
+
+    componentFilezone(createRender($page.children[0]));
+    componentUploadQueue(createRender($page.children[1]));
+    componentUploadFAB(createRender($page.children[2]));
+
+    render($page);
+}
+
+export function init() {
+    return loadCSS(import.meta.url, "./ctrl_upload.css");
+}
+
+function componentUploadQueue(render) {
     const $page = createElement(`
-<div class="component_upload_queue hidden">
+<div class="component_upload hidden">
   <h2>CURRENT UPLOAD <div class="count_block">
       <span class="completed">24</span>
       <span class="grandTotal">24</span>
@@ -192,6 +210,26 @@ export default function(render) {
     ));
 }
 
-export function init() {
-    return loadCSS(import.meta.url, "./ctrl_upload_queue.css");
+function componentFilezone(render) {
+    // document.body
+    //     .querySelector(`[data-bind="filemanager-children"]`)
+    //     .classList.add("dropzone");
+}
+
+function componentUploadFAB(render) {
+    render(createElement(`
+        <div class="component_mobilefileupload no-select">
+            <form>
+                <input type="file" name="file" id="mobilefileupload" multiple />
+                <label for="mobilefileupload">
+                    <img
+                        class="component_icon"
+                        draggable="false"
+                        alt="upload"
+                        src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMzg0IDUxMiI+CiAgPHBhdGggZmlsbD0iI2YyZjJmMiIgZD0iTSAzNjAsNDYwIEggMjQgQyAxMC43LDQ2MCAwLDQ1My4zIDAsNDQwIHYgLTEyIGMgMCwtMTMuMyAxMC43LC0yMCAyNCwtMjAgaCAzMzYgYyAxMy4zLDAgMjQsNi43IDI0LDIwIHYgMTIgYyAwLDEzLjMgLTEwLjcsMjAgLTI0LDIwIHoiIC8+CiAgPHBhdGggZmlsbD0iI2YyZjJmMiIgZD0ibSAyMjYuNTUzOSwxNDkuMDAzMDMgdiAxNjEuOTQxIGMgMCw2LjYyNyAtNS4zNzMsMTIgLTEyLDEyIGggLTQ0IGMgLTYuNjI3LDAgLTEyLC01LjM3MyAtMTIsLTEyIHYgLTE2MS45NDEgaCAtNTIuMDU5IGMgLTIxLjM4MiwwIC0zMi4wOSwtMjUuODUxIC0xNi45NzEsLTQwLjk3MSBsIDg2LjA1OSwtODYuMDU4OTk3IGMgOS4zNzMsLTkuMzczIDI0LjU2OSwtOS4zNzMgMzMuOTQxLDAgbCA4Ni4wNTksODYuMDU4OTk3IGMgMTUuMTE5LDE1LjExOSA0LjQxMSw0MC45NzEgLTE2Ljk3MSw0MC45NzEgeiIgLz4KPC9zdmc+Cg=="
+                    />
+                </label>
+            </form>
+        </div>
+    `));
 }

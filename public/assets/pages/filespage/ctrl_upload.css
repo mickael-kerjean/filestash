@@ -1,0 +1,152 @@
+/***************************/
+/* COMPONENT: UPLOAD QUEUE */
+.component_upload {
+    position: fixed;
+    bottom: 0;
+    right: 00px;
+    z-index: 999;
+    width: 100%;
+    max-width: 550px;
+    box-shadow: 1px 2px 20px rgba(0, 0, 0, 0.1);
+    background: white;
+    padding: 20px 15px 15px 20px;
+    box-sizing: border-box;
+}
+.component_upload h2 {
+    margin: 0 0 5px 0;
+    font-size: 1.2em;
+    font-weight: 100;
+}
+.component_upload h2 .percent {
+    color: var(--emphasis-primary);
+}
+.component_upload h2 .count_block {
+    display: inline;
+    margin-left: 10px;
+}
+.component_upload h2 .count_block span.grandTotal {
+    font-size: 0.8em;
+    color: var(--emphasis-secondary);
+}
+.component_upload h2 .count_block span.grandTotal:before {
+    content: "/";
+}
+.component_upload h2 .count_block span.completed {
+    color: var(--emphasis-secondary);
+}
+.component_upload h2 .component_icon {
+    cursor: pointer;
+    margin-left: 10px;
+    width: 25px;
+    float: right;
+}
+.component_upload h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.0em;
+    font-weight: 100;
+}
+.component_upload .stats_content {
+    clear: both;
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-size: 0.85em;
+}
+.component_upload .stats_content .error_color {
+    color: var(--error);
+}
+.component_upload .stats_content .todo_color {
+    color: var(--light);
+}
+.component_upload .stats_content .file_row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.component_upload .stats_content .file_row .file_path {
+    padding: 3px 3px 3px 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.component_upload .stats_content .file_row .file_state {
+    padding: 3px 3px 3px 0;
+    display: flex;
+    flex-direction: column;
+    width: 40px;
+}
+.component_upload .stats_content .file_row:hover .file_control img {
+    display: block !important;
+    cursor: pointer;
+}
+.component_upload .stats_content .file_row .file_control {
+    padding: 3px 3px 3px 0;
+    display: flex;
+    flex-direction: column;
+    width: 18px;
+    height: 18px;
+}
+.component_upload .stats_content .file_row .file_control img {
+    display: none;
+}
+
+/***********************/
+/* COMPONENT: FILEZONE */
+[data-bind="filemanager-children"].dropzone {
+    border: 2px dashed!important;
+}
+
+/**************************/
+/* COMPONENT: FILE UPLOAD */
+.component_mobilefileupload {
+    display: inline;
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+}
+.component_mobilefileupload input[type="file"] {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+.component_mobilefileupload input[type="file"]:focus + label, .component_mobilefileupload input[type="file"] + label:hover {
+    opacity: 0.95;
+}
+.component_mobilefileupload input[type="file"] + label {
+    display: inline-block;
+    cursor: pointer;
+    background: var(--color);
+    border-radius: 50%;
+    background-position: center;
+    box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+    width: 50px;
+    height: 50px;
+}
+.component_mobilefileupload input[type="file"] + label:hover {
+    transition: background 0.4s;
+    background: var(--primary) radial-gradient(circle, transparent 1%, var(--emphasis-secondary) 1%) center/15000%;
+}
+.component_mobilefileupload input[type="file"] + label:active {
+    background-color: #00000033;
+    background-size: 100%;
+    transition: background 0s;
+}
+.component_mobilefileupload input[type="file"] + label .component_icon {
+    width: 24px;
+    height: 24px;
+    padding: 13px;
+}
+
+.mobilefileupload-appear {
+    transform: translateX(75px);
+    transition: transform 0.25s ease;
+}
+.mobilefileupload-appear-active {
+    transition-delay: 0.3s;
+    transform: translateX(0px);
+}

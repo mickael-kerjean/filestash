@@ -1,0 +1,134 @@
+[is="component_frequently_access"] .component_container {
+    padding: 0;
+    min-height: 145px;
+    padding: 0 0 7px 0;
+}
+[is="component_frequently_access"] .component_icon {
+    height: 25px;
+}
+[is="component_frequently_access"] .caption {
+    margin-top: 15px;
+    letter-spacing: 0.06em;
+    display: inline-block;
+    text-transform: uppercase;
+    font-size: 12px;
+    padding-bottom: 5px;
+    color: var(--light);
+}
+[is="component_frequently_access"] .frequent_wrapper {
+    display: flex;
+}
+[is="component_frequently_access"] .frequent_wrapper a {
+    width: 33.33%;
+    background: rgba(0, 0, 0, 0.05);
+    transition: background 0.05s linear 0s;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-right: 5px;
+    padding: 5px;
+    cursor: pointer;
+    line-height: 25px;
+    display: block;
+}
+[is="component_frequently_access"] .frequent_wrapper a img {
+    float: left;
+    height: 25px;
+    margin-right: 2px;
+}
+[is="component_frequently_access"] .frequent_wrapper a div {
+    width: calc(100% - 30px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+@media (max-width: 800px) {
+    [is="component_frequently_access"] .frequent_wrapper a:nth-child(6) {
+        display: none;
+    }
+}
+@media (max-width: 750px) {
+    [is="component_frequently_access"] .frequent_wrapper a:nth-child(5) {
+        display: none;
+    }
+}
+@media (max-width: 650px) {
+    [is="component_frequently_access"] .frequent_wrapper a:nth-child(4) {
+        display: none;
+    }
+}
+@media (max-width: 450px) {
+    [is="component_frequently_access"] .frequent_wrapper a:nth-child(3) {
+        display: none;
+    }
+}
+[is="component_frequently_access"] .nothing_placeholder {
+    padding: 20px;
+    text-align: center;
+    background: var(--emphasis-primary);
+    color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    position: relative;
+    top: 25px;
+}
+[is="component_frequently_access"] .nothing_placeholder svg {
+    display: block;
+    width: 45px;
+    margin: 0 auto;
+    padding-bottom: 5px;
+}
+
+.touch-no [is="component_frequently_access"] .frequent_wrapper a:hover {
+    transition: background 0.1s linear 0s;
+    background: var(--emphasis-primary);
+}
+
+.frequent-access-appear {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+}
+.frequent-access-appear .frequent_wrapper a {
+    transition: all 0.3s ease-out;
+    opacity: 0;
+    transform: translateX(5px);
+}
+
+.frequent-access-appear.frequent-access-appear-active {
+    opacity: 1;
+}
+.frequent-access-appear.frequent-access-appear-active .frequent_wrapper a {
+    transform: translateX(0px);
+    opacity: 1;
+}
+
+.frequent-access-enter {
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+}
+.frequent-access-enter .frequent_wrapper a {
+    transition: all 0.3s ease-out;
+    transition-delay: 0.2s;
+    opacity: 0;
+    transform: translateY(-5px);
+}
+
+.frequent-access-enter.frequent-access-enter-active {
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+.frequent-access-enter.frequent-access-enter-active .frequent_wrapper a {
+    transform: translateY(0px);
+    opacity: 1;
+}
+
+.dark-mode [is="component_frequently_access"] .frequent_wrapper a {
+    color: var(--light);
+    background: var(--dark);
+}
+.dark-mode [is="component_frequently_access"] .frequent_wrapper a:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode [is="component_frequently_access"] .nothing_placeholder {
+    background: var(--dark);
+    color: rgba(255, 255, 255, 0.5);
+}

@@ -7,18 +7,19 @@ import WithShell, { init as initShell } from "../components/decorator_shell_file
 import componentFilesystem, { init as initFilesystem } from "./filespage/ctrl_filesystem.js";
 import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.js";
 import componentNewItem, { init as initNewItem } from "./filespage/ctrl_newitem.js";
-import componentUploadQueue, { init as initUploadQueue } from "./filespage/ctrl_upload_queue.js";
+import componentUpload, { init as initUpload } from "./filespage/ctrl_upload.js";
+import componentFrequentlyAccess, { init as initFrequentlyAccess } from "./filespage/ctrl_frequentlyaccess.js";
 
 import "../components/breadcrumb.js";
 
 export default WithShell(function(render) {
     const $page = createElement(`
         <div class="component_page_filespage scroll-y">
-            <div is="frequent_access" class="hidden"></div>
+            <div is="component_frequently_access"></div>
+            <div is="component_upload"></div>
             <div is="component_submenu"></div>
             <div is="component_newitem"></div>
             <div is="component_filesystem"></div>
-            <div is="component_uploadqueue"></div>
         </div>
     `);
     render($page);
@@ -32,14 +33,17 @@ export default WithShell(function(render) {
     // feature3: render the creation menu
     componentNewItem(createRender(qs($page, "[is=\"component_newitem\"]")));
 
-    // feature4: render the upload queue
-    componentUploadQueue(createRender(qs($page, "[is=\"component_uploadqueue\"]")));
+    // feature4: render the upload
+    componentUpload(createRender(qs($page, "[is=\"component_upload\"]")));
+
+    // feature5: render the frequent access bar
+    componentFrequentlyAccess(createRender(qs($page , "[is=\"component_frequently_access\"]")));
 });
 
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_filespage.css"),
         initShell(), initFilesystem(),
-        initSubmenu(), initNewItem(), initUploadQueue(),
+        initSubmenu(), initNewItem(), initUpload(), initFrequentlyAccess(),
     ]);
 }

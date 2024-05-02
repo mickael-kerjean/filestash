@@ -5,7 +5,7 @@ const state$ = new rxjs.BehaviorSubject({
     sort: null,
     order: null,
     show_hidden: false,
-    // is_searching: false,
+    search_mode: false,
 });
 
 export const getState$ = () => state$.asObservable();

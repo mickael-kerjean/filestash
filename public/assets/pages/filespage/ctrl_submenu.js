@@ -207,7 +207,7 @@ function componentRight(render) {
                     onClick(qs($page, `[data-action="search"]`)),
                     rxjs.fromEvent(window, "keydown").pipe(
                         rxjs.filter((e) => e.ctrlKey && e.key === "f"),
-                        // rxjs.tap((e) => e.preventDefault()),
+                        rxjs.tap((e) => e.preventDefault()),
                     ),
                 ).pipe(rxjs.map(($el) => qs($page, "input").classList.contains("hidden"))),
                 escape$.pipe(rxjs.mapTo(false)),
@@ -248,7 +248,7 @@ function componentRight(render) {
         `))),
         rxjs.mergeMap(($page) => onClick($page, `[data-bind="clear"]`).pipe(
             rxjs.tap(() => clearSelection()),
-            rxjs.mergeMap(() => rxjs.EMPTY),
+            rxjs.takeUntil(getSelection$().pipe(rxjs.skip(1))),
         )),
     ));
 }
