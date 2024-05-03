@@ -84,17 +84,34 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	var perms Metadata = Metadata{}
+	if obj, ok := ctx.Backend.(interface{ Meta(path string) Metadata }); ok {
+		perms = obj.Meta(path)
+	}
 	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
 		if err = auth.Ls(ctx, path); err != nil {
 			Log.Info("ls::auth '%s'", err.Error())
 			SendErrorResult(res, ErrNotAuthorized)
 			return
 		}
-	}
-
-	var perms Metadata = Metadata{}
-	if obj, ok := ctx.Backend.(interface{ Meta(path string) Metadata }); ok {
-		perms = obj.Meta(path)
+		if err = auth.Mkdir(ctx, path); err != nil {
+			perms.CanCreateDirectory = NewBool(false)
+		}
+		if err = auth.Touch(ctx, path); err != nil {
+			perms.CanCreateFile = NewBool(false)
+		}
+		if err = auth.Mv(ctx, path, path); err != nil {
+			perms.CanRename = NewBool(false)
+		}
+		if err = auth.Save(ctx, path); err != nil {
+			perms.CanUpload = NewBool(false)
+		}
+		if err = auth.Rm(ctx, path); err != nil {
+			perms.CanDelete = NewBool(false)
+		}
+		if err = auth.Cat(ctx, path); err != nil {
+			perms.CanSee = NewBool(false)
+		}
 	}
 	if model.CanEdit(ctx) == false {
 		perms.CanCreateFile = NewBool(false)
