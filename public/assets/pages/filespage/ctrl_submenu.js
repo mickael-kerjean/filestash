@@ -1,6 +1,6 @@
 import { createElement, createRender, createFragment, onDestroy, nop } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation, onClick, preventDefault } from "../../lib/rx.js";
-import { animate } from "../../lib/animate.js";
+import { animate, slideYIn } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { getSelection$, clearSelection } from "./model_files.js";
@@ -73,12 +73,13 @@ function componentLeft(render, { $scroll }) {
         rxjs.filter((selections) => selections.length === 1),
         rxjs.map(() => render(createFragment(`
             <button data-action="download">Download</button>
+            <button data-action="delete">Delete</button>
             <button data-action="share">Share</button>
             <button data-action="embed">Embed</button>
             <button data-action="tag">Tag</button>
             <button data-action="rename">Rename</button>
-            <button data-action="delete">Delete</button>
         `))),
+        rxjs.tap(($buttons) => animate($buttons, { time: 100, keyframes: slideYIn(5) })),
         rxjs.mergeMap(($page) => rxjs.merge(
             onClick(qs($page, `[data-action="download"]`)).pipe(
                 rxjs.mergeMap(() => rxjs.EMPTY),
@@ -186,56 +187,79 @@ function componentRight(render) {
                 }
             })),
             // feature: sort button
-            onClick(qs($page, `[data-action="sort"]`)).pipe(rxjs.mergeMap(() => {
-                qs($page, `[data-target="sort"]`).classList.toggle("active");
-                const $lis = qsa($page, `.dropdown_container li`);
-                return onClick($lis).pipe(rxjs.tap(($el) => {
-                    setState(
-                        "sort", $el.getAttribute("data-target"),
-                        "order", !!$el.querySelector("img") ? "asc" : "des",
+            rxjs.merge(
+                onClick(qs($page, `[data-action="sort"]`)).pipe(rxjs.map(($el) => { // toggle the dropdown
+                    return !$el.nextSibling.classList.contains("active")
+                })),
+                escape$.pipe(rxjs.mapTo(false)), // quit the dropdown on esc
+                rxjs.fromEvent(window, "click").pipe( // quit when clicking outside the dropdown
+                    rxjs.filter((e) => !e.target.closest(`[data-action="sort"]`) && !e.target.closest(".dropdown_container")),
+                    rxjs.mapTo(false),
+                ),
+            ).pipe(
+                rxjs.takeUntil(getSelection$().pipe(rxjs.skip(1))),
+                rxjs.mergeMap((targetStateIsOpen) => {
+                    const $sort = qs($page, `[data-target="sort"]`);
+                    if (targetStateIsOpen) {
+                        $sort.classList.add("active");
+                    } else {
+                        $sort.classList.remove("active");
+                    }
+                    const $lis = qsa($page, `.dropdown_container li`);
+                    return onClick($lis).pipe(
+                        rxjs.tap(($el) => {
+                            setState(
+                                "sort", $el.getAttribute("data-target"),
+                                "order", !!$el.querySelector("img") ? "asc" : "des",
+                            );
+                            [...$lis].map(($li) => {
+                                const $img = $li.querySelector("img");
+                                if ($img) $img.remove();
+                            });
+                            $el.appendChild(createElement(`<img class="component_icon" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />`));
+                        }),
+                        rxjs.tap(() => $sort.classList.remove("active")),
                     );
-                    [...$lis].map(($li) => {
-                        const $img = $li.querySelector("img");
-                        if ($img) $img.remove();
-                    });
-                    $el.appendChild(createElement(`<img class="component_icon" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />`));
-                }));
-            })),
+                }),
+            ),
             // feature: search box
             rxjs.merge(
                 rxjs.merge(
                     onClick(qs($page, `[data-action="search"]`)),
                     rxjs.fromEvent(window, "keydown").pipe(
                         rxjs.filter((e) => e.ctrlKey && e.key === "f"),
-                        rxjs.tap((e) => e.preventDefault()),
+                        preventDefault(),
                     ),
                 ).pipe(rxjs.map(($el) => qs($page, "input").classList.contains("hidden"))),
                 escape$.pipe(rxjs.mapTo(false)),
-            ).pipe(rxjs.mergeMap(async (show) => {
-                const $input = qs($page, "input");
-                const $searchImg = qs($page, "img");
-                if (show) {
-                    $page.classList.add("hover");
-                    $input.value = "";
-                    $input.classList.remove("hidden");
-                    $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.CROSS);
-                    $searchImg.setAttribute("alt", "close");
-                    await animate($input, {
-                        keyframes: [{width: "0px"}, {width: "180px"}],
-                        time: 200,
-                    });
-                    $input.focus();
-                } else {
-                    $page.classList.remove("hover");
-                    $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.MAGNIFYING_GLASS);
-                    $searchImg.setAttribute("alt", "search");
-                    await animate($input, {
-                        keyframes: [{width: "180px"}, {width: "0px"}],
-                        time: 100,
-                    });
-                    $input.classList.add("hidden");
-                }
-            })),
+            ).pipe(
+                rxjs.takeUntil(getSelection$().pipe(rxjs.skip(1))),
+                rxjs.mergeMap(async (show) => {
+                    const $input = qs($page, "input");
+                    const $searchImg = qs($page, "img");
+                    if (show) {
+                        $page.classList.add("hover");
+                        $input.value = "";
+                        $input.classList.remove("hidden");
+                        $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.CROSS);
+                        $searchImg.setAttribute("alt", "close");
+                        await animate($input, {
+                            keyframes: [{width: "0px"}, {width: "180px"}],
+                            time: 200,
+                        });
+                        $input.focus();
+                    } else {
+                        $page.classList.remove("hover");
+                        $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.MAGNIFYING_GLASS);
+                        $searchImg.setAttribute("alt", "search");
+                        await animate($input, {
+                            keyframes: [{width: "180px"}, {width: "0px"}],
+                            time: 100,
+                        });
+                        $input.classList.add("hidden");
+                    }
+                }),
+            ),
         )),
     ));
 
