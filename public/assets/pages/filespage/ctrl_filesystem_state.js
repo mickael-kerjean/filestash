@@ -1,10 +1,10 @@
-import rxjs, { effect } from "../../lib/rx.js";
+import rxjs, { effect, preventDefault } from "../../lib/rx.js";
 
 const state$ = new rxjs.BehaviorSubject({
     view: "grid",
     sort: null,
-    order: null,
     show_hidden: false,
+    order: null,
     search_mode: false,
 });
 
@@ -19,7 +19,7 @@ export const setState = (...args) => {
 }
 
 effect(rxjs.fromEvent(window, "keydown").pipe(
-    rxjs.tap((e) => e.preventDefault()),
     rxjs.filter((e) => e.ctrlKey && e.key === "h"),
+    preventDefault(),
     rxjs.tap(() => setState("show_hidden", !state$.value.show_hidden)),
 ));

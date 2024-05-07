@@ -30,13 +30,20 @@ export default async function(render) {
     // feature: virtual scrolling
     const removeLoader = createLoader($page);
     const path = location.pathname.replace(new RegExp("^/files"), "");
+    const refreshOnResize$ = rxjs.fromEvent(window, "resize").pipe(
+        rxjs.startWith(null),
+        rxjs.map(() => [gridSize(qs($page, `[data-target="list"]`).clientWidth), document.body.clientHeight]),
+        rxjs.distinctUntilChanged((prev, curr) => {
+            return prev[0] === curr[0] && prev[1] && curr[1]
+        }),
+    );
     effect(rxjs.of(path).pipe(
         ls(),
         removeLoader,
-        rxjs.mergeMap(({ files, ...rest }) => getState$().pipe(rxjs.map((state) => {
+        rxjs.mergeMap(({ files, ...rest }) => getState$().pipe(rxjs.mergeMap((state) => {
             if (state.show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
             // files = files.sort()
-            return { ...rest, files, ...state };
+            return rxjs.of({ ...rest, files, ...state });
         }))),
         rxjs.mergeMap(({ files, search_mode, ...rest }) => {
             if (files.length === 0) {
@@ -45,18 +52,32 @@ export default async function(render) {
             }
             return rxjs.of({...rest, files });
         }),
+        rxjs.mergeMap((obj) => refreshOnResize$.pipe(rxjs.mapTo(obj))),
         rxjs.mergeMap(({ files, path, view }) => { // STEP1: setup the list of files
-            const FILE_HEIGHT = 160;
-            const BLOCK_SIZE = Math.ceil(document.body.clientHeight / FILE_HEIGHT) + 1;
-            // const BLOCK_SIZE = 6;
-            const COLUMN_PER_ROW = 4;
+            const $list = qs($page, `[data-target="list"]`);
+            $list.closest(".scroll-y").scrollTop = 0;
+            let FILE_HEIGHT, COLUMN_PER_ROW;
+            switch(view) {
+            case "grid":
+                FILE_HEIGHT = 160;
+                COLUMN_PER_ROW = gridSize($list.clientWidth);
+                $list.style.gridTemplateColumns = `repeat(auto-fill, ${100 / COLUMN_PER_ROW}%)`;
+                break;
+            case "list":
+                FILE_HEIGHT = 47;
+                COLUMN_PER_ROW = 1;
+                $list.style.gridTemplateColumns = `repeat(auto-fill, 100%)`;
+                break;
+            default:
+                throw new Error("Not Implemented");
+            }
             const VIRTUAL_SCROLL_MINIMUM_TRIGGER = 50;
+            const BLOCK_SIZE = Math.ceil(document.body.clientHeight / FILE_HEIGHT) + 1;
+
             let size = files.length;
             if (size > VIRTUAL_SCROLL_MINIMUM_TRIGGER) {
                 size = Math.min(files.length, BLOCK_SIZE * COLUMN_PER_ROW);
             }
-            const $list = qs($page, `[data-target="list"]`);
-            $list.closest(".scroll-y").scrollTop = 0;
             const $fs = document.createDocumentFragment();
             for (let i = 0; i < size; i++) {
                 const file = files[i];
@@ -65,6 +86,7 @@ export default async function(render) {
                     type: file.type,
                     ...createLink(file, path),
                     view,
+                    n: i,
                 }));
             }
             animate($list, { time: 200, keyframes: slideYIn(5) });
@@ -97,6 +119,7 @@ export default async function(render) {
             return rxjs.of({
                 files,
                 path,
+                view,
                 currentState: 0,
                 $list,
                 setHeight,
@@ -107,13 +130,17 @@ export default async function(render) {
             });
         }),
         rxjs.mergeMap(({
-            files, path,
+            files, path, view,
             BLOCK_SIZE, COLUMN_PER_ROW, FILE_HEIGHT,
             MARGIN,
             currentState,
             height, setHeight,
             $list,
         }) => rxjs.fromEvent($page.closest(".scroll-y"), "scroll", { passive: true }).pipe(
+            rxjs.takeUntil(rxjs.merge(
+                refreshOnResize$.pipe(rxjs.skip(1)),
+                getState$().pipe(rxjs.skip(1)),
+            )),
             rxjs.map((e) => {
                 // 0-------------0-----------1-----------2-----------3 ....
                 //    [padding]     $block1     $block2     $block3    ....
@@ -169,6 +196,8 @@ export default async function(render) {
                         name: file.name,
                         type: file.type,
                         ...createLink(file, path),
+                        view,
+                        n: i,
                     }));
                     n += 1;
                 }
@@ -213,4 +242,13 @@ function createLink(file, filepath) {
     if (file.type === "directory") path += "/";
     link = file.type === "directory" ? "/files" + path : "/view" + path;
     return { path, link };
+}
+
+function gridSize(size) {
+    const DESIRED_FILE_WIDTH_ON_LARGE_SCREEN = 180;
+    if (size > 800) return Math.floor(size / DESIRED_FILE_WIDTH_ON_LARGE_SCREEN);
+    if (size > 700) return 4;
+    if (size > 550) return 3;
+    if (size > 300) return 2;
+    return 1;
 }

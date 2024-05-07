@@ -177,11 +177,11 @@ function componentRight(render) {
             onClick(qs($page, `[data-action="view"]`)).pipe(rxjs.tap(($button) => {
                 const $img = $button.querySelector("img");
                 if ($img.getAttribute("alt") === "list") {
-                    setState("view", "grid");
+                    setState("view", "list");
                     $img.setAttribute("alt", "grid");
                     $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.GRID_VIEW);
                 } else {
-                    setState("view", "list");
+                    setState("view", "grid");
                     $img.setAttribute("alt", "list");
                     $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.LIST_VIEW);
                 }
