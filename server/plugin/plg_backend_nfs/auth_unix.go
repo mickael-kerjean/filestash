@@ -3,6 +3,8 @@ package plg_backend_nfs
 import (
 	"bytes"
 	"math/rand"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/vmware/go-nfs-client/nfs/rpc"
@@ -21,17 +23,34 @@ type AuthUnix struct {
 }
 
 // ref: RFC5531 - page25
-func NewAuthUnix(machineName string, uid, gid uint32, gids []uint32) rpc.Auth {
+func NewAuthUnix(machineName string, uid, gid uint32, gids []groupLabel, gidsHint string) rpc.Auth {
 	w := new(bytes.Buffer)
-	if len(gids) > 16 { // limit of NFS in AUTH_UNIX
-		gids = gids[len(gids)-16 : len(gids)]
+	if len(gids) > 16 { // https://www.rfc-editor.org/rfc/rfc5531.html#page-25
+		// when the limit of AUTH_UNIX is reached, we want to filter out the
+		// groups that are of less of importance
+		for i, _ := range gids {
+			score := 0
+			for _, h := range strings.Split(gidsHint, ",") {
+				if strings.Contains(gids[i].label, strings.TrimSpace(h)) {
+					score += 1
+				}
+			}
+			gids[i].priority = score
+		}
+		sort.Slice(gids, func(i, j int) bool {
+			return gids[i].priority > gids[j].priority
+		})
+		gids = gids[0:16]
+		sort.Slice(gids, func(i, j int) bool {
+			return gids[i].id < gids[j].id
+		})
 	}
 	xdr.Write(w, AuthUnix{
 		Stamp:       rand.New(rand.NewSource(time.Now().UnixNano())).Uint32(),
 		Machinename: machineName,
 		Uid:         uid,
 		Gid:         gid,
-		Gids:        gids,
+		Gids:        toGids(gids),
 	})
 	return rpc.Auth{
 		1, // = AUTH_SYS in RFC5531

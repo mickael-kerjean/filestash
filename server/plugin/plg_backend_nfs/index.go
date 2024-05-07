@@ -44,7 +44,7 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	if err != nil {
 		return nil, err
 	}
-	auth := NewAuthUnix(params["machine_name"], uid, gid, gids)
+	auth := NewAuthUnix(params["machine_name"], uid, gid, gids, params["gids"])
 	v, err := mount.Mount(
 		params["target"],
 		auth,
@@ -52,7 +52,15 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	if err != nil {
 		return nil, err
 	}
-	return NfsShare{mount, v, auth, app.Context, uid, gid, gids}, nil
+	return NfsShare{mount, v, auth, app.Context, uid, gid, toGids(gids)}, nil
+}
+
+func toGids(gids []groupLabel) []uint32 {
+	g := make([]uint32, len(gids))
+	for _, gid := range gids {
+		g = append(g, gid.id)
+	}
+	return g
 }
 
 func (this NfsShare) LoginForm() Form {
