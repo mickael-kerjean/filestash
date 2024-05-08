@@ -14,13 +14,13 @@ import WithShell from "./decorator_sidemenu.js";
 import { cssHideMenu } from "./animate.js";
 import { formObjToJSON$ } from "./helper_form.js";
 import { getDeps } from "./model_setup.js";
-import { authenticate$ } from "./model_admin_session.js";
+import { authenticate$, isAdmin$ } from "./model_admin_session.js";
 
 import "../../components/icon.js";
 
 const stepper$ = new rxjs.BehaviorSubject(1);
 
-export default async function(render) {
+export default setupHOC(async function(render) {
     const $page = createElement(`
         <div class="component_setup">
            <div data-bind="multistep-form"></div>
@@ -38,7 +38,18 @@ export default async function(render) {
         rxjs.tap((ctrl) => ctrl(createRender(qs($page, "[data-bind=\"multistep-form\"]")))),
         rxjs.catchError(ctrlError(render)),
     ));
-};
+});
+
+function setupHOC(ctrlWrapped) {
+    const ctrlGoAdmin = () => location.href = "/admin/";
+    return (render) => {
+        effect(isAdmin$().pipe(
+            rxjs.map((isAdmin) => isAdmin ? ctrlWrapped : ctrlGoAdmin),
+            rxjs.tap((ctrl) => ctrl(render)),
+            rxjs.catchError(ctrlError(render)),
+        ));
+    };
+}
 
 function componentStep1(render) {
     const $page = createElement(`
