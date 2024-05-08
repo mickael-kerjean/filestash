@@ -3,8 +3,10 @@ import rxjs, { effect, applyMutation, onClick, preventDefault } from "../../lib/
 import { animate, slideYIn } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs, qsa } from "../../lib/dom.js";
-import { getSelection$, clearSelection } from "./model_files.js";
-import { getAction$, setAction } from "./model_action.js";
+
+import "../../components/dropdown.js";
+import "../../components/icon.js";
+import { createModal } from "../../components/modal.js";
 
 import componentShare from "./modal_share.js";
 import componentEmbed from "./modal_embed.js";
@@ -12,11 +14,9 @@ import componentTag from "./modal_tag.js";
 import componentRename from "./modal_rename.js";
 import componentDelete from "./modal_delete.js";
 
-import "../../components/dropdown.js";
-import "../../components/icon.js";
-import { createModal } from "../../components/modal.js";
-
-import { setState } from "./ctrl_filesystem_state.js";
+import { getSelection$, clearSelection } from "./state_selection.js";
+import { getAction$, setAction } from "./state_event.js";
+import { setState } from "./state_filesystem.js";
 
 const modalOpt = {
     withButtonsRight: "OK",
@@ -139,13 +139,14 @@ function componentRight(render) {
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 0),
         rxjs.map(() => render(createFragment(`
-            <input class="hidden" placeholder="search" style="
-                 background: transparent;
-                 border: none;
-                 padding-left: 5px;
-                 color: var(--color);
-                 font-size: 0.95rem;
-                ">
+            <form style="display: inline-block;" onsubmit="event.preventDefault()">
+                <input class="hidden" placeholder="search" style="
+                    background: transparent;
+                    border: none;
+                    padding-left: 5px;
+                    color: var(--color);
+                    font-size: 0.95rem;">
+            </form>
             <button data-action="search">
                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.MAGNIFYING_GLASS}" alt="search" />
             </button>
@@ -257,8 +258,15 @@ function componentRight(render) {
                             time: 100,
                         });
                         $input.classList.add("hidden");
+                        // setState("search", ""); TODO
                     }
+                    return $input;
                 }),
+                rxjs.mergeMap(($input) => rxjs.merge(
+                    rxjs.fromEvent($input, "input").pipe(rxjs.debounceTime(500)),
+                    rxjs.fromEvent($input, "change"),
+                ).pipe(rxjs.map(() => $input.value), rxjs.distinctUntilChanged())),
+                rxjs.tap((val) => setState("search", val)),
             ),
         )),
     ));

@@ -2,10 +2,10 @@ import rxjs, { effect, preventDefault } from "../../lib/rx.js";
 
 const state$ = new rxjs.BehaviorSubject({
     view: "grid",
-    sort: null,
+    sort: "type",
     show_hidden: false,
     order: null,
-    search_mode: false,
+    search: "",
 });
 
 export const getState$ = () => state$.asObservable();

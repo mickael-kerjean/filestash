@@ -1,5 +1,8 @@
 import { createElement } from "../../lib/skeleton/index.js";
-import { addSelection, isSelected } from "./model_files.js";
+import { qs } from "../../lib/dom.js";
+import assert from "../../lib/assert.js";
+
+import { addSelection, isSelected } from "./state_selection.js";
 
 const IMAGE = {
     FILE: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBoZWlnaHQ9IjE2IiB3aWR0aD0iMTYiPgogIDxwYXRoIHN0eWxlPSJjb2xvcjojMDAwMDAwO3RleHQtaW5kZW50OjA7dGV4dC10cmFuc2Zvcm06bm9uZTtmaWxsOiM4YzhjOGM7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlLXdpZHRoOjAuOTg0ODEwNDEiIGQ9Im0gMiwxMy4wODI0MTIgMC4wMTk0NjIsMS40OTIzNDcgYyA1ZS02LDAuMjIyMTQ1IDAuMjA1NTkwMiwwLjQyNDI2MiAwLjQzMTE1MDIsMC40MjQyNzIgTCAxMy41ODk2MTIsMTUgQyAxMy44MTUxNzMsMTQuOTk5OTk1IDEzLjk5OTk5LDE0Ljc5Nzg3NCAxNCwxNC41NzU3MjkgdiAtMS40OTMzMTcgYyAtNC4xNzE4NjkyLDAuNjYyMDIzIC03LjY1MTY5MjgsMC4zOTg2OTYgLTEyLDAgeiIgLz4KICA8cGF0aCBzdHlsZT0iY29sb3I6IzAwMDAwMDt0ZXh0LWluZGVudDowO3RleHQtdHJhbnNmb3JtOm5vbmU7ZGlzcGxheTppbmxpbmU7ZmlsbDojYWFhYWFhO3N0cm9rZS13aWR0aDowLjk4NDA4MTI3IiBkPSJNIDIuMzUwMSwxLjAwMTMzMTIgQyAyLjE1MjU5LDEuMDM4MzI0NyAxLjk5NjU5LDEuMjI3MjcyMyAyLjAwMDA5LDEuNDI0OTM1NiBWIDE0LjEzMzQ1NyBjIDVlLTYsMC4yMjE4MTYgMC4yMDUyMywwLjQyMzYzNCAwLjQzMDc5LDAuNDIzNjQ0IGwgMTEuMTM5LC0xLjAxZS00IGMgMC4yMjU1NiwtNmUtNiAwLjQzMDExLC0wLjIwMDc1OCAwLjQzMDEyLC0wLjQyMjU3NCBsIDYuN2UtNCwtOS44MjI2NDI2IGMgLTIuNDg0MDQ2LC0xLjM1NTAwNiAtMi40MzUyMzQsLTIuMDMxMjI1NCAtMy41MDAxLC0zLjMwOTcwNyAtMC4wNDMsLTAuMDE1ODgyIDAuMDQ2LDAuMDAxNzQgMCwwIEwgMi40MzA2NywxLjAwMTEwOCBDIDIuNDAzODMsMC45OTg1OSAyLjM3Njc0LDAuOTk4NTkgMi4zNDk5LDEuMDAxMTA4IFoiIC8+CiAgPHBhdGggc3R5bGU9ImRpc3BsYXk6aW5saW5lO2ZpbGw6IzhjOGM4YztmaWxsLW9wYWNpdHk6MTtzdHJva2U6IzllNzU3NTtzdHJva2Utd2lkdGg6MDtzdHJva2UtbGluZWNhcDpidXR0O3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIiBkPSJtIDEwLjUwMDU3LDEuMDAyMDc2NCBjIDAsMy4yNzY4MDI4IC0wLjAwNTIsMy4xNzM5MTYxIDAuMzYyOTIxLDMuMjY5ODIwMiAwLjI4MDEwOSwwLjA3Mjk4NCAzLjEzNzE4LDAuMDM5ODg3IDMuMTM3MTgsMC4wMzk4ODcgLTEuMTIwMDY3LC0xLjA1NTY2OTIgLTIuMzMzNCwtMi4yMDY0NzEzIC0zLjUwMDEsLTMuMzA5NzA3NCB6IiAvPgo8L3N2Zz4K",
@@ -19,7 +22,7 @@ const $tmpl = createElement(`
                         <span>__TEMPLATE__<span class="extension"></span></span>
                     </span>
                 </span>
-                <span class="component_datetime"><span>06/06/2020</span></span>
+                <span class="component_datetime"></span>
                 <div class="component_action"></div>
                 <div class="selectionOverlay"></div>
             </div>
@@ -35,6 +38,7 @@ const $tmpl = createElement(`
 export function createThing({
     name = null,
     type = "N/A",
+    time = 0,
     path = null,
     // size = 0,
     // time = null,
@@ -44,9 +48,9 @@ export function createThing({
     n = 0,
 }) {
     const $thing = $tmpl.cloneNode(true);
-    if (!($thing instanceof window.HTMLElement)) throw new Error("assertion failed: $thing must be an HTMLELement");
-    const $label = $thing.querySelector(".component_filename .file-details > span");
-    if (!($label instanceof window.HTMLElement)) throw new Error("assertion failed: $label must be an HTMLELement");
+    assert.type($thing, window.HTMLElement);
+    const $label = qs($thing, ".component_filename .file-details > span");
+    const $time = qs($thing, ".component_datetime");
 
     $label.textContent = name;
     $thing.querySelector("a").setAttribute("href", link);
@@ -54,10 +58,7 @@ export function createThing({
     $thing.setAttribute("data-droptarget", type === "directory");
     $thing.setAttribute("data-n", n);
     $thing.classList.add("view-" + view);
-    const sideEffectSelection = ($el, checked) => {
-        $el.classList.add(checked ? "selected" : "not-selected");
-        $el.querySelector(`input[type="checkbox"]`).checked = checked;
-    };
+    $time.textContent = formatTime(new Date(time));
     sideEffectSelection($thing, isSelected(n));
     if (type === "hidden") $thing.classList.add("hidden");
 
@@ -79,7 +80,7 @@ export function createThing({
         const crt = $thing.cloneNode(true);
         $thing.style.opacity = "0.7";
         const $box = crt.querySelector(".box");
-        crt.style.opacity = "0.2 "
+        crt.style.opacity = "0.2";
         crt.style.backgroundColor = "var(--border)";
         $box.style.backgroundColor = "inherit";
         $box.style.border = "none";
@@ -101,4 +102,18 @@ export function createThing({
         console.log("DROPPED!", e.dataTransfer.getData("path"));
     };
     return $thing;
+}
+
+function sideEffectSelection($el, checked) {
+    $el.classList.add(checked ? "selected" : "not-selected");
+    $el.querySelector(`input[type="checkbox"]`).checked = checked;
+}
+
+function formatTime(date) {
+    if (!date) return "";
+    return new Intl.DateTimeFormat(navigator.language || "en-US")
+        .format(date)
+        .split("/")
+        .map((chunk) => chunk.padStart(2, "0"))
+        .join("/");
 }

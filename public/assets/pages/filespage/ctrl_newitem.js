@@ -4,7 +4,7 @@ import { qs } from "../../lib/dom.js";
 import { animate } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 
-import { getAction$, setAction } from "./model_action.js";
+import { getAction$, setAction } from "./state_event.js";
 
 export default async function(render) {
     const $node = createElement(`
