@@ -46,6 +46,7 @@ export function createThing({
     // permissions = {}
     view = "",
     n = 0,
+    read_only = false,
 }) {
     const $thing = $tmpl.cloneNode(true);
     assert.type($thing, window.HTMLElement);
@@ -60,7 +61,12 @@ export function createThing({
     $thing.classList.add("view-" + view);
     $time.textContent = formatTime(new Date(time));
     sideEffectSelection($thing, isSelected(n));
-    if (type === "hidden") $thing.classList.add("hidden");
+
+    if (read_only === true) return $thing;
+    else if (type === "hidden") {
+        $thing.classList.add("hidden");
+        return $thing;
+    }
 
     $thing.querySelector(".component_checkbox").onclick = function(e) {
         e.preventDefault();

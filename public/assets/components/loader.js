@@ -45,7 +45,7 @@ class Loader extends window.HTMLElement {
 
 customElements.define("component-loader", Loader);
 export function createLoader($parent, opts = {}) {
-    const { wait = 500 } = opts;
+    const { wait = 250 } = opts;
     const cancel = effect(new rxjs.Observable((observer) => {
         const $icon = createElement(`
             <div class="component_loader">
@@ -61,7 +61,7 @@ export function createLoader($parent, opts = {}) {
         `);
         const id = window.setTimeout(() => {
             $parent.replaceChildren($icon);
-            animate($icon, { time: 1000, keyframes: opacityIn() });
+            animate($icon, { time: 750, keyframes: opacityIn() });
         }, wait);
         return () => {
             clearTimeout(id);

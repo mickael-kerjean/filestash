@@ -49,15 +49,15 @@ export default async function(render) {
             if (!!state.search) {
                 const removeLoader = createLoader($header);
                 return search(state.search_q).pipe(rxjs.map((files) => ({
-                    ...rest, files, ...state,
+                    ...rest, files, ...state, read_only: true,
                 })), removeLoader);
             }
-            return rxjs.of({ ...rest, files, ...state });
+            return rxjs.of({ ...rest, files, ...state, read_only: false });
         }))),
         rxjs.mergeMap(({ show_hidden, files, ...rest }) => {
             if (show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
             console.log(rest);
-            files = sort(files, rest.sort);
+            files = sort(files, rest.sort, rest.order);
             return rxjs.of({ ...rest, files })
         }),
         removeLoader,
@@ -69,7 +69,7 @@ export default async function(render) {
             return rxjs.of({...rest, files });
         }),
         rxjs.mergeMap((obj) => refreshOnResize$.pipe(rxjs.mapTo(obj))),
-        rxjs.mergeMap(({ files, path, view }) => { // STEP1: setup the list of files
+        rxjs.mergeMap(({ files, path, view, read_only }) => { // STEP1: setup the list of files
             $list.closest(".scroll-y").scrollTop = 0;
             let FILE_HEIGHT, COLUMN_PER_ROW;
             switch(view) {
@@ -99,7 +99,7 @@ export default async function(render) {
                 $fs.appendChild(createThing({
                     ...file,
                     ...createLink(file, path),
-                    view,
+                    view, read_only,
                     n: i,
                 }));
             }
@@ -129,9 +129,10 @@ export default async function(render) {
                 $listAfter.style.height = `${height - size}px`;
             };
             setHeight(0);
-            // const top = ($node) => $node.getBoundingClientRect().top;
+            const top = ($node) => $node.getBoundingClientRect().top;
             return rxjs.of({
                 files,
+                read_only,
                 path,
                 view,
                 currentState: 0,
@@ -140,11 +141,11 @@ export default async function(render) {
                 FILE_HEIGHT,
                 BLOCK_SIZE,
                 COLUMN_PER_ROW,
-                MARGIN: 35, // TODO: top($list) - top($list.closest(".scroll-y"));
+                MARGIN: top($list) - top($list.closest(".scroll-y")),
             });
         }),
         rxjs.mergeMap(({
-            files, path, view,
+            files, path, view, read_only,
             BLOCK_SIZE, COLUMN_PER_ROW, FILE_HEIGHT,
             MARGIN,
             currentState,
@@ -207,7 +208,7 @@ export default async function(render) {
                         type: "hidden",
                     }));
                     else $fs.appendChild(createThing({
-                        ...file,
+                        ...file, read_only,
                         ...createLink(file, path),
                         view,
                         n: i,

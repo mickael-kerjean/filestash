@@ -16,7 +16,7 @@ import componentDelete from "./modal_delete.js";
 
 import { getSelection$, clearSelection } from "./state_selection.js";
 import { getAction$, setAction } from "./state_event.js";
-import { setState } from "./state_filesystem.js";
+import { setState, getState$ } from "./state_filesystem.js";
 
 const modalOpt = {
     withButtonsRight: "OK",
@@ -38,7 +38,7 @@ export default async function(render) {
     componentRight(createRender(qs($page, ".action.right")));
 
     effect(rxjs.fromEvent($scroll, "scroll", { passive: true }).pipe(
-        rxjs.map((e) => e.target.scrollTop > 30),
+        rxjs.map((e) => e.target.scrollTop > 12),
         rxjs.distinctUntilChanged(),
         rxjs.startWith(false),
         rxjs.tap((scrolling) => scrolling
@@ -157,20 +157,20 @@ function componentRight(render) {
                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.SORT}" alt="sort" />
             </button>
             <div class="component_dropdown view sort" data-target="sort">
-              <div class="dropdown_container">
-                <ul>
-                  <li data-target="type">
-                       Sort By Type
-                       <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />
-                  </li>
-                  <li data-target="date">
-                      Sort By Date
-                  </li>
-                  <li data-target="name">
-                    Sort By Name
-                  </li>
-                </ul>
-              </div>
+                <div class="dropdown_container">
+                    <ul>
+                        <li data-target="type">
+                            Sort By Type
+                            <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />
+                        </li>
+                        <li data-target="date">
+                            Sort By Date
+                        </li>
+                        <li data-target="name">
+                            Sort By Name
+                        </li>
+                    </ul>
+                </div>
             </div>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
@@ -208,18 +208,23 @@ function componentRight(render) {
                     }
                     const $lis = qsa($page, `.dropdown_container li`);
                     return onClick($lis).pipe(
-                        rxjs.tap(($el) => {
+                        rxjs.first(),
+                        rxjs.mergeMap(($el) => getState$().pipe(rxjs.first(), rxjs.map((state) => ({
+                            order: state.order,
+                            $el,
+                        })))),
+                        rxjs.tap(({ $el, order }) => {
                             setState(
                                 "sort", $el.getAttribute("data-target"),
-                                "order", !!$el.querySelector("img") ? "asc" : "des",
+                                "order", order === "asc" ? "des" : "asc",
                             );
                             [...$lis].map(($li) => {
                                 const $img = $li.querySelector("img");
                                 if ($img) $img.remove();
                             });
                             $el.appendChild(createElement(`<img class="component_icon" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />`));
+                            $sort.classList.remove("active");
                         }),
-                        rxjs.tap(() => $sort.classList.remove("active")),
                     );
                 }),
             ),

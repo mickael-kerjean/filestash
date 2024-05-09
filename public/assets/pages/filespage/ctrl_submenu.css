@@ -4,7 +4,7 @@
     position: sticky;
     top: 0;
     z-index: 3;
-    padding: 5px 0;
+    padding: 4px 0;
     backdrop-filter: blur(20px) saturate(2);
     transition: 0.2s ease box-shadow;
 }

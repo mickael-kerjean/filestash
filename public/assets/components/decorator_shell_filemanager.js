@@ -21,7 +21,7 @@ export default function(ctrl) {
         render($page);
 
         // feature1: setup the breadcrumb path
-        qs($page, `[is="component-breadcrumb"]`).setAttribute("path", urlToPath(location.pathname));
+        qs($page, `[is="component-breadcrumb"]`).setAttribute("path", urlToPath(location.pathname + location.hash));
 
         // feature2: setup the childrens
         const $main = qs($page, `[data-bind="filemanager-children"]`);
