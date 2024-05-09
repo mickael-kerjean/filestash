@@ -57,8 +57,8 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 
 func toGids(gids []groupLabel) []uint32 {
 	g := make([]uint32, len(gids))
-	for _, gid := range gids {
-		g = append(g, gid.id)
+	for i, _ := range gids {
+		g[i] = gids[i].id
 	}
 	return g
 }
