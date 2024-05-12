@@ -22,9 +22,10 @@ import ajax from "../../lib/ajax.js";
 // }
 
 export function search(term) {
-    return rxjs.of([]).pipe(
-        rxjs.delay(1500),
-    );
+    return ajax({
+        url: `/api/files/search?path=/&q=${term}`,
+        responseType: "json"
+    }).pipe(rxjs.mapTo([]));
 }
 
 export function ls(path) {

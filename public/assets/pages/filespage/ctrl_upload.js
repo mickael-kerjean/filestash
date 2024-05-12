@@ -1,4 +1,5 @@
 import { createElement, createFragment, createRender } from "../../lib/skeleton/index.js";
+import { animate, slideYOut } from "../../lib/animate.js";
 import rxjs, { effect, onClick } from "../../lib/rx.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
@@ -206,6 +207,7 @@ function componentUploadQueue(render) {
     render($page);
 
     effect(onClick(qs($page, "img[alt=\"close\"]")).pipe(
+        rxjs.mergeMap(() => animate($page, { time: 200, keyframes: slideYOut(50) })),
         rxjs.tap(() => $page.classList.add("hidden")),
     ));
 }

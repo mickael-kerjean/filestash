@@ -1,7 +1,8 @@
 .component_thing {
     clear: both;
 }
-.component_thing:hover .box, .component_thing .highlight.box, .component_thing.hover .box, .component_thing .highlight.box {
+.component_thing:hover .box, .component_thing .highlight.box,
+.component_thing.hover .box, .component_thing .highlight.box {
     transition: 0.1s ease-out background;
     background: var(--border);
     border-color: var(--super-light);
@@ -88,7 +89,7 @@
     top: 7px;
     left: 7px;
 }
-.component_thing:hover .component_checkbox, .component_thing.selected .component_checkbox {
+.touch-no .component_thing:hover .component_checkbox, .component_thing.selected .component_checkbox {
     transition-delay: 0.1s;
     opacity: 1;
 }

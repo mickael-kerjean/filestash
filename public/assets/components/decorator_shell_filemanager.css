@@ -5,21 +5,35 @@
 }
 .component_filemanager_shell .component_sidebar {
     width: 240px;
-    padding: 20px;
+    padding: 20px 7px 0 7px;
 }
 .component_filemanager_shell .component_sidebar > h3 {
-    padding-left: 10px;
     margin-bottom: 5px;
     color: var(--light);
-    font-size: 1rem;
+    font-size: 0.95rem;
+    opacity: 0.8;
+    padding-left: 10px;
 }
 .component_filemanager_shell .component_sidebar > div {
-    background: rgba(0,0,0,0.1);
-    padding-left: 10px;
-    width: 90%;
-    height: 50px;
-    margin: 0 auto;
+    min-height: 50px;
 }
+.component_filemanager_shell .component_sidebar > div > * {
+    display: flex;
+    padding: 5px 0px 5px 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.component_filemanager_shell .component_sidebar > div > *:hover {
+    background: var(--border);
+    border-radius: 3px;
+}
+.component_filemanager_shell .component_sidebar > div .component_icon {
+    width: 22px;
+    height: 22px;
+    padding-right: 5px;
+}
+
+
 .component_filemanager_shell [is="component-breadcrumb"]:hover ~ [data-bind="filemanager-children"],
 .component_filemanager_shell [data-bind="sidebar"]:hover ~ div > [data-bind="filemanager-children"] {
     border-color: var(--border);
@@ -64,6 +78,7 @@
 }
 
 .component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_filesystem"],
+.component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_newitem"],
 .component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_submenu"] .component_submenu{
     padding: 0 30px;
 }

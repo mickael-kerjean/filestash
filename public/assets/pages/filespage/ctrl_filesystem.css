@@ -20,6 +20,7 @@
 }
 [is="component_filesystem"] .empty .component_icon {
     height: 200px;
+    max-width: 100%;
 }
 [is="component_filesystem"] .empty .label {
     margin-top: -40px;

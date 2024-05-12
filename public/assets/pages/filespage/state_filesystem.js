@@ -12,10 +12,13 @@ export const getState$ = () => state$.asObservable();
 
 export const setState = (...args) => {
     const obj = { ...state$.value };
+    let hasChange = false;
     for (let i=0; i<args.length; i+=2) {
+        if (obj[args[i]] === args[i+1]) continue;
         obj[args[i]] = args[i+1];
+        hasChange = true;
     }
-    state$.next(obj);
+    if (hasChange) state$.next(obj);
 }
 
 effect(rxjs.fromEvent(window, "keydown").pipe(

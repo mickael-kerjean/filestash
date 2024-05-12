@@ -8,6 +8,8 @@ export function sort(files, type, order) {
     }
 }
 
+export const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
 function sortByType(files, order) {
     let tmp;
     return files.sort(function(fileA, fileB) {

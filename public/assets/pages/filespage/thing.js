@@ -10,7 +10,7 @@ const IMAGE = {
 };
 
 const $tmpl = createElement(`
-    <div class="component_thing" draggable="true">
+    <div class="component_thing no-select" draggable="true">
         <a href="__TEMPLATE__" data-link>
             <div class="box">
                 <div class="component_checkbox"><input type="checkbox"><span class="indicator"></span></div>

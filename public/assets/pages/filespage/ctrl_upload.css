@@ -11,6 +11,8 @@
     background: white;
     padding: 20px 15px 15px 20px;
     box-sizing: border-box;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
 }
 .component_upload h2 {
     margin: 0 0 5px 0;
@@ -37,7 +39,7 @@
 .component_upload h2 .component_icon {
     cursor: pointer;
     margin-left: 10px;
-    width: 25px;
+    width: 20px;
     float: right;
 }
 .component_upload h3 {

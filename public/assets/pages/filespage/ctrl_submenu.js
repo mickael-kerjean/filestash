@@ -1,6 +1,6 @@
 import { createElement, createRender, createFragment, onDestroy, nop } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation, onClick, preventDefault } from "../../lib/rx.js";
-import { animate, slideYIn } from "../../lib/animate.js";
+import { animate, slideXIn, slideYIn } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs, qsa } from "../../lib/dom.js";
 
@@ -26,8 +26,8 @@ const modalOpt = {
 export default async function(render) {
     const $page = createElement(`
         <div class="component_submenu container">
-            <div class="action left no-select" style="margin-left:2px;"></div>
-            <div class="action right no-select" style="margin-right:2px;"></div>
+            <div class="action left no-select"></div>
+            <div class="action right no-select"></div>
         </div>
     `);
     render($page);
@@ -243,12 +243,20 @@ function componentRight(render) {
                 rxjs.mergeMap(async (show) => {
                     const $input = qs($page, "input");
                     const $searchImg = qs($page, "img");
+                    const hide_left_side = document.body.clientWidth < 500;
                     if (show) {
                         $page.classList.add("hover");
                         $input.value = "";
                         $input.classList.remove("hidden");
                         $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.CROSS);
                         $searchImg.setAttribute("alt", "close");
+
+                        if (hide_left_side) {
+                            const $listOfButtons = $page.parentElement.firstElementChild.children
+                            for (let $item of $listOfButtons) {
+                                $item.classList.add("hidden");
+                            }
+                        }
                         await animate($input, {
                             keyframes: [{width: "0px"}, {width: "180px"}],
                             time: 200,
@@ -263,18 +271,29 @@ function componentRight(render) {
                             time: 100,
                         });
                         $input.classList.add("hidden");
-                        // setState("search", ""); TODO
+                        if (hide_left_side) {
+                            const $listOfButtons = $page.parentElement.firstElementChild.children
+                            for (let $item of $listOfButtons) {
+                                $item.classList.remove("hidden");
+                                animate($item, { time: 100, keyframes: slideXIn(5) })
+                            }
+                        }
+                        setState("search", "");
                     }
                     return $input;
                 }),
                 rxjs.mergeMap(($input) => rxjs.merge(
                     rxjs.fromEvent($input, "input").pipe(rxjs.debounceTime(500)),
                     rxjs.fromEvent($input, "change"),
-                ).pipe(rxjs.map(() => $input.value), rxjs.distinctUntilChanged())),
-                rxjs.tap((val) => setState("search", val)),
+                ).pipe(
+                    rxjs.map(() => $input.value),
+                    rxjs.distinctUntilChanged(),
+                    rxjs.tap((val) => setState("search", val)),
+                )),
             ),
         )),
     ));
+    onDestroy(() => setState("search", ""));
 
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length >= 1),

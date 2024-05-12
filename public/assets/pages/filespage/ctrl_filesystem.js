@@ -1,4 +1,4 @@
-import { createElement, createRender } from "../../lib/skeleton/index.js";
+import { createElement, createRender, onDestroy } from "../../lib/skeleton/index.js";
 import { animate, slideYIn } from "../../lib/animate.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { loadCSS } from "../../helpers/loader.js";
@@ -7,7 +7,7 @@ import { ApplicationError } from "../../lib/error.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
-import { sort } from "./helper.js";
+import { sort, isMobile } from "./helper.js";
 import { createThing } from "./thing.js";
 import { getState$ } from "./state_filesystem.js";
 import { ls, search } from "./model_files.js";
@@ -21,6 +21,7 @@ export default async function(render) {
     const $page = createElement(`
         <div class="component_filesystem container">
             <div data-target="header" style="text-align:center;"></div>
+
             <div class="ifscroll-before"></div>
             <div data-target="list" class="list"></div>
             <div class="ifscroll-after"></div>
@@ -30,7 +31,6 @@ export default async function(render) {
     render($page);
 
     // feature: virtual scrolling
-    const removeLoader = createLoader($page);
     const path = location.pathname.replace(new RegExp("^/files"), "");
     const refreshOnResize$ = rxjs.fromEvent(window, "resize").pipe(
         rxjs.startWith(null),
@@ -39,11 +39,12 @@ export default async function(render) {
             return prev[0] === curr[0] && prev[1] && curr[1]
         }),
     );
+    const $header = qs($page, `[data-target="header"]`);
     const $list = qs($page, `[data-target="list"]`);
+    const removeLoader = createLoader($header);
 
     effect(ls(path).pipe(
-        rxjs.mergeMap(({ files, ...rest }) => getState$().pipe(rxjs.mergeMap((state) => {
-            const $header = qs($page, `[data-target="header"]`);
+        rxjs.switchMap(({ files, ...rest }) => getState$().pipe(rxjs.switchMap((state) => {
             $header.innerHTML = "";
             $list.innerHTML = "";
             if (!!state.search) {
@@ -103,7 +104,7 @@ export default async function(render) {
                     n: i,
                 }));
             }
-            animate($list, { time: 200, keyframes: slideYIn(5) });
+            animate($list, { time: 200, keyframes: slideYIn(isMobile ? 10 : 5) });
             $list.replaceChildren($fs);
 
             //////////////////////////////////////
@@ -144,7 +145,7 @@ export default async function(render) {
                 MARGIN: top($list) - top($list.closest(".scroll-y")),
             });
         }),
-        rxjs.mergeMap(({
+        rxjs.switchMap(({
             files, path, view, read_only,
             BLOCK_SIZE, COLUMN_PER_ROW, FILE_HEIGHT,
             MARGIN,
@@ -152,10 +153,6 @@ export default async function(render) {
             height, setHeight,
             $list,
         }) => rxjs.fromEvent($page.closest(".scroll-y"), "scroll", { passive: true }).pipe(
-            rxjs.takeUntil(rxjs.merge(
-                refreshOnResize$.pipe(rxjs.skip(1)),
-                getState$().pipe(rxjs.skip(1)),
-            )),
             rxjs.map((e) => {
                 // 0-------------0-----------1-----------2-----------3 ....
                 //    [padding]     $block1     $block2     $block3    ....
@@ -230,6 +227,19 @@ export default async function(render) {
         )),
         rxjs.catchError(ctrlError()),
     ));
+
+
+
+    // feature: remove long touch popup on mobile
+    const disableLongTouch = (e) => {
+        if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) === false) {
+            return;
+        }
+        e.preventDefault();
+    }
+    document.addEventListener("contextmenu", disableLongTouch);
+    onDestroy(() => document.removeEventListener("contextmenu", disableLongTouch));
+
 }
 
 function renderEmpty(render, base64Icon) {

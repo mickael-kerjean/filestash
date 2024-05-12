@@ -17,7 +17,7 @@
 .component_breadcrumb .breadcrumb .ul > span {
     display: block;
     flex-grow: 1;
-    padding: 7px 0;
+    padding: 7px 7px 7px 0;
 }
 .component_breadcrumb .breadcrumb .ul div, .component_breadcrumb .breadcrumb .ul .li {
     display: inline-block;
@@ -37,6 +37,10 @@
 .component_breadcrumb .component_path-element .label {
     color: rgba(0, 0, 0, 0.75);
     padding: 2px 5px;
+}
+.touch-yes .component_breadcrumb .component_path-element .label {
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 .component_breadcrumb .component_path-element .label span { display: inline-block; }
 .component_breadcrumb .component_path-element a.label {

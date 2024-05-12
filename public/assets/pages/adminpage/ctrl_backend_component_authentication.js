@@ -93,6 +93,7 @@ export default async function(render) {
                 }));
                 $idp.classList.add("hidden");
                 $idp.setAttribute("id", key);
+                if (Object.keys(idpSpec).length === 0) $idp.style.display = "none";
                 idps.push($idp);
             }
             return idps;
