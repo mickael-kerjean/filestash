@@ -25,7 +25,7 @@
 }
 .component_thing .file-details {
     padding: 0 5px;
-    line-height: 22px;
+    line-height: 25px;
     white-space: nowrap;
 }
 .component_thing .file-details > span {
@@ -212,7 +212,7 @@
     background: var(--color);
     color: var(--bg-color);
     border-radius: 4px;
-    padding: 3px 10px;
+    padding: 2px 10px;
     display: inline-block;
     text-align: center;
     min-width: 20px;
@@ -220,6 +220,9 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+.list > .component_thing.view-list .info_extension {
+    display: none;
 }
 .list > .component_thing.view-grid .box .component_filename {
     letter-spacing: -0.5px;

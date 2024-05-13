@@ -1,4 +1,6 @@
+import { onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect, preventDefault } from "../../lib/rx.js";
+import { settingsGet, settingsSave } from "../../lib/store.js";
 
 const state$ = new rxjs.BehaviorSubject({
     view: "grid",
@@ -18,7 +20,9 @@ export const setState = (...args) => {
         obj[args[i]] = args[i+1];
         hasChange = true;
     }
-    if (hasChange) state$.next(obj);
+    if (!hasChange) return
+    state$.next(obj);
+    settingsSave(state$.value, "filespage");
 }
 
 effect(rxjs.fromEvent(window, "keydown").pipe(

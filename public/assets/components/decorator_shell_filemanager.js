@@ -42,7 +42,7 @@ export default function(ctrl) {
             rxjs.of(null),
         ).pipe(
             rxjs.mapTo($page.firstElementChild),
-            // rxjs.tap(($sidebar) => document.body.clientWidth > 1250 ? $sidebar.classList.remove("hidden") : $sidebar.classList.add("hidden")),
+            rxjs.tap(($sidebar) => document.body.clientWidth > 1250 ? $sidebar.classList.remove("hidden") : $sidebar.classList.add("hidden")),
         ));
     };
 }

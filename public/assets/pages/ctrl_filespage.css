@@ -7,6 +7,9 @@
     background: var(--bg-color);
     box-sizing: border-box;
 }
+body:not(.dark-mode) .component_page_filespage {
+    background: linear-gradient(177deg, rgba(250,250,250,0.3) 0%, var(--bg-color) 30%);
+}
 
 /* .component_page_filespage .error { */
 /*     cursor: pointer; */

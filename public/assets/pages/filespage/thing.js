@@ -16,6 +16,7 @@ const $tmpl = createElement(`
                 <div class="component_checkbox"><input type="checkbox"><span class="indicator"></span></div>
                 <span>
                     <img class="component_icon" draggable="false" src="__TEMPLATE__" alt="directory">
+                    <div class="info_extension"></div>
                 </span>
                 <span class="component_filename">
                     <span class="file-details">
@@ -36,7 +37,7 @@ const $tmpl = createElement(`
 // can toggle links, potentially includes a thumbnail, can be used as a source and target for
 // drag and drop on other folders and many other non obvious stuff
 export function createThing({
-    name = null,
+    name = "",
     type = "N/A",
     time = 0,
     path = null,
@@ -50,23 +51,32 @@ export function createThing({
 }) {
     const $thing = $tmpl.cloneNode(true);
     assert.type($thing, window.HTMLElement);
-    const $label = qs($thing, ".component_filename .file-details > span");
     const $time = qs($thing, ".component_datetime");
+    const $label = qs($thing, ".component_filename .file-details > span");
+    const $extension = qs($thing, ".info_extension");
 
-    $label.textContent = name;
     $thing.querySelector("a").setAttribute("href", link);
     $thing.querySelector("img").setAttribute("src", (type === "file" ? IMAGE.FILE : IMAGE.FOLDER));
     $thing.setAttribute("data-droptarget", type === "directory");
     $thing.setAttribute("data-n", n);
     $thing.classList.add("view-" + view);
     $time.textContent = formatTime(new Date(time));
-    sideEffectSelection($thing, isSelected(n));
 
-    if (read_only === true) return $thing;
-    else if (type === "hidden") {
+    const [filename, ext] = formatFile(name);
+    $label.innerHTML = type === "file" ? `${filename}<span class="extension">${formatDot(ext)}</span>` : name;
+    if (type === "file" && !!ext) $extension.innerHTML = `<span>${ext}</span>`;
+
+    if (read_only === true) {
+        qs($thing, ".component_checkbox").classList.add("hidden");
+        return $thing;
+    } else if (type === "hidden") {
         $thing.classList.add("hidden");
         return $thing;
     }
+
+    const checked = isSelected(n);
+    $thing.classList.add(checked ? "selected" : "not-selected");
+    qs($thing, `input[type="checkbox"]`).checked = checked;
 
     $thing.querySelector(".component_checkbox").onclick = function(e) {
         e.preventDefault();
@@ -74,9 +84,6 @@ export function createThing({
         addSelection({
             name, type,
             shift: e.shiftKey, n,
-        });
-        $thing.closest(".list").querySelectorAll(".component_thing").forEach(($el) => {
-            sideEffectSelection($el, isSelected(parseInt($el.getAttribute("data-n"))));
         });
     };
     $thing.ondragstart = (e) => {
@@ -110,11 +117,6 @@ export function createThing({
     return $thing;
 }
 
-function sideEffectSelection($el, checked) {
-    $el.classList.add(checked ? "selected" : "not-selected");
-    $el.querySelector(`input[type="checkbox"]`).checked = checked;
-}
-
 function formatTime(date) {
     if (!date) return "";
     return new Intl.DateTimeFormat(navigator.language || "en-US")
@@ -122,4 +124,18 @@ function formatTime(date) {
         .split("/")
         .map((chunk) => chunk.padStart(2, "0"))
         .join("/");
+}
+
+function formatFile(filename) {
+    const fname = filename.split(".");
+    if (fname.length < 2) {
+        return [filename, ""];
+    }
+    const ext = fname.pop();
+    return [fname.join("."), ext];
+}
+
+function formatDot(ext) {
+    if (!ext) return "";
+    return "." + ext;
 }

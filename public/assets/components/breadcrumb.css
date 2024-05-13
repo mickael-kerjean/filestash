@@ -24,6 +24,7 @@
 }
 .component_breadcrumb .component_logout {
     align-self: center;
+    padding-right: 10px;
 }
 .component_breadcrumb .component_logout .component_icon {
     height: 20px;

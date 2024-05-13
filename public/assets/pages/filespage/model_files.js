@@ -22,10 +22,13 @@ import ajax from "../../lib/ajax.js";
 // }
 
 export function search(term) {
+    const path = location.pathname.replace(new RegExp("^/files/"), "/");
     return ajax({
-        url: `/api/files/search?path=/&q=${term}`,
+        url: `/api/files/search?path=${path}&q=${term}`,
         responseType: "json"
-    }).pipe(rxjs.mapTo([]));
+    }).pipe(
+        rxjs.map(({ responseJSON }) => ({files: responseJSON.results })),
+    );
 }
 
 export function ls(path) {

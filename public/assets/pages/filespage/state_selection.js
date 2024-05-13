@@ -1,15 +1,28 @@
 import rxjs from "../../lib/rx.js";
-import ajax from "../../lib/ajax.js";
 import { onDestroy } from "../../lib/skeleton/index.js";
 
 const selection$ = new rxjs.BehaviorSubject([]);
 
 onDestroy(() => selection$.next([]));
 
-export function addSelection({ name, type, shift, n }) {
-    selection$.next(
+export function addSelection({ shift = false, n = 0 }) {
+    const newSelection = selection$.value;
+    let alreadyKnown = false;
+    for (let i=0; i<newSelection.length; i++) {
+        if (newSelection[i].n !== n) {
+            continue;
+        }
+        alreadyKnown = true;
+        if (newSelection[i].shift === shift) {
+            continue;
+        }
+        newSelection[i].shift = shift;
+        selection$.next(newSelection);
+    }
+
+    if (alreadyKnown === false) selection$.next(
         selection$.value
-            .concat({ name, type, shift, n })
+            .concat({ shift, n })
             .sort((prev, curr) => prev.n - curr.n)
     );
 }
@@ -33,6 +46,18 @@ export function isSelected(n) {
     return isChecked;
 }
 
+export function lengthSelection() {
+    const selections = selection$.value;
+    let l = 0;
+    for (let i=0; i<selections.length; i++) {
+        l += selections[i].shift && selections[i-1] ?
+            selections[i]["n"] - selections[i-1]["n"] :
+            1;
+    }
+    return l;
+}
+
+
 function isBetween(n, lowerBound, higherBound) {
-    return n <= higherBound && n >= lowerBound;
+    return n < higherBound && n > lowerBound;
 }

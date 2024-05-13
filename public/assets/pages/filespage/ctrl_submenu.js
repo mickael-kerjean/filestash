@@ -14,7 +14,7 @@ import componentTag from "./modal_tag.js";
 import componentRename from "./modal_rename.js";
 import componentDelete from "./modal_delete.js";
 
-import { getSelection$, clearSelection } from "./state_selection.js";
+import { getSelection$, clearSelection, lengthSelection } from "./state_selection.js";
 import { getAction$, setAction } from "./state_event.js";
 import { setState, getState$ } from "./state_filesystem.js";
 
@@ -72,7 +72,7 @@ function componentLeft(render, { $scroll }) {
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 1),
         rxjs.map(() => render(createFragment(`
-            <button data-action="download">Download</button>
+            <a><button data-action="download">Download</button></a>
             <button data-action="delete">Delete</button>
             <button data-action="share">Share</button>
             <button data-action="embed">Embed</button>
@@ -80,7 +80,7 @@ function componentLeft(render, { $scroll }) {
             <button data-action="rename">Rename</button>
         `))),
         rxjs.tap(($buttons) => animate($buttons, { time: 100, keyframes: slideYIn(5) })),
-        rxjs.mergeMap(($page) => rxjs.merge(
+        rxjs.switchMap(($page) => rxjs.merge(
             onClick(qs($page, `[data-action="download"]`)).pipe(
                 rxjs.mergeMap(() => rxjs.EMPTY),
             ),
@@ -99,6 +99,9 @@ function componentLeft(render, { $scroll }) {
             onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.tap(() => {
                 componentDelete(createModal(modalOpt));
             })),
+            // getSelection$().pipe(rxjs.tap((a) => {
+            //     console.log("HH", a);
+            // })),
         )),
     ));
 
@@ -201,12 +204,11 @@ function componentRight(render) {
                 rxjs.takeUntil(getSelection$().pipe(rxjs.skip(1))),
                 rxjs.mergeMap((targetStateIsOpen) => {
                     const $sort = qs($page, `[data-target="sort"]`);
-                    if (targetStateIsOpen) {
-                        $sort.classList.add("active");
-                    } else {
-                        $sort.classList.remove("active");
-                    }
                     const $lis = qsa($page, `.dropdown_container li`);
+                    targetStateIsOpen ?
+                        $sort.classList.add("active") :
+                        $sort.classList.remove("active");
+
                     return onClick($lis).pipe(
                         rxjs.first(),
                         rxjs.mergeMap(($el) => getState$().pipe(rxjs.first(), rxjs.map((state) => ({
@@ -257,6 +259,7 @@ function componentRight(render) {
                                 $item.classList.add("hidden");
                             }
                         }
+                        setAction(null); // reset new file, new folder
                         await animate($input, {
                             keyframes: [{width: "0px"}, {width: "180px"}],
                             time: 200,
@@ -283,7 +286,9 @@ function componentRight(render) {
                     return $input;
                 }),
                 rxjs.mergeMap(($input) => rxjs.merge(
-                    rxjs.fromEvent($input, "input").pipe(rxjs.debounceTime(500)),
+                    rxjs.fromEvent($input, "input").pipe(
+                        rxjs.debounce(() => $input.value ? rxjs.timer(500) : rxjs.of(null)),
+                    ),
                     rxjs.fromEvent($input, "change"),
                 ).pipe(
                     rxjs.map(() => $input.value),
@@ -299,7 +304,7 @@ function componentRight(render) {
         rxjs.filter((selections) => selections.length >= 1),
         rxjs.map((selections) => render(createFragment(`
             <button data-bind="clear">
-                ${selections.length} <component-icon name="close"></component-icon>
+                ${lengthSelection()} <component-icon name="close"></component-icon>
             </button>
         `))),
         rxjs.mergeMap(($page) => onClick($page, `[data-bind="clear"]`).pipe(
@@ -308,7 +313,6 @@ function componentRight(render) {
         )),
     ));
 }
-
 
 export function init() {
     return Promise.all([

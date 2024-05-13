@@ -1,6 +1,6 @@
 import { createElement, createRender, onDestroy } from "../../lib/skeleton/index.js";
 import { animate, slideYIn } from "../../lib/animate.js";
-import rxjs, { effect } from "../../lib/rx.js";
+import rxjs, { effect, preventDefault } from "../../lib/rx.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
@@ -9,6 +9,7 @@ import ctrlError from "../ctrl_error.js";
 
 import { sort, isMobile } from "./helper.js";
 import { createThing } from "./thing.js";
+import { clearSelection, addSelection, getSelection$, isSelected } from "./state_selection.js";
 import { getState$ } from "./state_filesystem.js";
 import { ls, search } from "./model_files.js";
 
@@ -29,6 +30,7 @@ export default async function(render) {
         </div>
     `);
     render($page);
+    let _files = [];
 
     // feature: virtual scrolling
     const path = location.pathname.replace(new RegExp("^/files"), "");
@@ -42,6 +44,8 @@ export default async function(render) {
     const $header = qs($page, `[data-target="header"]`);
     const $list = qs($page, `[data-target="list"]`);
     const removeLoader = createLoader($header);
+    const $listBefore = qs($page, ".ifscroll-before");
+    const $listAfter = qs($page, ".ifscroll-after");
 
     effect(ls(path).pipe(
         rxjs.switchMap(({ files, ...rest }) => getState$().pipe(rxjs.switchMap((state) => {
@@ -49,15 +53,17 @@ export default async function(render) {
             $list.innerHTML = "";
             if (!!state.search) {
                 const removeLoader = createLoader($header);
-                return search(state.search_q).pipe(rxjs.map((files) => ({
+                $listBefore.setAttribute("style", "");
+                $listAfter.setAttribute("style", "");
+                return search(state.search).pipe(rxjs.map(({ files }) => ({
                     ...rest, files, ...state, read_only: true,
                 })), removeLoader);
             }
+            _files = files;
             return rxjs.of({ ...rest, files, ...state, read_only: false });
         }))),
         rxjs.mergeMap(({ show_hidden, files, ...rest }) => {
             if (show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
-            console.log(rest);
             files = sort(files, rest.sort, rest.order);
             return rxjs.of({ ...rest, files })
         }),
@@ -87,7 +93,7 @@ export default async function(render) {
             default:
                 throw new Error("Not Implemented");
             }
-            const VIRTUAL_SCROLL_MINIMUM_TRIGGER = 50;
+            const VIRTUAL_SCROLL_MINIMUM_TRIGGER = 100;
             const BLOCK_SIZE = Math.ceil(document.body.clientHeight / FILE_HEIGHT) + 1;
 
             let size = files.length;
@@ -115,8 +121,6 @@ export default async function(render) {
 
             //////////////////////////////////////
             // CASE 2: with virtual scroll
-            const $listBefore = qs($page, ".ifscroll-before");
-            const $listAfter = qs($page, ".ifscroll-after");
             const height = (Math.ceil(files.length / COLUMN_PER_ROW) - BLOCK_SIZE) * FILE_HEIGHT;
             if (height > 33554400) {
                 console.log(`maximum CSS height reached, requested height ${height} is too large`);
@@ -228,10 +232,31 @@ export default async function(render) {
         rxjs.catchError(ctrlError()),
     ));
 
-
+    // feature: selection
+    effect(rxjs.fromEvent(window, "keydown").pipe(
+        rxjs.filter((e) => e.keyCode === 27),
+        rxjs.tap(() => clearSelection()),
+    ));
+    effect(rxjs.fromEvent(window, "keydown").pipe(
+        rxjs.filter((e) => e.key === "a" && e.ctrlKey && _files.length > 0),
+        preventDefault(),
+        rxjs.tap(() => {
+            clearSelection();
+            addSelection({ n: 0 });
+            addSelection({ n: _files.length, shift: true });
+        }),
+    ));
+    effect(getSelection$().pipe(rxjs.tap((a) => {
+        for (let $thing of $page.querySelectorAll(".component_thing")) {
+            const checked = isSelected(parseInt($thing.getAttribute("data-n")));
+            $thing.classList.add(checked ? "selected" : "not-selected");
+            $thing.classList.remove(checked ? "not-selected" : "selected");
+            qs($thing, `input[type="checkbox"]`).checked = checked;
+        };
+    })));
 
     // feature: remove long touch popup on mobile
-    const disableLongTouch = (e) => {
+    const disableLongTouch = (e) => { // TODO: use lib for mobile detect
         if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) === false) {
             return;
         }
@@ -260,11 +285,10 @@ export function init() {
     ]);
 }
 
-function createLink(file, filepath) {
-    let path = filepath + file.name;
-    let link = "";
+function createLink(file, currentPath) {
+    let path = file.path ? file.path : currentPath + file.name;
     if (file.type === "directory") path += "/";
-    link = file.type === "directory" ? "/files" + path : "/view" + path;
+    const link = file.type === "directory" ? "/files" + path : "/view" + path;
     return { path, link };
 }
 

@@ -25,7 +25,7 @@ export function getFilename() {
 }
 
 export function getDownloadUrl() {
-    return "/api/files/cat?path=" + getCurrentPath().replace(/%23/g, "#");
+    return "/api/files/cat?path=" + getCurrentPath().replace(/%23/g, "#") + location.hash;
 }
 
 export function getCurrentPath() {

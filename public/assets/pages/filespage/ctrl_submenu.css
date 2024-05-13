@@ -53,12 +53,11 @@
     background: var(--border);
 }
 [is="component_submenu"] .component_submenu .action.right {
-    float: right;
     border-radius: 5px;
 }
 [is="component_submenu"] .component_submenu .action.right button[data-bind="clear"] {
     display: flex;
-    font-size: 0.9rem;
+    align-items: center;
     background: var(--border);
     font-weight: bold;
 }
