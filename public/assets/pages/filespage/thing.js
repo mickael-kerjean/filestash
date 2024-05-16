@@ -1,7 +1,8 @@
-import { createElement } from "../../lib/skeleton/index.js";
+import { createElement, createFragment } from "../../lib/skeleton/index.js";
 import { qs } from "../../lib/dom.js";
 import assert from "../../lib/assert.js";
 
+import { files$ } from "./ctrl_filesystem.js";
 import { addSelection, isSelected } from "./state_selection.js";
 
 const IMAGE = {
@@ -10,25 +11,18 @@ const IMAGE = {
 };
 
 const $tmpl = createElement(`
-    <div class="component_thing no-select" draggable="true">
-        <a href="__TEMPLATE__" data-link>
-            <div class="box">
-                <div class="component_checkbox"><input type="checkbox"><span class="indicator"></span></div>
-                <span>
-                    <img class="component_icon" draggable="false" src="__TEMPLATE__" alt="directory">
-                    <div class="info_extension"></div>
-                </span>
-                <span class="component_filename">
-                    <span class="file-details">
-                        <span>__TEMPLATE__<span class="extension"></span></span>
-                    </span>
-                </span>
-                <span class="component_datetime"></span>
-                <div class="component_action"></div>
-                <div class="selectionOverlay"></div>
-            </div>
-        </a>
-    </div>
+    <a href="__TEMPLATE__" class="component_thing no-select" draggable="true" data-link>
+        <div class="component_checkbox"><input type="checkbox"><span class="indicator"></span></div>
+        <img class="component_icon" draggable="false" src="__TEMPLATE__" alt="directory">
+        <div class="info_extension"><span></span></div>
+        <span class="component_filename">
+            <span class="file-details"><span>
+                <span class="component_filesize">(281B)</span>
+            </span></span>
+        </span>
+        <span class="component_datetime"></span>
+        <div class="selectionOverlay"></div>
+    </a>
 `);
 
 // a filesystem "thing" is typically either a file or folder which have a lot of behavior builtin.
@@ -41,7 +35,7 @@ export function createThing({
     type = "N/A",
     time = 0,
     path = null,
-    // size = 0,
+    size = 0,
     // time = null,
     link = "",
     // permissions = {}
@@ -51,23 +45,36 @@ export function createThing({
 }) {
     const $thing = $tmpl.cloneNode(true);
     assert.type($thing, window.HTMLElement);
-    const $time = qs($thing, ".component_datetime");
-    const $label = qs($thing, ".component_filename .file-details > span");
-    const $extension = qs($thing, ".info_extension");
 
-    $thing.querySelector("a").setAttribute("href", link);
-    $thing.querySelector("img").setAttribute("src", (type === "file" ? IMAGE.FILE : IMAGE.FOLDER));
+    // querySelector is nicer but slower and this is the hot path so we want
+    // it fast!
+    const $link = $thing;
+    const $checkbox = $thing.children[0]; // = qs($thing, ".component_checkbox");
+    const $img = $thing.children[1]; // = qs($thing, "img")
+    const $extension = $thing.children[2].firstElementChild; // = qs($thing, ".info_extension > span");
+    const $label = $thing.children[3].firstElementChild.firstElementChild; // = qs($thing, ".component_filename .file-details > span");
+    const $time = $thing.children[4]; // = qs($thing, ".component_datetime");
+
+    $link.setAttribute("href", link);
+    $img.setAttribute("src", (type === "file" ? IMAGE.FILE : IMAGE.FOLDER));
     $thing.setAttribute("data-droptarget", type === "directory");
     $thing.setAttribute("data-n", n);
+    $thing.setAttribute("data-path", path);
     $thing.classList.add("view-" + view);
     $time.textContent = formatTime(new Date(time));
 
     const [filename, ext] = formatFile(name);
-    $label.innerHTML = type === "file" ? `${filename}<span class="extension">${formatDot(ext)}</span>` : name;
-    if (type === "file" && !!ext) $extension.innerHTML = `<span>${ext}</span>`;
+    $label.textContent = name;
+    if (type === "file") {
+        $extension.textContent = ext;
+        const $filesize = document.createElement("span");
+        $filesize.classList.add("component_filesize");
+        $filesize.textContent = formatSize(size);
+        $label.appendChild($filesize);
+    }
 
     if (read_only === true) {
-        qs($thing, ".component_checkbox").classList.add("hidden");
+        $checkbox.classList.add("hidden");
         return $thing;
     } else if (type === "hidden") {
         $thing.classList.add("hidden");
@@ -76,14 +83,15 @@ export function createThing({
 
     const checked = isSelected(n);
     $thing.classList.add(checked ? "selected" : "not-selected");
-    qs($thing, `input[type="checkbox"]`).checked = checked;
+    $checkbox.firstElementChild.checked = checked;
 
-    $thing.querySelector(".component_checkbox").onclick = function(e) {
+    $checkbox.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         addSelection({
-            name, type,
-            shift: e.shiftKey, n,
+            n,
+            path: $thing.getAttribute("data-path"),
+            shift: (e.shiftKey || e.metaKey), files: (files$.value || []),
         });
     };
     $thing.ondragstart = (e) => {
@@ -92,7 +100,7 @@ export function createThing({
 
         const crt = $thing.cloneNode(true);
         $thing.style.opacity = "0.7";
-        const $box = crt.querySelector(".box");
+        const $box = crt;
         crt.style.opacity = "0.2";
         crt.style.backgroundColor = "var(--border)";
         $box.style.backgroundColor = "inherit";
@@ -119,11 +127,14 @@ export function createThing({
 
 function formatTime(date) {
     if (!date) return "";
-    return new Intl.DateTimeFormat(navigator.language || "en-US")
-        .format(date)
-        .split("/")
-        .map((chunk) => chunk.padStart(2, "0"))
-        .join("/");
+    // Intl.DateTimeFormat is slow and in the hot path, so
+    // let's render date manually if possible
+    if (navigator.language.substr(0, 2) === "en") {
+        return date.getFullYear() + "/" +
+            (date.getMonth() + 1).toString().padStart(2, "0") + "/" +
+            date.getDate().toString().padStart(2, "0");
+    }
+    return new Intl.DateTimeFormat(navigator.language).format(date);
 }
 
 function formatFile(filename) {
@@ -138,4 +149,20 @@ function formatFile(filename) {
 function formatDot(ext) {
     if (!ext) return "";
     return "." + ext;
+}
+
+function formatSize(bytes) {
+    if (Number.isNaN(bytes) || bytes < 0 || bytes === undefined) {
+        return "";
+    } else if (bytes < 1024) {
+        return "("+bytes+"B)";
+    } else if (bytes < 1048576) {
+        return "("+Math.round(bytes/1024*10)/10+"KB)";
+    } else if (bytes < 1073741824) {
+        return "("+Math.round(bytes/(1024*1024)*10)/10+"MB)";
+    } else if (bytes < 1099511627776) {
+        return "("+Math.round(bytes/(1024*1024*1024)*10)/10+"GB)";
+    } else {
+        return "("+Math.round(bytes/(1024*1024*1024*1024))+"TB)";
+    }
 }

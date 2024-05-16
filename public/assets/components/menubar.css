@@ -7,12 +7,12 @@
     z-index: 4;
     text-align: left;
 }
-.component_menubar .component_container {
+.component_menubar .container {
     padding: 0;
     color: var(--bg-color);
     font-size: 0.9em;
 }
-.component_menubar .component_container > span {
+.component_menubar .container > span {
     display: flex;
 }
 .component_menubar .titlebar {
@@ -37,7 +37,7 @@
 .dark-mode .component_menubar {
     background: var(--bg-color);
 }
-.dark-mode .component_menubar .component_container {
+.dark-mode .component_menubar .container {
     color: inherit;
 }
 

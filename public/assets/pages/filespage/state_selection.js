@@ -1,11 +1,12 @@
 import rxjs from "../../lib/rx.js";
 import { onDestroy } from "../../lib/skeleton/index.js";
+import { ApplicationError } from "../../lib/error.js";
 
 const selection$ = new rxjs.BehaviorSubject([]);
 
 onDestroy(() => selection$.next([]));
 
-export function addSelection({ shift = false, n = 0 }) {
+export function addSelection({ shift = false, n = 0, ...rest }) {
     const newSelection = selection$.value;
     let alreadyKnown = false;
     for (let i=0; i<newSelection.length; i++) {
@@ -22,7 +23,7 @@ export function addSelection({ shift = false, n = 0 }) {
 
     if (alreadyKnown === false) selection$.next(
         selection$.value
-            .concat({ shift, n })
+            .concat({ shift, n, ...rest })
             .sort((prev, curr) => prev.n - curr.n)
     );
 }
@@ -40,7 +41,7 @@ export function isSelected(n) {
     for (let i=0;i<selection$.value.length;i++) {
         if (selection$.value[i]["n"] === n) isChecked = !isChecked;
         else if (selection$.value[i]["shift"]
-                 && isBetween(n, selection$.value[i-1]["n"], selection$.value[i]["n"]))
+                 && isBetween(n, selection$.value[i-1]?.n, selection$.value[i]?.n))
             isChecked = !isChecked
     }
     return isChecked;
@@ -57,6 +58,31 @@ export function lengthSelection() {
     return l;
 }
 
+export function expandSelection() {
+    const selections = [];
+    for (let i=0; i<selection$.value.length; i++) {
+        const curr = selection$.value[i];
+        if (curr.shift === false) {
+            selections.push({ path: curr.path });
+            continue;
+        }
+        let prev = selection$.value[i-1];
+        if (!prev) prev = { n: 0 };
+        for (let i=1; i<= curr.n - prev.n; i++) {
+            if (i > 100000) throw new ApplicationError(
+                "Internal error",
+                `pages::state_selection.js curr=${curr.n} prev=${prev.n}`,
+            );
+            const path = location.pathname.replace(new RegExp("^/files"), "");
+            const f = curr.files[prev.n + i];
+            console.log(f)
+            selections.push({
+                path: path + f.name + (f.type === "directory" ? "/" : ""),
+            });
+        }
+    }
+    return selections;
+}
 
 function isBetween(n, lowerBound, higherBound) {
     return n < higherBound && n > lowerBound;

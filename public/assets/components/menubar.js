@@ -11,7 +11,7 @@ export default class ComponentMenubar extends window.HTMLElement {
 
         this.classList.add("component_menubar");
         this.innerHTML = `
-            <div class="component_container">
+            <div class="container">
                 <span>
                     <div class="titlebar">
                         ${basename(decodeURIComponent(location.pathname + location.hash)) || "&nbsp;"}

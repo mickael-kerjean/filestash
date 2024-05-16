@@ -1,5 +1,6 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
-import rxjs, { effect } from "../lib/rx.js";
+import { navigate } from "../lib/skeleton/router.js";
+import rxjs, { effect, preventDefault } from "../lib/rx.js";
 import { onDestroy } from "../lib/skeleton/lifecycle.js";
 import { animate, slideYOut } from "../lib/animate.js";
 import { qs } from "../lib/dom.js";
@@ -22,7 +23,8 @@ export default function(ctrl) {
         render($page);
 
         // feature1: setup the breadcrumb path
-        qs($page, `[is="component-breadcrumb"]`).setAttribute("path", urlToPath(location.pathname + location.hash));
+        const $breadcrumb = qs($page, `[is="component-breadcrumb"]`);
+        $breadcrumb.setAttribute("path", urlToPath(location.pathname + location.hash));
 
         // feature2: setup the childrens
         const $main = qs($page, `[data-bind="filemanager-children"]`);
@@ -44,6 +46,16 @@ export default function(ctrl) {
             rxjs.mapTo($page.firstElementChild),
             rxjs.tap(($sidebar) => document.body.clientWidth > 1250 ? $sidebar.classList.remove("hidden") : $sidebar.classList.add("hidden")),
         ));
+
+        // feature4: key shortcut
+        effect(rxjs.fromEvent(window, "keydown").pipe(
+            rxjs.filter((e) => new RegExp("^/files/.+").test(location.pathname) && e.keyCode === 8), // backspace in filemanager
+            rxjs.tap(() => {
+                const p = location.pathname.replace(new RegExp("/$"), "").split("/");
+                p.pop();
+                navigate(p.join("/") + "/" + location.hash);
+            }),
+        ));
     };
 }
 
@@ -56,7 +68,7 @@ async function ctrlSidebar(render) {
     // Tags:
     // - name + color
     const $comp = createElement(`
-        <div class="component_sidebar">
+        <div class="component_sidebar" style="display:none">
             <br>
 
             <h3>Quick Access</h3>

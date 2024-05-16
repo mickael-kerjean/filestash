@@ -1,20 +1,14 @@
-.component_thing {
-    clear: both;
-}
-.component_thing:hover .box, .component_thing .highlight.box,
-.component_thing.hover .box, .component_thing .highlight.box {
+.component_thing:hover, .component_thing .highlight,
+.component_thing.hover, .component_thing .highlight {
     transition: 0.1s ease-out background;
     background: var(--border);
     border-color: var(--super-light);
     border-radius: 5px;
 }
-.component_thing:hover .box:not(.loading) .component_datetime {
+.component_thing:not(.loading):hover .component_datetime {
     display: none;
 }
-.component_thing:hover .box:not(.loading) .component_action {
-    display: block;
-}
-.component_thing .component_action, .component_thing .component_checkbox {
+.component_thing .component_checkbox {
     display: none;
 }
 .component_thing .file-is-hover {
@@ -48,22 +42,6 @@
     border-bottom: 2px solid var(--emphasis-primary);
     color: var(--color);
 }
-.component_thing .component_icon {
-    width: 25px;
-    height: 25px;
-}
-.component_thing .component_filesize span {
-    color: var(--light);
-    font-size: 0.85em;
-}
-.component_thing .component_datetime {
-    float: right;
-    color: var(--light);
-    line-height: 25px;
-    margin: 0 -10px;
-    padding: 0 10px;
-    position: relative;
-}
 .component_thing .component_action {
     float: right;
     color: #6f6f6f;
@@ -72,9 +50,22 @@
     padding: 0 10px;
     position: relative;
 }
-.component_thing .component_action .component_icon {
-    padding: 1px 0;
-    box-sizing: border-box;
+.component_thing .component_icon {
+    width: 25px;
+    height: 25px;
+}
+.component_thing .component_filesize {
+    color: var(--light);
+    font-size: 0.85em;
+    padding-left: 3px;
+}
+.component_thing .component_datetime {
+    float: right;
+    color: var(--light);
+    line-height: 25px;
+    margin: 0 -10px;
+    padding: 0 10px;
+    position: relative;
 }
 .component_thing .component_checkbox {
     opacity: 0;
@@ -87,9 +78,10 @@
 }
 .component_thing .component_checkbox .indicator {
     top: 7px;
-    left: 7px;
+    left: 6px;
 }
-.touch-no .component_thing:hover .component_checkbox, .component_thing.selected .component_checkbox {
+.touch-no .component_thing:hover .component_checkbox,
+.component_thing.selected .component_checkbox {
     transition-delay: 0.1s;
     opacity: 1;
 }
@@ -114,73 +106,22 @@
 }
 .list > .component_thing {
     width: 100%;
-}
-.list > .component_thing .box {
-    margin: 0px 0 2px 0;
+    position: relative;
+    box-sizing: border-box;
 }
 .list > .component_thing.view-grid {
-    width: 100%;
-    text-align: center;
-    transition: 0.1s ease transform;
-}
-.list > .component_thing.view-grid .box {
-    height: 156px;
-}
-/* @media (max-width: 699px) { */
-/*     .list > .component_thing.view-grid { */
-/*         width: 33.33%; */
-/*     } */
-/*     .list > .component_thing.view-grid .box { */
-/*         height: 200px; */
-/*     } */
-/* } */
-/* @media (max-width: 670px) { */
-/*     .list > .component_thing.view-grid .box { */
-/*         height: 170px; */
-/*     } */
-/* } */
-/* @media (max-width: 550px) { */
-/*     .list > .component_thing.view-grid { */
-/*         width: 50%; */
-/*     } */
-/*     .list > .component_thing.view-grid .box { */
-/*         height: 200px; */
-/*     } */
-/* } */
-/* @media (max-width: 480px) { */
-/*     .list > .component_thing.view-grid .box { */
-/*         height: 170px; */
-/*     } */
-/* } */
-/* @media (max-width: 400px) { */
-/*     .list > .component_thing.view-grid .box { */
-/*         height: 140px; */
-/*     } */
-/*     .list > .component_thing.view-grid .box .info_extension { */
-/*         font-size: 0.8em !important; */
-/*         padding: 3px 10px; */
-/*     } */
-/* } */
-/* @media (max-width: 340px) { */
-/*     .list > .component_thing.view-grid .box { */
-/*         height: 130px; */
-/*     } */
-/* } */
-.list > .component_thing.view-grid .box {
-    margin: 2px;
-    padding: 0;
-    position: relative;
-    border-width: 0;
-    box-sizing: border-box;
     border: 2px solid var(--border);
     border-radius: 5px;
+    text-align: center;
+    height: 160px;
+    box-sizing: border-box;
 }
-.list > .component_thing.view-grid .box > span > img {
+.list > .component_thing.view-grid > img {
     padding: 0;
     margin: 0;
     display: block;
 }
-.list > .component_thing.view-grid .box > span > img.component_icon {
+.list > .component_thing.view-grid > img.component_icon {
     padding: 30px;
     box-sizing: border-box;
     width: 100%;
@@ -189,7 +130,7 @@
     margin: 0 auto;
     z-index: 0;
 }
-.list > .component_thing.view-grid .box > span > img.thumbnail {
+.list > .component_thing.view-grid > img.thumbnail {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -197,7 +138,7 @@
     background: var(--dark);
     z-index: 0;
 }
-.list > .component_thing.view-grid .box .info_extension {
+.list > .component_thing.view-grid .info_extension {
     position: absolute;
     top: 45%;
     text-align: right;
@@ -208,7 +149,7 @@
     font-size: 0.95em;
     text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.2);
 }
-.list > .component_thing.view-grid .box .info_extension span {
+.list > .component_thing.view-grid .info_extension span {
     background: var(--color);
     color: var(--bg-color);
     border-radius: 4px;
@@ -221,10 +162,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.list > .component_thing.view-list .info_extension {
+.list > .component_thing .info_extension span:empty {
     display: none;
 }
-.list > .component_thing.view-grid .box .component_filename {
+.list > .component_thing.view-grid .component_filename {
     letter-spacing: -0.5px;
     z-index: 2;
     position: absolute;
@@ -234,20 +175,20 @@
     border-radius: 2px;
     padding: 3px 0px;
 }
-.list > .component_thing.view-grid .box .component_filename .file-details {
+.list > .component_thing.view-grid .component_filename .file-details {
     width: calc(100% - 10px);
     display: block;
 }
-.list > .component_thing.view-grid .box .component_filename .file-details > span {
+.list > .component_thing.view-grid .component_filename .file-details > span {
     width: 100%;
 }
-.list > .component_thing.view-grid .box .component_filename .file-details > span form input {
+.list > .component_thing.view-grid .component_filename .file-details > span form input {
     letter-spacing: -0.5px;
     text-align: center;
     width: 100%;
     padding: 0;
 }
-.list > .component_thing.view-grid .box .image_layer {
+.list > .component_thing.view-grid .image_layer {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -257,42 +198,27 @@
     background: rgba(0, 0, 0, 0);
     transition: 0.2s ease-out background;
 }
-.list > .component_thing.view-grid .box .component_filesize, .list > .component_thing.view-grid .box .component_datetime {
+.list > .component_thing.view-grid .component_filesize,
+.list > .component_thing.view-grid .component_datetime {
     display: none;
 }
-.list > .component_thing.view-grid .box .component_action {
-    transform: translateX(5px);
-    transition: 0.15s ease-out all;
-    z-index: 2;
-    display: block;
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    border-radius: 5px;
-    margin-right: 0px;
-    padding: 0px;
-}
-.list > .component_thing.view-grid .box img.thumbnail {
+.list > .component_thing.view-grid img.thumbnail {
     transition: 0.2s ease-out transform;
 }
-.list > .component_thing.view-grid.not-selected .box:hover .component_action {
-    transition-delay: 0.1s;
-    transform: translateX(0);
-}
-.list > .component_thing.view-grid.not-selected .box:hover img.thumbnail {
+.list > .component_thing.view-grid.not-selected:hover img.thumbnail {
     transform: scale(0.6);
 }
-.list > .component_thing.view-grid.not-selected .box:hover .image_layer {
+.list > .component_thing.view-grid.not-selected:hover .image_layer {
     background: var(--border);
 }
-.list > .component_thing.view-grid.not-selected .box.preview:hover .component_filename {
+.list > .component_thing.view-grid.not-selected.preview:hover .component_filename {
     opacity: 1;
 }
-.list > .component_thing.view-grid.not-selected .box.preview .component_filename {
+.list > .component_thing.view-grid.not-selected.preview .component_filename {
     transition: 0.2s ease-out opacity;
     opacity: 0;
 }
-.list > .component_thing.view-grid.selected .box img.thumbnail {
+.list > .component_thing.view-grid.selected img.thumbnail {
     transform: scale(0.6);
 }
 .list > .component_thing.view-grid .component_checkbox {
@@ -301,8 +227,16 @@
     left: 3px;
     transform: translateX(-5px);
 }
-.list > .component_thing.view-grid:hover .component_checkbox, .list > .component_thing.view-grid.selected .component_checkbox {
+.list > .component_thing.view-grid:hover .component_checkbox,
+.list > .component_thing.view-grid.selected .component_checkbox {
     transform: translateX(0px);
+}
+
+.list > .component_thing.view-list {
+    padding: 10px;
+}
+.list > .component_thing.view-list .info_extension {
+    display: none;
 }
 .list > .component_thing.view-list .component_checkbox {
     top: 8px;
@@ -313,42 +247,39 @@
 .list > .component_thing.view-list .component_checkbox:hover {
     background: rgba(0, 0, 0, 0.1);
 }
-.list > .component_thing.view-list:hover .component_checkbox, .list > .component_thing.view-list.selected .component_checkbox {
+.list > .component_thing.view-list:hover .component_checkbox,
+.list > .component_thing.view-list.selected .component_checkbox {
     display: block;
 }
-.list > .component_thing.view-list:hover .component_checkbox ~ span > .component_icon, .list > .component_thing.view-list.selected .component_checkbox ~ span > .component_icon {
+.list > .component_thing.view-list:hover .component_checkbox ~ .component_icon,
+.list > .component_thing.view-list.selected .component_checkbox ~ .component_icon {
     visibility: hidden;
 }
-.list > .component_thing.view-list:hover .component_checkbox .indicator, .list > .component_thing.view-list.selected .component_checkbox .indicator {
+.list > .component_thing.view-list:hover .component_checkbox .indicator,
+.list > .component_thing.view-list.selected .component_checkbox .indicator {
     border-color: var(--color);
 }
-.list > .component_thing.view-list:hover .component_checkbox input ~ span, .list > .component_thing.view-list.selected .component_checkbox input ~ span {
+.list > .component_thing.view-list:hover .component_checkbox input ~ span,
+.list > .component_thing.view-list.selected .component_checkbox input ~ span {
     background-color: rgba(255, 255, 255, 0.4);
 }
-.list > .component_thing.view-list:hover .component_checkbox input:checked ~ span, .list > .component_thing.view-list.selected .component_checkbox input:checked ~ span {
+.list > .component_thing.view-list:hover .component_checkbox input:checked ~ span,
+.list > .component_thing.view-list.selected .component_checkbox input:checked ~ span {
     background-color: var(--color);
 }
-.list .not-selected .box:hover .component_action {
-    opacity: 1;
-}
-.list .not-selected .box .component_action {
-    opacity: 0;
-}
-.list .selected .box .component_action {
-    opacity: 0;
-}
 
-.dark-mode .component_thing:hover .box {
+/* Dark Mode */
+.dark-mode .component_thing:hover {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 2px;
 }
-.dark-mode .component_thing .box {
+.dark-mode .component_thing {
     background: inherit;
 }
 .dark-mode .component_thing .component_filename {
     color: var(--light);
 }
-.dark-mode .component_thing .box.highlight {
+.dark-mode .component_thing.highlight {
     background: rgba(255, 255, 255, 0.05);
 }
 .dark-mode .component_thing form input {

@@ -10,7 +10,7 @@
 }
 .scrolling [is="component_submenu"] {
     box-shadow: 0 5px 10px rgba(100,100,100,.05);
-    background: rgba(245,245,245,0.75);
+    background: rgba(245,245,245,0.9);
 }
 [is="component_submenu"] .component_submenu {
     display: flex;
@@ -36,6 +36,7 @@
     margin-left: 2px;
     overflow: hidden;
     white-space: nowrap;
+    text-overflow: ellipsis;
 }
 [is="component_submenu"] .component_submenu .action.right {
     margin-right:2px;

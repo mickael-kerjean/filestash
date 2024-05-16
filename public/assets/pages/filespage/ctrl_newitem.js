@@ -13,7 +13,7 @@ export default async function(render) {
                 <div class="mouse-is-hover highlight box">
                     <img class="component_icon" draggable="false" alt="directory">
                     <span class="file-details">
-                        <form><input type="text" value=""></form>
+                        <form><input type="text" name="name" value=""><input type="hidden" name="type" value=""></form>
                     </span>
                     <span class="component_action">
                         <div class="action">
@@ -52,6 +52,7 @@ export default async function(render) {
             $icon.setAttribute("src", `data:image/svg+xml;base64,${img}`);
             $icon.setAttribute("alt", alt);
             $input.value = "";
+            $input.nextSibling.setAttribute("name", alt);
             if ($node.classList.contains("hidden")) animate($node, {
                 keyframes: [{ height: `0px` }, { height: "50px" }],
                 time: 100, fill: "forwards",
@@ -83,7 +84,7 @@ export default async function(render) {
     // feature3: submit form
     effect(rxjs.fromEvent($node, "submit").pipe(
         preventDefault(),
-        rxjs.tap(() => console.log("SUBMIT")),
+        rxjs.tap(() => console.log("SUBMIT", $input.value, "type", $input.nextSibling.getAttribute("name"))),
     ));
 }
 

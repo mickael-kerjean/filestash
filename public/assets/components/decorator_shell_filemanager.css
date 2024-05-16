@@ -72,13 +72,14 @@
     background: rgba(100,100,100,.05);
 }
 
-.component_filemanager_shell [data-bind="filemanager-children"] .container,
-.component_filemanager_shell [is="component-breadcrumb"] .container {
-    max-width: 2100px;
-}
+/* .component_filemanager_shell [data-bind="filemanager-children"] .container, */
+/* .component_filemanager_shell [is="component-breadcrumb"] .container { */
+/*     max-width: 2100px; */
+/* } */
 
 .component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_filesystem"],
 .component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_newitem"],
+.component_filemanager_shell [data-bind="sidebar"] ~ div component-menubar,
 .component_filemanager_shell [data-bind="sidebar"] ~ div [is="component-breadcrumb"],
 .component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_submenu"] .component_submenu{
     padding: 0 30px;

@@ -2,7 +2,7 @@
     overflow: hidden;
 }
 .component_newitem .component_thing {
-    margin: 2px;
+    margin: 2px 0;
 }
 .component_newitem .component_thing .box {
     margin: 0;

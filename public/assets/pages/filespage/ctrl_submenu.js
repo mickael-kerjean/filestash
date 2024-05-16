@@ -3,6 +3,7 @@ import rxjs, { effect, applyMutation, onClick, preventDefault } from "../../lib/
 import { animate, slideXIn, slideYIn } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs, qsa } from "../../lib/dom.js";
+import { basename } from "../../lib/path.js";
 
 import "../../components/dropdown.js";
 import "../../components/icon.js";
@@ -14,7 +15,7 @@ import componentTag from "./modal_tag.js";
 import componentRename from "./modal_rename.js";
 import componentDelete from "./modal_delete.js";
 
-import { getSelection$, clearSelection, lengthSelection } from "./state_selection.js";
+import { getSelection$, clearSelection, lengthSelection, expandSelection } from "./state_selection.js";
 import { getAction$, setAction } from "./state_event.js";
 import { setState, getState$ } from "./state_filesystem.js";
 
@@ -72,7 +73,9 @@ function componentLeft(render, { $scroll }) {
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 1),
         rxjs.map(() => render(createFragment(`
-            <a><button data-action="download">Download</button></a>
+            <a ${generateLinkAttributes(expandSelection())}>
+                <button data-action="download">Download</button>
+            </a>
             <button data-action="delete">Delete</button>
             <button data-action="share">Share</button>
             <button data-action="embed">Embed</button>
@@ -99,22 +102,18 @@ function componentLeft(render, { $scroll }) {
             onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.tap(() => {
                 componentDelete(createModal(modalOpt));
             })),
-            // getSelection$().pipe(rxjs.tap((a) => {
-            //     console.log("HH", a);
-            // })),
         )),
     ));
 
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length > 1),
         rxjs.map(() => render(createFragment(`
-            <button data-action="download">Download</button>
+            <a ${generateLinkAttributes(expandSelection())}>
+                <button data-action="download">Download</button>
+            </a>
             <button data-action="delete">Delete</button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
-            onClick(qs($page, `[data-action="download"]`)).pipe(
-                rxjs.mergeMap(() => rxjs.EMPTY),
-            ),
             onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.tap(() => {
                 componentDelete(createModal(modalOpt));
             })),
@@ -235,7 +234,7 @@ function componentRight(render) {
                 rxjs.merge(
                     onClick(qs($page, `[data-action="search"]`)),
                     rxjs.fromEvent(window, "keydown").pipe(
-                        rxjs.filter((e) => e.ctrlKey && e.key === "f"),
+                        rxjs.filter((e) => (e.ctrlKey || e.metaKey) && e.key === "f"),
                         preventDefault(),
                     ),
                 ).pipe(rxjs.map(($el) => qs($page, "input").classList.contains("hidden"))),
@@ -319,4 +318,19 @@ export function init() {
         loadCSS(import.meta.url, "../../css/designsystem_dropdown.css"),
         loadCSS(import.meta.url, "./ctrl_submenu.css"),
     ]);
+}
+
+function generateLinkAttributes(selections) {
+    let filename = "archive.zip";
+    let href = "/api/files/zip?";
+    if (selections.length === 1) {
+        const path = selections[0].path;
+        const regDir = new RegExp("/$");
+        filename = regDir.test(path) ?
+            basename(path.replace(regDir, "")) + ".zip" :
+            basename(path);
+        href = "/api/files/cat?"
+    }
+    href += selections.map(({path}) => "path=" + encodeURIComponent(path)).join("&");
+    return `href="${href}" download="${filename}"`
 }
