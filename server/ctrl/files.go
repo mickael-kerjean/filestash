@@ -94,6 +94,7 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 			SendErrorResult(res, ErrNotAuthorized)
 			return
 		}
+		ctx.Context = context.WithValue(ctx.Context, "AUDIT", false)
 		if err = auth.Mkdir(ctx, path); err != nil {
 			perms.CanCreateDirectory = NewBool(false)
 		}
