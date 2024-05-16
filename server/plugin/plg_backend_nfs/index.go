@@ -177,6 +177,20 @@ func (this NfsShare) Ls(path string) ([]os.FileInfo, error) {
 			// don't show anything else than file and folder
 			continue
 		}
+		if len(this.gids) > 0 { // filter out what users don't have access
+			hasAccess := false
+			for _, gid := range this.gids {
+				if gid == dir.Attr.Attr.GID {
+					hasAccess = true
+				}
+			}
+			if this.gid == dir.Attr.Attr.GID {
+				hasAccess = true
+			}
+			if hasAccess == false {
+				continue
+			}
+		}
 		files = append(files, File{
 			FName: dir.FileName,
 			FType: func() string {
