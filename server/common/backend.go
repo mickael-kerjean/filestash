@@ -22,9 +22,6 @@ func (d *Driver) Register(name string, driver IBackend) {
 	if driver == nil {
 		panic("backend: register invalid nil backend")
 	}
-	if d.ds[name] != nil {
-		panic("backend: register already exist")
-	}
 	d.ds[name] = driver
 }
 
