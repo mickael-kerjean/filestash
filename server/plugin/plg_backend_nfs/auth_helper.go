@@ -19,7 +19,7 @@ func init() {
 	cacheForGroup = NewAppCache(120, 60)
 }
 
-func extractUserInfo(uidHint string, gidHint string, gidsHint string) (uint32, uint32, []groupLabel) {
+func ExtractUserInfo(uidHint string, gidHint string, gidsHint string) (uint32, uint32, []groupLabel) {
 	// case 1: everything is being sent as "uid=number, gid=number and gids=number,number,number"
 	if _uid, err := strconv.Atoi(uidHint); err == nil {
 		var (
