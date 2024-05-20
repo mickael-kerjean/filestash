@@ -16,8 +16,8 @@ import componentRename from "./modal_rename.js";
 import componentDelete from "./modal_delete.js";
 
 import { getSelection$, clearSelection, lengthSelection, expandSelection } from "./state_selection.js";
-import { getAction$, setAction } from "./state_event.js";
-import { setState, getState$ } from "./state_filesystem.js";
+import { getAction$, setAction } from "./state_newthing.js";
+import { setState, getState$ } from "./state_config.js";
 
 const modalOpt = {
     withButtonsRight: "OK",
@@ -64,7 +64,10 @@ function componentLeft(render, { $scroll }) {
             rxjs.map((currentAction) => actionName == currentAction ? null : actionName),
         )),
         rxjs.tap((actionName) => {
-            $scroll.scrollTo({top: 0, behavior: "smooth"});
+            $scroll.scrollTo({
+                top: 0,
+                behavior: window.chrome ? "smooth" : "instant", // prevent firefox bug
+            });
             setAction(actionName);
         }),
     ));
@@ -78,8 +81,8 @@ function componentLeft(render, { $scroll }) {
             </a>
             <button data-action="delete">Delete</button>
             <button data-action="share">Share</button>
-            <button data-action="embed">Embed</button>
-            <button data-action="tag">Tag</button>
+            <button data-action="embed" class="hidden">Embed</button>
+            <button data-action="tag" class="hidden">Tag</button>
             <button data-action="rename">Rename</button>
         `))),
         rxjs.tap(($buttons) => animate($buttons, { time: 100, keyframes: slideYIn(5) })),

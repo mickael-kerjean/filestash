@@ -25,6 +25,7 @@
     color: var(--light);
     letter-spacing: 0;
     border-radius: 5px;
+    line-height: 15px;
 }
 [is="component_submenu"] .component_submenu .action button img {
     width: 16px;

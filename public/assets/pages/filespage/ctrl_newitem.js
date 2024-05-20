@@ -4,7 +4,9 @@ import { qs } from "../../lib/dom.js";
 import { animate } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 
-import { getAction$, setAction } from "./state_event.js";
+import { getAction$, setAction } from "./state_newthing.js";
+import { rm as mkdir, touch } from "./state_filemutate.js";
+import { currentPath } from "./helper.js";
 
 export default async function(render) {
     const $node = createElement(`
@@ -84,7 +86,13 @@ export default async function(render) {
     // feature3: submit form
     effect(rxjs.fromEvent($node, "submit").pipe(
         preventDefault(),
-        rxjs.tap(() => console.log("SUBMIT", $input.value, "type", $input.nextSibling.getAttribute("name"))),
+        rxjs.mergeMap(() => {
+            window.dispatchEvent(new KeyboardEvent("keydown", { keyCode: 27 })); // close
+            const type = $input.nextSibling.getAttribute("name");
+            if (type === "file") return touch(currentPath() + $input.value);
+            return mkdir(currentPath() + $input.value + "/");
+        }),
+        rxjs.catchError((err) => console.log("ERR", err)),
     ));
 }
 

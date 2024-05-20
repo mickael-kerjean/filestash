@@ -33,8 +33,8 @@
     top: 3px;
     width: 12px;
     height: 12px;
-    background-color: rgba(0, 0, 0, 0.05);
-    border: 2px solid rgba(0, 0, 0, 0.05);
+    background-color: var(--border);
+    border: 2px solid var(--border);
     pointer-events: none;
     -webkit-user-select: none;
     -moz-user-select: none;

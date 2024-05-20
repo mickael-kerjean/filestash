@@ -1,5 +1,9 @@
 import { extname } from "../../lib/path.js";
 
+export function currentPath() {
+    return location.pathname.replace(new RegExp("^/files"), "");
+}
+
 export function sort(files, type, order) {
     switch(type) {
     case "name": return sortByName(files, order);

@@ -7,10 +7,11 @@ import { ApplicationError } from "../../lib/error.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
-import { sort, isMobile } from "./helper.js";
+import { currentPath, sort, isMobile } from "./helper.js";
 import { createThing } from "./thing.js";
 import { clearSelection, addSelection, getSelection$, isSelected } from "./state_selection.js";
-import { getState$ } from "./state_filesystem.js";
+import { middlewareLs } from "./state_filemutate.js";
+import { getState$ } from "./state_config.js";
 import { ls, search } from "./model_files.js";
 
 const ICONS = {
@@ -37,7 +38,7 @@ export default async function(render) {
     onDestroy(() => files$.next(null));
 
     // feature: virtual scrolling
-    const path = location.pathname.replace(new RegExp("^/files"), "");
+    const path = currentPath();
     const $header = qs($page, `[data-target="header"]`);
     const $list = qs($page, `[data-target="list"]`);
     const removeLoader = createLoader($header);
@@ -52,6 +53,7 @@ export default async function(render) {
     );
 
     effect(ls(path).pipe(
+        middlewareLs(currentPath()),
         rxjs.switchMap(({ files, ...rest }) => getState$().pipe(rxjs.switchMap((state) => {
             $header.innerHTML = "";
             $list.innerHTML = "";
@@ -60,10 +62,10 @@ export default async function(render) {
                 $listBefore.setAttribute("style", "");
                 $listAfter.setAttribute("style", "");
                 return search(state.search).pipe(rxjs.map(({ files }) => ({
-                    ...rest, files, ...state, read_only: true,
+                    files, read_only: true, ...state, ...rest,
                 })), removeLoader);
             }
-            return rxjs.of({ ...rest, files, ...state, read_only: false });
+            return rxjs.of({ files, read_only: false, ...state, ...rest });
         }))),
         rxjs.mergeMap(({ show_hidden, files, ...rest }) => {
             if (show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
@@ -248,7 +250,7 @@ export default async function(render) {
         rxjs.tap(() => {
             clearSelection();
             if (!Array.isArray(files$.value) || files$.value.length === 0) return;
-            const path = location.pathname.replace(new RegExp("/files/"), "/");
+            const path = currentPath();
             const el0 = files$.value[0];
             const elm1 = files$.value.slice(-1)[0];
             addSelection({

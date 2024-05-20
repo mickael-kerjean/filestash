@@ -32,13 +32,18 @@ export function search(term) {
 }
 
 export function ls(path) {
-    return ajax({
+    return rxjs.merge(
+        rxjs.of(null),
+        rxjs.fromEvent(window, "keydown").pipe( // "r" shorcut
+            rxjs.filter((e) => e.keyCode === 82 && document.activeElement.tagName !== "INPUT"),
+        )
+    ).pipe(rxjs.mergeMap(() => ajax({
         url: `/api/files/ls?path=${path}`,
         responseType: "json"
     }).pipe(rxjs.map(({ responseJSON }) => ({
         files: responseJSON.results.sort(sortByDefault),
         path,
-    })));
+    })))));
 }
 
 const sortByDefault = (fileA, fileB) => {

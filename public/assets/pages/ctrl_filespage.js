@@ -36,8 +36,8 @@ export default WithShell(function(render) {
     // feature4: render the upload
     componentUpload(createRender(qs($page, "[is=\"component_upload\"]")));
 
-    // feature5: render the frequent access bar
-    componentFrequentlyAccess(createRender(qs($page , "[is=\"component_frequently_access\"]")));
+    // // feature5: render the frequent access bar
+    // componentFrequentlyAccess(createRender(qs($page , "[is=\"component_frequently_access\"]")));
 });
 
 export function init() {

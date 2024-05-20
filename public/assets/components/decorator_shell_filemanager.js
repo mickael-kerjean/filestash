@@ -49,7 +49,7 @@ export default function(ctrl) {
 
         // feature4: key shortcut
         effect(rxjs.fromEvent(window, "keydown").pipe(
-            rxjs.filter((e) => new RegExp("^/files/.+").test(location.pathname) && e.keyCode === 8), // backspace in filemanager
+            rxjs.filter((e) => new RegExp("^/files/.+").test(location.pathname) && e.keyCode === 8 && document.activeElement.nodeName !== "INPUT"), // backspace in filemanager
             rxjs.tap(() => {
                 const p = location.pathname.replace(new RegExp("/$"), "").split("/");
                 p.pop();

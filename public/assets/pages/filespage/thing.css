@@ -87,6 +87,7 @@
 }
 .component_thing .selectionOverlay {
     display: none;
+    border-radius: 3px;
 }
 .component_thing.selected .selectionOverlay {
     display: block;
@@ -257,7 +258,7 @@
 }
 .list > .component_thing.view-list:hover .component_checkbox .indicator,
 .list > .component_thing.view-list.selected .component_checkbox .indicator {
-    border-color: var(--color);
+    border-color: #57595A;
 }
 .list > .component_thing.view-list:hover .component_checkbox input ~ span,
 .list > .component_thing.view-list.selected .component_checkbox input ~ span {
@@ -265,13 +266,13 @@
 }
 .list > .component_thing.view-list:hover .component_checkbox input:checked ~ span,
 .list > .component_thing.view-list.selected .component_checkbox input:checked ~ span {
-    background-color: var(--color);
+    background-color: #57595A;
 }
 
 /* Dark Mode */
 .dark-mode .component_thing:hover {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 2px;
+    border-radius: 3px;
 }
 .dark-mode .component_thing {
     background: inherit;

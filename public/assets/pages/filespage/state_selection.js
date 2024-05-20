@@ -1,6 +1,7 @@
 import rxjs from "../../lib/rx.js";
 import { onDestroy } from "../../lib/skeleton/index.js";
 import { ApplicationError } from "../../lib/error.js";
+import { currentPath } from "./helper.js";
 
 const selection$ = new rxjs.BehaviorSubject([]);
 
@@ -73,7 +74,7 @@ export function expandSelection() {
                 "Internal error",
                 `pages::state_selection.js curr=${curr.n} prev=${prev.n}`,
             );
-            const path = location.pathname.replace(new RegExp("^/files"), "");
+            const path = currentPath();
             const f = curr.files[prev.n + i];
             console.log(f)
             selections.push({
