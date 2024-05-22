@@ -8,14 +8,12 @@ import componentFilesystem, { init as initFilesystem } from "./filespage/ctrl_fi
 import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.js";
 import componentNewItem, { init as initNewItem } from "./filespage/ctrl_newitem.js";
 import componentUpload, { init as initUpload } from "./filespage/ctrl_upload.js";
-import componentFrequentlyAccess, { init as initFrequentlyAccess } from "./filespage/ctrl_frequentlyaccess.js";
 
 import "../components/breadcrumb.js";
 
 export default WithShell(function(render) {
     const $page = createElement(`
         <div class="component_page_filespage scroll-y">
-            <div is="component_frequently_access"></div>
             <div is="component_upload"></div>
             <div is="component_submenu"></div>
             <div is="component_newitem"></div>
@@ -35,15 +33,12 @@ export default WithShell(function(render) {
 
     // feature4: render the upload
     componentUpload(createRender(qs($page, "[is=\"component_upload\"]")));
-
-    // // feature5: render the frequent access bar
-    // componentFrequentlyAccess(createRender(qs($page , "[is=\"component_frequently_access\"]")));
 });
 
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_filespage.css"),
         initShell(), initFilesystem(),
-        initSubmenu(), initNewItem(), initUpload(), initFrequentlyAccess(),
+        initSubmenu(), initNewItem(), initUpload(),
     ]);
 }

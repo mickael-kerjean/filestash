@@ -5,7 +5,7 @@ import { currentPath } from "./helper.js";
 
 const selection$ = new rxjs.BehaviorSubject([]);
 
-onDestroy(() => selection$.next([]));
+onDestroy(clearSelection);
 
 export function addSelection({ shift = false, n = 0, ...rest }) {
     const newSelection = selection$.value;
@@ -30,7 +30,7 @@ export function addSelection({ shift = false, n = 0, ...rest }) {
 }
 
 export function clearSelection() {
-    selection$.next([]);
+    if (selection$.value.length > 0) selection$.next([])
 }
 
 export function getSelection$() {
@@ -76,7 +76,6 @@ export function expandSelection() {
             );
             const path = currentPath();
             const f = curr.files[prev.n + i];
-            console.log(f)
             selections.push({
                 path: path + f.name + (f.type === "directory" ? "/" : ""),
             });

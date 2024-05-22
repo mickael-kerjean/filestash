@@ -26,9 +26,9 @@ export function search(term) {
     return ajax({
         url: `/api/files/search?path=${path}&q=${term}`,
         responseType: "json"
-    }).pipe(
-        rxjs.map(({ responseJSON }) => ({files: responseJSON.results })),
-    );
+    }).pipe(rxjs.map(({ responseJSON }) => ({
+        files: responseJSON.results,
+    })));
 }
 
 export function ls(path) {
@@ -37,11 +37,12 @@ export function ls(path) {
         rxjs.fromEvent(window, "keydown").pipe( // "r" shorcut
             rxjs.filter((e) => e.keyCode === 82 && document.activeElement.tagName !== "INPUT"),
         )
-    ).pipe(rxjs.mergeMap(() => ajax({
+    ).pipe(rxjs.switchMap(() => ajax({
         url: `/api/files/ls?path=${path}`,
         responseType: "json"
     }).pipe(rxjs.map(({ responseJSON }) => ({
-        files: responseJSON.results.sort(sortByDefault),
+        files: responseJSON.results,
+        permissions: responseJSON.permissions,
         path,
     })))));
 }

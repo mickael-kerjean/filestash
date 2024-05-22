@@ -28,13 +28,13 @@
     line-height: 15px;
 }
 [is="component_submenu"] .component_submenu .action button img {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
     margin-left: -3px;
     margin-right: -3px;
 }
 [is="component_submenu"] .component_submenu .action.left {
-    margin-left: 2px;
+    margin-right: 2px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

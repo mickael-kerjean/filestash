@@ -18,10 +18,19 @@ export function touch(path) {
         time: new Date().getTime(),
         loading: true,
     });
-    onDestroy(() => statePop(virtualFiles$, basepath, filename));
+    const onSuccess = () => {
+        removeLoading(basepath, filename);
+        onDestroy(() => statePop(virtualFiles$, basepath, filename));
+        // TODO: update cache
+    };
+    const onFailure = (err, caught) => {
+        statePop(virtualFiles$, basepath, filename);
+        return rxjs.EMPTY;
+    };
     return rxjs.of(null).pipe(
         rxjs.delay(2000),
-        removeLoading(basepath, filename),
+        rxjs.tap(onSuccess),
+        rxjs.catchError(onFailure),
     );
 }
 
@@ -34,13 +43,19 @@ export function mkdir(path) {
         time: new Date().getTime(),
         loading: true,
     });
-    onDestroy(() => {
-        statePop(virtualFiles$, basepath, dirname);
+    const onSuccess = () => {
+        removeLoading(basepath, dirname);
+        onDestroy(() => statePop(virtualFiles$, basepath, dirname));
         // TODO: update cache
-    });
+    };
+    const onFailure = () => {
+        statePop(virtualFiles$, basepath, dirname);
+        return rxjs.EMPTY;
+    };
     return rxjs.of(null).pipe(
         rxjs.delay(2000),
-        removeLoading(basepath, dirname),
+        rxjs.tap(onSuccess),
+        rxjs.catchError(onFailure),
     );
 }
 
@@ -53,36 +68,145 @@ export function save(path, size) {
         time: new Date().getTime(),
         loading: true,
     });
-    onDestroy(() => statePop(virtualFiles$, basepath, filename));
+    const onSuccess = () => {
+        removeLoading(basepath, filename);
+        onDestroy(() => statePop(virtualFiles$, basepath, filename));
+        // TODO: update cache
+    };
+    const onFailure = () => {
+        statePop(virtualFiles$, basepath, dirname);
+        return rxjs.EMPTY;
+    };
     return rxjs.of(null).pipe(
         rxjs.delay(2000),
-        removeLoading(basepath, filename),
+        rxjs.tap(onSuccess),
+        rxjs.catchError(onFailure),
     );
 }
 
-export function rm(path) {
-    const [basepath, filename] = extractPath(path);
+export function rm(...paths) {
+    if (paths.length === 0) return rxjs.of(null);
+
+    const arr = new Array(paths.length * 2);
+    let basepath = null;
+    for (let i=0;i<paths.length;i++) {
+        [arr[2*i], arr[2*i+1]] = extractPath(paths[i]);
+        if (i === 0) basepath = arr[2*i];
+        else if (basepath !== arr[2*i]) throw new Error("not implemented yet");
+    }
+
     stateAdd(mutationFiles$, basepath, {
-        name: filename,
+        name: basepath,
         fn: (file) => {
-            if (file.name === filename) file.loading = true;
+            for (let i=0;i<arr.length;i+=2) {
+                if (file.name === arr[i+1]) {
+                    file.loading = true;
+                    file.last = true;
+                }
+            }
             return file;
         },
     });
-    onDestroy(() => statePop(mutationFiles$, basepath, filename));
+
+    const onSuccess = () => {
+        stateAdd(mutationFiles$, basepath, {
+            name: basepath,
+            fn: (file) => {
+                for (let i=0;i<arr.length;i+=2) {
+                    if (file.name === arr[i+1]) return null;
+                }
+                return file;
+            },
+        });
+        onDestroy(() => statePop(mutationFiles$, basepath, basepath));
+        // TODO: update cache
+    };
+    const onFailure = () => {
+        stateAdd(mutationFiles$, basepath, {
+            name: basepath,
+            fn: (file) => {
+                for (let i=0;i<arr.length;i+=2) {
+                    if (file.name === arr[i+1]) delete file.loading;
+                }
+                return file;
+            },
+        });
+        return rxjs.EMPTY;
+    };
+
     return rxjs.of(null).pipe(
         rxjs.delay(1000),
-        rxjs.tap(() => stateAdd(mutationFiles$, basepath, {
-            name: filename,
-            fn: (file) => file.name === filename ? null : file,
-        })),
+        rxjs.tap(onSuccess),
+        rxjs.catchError(onFailure),
     );
 }
 
 export function mv(fromPath, toPath) {
-    // TODO
+    const [fromBasepath, fromName] = extractPath(fromPath);
+    const [toBasepath, toName] = extractPath(toPath);
+
+    let type = null;
+    if (fromBasepath === toBasepath) {
+        stateAdd(mutationFiles$, fromBasepath, {
+            name: fromName,
+            fn: (file) => {
+                if (file.name === fromName) {
+                    file.loading = true;
+                    file.name = toName;
+                    type = file.type;
+                }
+                return file;
+            },
+        });
+    } else {
+        stateAdd(mutationFiles$, fromBasepath, {
+            name: fromName,
+            fn: (file) => {
+                if (file.name === fromName) {
+                    file.loading = true;
+                    type = file.type;
+                }
+                return file;
+            },
+        });
+        stateAdd(virtualFiles$, toBasepath, {
+            name: toName,
+            loading: true,
+            type,
+        });
+    }
+    const onSuccess = () => {
+        if (fromBasepath === toBasepath) {
+            stateAdd(mutationFiles$, fromBasepath, {
+                name: fromName,
+                fn: (file) => {
+                    if (file.name === toName) delete file.loading;
+                    return file;
+                },
+            });
+        } else {
+            stateAdd(mutationFiles$, fromBasepath, {
+                name: fromName,
+                fn: (file) => {
+                    if (file.name === fromName) return null;
+                    return file;
+                },
+            });
+            removeLoading(toBasepath, toName);
+        }
+    };
+    const onFailure = () => {
+        if (fromBasepath === toBasepath) {
+            // TODO
+        } else {
+            // TODO
+        }
+        return rxjs.EMPTY;
+    };
     return rxjs.of(null).pipe(
         rxjs.delay(1000),
+        rxjs.tap(onSuccess),
+        rxjs.catchError(onFailure),
     );
 }
 
@@ -113,11 +237,11 @@ export function middlewareLs(path) {
             }
             return rxjs.of({ ...res, files });
         }))),
-        rxjs.tap(({ files }) => console.log(files)),
+        // rxjs.tap(({ files }) => console.log(files)),
     );
 }
 
-function extractPath(path) {
+export function extractPath(path) {
     path = path.replace(new RegExp("/$"), "");
     const p = path.split("/");
     const filename = p.pop();
@@ -144,7 +268,7 @@ function stateAdd(behavior, path, obj) {
 
 function statePop(behavior, path, filename) {
     const arr = behavior.value[path];
-    if (!arr) throw new Error("assertion failed[0] - state_filemutate.js");
+    if (!arr) return;
     const newArr = arr.filter(({ name }) => name !== filename)
     if (newArr.length === 0) {
         const newState = { ...behavior.value };
@@ -159,15 +283,13 @@ function statePop(behavior, path, filename) {
 }
 
 function removeLoading(path, filename) {
-    return rxjs.tap(() => {
-        const arr = virtualFiles$.value[path];
-        if (!arr) throw new Error("assertion failed[1]- state_filemutate.js");
-        virtualFiles$.next({
-            ...virtualFiles$.value,
-            [path]: arr.map((file) => {
-                if (file.name === filename) delete file.loading;
-                return file;
-            }),
-        });
+    const arr = virtualFiles$.value[path];
+    if (!arr) return;
+    virtualFiles$.next({
+        ...virtualFiles$.value,
+        [path]: arr.map((file) => {
+            if (file.name === filename) delete file.loading;
+            return file;
+        }),
     });
 }

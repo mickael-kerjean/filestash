@@ -17,7 +17,7 @@ export const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 function sortByType(files, order) {
     let tmp;
     return files.sort(function(fileA, fileB) {
-        tmp = _moveLoadingDownward(fileA, fileB);
+        tmp = _moveDownward(fileA, fileB);
         if (tmp !== 0) return tmp;
 
         tmp = _moveFolderUpward(fileA, fileB);
@@ -40,7 +40,7 @@ function sortByType(files, order) {
 function sortByName(files, order) {
     let tmp;
     return files.sort(function(fileA, fileB) {
-        tmp = _moveLoadingDownward(fileA, fileB);
+        tmp = _moveDownward(fileA, fileB);
         if (tmp !== 0) return tmp;
 
         tmp = _moveFolderUpward(fileA, fileB);
@@ -72,12 +72,12 @@ function sortNumber(a, b, order) {
     return a - b;
 }
 
-function _moveLoadingDownward(fileA, fileB) {
-    const aIsLoading = fileA.icon === "loading";
-    const bIsLoading = fileB.icon === "loading";
+function _moveDownward(fileA, fileB) {
+    const aIsLast = fileA.last;
+    const bIsLast = fileB.last;
 
-    if (aIsLoading && !bIsLoading) return +1;
-    else if (!aIsLoading && bIsLoading) return -1;
+    if (aIsLast && !bIsLast) return +1;
+    else if (!aIsLast && bIsLast) return -1;
     return 0;
 }
 

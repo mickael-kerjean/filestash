@@ -18,6 +18,8 @@ import componentDelete from "./modal_delete.js";
 import { getSelection$, clearSelection, lengthSelection, expandSelection } from "./state_selection.js";
 import { getAction$, setAction } from "./state_newthing.js";
 import { setState, getState$ } from "./state_config.js";
+import { rm, mv, extractPath } from "./state_filemutate.js";
+import { getPermission, calculatePermission } from "./model_acl.js";
 
 const modalOpt = {
     withButtonsRight: "OK",
@@ -51,9 +53,10 @@ export default async function(render) {
 function componentLeft(render, { $scroll }) {
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 0),
+        rxjs.mergeMap(() => getPermission()),
         rxjs.map(() => render(createFragment(`
-            <button data-action="new-file">New File</button>
-            <button data-action="new-folder">New Folder</button>
+            <button data-action="new-file"${toggleDependingOnPermission("new-file")}>New File</button>
+            <button data-action="new-folder"${toggleDependingOnPermission("new-folder")}>New Folder</button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
             onClick(qs($page, `[data-action="new-file"]`)).pipe(rxjs.mapTo("NEW_FILE")),
@@ -79,11 +82,11 @@ function componentLeft(render, { $scroll }) {
             <a ${generateLinkAttributes(expandSelection())}>
                 <button data-action="download">Download</button>
             </a>
-            <button data-action="delete">Delete</button>
+            <button data-action="delete"${toggleDependingOnPermission("delete")}>Delete</button>
             <button data-action="share">Share</button>
             <button data-action="embed" class="hidden">Embed</button>
             <button data-action="tag" class="hidden">Tag</button>
-            <button data-action="rename">Rename</button>
+            <button data-action="rename"${toggleDependingOnPermission("rename")}>Rename</button>
         `))),
         rxjs.tap(($buttons) => animate($buttons, { time: 100, keyframes: slideYIn(5) })),
         rxjs.switchMap(($page) => rxjs.merge(
@@ -97,14 +100,31 @@ function componentLeft(render, { $scroll }) {
                 componentEmbed(createModal(modalOpt));
             })),
             onClick(qs($page, `[data-action="tag"]`)).pipe(rxjs.tap(() => {
-                componentTag(createModal(modalOpt))
+                componentTag(createModal(modalOpt));
             })),
-            onClick(qs($page, `[data-action="rename"]`)).pipe(rxjs.tap(() => {
-                componentRename(createModal(modalOpt));
-            })),
-            onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.tap(() => {
-                componentDelete(createModal(modalOpt));
-            })),
+            onClick(qs($page, `[data-action="rename"]`)).pipe(
+                rxjs.mergeMap(() => componentRename(
+                    createModal(modalOpt),
+                    basename(expandSelection()[0].path.replace(new RegExp("/$"), "")),
+                )),
+                rxjs.mergeMap((val) => {
+                    const path = expandSelection()[0].path;
+                    const [basepath, filename] = extractPath(path);
+                    return mv(path, basepath + val);
+                }),
+                rxjs.tap(clearSelection),
+            ),
+            onClick(qs($page, `[data-action="delete"]`)).pipe(
+                rxjs.mergeMap(() => componentDelete(
+                    createModal(modalOpt),
+                    basename(expandSelection()[0].path.replace(new RegExp("/$"), "")).substr(0, 15),
+                )),
+                rxjs.mergeMap((val) => {
+                    const selection = expandSelection()[0].path;
+                    clearSelection();
+                    return rm(selection);
+                }),
+            ),
         )),
     ));
 
@@ -117,9 +137,14 @@ function componentLeft(render, { $scroll }) {
             <button data-action="delete">Delete</button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
-            onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.tap(() => {
-                componentDelete(createModal(modalOpt));
-            })),
+            onClick(qs($page, `[data-action="delete"]`)).pipe(
+                rxjs.mergeMap(() => componentDelete(createModal(modalOpt), "remove")),
+                rxjs.mergeMap((val) => {
+                    const selections = expandSelection().map(({ path }) => path);
+                    clearSelection();
+                    return rm(...selections);
+                }),
+            ),
         )),
     ));
 }
@@ -335,5 +360,9 @@ function generateLinkAttributes(selections) {
         href = "/api/files/cat?"
     }
     href += selections.map(({path}) => "path=" + encodeURIComponent(path)).join("&");
-    return `href="${href}" download="${filename}"`
+    return `href="${href}" download="${filename}"`;
+}
+
+function toggleDependingOnPermission(action) {
+    return calculatePermission(action) === false ? ` style="display:none"` : "";
 }

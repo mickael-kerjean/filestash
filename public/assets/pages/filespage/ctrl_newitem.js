@@ -5,7 +5,7 @@ import { animate } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 
 import { getAction$, setAction } from "./state_newthing.js";
-import { rm as mkdir, touch } from "./state_filemutate.js";
+import { mkdir, touch } from "./state_filemutate.js";
 import { currentPath } from "./helper.js";
 
 export default async function(render) {
