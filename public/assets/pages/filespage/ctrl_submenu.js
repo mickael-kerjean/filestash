@@ -20,6 +20,8 @@ import { getAction$, setAction } from "./state_newthing.js";
 import { setState, getState$ } from "./state_config.js";
 import { rm, mv, extractPath } from "./state_filemutate.js";
 import { getPermission, calculatePermission } from "./model_acl.js";
+import { clearCache } from "./cache.js";
+import { currentPath } from "./helper.js";
 
 const modalOpt = {
     withButtonsRight: "OK",
@@ -55,8 +57,8 @@ function componentLeft(render, { $scroll }) {
         rxjs.filter((selections) => selections.length === 0),
         rxjs.mergeMap(() => getPermission()),
         rxjs.map(() => render(createFragment(`
-            <button data-action="new-file"${toggleDependingOnPermission("new-file")}>New File</button>
-            <button data-action="new-folder"${toggleDependingOnPermission("new-folder")}>New Folder</button>
+            <button data-action="new-file"${toggleDependingOnPermission(currentPath(), "new-file")}>New File</button>
+            <button data-action="new-folder"${toggleDependingOnPermission(currentPath(), "new-folder")}>New Folder</button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
             onClick(qs($page, `[data-action="new-file"]`)).pipe(rxjs.mapTo("NEW_FILE")),
@@ -110,9 +112,11 @@ function componentLeft(render, { $scroll }) {
                 rxjs.mergeMap((val) => {
                     const path = expandSelection()[0].path;
                     const [basepath, filename] = extractPath(path);
+                    clearSelection();
+                    clearCache(path);
+                    clearCache(basepath + val);
                     return mv(path, basepath + val);
                 }),
-                rxjs.tap(clearSelection),
             ),
             onClick(qs($page, `[data-action="delete"]`)).pipe(
                 rxjs.mergeMap(() => componentDelete(
@@ -122,6 +126,7 @@ function componentLeft(render, { $scroll }) {
                 rxjs.mergeMap((val) => {
                     const selection = expandSelection()[0].path;
                     clearSelection();
+                    clearCache(selection);
                     return rm(selection);
                 }),
             ),
@@ -170,7 +175,7 @@ function componentRight(render) {
         rxjs.filter((selections) => selections.length === 0),
         rxjs.map(() => render(createFragment(`
             <form style="display: inline-block;" onsubmit="event.preventDefault()">
-                <input class="hidden" placeholder="search" style="
+                <input class="hidden" placeholder="search" name="q" style="
                     background: transparent;
                     border: none;
                     padding-left: 5px;
@@ -363,6 +368,6 @@ function generateLinkAttributes(selections) {
     return `href="${href}" download="${filename}"`;
 }
 
-function toggleDependingOnPermission(action) {
-    return calculatePermission(action) === false ? ` style="display:none"` : "";
+function toggleDependingOnPermission(path, action) {
+    return calculatePermission(path, action) === false ? ` style="display:none"` : "";
 }

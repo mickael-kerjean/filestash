@@ -1,25 +1,62 @@
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 
-// export function ls() {
-//     return rxjs.from(new Error("missing cache")).pipe(
-//         rxjs.catchError(() => rxjs.of({ files: null })),
-//         rxjs.mergeMap(({ files: filesInCache }) => ajax({
-//             url: `/api/files/ls?path=${path}`,
-//             responseType: "json"
-//         }).pipe(
-//             rxjs.map(({ responseJSON }) => responseJSON),
-//             rxjs.filter(({ filesInRemote }) => {
-//                 if (!Array.isArray(filesInCache)) return true;
-//                 if (filesInCache.length != filesInRemote.length) return true;
-//                 for (let i=0; i<filesInCache.length; i++) {
-//                     if (filesInCache[i].name !== filesInRemote[i].name) return true;
-//                 }
-//                 return false;
-//             }),
-//         )),
-//     )
-// }
+import { setPermissions } from "./model_acl.js";
+import fscache from "./cache.js";
+
+/*
+ * ls is in the hot path. To make it look faster, we keep a cache of its results locally
+ * and refresh the screen twice, a first time with the result of the cache and another time
+ * with the fresh data.
+ */
+export function ls(path) {
+    return rxjs.combineLatest(
+        lsFromCache(path),
+        rxjs.merge(
+            rxjs.of(null),
+            rxjs.merge(rxjs.of(null), rxjs.fromEvent(window, "keydown").pipe( // "r" shorcut
+                rxjs.filter((e) => e.keyCode === 82 && document.activeElement.tagName !== "INPUT"),
+            )).pipe(
+                rxjs.switchMap(() => lsFromHttp(path)),
+                rxjs.tap(({ permissions }) => setPermissions(path, permissions)),
+            ),
+        )
+    ).pipe(rxjs.mergeMap(([cache, http]) => {
+        if (http && cache) {
+            let shouldRefresh = false;
+            if (http.files.length !== cache.files.length) return rxjs.of(http);
+            else if (JSON.stringify(http.permissions) !== JSON.stringify(cache.permissions)) return rxjs.of(http);
+            for (let i=0; i<http.files.length; i++) {
+                if (http.files[i].type !== cache.files[i].type ||
+                    http.files[i].name !== cache.files[i].name) {
+                    return rxjs.of(http);
+                }
+            }
+        }
+
+        if (http) return rxjs.of(http);
+        if (cache) return rxjs.of(cache);
+        return rxjs.EMPTY;
+    }));
+}
+
+function lsFromCache(path) {
+    return rxjs.from(fscache().get(path));
+}
+
+function lsFromHttp(path) {
+    return ajax({
+        url: `/api/files/ls?path=${path}`,
+        responseType: "json"
+    }).pipe(
+        // rxjs.delay(1000),
+        rxjs.map(({ responseJSON }) => ({
+            files: responseJSON.results,
+            permissions: responseJSON.permissions,
+        })),
+        rxjs.tap((data) => fscache().store(path, data)),
+    );
+}
 
 export function search(term) {
     const path = location.pathname.replace(new RegExp("^/files/"), "/");
@@ -30,30 +67,3 @@ export function search(term) {
         files: responseJSON.results,
     })));
 }
-
-export function ls(path) {
-    return rxjs.merge(
-        rxjs.of(null),
-        rxjs.fromEvent(window, "keydown").pipe( // "r" shorcut
-            rxjs.filter((e) => e.keyCode === 82 && document.activeElement.tagName !== "INPUT"),
-        )
-    ).pipe(rxjs.switchMap(() => ajax({
-        url: `/api/files/ls?path=${path}`,
-        responseType: "json"
-    }).pipe(rxjs.map(({ responseJSON }) => ({
-        files: responseJSON.results,
-        permissions: responseJSON.permissions,
-        path,
-    })))));
-}
-
-const sortByDefault = (fileA, fileB) => {
-    if (fileA.type !== fileB.type) {
-        if (fileA.type === "file") return +1;
-        return -1;
-    }
-    // if (fileA.name < fileB.name) {
-    //     return -1
-    // }
-    return 0;
-};

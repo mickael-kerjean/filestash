@@ -13,7 +13,7 @@ const IMAGE = {
 
 const $tmpl = createElement(`
     <a href="__TEMPLATE__" class="component_thing no-select" draggable="true" data-link>
-        <div class="component_checkbox"><input type="checkbox"><span class="indicator"></span></div>
+        <div class="component_checkbox"><input name="select" type="checkbox"><span class="indicator"></span></div>
         <img class="component_icon" draggable="false" src="__TEMPLATE__" alt="directory">
         <div class="info_extension"><span></span></div>
         <span class="component_filename">
@@ -100,20 +100,9 @@ export function createThing({
         });
     };
     $thing.ondragstart = (e) => {
-        e.dataTransfer.setData("path", path);
         $thing.classList.add("hover");
-
-        const crt = $thing.cloneNode(true);
-        $thing.style.opacity = "0.7";
-        const $box = crt;
-        crt.style.opacity = "0.2";
-        crt.style.backgroundColor = "var(--border)";
-        $box.style.backgroundColor = "inherit";
-        $box.style.border = "none";
-        $box.style.borderRadius = "0";
-
-        $thing.closest("[data-target=\"list\"]").appendChild(crt);
-        e.dataTransfer.setDragImage(crt, e.offsetX, -10);
+        e.dataTransfer.setData("path", path);
+        e.dataTransfer.setDragImage($thing, e.offsetX, -10);
     };
     $thing.ondragover = (e) => {
         if ($thing.getAttribute("data-droptarget") !== "true") return;

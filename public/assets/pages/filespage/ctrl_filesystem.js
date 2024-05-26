@@ -9,6 +9,7 @@ import ctrlError from "../ctrl_error.js";
 
 import { currentPath, sort, isMobile } from "./helper.js";
 import { createThing } from "./thing.js";
+import { init as initCache } from "./cache.js";
 import { clearSelection, addSelection, getSelection$, isSelected } from "./state_selection.js";
 import { middlewareLs } from "./state_filemutate.js";
 import { getState$ } from "./state_config.js";
@@ -53,8 +54,9 @@ export default async function(render) {
         }),
     );
 
+    let count = 0;
     effect(ls(path).pipe(
-        rxjs.tap(({ permissions }) => setPermissions(permissions)),
+        rxjs.tap(({ permissions }) => setPermissions(path, permissions)),
         middlewareLs(currentPath()),
         rxjs.switchMap(({ files, ...rest }) => getState$().pipe(rxjs.switchMap((state) => {
             $header.innerHTML = "";
@@ -74,6 +76,7 @@ export default async function(render) {
             files = sort(files, rest.sort, rest.order);
             return rxjs.of({ ...rest, files })
         }),
+        rxjs.map((data) => ({ ...data, count: count++ })),
         removeLoader,
         rxjs.mergeMap(({ files, search, ...rest }) => {
             files$.next(files);
@@ -84,7 +87,7 @@ export default async function(render) {
             return rxjs.of({...rest, files });
         }),
         rxjs.mergeMap((obj) => refreshOnResize$.pipe(rxjs.mapTo(obj))),
-        rxjs.mergeMap(({ files, path, view, read_only }) => { // STEP1: setup the list of files
+        rxjs.mergeMap(({ files, view, read_only, count }) => { // STEP1: setup the list of files
             $list.closest(".scroll-y").scrollTop = 0;
             let FILE_HEIGHT, COLUMN_PER_ROW;
             switch(view) {
@@ -114,12 +117,15 @@ export default async function(render) {
                 const file = files[i];
                 $fs.appendChild(createThing({
                     ...file,
-                    ...createLink(file, path),
+                    ...createLink(file, currentPath()),
                     view, read_only,
                     n: i,
                 }));
             }
-            animate($list, { time: 200, keyframes: slideYIn(isMobile ? 10 : 5) });
+            if (count === 0) animate(
+                $list,
+                { time: 200, keyframes: slideYIn(isMobile ? 10 : 5) },
+            );
             $list.replaceChildren($fs);
 
             //////////////////////////////////////
@@ -301,6 +307,7 @@ export function init() {
         loadCSS(import.meta.url, "./ctrl_filesystem.css"),
         loadCSS(import.meta.url, "./thing.css"),
         loadCSS(import.meta.url, "./modal.css"),
+        initCache(),
     ]);
 }
 

@@ -1,5 +1,6 @@
 import { onDestroy } from "../../lib/skeleton/index.js";
 import rxjs from "../../lib/rx.js";
+import fscache from "./cache.js";
 
 const virtualFiles$ = new rxjs.BehaviorSubject({
     // "/tmp/": [],
@@ -11,50 +12,71 @@ const mutationFiles$ = new rxjs.BehaviorSubject({
 
 export function touch(path) {
     const [basepath, filename] = extractPath(path);
-    stateAdd(virtualFiles$, basepath, {
+    const file = {
         name: filename,
         type: "file",
         size: 0,
         time: new Date().getTime(),
+    };
+    stateAdd(virtualFiles$, basepath, {
+        ...file,
         loading: true,
     });
-    const onSuccess = () => {
-        removeLoading(basepath, filename);
+    const onSuccess = async () => {
+        removeLoading(virtualFiles$, basepath, filename);
         onDestroy(() => statePop(virtualFiles$, basepath, filename));
-        // TODO: update cache
+        await fscache().update(basepath, ({ files, ...rest }) => {
+            if (Array.isArray(files) === false) return rest;
+            return { files: files.concat([file]), ...rest };
+        });
     };
     const onFailure = (err, caught) => {
         statePop(virtualFiles$, basepath, filename);
-        return rxjs.EMPTY;
+        return rxjs.of(fscache().remove(basepath)).pipe(
+            rxjs.mergeMap(() => rxjs.EMPTY),
+        );
     };
     return rxjs.of(null).pipe(
         rxjs.delay(2000),
-        rxjs.tap(onSuccess),
+        rxjs.mergeMap(onSuccess),
         rxjs.catchError(onFailure),
     );
 }
 
 export function mkdir(path) {
     const [basepath, dirname] = extractPath(path);
-    stateAdd(virtualFiles$, basepath, {
+    const file = {
         name: dirname,
         type: "directory",
         size: 0,
         time: new Date().getTime(),
+    };
+    stateAdd(virtualFiles$, basepath, {
+        ...file,
         loading: true,
     });
-    const onSuccess = () => {
-        removeLoading(basepath, dirname);
+    const onSuccess = async () => {
+        removeLoading(virtualFiles$, basepath, dirname);
         onDestroy(() => statePop(virtualFiles$, basepath, dirname));
-        // TODO: update cache
+        await fscache().update(basepath, ({ files, ...rest }) => {
+            if (Array.isArray(files) === false) return rest;
+            return { files: files.concat([file]), ...rest };
+        });
+        // TODO: remove cache if path not found
+        // await fscache().store(path, {
+        //     files: [],
+        //     permissions: {},
+        // });
     };
     const onFailure = () => {
         statePop(virtualFiles$, basepath, dirname);
-        return rxjs.EMPTY;
+        return rxjs.of(fscache().remove(basepath)).pipe(
+            rxjs.mergeMap(() => rxjs.EMPTY),
+        );
     };
     return rxjs.of(null).pipe(
         rxjs.delay(2000),
-        rxjs.tap(onSuccess),
+        rxjs.mergeMap(onSuccess),
         rxjs.catchError(onFailure),
     );
 }
@@ -69,7 +91,7 @@ export function save(path, size) {
         loading: true,
     });
     const onSuccess = () => {
-        removeLoading(basepath, filename);
+        removeLoading(virtualFiles$, basepath, filename);
         onDestroy(() => statePop(virtualFiles$, basepath, filename));
         // TODO: update cache
     };
@@ -92,7 +114,7 @@ export function rm(...paths) {
     for (let i=0;i<paths.length;i++) {
         [arr[2*i], arr[2*i+1]] = extractPath(paths[i]);
         if (i === 0) basepath = arr[2*i];
-        else if (basepath !== arr[2*i]) throw new Error("not implemented yet");
+        else if (basepath !== arr[2*i]) throw new Error("NOT_IMPLEMENTED");
     }
 
     stateAdd(mutationFiles$, basepath, {
@@ -108,7 +130,7 @@ export function rm(...paths) {
         },
     });
 
-    const onSuccess = () => {
+    const onSuccess = async () => {
         stateAdd(mutationFiles$, basepath, {
             name: basepath,
             fn: (file) => {
@@ -119,7 +141,7 @@ export function rm(...paths) {
             },
         });
         onDestroy(() => statePop(mutationFiles$, basepath, basepath));
-        // TODO: update cache
+        await Promise.all(paths.map((path) => fscache().remove(path, false)));
     };
     const onFailure = () => {
         stateAdd(mutationFiles$, basepath, {
@@ -176,6 +198,7 @@ export function mv(fromPath, toPath) {
         });
     }
     const onSuccess = () => {
+        fscache().remove(fromPath, false);
         if (fromBasepath === toBasepath) {
             stateAdd(mutationFiles$, fromBasepath, {
                 name: fromName,
@@ -192,7 +215,7 @@ export function mv(fromPath, toPath) {
                     return file;
                 },
             });
-            removeLoading(toBasepath, toName);
+            removeLoading(virtualFiles$, toBasepath, toName);
         }
     };
     const onFailure = () => {
@@ -282,8 +305,8 @@ function statePop(behavior, path, filename) {
     });
 }
 
-function removeLoading(path, filename) {
-    const arr = virtualFiles$.value[path];
+function removeLoading(behavior, path, filename) {
+    const arr = behavior.value[path];
     if (!arr) return;
     virtualFiles$.next({
         ...virtualFiles$.value,

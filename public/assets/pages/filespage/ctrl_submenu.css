@@ -39,9 +39,6 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-[is="component_submenu"] .component_submenu .action.right {
-    margin-right:2px;
-}
 [is="component_submenu"] .component_submenu .action.right:hover,
 [is="component_submenu"] .component_submenu .action.right.hover{
     background: var(--border);
