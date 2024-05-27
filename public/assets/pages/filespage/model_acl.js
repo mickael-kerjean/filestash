@@ -21,6 +21,8 @@ export function calculatePermission(path, action) {
     }
 }
 
-export function getPermission() {
-    return perms$.asObservable();
+export function getPermission(path) {
+    return perms$.asObservable().pipe(
+        rxjs.map((perms) => perms[path]),
+    );
 }

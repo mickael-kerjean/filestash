@@ -13,6 +13,7 @@
     font-size: 0.95rem;
     opacity: 0.8;
     padding-left: 10px;
+    text-transform: capitalize;
 }
 .component_filemanager_shell .component_sidebar > div {
     min-height: 50px;

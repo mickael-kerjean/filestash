@@ -19,14 +19,14 @@ import componentDelete from "./modal_delete.js";
 import { getSelection$, clearSelection, lengthSelection, expandSelection } from "./state_selection.js";
 import { getAction$, setAction } from "./state_newthing.js";
 import { setState, getState$ } from "./state_config.js";
-import { rm, mv, extractPath } from "./state_filemutate.js";
-import { getPermission, calculatePermission } from "./model_acl.js";
 import { clearCache } from "./cache.js";
-import { currentPath } from "./helper.js";
+import { getPermission, calculatePermission } from "./model_acl.js";
+import { rm, mv } from "./model_files.js";
+import { currentPath, extractPath } from "./helper.js";
 
 const modalOpt = {
-    withButtonsRight: "OK",
-    withButtonsLeft: "CANCEL",
+    withButtonsRight: t("OK"),
+    withButtonsLeft: t("CANCEL"),
 };
 
 export default async function(render) {
@@ -297,7 +297,6 @@ function componentRight(render) {
                 rxjs.mergeMap(async (show) => {
                     const $input = qs($page, "input");
                     const $searchImg = qs($page, "img");
-                    const hide_left_side = document.body.clientWidth < 500;
                     if (show) {
                         $page.classList.add("hover");
                         $input.value = "";
@@ -305,11 +304,9 @@ function componentRight(render) {
                         $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.CROSS);
                         $searchImg.setAttribute("alt", "close");
 
-                        if (hide_left_side) {
-                            const $listOfButtons = $page.parentElement.firstElementChild.children
-                            for (let $item of $listOfButtons) {
-                                $item.classList.add("hidden");
-                            }
+                        const $listOfButtons = $page.parentElement.firstElementChild.children
+                        for (let $item of $listOfButtons) {
+                            $item.classList.add("hidden");
                         }
                         setAction(null); // reset new file, new folder
                         await animate($input, {
@@ -326,12 +323,10 @@ function componentRight(render) {
                             time: 100,
                         });
                         $input.classList.add("hidden");
-                        if (hide_left_side) {
-                            const $listOfButtons = $page.parentElement.firstElementChild.children
-                            for (let $item of $listOfButtons) {
-                                $item.classList.remove("hidden");
-                                animate($item, { time: 100, keyframes: slideXIn(5) })
-                            }
+                        const $listOfButtons = $page.parentElement.firstElementChild.children
+                        for (let $item of $listOfButtons) {
+                            $item.classList.remove("hidden");
+                            animate($item, { time: 100, keyframes: slideXIn(5) })
                         }
                         setState("search", "");
                     }

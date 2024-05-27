@@ -2,6 +2,8 @@ import { createElement, createFragment } from "../../lib/skeleton/index.js";
 import { qs } from "../../lib/dom.js";
 import assert from "../../lib/assert.js";
 
+import { extractPath } from "./helper.js";
+import { mv } from "./model_files.js";
 import { files$ } from "./ctrl_filesystem.js";
 import { addSelection, isSelected } from "./state_selection.js";
 
@@ -12,7 +14,7 @@ const IMAGE = {
 };
 
 const $tmpl = createElement(`
-    <a href="__TEMPLATE__" class="component_thing no-select" draggable="true" data-link>
+    <a href="__TEMPLATE__" class="component_thing no-select" draggable="false" data-link>
         <div class="component_checkbox"><input name="select" type="checkbox"><span class="indicator"></span></div>
         <img class="component_icon" draggable="false" src="__TEMPLATE__" alt="directory">
         <div class="info_extension"><span></span></div>
@@ -42,6 +44,7 @@ export function createThing({
     view = "",
     n = 0,
     read_only = false,
+    permissions = {},
 }) {
     const $thing = $tmpl.cloneNode(true);
     assert.type($thing, window.HTMLElement);
@@ -87,9 +90,9 @@ export function createThing({
     }
 
     const checked = isSelected(n);
+    if (permissions && permissions.can_move !== false) $thing.setAttribute("draggable", "true");
     $thing.classList.add(checked ? "selected" : "not-selected");
     $checkbox.firstElementChild.checked = checked;
-
     $checkbox.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -112,9 +115,20 @@ export function createThing({
     $thing.ondragleave = () => {
         $thing.classList.remove("hover");
     };
-    $thing.ondrop = (e) => {
+    $thing.ondrop = async (e) => {
         $thing.classList.remove("hover");
-        console.log("DROPPED!", e.dataTransfer.getData("path"));
+
+        const from = e.dataTransfer.getData("path");
+        let to = path;
+        if (from === to) return;
+
+        const isDir = (p) => new RegExp("/$").test(p);
+        if (isDir(to)) {
+            const [fromBasepath, fromName] = extractPath(from);
+            to += fromName;
+            if (isDir(from)) to += "/";
+        }
+        await mv(from, to).toPromise();
     };
     return $thing;
 }

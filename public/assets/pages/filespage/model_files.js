@@ -3,58 +3,111 @@ import ajax from "../../lib/ajax.js";
 
 import { setPermissions } from "./model_acl.js";
 import fscache from "./cache.js";
+import {
+    rm as cacheRm, mv as cacheMv, save as cacheSave,
+    touch as cacheTouch, mkdir as cacheMkdir, ls as middlewareLs,
+} from "./cache_transcient.js";
 
 /*
- * ls is in the hot path. To make it look faster, we keep a cache of its results locally
- * and refresh the screen twice, a first time with the result of the cache and another time
- * with the fresh data.
+ * The naive approach would be to make an API call and refresh the screen after an action
+ * is made but that give a poor UX. Instead, we rely on 2 layers of caching:
+ * - the indexedDB cache that stores the part of the filesystem we've already visited. That way
+ *   we can make navigation feel instant by first returning what's in the cache first and only
+ *   refresh the screen if our cache is out of date.
+ * - the transcient cache which is used whenever the user do something. For example, when creating
+ *   a file we have 3 actions being done:
+ *   1. a new file is shown in the UI but with a loading spinner
+ *   2. the api call is made
+ *   3. the new file is being persisted in the screen if the API call is a success
  */
+
+export function touch(path) {
+    const ajax$ = rxjs.of(null).pipe(
+        rxjs.delay(1000),
+        // rxjs.tap(() => {
+        //     throw new Error("NOOOO");
+        // }),
+        rxjs.delay(1000),
+    );
+    return cacheTouch(ajax$, path);
+}
+
+export function mkdir(path) {
+    const ajax$ = rxjs.of(null).pipe(
+        rxjs.delay(1000),
+        // rxjs.tap(() => {
+        //     throw new Error("NOOOO");
+        // }),
+        rxjs.delay(1000),
+    );
+    return cacheMkdir(ajax$, path);
+}
+
+export function rm(...paths) {
+    const ajax$ = rxjs.of(null).pipe(
+        rxjs.delay(1000),
+        // rxjs.tap(() => {
+        //     throw new Error("NOOOO");
+        // }),
+        rxjs.delay(1000),
+    );
+    return cacheRm(ajax$, ...paths);
+}
+
+export function mv(from, to) {
+    const ajax$ = rxjs.of(null).pipe(rxjs.delay(1000));
+    return cacheMv(ajax$, from, to);
+}
+
+export function save(path) { // TODO
+    return rxjs.of(null).pipe(rxjs.delay(1000));
+}
+
 export function ls(path) {
+    const lsFromCache = (path) => rxjs.from(fscache().get(path));
+    const lsFromHttp = (path) => ajax({
+        url: `/api/files/ls?path=${path}`,
+        responseType: "json"
+    }).pipe(
+        rxjs.map(({ responseJSON }) => ({
+            files: responseJSON.results,
+            permissions: responseJSON.permissions,
+        })),
+        rxjs.tap((data) => fscache().store(path, data)),
+    );
+
     return rxjs.combineLatest(
         lsFromCache(path),
         rxjs.merge(
             rxjs.of(null),
             rxjs.merge(rxjs.of(null), rxjs.fromEvent(window, "keydown").pipe( // "r" shorcut
                 rxjs.filter((e) => e.keyCode === 82 && document.activeElement.tagName !== "INPUT"),
-            )).pipe(
-                rxjs.switchMap(() => lsFromHttp(path)),
-                rxjs.tap(({ permissions }) => setPermissions(path, permissions)),
-            ),
-        )
-    ).pipe(rxjs.mergeMap(([cache, http]) => {
-        if (http && cache) {
-            let shouldRefresh = false;
-            if (http.files.length !== cache.files.length) return rxjs.of(http);
-            else if (JSON.stringify(http.permissions) !== JSON.stringify(cache.permissions)) return rxjs.of(http);
-            for (let i=0; i<http.files.length; i++) {
-                if (http.files[i].type !== cache.files[i].type ||
-                    http.files[i].name !== cache.files[i].name) {
-                    return rxjs.of(http);
+            )).pipe(rxjs.switchMap(() => lsFromHttp(path))),
+        ),
+    ).pipe(
+        rxjs.mergeMap(([cache, http]) => {
+            if (http) return rxjs.of(http);
+            if (cache) return rxjs.of(cache);
+            return rxjs.EMPTY;
+        }),
+        rxjs.distinctUntilChanged((prev, curr) => {
+            let refresh = false;
+            if (prev.files.length !== curr.files.length) refresh = true;
+            else if (JSON.stringify(prev.permissions) !== JSON.stringify(curr.permissions)) refresh = true;
+            else {
+                for (let i=0; i<curr.files.length; i++) {
+                    if (curr.files[i].type !== prev.files[i].type ||
+                        curr.files[i].size !== prev.files[i].size ||
+                        curr.files[i].name !== prev.files[i].name) {
+                        refresh = true;
+                        break;
+                    }
                 }
             }
-        }
-
-        if (http) return rxjs.of(http);
-        if (cache) return rxjs.of(cache);
-        return rxjs.EMPTY;
-    }));
-}
-
-function lsFromCache(path) {
-    return rxjs.from(fscache().get(path));
-}
-
-function lsFromHttp(path) {
-    return ajax({
-        url: `/api/files/ls?path=${path}`,
-        responseType: "json"
-    }).pipe(
-        // rxjs.delay(1000),
-        rxjs.map(({ responseJSON }) => ({
-            files: responseJSON.results,
-            permissions: responseJSON.permissions,
-        })),
-        rxjs.tap((data) => fscache().store(path, data)),
+            return !refresh;
+        }),
+        rxjs.tap(({ permissions }) => setPermissions(path, permissions)),
+        middlewareLs(path),
     );
 }
 

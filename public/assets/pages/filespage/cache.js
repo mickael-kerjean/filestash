@@ -112,7 +112,7 @@ class IndexDBCache extends ICache {
         if (exact !== true) {
             let request = store.openCursor(IDBKeyRange.bound(
                 [key[0], key[1], key[2]],
-                [key[0], key[1], key[2]+'\uFFFF'.repeat(5000)],
+                [key[0], key[1], key[2]+"\u{FFFF}".repeat(5000)],
                 true, true,
             ));
             await new Promise((done, err) => {
@@ -177,22 +177,42 @@ export function clearCache(path) {
 }
 
 export async function init() {
-    cache = new InMemoryCache();
-    if (!("indexedDB" in window)) return initCacheState();
+    const setup_cache = () => {
+        cache = new InMemoryCache();
+        if (!("indexedDB" in window)) return initCacheState();
 
-    cache = new IndexDBCache();
-    return Promise.all([cache.db, initCacheState()]).catch((err) => {
-        if (err === "INDEXEDDB_NOT_SUPPORTED") {
-            // Firefox in private mode act like if it supports indexedDB but
-            // is throwing that string as an error if you try to use it ...
-            // so we fallback with our basic ram cache
-            cache = new DataFromMemory();
-            return initCacheState();
-        }
-        throw err;
-    });
+        cache = new IndexDBCache();
+        return Promise.all([cache.db, initCacheState()]).catch((err) => {
+            if (err === "INDEXEDDB_NOT_SUPPORTED") {
+                // Firefox in private mode act like if it supports indexedDB but
+                // is throwing that string as an error if you try to use it ...
+                // so we fallback with our basic ram cache
+                cache = new DataFromMemory();
+                return initCacheState();
+            }
+            throw err;
+        });
+    }
+    const setup_session = () => {
+        return Promise.resolve();
+    };
+
+    return Promise.all([setup_cache(), setup_session()]);
 }
 
 export default function() {
     return cache;
 };
+
+let backendID = "na";
+export function currentBackend() {
+    return backendID;
+}
+
+export function currentShare() {
+    return new window.URL(location.href).searchParams.get("share") || "";
+}
+
+function initCacheState() {
+    return Promise.resolve();
+}

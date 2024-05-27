@@ -4,6 +4,13 @@ export function currentPath() {
     return decodeURIComponent(location.pathname.replace(new RegExp("^/files"), ""));
 }
 
+export function extractPath(path) {
+    path = path.replace(new RegExp("/$"), "");
+    const p = path.split("/");
+    const filename = p.pop();
+    return [p.join("/") + "/", filename];
+}
+
 export function sort(files, type, order) {
     switch(type) {
     case "name": return sortByName(files, order);

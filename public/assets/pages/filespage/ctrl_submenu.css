@@ -53,6 +53,7 @@
 }
 [is="component_submenu"] .component_submenu .action.right {
     border-radius: 5px;
+    white-space: nowrap;
 }
 [is="component_submenu"] .component_submenu .action.right button[data-bind="clear"] {
     display: flex;

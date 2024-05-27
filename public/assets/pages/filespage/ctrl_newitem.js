@@ -5,8 +5,8 @@ import { animate } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 
 import { getAction$, setAction } from "./state_newthing.js";
-import { mkdir, touch } from "./state_filemutate.js";
 import { currentPath } from "./helper.js";
+import { mkdir, touch } from "./model_files.js";
 
 export default async function(render) {
     const $node = createElement(`

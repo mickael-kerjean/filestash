@@ -1,6 +1,16 @@
 import { onDestroy } from "../../lib/skeleton/index.js";
 import rxjs from "../../lib/rx.js";
 import fscache from "./cache.js";
+import { extractPath } from "./helper.js";
+
+/*
+ * The transcient cache is used to rerender the list of files in a particular location. That's used
+ * when the user is doing either of a touch, mkdir, rm or mv. It is split onto 2 parts:
+ * - the virtualFiles$: which are things we want to display in addition to what is currently
+ *   visible on the screen
+ * - the mutationFiles$: which are things already on the screen which we need to mutate. For
+ *   example when we want a particular file to show a loading spinner
+ */
 
 const virtualFiles$ = new rxjs.BehaviorSubject({
     // "/tmp/": [],
@@ -10,7 +20,7 @@ const mutationFiles$ = new rxjs.BehaviorSubject({
     // "/home/": [{ name: "test", fn: (file) => file, ...]
 });
 
-export function touch(path) {
+export function touch(ajax$, path) {
     const [basepath, filename] = extractPath(path);
     const file = {
         name: filename,
@@ -25,10 +35,10 @@ export function touch(path) {
     const onSuccess = async () => {
         removeLoading(virtualFiles$, basepath, filename);
         onDestroy(() => statePop(virtualFiles$, basepath, filename));
-        await fscache().update(basepath, ({ files, ...rest }) => {
-            if (Array.isArray(files) === false) return rest;
-            return { files: files.concat([file]), ...rest };
-        });
+        await fscache().update(basepath, ({ files, ...rest }) => ({
+            files: files.concat([file]),
+            ...rest,
+        }));
     };
     const onFailure = (err, caught) => {
         statePop(virtualFiles$, basepath, filename);
@@ -36,14 +46,13 @@ export function touch(path) {
             rxjs.mergeMap(() => rxjs.EMPTY),
         );
     };
-    return rxjs.of(null).pipe(
-        rxjs.delay(2000),
+    return ajax$.pipe(
         rxjs.mergeMap(onSuccess),
         rxjs.catchError(onFailure),
     );
 }
 
-export function mkdir(path) {
+export function mkdir(ajax$, path) {
     const [basepath, dirname] = extractPath(path);
     const file = {
         name: dirname,
@@ -58,15 +67,10 @@ export function mkdir(path) {
     const onSuccess = async () => {
         removeLoading(virtualFiles$, basepath, dirname);
         onDestroy(() => statePop(virtualFiles$, basepath, dirname));
-        await fscache().update(basepath, ({ files, ...rest }) => {
-            if (Array.isArray(files) === false) return rest;
-            return { files: files.concat([file]), ...rest };
-        });
-        // TODO: remove cache if path not found
-        // await fscache().store(path, {
-        //     files: [],
-        //     permissions: {},
-        // });
+        await fscache().update(basepath, ({ files, ...rest }) => ({
+            files: files.concat([file]),
+            ...rest,
+        }));
     };
     const onFailure = () => {
         statePop(virtualFiles$, basepath, dirname);
@@ -74,41 +78,44 @@ export function mkdir(path) {
             rxjs.mergeMap(() => rxjs.EMPTY),
         );
     };
-    return rxjs.of(null).pipe(
-        rxjs.delay(2000),
+    return ajax$.pipe(
         rxjs.mergeMap(onSuccess),
         rxjs.catchError(onFailure),
     );
 }
 
-export function save(path, size) {
+export function save(ajax$, path, size) {
     const [basepath, filename] = extractPath(path);
-    stateAdd(virtualFiles$, basepath, {
+    const file = {
         name: dirname,
         type: "file",
         size,
         time: new Date().getTime(),
+    };
+    stateAdd(virtualFiles$, basepath, {
+        ...file,
         loading: true,
     });
-    const onSuccess = () => {
+    const onSuccess = async () => {
         removeLoading(virtualFiles$, basepath, filename);
         onDestroy(() => statePop(virtualFiles$, basepath, filename));
-        // TODO: update cache
+        await fscache().update(basepath, ({ files, ...rest }) => ({
+            files: files.concat([file]),
+            ...rest,
+        }));
     };
     const onFailure = () => {
         statePop(virtualFiles$, basepath, dirname);
         return rxjs.EMPTY;
     };
-    return rxjs.of(null).pipe(
-        rxjs.delay(2000),
+    return ajax$.pipe(
         rxjs.tap(onSuccess),
         rxjs.catchError(onFailure),
     );
 }
 
-export function rm(...paths) {
+export function rm(ajax$, ...paths) {
     if (paths.length === 0) return rxjs.of(null);
-
     const arr = new Array(paths.length * 2);
     let basepath = null;
     for (let i=0;i<paths.length;i++) {
@@ -116,7 +123,6 @@ export function rm(...paths) {
         if (i === 0) basepath = arr[2*i];
         else if (basepath !== arr[2*i]) throw new Error("NOT_IMPLEMENTED");
     }
-
     stateAdd(mutationFiles$, basepath, {
         name: basepath,
         fn: (file) => {
@@ -129,7 +135,6 @@ export function rm(...paths) {
             return file;
         },
     });
-
     const onSuccess = async () => {
         stateAdd(mutationFiles$, basepath, {
             name: basepath,
@@ -142,31 +147,42 @@ export function rm(...paths) {
         });
         onDestroy(() => statePop(mutationFiles$, basepath, basepath));
         await Promise.all(paths.map((path) => fscache().remove(path, false)));
+        await fscache().update(basepath, ({ files, ...rest }) => ({
+            files: files.filter(({ name }) => {
+                for (let i=0;i<arr.length;i+=2) {
+                    if (name === arr[i+1]) {
+                        return false;
+                    }
+                }
+                return true;
+            }),
+            ...rest,
+        }));
     };
     const onFailure = () => {
         stateAdd(mutationFiles$, basepath, {
             name: basepath,
             fn: (file) => {
                 for (let i=0;i<arr.length;i+=2) {
-                    if (file.name === arr[i+1]) delete file.loading;
+                    if (file.name === arr[i+1]) {
+                        delete file.loading;
+                        delete file.last;
+                    }
                 }
                 return file;
             },
         });
         return rxjs.EMPTY;
     };
-
-    return rxjs.of(null).pipe(
-        rxjs.delay(1000),
+    return ajax$.pipe(
         rxjs.tap(onSuccess),
         rxjs.catchError(onFailure),
     );
 }
 
-export function mv(fromPath, toPath) {
+export function mv(ajax$, fromPath, toPath) {
     const [fromBasepath, fromName] = extractPath(fromPath);
     const [toBasepath, toName] = extractPath(toPath);
-
     let type = null;
     if (fromBasepath === toBasepath) {
         stateAdd(mutationFiles$, fromBasepath, {
@@ -197,7 +213,8 @@ export function mv(fromPath, toPath) {
             type,
         });
     }
-    const onSuccess = () => {
+    const onSuccess = async () => {
+        console.log(fromPath, toPath)
         fscache().remove(fromPath, false);
         if (fromBasepath === toBasepath) {
             stateAdd(mutationFiles$, fromBasepath, {
@@ -206,6 +223,17 @@ export function mv(fromPath, toPath) {
                     if (file.name === toName) delete file.loading;
                     return file;
                 },
+            });
+            await fscache().update(fromBasepath, ({ files, ...rest }) => {
+                return {
+                    files: files.map((file) => {
+                        if (file.name === fromName) {
+                            file.name = toName;
+                        }
+                        return file;
+                    }),
+                    ...rest,
+                };
             });
         } else {
             stateAdd(mutationFiles$, fromBasepath, {
@@ -219,21 +247,19 @@ export function mv(fromPath, toPath) {
         }
     };
     const onFailure = () => {
-        if (fromBasepath === toBasepath) {
-            // TODO
-        } else {
-            // TODO
+        statePop(mutationFiles$, fromBasepath, fromName);
+        if (fromBasepath !== toBasepath) {
+            statePop(virtualFiles$, toBasepath, toName);
         }
         return rxjs.EMPTY;
     };
-    return rxjs.of(null).pipe(
-        rxjs.delay(1000),
+    return ajax$.pipe(
         rxjs.tap(onSuccess),
         rxjs.catchError(onFailure),
     );
 }
 
-export function middlewareLs(path) {
+export function ls(path) {
     return rxjs.pipe(
         // case1: virtual files = additional files we want to see displayed in the UI
         rxjs.switchMap(({ files, ...res }) => virtualFiles$.pipe(rxjs.mergeMap((virtualFiles) => {
@@ -260,15 +286,7 @@ export function middlewareLs(path) {
             }
             return rxjs.of({ ...res, files });
         }))),
-        // rxjs.tap(({ files }) => console.log(files)),
     );
-}
-
-export function extractPath(path) {
-    path = path.replace(new RegExp("/$"), "");
-    const p = path.split("/");
-    const filename = p.pop();
-    return [p.join("/") + "/", filename];
 }
 
 function stateAdd(behavior, path, obj) {
