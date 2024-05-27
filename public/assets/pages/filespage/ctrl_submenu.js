@@ -4,6 +4,7 @@ import { animate, slideXIn, slideYIn } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { basename } from "../../lib/path.js";
+import t from "../../locales/index.js";
 
 import "../../components/dropdown.js";
 import "../../components/icon.js";
@@ -55,10 +56,17 @@ export default async function(render) {
 function componentLeft(render, { $scroll }) {
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 0),
+        rxjs.mergeMap(() => rxjs.merge(rxjs.fromEvent(window, "resize"), rxjs.of(null))),
         rxjs.mergeMap(() => getPermission()),
         rxjs.map(() => render(createFragment(`
-            <button data-action="new-file"${toggleDependingOnPermission(currentPath(), "new-file")}>New File</button>
-            <button data-action="new-folder"${toggleDependingOnPermission(currentPath(), "new-folder")}>New Folder</button>
+            <button data-action="new-file" title="${t("New File")}"${toggleDependingOnPermission(currentPath(), "new-file")}>
+                ${ window.innerWidth < 410 && t("New File").length > 10 ?
+                    t("New File", null, "NEW_FILE::SHORT") : t("New File") }
+            </button>
+            <button data-action="new-folder" title="${t("New Folder")}"${toggleDependingOnPermission(currentPath(), "new-folder")}>
+                ${ window.innerWidth < 410 && t("New Folder").length > 10 ?
+                    t("New Folder", null, "NEW_FOLDER::SHORT") : t("New Folder") }
+            </button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
             onClick(qs($page, `[data-action="new-file"]`)).pipe(rxjs.mapTo("NEW_FILE")),
@@ -81,14 +89,24 @@ function componentLeft(render, { $scroll }) {
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 1),
         rxjs.map(() => render(createFragment(`
-            <a ${generateLinkAttributes(expandSelection())}>
-                <button data-action="download">Download</button>
-            </a>
-            <button data-action="delete"${toggleDependingOnPermission("delete")}>Delete</button>
-            <button data-action="share">Share</button>
-            <button data-action="embed" class="hidden">Embed</button>
-            <button data-action="tag" class="hidden">Tag</button>
-            <button data-action="rename"${toggleDependingOnPermission("rename")}>Rename</button>
+            <a ${generateLinkAttributes(expandSelection())}><button data-action="download" title="${t("Download")}">
+                ${t("Download")}
+            </button></a>
+            <button data-action="delete"${toggleDependingOnPermission(currentPath(), "delete")} title="${t("Remove")}">
+                ${t("Remove")}
+            </button>
+            <button data-action="share" title="${t("Share")}">
+                ${t("Share")}
+            </button>
+            <button data-action="embed" class="hidden" title="${t("Embed")}">
+                ${t("Embed")}
+            </button>
+            <button data-action="tag" class="hidden" title="${t("Tag")}">
+                ${t("Tag")}
+            </button>
+            <button data-action="rename" title="${t("Rename")}"${toggleDependingOnPermission(currentPath(), "rename")}>
+                ${t("Rename")}
+            </button>
         `))),
         rxjs.tap(($buttons) => animate($buttons, { time: 100, keyframes: slideYIn(5) })),
         rxjs.switchMap(($page) => rxjs.merge(
@@ -136,10 +154,12 @@ function componentLeft(render, { $scroll }) {
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length > 1),
         rxjs.map(() => render(createFragment(`
-            <a ${generateLinkAttributes(expandSelection())}>
-                <button data-action="download">Download</button>
-            </a>
-            <button data-action="delete">Delete</button>
+            <a ${generateLinkAttributes(expandSelection())}><button data-action="download">
+                ${t("Download")}
+            </button></a>
+            <button data-action="delete"${toggleDependingOnPermission(currentPath(), "delete")}>
+                ${t("Remove")}
+            </button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
             onClick(qs($page, `[data-action="delete"]`)).pipe(
@@ -175,34 +195,34 @@ function componentRight(render) {
         rxjs.filter((selections) => selections.length === 0),
         rxjs.map(() => render(createFragment(`
             <form style="display: inline-block;" onsubmit="event.preventDefault()">
-                <input class="hidden" placeholder="search" name="q" style="
+                <input class="hidden" placeholder="${t("search")}" name="q" style="
                     background: transparent;
                     border: none;
                     padding-left: 5px;
                     color: var(--color);
                     font-size: 0.95rem;">
             </form>
-            <button data-action="search">
+            <button data-action="search" title="${t("Search")}">
                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.MAGNIFYING_GLASS}" alt="search" />
             </button>
-            <button data-action="view">
+            <button data-action="view" title="${t("Layout")}">
                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.LIST_VIEW}" alt="list" />
             </button>
-            <button data-action="sort">
+            <button data-action="sort" title="${t("Sort")}">
                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.SORT}" alt="sort" />
             </button>
             <div class="component_dropdown view sort" data-target="sort">
                 <div class="dropdown_container">
                     <ul>
                         <li data-target="type">
-                            Sort By Type
+                            ${t("Sort By Type")}
                             <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />
                         </li>
                         <li data-target="date">
-                            Sort By Date
+                            ${t("Sort By Date")}
                         </li>
                         <li data-target="name">
-                            Sort By Name
+                            ${t("Sort By Name")}
                         </li>
                     </ul>
                 </div>

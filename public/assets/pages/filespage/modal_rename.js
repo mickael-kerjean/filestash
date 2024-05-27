@@ -3,11 +3,12 @@ import { extname } from "../../lib/path.js";
 import rxjs, { effect, preventDefault } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { MODAL_RIGHT_BUTTON } from "../../components/modal.js";
+import t from "../../locales/index.js";
 
 export default function(render, filename) {
     const $modal = createElement(`
         <div>
-            Rename as:
+            ${t("Rename as")}:
             <form style="margin-top: 10px;">
                 <input class="component_input" type="text" autocomplete="new-password" value="">
                 <div class="modal-error-message"></div>

@@ -3,6 +3,7 @@ import { animate, slideYOut } from "../../lib/animate.js";
 import rxjs, { effect, onClick } from "../../lib/rx.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
+import t from "../../locales/index.js";
 
 export default function(render) {
     const $page = createFragment(`
@@ -25,7 +26,7 @@ export function init() {
 function componentUploadQueue(render) {
     const $page = createElement(`
 <div class="component_upload hidden">
-  <h2>CURRENT UPLOAD <div class="count_block">
+  <h2>${t("Current Upload")} <div class="count_block">
       <span class="completed">24</span>
       <span class="grandTotal">24</span>
     </div>
@@ -223,7 +224,7 @@ function componentUploadFAB(render) {
         <div class="component_mobilefileupload no-select">
             <form>
                 <input type="file" name="file" id="mobilefileupload" multiple />
-                <label for="mobilefileupload">
+                <label for="mobilefileupload" title="${t("Upload")}">
                     <img
                         class="component_icon"
                         draggable="false"

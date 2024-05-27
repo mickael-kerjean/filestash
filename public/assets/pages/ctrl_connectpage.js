@@ -1,5 +1,6 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation } from "../lib/rx.js";
+import t from "../locales/index.js";
 import { qs } from "../lib/dom.js";
 import { CSS } from "../helpers/loader.js";
 

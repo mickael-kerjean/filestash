@@ -1,1 +1,0 @@
-export default function t(str: string | undefined, replacementString?: string, requestedKey?: string): string;

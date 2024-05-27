@@ -1,5 +1,3 @@
-import { init as initCacheState, currentBackend, currentShare } from "./cache_state.js";
-
 class ICache {
     constructor() {}
 
@@ -189,7 +187,7 @@ export async function init() {
             // is throwing that string as an error if you try to use it ...
             // so we fallback with our basic ram cache
             cache = new DataFromMemory();
-            return setup_cache_state();
+            return initCacheState();
         }
         throw err;
     });

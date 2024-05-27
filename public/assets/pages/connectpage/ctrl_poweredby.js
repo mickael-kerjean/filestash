@@ -1,7 +1,7 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs from "../../lib/rx.js";
 import { transition } from "../../lib/animate.js";
-import t from "../../lib/locales.js";
+import t from "../../locales/index.js";
 
 import config$ from "./model_config.js";
 

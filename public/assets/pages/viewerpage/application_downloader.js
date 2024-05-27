@@ -2,7 +2,7 @@ import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { loadCSS } from "../../helpers/loader.js";
-import t from "../../lib/locales.js";
+import t from "../../locales/index.js";
 
 import { transition, getFilename, getDownloadUrl } from "./common.js";
 

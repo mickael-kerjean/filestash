@@ -5,7 +5,7 @@ import { qs, qsa, safe } from "../../lib/dom.js";
 import { animate, slideYIn, transition } from "../../lib/animate.js";
 import { createForm } from "../../lib/form.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
-import t from "../../lib/locales.js";
+import t from "../../locales/index.js";
 import { formTmpl } from "../../components/form.js";
 import notification from "../../components/notification.js";
 import { CSS } from "../../helpers/loader.js";

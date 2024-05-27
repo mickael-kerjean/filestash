@@ -1,7 +1,7 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation } from "../lib/rx.js";
 import { qs } from "../lib/dom.js";
-import t from "../lib/locales.js";
+import t from "../locales/index.js";
 
 import { AjaxError, ApplicationError } from "../lib/error.js";
 
@@ -16,7 +16,7 @@ export default function(render = createRender(qs(document.body, "[role=\"main\"]
                 <style>${css}</style>
                 <a href="${calculateBacklink(location.pathname)}" class="backnav">
                     <component-icon name="arrow_left"></component-icon>
-                    home
+                    ${t("home")}
                 </a>
                 <div class="component_container">
                     <div class="error-page">
