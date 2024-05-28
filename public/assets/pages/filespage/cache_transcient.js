@@ -202,6 +202,7 @@ export function mv(ajax$, fromPath, toPath) {
             fn: (file) => {
                 if (file.name === fromName) {
                     file.loading = true;
+                    file.last = true;
                     type = file.type;
                 }
                 return file;

@@ -1,6 +1,9 @@
 import { animate, slideYOut, slideYIn, opacityOut } from "../lib/animate.js";
 import { loadCSS } from "../helpers/loader.js";
 
+import { mv } from "../pages/filespage/model_files.js";
+import { extractPath } from "../pages/filespage/helper.js";
+
 class ComponentBreadcrumb extends window.HTMLDivElement {
     constructor() {
         super();
@@ -100,7 +103,7 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
             })();
 
             return `
-                <div class="component_path-element n${idx}">
+                <div class="component_path-element n${idx}" data-path="${pathChunks.slice(0, idx+1).join("/") + "/"}">
                     <div class="li component_path-element-wrapper">
                         <a class="label" href="/files${link}" data-link>
                             ${tmpl}
@@ -154,16 +157,22 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
 
     setupDragDropTarget() {
         this.querySelectorAll("a.label").forEach(($folder) => {
+            const $path = $folder.closest(".component_path-element");
             $folder.ondragover = (e) => {
                 e.preventDefault();
-                $folder.parentElement.classList.add("highlight");
+                $path.classList.add("highlight");
             };
             $folder.ondragleave = () => {
-                $folder.parentElement.classList.remove("highlight");
+                $path.classList.remove("highlight");
             };
-            $folder.ondrop = (e) => {
-                $folder.parentElement.classList.remove("highlight");
-                console.log("DROP", e.dataTransfer.getData("path"));
+            $folder.ondrop = async (e) => {
+                $path.classList.remove("highlight");
+                const from = e.dataTransfer.getData("path");
+                let to = $path.getAttribute("data-path");
+
+                const [fromBasepath, fromName] = extractPath(from);
+                to += fromName + "/";
+                await mv(from, to).toPromise();
             };
         });
     }
