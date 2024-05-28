@@ -5,6 +5,7 @@ import { qs, qsa } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
 import { formTmpl } from "../../components/form.js";
 import { generateSkeleton } from "../../components/skeleton.js";
+import ctrlError from "../ctrl_error.js";
 
 import {
     getState,
@@ -266,4 +267,5 @@ export default async function(render) {
 const saveMiddleware = () => rxjs.pipe(
     rxjs.mergeMap(() => getState()),
     saveConfig(),
+    rxjs.catchError(ctrlError()),
 );

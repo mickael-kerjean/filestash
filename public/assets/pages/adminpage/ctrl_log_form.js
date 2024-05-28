@@ -2,7 +2,6 @@ import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation } from "../../lib/rx.js";
 import { qsa } from "../../lib/dom.js";
 import { createForm, mutateForm } from "../../lib/form.js";
-import t from "../../lib/locales.js";
 import { generateSkeleton } from "../../components/skeleton.js";
 import notification from "../../components/notification.js";
 import { formTmpl } from "../../components/form.js";
@@ -54,7 +53,7 @@ export default function(render) {
         )),
         saveConfig(),
         rxjs.catchError((err) => {
-            notification.error((err && err.message) || t("Oops"));
+            notification.error((err && err.message) || "Oops");
             return rxjs.EMPTY;
         }),
     ));
