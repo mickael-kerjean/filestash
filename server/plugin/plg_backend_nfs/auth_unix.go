@@ -23,7 +23,7 @@ type AuthUnix struct {
 }
 
 // ref: RFC5531 - page25
-func NewAuthUnix(machineName string, uid, gid uint32, gids []groupLabel, gidsHint string) rpc.Auth {
+func NewAuthUnix(machineName string, uid, gid uint32, gids []GroupLabel, gidsHint string) rpc.Auth {
 	w := new(bytes.Buffer)
 	if len(gids) > 16 { // https://www.rfc-editor.org/rfc/rfc5531.html#page-25
 		// when the limit of AUTH_UNIX is reached, we want to filter out the
@@ -31,18 +31,18 @@ func NewAuthUnix(machineName string, uid, gid uint32, gids []groupLabel, gidsHin
 		for i, _ := range gids {
 			score := 0
 			for _, h := range strings.Split(gidsHint, ",") {
-				if strings.Contains(gids[i].label, strings.TrimSpace(h)) {
+				if strings.Contains(gids[i].Label, strings.TrimSpace(h)) {
 					score += 1
 				}
 			}
-			gids[i].priority = score
+			gids[i].Priority = score
 		}
 		sort.Slice(gids, func(i, j int) bool {
-			return gids[i].priority > gids[j].priority
+			return gids[i].Priority > gids[j].Priority
 		})
 		gids = gids[0:16]
 		sort.Slice(gids, func(i, j int) bool {
-			return gids[i].id < gids[j].id
+			return gids[i].Id < gids[j].Id
 		})
 	}
 	xdr.Write(w, AuthUnix{

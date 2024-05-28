@@ -19,13 +19,13 @@ func init() {
 	cacheForGroup = NewAppCache(120, 60)
 }
 
-func ExtractUserInfo(uidHint string, gidHint string, gidsHint string) (uint32, uint32, []groupLabel) {
+func ExtractUserInfo(uidHint string, gidHint string, gidsHint string) (uint32, uint32, []GroupLabel) {
 	// case 1: everything is being sent as "uid=number, gid=number and gids=number,number,number"
 	if _uid, err := strconv.Atoi(uidHint); err == nil {
 		var (
 			uid  uint32 = uint32(_uid)
 			gid  uint32
-			gids []groupLabel
+			gids []GroupLabel
 		)
 		if _gid, err := strconv.Atoi(gidHint); err == nil {
 			gid = uint32(_gid)
@@ -35,7 +35,7 @@ func ExtractUserInfo(uidHint string, gidHint string, gidsHint string) (uint32, u
 		for _, t := range strings.Split(gidsHint, ",") {
 			tmp := strings.TrimSpace(t)
 			if gid, err := strconv.Atoi(tmp); err == nil {
-				gids = append(gids, groupLabel{uint32(gid), tmp, 0})
+				gids = append(gids, GroupLabel{uint32(gid), tmp, 0})
 			}
 		}
 		return uid, gid, gids
@@ -45,7 +45,7 @@ func ExtractUserInfo(uidHint string, gidHint string, gidsHint string) (uint32, u
 		return _uid, _gid, extractFromEtcGroup(uidHint, _gid)
 	}
 	// case 3: base case
-	return 0, 0, []groupLabel{}
+	return 0, 0, []GroupLabel{}
 }
 
 func extractFromEtcPasswd(username string) (uint32, uint32, error) {
@@ -84,22 +84,22 @@ func extractFromEtcPasswd(username string) (uint32, uint32, error) {
 	return 0, 0, ErrNotFound
 }
 
-type groupLabel struct {
-	id       uint32
-	label    string
-	priority int
+type GroupLabel struct {
+	Id       uint32
+	Label    string
+	Priority int
 }
 
-func extractFromEtcGroup(username string, primary uint32) []groupLabel {
+func extractFromEtcGroup(username string, primary uint32) []GroupLabel {
 	if v := cacheForGroup.Get(map[string]string{"username": username}); v != nil {
-		return v.([]groupLabel)
+		return v.([]GroupLabel)
 	}
 	f, err := os.OpenFile("/etc/group", os.O_RDONLY, os.ModePerm)
 	if err != nil {
-		return []groupLabel{}
+		return []GroupLabel{}
 	}
 	defer f.Close()
-	gids := []groupLabel{}
+	gids := []GroupLabel{}
 	lines := bufio.NewReader(f)
 	for {
 		line, _, err := lines.ReadLine()
@@ -123,7 +123,7 @@ func extractFromEtcGroup(username string, primary uint32) []groupLabel {
 		if gid, err := strconv.Atoi(s[2]); err == nil {
 			ugid := uint32(gid)
 			if ugid != primary {
-				gids = append(gids, groupLabel{ugid, s[0], 0})
+				gids = append(gids, GroupLabel{ugid, s[0], 0})
 			}
 		}
 		cacheForGroup.Set(map[string]string{"username": username}, gids)

@@ -56,10 +56,10 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	return NfsShare{mount, v, auth, app.Context, uid, gid, toGids(gids)}, nil
 }
 
-func toGids(gids []groupLabel) []uint32 {
+func toGids(gids []GroupLabel) []uint32 {
 	g := make([]uint32, len(gids))
 	for i, _ := range gids {
-		g[i] = gids[i].id
+		g[i] = gids[i].Id
 	}
 	return g
 }
