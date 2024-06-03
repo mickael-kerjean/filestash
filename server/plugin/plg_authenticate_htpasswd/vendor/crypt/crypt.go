@@ -12,7 +12,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/mickael-kerjean/server/plg_authenticate_htpasswd/vendor/crypt/common"
+	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/vendor/crypt/common"
 )
 
 var ErrKeyMismatch = errors.New("hashed value is not the hash of the given password")

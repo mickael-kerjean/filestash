@@ -11,13 +11,15 @@ package plg_backend_ldap
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"gopkg.in/ldap.v3"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+
+	"github.com/go-ldap/ldap/v3"
 )
 
 var LDAPCache AppCache
