@@ -269,7 +269,7 @@ export default async function(render) {
                 shift: false, files: [],
             });
             if (elm1) addSelection({
-                n: (files$.value || []).length,
+                n: (files$.value || []).length - 1,
                 path: path + elm1.name + (elm1.type === "directory" ? "/" : ""),
                 shift: true, files: (files$.value || []),
             });

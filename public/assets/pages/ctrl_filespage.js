@@ -3,6 +3,7 @@ import rxjs, { effect } from "../lib/rx.js";
 import { qs } from "../lib/dom.js";
 import { loadCSS } from "../helpers/loader.js";
 import WithShell, { init as initShell } from "../components/decorator_shell_filemanager.js";
+import { get as getConfig } from "./filespage/model_config.js";
 
 import componentFilesystem, { init as initFilesystem } from "./filespage/ctrl_filesystem.js";
 import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.js";
@@ -38,7 +39,7 @@ export default WithShell(function(render) {
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_filespage.css"),
-        initShell(), initFilesystem(),
+        initShell(), initFilesystem(), getConfig().toPromise(),
         initSubmenu(), initNewItem(), initUpload(),
     ]);
 }

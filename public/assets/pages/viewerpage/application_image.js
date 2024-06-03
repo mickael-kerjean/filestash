@@ -22,7 +22,7 @@ export default function(render) {
                     <img class="photo idle hidden" draggable="true" src="${getDownloadUrl()}">
                 </div>
                 <div class="images_aside scroll-y"></div>
-                <div class="component_pager"></div>
+                <div class="component_pager hidden"></div>
             </div>
         </div>
     `);

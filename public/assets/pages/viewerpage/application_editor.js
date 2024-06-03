@@ -3,7 +3,7 @@ import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideXIn, opacityOut } from "../../lib/animate.js";
 import { qs } from "../../lib/dom.js";
 import { createLoader } from "../../components/loader.js";
-import modal from "../../components/modal.js";
+import { createModal } from "../../components/modal.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import ajax from "../../lib/ajax.js";
 import { extname } from "../../lib/path.js";
@@ -169,7 +169,7 @@ export default async function(render) {
             //     },
             // );
             return new Promise((done) => {
-                modal.open(createElement(`
+                createModal(createElement(`
                 <div style="text-align:center;padding-bottom:5px;">
                     Do you want to save the changes ?
                 </div>

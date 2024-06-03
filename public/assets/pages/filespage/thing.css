@@ -122,6 +122,16 @@
     margin: 0;
     display: block;
 }
+.list > .component_thing.view-grid > img.component_icon.thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+    background: var(--dark);
+    padding: 0;
+    margin: 0;
+    display: block;
+}
 .list > .component_thing.view-grid > img.component_icon {
     padding: 30px;
     box-sizing: border-box;
@@ -129,14 +139,6 @@
     height: 100%;
     object-fit: contain;
     margin: 0 auto;
-    z-index: 0;
-}
-.list > .component_thing.view-grid > img.thumbnail {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 50% 50%;
-    background: var(--dark);
     z-index: 0;
 }
 .list > .component_thing.view-grid .info_extension {
@@ -168,7 +170,7 @@
 }
 .list > .component_thing.view-grid .component_filename {
     letter-spacing: -0.5px;
-    z-index: 2;
+    z-index: -1;
     position: absolute;
     bottom: 2px;
     left: 2px;

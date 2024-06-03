@@ -1,7 +1,7 @@
 import { onDestroy } from "../../lib/skeleton/index.js";
 import rxjs from "../../lib/rx.js";
 import fscache from "./cache.js";
-import { extractPath } from "./helper.js";
+import { extractPath, isDir } from "./helper.js";
 
 /*
  * The transcient cache is used to rerender the list of files in a particular location. That's used
@@ -215,7 +215,6 @@ export function mv(ajax$, fromPath, toPath) {
         });
     }
     const onSuccess = async () => {
-        console.log(fromPath, toPath)
         fscache().remove(fromPath, false);
         if (fromBasepath === toBasepath) {
             stateAdd(mutationFiles$, fromBasepath, {
@@ -244,7 +243,21 @@ export function mv(ajax$, fromPath, toPath) {
                     return file;
                 },
             });
-            removeLoading(virtualFiles$, toBasepath, toName);
+            onDestroy(() => statePop(mutationFiles$, fromBasepath, fromName));
+            statePop(virtualFiles$, toBasepath, toName);
+            await fscache().update(fromBasepath, ({ files, ...rest }) => ({
+                files: files.filter((file) => file.name === fromName ? false : true),
+                ...rest,
+            }))
+            await fscache().update(toBasepath, ({ files, ...rest }) => ({
+                files: files.concat([{
+                    name: fromName,
+                    time: new Date().getTime(),
+                    type,
+                }]),
+                ...rest,
+            }));
+            if (isDir(fromPath)) await fscache.remove(fromPath);
         }
     };
     const onFailure = () => {

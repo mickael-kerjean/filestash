@@ -55,7 +55,7 @@ export default async function(render) {
 
 function componentLeft(render, { $scroll }) {
     effect(getSelection$().pipe(
-        rxjs.filter((selections) => selections.length === 0),
+        rxjs.filter(() => lengthSelection() === 0),
         rxjs.mergeMap(() => rxjs.merge(rxjs.fromEvent(window, "resize"), rxjs.of(null))),
         rxjs.mergeMap(() => getPermission()),
         rxjs.map(() => render(createFragment(`
@@ -87,15 +87,15 @@ function componentLeft(render, { $scroll }) {
     onDestroy(() => setAction(null));
 
     effect(getSelection$().pipe(
-        rxjs.filter((selections) => selections.length === 1),
+        rxjs.filter(() => lengthSelection() === 1),
         rxjs.map(() => render(createFragment(`
-            <a ${generateLinkAttributes(expandSelection())}><button data-action="download" title="${t("Download")}">
+            <a target="_blank" ${generateLinkAttributes(expandSelection())}><button data-action="download" title="${t("Download")}">
                 ${t("Download")}
             </button></a>
             <button data-action="delete"${toggleDependingOnPermission(currentPath(), "delete")} title="${t("Remove")}">
                 ${t("Remove")}
             </button>
-            <button data-action="share" title="${t("Share")}">
+            <button data-action="share" title="${t("Share")}" class="hidden">
                 ${t("Share")}
             </button>
             <button data-action="embed" class="hidden" title="${t("Embed")}">
@@ -152,9 +152,9 @@ function componentLeft(render, { $scroll }) {
     ));
 
     effect(getSelection$().pipe(
-        rxjs.filter((selections) => selections.length > 1),
+        rxjs.filter((selections) => lengthSelection() > 1),
         rxjs.map(() => render(createFragment(`
-            <a ${generateLinkAttributes(expandSelection())}><button data-action="download">
+            <a target="_blank" ${generateLinkAttributes(expandSelection())}><button data-action="download">
                 ${t("Download")}
             </button></a>
             <button data-action="delete"${toggleDependingOnPermission(currentPath(), "delete")}>

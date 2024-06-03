@@ -21,7 +21,7 @@ export default function(render) {
             <div class="formviewer_container hidden">
                 <form class="sticky box"></form>
             </div>
-            <button is="component-fab"></button>
+            <button is="component-fab" data-options="download"></button>
         </div>
     `);
     render($page);

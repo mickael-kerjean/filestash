@@ -2,7 +2,7 @@ import { animate, slideYOut, slideYIn, opacityOut } from "../lib/animate.js";
 import { loadCSS } from "../helpers/loader.js";
 
 import { mv } from "../pages/filespage/model_files.js";
-import { extractPath } from "../pages/filespage/helper.js";
+import { extractPath, isDir } from "../pages/filespage/helper.js";
 
 class ComponentBreadcrumb extends window.HTMLDivElement {
     constructor() {
@@ -171,7 +171,8 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
                 let to = $path.getAttribute("data-path");
 
                 const [fromBasepath, fromName] = extractPath(from);
-                to += fromName + "/";
+                to += fromName;
+                if (isDir(from)) to += "/";
                 await mv(from, to).toPromise();
             };
         });

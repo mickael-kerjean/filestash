@@ -124,7 +124,7 @@ const css = `
 }
 `;
 
-function calculateBacklink(pathname) {
+function calculateBacklink(pathname = "") {
     let url = "/";
     const listPath = pathname.replace(new RegExp("/$"), "").split("/");
     switch (listPath[1]) {

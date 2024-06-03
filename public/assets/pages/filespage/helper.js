@@ -1,11 +1,17 @@
 import { extname } from "../../lib/path.js";
 
+const regexCurrentPath = new RegExp("^/files")
 export function currentPath() {
-    return decodeURIComponent(location.pathname.replace(new RegExp("^/files"), ""));
+    return decodeURIComponent(location.pathname.replace(regexCurrentPath, ""));
+}
+
+const regexDir = new RegExp("/$");
+export function isDir(path) {
+    return regexDir.test(path);
 }
 
 export function extractPath(path) {
-    path = path.replace(new RegExp("/$"), "");
+    path = path.replace(regexDir, "");
     const p = path.split("/");
     const filename = p.pop();
     return [p.join("/") + "/", filename];

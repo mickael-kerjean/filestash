@@ -3,7 +3,7 @@ import ajax from "../../lib/ajax.js";
 
 const release$ = ajax({
     url: "/about",
-    responseType: "text"
+    responseType: "text",
 }).pipe(rxjs.shareReplay(1));
 
 export function get() {

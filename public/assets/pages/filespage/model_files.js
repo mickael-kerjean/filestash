@@ -22,40 +22,38 @@ import {
  */
 
 export function touch(path) {
-    const ajax$ = rxjs.of(null).pipe(
-        rxjs.delay(1000),
-        // rxjs.tap(() => {
-        //     throw new Error("NOOOO");
-        // }),
-        rxjs.delay(1000),
-    );
+    const ajax$ = ajax({
+        url: `/api/files/touch?path=${encodeURIComponent(path)}`,
+        method: "POST",
+        responseType: "json",
+    });
     return cacheTouch(ajax$, path);
 }
 
 export function mkdir(path) {
-    const ajax$ = rxjs.of(null).pipe(
-        rxjs.delay(1000),
-        // rxjs.tap(() => {
-        //     throw new Error("NOOOO");
-        // }),
-        rxjs.delay(1000),
-    );
+    const ajax$ = ajax({
+        url: `/api/files/mkdir?path=${encodeURIComponent(path)}`,
+        method: "POST",
+        responseType: "json",
+    });
     return cacheMkdir(ajax$, path);
 }
 
 export function rm(...paths) {
-    const ajax$ = rxjs.of(null).pipe(
-        rxjs.delay(1000),
-        // rxjs.tap(() => {
-        //     throw new Error("NOOOO");
-        // }),
-        rxjs.delay(1000),
-    );
+    const ajax$ = rxjs.forkJoin(paths.map((path) => ajax({
+        url: `/api/files/rm?path=${encodeURIComponent(path)}`,
+        method: "POST",
+        responseType: "json",
+    })));
     return cacheRm(ajax$, ...paths);
 }
 
 export function mv(from, to) {
-    const ajax$ = rxjs.of(null).pipe(rxjs.delay(1000));
+    const ajax$ = ajax({
+        url: `/api/files/mv?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+        method: "POST",
+        responseType: "json",
+    });
     return cacheMv(ajax$, from, to);
 }
 
@@ -66,8 +64,9 @@ export function save(path) { // TODO
 export function ls(path) {
     const lsFromCache = (path) => rxjs.from(fscache().get(path));
     const lsFromHttp = (path) => ajax({
-        url: `/api/files/ls?path=${path}`,
-        responseType: "json"
+        url: `/api/files/ls?path=${encodeURIComponent(path)}`,
+        method: "GET",
+        responseType: "json",
     }).pipe(
         rxjs.map(({ responseJSON }) => ({
             files: responseJSON.results,
@@ -114,7 +113,7 @@ export function ls(path) {
 export function search(term) {
     const path = location.pathname.replace(new RegExp("^/files/"), "/");
     return ajax({
-        url: `/api/files/search?path=${path}&q=${term}`,
+        url: `/api/files/search?path=${encodeURIComponent(path)}&q=${encodeURIComponent(term)}`,
         responseType: "json"
     }).pipe(rxjs.map(({ responseJSON }) => ({
         files: responseJSON.results,

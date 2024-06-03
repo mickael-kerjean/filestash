@@ -3,13 +3,14 @@ import rxjs, { effect } from "../../lib/rx.js";
 import { loadCSS } from "../../helpers/loader.js";
 import assert from "../../lib/assert.js";
 import ctrlError from "../ctrl_error.js";
+import notification from "../../components/notification.js";
 
-import { getDownloadUrl } from "./common.js";
+import { getCurrentPath } from "./common.js";
 
-export default function(render, opts = {}) {
+export default function(render, { endpoint = "" }) {
     const $page = createElement(`
         <div class="component_appframe">
-            <iframe src="${getDownloadUrl()}"></iframe>
+            <iframe src="${endpoint}?path=${encodeURIComponent(getCurrentPath())}"></iframe>
         </div>
     `);
     render($page);
@@ -19,10 +20,10 @@ export default function(render, opts = {}) {
         rxjs.tap((event) => { // TODO: notification
             switch (event.data.type) {
             case "notify::info":
-                // notify.send(t(event.data.message), "info");
+                notify.info(t(event.data.message));
                 break;
             case "notify::error":
-                // notify.send(t(event.data.message), "error");
+                notify.error(t(event.data.message));
                 break;
             }
         }),

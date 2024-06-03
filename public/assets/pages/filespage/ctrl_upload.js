@@ -7,13 +7,14 @@ import t from "../../locales/index.js";
 
 export default function(render) {
     const $page = createFragment(`
-        <div is="component_filezone"></div>
         <div is="component_upload_queue"></div>
+
+        <div is="component_filezone"></div>
         <div is="component_upload_fab"></div>
     `);
 
-    componentFilezone(createRender($page.children[0]));
     componentUploadQueue(createRender($page.children[1]));
+    componentFilezone(createRender($page.children[0]));
     componentUploadFAB(createRender($page.children[2]));
 
     render($page);
@@ -25,7 +26,7 @@ export function init() {
 
 function componentUploadQueue(render) {
     const $page = createElement(`
-<div class="component_upload hidden">
+<div class="component_upload">
   <h2>${t("Current Upload")} <div class="count_block">
       <span class="completed">24</span>
       <span class="grandTotal">24</span>
