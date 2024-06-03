@@ -63,6 +63,18 @@ func (this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
 	}
 	// instantiate the new indexer
 	s := NewSearchIndexer(id, app.Backend)
+	defer func() {
+		// recover from panic if one occurred. Set err to nil otherwise.
+		if recover() != nil {
+			name := "na"
+			for _, el := range app.Backend.LoginForm().Elmnts {
+				if el.Name == "type" {
+					name = el.Value.(string)
+				}
+			}
+			Log.Error("plg_search_sqlitefs::panic backend=\"%s\"", name)
+		}
+	}()
 	v := reflect.ValueOf(app.Backend).Elem().FieldByName("Context")
 	if v.IsValid() && v.CanSet() {
 		// prevent context expiration which is often default as r.Context()
