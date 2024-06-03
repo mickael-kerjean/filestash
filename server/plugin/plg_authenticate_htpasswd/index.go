@@ -88,7 +88,7 @@ func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]s
 		return nil, NewError("You haven't configured any users", 500)
 	}
 	lines := strings.Split(idpParams["users"], "\n")
-	for _, line := range lines {
+	for n, line := range lines {
 		pair := strings.SplitN(line, ":", 2)
 		if len(pair) != 2 {
 			continue
@@ -104,6 +104,7 @@ func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]s
 		return map[string]string{
 			"user":     formData["user"],
 			"password": formData["password"],
+			"n":        fmt.Sprintf("%d", n),
 		}, nil
 	}
 	http.SetCookie(res, &http.Cookie{
