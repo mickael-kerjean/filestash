@@ -22,7 +22,7 @@ type SearchProcess struct {
 }
 
 func (this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
-	id := GenerateID(app)
+	id := GenerateID(app.Session)
 
 	// try to find the search indexer among the existing ones
 	this.mu.RLock()
@@ -82,7 +82,7 @@ func (this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
 }
 
 func (this *SearchProcess) HintRm(app *App, path string) {
-	id := GenerateID(app)
+	id := GenerateID(app.Session)
 	this.mu.RLock()
 	for i := len(this.idx) - 1; i >= 0; i-- {
 		if id == this.idx[i].Id {
@@ -94,7 +94,7 @@ func (this *SearchProcess) HintRm(app *App, path string) {
 }
 
 func (this *SearchProcess) HintFile(app *App, path string) {
-	id := GenerateID(app)
+	id := GenerateID(app.Session)
 	this.mu.RLock()
 	for i := len(this.idx) - 1; i >= 0; i-- {
 		if id == this.idx[i].Id {
