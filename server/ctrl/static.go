@@ -67,6 +67,10 @@ func LegacyIndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) { 
 		`)))
 		return
 	}
+	if os.Getenv("CANARY") != "" {
+		LegacyServeFile(res, req, "/index.frontoffice.html")
+		return
+	}
 	LegacyServeFile(res, req, "/index.html")
 }
 
@@ -96,7 +100,8 @@ func LegacyServeFile(res http.ResponseWriter, req *http.Request, filePath string
 		curPath := filePath + cfg.FileExt
 		file, err := WWWEmbed.Open("static/www" + curPath)
 		if env := os.Getenv("DEBUG"); env == "true" {
-			//file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
+			file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
+		} else if os.Getenv("CANARY") != "" {
 			file, err = WWWDir.Open("public" + curPath)
 		}
 		if err != nil {
@@ -210,7 +215,11 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		`)))
 		return
 	}
-	ServeFile(res, req, WWWPublic, "index.frontoffice.html")
+	if os.Getenv("CANARY") != "" {
+		ServeFile(res, req, WWWPublic, "index.frontoffice.html")
+		return
+	}
+	ServeFile(res, req, WWWPublic, "index.html")
 }
 
 func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
