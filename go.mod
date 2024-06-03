@@ -19,7 +19,7 @@ require (
 	github.com/hirochachacha/go-smb2 v1.1.0
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/mickael-kerjean/net v0.0.0-20191120063050-2457c043ba06
-	github.com/mickael-kerjean/saml v0.0.0-20221221152539-19783715740c
+	github.com/mickael-kerjean/saml v0.0.0-20240603162924-4629e91322ce
 	github.com/mitchellh/hashstructure v1.1.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/sftp v1.13.6
