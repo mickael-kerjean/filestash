@@ -12,7 +12,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/vendor/crypt/common"
+	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/common"
 )
 
 var ErrKeyMismatch = errors.New("hashed value is not the hash of the given password")
@@ -52,10 +52,10 @@ type Crypter interface {
 type Crypt uint
 
 const (
-	APR1   Crypt = iota + 1 // import "github.com/mickael-kerjean/server/plg_authenticate_htpasswd/vendor/crypt/apr1_crypt"
-	MD5                     // import "github.com/mickael-kerjean/server/plg_authenticate_htpasswd/vendor/crypt/md5_crypt"
-	SHA256                  // import "github.com/mickael-kerjean/server/plg_authenticate_htpasswd/vendor/crypt/sha256_crypt"
-	SHA512                  // import "github.com/mickael-kerjean/server/plg_authenticate_htpasswd/vendor/crypt/sha512_crypt"
+	APR1   Crypt = iota + 1 // import "github.com/mickael-kerjean/filestash/server/plg_authenticate_htpasswd/deps/crypt/apr1_crypt"
+	MD5                     // import "github.com/mickael-kerjean/filestash/server/plg_authenticate_htpasswd/deps/crypt/md5_crypt"
+	SHA256                  // import "github.com/mickael-kerjean/filestash/server/plg_authenticate_htpasswd/deps/crypt/sha256_crypt"
+	SHA512                  // import "github.com/mickael-kerjean/filestash/server/plg_authenticate_htpasswd/deps/crypt/sha512_crypt"
 	maxCrypt
 )
 

@@ -13,8 +13,8 @@ import (
 	"bytes"
 	"crypto/md5"
 
-	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/vendor/crypt"
-	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/vendor/crypt/common"
+	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt"
+	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/common"
 )
 
 func init() {

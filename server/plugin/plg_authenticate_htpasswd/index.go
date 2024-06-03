@@ -7,11 +7,11 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 
-	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/vendor/crypt"
-	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/vendor/crypt/apr1_crypt"
-	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/vendor/crypt/md5_crypt"
-	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/vendor/crypt/sha256_crypt"
-	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/vendor/crypt/sha512_crypt"
+	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt"
+	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/apr1_crypt"
+	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/md5_crypt"
+	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/sha256_crypt"
+	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/sha512_crypt"
 	"net/http"
 	"strings"
 )
