@@ -13,8 +13,11 @@ func SafeOsOpenFile(path string, flag int, perm os.FileMode) (*os.File, error) {
 		return nil, ErrFilesystemError
 	}
 	f, err := os.OpenFile(path, flag|syscall.O_NOFOLLOW, perm)
-	if err != nil && errors.Is(err, fs.ErrNotExist) {
-		return nil, ErrNotFound
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, ErrNotFound
+		}
+		return nil, processError(err)
 	}
 	return f, err
 }

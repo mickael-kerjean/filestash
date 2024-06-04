@@ -76,7 +76,7 @@ func SafeOsMkdir(path string, mode os.FileMode) error {
 		Log.Debug("common::files safeOsMkdir err[%s] path[%s]", err.Error(), path)
 		return ErrFilesystemError
 	}
-	return os.Mkdir(path, mode)
+	return processError(os.Mkdir(path, mode))
 }
 
 func SafeOsRemove(path string) error {
@@ -84,7 +84,7 @@ func SafeOsRemove(path string) error {
 		Log.Debug("common::files safeOsRemove err[%s] path[%s]", err.Error(), path)
 		return ErrFilesystemError
 	}
-	return os.Remove(path)
+	return processError(os.Remove(path))
 }
 
 func SafeOsRemoveAll(path string) error {
@@ -92,7 +92,7 @@ func SafeOsRemoveAll(path string) error {
 		Log.Debug("common::files safeOsRemoveAll err[%s] path[%s]", err.Error(), path)
 		return ErrFilesystemError
 	}
-	return os.RemoveAll(path)
+	return processError(os.RemoveAll(path))
 }
 
 func SafeOsRename(from string, to string) error {
@@ -103,7 +103,7 @@ func SafeOsRename(from string, to string) error {
 		Log.Debug("common::files safeOsRemove err[%s] to[%s]", err.Error(), to)
 		return ErrFilesystemError
 	}
-	return os.Rename(from, to)
+	return processError(os.Rename(from, to))
 }
 
 func safePath(path string) error {
@@ -120,4 +120,17 @@ func safePath(path string) error {
 		return ErrFilesystemError
 	}
 	return nil
+}
+
+func processError(err error) error {
+	if err == nil {
+		return nil
+	}
+	if pe, ok := err.(*os.PathError); ok {
+		return pe.Err
+	}
+	if le, ok := err.(*os.LinkError); ok {
+		return le.Err
+	}
+	return err
 }
