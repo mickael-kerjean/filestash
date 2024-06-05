@@ -41,6 +41,9 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	if c := SambaCache.Get(params); c != nil {
 		return c.(*Samba), nil
 	}
+	if strings.HasPrefix(params["host"], "smb://") == false {
+		params["host"] = "smb://" + params["host"]
+	}
 	if u, err := url.Parse(params["host"]); err == nil {
 		params["host"] = u.Host
 		if params["port"] == "" {
@@ -49,13 +52,11 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		if params["share"] == "" {
 			params["share"] = strings.ReplaceAll(u.Path, "/", "")
 		}
-		if u.User != nil {
-			if params["username"] == "" {
-				params["username"] = u.User.Username()
-			}
-			if params["password"] == "" {
-				params["password"], _ = u.User.Password()
-			}
+		if params["username"] == "" && u.User != nil {
+			params["username"] = u.User.Username()
+		}
+		if params["password"] == "" && u.User != nil {
+			params["password"], _ = u.User.Password()
 		}
 	}
 	if params["port"] == "" {
