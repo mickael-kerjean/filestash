@@ -9,9 +9,9 @@ export default defineConfig(({ comand, mode }) => {
             setupFiles: ["./test/setup.js"],
         },
         coverage: {
-            reporter: ["text", "html"],
+            reporter: ["html"],
             exclude: [
-                "./public/assets/lib/vendor/**"
+                "./assets/lib/vendor/**"
             ],
         }
     };

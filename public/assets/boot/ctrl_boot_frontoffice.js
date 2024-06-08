@@ -1,6 +1,7 @@
 import rxjs, { ajax } from "../lib/rx.js";
 // import { setup_cache } from "../helpers/cache.js";
 import { init as setup_loader, loadJS } from "../helpers/loader.js";
+import { init as setup_translation } from "../locales/index.js";
 import { report } from "../helpers/log.js";
 
 export default async function main() {
@@ -50,44 +51,6 @@ function $error(msg) {
 }
 
 /// /////////////////////////////////////////
-// boot steps helpers
-function setup_translation() {
-    let selectedLanguage = "en";
-    switch (window.navigator.language) {
-    case "zh-TW":
-        selectedLanguage = "zh_tw";
-        break;
-    default:
-        const userLanguage = window.navigator.language.split("-")[0] || "en";
-        const idx = [
-            "az", "be", "bg", "ca", "cs", "da", "de", "el", "es", "et",
-            "eu", "fi", "fr", "gl", "hr", "hu", "id", "is", "it", "ja",
-            "ka", "ko", "lt", "lv", "mn", "nb", "nl", "pl", "pt", "ro",
-            "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi", "zh"
-        ].indexOf(window.navigator.language.split("-")[0] || "");
-        if (idx !== -1) {
-            selectedLanguage = userLanguage;
-        }
-    }
-
-    if (selectedLanguage === "en") {
-        return;
-    }
-    return ajax({
-        url: "/assets/locales/" + selectedLanguage + ".json",
-        responseType: "json"
-    }).pipe(
-        rxjs.tap(({ responseHeaders, response }) => {
-            const contentType = responseHeaders["content-type"].trim();
-            if (contentType !== "application/json") {
-                report("boot::translation", new Error(`wrong content type '${contentType}'`), "ctrl_boot_frontoffice.js");
-                return;
-            }
-            window.LNG = response;
-        })
-    ).toPromise();
-}
-
 async function setup_xdg_open() {
     window.overrides = {};
     return loadJS(import.meta.url, "/overrides/xdg-open.js");
