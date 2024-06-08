@@ -1,5 +1,6 @@
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
+import notification from "../../components/notification.js";
 
 import { setPermissions } from "./model_acl.js";
 import fscache from "./cache.js";
@@ -21,12 +22,17 @@ import {
  *   3. the new file is being persisted in the screen if the API call is a success
  */
 
+const errorNotification = rxjs.catchError((err) => {
+    notification.error(err);
+    throw err;
+});
+
 export function touch(path) {
     const ajax$ = ajax({
         url: `/api/files/touch?path=${encodeURIComponent(path)}`,
         method: "POST",
         responseType: "json",
-    });
+    }).pipe(errorNotification);
     return cacheTouch(ajax$, path);
 }
 
@@ -35,7 +41,7 @@ export function mkdir(path) {
         url: `/api/files/mkdir?path=${encodeURIComponent(path)}`,
         method: "POST",
         responseType: "json",
-    });
+    }).pipe(errorNotification);
     return cacheMkdir(ajax$, path);
 }
 
@@ -44,7 +50,7 @@ export function rm(...paths) {
         url: `/api/files/rm?path=${encodeURIComponent(path)}`,
         method: "POST",
         responseType: "json",
-    })));
+    }).pipe(errorNotification)));
     return cacheRm(ajax$, ...paths);
 }
 
@@ -53,7 +59,7 @@ export function mv(from, to) {
         url: `/api/files/mv?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
         method: "POST",
         responseType: "json",
-    });
+    }).pipe(errorNotification);
     return cacheMv(ajax$, from, to);
 }
 

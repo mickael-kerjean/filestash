@@ -9,12 +9,12 @@
     max-width: 550px;
     box-shadow: 1px 2px 20px rgba(0, 0, 0, 0.1);
     background: white;
-    padding: 20px 15px 15px 20px;
     box-sizing: border-box;
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
 }
 .component_upload h2 {
+    padding: 20px 20px 5px 20px;
     margin: 0 0 5px 0;
     font-size: 1.2em;
     font-weight: 100;
@@ -43,11 +43,19 @@
     float: right;
 }
 .component_upload h3 {
-    margin: 0 0 5px 0;
-    font-size: 1.0em;
-    font-weight: 100;
+    padding: 3px 20px 3px 20px;
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: normal;
+    background: var(--dark);
+    color: var(--super-light);
 }
+.component_upload h3 span {
+    float: right;
+}
+
 .component_upload .stats_content {
+    padding: 5px 10px 5px 20px;
     clear: both;
     max-height: 200px;
     overflow-y: auto;
@@ -67,31 +75,39 @@
     width: 100%;
 }
 .component_upload .stats_content .file_row .file_path {
-    padding: 3px 3px 3px 0;
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    padding: 3px 0;
+}
+.component_upload .stats_content .file_row .file_path .speed {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    padding-left: 5px;
+}
+.component_upload .stats_content .file_row .file_path .speed:not(:empty):before {
+    content: "(";
+}
+.component_upload .stats_content .file_row .file_path .speed:not(:empty):after {
+    content: ")";
 }
 .component_upload .stats_content .file_row .file_state {
-    padding: 3px 3px 3px 0;
-    display: flex;
-    flex-direction: column;
     width: 40px;
-}
-.component_upload .stats_content .file_row:hover .file_control img {
-    display: block !important;
-    cursor: pointer;
+    padding: 3px 0;
 }
 .component_upload .stats_content .file_row .file_control {
-    padding: 3px 3px 3px 0;
-    display: flex;
-    flex-direction: column;
-    width: 18px;
-    height: 18px;
+    width: 25px;
 }
 .component_upload .stats_content .file_row .file_control img {
     display: none;
+    cursor: pointer;
+    height: 24px;
+    width: 24px;
+}
+.component_upload .stats_content .file_row:hover .file_control img {
+    display: inherit;
+    padding-top: 1px;
 }
 
 /***********************/
