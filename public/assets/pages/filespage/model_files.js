@@ -4,10 +4,7 @@ import notification from "../../components/notification.js";
 
 import { setPermissions } from "./model_acl.js";
 import fscache from "./cache.js";
-import {
-    rm as cacheRm, mv as cacheMv, save as cacheSave,
-    touch as cacheTouch, mkdir as cacheMkdir, ls as middlewareLs,
-} from "./cache_transcient.js";
+import { ls as middlewareLs } from "./model_virtual_layer.js";
 
 /*
  * The naive approach would be to make an API call and refresh the screen after an action
@@ -22,55 +19,41 @@ import {
  *   3. the new file is being persisted in the screen if the API call is a success
  */
 
-const errorNotification = rxjs.catchError((err) => {
+const withNotification = rxjs.catchError((err) => {
     notification.error(err);
     throw err;
 });
 
-export function touch(path) {
-    const ajax$ = ajax({
-        url: `/api/files/touch?path=${encodeURIComponent(path)}`,
-        method: "POST",
-        responseType: "json",
-    }).pipe(errorNotification);
-    return cacheTouch(ajax$, path);
-}
+export const touch = (path) => ajax({
+    url: `api/files/touch?path=${encodeURIComponent(path)}`,
+    method: "POST",
+    responseType: "json",
+}).pipe(withNotification);
 
-export function mkdir(path) {
-    const ajax$ = ajax({
-        url: `/api/files/mkdir?path=${encodeURIComponent(path)}`,
-        method: "POST",
-        responseType: "json",
-    }).pipe(errorNotification);
-    return cacheMkdir(ajax$, path);
-}
+export const mkdir = (path) => ajax({
+    url: `api/files/mkdir?path=${encodeURIComponent(path)}`,
+    method: "POST",
+    responseType: "json",
+}).pipe(withNotification);
 
-export function rm(...paths) {
-    const ajax$ = rxjs.forkJoin(paths.map((path) => ajax({
-        url: `/api/files/rm?path=${encodeURIComponent(path)}`,
-        method: "POST",
-        responseType: "json",
-    }).pipe(errorNotification)));
-    return cacheRm(ajax$, ...paths);
-}
+export const rm = (...paths) => rxjs.forkJoin(paths.map((path) => ajax({
+    url: `api/files/rm?path=${encodeURIComponent(path)}`,
+    method: "POST",
+    responseType: "json",
+}).pipe(withNotification)));
 
-export function mv(from, to) {
-    const ajax$ = ajax({
-        url: `/api/files/mv?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
-        method: "POST",
-        responseType: "json",
-    }).pipe(errorNotification);
-    return cacheMv(ajax$, from, to);
-}
+export const mv = (from, to) => ajax({
+    url: `api/files/mv?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+    method: "POST",
+    responseType: "json",
+}).pipe(withNotification);
 
-export function save(path) { // TODO
-    return rxjs.of(null).pipe(rxjs.delay(1000));
-}
+export const save = (path) => rxjs.of(null).pipe(rxjs.delay(1000));
 
-export function ls(path) {
+export const ls = (path) => {
     const lsFromCache = (path) => rxjs.from(fscache().get(path));
     const lsFromHttp = (path) => ajax({
-        url: `/api/files/ls?path=${encodeURIComponent(path)}`,
+        url: `api/files/ls?path=${encodeURIComponent(path)}`,
         method: "GET",
         responseType: "json",
     }).pipe(
@@ -114,14 +97,14 @@ export function ls(path) {
         rxjs.tap(({ permissions }) => setPermissions(path, permissions)),
         middlewareLs(path),
     );
-}
+};
 
-export function search(term) {
+export const search = (term) => {
     const path = location.pathname.replace(new RegExp("^/files/"), "/");
     return ajax({
-        url: `/api/files/search?path=${encodeURIComponent(path)}&q=${encodeURIComponent(term)}`,
+        url: `api/files/search?path=${encodeURIComponent(path)}&q=${encodeURIComponent(term)}`,
         responseType: "json"
     }).pipe(rxjs.map(({ responseJSON }) => ({
         files: responseJSON.results,
     })));
-}
+};

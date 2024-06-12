@@ -5,23 +5,26 @@ import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { AjaxError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
+import { currentPath } from "./helper.js";
+import { mkdir, save } from "./model_virtual_layer.js";
 import t from "../../locales/index.js";
+
+const workers$ = new rxjs.BehaviorSubject({ tasks: [], size: null });
 
 export default function(render) {
     const $page = createFragment(`
         <div is="component_filezone"></div>
         <div is="component_upload_fab"></div>
     `);
-    const tasks$ = new rxjs.BehaviorSubject([]);
 
     if (!document.querySelector(`[is="component_upload_queue"]`)) {
         const $queue = createElement(`<div is="component_upload_queue"></div>`);
         document.body.appendChild($queue);
-        componentUploadQueue(createRender($queue), { tasks$ });
+        componentUploadQueue(createRender($queue), { workers$ });
     }
 
-    componentFilezone(createRender($page.children[0]), { tasks$ });
-    componentUploadFAB(createRender($page.children[1]), { tasks$ });
+    componentFilezone(createRender($page.children[0]), { workers$ });
+    componentUploadFAB(createRender($page.children[1]), { workers$ });
     render($page);
 }
 
@@ -29,7 +32,7 @@ export function init() {
     return loadCSS(import.meta.url, "./ctrl_upload.css");
 }
 
-function componentUploadFAB(render, { tasks$ }) {
+function componentUploadFAB(render, { workers$ }) {
     const $page = createElement(`
         <div class="component_mobilefileupload no-select">
             <form>
@@ -46,17 +49,18 @@ function componentUploadFAB(render, { tasks$ }) {
         </div>
     `);
     effect(rxjs.fromEvent(qs($page, `input[type="file"]`), "change").pipe(
-        rxjs.tap(async (e) => tasks$.next(await processFiles(e.target.files)))
+        rxjs.tap(async (e) => workers$.next(await processFiles(e.target.files))),
     ));
     render($page);
 }
 
-function componentFilezone(render, { tasks$ }) {
+function componentFilezone(render, { workers$ }) {
     const $target = document.body.querySelector(`[data-bind="filemanager-children"]`);
     $target.ondragenter = (e) => {
         e.preventDefault();
         e.stopPropagation();
         $target.classList.add("dropzone");
+        e.dataTransfer.setData("type", "fileupload");
     };
     $target.ondragover = (e) => {
         e.preventDefault();
@@ -68,9 +72,13 @@ function componentFilezone(render, { tasks$ }) {
         e.preventDefault();
         e.stopPropagation();
         const loadID = setTimeout(() => render(createElement("<div>LOADING</div>")), 2000);
-        if (e.dataTransfer.items instanceof window.DataTransferItemList) tasks$.next(await processItems(e.dataTransfer.items));
-        else if (e.dataTransfer.files instanceof window.FileList) tasks$.next(await processFiles(e.dataTransfer.files));
-        else assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js", entry);
+        if (e.dataTransfer.items instanceof window.DataTransferItemList) {
+            workers$.next(await processItems(e.dataTransfer.items));
+        } else if (e.dataTransfer.files instanceof window.FileList) {
+            workers$.next(await processFiles(e.dataTransfer.files));
+        } else {
+            assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js", entry);
+        }
         $target.classList.remove("dropzone");
         clearTimeout(loadID);
         render(createFragment(""));
@@ -79,7 +87,7 @@ function componentFilezone(render, { tasks$ }) {
 
 const MAX_WORKERS = 4;
 
-function componentUploadQueue(render, { tasks$ }) {
+function componentUploadQueue(render, { workers$ }) {
     const $page = createElement(`
         <div class="component_upload hidden">
             <h2 class="no-select">${t("Current Upload")}
@@ -103,14 +111,15 @@ function componentUploadQueue(render, { tasks$ }) {
         </div>
    `);
 
-    // feature1: close the queue and stop the upload
-    effect(onClick(qs($page, `img[alt="close"]`)).pipe(
+    // feature1: close the queue
+    onClick(qs($page, `img[alt="close"]`)).pipe(
         rxjs.mergeMap(() => animate($page, { time: 200, keyframes: slideYOut(50) })),
         rxjs.tap(() => $page.classList.add("hidden")),
-    ));
+    ).subscribe();
 
     // feature2: setup the task queue in the dom
-    effect(tasks$.asObservable().pipe(rxjs.tap((tasks) => {
+    workers$.subscribe(({ tasks }) => {
+        console.log("TASKS SETUP DOM", tasks);
         if (tasks.length === 0) return;
         $page.classList.remove("hidden");
         const $fragment = document.createDocumentFragment();
@@ -123,7 +132,7 @@ function componentUploadQueue(render, { tasks$ }) {
             $task.firstElementChild.nextElementSibling.textContent = t("Waiting");
         }
         $content.appendChild($fragment);
-    })));
+    });
 
     // feature3: process tasks
     const $icon = createElement(`<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cjxzdmcgdmlld0JveD0iMCAwIDM4NCA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHBhdGggc3R5bGU9ImZpbGw6ICM2MjY0Njk7IiBkPSJNMCAxMjhDMCA5Mi43IDI4LjcgNjQgNjQgNjRIMzIwYzM1LjMgMCA2NCAyOC43IDY0IDY0VjM4NGMwIDM1LjMtMjguNyA2NC02NCA2NEg2NGMtMzUuMyAwLTY0LTI4LjctNjQtNjRWMTI4eiIgLz4KPC9zdmc+Cg==" alt="stop" title="${t("Aborted")}">`)
@@ -131,10 +140,14 @@ function componentUploadQueue(render, { tasks$ }) {
     const updateDOMTaskProgress = ($task, text) => $task.firstElementChild.nextElementSibling.textContent = text;
     const updateDOMTaskSpeed = ($task, text) => $task.firstElementChild.firstElementChild.nextElementSibling.textContent = formatSpeed(text);
     const updateDOMGlobalSpeed = function (workersSpeed) {
+        let last = 0;
         return (nworker, currentWorkerSpeed) => {
             workersSpeed[nworker] = currentWorkerSpeed;
+            if (new Date() - last <= 500) return;
+            last = new Date();
             const speed = workersSpeed.reduce((acc, el) => acc + el, 0);
-            $page.firstElementChild.nextElementSibling.firstElementChild.textContent = formatSpeed(speed);
+            const $speed = $page.firstElementChild.nextElementSibling.firstElementChild;
+            $speed.textContent = formatSpeed(speed);
         };
     }(new Array(MAX_WORKERS).fill(0));
     const updateDOMGlobalTitle = ($page, text) => $page.firstElementChild.nextElementSibling.childNodes[0].textContent = text;
@@ -202,7 +215,8 @@ function componentUploadQueue(render, { tasks$ }) {
         }
     };
     const noFailureAllowed = (fn) => fn().catch(() => noFailureAllowed(fn));
-    effect(tasks$.pipe(rxjs.tap(async (newTasks) => {
+    workers$.subscribe(async ({ tasks: newTasks }) => {
+        console.log("TASKS PROCESS", newTasks);
         tasks = tasks.concat(newTasks); // add new tasks to the pool
         while(true) {
             const nworker = reservations.indexOf(false);
@@ -210,7 +224,7 @@ function componentUploadQueue(render, { tasks$ }) {
             reservations[nworker] = true;
             noFailureAllowed(processWorkerQueue.bind(this, nworker)).then(() => reservations[nworker] = false);
         }
-    })));
+    });
 }
 
 class IExecutor {
@@ -219,7 +233,6 @@ class IExecutor {
     run() { throw new Error("NOT_IMPLEMENTED"); }
 }
 
-const blob = new Blob(new Array(2 * 1024 * 1024).fill('a'), { type: "text/plain" });
 function workerImplFile({ error, progress, speed }) {
     return new class Worker extends IExecutor {
         constructor() {
@@ -232,16 +245,12 @@ function workerImplFile({ error, progress, speed }) {
             this.xhr.abort();
         }
 
-        run({ stream }) {
+        async run({ entry, path, virtual }) {
             return new Promise((done, err) => {
-                console.log("EXECUTE", stream)
                 this.xhr = new XMLHttpRequest();
-                this.xhr.open("POST", "http://localhost:8334/api/files/cat?path=" + encodeURIComponent("/filestashtest/test/dummy.txt"));
+                this.xhr.open("POST", "api/files/cat?path=" + encodeURIComponent(path));
                 this.xhr.withCredentials = true;
                 this.xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
-                this.xhr.onerror = function(e) {
-                    err(new AjaxError("failed", e, "FAILED"));
-                };
                 this.xhr.upload.onabort = () => {
                     err(new AjaxError("aborted", null, "ABORTED"));
                     error(new AjaxError("aborted", null, "ABORTED"));
@@ -271,17 +280,25 @@ function workerImplFile({ error, progress, speed }) {
                         this.prevProgress.shift();
                     }
                 };
-                // this.xhr.onreadystatechange = () => console.log(this.xhr.readyState);
                 this.xhr.onload = () => {
                     progress(100);
+                    virtual.afterSuccess();
                     done();
                 };
-                this.xhr.send(stream);
+                this.xhr.onerror = function(e) {
+                    err(new AjaxError("failed", e, "FAILED"));
+                    vitual.afterError();
+                };
+                entry.file(
+                    (file) => this.xhr.send(file),
+                    (err)  => this.xhr.onerror(err),
+                );
             });
 
         }
     }
 }
+
 function workerImplDirectory({ error, progress }) {
     return new class Worker extends IExecutor {
         constructor() {
@@ -293,10 +310,10 @@ function workerImplDirectory({ error, progress }) {
             this.xhr.abort();
         }
 
-        run() {
+        run({ virtual, path }) {
             return new Promise((done, err) => {
                 this.xhr = new XMLHttpRequest();
-                this.xhr.open("POST", "http://localhost:8334/api/files/mkdir?path=" + encodeURIComponent("/filestashtest/test/dummy.txt"));
+                this.xhr.open("POST", "api/files/mkdir?path=" + encodeURIComponent(path));
                 this.xhr.withCredentials = true;
                 this.xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
                 this.xhr.onerror = function(e) {
@@ -316,13 +333,14 @@ function workerImplDirectory({ error, progress }) {
                     err(new AjaxError("aborted", null, "ABORTED"));
                     error(new AjaxError("aborted", null, "ABORTED"));
                     clearInterval(id);
+                    virtual.afterError();
                 };
                 this.xhr.onload = () => {
                     clearInterval(id);
                     progress(100);
+                    virtual.afterSuccess();
                     setTimeout(() => done(), 500);
                 };
-                console.log(stream)
                 this.xhr.send(null);
             });
 
@@ -330,7 +348,7 @@ function workerImplDirectory({ error, progress }) {
     }
 }
 
-async function processFiles(filelist) {
+async function processFiles(filelist) { // TODO
     const files = [];
     const detectFiletype = (file) => {
         // the 4096 is an heuristic I've observed and taken from:
@@ -354,10 +372,10 @@ async function processFiles(filelist) {
     for (const currentFile of filelist) {
         const type = await detectFiletype(currentFile);
         const file = { type, date: currentFile.lastModified, name: currentFile.name, path: currentFile.name };
-        if (type === "file") file.size = currentFile.size;
-        else if (type === "directory") file.path += "/";
-        else assert.fail(`NOT_SUPPORTED type="${type}"`, type);
-        file.stream = currentFile // TODO: put a file object in there
+        if (type === "directory") file.path += "/";
+        else if (type === "file") {
+            fs.push({ type: "file", path, exec: workerImplFile, entry: currentFile });
+        } else assert.fail(`NOT_SUPPORTED type="${type}"`, type);
         file.exec = workerImplFile.bind(file);
         files.push(file);
     }
@@ -366,26 +384,42 @@ async function processFiles(filelist) {
 
 async function processItems(itemList) {
     const bfs = async (queue) => {
-        const fs = [];
-        let path = ""
+        const tasks = [];
+        let size = 0;
+        let path = "";
+        const basepath = currentPath();
         while (queue.length > 0) {
             const entry = queue.shift();
-            const path = entry.fullPath.substring(1);
+            const path = basepath + entry.fullPath.substring(1);
+            let task = null;
             if (entry === null) continue;
-            else if (entry.isFile) {
-                const file = await new Promise((done) => entry.file((file) => done(file)));
-                fs.push({ type: "file", path, exec: workerImplFile, stream: file });
-                continue;
+            if (entry.isFile) {
+                const entrySize = await new Promise((done) => entry.getMetadata(({ size }) => done(size)));
+                task = {
+                    type: "file", entry,
+                    path,
+                    exec: workerImplFile,
+                    virtual: save(path, entrySize),
+                };
+                size += entrySize;
             } else if (entry.isDirectory) {
-                fs.push({ type: "directory", path: path + "/", exec: workerImplDirectory });
+                task = {
+                    type: "directory",
+                    path: path + "/",
+                    exec: workerImplDirectory,
+                    virtual: mkdir(path),
+                };
+                size += 5000; // that's to calculate the remaining time for an upload, aka made up size is ok
                 queue = queue.concat(await new Promise((done) => {
-                    entry.createReader().readEntries(done)
+                    entry.createReader().readEntries(done);
                 }));
-                continue;
+            } else {
+                assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js", entry);
             }
-            assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js", entry);
+            task.virtual.before();
+            tasks.push(task);
         }
-        return fs;
+        return { tasks, size: 1000 };
     }
     const entries = [];
     for (const item of itemList) entries.push(item.webkitGetAsEntry());

@@ -6,6 +6,9 @@ import { report } from "../helpers/log.js";
 
 export default async function main() {
     try {
+        let config = {};
+        // await Config.refresh()
+
         await Promise.all([ // procedure with no outside dependencies
             setup_translation(),
             setup_xdg_open(),
@@ -16,10 +19,10 @@ export default async function main() {
             setup_loader(),
             setup_history(),
         ]);
-        // await Config.refresh()
 
         await Promise.all([ // procedure with dependency on config
             // setup_chromecast() // TODO
+            setup_base(config),
         ]);
 
         window.dispatchEvent(new window.Event("pagechange"));
@@ -66,6 +69,13 @@ async function setup_device() {
     window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(e) {
         e.matches ? document.body.classList.add("dark-mode") : document.body.classList.remove("dark-mode");
     });
+}
+
+async function setup_base(config) {
+    // TODO: base as config in admin
+    const $meta = document.createElement("base");
+    $meta.setAttribute("href", location.origin);
+    document.head.appendChild($meta);
 }
 
 // async function setup_sw() {

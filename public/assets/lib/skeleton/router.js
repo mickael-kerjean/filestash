@@ -25,9 +25,9 @@ export async function navigate(href) {
 const trimPrefix = (value, prefix) => value.startsWith(prefix) ? value.slice(prefix.length) : value;
 
 export function currentRoute(r, notFoundRoute) {
-    const currentRoute = "/" + trimPrefix(
+    const currentRoute = trimPrefix(
         window.location.pathname,
-        window.document.head.querySelector("base")?.getAttribute("href") || "/"
+        window.document.head.querySelector("base")?.getAttribute("href") || ""
     );
     for (const routeKey in r) {
         if (new RegExp("^" + routeKey + "$").test(currentRoute)) {

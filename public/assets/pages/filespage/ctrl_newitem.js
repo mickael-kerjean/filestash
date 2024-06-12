@@ -6,7 +6,17 @@ import { loadCSS } from "../../helpers/loader.js";
 
 import { getAction$, setAction } from "./state_newthing.js";
 import { currentPath } from "./helper.js";
-import { mkdir, touch } from "./model_files.js";
+import { mkdir as mkdir$, touch as touch$ } from "./model_files.js";
+import { mkdir as mkdirVL, touch as touchVL, withVirtualLayer } from "./model_virtual_layer.js";
+
+const touch = (path) => withVirtualLayer(
+    touch$(path),
+    touchVL(path),
+);
+const mkdir = (path) => withVirtualLayer(
+    mkdir$(path),
+    mkdirVL(path),
+);
 
 export default async function(render) {
     const $node = createElement(`

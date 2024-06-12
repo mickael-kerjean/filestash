@@ -21,13 +21,25 @@ import { getAction$, setAction } from "./state_newthing.js";
 import { setState, getState$ } from "./state_config.js";
 import { clearCache } from "./cache.js";
 import { getPermission, calculatePermission } from "./model_acl.js";
-import { rm, mv } from "./model_files.js";
 import { currentPath, extractPath } from "./helper.js";
+
+import { rm as rm$, mv as mv$ } from "./model_files.js";
+import { rm as rmVL, mv as mvVL, withVirtualLayer } from "./model_virtual_layer.js";
 
 const modalOpt = {
     withButtonsRight: t("OK"),
     withButtonsLeft: t("CANCEL"),
 };
+
+const rm = (...paths) => withVirtualLayer(
+    rm$(...paths),
+    rmVL(...paths),
+);
+
+const mv = (from, to) => withVirtualLayer(
+    mv$(from, to),
+    mvVL(from, to),
+);
 
 export default async function(render) {
     const $page = createElement(`
@@ -127,7 +139,7 @@ function componentLeft(render, { $scroll }) {
                     createModal(modalOpt),
                     basename(expandSelection()[0].path.replace(new RegExp("/$"), "")),
                 )),
-                rxjs.mergeMap((val) => {
+                rxjs.mergeMap((val) => { // TODO: migrate to transcient impl
                     const path = expandSelection()[0].path;
                     const [basepath, filename] = extractPath(path);
                     clearSelection();
@@ -141,7 +153,7 @@ function componentLeft(render, { $scroll }) {
                     createModal(modalOpt),
                     basename(expandSelection()[0].path.replace(new RegExp("/$"), "")).substr(0, 15),
                 )),
-                rxjs.mergeMap((val) => {
+                rxjs.mergeMap((val) => { // TODO: migrate to transcient impl
                     const selection = expandSelection()[0].path;
                     clearSelection();
                     clearCache(selection);

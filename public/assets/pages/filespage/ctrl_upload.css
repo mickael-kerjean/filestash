@@ -17,7 +17,7 @@
     padding: 20px 20px 5px 20px;
     margin: 0 0 5px 0;
     font-size: 1.2em;
-    font-weight: 100;
+    font-weight: normal;
 }
 .component_upload h2 .percent {
     color: var(--emphasis-primary);
