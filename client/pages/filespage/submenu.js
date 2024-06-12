@@ -164,7 +164,7 @@ class SubmenuComponent extends React.Component {
                         </NgIf>
                         <NgIf
                             className="button-extract"
-                            cond={/canary/.test(location.search) && this.props.selected.length === 1 && this.props.selected[0].replace(/.*\.([^\.]+)/, "$1") === "zip"}
+                            cond={this.props.selected.length === 1 && this.props.selected[0].replace(/.*\.([^\.]+)/, "$1") === "zip"}
                             type="inline"
                             onMouseDown={this.onExtract.bind(this, this.props.selected)}>
                             <ReactCSSTransitionGroup transitionName="submenuwithSelection" transitionLeave={false} transitionEnter={false} transitionAppear={true} transitionAppearTimeout={10000}>
