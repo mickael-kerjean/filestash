@@ -63,7 +63,7 @@ export function touch(path) {
         async afterSuccess() {
             removeLoading(virtualFiles$, basepath, filename);
             onDestroy(() => statePop(virtualFiles$, basepath, filename));
-            await fscache().update(basepath, ({ files, ...rest }) => ({
+            await fscache().update(basepath, ({ files = [], ...rest }) => ({
                 files: files.concat([file]),
                 ...rest,
             }));
@@ -100,7 +100,7 @@ export function mkdir(path) {
         async afterSuccess() {
             removeLoading(virtualFiles$, basepath, dirname);
             onDestroy(() => statePop(virtualFiles$, basepath, dirname));
-            await fscache().update(basepath, ({ files, ...rest }) => ({
+            await fscache().update(basepath, ({ files = [], ...rest }) => ({
                 files: files.concat([file]),
                 ...rest,
             }));
@@ -137,7 +137,7 @@ export function save(path, size) {
         async afterSuccess() {
             removeLoading(virtualFiles$, basepath, filename);
             onDestroy(() => statePop(virtualFiles$, basepath, filename));
-            await fscache().update(basepath, ({ files, ...rest }) => ({
+            await fscache().update(basepath, ({ files = [], ...rest }) => ({
                 files: files.concat([file]),
                 ...rest,
             }));
@@ -190,7 +190,7 @@ export function rm(...paths) {
             });
             onDestroy(() => statePop(mutationFiles$, basepath, basepath));
             await Promise.all(paths.map((path) => fscache().remove(path, false)));
-            await fscache().update(basepath, ({ files, ...rest }) => ({
+            await fscache().update(basepath, ({ files = [], ...rest }) => ({
                 files: files.filter(({ name }) => {
                     for (let i=0;i<arr.length;i+=2) {
                         if (name === arr[i+1]) {
@@ -278,7 +278,7 @@ export function mv(fromPath, toPath) {
                     return file;
                 },
             });
-            await fscache().update(fromBasepath, ({ files, ...rest }) => {
+            await fscache().update(fromBasepath, ({ files = [], ...rest }) => {
                 return {
                     files: files.map((file) => {
                         if (file.name === fromName) {
@@ -300,11 +300,11 @@ export function mv(fromPath, toPath) {
             });
             onDestroy(() => statePop(mutationFiles$, fromBasepath, fromName));
             statePop(virtualFiles$, toBasepath, toName);
-            await fscache().update(fromBasepath, ({ files, ...rest }) => ({
+            await fscache().update(fromBasepath, ({ files = [], ...rest }) => ({
                 files: files.filter((file) => file.name === fromName ? false : true),
                 ...rest,
             }))
-            await fscache().update(toBasepath, ({ files, ...rest }) => ({
+            await fscache().update(toBasepath, ({ files = [], ...rest }) => ({
                 files: files.concat([{
                     name: fromName,
                     time: new Date().getTime(),

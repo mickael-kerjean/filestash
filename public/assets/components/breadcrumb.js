@@ -1,8 +1,14 @@
 import { animate, slideYOut, slideYIn, opacityOut } from "../lib/animate.js";
 import { loadCSS } from "../helpers/loader.js";
 
-import { mv } from "../pages/filespage/model_files.js";
-import { extractPath, isDir } from "../pages/filespage/helper.js";
+import { extractPath, isDir, isNativeFileUpload } from "../pages/filespage/helper.js";
+import { mv as mv$ } from "../pages/filespage/model_files.js";
+import { mv as mvVL, withVirtualLayer } from "../pages/filespage/model_virtual_layer.js";
+
+const mv = (from, to) => withVirtualLayer(
+    mv$(from, to),
+    mvVL(from, to),
+);
 
 class ComponentBreadcrumb extends window.HTMLDivElement {
     constructor() {
@@ -158,13 +164,6 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
     setupDragDropTarget() {
         this.querySelectorAll("a.label").forEach(($folder) => {
             const $path = $folder.closest(".component_path-element");
-            $folder.ondragover = (e) => {
-                e.preventDefault();
-                $path.classList.add("highlight");
-            };
-            $folder.ondragleave = () => {
-                $path.classList.remove("highlight");
-            };
             $folder.ondrop = async (e) => {
                 $path.classList.remove("highlight");
                 const from = e.dataTransfer.getData("path");
@@ -174,6 +173,14 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
                 to += fromName;
                 if (isDir(from)) to += "/";
                 await mv(from, to).toPromise();
+            };
+            $folder.ondragover = (e) => {
+                if (isNativeFileUpload(e)) return;
+                e.preventDefault();
+                $path.classList.add("highlight");
+            };
+            $folder.ondragleave = () => {
+                $path.classList.remove("highlight");
             };
         });
     }

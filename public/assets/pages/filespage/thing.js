@@ -3,11 +3,18 @@ import { qs } from "../../lib/dom.js";
 import { animate, opacityIn } from "../../lib/animate.js";
 import assert from "../../lib/assert.js";
 
-import { extractPath, isDir } from "./helper.js";
-import { mv } from "./model_files.js";
+import { extractPath, isDir, isNativeFileUpload } from "./helper.js";
 import { get as getConfig } from "./model_config.js";
 import { files$ } from "./ctrl_filesystem.js";
 import { addSelection, isSelected, clearSelection } from "./state_selection.js";
+
+import { mv as mv$ } from "./model_files.js";
+import { mv as mvVL, withVirtualLayer } from "./model_virtual_layer.js";
+
+const mv = (from, to) => withVirtualLayer(
+    mv$(from, to),
+    mvVL(from, to),
+);
 
 const IMAGE = {
     FILE: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBoZWlnaHQ9IjE2IiB3aWR0aD0iMTYiPgogIDxwYXRoIHN0eWxlPSJjb2xvcjojMDAwMDAwO3RleHQtaW5kZW50OjA7dGV4dC10cmFuc2Zvcm06bm9uZTtmaWxsOiM4YzhjOGM7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlLXdpZHRoOjAuOTg0ODEwNDEiIGQ9Im0gMiwxMy4wODI0MTIgMC4wMTk0NjIsMS40OTIzNDcgYyA1ZS02LDAuMjIyMTQ1IDAuMjA1NTkwMiwwLjQyNDI2MiAwLjQzMTE1MDIsMC40MjQyNzIgTCAxMy41ODk2MTIsMTUgQyAxMy44MTUxNzMsMTQuOTk5OTk1IDEzLjk5OTk5LDE0Ljc5Nzg3NCAxNCwxNC41NzU3MjkgdiAtMS40OTMzMTcgYyAtNC4xNzE4NjkyLDAuNjYyMDIzIC03LjY1MTY5MjgsMC4zOTg2OTYgLTEyLDAgeiIgLz4KICA8cGF0aCBzdHlsZT0iY29sb3I6IzAwMDAwMDt0ZXh0LWluZGVudDowO3RleHQtdHJhbnNmb3JtOm5vbmU7ZGlzcGxheTppbmxpbmU7ZmlsbDojYWFhYWFhO3N0cm9rZS13aWR0aDowLjk4NDA4MTI3IiBkPSJNIDIuMzUwMSwxLjAwMTMzMTIgQyAyLjE1MjU5LDEuMDM4MzI0NyAxLjk5NjU5LDEuMjI3MjcyMyAyLjAwMDA5LDEuNDI0OTM1NiBWIDE0LjEzMzQ1NyBjIDVlLTYsMC4yMjE4MTYgMC4yMDUyMywwLjQyMzYzNCAwLjQzMDc5LDAuNDIzNjQ0IGwgMTEuMTM5LC0xLjAxZS00IGMgMC4yMjU1NiwtNmUtNiAwLjQzMDExLC0wLjIwMDc1OCAwLjQzMDEyLC0wLjQyMjU3NCBsIDYuN2UtNCwtOS44MjI2NDI2IGMgLTIuNDg0MDQ2LC0xLjM1NTAwNiAtMi40MzUyMzQsLTIuMDMxMjI1NCAtMy41MDAxLC0zLjMwOTcwNyAtMC4wNDMsLTAuMDE1ODgyIDAuMDQ2LDAuMDAxNzQgMCwwIEwgMi40MzA2NywxLjAwMTEwOCBDIDIuNDAzODMsMC45OTg1OSAyLjM3Njc0LDAuOTk4NTkgMi4zNDk5LDEuMDAxMTA4IFoiIC8+CiAgPHBhdGggc3R5bGU9ImRpc3BsYXk6aW5saW5lO2ZpbGw6IzhjOGM4YztmaWxsLW9wYWNpdHk6MTtzdHJva2U6IzllNzU3NTtzdHJva2Utd2lkdGg6MDtzdHJva2UtbGluZWNhcDpidXR0O3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIiBkPSJtIDEwLjUwMDU3LDEuMDAyMDc2NCBjIDAsMy4yNzY4MDI4IC0wLjAwNTIsMy4xNzM5MTYxIDAuMzYyOTIxLDMuMjY5ODIwMiAwLjI4MDEwOSwwLjA3Mjk4NCAzLjEzNzE4LDAuMDM5ODg3IDMuMTM3MTgsMC4wMzk4ODcgLTEuMTIwMDY3LC0xLjA1NTY2OTIgLTIuMzMzNCwtMi4yMDY0NzEzIC0zLjUwMDEsLTMuMzA5NzA3NCB6IiAvPgo8L3N2Zz4K",
@@ -153,14 +160,6 @@ export function createThing({
         e.dataTransfer.setData("path", path);
         e.dataTransfer.setDragImage($thing, e.offsetX, -10);
     };
-    $thing.ondragover = (e) => {
-        if ($thing.getAttribute("data-droptarget") !== "true") return;
-        e.preventDefault();
-        $thing.classList.add("hover");
-    };
-    $thing.ondragleave = () => {
-        $thing.classList.remove("hover");
-    };
     $thing.ondrop = async (e) => {
         $thing.classList.remove("hover");
         const from = e.dataTransfer.getData("path");
@@ -172,6 +171,15 @@ export function createThing({
             if (isDir(from)) to += "/";
         }
         await mv(from, to).toPromise();
+    };
+    $thing.ondragover = (e) => {
+        if(isNativeFileUpload(e)) return;
+        else if ($thing.getAttribute("data-droptarget") !== "true") return;
+        e.preventDefault();
+        $thing.classList.add("hover");
+    };
+    $thing.ondragleave = () => {
+        $thing.classList.remove("hover");
     };
     return $thing;
 }

@@ -5,7 +5,7 @@ import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { AjaxError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
-import { currentPath } from "./helper.js";
+import { currentPath, isNativeFileUpload } from "./helper.js";
 import { mkdir, save } from "./model_virtual_layer.js";
 import t from "../../locales/index.js";
 
@@ -55,22 +55,17 @@ function componentUploadFAB(render, { workers$ }) {
 }
 
 function componentFilezone(render, { workers$ }) {
-    const $target = document.body.querySelector(`[data-bind="filemanager-children"]`);
+    const selector = `[data-bind="filemanager-children"]`;
+    const $target = document.body.querySelector(selector);
+
     $target.ondragenter = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        if (!isNativeFileUpload(e)) return;
         $target.classList.add("dropzone");
-        e.dataTransfer.setData("type", "fileupload");
-    };
-    $target.ondragover = (e) => {
-        e.preventDefault();
-    };
-    $target.ondragleave = () => {
-        // console.log("DRAGLEAVE");
     };
     $target.ondrop = async (e) => {
+        if (!isNativeFileUpload(e)) return;
+        $target.classList.remove("dropzone");
         e.preventDefault();
-        e.stopPropagation();
         const loadID = setTimeout(() => render(createElement("<div>LOADING</div>")), 2000);
         if (e.dataTransfer.items instanceof window.DataTransferItemList) {
             workers$.next(await processItems(e.dataTransfer.items));
@@ -79,10 +74,17 @@ function componentFilezone(render, { workers$ }) {
         } else {
             assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js", entry);
         }
-        $target.classList.remove("dropzone");
         clearTimeout(loadID);
         render(createFragment(""));
     };
+    $target.ondragleave = (e) => {
+        if (!isNativeFileUpload(e)) return;
+        if (!(e.relatedTarget === null || // eg: drag outside the window
+              !e.relatedTarget.closest(selector) // eg: drag on the breadcrumb, ...
+             )) return;
+        $target.classList.remove("dropzone");
+    };
+    $target.ondragover = (e) => e.preventDefault();
 }
 
 const MAX_WORKERS = 4;
@@ -113,13 +115,12 @@ function componentUploadQueue(render, { workers$ }) {
 
     // feature1: close the queue
     onClick(qs($page, `img[alt="close"]`)).pipe(
-        rxjs.mergeMap(() => animate($page, { time: 200, keyframes: slideYOut(50) })),
+        // rxjs.mergeMap(() => animate($page, { time: 200, keyframes: slideYOut(50) })),
         rxjs.tap(() => $page.classList.add("hidden")),
     ).subscribe();
 
     // feature2: setup the task queue in the dom
     workers$.subscribe(({ tasks }) => {
-        console.log("TASKS SETUP DOM", tasks);
         if (tasks.length === 0) return;
         $page.classList.remove("hidden");
         const $fragment = document.createDocumentFragment();
@@ -216,7 +217,6 @@ function componentUploadQueue(render, { workers$ }) {
     };
     const noFailureAllowed = (fn) => fn().catch(() => noFailureAllowed(fn));
     workers$.subscribe(async ({ tasks: newTasks }) => {
-        console.log("TASKS PROCESS", newTasks);
         tasks = tasks.concat(newTasks); // add new tasks to the pool
         while(true) {
             const nworker = reservations.indexOf(false);
