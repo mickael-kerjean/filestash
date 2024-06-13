@@ -98,11 +98,22 @@ func LegacyServeFile(res http.ResponseWriter, req *http.Request, filePath string
 			continue
 		}
 		curPath := filePath + cfg.FileExt
-		file, err := WWWEmbed.Open("static/www" + curPath)
-		if env := os.Getenv("DEBUG"); env == "true" {
-			file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
-		} else if os.Getenv("CANARY") != "" {
-			file, err = WWWDir.Open("public" + curPath)
+		var (
+			file fs.File
+			err  error
+		)
+		if os.Getenv("CANARY") == "true" { // TODO: remove legacy option
+			if env := os.Getenv("DEBUG"); env == "true" {
+				file, err = WWWDir.Open("public" + curPath)
+			} else {
+				file, err = WWWEmbed.Open("static/www/canary" + curPath)
+			}
+		} else {
+			if env := os.Getenv("DEBUG"); env == "true" {
+				file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
+			} else {
+				file, err = WWWEmbed.Open("static/www" + curPath)
+			}
 		}
 		if err != nil {
 			continue

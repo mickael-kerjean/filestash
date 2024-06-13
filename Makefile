@@ -9,6 +9,9 @@ build_init:
 
 build_frontend:
 	NODE_ENV=production npm run build
+	mkdir -p ./server/ctrl/static/www/canary/
+	cp -R ./public/assets ./server/ctrl/static/www/canary/
+	cp -R ./public/*.html ./server/ctrl/static/www/canary/
 
 build_backend:
 	CGO_ENABLED=1 go build --tags "fts5" -o dist/filestash cmd/main.go
