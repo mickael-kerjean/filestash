@@ -55,7 +55,7 @@ RUN apt-get update > /dev/null && \
     /usr/share/tinytex/bin/$(uname -m)-linux/tlmgr install capt-of && \
     /usr/share/tinytex/bin/$(uname -m)-linux/tlmgr install epstopdf-pkg && \
     /usr/share/tinytex/bin/$(uname -m)-linux/tlmgr install cm-super && \
-    ln -s /usr/share/tinytex/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex && \
+    ln -s /usr/share/tinytex/bin/$(uname -m)-linux/pdflatex /usr/local/bin/pdflatex && \
     apt-get purge -y --auto-remove perl wget && \
     # Cleanup
     find /usr/share/ -name 'doc' | xargs rm -rf && \
