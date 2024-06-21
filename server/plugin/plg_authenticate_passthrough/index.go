@@ -43,7 +43,7 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 	case "password_only":
 		res.WriteHeader(http.StatusOK)
 		res.Write([]byte(Page(`
-      <form action="/api/session/auth/" method="post">
+      <form action="` + WithBase("/api/session/auth/") + `" method="post">
         <label>
           <input type="password" name="password" value="" placeholder="Password" />
         </label>
@@ -52,7 +52,7 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 	case "username_and_password":
 		res.WriteHeader(http.StatusOK)
 		res.Write([]byte(Page(`
-      <form action="/api/session/auth/" method="post">
+      <form action="` + WithBase("/api/session/auth/") + `" method="post">
         <label>
           <input type="text" name="user" value="" placeholder="User" />
         </label>

@@ -170,7 +170,7 @@
 }
 .list > .component_thing.view-grid .component_filename {
     letter-spacing: -0.5px;
-    z-index: -1;
+    z-index: 0;
     position: absolute;
     bottom: 2px;
     left: 2px;

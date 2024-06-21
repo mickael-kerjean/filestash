@@ -79,7 +79,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding: 3px 0;
+    padding: 3px 3px 3px 0;
 }
 .component_upload .stats_content .file_row .file_path .speed {
     font-size: 0.7rem;

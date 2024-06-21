@@ -4,7 +4,7 @@ import ajax from "../lib/ajax.js";
 export function createSession(authenticationRequest) {
     return ajax({
         method: "POST",
-        url: "/api/session",
+        url: "./api/session",
         body: authenticationRequest,
         responseType: "json",
     });
@@ -12,7 +12,7 @@ export function createSession(authenticationRequest) {
 
 export function getSession() {
     return ajax({
-        url: "/api/session",
+        url: "./api/session",
         method: "GET",
         responseType: "json"
     }).pipe(
@@ -22,7 +22,7 @@ export function getSession() {
 
 export function deleteSession() {
     return ajax({
-        url: "/api/session",
+        url: "./api/session",
         method: "DELETE"
     });
 }

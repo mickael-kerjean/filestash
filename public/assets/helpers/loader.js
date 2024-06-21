@@ -1,15 +1,15 @@
 import { get as getRelease } from "../pages/adminpage/model_release.js";
+import { toHref } from "../lib/skeleton/router.js";
 
 let version = null;
 
 export async function loadJS(baseURL, path, opts = {}) {
     const $script = document.createElement("script");
-    const link = new URL(path, baseURL) + "?version=" + version;
+    const link = new URL(path, baseURL) + (version ? "?version=" + version : "");
     $script.setAttribute("src", link.toString());
     for (const key in opts) {
         $script.setAttribute(key, opts[key]);
     }
-    if (typeof type === "string") ;
     if (document.head.querySelector(`[src="${link.toString()}"]`)) return Promise.resolve();
     document.head.appendChild($script);
     return new Promise((done) => {

@@ -19,7 +19,7 @@ func init() {
 			Handler: r,
 		}
 		go ensureAppHasBooted(
-			fmt.Sprintf("http://127.0.0.1:%d/about", port),
+			fmt.Sprintf("http://127.0.0.1:%d%s", port, WithBase("/about")),
 			fmt.Sprintf("[http] listening on :%d", port),
 		)
 		if err := srv.ListenAndServe(); err != nil {

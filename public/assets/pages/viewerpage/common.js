@@ -1,23 +1,11 @@
-import { transition as transitionLib, slideYIn } from "../../lib/animate.js";
-import { basename } from "../../lib/path.js";
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
+import { fromHref } from "../../lib/skeleton/router.js";
+import { transition as transitionLib, slideYIn } from "../../lib/animate.js";
+import { basename } from "../../lib/path.js";
 
 export function transition($node) {
     return transitionLib($node, { timeEnter: 150, enter: slideYIn(2) });
-}
-
-export function getFile$() {
-    return ajax(getDownloadUrl()).pipe(
-        rxjs.map(({ response }) => response),
-    );
-}
-
-export function saveFile$() {
-    return rxjs.pipe(
-        rxjs.delay(2000),
-        rxjs.tap((content) => console.log("SAVED")),
-    );
 }
 
 export function getFilename() {
@@ -25,11 +13,12 @@ export function getFilename() {
 }
 
 export function getDownloadUrl() {
-    return "/api/files/cat?path=" + getCurrentPath().replace(/%23/g, "#") + location.hash;
+    return "api/files/cat?path=" + encodeURIComponent(getCurrentPath());
 }
 
 export function getCurrentPath() {
-    return decodeURIComponent(location.pathname.replace("/view", "") + (location.hash || ""));
+    const fullpath = fromHref(location.pathname + location.hash);
+    return decodeURIComponent(fullpath.replace(new RegExp("^/view"), ""));
 }
 
 // function prepare(path) {

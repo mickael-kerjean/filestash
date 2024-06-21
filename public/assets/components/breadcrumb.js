@@ -1,3 +1,4 @@
+import { toHref } from "../lib/skeleton/router.js";
 import { animate, slideYOut, slideYIn, opacityOut } from "../lib/animate.js";
 import { loadCSS } from "../helpers/loader.js";
 
@@ -111,7 +112,7 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
             return `
                 <div class="component_path-element n${idx}" data-path="${pathChunks.slice(0, idx+1).join("/") + "/"}">
                     <div class="li component_path-element-wrapper">
-                        <a class="label" href="/files${link}" data-link>
+                        <a class="label" href="${toHref("/files")}${link}" data-link>
                             ${tmpl}
                         </a>
                         <div class="component_separator">
@@ -188,7 +189,7 @@ class ComponentBreadcrumb extends window.HTMLDivElement {
     __htmlLogout() {
         if (window.self !== window.top) return ""; // no logout button from an iframe
         return `
-            <a href="/logout" data-link>
+            <a href="${toHref("/logout")}" data-link>
                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0ODkuODg4IDQ4OS44ODgiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDQ4OS44ODggNDg5Ljg4ODsiPgogIDxwYXRoIGZpbGw9IiM2ZjZmNmYiIGQ9Ik0yNS4zODMsMjkwLjVjLTcuMi03Ny41LDI1LjktMTQ3LjcsODAuOC0xOTIuM2MyMS40LTE3LjQsNTMuNC0yLjUsNTMuNCwyNWwwLDBjMCwxMC4xLTQuOCwxOS40LTEyLjYsMjUuNyAgICBjLTM4LjksMzEuNy02Mi4zLDgxLjctNTYuNiwxMzYuOWM3LjQsNzEuOSw2NSwxMzAuMSwxMzYuOCwxMzguMWM5My43LDEwLjUsMTczLjMtNjIuOSwxNzMuMy0xNTQuNWMwLTQ4LjYtMjIuNS05Mi4xLTU3LjYtMTIwLjYgICAgYy03LjgtNi4zLTEyLjUtMTUuNi0xMi41LTI1LjZsMCwwYzAtMjcuMiwzMS41LTQyLjYsNTIuNy0yNS42YzUwLjIsNDAuNSw4Mi40LDEwMi40LDgyLjQsMTcxLjhjMCwxMjYuOS0xMDcuOCwyMjkuMi0yMzYuNywyMTkuOSAgICBDMTIyLjE4Myw0ODEuOCwzNS4yODMsMzk2LjksMjUuMzgzLDI5MC41eiBNMjQ0Ljg4MywwYy0xOCwwLTMyLjUsMTQuNi0zMi41LDMyLjV2MTQ5LjdjMCwxOCwxNC42LDMyLjUsMzIuNSwzMi41ICAgIHMzMi41LTE0LjYsMzIuNS0zMi41VjMyLjVDMjc3LjM4MywxNC42LDI2Mi44ODMsMCwyNDQuODgzLDB6IiAvPgo8L3N2Zz4K" alt="power">
             </a>
         `;

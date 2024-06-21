@@ -22,7 +22,9 @@ export function animate($node, opts = {}) {
             duration: time,
             fill,
             easing,
-        }).onfinish = done;
+        }).onfinish = () => done(() => {
+            $node.animate(keyframes.reverse(), { duration: 0, fill });
+        });
     });
 }
 

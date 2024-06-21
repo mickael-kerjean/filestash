@@ -37,12 +37,12 @@ func LegacyStaticHandler(_path string) func(*App, http.ResponseWriter, *http.Req
 			http.NotFound(res, req)
 			return
 		}
-		LegacyServeFile(res, req, JoinPath(_path, req.URL.Path))
+		legacyServeFile(res, req, JoinPath(_path, TrimBase(req.URL.Path)))
 	}
 }
 
 func LegacyIndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) { // TODO: migrate away
-	url := req.URL.Path
+	url := TrimBase(req.URL.Path)
 	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
 		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
 		return
@@ -67,14 +67,10 @@ func LegacyIndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) { 
 		`)))
 		return
 	}
-	if os.Getenv("CANARY") != "" {
-		LegacyServeFile(res, req, "/index.frontoffice.html")
-		return
-	}
-	LegacyServeFile(res, req, "/index.html")
+	legacyServeFile(res, req, "/index.html")
 }
 
-func LegacyServeFile(res http.ResponseWriter, req *http.Request, filePath string) { // TODO: migrate away
+func legacyServeFile(res http.ResponseWriter, req *http.Request, filePath string) { // TODO: migrate away
 	staticConfig := []struct {
 		ContentType string
 		FileExt     string
@@ -102,18 +98,10 @@ func LegacyServeFile(res http.ResponseWriter, req *http.Request, filePath string
 			file fs.File
 			err  error
 		)
-		if os.Getenv("CANARY") == "true" { // TODO: remove legacy option
-			if env := os.Getenv("DEBUG"); env == "true" {
-				file, err = WWWDir.Open("public" + curPath)
-			} else {
-				file, err = WWWEmbed.Open("static/www/canary" + curPath)
-			}
+		if env := os.Getenv("DEBUG"); env == "true" {
+			file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
 		} else {
-			if env := os.Getenv("DEBUG"); env == "true" {
-				file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
-			} else {
-				file, err = WWWEmbed.Open("static/www" + curPath)
-			}
+			file, err = WWWEmbed.Open("static/www" + curPath)
 		}
 		if err != nil {
 			continue
@@ -141,74 +129,74 @@ func LegacyServeFile(res http.ResponseWriter, req *http.Request, filePath string
 
 func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	url := req.URL.Path
-	if filepath.Ext(filepath.Base(url)) == "" {
-		if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
-			http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
-			return
-		}
-		header := res.Header()
-		preloadScripts := []string{
-			"/admin/assets/boot/router_backoffice.js", "/admin/assets/boot/router_backoffice.js", "/admin/assets/boot/ctrl_boot_backoffice.js", "/admin/assets/boot/common.js",
-			"/admin/assets/pages/adminpage/decorator.js", "/admin/assets/pages/adminpage/decorator_sidemenu.js", "/admin/assets/pages/adminpage/decorator_admin_only.js",
-			"/admin/assets/components/icon.js", "/admin/assets/lib/locales.js", "/admin/assets/lib/animate.js",
-			"/admin/assets/lib/skeleton/router.js", "/admin/assets/lib/skeleton/lifecycle.js",
-			"/admin/assets/lib/vendor/rxjs/rxjs-shared.min.js", "/admin/assets/lib/vendor/rxjs/rxjs-ajax.min.js", "/admin/assets/lib/ajax.js",
-			"/admin/assets/lib/rx.js", "/admin/assets/lib/vendor/rxjs/rxjs.min.js",
-		}
-		switch url {
-		case "/admin/backend":
-			preloadScripts = append(
-				preloadScripts,
-				"/admin/assets/pages/adminpage/ctrl_backend.js", "/admin/assets/pages/adminpage/ctrl_backend_component_storage.js", "/admin/assets/pages/adminpage/ctrl_backend_component_authentication.js",
-				"/admin/assets/model/config.js", "/admin/assets/model/backend.js",
-				"/admin/assets/pages/adminpage/model_backend.js", "/admin/assets/pages/adminpage/model_auth_middleware.js",
-				"/admin/assets/lib/random.js", "/admin/assets/lib/form.js", "/admin/assets/components/form.js",
-				"/admin/assets/components/skeleton.js", "/admin/assets/pages/adminpage/ctrl_backend_state.js", "/admin/assets/pages/adminpage/component_box-item.js", "/admin/assets/pages/adminpage/helper_form.js",
-			)
-		case "/admin/settings":
-			preloadScripts = append(
-				preloadScripts,
-				"/admin/assets/pages/adminpage/ctrl_settings.js", "/admin/assets/model/config.js",
-				"/admin/assets/lib/random.js", "/admin/assets/lib/form.js", "/admin/assets/components/form.js",
-				"/admin/assets/components/skeleton.js", "/admin/assets/pages/adminpage/helper_form.js",
-			)
-		case "/admin/logs":
-			preloadScripts = append(
-				preloadScripts,
-				"/admin/assets/pages/adminpage/ctrl_log.js", "/admin/assets/model/config.js", "/admin/assets/lib/random.js",
-				"/admin/assets/pages/adminpage/helper_form.js", "/admin/assets/pages/adminpage/model_log.js",
-				"/admin/assets/pages/adminpage/ctrl_log_form.js", "/admin/assets/pages/adminpage/ctrl_log_viewer.js", "/admin/assets/pages/adminpage/ctrl_log_audit.js",
-				"/admin/assets/lib/form.js", "/admin/assets/components/form.js", "/admin/assets/components/skeleton.js",
-			)
-		case "/admin/about":
-			preloadScripts = append(preloadScripts, "/admin/assets/pages/adminpage/ctrl_about.js")
-		default:
-			preloadScripts = append(preloadScripts, "/admin/assets/pages/ctrl_adminpage.js")
-		}
-		preloadScripts = append(
-			preloadScripts,
-			"/admin/assets/pages/ctrl_error.js", "/admin/assets/pages/adminpage/ctrl_login.js", "/admin/assets/lib/dom.js", "/admin/assets/lib/error.js",
-			"/admin/assets/pages/adminpage/animate.js", "/admin/assets/helpers/log.js", "/admin/assets/helpers/loader.js",
-			"/admin/assets/pages/adminpage/model_config.js", "/admin/assets/pages/adminpage/model_admin_session.js", "/admin/assets/pages/adminpage/model_release.js",
-			"/admin/assets/pages/adminpage/model_audit.js",
-		)
-		for _, href := range preloadScripts {
-			header.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, href))
-		}
-		header.Add("Link", `</about>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
-
-		ServeFile(res, req, WWWPublic, "index.backoffice.html")
+	if filepath.Ext(filepath.Base(url)) != "" {
+		req.URL.Path = strings.TrimPrefix(TrimBase(req.URL.Path), "/admin/")
+		ServeFile("/")(ctx, res, req)
 		return
 	}
-	ServeFile(res, req, WWWPublic, strings.TrimPrefix(req.URL.Path, "/admin/"))
+	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
+		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
+		return
+	}
+	preloadScripts := []string{
+		"/admin/assets/boot/router_backoffice.js", "/admin/assets/boot/router_backoffice.js", "/admin/assets/boot/ctrl_boot_backoffice.js", "/admin/assets/boot/common.js",
+		"/admin/assets/pages/adminpage/decorator.js", "/admin/assets/pages/adminpage/decorator_sidemenu.js", "/admin/assets/pages/adminpage/decorator_admin_only.js",
+		"/admin/assets/components/icon.js", "/admin/assets/locales/index.js", "/admin/assets/lib/animate.js",
+		"/admin/assets/lib/skeleton/router.js", "/admin/assets/lib/skeleton/lifecycle.js",
+		"/admin/assets/lib/vendor/rxjs/rxjs-shared.min.js", "/admin/assets/lib/vendor/rxjs/rxjs-ajax.min.js", "/admin/assets/lib/ajax.js",
+		"/admin/assets/lib/rx.js", "/admin/assets/lib/vendor/rxjs/rxjs.min.js",
+	}
+	switch TrimBase(url) {
+	case "/admin/backend":
+		preloadScripts = append(
+			preloadScripts,
+			"/admin/assets/pages/adminpage/ctrl_backend.js", "/admin/assets/pages/adminpage/ctrl_backend_component_storage.js", "/admin/assets/pages/adminpage/ctrl_backend_component_authentication.js",
+			"/admin/assets/model/config.js", "/admin/assets/model/backend.js",
+			"/admin/assets/pages/adminpage/model_backend.js", "/admin/assets/pages/adminpage/model_auth_middleware.js",
+			"/admin/assets/lib/random.js", "/admin/assets/lib/form.js", "/admin/assets/components/form.js",
+			"/admin/assets/components/skeleton.js", "/admin/assets/pages/adminpage/ctrl_backend_state.js", "/admin/assets/pages/adminpage/component_box-item.js", "/admin/assets/pages/adminpage/helper_form.js",
+		)
+	case "/admin/settings":
+		preloadScripts = append(
+			preloadScripts,
+			"/admin/assets/pages/adminpage/ctrl_settings.js", "/admin/assets/model/config.js",
+			"/admin/assets/lib/random.js", "/admin/assets/lib/form.js", "/admin/assets/components/form.js",
+			"/admin/assets/components/skeleton.js", "/admin/assets/pages/adminpage/helper_form.js",
+		)
+	case "/admin/logs":
+		preloadScripts = append(
+			preloadScripts,
+			"/admin/assets/pages/adminpage/ctrl_log.js", "/admin/assets/model/config.js", "/admin/assets/lib/random.js",
+			"/admin/assets/pages/adminpage/helper_form.js", "/admin/assets/pages/adminpage/model_log.js",
+			"/admin/assets/pages/adminpage/ctrl_log_form.js", "/admin/assets/pages/adminpage/ctrl_log_viewer.js", "/admin/assets/pages/adminpage/ctrl_log_audit.js",
+			"/admin/assets/lib/form.js", "/admin/assets/components/form.js", "/admin/assets/components/skeleton.js",
+		)
+	case "/admin/about":
+		preloadScripts = append(preloadScripts, "/admin/assets/pages/adminpage/ctrl_about.js")
+	default:
+		preloadScripts = append(preloadScripts, "/admin/assets/pages/ctrl_adminpage.js")
+	}
+	preloadScripts = append(
+		preloadScripts,
+		"/admin/assets/pages/ctrl_error.js", "/admin/assets/pages/adminpage/ctrl_login.js", "/admin/assets/lib/dom.js", "/admin/assets/lib/error.js",
+		"/admin/assets/pages/adminpage/animate.js", "/admin/assets/helpers/log.js", "/admin/assets/helpers/loader.js",
+		"/admin/assets/pages/adminpage/model_config.js", "/admin/assets/pages/adminpage/model_admin_session.js", "/admin/assets/pages/adminpage/model_release.js",
+		"/admin/assets/pages/adminpage/model_audit.js",
+	)
+	header := res.Header()
+	for _, href := range preloadScripts {
+		header.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(href)))
+	}
+	header.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
+
+	ServeIndex("index.backoffice.html")(ctx, res, req)
+	return
 }
 
 func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	url := req.URL.Path
-	if url != "/" && strings.HasPrefix(url, "/s/") == false &&
-		strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
-		url != "/login" && url != "/logout" && strings.HasPrefix(url, "/tags") == false {
-		NotFoundHandler(ctx, res, req)
+	if filepath.Ext(filepath.Base(url)) != "" {
+		ServeFile("/")(ctx, res, req)
 		return
 	}
 	ua := req.Header.Get("User-Agent")
@@ -226,11 +214,18 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		`)))
 		return
 	}
-	if os.Getenv("CANARY") != "" {
-		ServeFile(res, req, WWWPublic, "index.frontoffice.html")
+	url = TrimBase(req.URL.Path)
+	if url != "/" && strings.HasPrefix(url, "/s/") == false &&
+		strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
+		url != "/login" && url != "/logout" && strings.HasPrefix(url, "/tags") == false {
+		NotFoundHandler(ctx, res, req)
 		return
 	}
-	ServeFile(res, req, WWWPublic, "index.html")
+	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
+		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
+		return
+	}
+	ServeIndex("index.frontoffice.html")(ctx, res, req)
 }
 
 func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -360,47 +355,76 @@ func CustomCssHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	io.WriteString(res, Config.Get("general.custom_css").String())
 }
 
-func ServeFile(res http.ResponseWriter, req *http.Request, fs http.FileSystem, filePath string) {
-	staticConfig := []struct {
-		ContentType string
-		FileExt     string
-	}{
-		{"br", ".br"},
-		{"gzip", ".gz"},
-		{"", ""},
-	}
+func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+		filePath := JoinPath(chroot, TrimBase(req.URL.Path))
+		staticConfig := []struct {
+			ContentType string
+			FileExt     string
+		}{
+			{"br", ".br"},
+			{"gzip", ".gz"},
+			{"", ""},
+		}
 
-	head := res.Header()
-	acceptEncoding := req.Header.Get("Accept-Encoding")
-	for _, cfg := range staticConfig {
-		if strings.Contains(acceptEncoding, cfg.ContentType) == false {
-			continue
-		}
-		curPath := filePath + cfg.FileExt
-		file, err := fs.Open(curPath)
-		if err != nil {
-			continue
-		} else if stat, err := file.Stat(); err == nil {
-			etag := QuickHash(fmt.Sprintf(
-				"%s %d %d %s",
-				curPath, stat.Size(), stat.Mode(), stat.ModTime()), 10,
-			)
-			if etag == req.Header.Get("If-None-Match") {
-				res.WriteHeader(http.StatusNotModified)
-				return
+		head := res.Header()
+		acceptEncoding := req.Header.Get("Accept-Encoding")
+		for _, cfg := range staticConfig {
+			if strings.Contains(acceptEncoding, cfg.ContentType) == false {
+				continue
 			}
-			head.Set("Etag", etag)
+			curPath := filePath + cfg.FileExt
+			file, err := WWWPublic.Open(curPath)
+			if err != nil {
+				continue
+			} else if stat, err := file.Stat(); err == nil {
+				etag := QuickHash(fmt.Sprintf(
+					"%s %d %d %s",
+					curPath, stat.Size(), stat.Mode(), stat.ModTime()), 10,
+				)
+				if etag == req.Header.Get("If-None-Match") {
+					res.WriteHeader(http.StatusNotModified)
+					return
+				}
+				head.Set("Etag", etag)
+			}
+			head.Set("Content-Type", GetMimeType(filepath.Ext(filePath)))
+			if cfg.ContentType != "" {
+				head.Set("Content-Encoding", cfg.ContentType)
+			}
+			res.WriteHeader(http.StatusOK)
+			io.Copy(res, file)
+			file.Close()
+			return
 		}
-		head.Set("Content-Type", GetMimeType(filepath.Ext(filePath)))
-		if cfg.ContentType != "" {
-			head.Set("Content-Encoding", cfg.ContentType)
-		}
-		res.WriteHeader(http.StatusOK)
-		io.Copy(res, file)
-		file.Close()
-		return
+		http.NotFound(res, req)
 	}
-	http.NotFound(res, req)
+}
+
+func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request) {
+	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
+		head := res.Header()
+
+		// STEP1: pull the data from the embed
+		file, err := WWWPublic.Open(indexPath)
+		if err != nil {
+			http.NotFound(res, req)
+			return
+		}
+		defer file.Close()
+
+		// STEP2: compile the template
+		b, err := io.ReadAll(file)
+		if err != nil {
+			SendErrorResult(res, err)
+			return
+		}
+		head.Set("Content-Type", "text/html")
+		res.WriteHeader(http.StatusOK)
+		template.Must(template.New(indexPath).Parse(string(b))).Execute(res, map[string]any{
+			"base": WithBase("/"),
+		})
+	}
 }
 
 func InitPluginList(code []byte) {

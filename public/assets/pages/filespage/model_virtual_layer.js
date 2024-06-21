@@ -26,6 +26,12 @@ const mutationFiles$ = new rxjs.BehaviorSubject({
     // "/home/": [{ name: "test", fn: (file) => file, ...]
 });
 
+
+window.debug = () => {
+    console.log("VIRTUAL", JSON.stringify(virtualFiles$.value, null, 4));
+    console.log("MUTATION", JSON.stringify(mutationFiles$.value));
+};
+
 class IVirtualLayer {
     constructor() {}
     before() { throw new Error("NOT_IMPLEMENTED"); }
@@ -95,6 +101,7 @@ export function mkdir(path) {
                 ...file,
                 loading: true,
             });
+            statePop(mutationFiles$, basepath, dirname); // case: rm followed by mkdir
         }
 
         async afterSuccess() {
@@ -132,6 +139,7 @@ export function save(path, size) {
                 ...file,
                 loading: true,
             });
+            statePop(mutationFiles$, basepath, filename); // eg: rm followed by save
         }
 
         async afterSuccess() {
@@ -144,7 +152,7 @@ export function save(path, size) {
         }
 
         async afterError() {
-            statePop(virtualFiles$, basepath, dirname);
+            statePop(virtualFiles$, basepath, filename);
             return rxjs.EMPTY;
         }
     }
@@ -164,31 +172,38 @@ export function rm(...paths) {
         constructor() { super(); }
 
         before() {
-            stateAdd(mutationFiles$, basepath, {
-                name: basepath,
-                fn: (file) => {
-                    for (let i=0;i<arr.length;i+=2) {
+            for (let i=0; i<arr.length; i+=2) {
+                stateAdd(mutationFiles$, arr[i], {
+                    name: arr[i+1],
+                    fn: (file) => {
                         if (file.name === arr[i+1]) {
                             file.loading = true;
                             file.last = true;
                         }
-                    }
-                    return file;
-                },
-            });
+                        return file;
+                    },
+                });
+                statePop(virtualFiles$, arr[i], arr[i+1]); // eg: touch followed by rm
+            }
         }
 
         async afterSuccess() {
-            stateAdd(mutationFiles$, basepath, {
-                name: basepath,
-                fn: (file) => {
-                    for (let i=0;i<arr.length;i+=2) {
-                        if (file.name === arr[i+1]) return null;
-                    }
-                    return file;
-                },
+            for (let i=0;i<arr.length;i+=2) {
+                stateAdd(mutationFiles$, arr[i], {
+                    name: arr[i+1],
+                    fn: (file) => {
+                        for (let i=0; i<arr.length; i+=2) {
+                            if (file.name === arr[i+1]) return null;
+                        }
+                        return file;
+                    },
+                });
+            }
+            onDestroy(() => {
+                for (let i=0;i<arr.length;i+=2) {
+                    statePop(mutationFiles$, arr[i], arr[i+1]);
+                }
             });
-            onDestroy(() => statePop(mutationFiles$, basepath, basepath));
             await Promise.all(paths.map((path) => fscache().remove(path, false)));
             await fscache().update(basepath, ({ files = [], ...rest }) => ({
                 files: files.filter(({ name }) => {
@@ -204,18 +219,18 @@ export function rm(...paths) {
         }
 
         async afterError() {
-            stateAdd(mutationFiles$, basepath, {
-                name: basepath,
-                fn: (file) => {
-                    for (let i=0;i<arr.length;i+=2) {
+            for (let i=0;i<arr.length;i+=2) {
+                stateAdd(mutationFiles$, arr[i], {
+                    name: arr[i+1],
+                    fn: (file) => {
                         if (file.name === arr[i+1]) {
                             delete file.loading;
                             delete file.last;
                         }
-                    }
-                    return file;
-                },
-            });
+                        return file;
+                    },
+                });
+            }
             return rxjs.EMPTY;
         }
     }
@@ -327,16 +342,7 @@ export function mv(fromPath, toPath) {
 
 export function ls(path) {
     return rxjs.pipe(
-        // case1: virtual files = additional files we want to see displayed in the UI
-        rxjs.switchMap(({ files, ...res }) => virtualFiles$.pipe(rxjs.mergeMap((virtualFiles) => {
-            const shouldContinue = !!(virtualFiles[path] && virtualFiles[path].length > 0);
-            if (!shouldContinue) return rxjs.of({ ...res, files });
-            return rxjs.of({
-                ...res,
-                files: files.concat(virtualFiles[path]),
-            });
-        }))),
-        // case2: file mutation = update a file state, typically to add a loading state to an
+        // case1: file mutation = update a file state, typically to add a loading state to an
         //                        file or remove it entirely
         rxjs.switchMap(({ files, ...res }) => mutationFiles$.pipe(rxjs.mergeMap((fns) => {
             const shouldContinue = !!(fns[path] && fns[path].length > 0);
@@ -351,6 +357,15 @@ export function ls(path) {
                 }
             }
             return rxjs.of({ ...res, files });
+        }))),
+        // case2: virtual files = additional files we want to see displayed in the UI
+        rxjs.switchMap(({ files, ...res }) => virtualFiles$.pipe(rxjs.mergeMap((virtualFiles) => {
+            const shouldContinue = !!(virtualFiles[path] && virtualFiles[path].length > 0);
+            if (!shouldContinue) return rxjs.of({ ...res, files });
+            return rxjs.of({
+                ...res,
+                files: files.concat(virtualFiles[path]),
+            });
         }))),
     );
 }

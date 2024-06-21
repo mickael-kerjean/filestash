@@ -1,8 +1,9 @@
 import { extname } from "../../lib/path.js";
+import { fromHref } from "../../lib/skeleton/router.js";
 
 const regexCurrentPath = new RegExp("^/files")
 export function currentPath() {
-    return decodeURIComponent(location.pathname.replace(regexCurrentPath, ""));
+    return decodeURIComponent(fromHref(location.pathname).replace(regexCurrentPath, ""));
 }
 
 const regexDir = new RegExp("/$");

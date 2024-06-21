@@ -1,4 +1,5 @@
 import { createElement, navigate } from "../../lib/skeleton/index.js";
+import { toHref } from "../../lib/skeleton/router.js";
 import rxjs, { effect, applyMutation, applyMutations, preventDefault, onClick } from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
@@ -167,7 +168,7 @@ export default async function(render) {
     ).pipe(
         rxjs.mergeMap((formData) => { // CASE 1: authentication middleware flow
             if (!("middleware" in formData)) return rxjs.of(formData);
-            let url = "/api/session/auth/?action=redirect";
+            let url = "api/session/auth/?action=redirect";
             url += "&label=" + formData["label"];
             const p = getURLParams();
             if (Object.keys(p).length > 0) {
@@ -197,11 +198,11 @@ export default async function(render) {
             return rxjs.of(null).pipe(
                 rxjs.tap(() => toggleLoader(true)),
                 rxjs.mergeMap(() => createSession(formData)),
-                rxjs.tap(({ responseJSON }) => {
-                    let redirectURL = "/files/";
+                rxjs.tap(({ responseJSON }) => { // TODO
+                    let redirectURL = toHref("/files/");
                     const GET = getURLParams();
                     if (GET["next"]) redirectURL = GET["next"];
-                    else if (responseJSON.result) redirectURL = "/files" + responseJSON.result;
+                    else if (responseJSON.result) redirectURL = toHref("/files" + responseJSON.result);
                     navigate(redirectURL);
                 }),
                 rxjs.catchError((err) => {

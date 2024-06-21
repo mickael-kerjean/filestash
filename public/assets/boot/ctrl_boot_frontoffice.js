@@ -1,4 +1,5 @@
 import rxjs, { ajax } from "../lib/rx.js";
+import { toHref } from "../lib/skeleton/router.js";
 // import { setup_cache } from "../helpers/cache.js";
 import { init as setup_loader, loadJS } from "../helpers/loader.js";
 import { init as setup_translation } from "../locales/index.js";
@@ -56,7 +57,7 @@ function $error(msg) {
 /// /////////////////////////////////////////
 async function setup_xdg_open() {
     window.overrides = {};
-    return loadJS(import.meta.url, "/overrides/xdg-open.js");
+    return loadJS(import.meta.url, toHref("/overrides/xdg-open.js"));
 }
 
 async function setup_device() {

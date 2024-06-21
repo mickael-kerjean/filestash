@@ -59,13 +59,16 @@ export function createLoader($parent, opts = {}) {
                 <component-icon name="loading"></component-icon>
             </div>
         `);
+        let $cache = null;
         const id = window.setTimeout(() => {
+            $cache = $parent.cloneNode(true);
             $parent.replaceChildren($icon);
             animate($icon, { time: 750, keyframes: opacityIn() });
         }, wait);
         return () => {
             clearTimeout(id);
             $icon.remove();
+            if ($cache) $parent.replaceChildren(...$cache.children);
         };
     }));
     return rxjs.tap(() => cancel());

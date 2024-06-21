@@ -3,17 +3,18 @@ import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideXIn, opacityOut } from "../../lib/animate.js";
 import { qs } from "../../lib/dom.js";
 import { createLoader } from "../../components/loader.js";
-import { createModal } from "../../components/modal.js";
+import { createModal, MODAL_RIGHT_BUTTON } from "../../components/modal.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import ajax from "../../lib/ajax.js";
 import { extname } from "../../lib/path.js";
 import { get as getConfig } from "../../model/config.js";
+import t from "../../locales/index.js";
 
 import ctrlError from "../ctrl_error.js";
 import ctrlDownloader, { init as initDownloader } from "./application_downloader.js";
-import { getFile$, saveFile$, transition, getFilename, getCurrentPath } from "./common.js";
+import { transition, getFilename, getCurrentPath } from "./common.js";
 import { $ICON } from "./common_fab.js";
-import { fileOptions } from "./model_files.js";
+import { options, cat, save } from "./model_files.js";
 
 import "../../components/menubar.js";
 import "../../components/fab.js";
@@ -31,17 +32,19 @@ export default async function(render) {
     `);
     render($page);
 
-    const $editor = qs($page, ".component_editor");
-    const $menubar = qs($page, "component-menubar");
-    const $fab = qs($page, `[is="component-fab"]`);
+    const $dom = {
+        editor: () => qs($page, ".component_editor"),
+        menubar: () => qs($page, "component-menubar"),
+        fab: () => qs($page, `[is="component-fab"]`),
+    };
     const getConfig$ = getConfig().pipe(rxjs.shareReplay(1));
     const content$ = new rxjs.ReplaySubject(1);
 
     // feature1: setup the dom
     const removeLoader = createLoader($page);
     const setup$ = rxjs.race(
-        getFile$(),
-        ajax("/about").pipe(rxjs.delay(TIME_BEFORE_ABORT_EDIT), rxjs.map(() => null)),
+        cat(),
+        ajax("about").pipe(rxjs.delay(TIME_BEFORE_ABORT_EDIT), rxjs.map(() => null)),
     ).pipe(
         rxjs.mergeMap((content) => {
             if (content === null || has_binary(content)) {
@@ -61,12 +64,13 @@ export default async function(render) {
             rxjs.mergeMap((arr) => rxjs.from(loadMode(extname(getFilename()))).pipe(
                 rxjs.map((mode) => arr.concat([mode])),
             )),
-            rxjs.mergeMap((arr) => fileOptions(getCurrentPath()).pipe(
+            rxjs.mergeMap((arr) => options(getCurrentPath()).pipe(
                 rxjs.map((acl) => arr.concat([acl])),
             )),
         )),
         removeLoader,
         rxjs.map(([content, config, mode, acl]) => {
+            const $editor = $dom.editor();
             content$.next(content);
             $editor.classList.remove("hidden");
             const editor = window.CodeMirror($editor, {
@@ -82,17 +86,18 @@ export default async function(render) {
                 matchTags: { bothTags: true },
                 autoCloseTags: true,
             });
-            transition($editor);
+            // transition($editor);
             editor.getWrapperElement().setAttribute("mode", mode);
             if (!("ontouchstart" in window)) editor.focus();
             if (config["editor"] === "emacs") editor.addKeyMap({
                 "Ctrl-X Ctrl-C": (cm) => window.history.back(),
             });
             onDestroy(() => editor.clearHistory());
-            $menubar.classList.remove("hidden");
+            $dom.menubar().classList.remove("hidden");
             editor.execCommand("save");
             return editor;
         }),
+        // rxjs.tap(() => { debugger; }),
         rxjs.tap((editor) => requestAnimationFrame(() => editor.refresh())),
         rxjs.catchError(ctrlError()),
         rxjs.share(),
@@ -111,6 +116,7 @@ export default async function(render) {
         rxjs.switchMap((editor) => new rxjs.Observable((observer) => editor.on("change", (cm) => observer.next(cm)))),
         rxjs.mergeMap((editor) => content$.pipe(rxjs.map((oldContent) => [editor, editor.getValue(), oldContent]))),
         rxjs.tap(async([editor, newContent = "", oldContent = ""]) => {
+            const $fab = $dom.fab();
             if ($fab.disabled) return;
             const $breadcrumb = qs(document.body, `[is="component-breadcrumb"]`);
             if (newContent === oldContent) {
@@ -135,11 +141,12 @@ export default async function(render) {
             window.CodeMirror.commands.save = (cm) => observer.next(cm);
         })),
         rxjs.mergeMap((cm) => {
+            const $fab = $dom.fab();
             $fab.classList.remove("hidden");
             $fab.render($ICON.LOADING);
             $fab.disabled = true;
             return rxjs.of(cm.getValue()).pipe(
-                saveFile$(),
+                save(),
                 rxjs.tap((content) => {
                     $fab.removeAttribute("disabled");
                     content$.next(content);
@@ -151,30 +158,26 @@ export default async function(render) {
 
     // feature5: save on exit
     effect(setup$.pipe(
-        rxjs.tap((cm) => window.history.block = async(href) => {
+        rxjs.tap((cm) => window.history.block = async (href) => {
             const block = qs(document.body, `[is="component-breadcrumb"]`).hasAttribute("indicator");
             if (block === false) return false;
-
-            // confirm.now(
-            //     <div style={{ textAlign: "center", paddingBottom: "5px" }}>
-            //         { t("Do you want to save the changes ?") }
-            //     </div>,
-            //     () =>{
-            //         return this.save()
-            //             .then(() => this.props.history.push(nextLocation));
-            //     },
-            //     () => {
-            //         this.props.needSavingUpdate(false)
-            //             .then(() => this.props.history.push(nextLocation));
-            //     },
-            // );
-            return new Promise((done) => {
-                createModal(createElement(`
-                <div style="text-align:center;padding-bottom:5px;">
-                    Do you want to save the changes ?
-                </div>
-            `, { onQuit: () => { done(false); } }));
+            const userAction = await new Promise((done) => {
+                createModal({
+                    withButtonsRight: t("Yes"),
+                    withButtonsLeft: t("No"),
+                })(
+                    createElement(`
+                        <div style="text-align:center;padding-bottom:5px;">
+                            Do you want to save the changes ?
+                        </div>
+                    `),
+                    (val) => done(val),
+                );
             });
+            if (userAction === MODAL_RIGHT_BUTTON) {
+                console.log("TODO: SAVE THE DATA");
+            }
+            return false;
         }),
     ));
 }

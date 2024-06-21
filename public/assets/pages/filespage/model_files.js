@@ -2,6 +2,7 @@ import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 import notification from "../../components/notification.js";
 
+import { currentPath } from "./helper.js";
 import { setPermissions } from "./model_acl.js";
 import fscache from "./cache.js";
 import { ls as middlewareLs } from "./model_virtual_layer.js";
@@ -99,12 +100,9 @@ export const ls = (path) => {
     );
 };
 
-export const search = (term) => {
-    const path = location.pathname.replace(new RegExp("^/files/"), "/");
-    return ajax({
-        url: `api/files/search?path=${encodeURIComponent(path)}&q=${encodeURIComponent(term)}`,
-        responseType: "json"
-    }).pipe(rxjs.map(({ responseJSON }) => ({
-        files: responseJSON.results,
-    })));
-};
+export const search = (term) => ajax({
+    url: `api/files/search?path=${encodeURIComponent(currentPath())}&q=${encodeURIComponent(term)}`,
+    responseType: "json"
+}).pipe(rxjs.map(({ responseJSON }) => ({
+    files: responseJSON.results,
+})));

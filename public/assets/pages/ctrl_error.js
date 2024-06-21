@@ -1,4 +1,5 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
+import { toHref, fromHref } from "../lib/skeleton/router.js";
 import rxjs, { effect, applyMutation } from "../lib/rx.js";
 import { qs } from "../lib/dom.js";
 import t from "../locales/index.js";
@@ -14,7 +15,7 @@ export default function(render = createRender(qs(document.body, "[role=\"main\"]
         const $page = createElement(`
             <div>
                 <style>${css}</style>
-                <a href="${calculateBacklink(location.pathname)}" class="backnav">
+                <a href="${calculateBacklink(fromHref(location.pathname))}" class="backnav">
                     <component-icon name="arrow_left"></component-icon>
                     ${t("home")}
                 </a>
@@ -138,5 +139,5 @@ function calculateBacklink(pathname = "") {
         url = listPath.join("/") + "/";
         break;
     }
-    return url === "/files/" ? "/" : url;
+    return toHref(url === "/files/" ? "/" : url);
 }

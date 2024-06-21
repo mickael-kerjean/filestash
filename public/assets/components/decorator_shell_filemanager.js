@@ -1,5 +1,5 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
-import { navigate } from "../lib/skeleton/router.js";
+import { navigate, fromHref } from "../lib/skeleton/router.js";
 import rxjs, { effect, preventDefault } from "../lib/rx.js";
 import { onDestroy } from "../lib/skeleton/lifecycle.js";
 import { animate, slideYOut } from "../lib/animate.js";
@@ -25,7 +25,7 @@ export default function(ctrl) {
 
         // feature1: setup the breadcrumb path
         const $breadcrumb = qs($page, `[is="component-breadcrumb"]`);
-        $breadcrumb.setAttribute("path", urlToPath(location.pathname + location.hash));
+        $breadcrumb.setAttribute("path", urlToPath(fromHref(location.pathname + location.hash)));
 
         // feature2: setup the childrens
         const $main = qs($page, `[data-bind="filemanager-children"]`);

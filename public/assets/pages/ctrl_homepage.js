@@ -1,4 +1,5 @@
 import { createElement, navigate } from "../lib/skeleton/index.js";
+import { toHref } from "../lib/skeleton/router.js";
 import rxjs, { effect } from "../lib/rx.js";
 import { ApplicationError, AjaxError } from "../lib/error.js";
 import ctrlError from "./ctrl_error.js";
@@ -30,8 +31,8 @@ export default function(render) {
             return rxjs.throwError(err);
         }),
         rxjs.tap(({ is_authenticated, home = "/" }) => {
-            if (is_authenticated !== true) return navigate("/login");
-            return navigate(`/files${home}`);
+            if (is_authenticated !== true) return navigate(toHref("/login"));
+            return navigate(toHref(`/files${home}`));
         }),
         rxjs.catchError(ctrlError(render)),
     ));

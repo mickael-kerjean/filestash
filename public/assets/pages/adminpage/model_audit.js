@@ -5,7 +5,7 @@ const isLoading$ = new rxjs.BehaviorSubject(false);
 
 export function get(searchParams = new URLSearchParams()) {
     return ajax({
-        url: "/admin/api/audit?" + searchParams.toString(),
+        url: "admin/api/audit?" + searchParams.toString(),
         responseType: "json"
     }).pipe(
         rxjs.map(({ responseJSON }) => responseJSON.result)

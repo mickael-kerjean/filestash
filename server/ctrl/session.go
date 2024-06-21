@@ -403,7 +403,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		Log.Debug("session::authMiddleware 'auth mapping failed %s'", err.Error())
 		http.Redirect(
 			res, req,
-			"/?error=Not%20Valid&trace=mapping_error - "+err.Error(),
+			WithBase("/?error=Not%20Valid&trace=mapping_error - "+err.Error()),
 			http.StatusTemporaryRedirect,
 		)
 		return
@@ -415,7 +415,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		if IsATranslatedError(err) {
 			url = "/?error=" + err.Error() + "&trace=backend error - " + err.Error()
 		}
-		http.Redirect(res, req, url, http.StatusTemporaryRedirect)
+		http.Redirect(res, req, WithBase(url), http.StatusTemporaryRedirect)
 		return
 	}
 
@@ -450,7 +450,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	})
 	redirectURI := templateBind["next"]
 	if redirectURI == "" {
-		redirectURI = "/"
+		redirectURI = WithBase("/")
 	}
 	http.Redirect(res, req, redirectURI, http.StatusTemporaryRedirect)
 }

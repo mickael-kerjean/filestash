@@ -23,7 +23,7 @@ func Build(a App) *mux.Router {
 	)
 
 	// API for Session
-	session := r.PathPrefix("/api/session").Subrouter()
+	session := r.PathPrefix(WithBase("/api/session")).Subrouter()
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart}
 	session.HandleFunc("", NewMiddlewareChain(SessionGet, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, RateLimiter, BodyParser}
@@ -35,7 +35,7 @@ func Build(a App) *mux.Router {
 	session.HandleFunc("/auth/", NewMiddlewareChain(SessionAuthMiddleware, middlewares, a)).Methods("GET", "POST")
 
 	// API for Admin Console
-	admin := r.PathPrefix("/admin/api").Subrouter()
+	admin := r.PathPrefix(WithBase("/admin/api")).Subrouter()
 	middlewares = []Middleware{ApiHeaders, SecureOrigin}
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionGet, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{ApiHeaders, SecureOrigin, RateLimiter}
@@ -49,7 +49,7 @@ func Build(a App) *mux.Router {
 	admin.HandleFunc("/logs", NewMiddlewareChain(FetchLogHandler, middlewares, a)).Methods("GET")
 
 	// API for File management
-	files := r.PathPrefix("/api/files").Subrouter()
+	files := r.PathPrefix(WithBase("/api/files")).Subrouter()
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, WithPublicAPI, SessionStart, LoggedInOnly}
 	files.HandleFunc("/cat", NewMiddlewareChain(FileCat, middlewares, a)).Methods("GET", "HEAD")
 	files.HandleFunc("/zip", NewMiddlewareChain(FileDownloader, middlewares, a)).Methods("GET")
@@ -66,7 +66,7 @@ func Build(a App) *mux.Router {
 	files.HandleFunc("/search", NewMiddlewareChain(FileSearch, middlewares, a)).Methods("GET")
 
 	// API for Shared link
-	share := r.PathPrefix("/api/share").Subrouter()
+	share := r.PathPrefix(WithBase("/api/share")).Subrouter()
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, LoggedInOnly}
 	share.HandleFunc("", NewMiddlewareChain(ShareList, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, BodyParser}
@@ -78,32 +78,42 @@ func Build(a App) *mux.Router {
 
 	// Webdav server / Shared Link
 	middlewares = []Middleware{IndexHeaders, SecureHeaders}
-	r.HandleFunc("/s/{share}", NewMiddlewareChain(LegacyIndexHandler, middlewares, a)).Methods("GET")
+	if os.Getenv("CANARY") == "" { // TODO: remove once migration is done
+		r.HandleFunc(WithBase("/s/{share}"), NewMiddlewareChain(LegacyIndexHandler, middlewares, a)).Methods("GET")
+	} else {
+		r.HandleFunc(WithBase("/s/{share}"), NewMiddlewareChain(ServeFrontofficeHandler, middlewares, a)).Methods("GET")
+	}
 	middlewares = []Middleware{WebdavBlacklist, SessionStart}
-	r.PathPrefix("/s/{share}").Handler(NewMiddlewareChain(WebdavHandler, middlewares, a))
+	r.PathPrefix(WithBase("/s/{share}")).Handler(NewMiddlewareChain(WebdavHandler, middlewares, a))
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, RedirectSharedLoginIfNeeded, SessionStart, LoggedInOnly}
-	r.PathPrefix("/api/export/{share}/{mtype0}/{mtype1}").Handler(NewMiddlewareChain(FileExport, middlewares, a))
+	r.PathPrefix(WithBase("/api/export/{share}/{mtype0}/{mtype1}")).Handler(NewMiddlewareChain(FileExport, middlewares, a))
 
 	// Application Resources
 	middlewares = []Middleware{ApiHeaders, SecureHeaders}
-	r.HandleFunc("/api/config", NewMiddlewareChain(PublicConfigHandler, middlewares, a)).Methods("GET")
-	r.HandleFunc("/api/backend", NewMiddlewareChain(AdminBackend, middlewares, a)).Methods("GET")
+	r.HandleFunc(WithBase("/api/config"), NewMiddlewareChain(PublicConfigHandler, middlewares, a)).Methods("GET")
+	r.HandleFunc(WithBase("/api/backend"), NewMiddlewareChain(AdminBackend, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{StaticHeaders, SecureHeaders}
-	r.PathPrefix("/assets").Handler(http.HandlerFunc(NewMiddlewareChain(LegacyStaticHandler("/"), middlewares, a))).Methods("GET")
-	r.HandleFunc("/favicon.ico", NewMiddlewareChain(LegacyStaticHandler("/assets/logo/"), middlewares, a)).Methods("GET")
-	r.HandleFunc("/sw_cache.js", NewMiddlewareChain(LegacyStaticHandler("/assets/worker/"), middlewares, a)).Methods("GET")
+	if os.Getenv("CANARY") == "" { // TODO: remove after migration is done
+		r.PathPrefix(WithBase("/assets")).Handler(http.HandlerFunc(NewMiddlewareChain(LegacyStaticHandler("/"), middlewares, a))).Methods("GET")
+		r.HandleFunc(WithBase("/favicon.ico"), NewMiddlewareChain(LegacyStaticHandler("/assets/logo/"), middlewares, a)).Methods("GET")
+		r.HandleFunc(WithBase("/sw_cache.js"), NewMiddlewareChain(LegacyStaticHandler("/assets/worker/"), middlewares, a)).Methods("GET")
+	} else { // TODO: remove this after migration is done
+		r.PathPrefix(WithBase("/assets")).Handler(http.HandlerFunc(NewMiddlewareChain(ServeFile("/"), middlewares, a))).Methods("GET")
+		r.HandleFunc(WithBase("/favicon.ico"), NewMiddlewareChain(ServeFile("/assets/logo/"), middlewares, a)).Methods("GET")
+		r.HandleFunc(WithBase("/sw_cache.js"), NewMiddlewareChain(ServeFile("/assets/worker/"), middlewares, a)).Methods("GET")
+	}
 
 	// Other endpoints
 	middlewares = []Middleware{ApiHeaders}
-	r.HandleFunc("/report", NewMiddlewareChain(ReportHandler, middlewares, a)).Methods("POST")
+	r.HandleFunc(WithBase("/report"), NewMiddlewareChain(ReportHandler, middlewares, a)).Methods("POST")
 	middlewares = []Middleware{IndexHeaders, SecureHeaders}
-	r.HandleFunc("/about", NewMiddlewareChain(AboutHandler, middlewares, a)).Methods("GET")
-	r.HandleFunc("/robots.txt", NewMiddlewareChain(RobotsHandler, []Middleware{}, a))
-	r.HandleFunc("/manifest.json", NewMiddlewareChain(ManifestHandler, []Middleware{}, a)).Methods("GET")
-	r.HandleFunc("/.well-known/security.txt", NewMiddlewareChain(WellKnownSecurityHandler, []Middleware{}, a)).Methods("GET")
-	r.HandleFunc("/healthz", NewMiddlewareChain(HealthHandler, []Middleware{}, a)).Methods("GET")
-	r.HandleFunc("/custom.css", NewMiddlewareChain(CustomCssHandler, []Middleware{}, a)).Methods("GET")
-	r.PathPrefix("/doc").Handler(NewMiddlewareChain(DocPage, []Middleware{}, a)).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+	r.HandleFunc(WithBase("/about"), NewMiddlewareChain(AboutHandler, middlewares, a)).Methods("GET")
+	r.HandleFunc(WithBase("/robots.txt"), NewMiddlewareChain(RobotsHandler, []Middleware{}, a))
+	r.HandleFunc(WithBase("/manifest.json"), NewMiddlewareChain(ManifestHandler, []Middleware{}, a)).Methods("GET")
+	r.HandleFunc(WithBase("/.well-known/security.txt"), NewMiddlewareChain(WellKnownSecurityHandler, []Middleware{}, a)).Methods("GET")
+	r.HandleFunc(WithBase("/healthz"), NewMiddlewareChain(HealthHandler, []Middleware{}, a)).Methods("GET")
+	r.HandleFunc(WithBase("/custom.css"), NewMiddlewareChain(CustomCssHandler, []Middleware{}, a)).Methods("GET")
+	r.PathPrefix(WithBase("/doc")).Handler(NewMiddlewareChain(DocPage, []Middleware{}, a)).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 
 	if os.Getenv("DEBUG") == "true" {
 		initDebugRoutes(r)
@@ -111,10 +121,13 @@ func Build(a App) *mux.Router {
 	initPluginsRoutes(r, &a)
 
 	middlewares = []Middleware{SecureHeaders}
-	r.PathPrefix("/admin").Handler(http.HandlerFunc(NewMiddlewareChain(ServeBackofficeHandler, middlewares, a))).Methods("GET")
+	r.PathPrefix(WithBase("/admin")).Handler(http.HandlerFunc(NewMiddlewareChain(ServeBackofficeHandler, middlewares, a))).Methods("GET")
 	middlewares = []Middleware{IndexHeaders, SecureHeaders}
-	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(LegacyIndexHandler, middlewares, a))).Methods("GET", "POST")
-
+	if os.Getenv("CANARY") == "" { // TODO: remove once migration is done
+		r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(LegacyIndexHandler, middlewares, a))).Methods("GET", "POST")
+	} else {
+		r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(ServeFrontofficeHandler, middlewares, a))).Methods("GET", "POST")
+	}
 	return r
 }
 
@@ -162,7 +175,7 @@ func initPluginsRoutes(r *mux.Router, a *App) {
 		})
 	}
 	// map file types to application handler
-	r.HandleFunc("/overrides/xdg-open.js", func(res http.ResponseWriter, req *http.Request) {
+	r.HandleFunc(WithBase("/overrides/xdg-open.js"), func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
 		res.Write([]byte(`window.overrides["xdg-open"] = function(mime){`))
 		openers := Hooks.Get.XDGOpen()

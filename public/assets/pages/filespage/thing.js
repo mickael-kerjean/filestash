@@ -1,4 +1,5 @@
 import { createElement, createFragment } from "../../lib/skeleton/index.js";
+import { toHref } from "../../lib/skeleton/router.js";
 import { qs } from "../../lib/dom.js";
 import { animate, opacityIn } from "../../lib/animate.js";
 import assert from "../../lib/assert.js";
@@ -82,7 +83,7 @@ export function createThing({
     const $label = $thing.children[3].firstElementChild.firstElementChild; // = qs($thing, ".component_filename .file-details > span");
     const $time = $thing.children[4]; // = qs($thing, ".component_datetime");
 
-    $link.setAttribute("href", link);
+    $link.setAttribute("href", toHref(link));
     $thing.setAttribute("data-droptarget", type === "directory");
     $thing.setAttribute("data-n", n);
     $thing.setAttribute("data-path", path);
@@ -103,10 +104,11 @@ export function createThing({
         $img.classList.add("thumbnail");
         const $placeholder = $img.cloneNode(true);
         $img.parentElement.appendChild($placeholder);
-        $img.setAttribute("src", "/api/files/cat?path=" + encodeURIComponent(path) + "&thumbnail=true");
+        $img.setAttribute("src", "api/files/cat?path=" + encodeURIComponent(path) + "&thumbnail=true");
         $img.style.opacity = 0;
         $img.style.position = "absolute";
         $img.style.top = 0;
+        $img.style.zIndex = 1;
         $placeholder.setAttribute("src", IMAGE.THUMBNAIL_PLACEHOLDER);
         const t = new Date();
         $img.onload = async () => {
