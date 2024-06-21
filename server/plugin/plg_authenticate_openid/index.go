@@ -53,6 +53,6 @@ func (this OpenID) EntryPoint(idpParams map[string]string, req *http.Request, re
 	return nil
 }
 
-func (this OpenID) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
+func (this OpenID) Callback(formData map[string]string, idpParams map[string]string, req *http.Request, res http.ResponseWriter) (map[string]string, error) {
 	return nil, ErrNotImplemented
 }

@@ -82,7 +82,7 @@ func (this Htpasswd) EntryPoint(idpParams map[string]string, req *http.Request, 
 	return nil
 }
 
-func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
+func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]string, req *http.Request, res http.ResponseWriter) (map[string]string, error) {
 	if idpParams["users"] == "" {
 		Log.Error("plg_authenticate_htpasswd::callback there is no user configured")
 		return nil, NewError("You haven't configured any users", 500)

@@ -308,7 +308,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	// Step2: End of the authentication process. Could come from:
 	// - target of a html form. eg: ldap, mysql, ...
 	// - identity provider redirection uri. eg: oauth2, openid, ...
-	templateBind, err := plugin.Callback(formData, idpParams, res)
+	templateBind, err := plugin.Callback(formData, idpParams, req, res)
 	if err == ErrAuthenticationFailed {
 		http.Redirect(
 			res, req,

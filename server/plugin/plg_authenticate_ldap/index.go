@@ -67,6 +67,6 @@ func (this Ldap) EntryPoint(idpParams map[string]string, req *http.Request, res 
 	return nil
 }
 
-func (this Ldap) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
+func (this Ldap) Callback(formData map[string]string, idpParams map[string]string, req *http.Request, res http.ResponseWriter) (map[string]string, error) {
 	return nil, ErrNotImplemented
 }

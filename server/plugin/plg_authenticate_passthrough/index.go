@@ -68,7 +68,7 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 	return nil
 }
 
-func (this Admin) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
+func (this Admin) Callback(formData map[string]string, idpParams map[string]string, req *http.Request, res http.ResponseWriter) (map[string]string, error) {
 	return map[string]string{
 		"user":     formData["user"],
 		"password": formData["password"],
