@@ -246,31 +246,6 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		)
 		return
 	}
-	formData := map[string]string{}
-	switch req.Method {
-	case "GET":
-		for key, element := range _get {
-			if len(element) == 0 {
-				continue
-			}
-			formData[key] = element[0]
-		}
-	case "POST":
-		if err := req.ParseForm(); err != nil {
-			http.Redirect(
-				res, req,
-				"/?error=Not%20Valid&trace=parsing body - "+err.Error(),
-				http.StatusTemporaryRedirect,
-			)
-			return
-		}
-		for key, values := range req.Form {
-			if len(values) == 0 {
-				continue
-			}
-			formData[key] = values[0]
-		}
-	}
 	idpParams := map[string]string{}
 	if err := json.Unmarshal(
 		[]byte(Config.Get("middleware.identity_provider.params").String()),
@@ -308,7 +283,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	// Step2: End of the authentication process. Could come from:
 	// - target of a html form. eg: ldap, mysql, ...
 	// - identity provider redirection uri. eg: oauth2, openid, ...
-	templateBind, err := plugin.Callback(formData, idpParams, req, res)
+	templateBind, err := plugin.Callback(idpParams, req, res)
 	if err == ErrAuthenticationFailed {
 		http.Redirect(
 			res, req,

@@ -64,7 +64,12 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 	return nil
 }
 
-func (this Admin) Callback(formData map[string]string, idpParams map[string]string, req *http.Request, res http.ResponseWriter) (map[string]string, error) {
+func (this Admin) Callback(idpParams map[string]string, req *http.Request, res http.ResponseWriter) (map[string]string, error) {
+	formData, err := FormData(req)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := bcrypt.CompareHashAndPassword(
 		[]byte(Config.Get("auth.admin").String()),
 		[]byte(formData["password"]),
