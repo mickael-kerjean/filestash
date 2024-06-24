@@ -7,8 +7,9 @@ import { createForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 import ctrlError from "../ctrl_error.js";
 
-import { transition, getFile$, saveFile$ } from "./common.js";
+import { transition } from "./common.js";
 import { $ICON } from "./common_fab.js";
+import { cat, save } from "./model_files.js";
 
 import "../../components/icon.js";
 import "../../components/menubar.js";
@@ -35,7 +36,7 @@ export default function(render) {
     const file$ = new rxjs.ReplaySubject(1);
 
     // feature1: setup the dom
-    effect(getFile$().pipe(
+    effect(cat().pipe(
         rxjs.map((content) => JSON.parse(content)),
         rxjs.mergeMap((formSpec) => rxjs.from(createForm(formSpec, formTmpl({
             renderLeaf: ({ label, format, description, required }) => createElement(`
@@ -100,8 +101,9 @@ export default function(render) {
             $fab.disabled = true;
         }),
         rxjs.mergeMap(($fab) => rxjs.of(JSON.stringify(formState())).pipe(
-            saveFile$(),
-            rxjs.mergeMap(() => getFile$().pipe(rxjs.tap((formSpec) => file$.next(JSON.parse(formSpec))))),
+            rxjs.tap((a) => console.log(a)),
+            // rxjs.mergeMap((content) => save(content)),
+            rxjs.mergeMap(() => cat().pipe(rxjs.tap((formSpec) => file$.next(JSON.parse(formSpec))))),
         )),
         rxjs.tap(() => {
             $fab.render($ICON.SAVING);

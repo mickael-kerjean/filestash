@@ -64,7 +64,7 @@ export default async function(render) {
             rxjs.mergeMap((arr) => rxjs.from(loadMode(extname(getFilename()))).pipe(
                 rxjs.map((mode) => arr.concat([mode])),
             )),
-            rxjs.mergeMap((arr) => options(getCurrentPath()).pipe(
+            rxjs.mergeMap((arr) => options().pipe(
                 rxjs.map((acl) => arr.concat([acl])),
             )),
         )),
@@ -145,13 +145,11 @@ export default async function(render) {
             $fab.classList.remove("hidden");
             $fab.render($ICON.LOADING);
             $fab.disabled = true;
-            return rxjs.of(cm.getValue()).pipe(
-                save(),
-                rxjs.tap((content) => {
-                    $fab.removeAttribute("disabled");
-                    content$.next(content);
-                }),
-            );
+            const content = cm.getValue();
+            return save(content).pipe(rxjs.tap(() => {
+                $fab.removeAttribute("disabled");
+                content$.next(content);
+            }));
         }),
         rxjs.catchError(ctrlError()),
     ));
@@ -175,7 +173,10 @@ export default async function(render) {
                 );
             });
             if (userAction === MODAL_RIGHT_BUTTON) {
-                console.log("TODO: SAVE THE DATA");
+                const $fab = $dom.fab();
+                $fab.render($ICON.LOADING);
+                $fab.disabled = true;
+                await save(cm.getValue()).toPromise();
             }
             return false;
         }),

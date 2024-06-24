@@ -194,11 +194,6 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 }
 
 func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
-	url := req.URL.Path
-	if filepath.Ext(filepath.Base(url)) != "" {
-		ServeFile("/")(ctx, res, req)
-		return
-	}
 	ua := req.Header.Get("User-Agent")
 	if strings.Contains(ua, "MSIE ") || strings.Contains(ua, "Trident/") || strings.Contains(ua, "Edge/") {
 		// Microsoft is behaving on many occasion differently than Firefox / Chrome.
@@ -214,7 +209,7 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		`)))
 		return
 	}
-	url = TrimBase(req.URL.Path)
+	url := TrimBase(req.URL.Path)
 	if url != "/" && strings.HasPrefix(url, "/s/") == false &&
 		strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
 		url != "/login" && url != "/logout" && strings.HasPrefix(url, "/tags") == false {

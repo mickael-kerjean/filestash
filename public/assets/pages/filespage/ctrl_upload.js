@@ -392,7 +392,7 @@ function workerImplDirectory({ error, progress }) {
 async function processFiles(filelist) { // TODO
     const files = [];
     const detectFiletype = (file) => {
-        // the 4096 is an heuristic I've observed and taken from:
+        // the 4096 is an heuristic observed and taken from:
         // https://stackoverflow.com/questions/25016442
         // however the proposed answer is just wrong as it doesn't consider folder with
         // name such as: test.png and as Stackoverflow favor consanguinity with their
@@ -413,10 +413,13 @@ async function processFiles(filelist) { // TODO
     for (const currentFile of filelist) {
         const type = await detectFiletype(currentFile);
         const file = { type, date: currentFile.lastModified, name: currentFile.name, path: currentFile.name };
-        if (type === "directory") file.path += "/";
-        else if (type === "file") {
-            fs.push({ type: "file", path, exec: workerImplFile, entry: currentFile });
-        } else assert.fail(`NOT_SUPPORTED type="${type}"`, type);
+        if (type === "directory") {
+            file.path += "/";
+        } else if (type === "file") {
+            file.entry = currentFile;
+        } else {
+            assert.fail(`NOT_SUPPORTED type="${type}"`, type);
+        }
         file.exec = workerImplFile.bind(file);
         files.push(file);
     }
