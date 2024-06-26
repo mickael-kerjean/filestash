@@ -24,37 +24,37 @@ func Build(a App) *mux.Router {
 
 	// API for Session
 	session := r.PathPrefix(WithBase("/api/session")).Subrouter()
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, PluginInjector}
 	session.HandleFunc("", NewMiddlewareChain(SessionGet, middlewares, a)).Methods("GET")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, RateLimiter, BodyParser}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, RateLimiter, BodyParser, PluginInjector}
 	session.HandleFunc("", NewMiddlewareChain(SessionAuthenticate, middlewares, a)).Methods("POST")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, PluginInjector}
 	session.HandleFunc("", NewMiddlewareChain(SessionLogout, middlewares, a)).Methods("DELETE")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, PluginInjector}
 	session.HandleFunc("/auth/{service}", NewMiddlewareChain(SessionOAuthBackend, middlewares, a)).Methods("GET")
 	session.HandleFunc("/auth/", NewMiddlewareChain(SessionAuthMiddleware, middlewares, a)).Methods("GET", "POST")
 
 	// API for Admin Console
 	admin := r.PathPrefix(WithBase("/admin/api")).Subrouter()
-	middlewares = []Middleware{ApiHeaders, SecureOrigin}
+	middlewares = []Middleware{ApiHeaders, SecureOrigin, PluginInjector}
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionGet, middlewares, a)).Methods("GET")
-	middlewares = []Middleware{ApiHeaders, SecureOrigin, RateLimiter}
+	middlewares = []Middleware{ApiHeaders, SecureOrigin, RateLimiter, PluginInjector}
 	admin.HandleFunc("/session", NewMiddlewareChain(AdminSessionAuthenticate, middlewares, a)).Methods("POST")
-	middlewares = []Middleware{ApiHeaders, AdminOnly, SecureOrigin}
+	middlewares = []Middleware{ApiHeaders, AdminOnly, SecureOrigin, PluginInjector}
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigHandler, middlewares, a)).Methods("GET")
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, a)).Methods("POST")
 	admin.HandleFunc("/middlewares/authentication", NewMiddlewareChain(AdminAuthenticationMiddleware, middlewares, a)).Methods("GET")
 	admin.HandleFunc("/audit", NewMiddlewareChain(FetchAuditHandler, middlewares, a)).Methods("GET")
-	middlewares = []Middleware{IndexHeaders, AdminOnly}
+	middlewares = []Middleware{IndexHeaders, AdminOnly, PluginInjector}
 	admin.HandleFunc("/logs", NewMiddlewareChain(FetchLogHandler, middlewares, a)).Methods("GET")
 
 	// API for File management
 	files := r.PathPrefix(WithBase("/api/files")).Subrouter()
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, WithPublicAPI, SessionStart, LoggedInOnly}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, WithPublicAPI, SessionStart, LoggedInOnly, PluginInjector}
 	files.HandleFunc("/cat", NewMiddlewareChain(FileCat, middlewares, a)).Methods("GET", "HEAD")
 	files.HandleFunc("/zip", NewMiddlewareChain(FileDownloader, middlewares, a)).Methods("GET")
 	files.HandleFunc("/unzip", NewMiddlewareChain(FileExtract, middlewares, a)).Methods("POST")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, WithPublicAPI, SessionStart, LoggedInOnly}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, WithPublicAPI, SessionStart, LoggedInOnly, PluginInjector}
 	files.HandleFunc("/cat", NewMiddlewareChain(FileAccess, middlewares, a)).Methods("OPTIONS")
 	files.HandleFunc("/cat", NewMiddlewareChain(FileSave, middlewares, a)).Methods("POST")
 	files.HandleFunc("/ls", NewMiddlewareChain(FileLs, middlewares, a)).Methods("GET")
@@ -62,37 +62,37 @@ func Build(a App) *mux.Router {
 	files.HandleFunc("/rm", NewMiddlewareChain(FileRm, middlewares, a)).Methods("POST")
 	files.HandleFunc("/mkdir", NewMiddlewareChain(FileMkdir, middlewares, a)).Methods("POST")
 	files.HandleFunc("/touch", NewMiddlewareChain(FileTouch, middlewares, a)).Methods("POST")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, WithPublicAPI, SessionStart, LoggedInOnly}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, WithPublicAPI, SessionStart, LoggedInOnly, PluginInjector}
 	files.HandleFunc("/search", NewMiddlewareChain(FileSearch, middlewares, a)).Methods("GET")
 
 	// API for Shared link
 	share := r.PathPrefix(WithBase("/api/share")).Subrouter()
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, LoggedInOnly}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, LoggedInOnly, PluginInjector}
 	share.HandleFunc("", NewMiddlewareChain(ShareList, middlewares, a)).Methods("GET")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, BodyParser}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, BodyParser, PluginInjector}
 	share.HandleFunc("/{share}/proof", NewMiddlewareChain(ShareVerifyProof, middlewares, a)).Methods("POST")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, CanManageShare}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, CanManageShare, PluginInjector}
 	share.HandleFunc("/{share}", NewMiddlewareChain(ShareDelete, middlewares, a)).Methods("DELETE")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, BodyParser, CanManageShare}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, BodyParser, CanManageShare, PluginInjector}
 	share.HandleFunc("/{share}", NewMiddlewareChain(ShareUpsert, middlewares, a)).Methods("POST")
 
 	// Webdav server / Shared Link
-	middlewares = []Middleware{IndexHeaders, SecureHeaders}
+	middlewares = []Middleware{IndexHeaders, SecureHeaders, PluginInjector}
 	if os.Getenv("CANARY") == "" { // TODO: remove once migration is done
 		r.HandleFunc(WithBase("/s/{share}"), NewMiddlewareChain(LegacyIndexHandler, middlewares, a)).Methods("GET")
 	} else {
 		r.HandleFunc(WithBase("/s/{share}"), NewMiddlewareChain(ServeFrontofficeHandler, middlewares, a)).Methods("GET")
 	}
-	middlewares = []Middleware{WebdavBlacklist, SessionStart}
+	middlewares = []Middleware{WebdavBlacklist, SessionStart, PluginInjector}
 	r.PathPrefix(WithBase("/s/{share}")).Handler(NewMiddlewareChain(WebdavHandler, middlewares, a))
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, RedirectSharedLoginIfNeeded, SessionStart, LoggedInOnly}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, RedirectSharedLoginIfNeeded, SessionStart, LoggedInOnly, PluginInjector}
 	r.PathPrefix(WithBase("/api/export/{share}/{mtype0}/{mtype1}")).Handler(NewMiddlewareChain(FileExport, middlewares, a))
 
 	// Application Resources
-	middlewares = []Middleware{ApiHeaders, SecureHeaders}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, PluginInjector}
 	r.HandleFunc(WithBase("/api/config"), NewMiddlewareChain(PublicConfigHandler, middlewares, a)).Methods("GET")
 	r.HandleFunc(WithBase("/api/backend"), NewMiddlewareChain(AdminBackend, middlewares, a)).Methods("GET")
-	middlewares = []Middleware{StaticHeaders, SecureHeaders}
+	middlewares = []Middleware{StaticHeaders, SecureHeaders, PluginInjector}
 	if os.Getenv("CANARY") == "" { // TODO: remove after migration is done
 		r.PathPrefix(WithBase("/assets")).Handler(http.HandlerFunc(NewMiddlewareChain(LegacyStaticHandler("/"), middlewares, a))).Methods("GET")
 		r.HandleFunc(WithBase("/favicon.ico"), NewMiddlewareChain(LegacyStaticHandler("/assets/logo/"), middlewares, a)).Methods("GET")
@@ -104,9 +104,9 @@ func Build(a App) *mux.Router {
 	}
 
 	// Other endpoints
-	middlewares = []Middleware{ApiHeaders}
+	middlewares = []Middleware{ApiHeaders, PluginInjector}
 	r.HandleFunc(WithBase("/report"), NewMiddlewareChain(ReportHandler, middlewares, a)).Methods("POST")
-	middlewares = []Middleware{IndexHeaders, SecureHeaders}
+	middlewares = []Middleware{IndexHeaders, SecureHeaders, PluginInjector}
 	r.HandleFunc(WithBase("/about"), NewMiddlewareChain(AboutHandler, middlewares, a)).Methods("GET")
 	r.HandleFunc(WithBase("/robots.txt"), NewMiddlewareChain(RobotsHandler, []Middleware{}, a))
 	r.HandleFunc(WithBase("/manifest.json"), NewMiddlewareChain(ManifestHandler, []Middleware{}, a)).Methods("GET")
@@ -120,9 +120,9 @@ func Build(a App) *mux.Router {
 	}
 	initPluginsRoutes(r, &a)
 
-	middlewares = []Middleware{SecureHeaders}
+	middlewares = []Middleware{SecureHeaders, PluginInjector}
 	r.PathPrefix(WithBase("/admin")).Handler(http.HandlerFunc(NewMiddlewareChain(ServeBackofficeHandler, middlewares, a))).Methods("GET")
-	middlewares = []Middleware{IndexHeaders, SecureHeaders}
+	middlewares = []Middleware{IndexHeaders, SecureHeaders, PluginInjector}
 	if os.Getenv("CANARY") == "" { // TODO: remove once migration is done
 		r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(LegacyIndexHandler, middlewares, a))).Methods("GET", "POST")
 	} else {
