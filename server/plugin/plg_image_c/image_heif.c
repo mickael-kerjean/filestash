@@ -87,7 +87,7 @@ int heif_to_jpeg(int inputDesc, int outputDesc, int targetSize) {
   }
   DEBUG("heic after extract");
   struct heif_decoding_options* decode_options = heif_decoding_options_alloc();
-  decode_options->convert_hdr_to_8bit = 1;
+  // decode_options->convert_hdr_to_8bit = 1;
   error = heif_decode_image(handle, &img, heif_colorspace_YCbCr, heif_chroma_420, decode_options);
   heif_decoding_options_free(decode_options);
   if (error.code != heif_error_Ok) {
