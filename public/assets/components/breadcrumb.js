@@ -11,7 +11,7 @@ const mv = (from, to) => withVirtualLayer(
     mvVL(from, to),
 );
 
-class ComponentBreadcrumb extends window.HTMLDivElement {
+class ComponentBreadcrumb extends window.HTMLElement {
     constructor() {
         super();
         if (new window.URL(location.href).searchParams.get("nav") === "false") {
@@ -206,4 +206,4 @@ export function init() {
     return loadCSS(import.meta.url, "./breadcrumb.css");
 }
 
-customElements.define("component-breadcrumb", ComponentBreadcrumb, { extends: "div" });
+customElements.define("component-breadcrumb", ComponentBreadcrumb);

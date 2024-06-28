@@ -4,7 +4,7 @@ import { qs } from "../../lib/dom.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { join } from "../../lib/path.js";
 import { createLoader } from "../../components/loader.js";
-import { getDownloadUrl } from "./common.js";
+import { getFilename, getDownloadUrl } from "./common.js";
 
 import * as THREE from "../../lib/vendor/three/three.module.js";
 import { OrbitControls } from "../../lib/vendor/three/OrbitControls.js";
@@ -16,7 +16,7 @@ import { Rhino3dmLoader } from "../../lib/vendor/three/3DMLoader.js";
 
 import componentDownloader, { init as initDownloader } from "./application_downloader.js";
 
-import "../../components/menubar.js";
+import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
 export default function(render, { mime }) {
     const $page = createElement(`
@@ -26,6 +26,7 @@ export default function(render, { mime }) {
         </div>
     `);
     render($page);
+    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()))
 
     const removeLoader = createLoader(qs($page, ".threeviewer_container"));
     effect(rxjs.of(getLoader(mime)).pipe(

@@ -14,7 +14,7 @@ export default function(ctrl) {
         <div class="component_filemanager_shell" style="flex-direction:row">
             <div data-bind="sidebar" class="hidden"></div>
             <div style="width:100%;display: flex; flex-direction: column;">
-                <div is="component-breadcrumb" path="${urlToPath(history.state.previous)}"></div>
+                <component-breadcrumb path="${urlToPath(history.state.previous)}"></component-breadcrumb>
                 <div data-bind="filemanager-children"></div>
             </div>
         </div>
@@ -24,7 +24,7 @@ export default function(ctrl) {
         render($page);
 
         // feature1: setup the breadcrumb path
-        const $breadcrumb = qs($page, `[is="component-breadcrumb"]`);
+        const $breadcrumb = qs($page, "component-breadcrumb");
         $breadcrumb.setAttribute("path", urlToPath(fromHref(location.pathname + location.hash)));
 
         // feature2: setup the childrens

@@ -12,11 +12,11 @@ import t from "../../locales/index.js";
 
 import ctrlError from "../ctrl_error.js";
 import ctrlDownloader, { init as initDownloader } from "./application_downloader.js";
-import { transition, getFilename, getCurrentPath } from "./common.js";
+import { transition, getFilename, getCurrentPath, getDownloadUrl } from "./common.js";
 import { $ICON } from "./common_fab.js";
 import { options, cat, save } from "./model_files.js";
 
-import "../../components/menubar.js";
+import { renderMenubar, buttonDownload } from "./component_menubar.js";
 import "../../components/fab.js";
 import "../../components/icon.js";
 
@@ -30,13 +30,14 @@ export default async function(render) {
             <button is="component-fab" class="hidden"></button>
         </div>
     `);
-    render($page);
-
     const $dom = {
         editor: () => qs($page, ".component_editor"),
         menubar: () => qs($page, "component-menubar"),
         fab: () => qs($page, `[is="component-fab"]`),
     };
+    render($page);
+    renderMenubar($dom.menubar(), buttonDownload(getFilename(), getDownloadUrl()));
+
     const getConfig$ = getConfig().pipe(rxjs.shareReplay(1));
     const content$ = new rxjs.ReplaySubject(1);
 
@@ -118,7 +119,7 @@ export default async function(render) {
         rxjs.tap(async([editor, newContent = "", oldContent = ""]) => {
             const $fab = $dom.fab();
             if ($fab.disabled) return;
-            const $breadcrumb = qs(document.body, `[is="component-breadcrumb"]`);
+            const $breadcrumb = qs(document.body, "component-breadcrumb");
             if (newContent === oldContent) {
                 await animate($fab, { time: 100, keyframes: opacityOut() });
                 $fab.classList.add("hidden");
@@ -157,7 +158,7 @@ export default async function(render) {
     // feature5: save on exit
     effect(setup$.pipe(
         rxjs.tap((cm) => window.history.block = async (href) => {
-            const block = qs(document.body, `[is="component-breadcrumb"]`).hasAttribute("indicator");
+            const block = qs(document.body, "component-breadcrumb").hasAttribute("indicator");
             if (block === false) return false;
             const userAction = await new Promise((done) => {
                 createModal({

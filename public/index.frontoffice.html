@@ -19,7 +19,7 @@
           import routes from "./assets/boot/router_frontoffice.js";
           main(document.getElementById("app"), routes, {
               spinner: `<component-loader></component-loader>`,
-              beforeStart: import("./assets/boot/ctrl_boot_frontoffice.js"),
+              beforeStart: import("{{ .base }}assets/boot/ctrl_boot_frontoffice.js"),
           });
         </script>
 

@@ -5,9 +5,9 @@ import { loadJS, loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
-import { getDownloadUrl } from "./common.js";
+import { getFilename, getDownloadUrl } from "./common.js";
 
-import "../../components/menubar.js";
+import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
 export default function(render) {
     const $page = createElement(`
@@ -17,6 +17,7 @@ export default function(render) {
         </div>
     `);
     render($page);
+    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
 
     const removeLoader = createLoader($page);
     const rendition$ = new rxjs.ReplaySubject(1);

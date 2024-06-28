@@ -120,7 +120,7 @@ export function createThing({
             else await animate($img, {
                 easing: "cubic-bezier(.51,.92,.24,1.15)",
                 keyframes: [
-                    { opacity: 0, transform: "scale(.98)" },
+                    { opacity: 0, transform: "scale(.97)" },
                     { opacity: 1 },
                     { opacity: 1, transform: "scale(1)" },
                 ],

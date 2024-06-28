@@ -6,12 +6,12 @@ import { qs } from "../../lib/dom.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
-import { transition, getDownloadUrl } from "./common.js";
+import { transition, getFilename, getDownloadUrl } from "./common.js";
 
 import componentMetadata from "./application_image_metadata.js";
 import componentPager, { init as initPager } from "./component_pager.js";
 
-import "../../components/menubar.js";
+import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
 export default function(render) {
     const $page = createElement(`
@@ -27,6 +27,7 @@ export default function(render) {
         </div>
     `);
     render($page);
+    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
     transition(qs($page, ".component_image_container"));
 
     const removeLoader = createLoader(qs($page, ".images_wrapper"));

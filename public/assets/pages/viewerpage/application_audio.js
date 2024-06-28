@@ -8,12 +8,12 @@ import Chromecast from "../../lib/chromecast.js";
 import assert from "../../lib/assert.js";
 
 import ctrlError from "../ctrl_error.js";
-import { render as renderMenubar } from "../../components/menubar.js";
+import { renderMenubar, buttonDownload } from "./component_menubar.js";
 import { menubarDownload, menubarChromecast, buildMenubar } from "./common_menubar.js";
 
 import { ICON } from "./common_icon.js";
 import { formatTimecode } from "./common_player.js";
-import { transition, getDownloadUrl } from "./common.js";
+import { transition, getFilename, getDownloadUrl } from "./common.js";
 
 const STATUS_PLAYING = "PLAYING";
 const STATUS_PAUSED = "PAUSED";
@@ -56,6 +56,8 @@ export default function(render, { mime }) {
         </div>
     `);
     render($page);
+    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()))
+
     transition(qs($page, ".audioplayer_box"));
 
     const $control = {
@@ -311,13 +313,13 @@ export default function(render, { mime }) {
         )),
     ));
 
-    // feature9: setup chromecast
-    effect(ready$.pipe(
-        rxjs.tap(() => renderMenubar(buildMenubar(
-            menubarChromecast(),
-            menubarDownload(),
-        ))),
-    ));
+    // // feature9: setup chromecast
+    // effect(ready$.pipe(
+    //     rxjs.tap(() => renderMenubar(buildMenubar(
+    //         menubarChromecast(),
+    //         menubarDownload(),
+    //     ))),
+    // ));
     // effect(rxjs.combineLatest(
     //     setup$,
     //     getSession(),

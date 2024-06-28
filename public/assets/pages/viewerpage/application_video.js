@@ -10,11 +10,10 @@ import Hls from "../../lib/vendor/hlsjs/hls.js";
 
 import ctrlError from "../ctrl_error.js";
 
-import { transition, getDownloadUrl } from "./common.js";
+import { transition, getFilename, getDownloadUrl } from "./common.js";
 import { formatTimecode } from "./common_player.js";
 import { ICON } from "./common_icon.js";
-// import { menubarDownload, buildMenubar } from "./common_menubar.js";
-// import { render as renderMenubar } from "../../components/menubar.js";
+import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
 import "../../components/icon.js";
 
@@ -89,6 +88,7 @@ export default function(render, { mime }) {
         </div>
     `);
     render($page);
+    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
     transition(qs($page, ".video_container"));
 
     const $video = qs($page, "video");
