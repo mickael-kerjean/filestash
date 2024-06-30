@@ -117,7 +117,6 @@ function componentUploadQueue(render, { workers$ }) {
     onClick(qs($page, `img[alt="close"]`)).pipe(
         rxjs.tap(async (cancel) => {
             const cleanup = await animate($page, { time: 200, keyframes: slideYOut(50) });
-            console.log(workers$.value);
             qs($page, ".stats_content").innerHTML = "";
             $page.classList.add("hidden");
             cleanup();
@@ -277,7 +276,7 @@ function workerImplFile({ error, progress, speed }) {
             this.xhr.abort();
         }
 
-        async run({ entry, path, virtual }) {
+        async run({ file, path, virtual }) {
             return new Promise((done, err) => {
                 this.xhr = new XMLHttpRequest();
                 this.xhr.open("POST", "api/files/cat?path=" + encodeURIComponent(path));
@@ -326,10 +325,7 @@ function workerImplFile({ error, progress, speed }) {
                     err(new AjaxError("failed", e, "FAILED"));
                     vitual.afterError();
                 };
-                entry.file(
-                    (file) => this.xhr.send(file),
-                    (err)  => this.xhr.onerror(err),
-                );
+                file().then((f) => this.xhr.send(f)).catch((err) => this.xhr.onerror(err));
             });
         }
     }
@@ -384,13 +380,13 @@ function workerImplDirectory({ error, progress }) {
                 };
                 this.xhr.send(null);
             });
-
         }
     }
 }
 
-async function processFiles(filelist) { // TODO
-    const files = [];
+async function processFiles(filelist) {
+    const tasks = [];
+    let size = 0;
     const detectFiletype = (file) => {
         // the 4096 is an heuristic observed and taken from:
         // https://stackoverflow.com/questions/25016442
@@ -412,18 +408,40 @@ async function processFiles(filelist) { // TODO
     }
     for (const currentFile of filelist) {
         const type = await detectFiletype(currentFile);
-        const file = { type, date: currentFile.lastModified, name: currentFile.name, path: currentFile.name };
-        if (type === "directory") {
-            file.path += "/";
-        } else if (type === "file") {
-            file.entry = currentFile;
-        } else {
+        let path = currentPath() + currentFile.name;
+        let task = null;
+        switch (type) {
+        case "file":
+            size += currentFile.size;
+            task = {
+                type: "file",
+                file: () => new Promise((done) => done(currentFile)),
+                path,
+                date: currentFile.lastModified,
+                exec: workerImplFile,
+                virtual: save(path, currentFile.size),
+                done: false, ready: () => true,
+                entry: currentFile,
+
+            };
+            break;
+        case "directory":
+            path += "/";
+            task = {
+                type: "directory", path,
+                date: currentFile.lastModified,
+                exec: workerImplDirectory,
+                virtual: mkdir(path),
+                done: false, ready: () => true,
+            };
+            break;
+        default:
             assert.fail(`NOT_SUPPORTED type="${type}"`, type);
         }
-        file.exec = workerImplFile.bind(file);
-        files.push(file);
+        task.virtual.before();
+        tasks.push(task);
     }
-    return files;
+    return { tasks, size: 0 };
 }
 
 async function processItems(itemList) {
@@ -440,7 +458,11 @@ async function processItems(itemList) {
             else if (entry.isFile) {
                 const entrySize = await new Promise((done) => entry.getMetadata(({ size }) => done(size)));
                 task = {
-                    type: "file", entry,
+                    type: "file",
+                    file: () => new Promise((done, err) => entry.file(
+                        (file) => done(file),
+                        (error) => err(error),
+                    )),
                     path,
                     exec: workerImplFile,
                     virtual: save(path, entrySize),
@@ -455,7 +477,6 @@ async function processItems(itemList) {
                     virtual: mkdir(path),
                     done: false,
                 };
-                size += 5000; // that's to calculate the remaining time for an upload, aka made up size is ok
                 queue = queue.concat(await new Promise((done) => {
                     entry.createReader().readEntries(done);
                 }));
