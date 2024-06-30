@@ -36,7 +36,7 @@ export default class ComponentMenubar extends window.HTMLElement {
 
     render(buttons) {
         const $item = this.querySelector(".action-item");
-        for (let i=0;i<buttons.length;i++) {
+        for (let i=buttons.length-1; i>=0; i--) {
             $item.appendChild(buttons[i]);
         }
         animate($item, { time: 250, keyframes: slideYIn(2) });
