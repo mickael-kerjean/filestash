@@ -13,6 +13,8 @@ export function opener(file = "", mimes) {
         return ["editor", { mime }];
     } else if (mime === "application/pdf") {
         return ["pdf", { mime }];
+    } else if (mime === "image/svg+xml") {
+        return ["editor", { mime }];
     } else if (type === "image") {
         return ["image", { mime }];
     } else if (["application/javascript", "application/xml", "application/json",

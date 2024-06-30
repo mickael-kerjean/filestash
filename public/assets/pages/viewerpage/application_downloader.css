@@ -2,7 +2,7 @@ body:not(.dark-mode) .component_filedownloader {
     background: #525659;
 }
 body.dark-mode .component_filedownloader {
-    background: var(--bg-color);
+    background: #242424;
 }
 
 .component_filedownloader {
