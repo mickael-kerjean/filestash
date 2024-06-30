@@ -35,5 +35,5 @@ export function opener(file = "", mimes) {
 }
 
 function getMimeType(file, mimes = {}) {
-    return mimes[file.split(".")[1]] || "text/plain";
+    return mimes[file.split(".").slice(-1)[0]] || "text/plain";
 }
