@@ -71,6 +71,8 @@ func SessionStart(fn HandlerFunc) HandlerFunc {
 			SendErrorResult(res, err)
 			return
 		}
+		ctx.Languages = _extractLanguages(req)
+
 		fn(ctx, res, req)
 	})
 }
@@ -326,4 +328,16 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 
 func _extractBackend(req *http.Request, ctx *App) (IBackend, error) {
 	return model.NewBackend(ctx, ctx.Session)
+}
+
+func _extractLanguages(req *http.Request) []string {
+	var lng = []string{}
+	for _, lngs := range strings.Split(req.Header.Get("Accept-Language"), ",") {
+		chunks := strings.Split(lngs, ";")
+		if len(chunks) == 0 {
+			continue
+		}
+		lng = append(lng, chunks[0])
+	}
+	return lng
 }
