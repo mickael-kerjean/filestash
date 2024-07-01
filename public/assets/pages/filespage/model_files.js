@@ -1,6 +1,8 @@
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
+import { basename } from "../../lib/path.js";
 import notification from "../../components/notification.js";
+import t from "../../locales/index.js";
 
 import { currentPath } from "./helper.js";
 import { setPermissions } from "./model_acl.js";
@@ -20,34 +22,48 @@ import { ls as middlewareLs } from "./model_virtual_layer.js";
  *   3. the new file is being persisted in the screen if the API call is a success
  */
 
-const withNotification = rxjs.catchError((err) => {
+const handleSuccess = (text) => rxjs.tap(() => notification.info(text));
+const handleError = rxjs.catchError((err) => {
     notification.error(err);
     throw err;
 });
+const trimDirectorySuffix = (name) => name.replace(new RegExp("/$"), "");
 
 export const touch = (path) => ajax({
     url: `api/files/touch?path=${encodeURIComponent(path)}`,
     method: "POST",
     responseType: "json",
-}).pipe(withNotification);
+}).pipe(
+    handleSuccess(t("A file named '{{VALUE}}' was created", basename(path))),
+    handleError,
+);
 
 export const mkdir = (path) => ajax({
     url: `api/files/mkdir?path=${encodeURIComponent(path)}`,
     method: "POST",
     responseType: "json",
-}).pipe(withNotification);
+}).pipe(
+    handleSuccess(t("A folder named '{{VALUE}}' was created", basename(trimDirectorySuffix(path)))),
+    handleError,
+);
 
 export const rm = (...paths) => rxjs.forkJoin(paths.map((path) => ajax({
     url: `api/files/rm?path=${encodeURIComponent(path)}`,
     method: "POST",
     responseType: "json",
-}).pipe(withNotification)));
+}))).pipe(
+    handleSuccess(paths.length > 1 ? t("All Done!") : t("The file '{{VALUE}}' was deleted", basename(trimDirectorySuffix(paths[0])))),
+    handleError,
+);
 
 export const mv = (from, to) => ajax({
     url: `api/files/mv?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
     method: "POST",
     responseType: "json",
-}).pipe(withNotification);
+}).pipe(
+    handleSuccess(t("The file '{{VALUE}}' was renamed", basename(trimDirectorySuffix(from)))),
+    handleError,
+);
 
 export const save = (path) => rxjs.of(null).pipe(rxjs.delay(1000));
 

@@ -134,32 +134,31 @@ function componentLeft(render, { $scroll }) {
             onClick(qs($page, `[data-action="tag"]`)).pipe(rxjs.tap(() => {
                 componentTag(createModal(modalOpt));
             })),
-            onClick(qs($page, `[data-action="rename"]`)).pipe(
-                rxjs.mergeMap(() => componentRename(
+            onClick(qs($page, `[data-action="rename"]`)).pipe(rxjs.mergeMap(() => {
+                const path = expandSelection()[0].path;
+                return rxjs.from(componentRename(
                     createModal(modalOpt),
-                    basename(expandSelection()[0].path.replace(new RegExp("/$"), "")),
-                )),
-                rxjs.mergeMap((val) => { // TODO: migrate to transcient impl
-                    const path = expandSelection()[0].path;
+                    basename(path.replace(new RegExp("/$"), "")),
+                )).pipe(rxjs.mergeMap((val) => {
                     const [basepath, filename] = extractPath(path);
                     clearSelection();
                     clearCache(path);
                     clearCache(basepath + val);
                     return mv(path, basepath + val);
-                }),
-            ),
-            onClick(qs($page, `[data-action="delete"]`)).pipe(
-                rxjs.mergeMap(() => componentDelete(
+                }));
+            })),
+            onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.mergeMap(() => {
+                const path = expandSelection()[0].path;
+                return rxjs.from(componentDelete(
                     createModal(modalOpt),
-                    basename(expandSelection()[0].path.replace(new RegExp("/$"), "")).substr(0, 15),
-                )),
-                rxjs.mergeMap((val) => { // TODO: migrate to transcient impl
+                    basename(path.replace(new RegExp("/$"), "")).substr(0, 15),
+                )).pipe(rxjs.mergeMap(() =>{
                     const selection = expandSelection()[0].path;
                     clearSelection();
-                    clearCache(selection);
+                    clearCache(path);
                     return rm(selection);
-                }),
-            ),
+                }));
+            })),
         )),
     ));
 
@@ -174,14 +173,16 @@ function componentLeft(render, { $scroll }) {
             </button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
-            onClick(qs($page, `[data-action="delete"]`)).pipe(
-                rxjs.mergeMap(() => componentDelete(createModal(modalOpt), "remove")),
-                rxjs.mergeMap((val) => {
-                    const selections = expandSelection().map(({ path }) => path);
+            onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.mergeMap(() => {
+                const paths = expandSelection().map(({ path }) => path);
+                return rxjs.from(componentDelete(
+                    createModal(modalOpt),
+                    "remove",
+                )).pipe(rxjs.mergeMap((val) => {
                     clearSelection();
-                    return rm(...selections);
-                }),
-            ),
+                    return rm(...paths);
+                }));
+            })),
         )),
     ));
 }
@@ -203,9 +204,20 @@ function componentRight(render) {
         rxjs.share(),
     );
 
+    const defaultLayout = (view) => {
+        switch (view) {
+        case "grid": return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.LIST_VIEW}" alt="grid" />`;
+        case "list": return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.GRID_VIEW}" alt="list" />`;
+        default: throw new Error("NOT_IMPLEMENTED");
+        }
+    };
+    const defaultSort = () => {
+        return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.SORT}" alt="sort" />`;
+    };
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 0),
-        rxjs.map(() => render(createFragment(`
+        rxjs.mergeMap(() => getState$().pipe(rxjs.first())),
+        rxjs.map(({ view, sort }) => render(createFragment(`
             <form style="display: inline-block;" onsubmit="event.preventDefault()">
                 <input class="hidden" placeholder="${t("search")}" name="q" style="
                     background: transparent;
@@ -218,10 +230,10 @@ function componentRight(render) {
                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.MAGNIFYING_GLASS}" alt="search" />
             </button>
             <button data-action="view" title="${t("Layout")}">
-                <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.LIST_VIEW}" alt="list" />
+                ${defaultLayout(view)}
             </button>
             <button data-action="sort" title="${t("Sort")}">
-                <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.SORT}" alt="sort" />
+                ${defaultSort(sort)}
             </button>
             <div class="component_dropdown view sort" data-target="sort">
                 <div class="dropdown_container">
@@ -245,13 +257,13 @@ function componentRight(render) {
             onClick(qs($page, `[data-action="view"]`)).pipe(rxjs.tap(($button) => {
                 const $img = $button.querySelector("img");
                 if ($img.getAttribute("alt") === "list") {
-                    setState("view", "list");
-                    $img.setAttribute("alt", "grid");
-                    $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.GRID_VIEW);
-                } else {
                     setState("view", "grid");
-                    $img.setAttribute("alt", "list");
+                    $img.setAttribute("alt", "grid");
                     $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.LIST_VIEW);
+                } else {
+                    setState("view", "list");
+                    $img.setAttribute("alt", "list");
+                    $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.GRID_VIEW);
                 }
             })),
             // feature: sort button

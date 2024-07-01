@@ -3,7 +3,8 @@ export function settingsGet(initialValues, prefix = "") {
     let currentSettings = {};
     Object.keys(initialValues).forEach((key) => {
         const settingsKey = prefix ? `${prefix}_${key}` : key;
-        currentSettings[key] = raw[settingsKey];
+        if (settingsKey in raw) currentSettings[key] = raw[settingsKey];
+        else currentSettings[key] = initialValues[key];
     });
     return currentSettings;
 }

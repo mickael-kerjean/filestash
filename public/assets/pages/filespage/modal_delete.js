@@ -19,14 +19,13 @@ export default function(render, removeLabel) {
     const $input = qs($modal, "input");
     const pressOK = render($modal, (id) => {
         if (id !== MODAL_RIGHT_BUTTON) {
-            ret.complete();
-            return ret.toPromise();
+            return;
         }
         else if (!isValid()) {
             qs($modal, ".modal-error-message").textContent = t("Doesn't match");
             return ret.toPromise();
         }
-        ret.next(true);
+        ret.next();
         ret.complete();
         return ret.toPromise();
     }).bind(this, MODAL_RIGHT_BUTTON);

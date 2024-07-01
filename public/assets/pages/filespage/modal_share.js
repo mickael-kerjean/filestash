@@ -6,7 +6,7 @@ export default function(render) {
           MODAL SHARE
         </div>
     `);
-    render($modal, ({ id }) => {
+    render($modal, (id) => {
         if (id !== 1) return;
     });
 }

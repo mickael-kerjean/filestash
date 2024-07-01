@@ -17,13 +17,12 @@ export default function(render, filename) {
     `);
     const ret = new rxjs.Subject();
     const $input = qs($modal, "input");
-    const pressOK = render($modal, (id) => {
+    const pressOK = render($modal, function (id) {
         const value = $input.value.trim();
         if (id !== MODAL_RIGHT_BUTTON) {
-            ret.complete();
-            return ret.toPromise();
+            return;
         } else if (!value || value === filename) {
-            qs($modal, ".modal-error-message").textContent = "Not Valid";
+            qs($modal, ".modal-error-message").textContent = t("Not Valid");
             return ret.toPromise();
         }
         ret.next(value);
