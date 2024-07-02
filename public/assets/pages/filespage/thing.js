@@ -5,7 +5,6 @@ import { animate, opacityIn } from "../../lib/animate.js";
 import assert from "../../lib/assert.js";
 
 import { extractPath, isDir, isNativeFileUpload } from "./helper.js";
-import { get as getConfig } from "./model_config.js";
 import { files$ } from "./ctrl_filesystem.js";
 import { addSelection, isSelected, clearSelection } from "./state_selection.js";
 
@@ -26,15 +25,15 @@ const IMAGE = {
 
 
 let TYPES = {
-    MIME: {},
-    THUMBNAILER: new Set(),
+    MIME: window.CONFIG.mime,
+    THUMBNAILER: (function() {
+        const set = new Set();
+        for (let i=0; i<window.CONFIG.thumbnailer.length; i++) {
+            set.add(window.CONFIG.thumbnailer[i]);
+        }
+        return set;
+    })(),
 };
-getConfig().subscribe((config) => {
-    TYPES.MIME = config.mime;
-    for (let i=0; i<config.thumbnailer.length; i++) {
-        TYPES.THUMBNAILER.add(config.thumbnailer[i]);
-    }
-});
 
 const $tmpl = createElement(`
     <a href="__TEMPLATE__" class="component_thing no-select" draggable="false" data-link>

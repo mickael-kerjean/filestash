@@ -3,27 +3,27 @@ import { toHref } from "../lib/skeleton/router.js";
 // import { setup_cache } from "../helpers/cache.js";
 import { init as setup_loader, loadJS } from "../helpers/loader.js";
 import { init as setup_translation } from "../locales/index.js";
+import { init as setup_config } from "../model/config.js";
+import { init as setup_chromecast } from "../model/chromecast.js";
 import { report } from "../helpers/log.js";
 
 export default async function main() {
     try {
-        let config = {};
-        // await Config.refresh()
-
         await Promise.all([ // procedure with no outside dependencies
+            setup_config(),
             setup_translation(),
             setup_xdg_open(),
             // setup_cache(), // TODO: dependency on session
             setup_device(),
-            // setup_sw(), // TODO
+            setup_sw(),
             setup_blue_death_screen(),
             setup_loader(),
             setup_history(),
         ]);
 
         await Promise.all([ // procedure with dependency on config
-            // setup_chromecast() // TODO
-            setup_base(config),
+            setup_chromecast(),
+            setup_title(),
         ]);
 
         window.dispatchEvent(new window.Event("pagechange"));
@@ -72,29 +72,22 @@ async function setup_device() {
     });
 }
 
-async function setup_base(config) {
-    // TODO: base as config in admin
-    const $meta = document.createElement("base");
-    $meta.setAttribute("href", location.origin);
-    document.head.appendChild($meta);
+async function setup_sw() {
+    if (!("serviceWorker" in window.navigator)) return;
+
+    if (window.navigator.userAgent.indexOf("Mozilla/") !== -1 &&
+        window.navigator.userAgent.indexOf("Firefox/") !== -1 &&
+        window.navigator.userAgent.indexOf("Gecko/") !== -1) {
+        // Firefox was acting weird with service worker so we disabled it
+        // see: https://github.com/mickael-kerjean/filestash/issues/255
+        return;
+    }
+    try {
+        // await window.navigator.serviceWorker.register("/sw_cache.js");
+    } catch (err) {
+        report("ServiceWorker registration failed", err);
+    }
 }
-
-// async function setup_sw() {
-//     if (!("serviceWorker" in window.navigator)) return;
-
-//     if (window.navigator.userAgent.indexOf("Mozilla/") !== -1 &&
-//         window.navigator.userAgent.indexOf("Firefox/") !== -1 &&
-//         window.navigator.userAgent.indexOf("Gecko/") !== -1) {
-//         // Firefox was acting weird with service worker so we disabled it
-//         // see: https://github.com/mickael-kerjean/filestash/issues/255
-//         return;
-//     }
-//     try {
-//         await window.navigator.serviceWorker.register("/sw_cache.js");
-//     } catch (err) {
-//         report("ServiceWorker registration failed", err);
-//     }
-// }
 
 async function setup_blue_death_screen() {
     window.onerror = function(msg, url, lineNo, colNo, error) {
@@ -116,4 +109,8 @@ async function setup_blue_death_screen() {
 
 async function setup_history() {
     window.history.replaceState({}, "");
+}
+
+async function setup_title() {
+    document.title = CONFIG.name || "Filestash";
 }

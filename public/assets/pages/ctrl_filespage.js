@@ -9,7 +9,6 @@ import componentFilesystem, { init as initFilesystem } from "./filespage/ctrl_fi
 import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.js";
 import componentNewItem, { init as initNewItem } from "./filespage/ctrl_newitem.js";
 import componentUpload, { init as initUpload } from "./filespage/ctrl_upload.js";
-import { get as getConfig } from "./filespage/model_config.js";
 
 import "../components/breadcrumb.js";
 
@@ -44,7 +43,7 @@ export default WithShell(function(render) {
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "ctrl_filespage.css"),
-        initShell(), initFilesystem(), getConfig().toPromise(),
+        initShell(), initFilesystem(),
         initSubmenu(), initNewItem(), initUpload(),
     ]);
 }

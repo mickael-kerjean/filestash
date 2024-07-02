@@ -7,7 +7,6 @@ import { createModal, MODAL_RIGHT_BUTTON } from "../../components/modal.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import ajax from "../../lib/ajax.js";
 import { extname } from "../../lib/path.js";
-import { get as getConfig } from "../../model/config.js";
 import t from "../../locales/index.js";
 
 import ctrlError from "../ctrl_error.js";
@@ -38,7 +37,6 @@ export default async function(render) {
     render($page);
     renderMenubar($dom.menubar(), buttonDownload(getFilename(), getDownloadUrl()));
 
-    const getConfig$ = getConfig().pipe(rxjs.shareReplay(1));
     const content$ = new rxjs.ReplaySubject(1);
 
     // feature1: setup the dom
@@ -59,7 +57,7 @@ export default async function(render) {
             }
             return rxjs.of(content);
         }),
-        rxjs.mergeMap((content) => getConfig$.pipe(
+        rxjs.mergeMap((content) => rxjs.of(window.CONFIG).pipe(
             rxjs.mergeMap((config) => rxjs.from(loadKeybinding(config.editor)).pipe(rxjs.mapTo(config))),
             rxjs.map((config) => [content, config]),
             rxjs.mergeMap((arr) => rxjs.from(loadMode(extname(getFilename()))).pipe(

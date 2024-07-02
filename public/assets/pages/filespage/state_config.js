@@ -1,23 +1,16 @@
 import { onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect, preventDefault } from "../../lib/rx.js";
 import { settingsGet, settingsSave } from "../../lib/store.js";
-import { get as getConfig } from "./model_config.js";
 
-const state$ = new rxjs.BehaviorSubject(null);
+const state$ = new rxjs.BehaviorSubject(settingsGet({
+    view: window.CONFIG.default_view || "grid",
+    show_hidden: window.CONFIG.display_hidden || false,
+    sort: window.CONFIG.default_sort || "type",
+    order: null,
+    search: "",
+}, "filespage"));
 
-getConfig().subscribe((config) => {
-    state$.next(settingsGet({
-        view: config.default_view || "grid",
-        show_hidden: config.display_hidden || false,
-        sort: config.default_sort || "type",
-        order: null,
-        search: "",
-    }, "filespage"));
-});
-
-export const getState$ = () => state$.asObservable().pipe(
-    rxjs.filter((state) => state !== null),
-);
+export const getState$ = () => state$.asObservable();
 
 export const setState = (...args) => {
     const obj = { ...state$.value };

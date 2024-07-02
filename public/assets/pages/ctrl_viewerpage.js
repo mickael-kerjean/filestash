@@ -4,18 +4,12 @@ import { ApplicationError } from "../lib/error.js";
 import { basename } from "../lib/path.js";
 import { loadCSS } from "../helpers/loader.js";
 import WithShell, { init as initShell } from "../components/decorator_shell_filemanager.js";
-import { get as getConfig } from "../model/config.js";
 
 import ctrlError from "./ctrl_error.js";
 import { opener } from "./viewerpage/mimetype.js";
 import { getCurrentPath } from "./viewerpage/common.js";
 
 import "../components/breadcrumb.js";
-
-const mime$ = getConfig().pipe(
-    rxjs.map((config) => config.mime),
-    rxjs.shareReplay(),
-);
 
 function loadModule(appName) {
     switch (appName) {
@@ -48,7 +42,7 @@ export default WithShell(async function(render) {
     const $page = createElement(`<div class="component_page_viewerpage"></div>`);
     render($page);
 
-    effect(mime$.pipe(
+    effect(rxjs.of(CONFIG.mime || {}).pipe(
         rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
         rxjs.mergeMap(([opener, options]) => rxjs.from(loadModule(opener)).pipe(
             rxjs.map((module) => module.default(createRender($page), options)),
@@ -61,7 +55,7 @@ export async function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_viewerpage.css"),
         initShell(),
-        mime$.pipe(
+        rxjs.of(CONFIG.mime || {}).pipe(
             rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
             rxjs.mergeMap(([opener]) => loadModule(opener)),
             rxjs.mergeMap((module) => typeof module.init === "function"? module.init() : rxjs.EMPTY),
