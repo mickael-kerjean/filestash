@@ -9,6 +9,10 @@ const config$ = ajax({
     rxjs.map(({ responseJSON }) => responseJSON.result),
 );
 
+export function get() {
+    return config$;
+}
+
 export async function init() {
     let config = await config$.toPromise();
     window.CONFIG = config;
