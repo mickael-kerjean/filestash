@@ -21,6 +21,9 @@
     background: var(--color);
     color: rgba(255, 255, 255, 0.8);
 }
+.dark-mode .component_notification .component_notification--container.info {
+    color: rgba(0, 0, 0, 0.8);
+}
 .component_notification .component_notification--container.error {
     background: var(--error);
     color: rgba(0, 0, 0, 0.5);
