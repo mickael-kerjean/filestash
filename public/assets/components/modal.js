@@ -68,9 +68,10 @@ class ModalComponent extends window.HTMLElement {
         ));
 
         // feature: closing the modal
+        const $body = () => qs($modal, "div > div");
         effect(close$.pipe(
             rxjs.mergeMap((data) => onQuit(data) || Promise.resolve()),
-            rxjs.tap(() => animate(qs($modal, "div > div"), {
+            rxjs.tap(() => animate($body(), {
                 time: 200,
                 keyframes: [
                     { opacity: 1, transform: "translateY(0)" },
@@ -87,9 +88,10 @@ class ModalComponent extends window.HTMLElement {
         ));
 
         // feature: animate opening
-        effect(rxjs.of(["opacity", "0"]).pipe(
-            applyMutation(qs($modal, "div > div"), "style", "setProperty"),
+        effect(rxjs.of(null).pipe(
             rxjs.tap(() => animate($modal, {
+                onEnter: () => $body().style.setProperty("opacity", "0"),
+                onExit: () => $body().style.setProperty("opacity", "1"),
                 time: 250,
                 keyframes: [
                     { opacity: 0 },
@@ -97,7 +99,7 @@ class ModalComponent extends window.HTMLElement {
                 ]
             })),
             rxjs.delay(50),
-            rxjs.tap(() => animate(qs($modal, "div > div"), {
+            rxjs.tap(() => animate($body(), {
                 time: 200,
                 keyframes: [
                     { opacity: 0, transform: "translateY(10px)" },

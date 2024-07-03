@@ -394,14 +394,14 @@ export function init() {
 
 function generateLinkAttributes(selections) {
     let filename = "archive.zip";
-    let href = "/api/files/zip?";
+    let href = "api/files/zip?";
     if (selections.length === 1) {
         const path = selections[0].path;
         const regDir = new RegExp("/$");
         filename = regDir.test(path) ?
             basename(path.replace(regDir, "")) + ".zip" :
             basename(path);
-        href = "/api/files/cat?"
+        href = "api/files/cat?"
     }
     href += selections.map(({path}) => "path=" + encodeURIComponent(path)).join("&");
     return `href="${href}" download="${filename}"`;

@@ -18,6 +18,7 @@
 
 .dark-mode .component_modal{
     background: var(--bg-color);
+    color: rgba(0,0,0,0.7);
 }
 
 .component_popup .popup--content {
