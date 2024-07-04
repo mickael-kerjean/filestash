@@ -1,4 +1,4 @@
-import { createElement } from "../lib/skeleton/index.js";
+import { createElement, onDestroy } from "../lib/skeleton/index.js";
 import rxjs, { effect } from "../lib/rx.js";
 import { animate, opacityIn } from "../lib/animate.js";
 
@@ -46,31 +46,32 @@ class Loader extends window.HTMLElement {
 customElements.define("component-loader", Loader);
 export function createLoader($parent, opts = {}) {
     const { wait = 250 } = opts;
-    const cancel = effect(new rxjs.Observable((observer) => {
-        const $icon = createElement(`
+    const $icon = createElement(`
             <div class="component_loader">
                 <style>
                     .component_loader {
                         display: block;
                         text-align: center;
-                        margin-top: 25px;
+                        margin-top: 100px;
                     }
                 </style>
                 <component-icon name="loading"></component-icon>
             </div>
-        `);
-        let $cache = null;
-        const id = window.setTimeout(() => {
-            $cache = $parent.cloneNode(true);
-            $parent.replaceChildren($icon);
-            animate($icon, { time: 750, keyframes: opacityIn() });
-        }, wait);
-        return () => {
-            clearTimeout(id);
-            $icon.remove();
-            if ($cache) $parent.replaceChildren(...$cache.children);
-        };
-    }));
+    `);
+    let $cache = null;
+    const id = window.setTimeout(() => {
+        $cache = $parent;
+        $parent.appendChild($icon);
+        animate($icon, { time: 750, keyframes: opacityIn() });
+    }, wait);
+
+    const cancel = () => {
+        clearTimeout(id);
+        if(!$cache) return;
+        $icon.remove();
+    };
+
+    onDestroy(() => cancel());
     return rxjs.tap(() => cancel());
 }
 

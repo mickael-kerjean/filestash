@@ -131,6 +131,11 @@
     padding: 0;
     margin: 0;
     display: block;
+    border-radius: 3px;
+}
+.list > .component_thing.view-grid > img.component_icon.thumbnail.placeholder {
+    position: absolute;
+    top: 0;
 }
 .list > .component_thing.view-grid > img.component_icon {
     padding: 30px;
@@ -170,7 +175,6 @@
 }
 .list > .component_thing.view-grid .component_filename {
     letter-spacing: -0.5px;
-    z-index: 0;
     position: absolute;
     bottom: 2px;
     left: 2px;
@@ -214,13 +218,15 @@
 .list > .component_thing.view-grid.not-selected:hover .image_layer {
     background: var(--border);
 }
-.list > .component_thing.view-grid.not-selected.preview:hover .component_filename {
+
+.list > .component_thing.view-grid.not-selected:hover .thumbnail ~ .component_filename {
     opacity: 1;
 }
-.list > .component_thing.view-grid.not-selected.preview .component_filename {
+.list > .component_thing.view-grid.not-selected .thumbnail ~ .component_filename {
     transition: 0.2s ease-out opacity;
     opacity: 0;
 }
+
 .list > .component_thing.view-grid.selected img.thumbnail {
     transform: scale(0.6);
 }

@@ -22,18 +22,19 @@ export function animate($node, opts = {}) {
          || typeof $node.animate !== "function"
          || window.matchMedia(`(prefers-reduced-motion: reduce)`) === true
          || window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true) {
+        onEnter();
         onExit();
         return Promise.resolve();
     }
     onEnter();
     return new Promise((done) => {
-        $node.animate(keyframes, {
+        const handler = $node.animate(keyframes, {
             duration: time,
-            fill,
-            easing,
-        }).onfinish = () => {
-            done(() => $node.animate(keyframes.reverse(), { duration: 0, fill }));
+            fill, easing,
+        });
+        handler.onfinish = () => {
             onExit();
+            done(() => handler.cancel());
         }
     });
 }

@@ -14,7 +14,7 @@ export default class ComponentMenubar extends window.HTMLElement {
         this.innerHTML = `
             <div class="container">
                 <span>
-                    <div class="titlebar">${getFilename()}</div>
+                    <div class="titlebar" style="opacity:0">${getFilename()}</div>
                     <div class="action-item no-select"></div>
                 </span>
             </div>
@@ -22,12 +22,12 @@ export default class ComponentMenubar extends window.HTMLElement {
     }
 
     async connectedCallback() {
-        await loadCSS(import.meta.url, "./component_menubar.css");
         const $title = this.querySelector(".titlebar");
-        $title.style.opacity = 0;
-        this.timeoutID = setTimeout(() => {
-            animate($title, { time: 250, keyframes: slideYIn(2) });
-        }, 100);
+        this.timeoutID = setTimeout(() => animate($title, {
+            time: 250,
+            keyframes: slideYIn(2),
+            onExit: () => $title.style.opacity = 1,
+        }), 100);
     }
 
     disconnectedCallback() {
@@ -87,6 +87,10 @@ export function buttonFullscreen($screen) {
 export function renderMenubar($menubar, ...buttons) {
     assert.type($menubar, ComponentMenubar);
     $menubar.render(buttons);
+}
+
+export async function init() {
+    return loadCSS(import.meta.url, "./component_menubar.css");
 }
 
 customElements.define("component-menubar", ComponentMenubar);

@@ -9,7 +9,6 @@ import assert from "../../lib/assert.js";
 
 import ctrlError from "../ctrl_error.js";
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
-import { menubarDownload, menubarChromecast, buildMenubar } from "./common_menubar.js";
 
 import { ICON } from "./common_icon.js";
 import { formatTimecode } from "./common_player.js";

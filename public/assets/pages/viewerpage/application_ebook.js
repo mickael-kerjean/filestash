@@ -19,11 +19,12 @@ export default function(render) {
     render($page);
     renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
 
-    const removeLoader = createLoader($page);
     const rendition$ = new rxjs.ReplaySubject(1);
 
     // feature1: setup the dom
-    const setup$ = rxjs.of(qs($page, `[data-bind="epub"]`)).pipe(
+    const $epub = qs($page, `[data-bind="epub"]`);
+    const removeLoader = createLoader($page);
+    const setup$ = rxjs.of($epub).pipe(
         rxjs.mergeMap(async($epub) => {
             const book = new window.ePub.Book({
                 replacements: "blobUrl",

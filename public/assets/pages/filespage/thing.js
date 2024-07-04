@@ -1,7 +1,6 @@
 import { createElement, createFragment } from "../../lib/skeleton/index.js";
-import { toHref } from "../../lib/skeleton/router.js";
 import { qs } from "../../lib/dom.js";
-import { animate, opacityIn } from "../../lib/animate.js";
+import { animate, opacityOut, opacityIn } from "../../lib/animate.js";
 import assert from "../../lib/assert.js";
 
 import { extractPath, isDir, isNativeFileUpload } from "./helper.js";
@@ -82,7 +81,7 @@ export function createThing({
     const $label = $thing.children[3].firstElementChild.firstElementChild; // = qs($thing, ".component_filename .file-details > span");
     const $time = $thing.children[4]; // = qs($thing, ".component_datetime");
 
-    $link.setAttribute("href", toHref(link));
+    $link.setAttribute("href", link);
     $thing.setAttribute("data-droptarget", type === "directory");
     $thing.setAttribute("data-n", n);
     $thing.setAttribute("data-path", path);
@@ -102,29 +101,23 @@ export function createThing({
         $extension.classList.add("hidden");
         $img.classList.add("thumbnail");
         const $placeholder = $img.cloneNode(true);
+        $placeholder.classList.add("placeholder");
+        $placeholder.setAttribute("src", IMAGE.THUMBNAIL_PLACEHOLDER);
         $img.parentElement.appendChild($placeholder);
         $img.setAttribute("src", "api/files/cat?path=" + encodeURIComponent(path) + "&thumbnail=true");
-        $img.style.opacity = 0;
-        $img.style.position = "absolute";
-        $img.style.top = 0;
-        $img.style.zIndex = 1;
-        $placeholder.setAttribute("src", IMAGE.THUMBNAIL_PLACEHOLDER);
         const t = new Date();
         $img.onload = async () => {
             const duration = new Date() - t;
-            if (duration < 1000) await animate($img, {
-                keyframes: opacityIn(),
-                time: duration > 32 ? 200 : 0,
-            });
-            else await animate($img, {
-                easing: "cubic-bezier(.51,.92,.24,1.15)",
-                keyframes: [
-                    { opacity: 0, transform: "scale(.97)" },
-                    { opacity: 1 },
-                    { opacity: 1, transform: "scale(1)" },
-                ],
-                time: 300,
-            });
+            await Promise.all([
+                animate($img, {
+                    keyframes: opacityIn(),
+                    time: duration > 1500 ? 300 : duration > 50 ? 200 : 0,
+                }),
+                animate($placeholder, {
+                    keyframes: opacityOut(),
+                    time: duration > 1500 ? 300 : duration > 50 ? 200 : 0,
+                }),
+            ]);
             $placeholder.remove();
         };
     }
@@ -165,7 +158,9 @@ export function createThing({
         $thing.classList.remove("hover");
         const from = e.dataTransfer.getData("path");
         let to = path;
-        if (from === to) return;
+        if ($thing.getAttribute("data-droptarget") !== "true") return;
+        else if (from === to) return;
+
         if (isDir(to)) {
             const [fromBasepath, fromName] = extractPath(from);
             to += fromName;

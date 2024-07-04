@@ -4,6 +4,7 @@ import { ApplicationError } from "../lib/error.js";
 import { basename } from "../lib/path.js";
 import { loadCSS } from "../helpers/loader.js";
 import WithShell, { init as initShell } from "../components/decorator_shell_filemanager.js";
+import { init as initMenubar } from "./viewerpage/component_menubar.js";
 
 import ctrlError from "./ctrl_error.js";
 import { opener } from "./viewerpage/mimetype.js";
@@ -54,7 +55,7 @@ export default WithShell(async function(render) {
 export async function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_viewerpage.css"),
-        initShell(),
+        initShell(), initMenubar(),
         rxjs.of(CONFIG.mime || {}).pipe(
             rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
             rxjs.mergeMap(([opener]) => loadModule(opener)),

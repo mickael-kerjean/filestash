@@ -317,7 +317,7 @@ export function init() {
 function createLink(file, currentPath) {
     let path = file.path;
     if (!path) path = currentPath + file.name + (file.type === "directory" ? "/" : "");
-    const link = file.type === "directory" ? "/files" + path : "/view" + path;
+    const link = file.type === "directory" ? "files" + path : "view" + path;
     return {
         path: path,
         link: link,

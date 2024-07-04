@@ -38,18 +38,17 @@ export default function(render) {
     const $photo = qs($page, "img.photo");
     effect(onLoad($photo).pipe(
         removeLoader,
-        rxjs.tap(($node) => {
-            $node.classList.remove("hidden");
-            animate($node, {
-                time: 300,
-                easing: "cubic-bezier(.51,.92,.24,1.15)",
-                keyframes: [
-                    { opacity: 0, transform: "scale(.97)" },
-                    { opacity: 1 },
-                    { opacity: 1, transform: "scale(1)" },
-                ],
-            });
-        }),
+        rxjs.map(() => $photo),
+        rxjs.tap(($img) => animate($img, {
+            onEnter: () => $img.classList.remove("hidden"),
+            time: 300,
+            easing: "cubic-bezier(.51,.92,.24,1.15)",
+            keyframes: [
+                { opacity: 0, transform: "scale(.97)" },
+                { opacity: 1 },
+                { opacity: 1, transform: "scale(1)" },
+            ],
+        })),
         rxjs.catchError((err) => {
             if (err.target instanceof window.HTMLElement && err.type === "error") {
                 return rxjs.of($photo).pipe(

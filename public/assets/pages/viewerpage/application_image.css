@@ -57,9 +57,6 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     left: 0;
     right: 0;
 }
-.component_imageviewer .component_image_container .images_wrapper .component_loader svg {
-    width: 40px;
-}
 .component_imageviewer .component_image_container .images_aside {
     flex: 0;
     text-align: left;
@@ -176,33 +173,22 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     transition: 0.2s ease transform;
 }
 
-.component_imageviewer .loader, .component_imageviewer .loader > span {
-    height: 100%;
-    display: block;
+.component_imageviewer .component_loader {
+    margin-top: 0;
 }
-
-.component_imageviewer .loader .component_loader {
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+.component_imageviewer .component_loader img {
+    width: 40px;
 }
-.component_imageviewer .loader .component_loader svg {
-    margin: auto;
-}
-
 .component_imageviewer .error {
     color: var(--dark);
     font-size: 1.3em;
     margin-top: 10px;
 }
-
 .component_imageviewer .component_image_container img.error {
     filter: contrast(0.8);
     width: 160px;
     margin: 0 auto;
 }
-
 .dark-mode .component_imageviewer .component_image_container {
     background: #242424;
 }
