@@ -104,10 +104,13 @@ export function createThing({
         $placeholder.classList.add("placeholder");
         $placeholder.setAttribute("src", IMAGE.THUMBNAIL_PLACEHOLDER);
         $img.parentElement.appendChild($placeholder);
-        $img.setAttribute("src", "api/files/cat?path=" + encodeURIComponent(path) + "&thumbnail=true");
+
+        $img.src = "api/files/cat?path=" + encodeURIComponent(path) + "&thumbnail=true";
+        $img.loaded = false;
         const t = new Date();
         $img.onload = async () => {
             const duration = new Date() - t;
+            $img.loaded = true;
             await Promise.all([
                 animate($img, {
                     keyframes: opacityIn(),
@@ -120,6 +123,15 @@ export function createThing({
             ]);
             $placeholder.remove();
         };
+        const id = setInterval(() => { // cancellation when image is outside the viewport
+            if ($img.loaded === true) return clearInterval(id);
+            else if (typeof $thing.checkVisibility !== "function") return clearInterval(id);
+            else if ($thing.checkVisibility() === false) {
+                $img.src = "";
+                clearInterval(id);
+                return;
+            }
+        }, 250);
     }
 
     if (loading) {

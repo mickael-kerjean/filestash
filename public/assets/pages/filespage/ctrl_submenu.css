@@ -33,17 +33,22 @@
     margin-left: -3px;
     margin-right: -3px;
 }
+.touch-yes [is="component_submenu"] .component_submenu .action button img {
+    width: 16px;
+    height: 16px;
+}
 [is="component_submenu"] .component_submenu .action.left {
     margin-right: 2px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    display: flex;
 }
-[is="component_submenu"] .component_submenu .action.right:hover,
+.touch-no [is="component_submenu"] .component_submenu .action.right:hover,
 [is="component_submenu"] .component_submenu .action.right.hover{
     background: var(--border);
 }
-[is="component_submenu"] .component_submenu .action button:hover {
+.touch-no [is="component_submenu"] .component_submenu .action button:hover {
     filter: brightness(0.9);
     background: var(--border);
 }

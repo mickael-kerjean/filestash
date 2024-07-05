@@ -7,7 +7,10 @@ export const options = () => ajax({
     method: "OPTIONS",
 }).pipe(rxjs.map((res) => res.responseHeaders.allow.replace(/\r/, "").split(", ")));
 
-export const cat = () => ajax(getDownloadUrl()).pipe(
+export const cat = () => ajax({
+    url: getDownloadUrl(),
+    method: "GET",
+}).pipe(
     rxjs.map(({ response }) => response),
 );
 

@@ -45,7 +45,10 @@ class Loader extends window.HTMLElement {
 
 customElements.define("component-loader", Loader);
 export function createLoader($parent, opts = {}) {
-    const { wait = 250 } = opts;
+    const {
+        wait = 250,
+        append = ($loader) => $parent.appendChild($loader),
+    } = opts;
     const $icon = createElement(`
             <div class="component_loader">
                 <style>
@@ -58,16 +61,13 @@ export function createLoader($parent, opts = {}) {
                 <component-icon name="loading"></component-icon>
             </div>
     `);
-    let $cache = null;
     const id = window.setTimeout(() => {
-        $cache = $parent;
-        $parent.appendChild($icon);
+        append($icon);
         animate($icon, { time: 750, keyframes: opacityIn() });
     }, wait);
 
     const cancel = () => {
         clearTimeout(id);
-        if(!$cache) return;
         $icon.remove();
     };
 

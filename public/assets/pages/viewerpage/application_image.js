@@ -19,7 +19,7 @@ export default function(render) {
             <component-menubar></component-menubar>
             <div class="component_image_container">
                 <div class="images_wrapper">
-                    <img class="photo idle hidden" draggable="true" src="${getDownloadUrl()}">
+                    <img class="photo idle hidden" src="${getDownloadUrl()}&size=${window.innerWidth}">
                 </div>
                 <div class="images_aside scroll-y"></div>
                 <div class="component_pager hidden"></div>

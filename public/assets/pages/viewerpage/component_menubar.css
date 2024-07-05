@@ -27,12 +27,14 @@
 }
 .component_menubar .action-item {
     padding-right: 10px;
+    display: flex;
+    align-items: center;
 }
 .component_menubar .action-item .component_icon {
     height: 19px;
     width: 19px;
     cursor: pointer;
-    padding: 9px 2px 0px 2px;
+    padding: 0 2px;
 }
 .component_menubar .action-item .download-button .component_icon {
     padding-right: 1px;

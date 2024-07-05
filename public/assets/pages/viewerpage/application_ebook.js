@@ -23,7 +23,9 @@ export default function(render) {
 
     // feature1: setup the dom
     const $epub = qs($page, `[data-bind="epub"]`);
-    const removeLoader = createLoader($page);
+    const removeLoader = createLoader($page, {
+        append: ($loader) => $page.insertBefore($loader, qs($page, ".ebookviewer_container")),
+    });
     const setup$ = rxjs.of($epub).pipe(
         rxjs.mergeMap(async($epub) => {
             const book = new window.ePub.Book({
@@ -42,12 +44,10 @@ export default function(render) {
                 rendition.destroy();
             });
             book.open(getDownloadUrl());
-            await new Promise((done) => {
-                rendition.hooks.render.register(() => {
-                    rendition$.next(rendition);
-                    done();
-                });
-            });
+            await new Promise((done) => rendition.hooks.render.register(() => {
+                rendition$.next(rendition);
+                done();
+            }));
         }),
         removeLoader,
         rxjs.catchError(ctrlError()),
