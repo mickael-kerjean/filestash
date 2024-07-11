@@ -6,12 +6,17 @@ import { qs } from "../../lib/dom.js";
 import { AjaxError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
 import { currentPath, isNativeFileUpload } from "./helper.js";
+import { calculatePermission } from "./model_acl.js";
 import { mkdir, save } from "./model_virtual_layer.js";
 import t from "../../locales/index.js";
 
 const workers$ = new rxjs.BehaviorSubject({ tasks: [], size: null });
 
 export default function(render) {
+    if (!calculatePermission(currentPath(), "new-file")) {
+        return;
+    }
+
     const $page = createFragment(`
         <div is="component_filezone"></div>
         <div is="component_upload_fab"></div>

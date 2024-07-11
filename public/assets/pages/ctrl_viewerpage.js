@@ -5,10 +5,12 @@ import { basename } from "../lib/path.js";
 import { loadCSS } from "../helpers/loader.js";
 import WithShell, { init as initShell } from "../components/decorator_shell_filemanager.js";
 import { init as initMenubar } from "./viewerpage/component_menubar.js";
+import { init as initCache } from "./filespage/cache.js";
 
 import ctrlError from "./ctrl_error.js";
 import { opener } from "./viewerpage/mimetype.js";
 import { getCurrentPath } from "./viewerpage/common.js";
+import { options } from "./viewerpage/model_files.js";
 
 import "../components/breadcrumb.js";
 
@@ -43,19 +45,29 @@ export default WithShell(async function(render) {
     const $page = createElement(`<div class="component_page_viewerpage"></div>`);
     render($page);
 
+    // feature: render viewer application
     effect(rxjs.of(CONFIG.mime || {}).pipe(
         rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
-        rxjs.mergeMap(([opener, options]) => rxjs.from(loadModule(opener)).pipe(
-            rxjs.map((module) => module.default(createRender($page), options)),
-        )),
+        rxjs.mergeMap(([opener, opts]) => rxjs.from(loadModule(opener)).pipe(rxjs.tap((module) => {
+            module.default(createRender($page), { ...opts, acl$: options() });
+        }))),
         rxjs.catchError(ctrlError()),
+    ));
+
+    // feature: cleanup up the design when navbar is not there
+    effect(rxjs.of(new URL(location).searchParams.get("nav")).pipe(
+        rxjs.filter((value) => value === "false"),
+        rxjs.tap(() => {
+            $page.parentElement.style.border = "none";
+            $page.parentElement.style.borderRadius = "0";
+        }),
     ));
 });
 
 export async function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_viewerpage.css"),
-        initShell(), initMenubar(),
+        initShell(), initMenubar(), initCache(),
         rxjs.of(CONFIG.mime || {}).pipe(
             rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
             rxjs.mergeMap(([opener]) => loadModule(opener)),

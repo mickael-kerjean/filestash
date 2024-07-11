@@ -10,7 +10,6 @@ import ctrlError from "../ctrl_error.js";
 
 import { currentPath, sort, isMobile } from "./helper.js";
 import { createThing } from "./thing.js";
-import { init as initCache } from "./cache.js";
 import { clearSelection, addSelection, getSelection$, isSelected } from "./state_selection.js";
 import { getState$ } from "./state_config.js";
 import { ls, search } from "./model_files.js";
@@ -96,7 +95,7 @@ export default async function(render) {
                 FILE_HEIGHT = 160;
                 COLUMN_PER_ROW = gridSize($list.clientWidth);
                 $list.style.gridTemplateColumns = `repeat(${COLUMN_PER_ROW}, 1fr)`;
-                $list.style.gridGap = "4px";
+                $list.style.gridGap = document.body.clientWidth > 1300 ? "10px" : "5px";
                 break;
             case "list":
                 FILE_HEIGHT = 47;
@@ -310,7 +309,6 @@ export function init() {
         loadCSS(import.meta.url, "./ctrl_filesystem.css"),
         loadCSS(import.meta.url, "./thing.css"),
         loadCSS(import.meta.url, "./modal.css"),
-        initCache(),
     ]);
 }
 
@@ -325,9 +323,9 @@ function createLink(file, currentPath) {
 }
 
 function gridSize(size) {
-    const DESIRED_FILE_WIDTH_ON_LARGE_SCREEN = 180;
-    if (size > 800) return Math.floor(size / DESIRED_FILE_WIDTH_ON_LARGE_SCREEN);
-    if (size > 700) return 4;
+    const DESIRED_FILE_WIDTH_ON_LARGE_SCREEN = 230;
+    if (size > 850) return Math.floor(size / DESIRED_FILE_WIDTH_ON_LARGE_SCREEN);
+    if (size > 750) return 4;
     if (size > 550) return 3;
     if (size > 300) return 2;
     return 1;

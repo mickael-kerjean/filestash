@@ -1,6 +1,7 @@
 import { onDestroy } from "../../lib/skeleton/index.js";
 import rxjs from "../../lib/rx.js";
 import fscache from "./cache.js";
+import { hooks } from "./model_files.js";
 import { extractPath, isDir } from "./helper.js";
 
 /*
@@ -73,6 +74,7 @@ export function touch(path) {
                 files: files.concat([file]),
                 ...rest,
             }));
+            hooks.mutation.emit({ op: "touch", path: basepath });
         }
 
         async afterError(err, caught) {
@@ -111,6 +113,7 @@ export function mkdir(path) {
                 files: files.concat([file]),
                 ...rest,
             }));
+            hooks.mutation.emit({ op: "mkdir", path: basepath });
         }
 
         async afterError(err, caught) {
@@ -149,6 +152,7 @@ export function save(path, size) {
                 files: files.concat([file]),
                 ...rest,
             }));
+            hooks.mutation.emit({ op: "save", path: basepath });
         }
 
         async afterError() {
@@ -216,6 +220,7 @@ export function rm(...paths) {
                 }),
                 ...rest,
             }));
+            if (arr.length > 0) hooks.mutation.emit({ op: "rm", path: arr[0] });
         }
 
         async afterError() {
@@ -304,6 +309,7 @@ export function mv(fromPath, toPath) {
                     ...rest,
                 };
             });
+            hooks.mutation.emit({ op: "mv", path: fromBasepath });
         }
         async _afterSuccessDifferentPath() {
             stateAdd(mutationFiles$, fromBasepath, {
@@ -327,7 +333,9 @@ export function mv(fromPath, toPath) {
                 }]),
                 ...rest,
             }));
-            if (isDir(fromPath)) await fscache.remove(fromPath);
+            if (isDir(fromPath)) await fscache().remove(fromPath);
+            hooks.mutation.emit({ op: "mv", path: fromBasepath });
+            hooks.mutation.emit({ op: "mv", path: toBasepath });
         }
 
         async afterError() {

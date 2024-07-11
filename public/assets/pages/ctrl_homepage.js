@@ -32,8 +32,7 @@ export default function(render) {
             return rxjs.throwError(err);
         }),
         rxjs.tap(({ is_authenticated, home = "/" }) => {
-            // TODO: next?
-            if (is_authenticated !== true) return navigate(forwardURLParams(toHref("/login"), ["share"]));
+            if (is_authenticated !== true) return navigate(forwardURLParams(toHref("/login"), ["share", "next"]));
             return navigate(forwardURLParams(toHref(`/files${home}`), ["share"]));
         }),
         rxjs.catchError(ctrlError(render)),

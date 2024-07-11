@@ -11,9 +11,9 @@ import t from "../../locales/index.js";
 
 import ctrlError from "../ctrl_error.js";
 import ctrlDownloader, { init as initDownloader } from "./application_downloader.js";
-import { transition, getFilename, getCurrentPath, getDownloadUrl } from "./common.js";
+import { getFilename, getDownloadUrl } from "./common.js";
 import { $ICON } from "./common_fab.js";
-import { options, cat, save } from "./model_files.js";
+import { cat, save } from "./model_files.js";
 
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
 import "../../components/fab.js";
@@ -21,7 +21,7 @@ import "../../components/icon.js";
 
 const TIME_BEFORE_ABORT_EDIT = 5000;
 
-export default async function(render) {
+export default async function(render, { acl$ }) {
     const $page = createElement(`
         <div class="component_ide">
             <component-menubar class="hidden"></component-menubar>
@@ -41,11 +41,14 @@ export default async function(render) {
 
     // feature1: setup the dom
     const removeLoader = createLoader($page);
-    const setup$ = rxjs.race(
-        cat(),
-        ajax("about").pipe(rxjs.delay(TIME_BEFORE_ABORT_EDIT), rxjs.map(() => null)),
+    const setup$ = rxjs.zip(
+        rxjs.race(
+            cat(),
+            ajax("about").pipe(rxjs.delay(TIME_BEFORE_ABORT_EDIT), rxjs.map(() => null)),
+        ),
+        acl$,
     ).pipe(
-        rxjs.mergeMap((content) => {
+        rxjs.mergeMap(([content, acl]) => {
             if (content === null || has_binary(content)) {
                 return rxjs.from(initDownloader()).pipe(
                     removeLoader,
@@ -55,49 +58,45 @@ export default async function(render) {
                     }),
                 );
             }
-            return rxjs.of(content);
+            return rxjs.of(content).pipe(
+                rxjs.mergeMap((content) => rxjs.of(window.CONFIG).pipe(
+                    rxjs.mergeMap((config) => rxjs.from(loadKeybinding(config.editor)).pipe(rxjs.mapTo(config))),
+                    rxjs.map((config) => [content, config]),
+                    rxjs.mergeMap((arr) => rxjs.from(loadMode(extname(getFilename()))).pipe(
+                        rxjs.map((mode) => arr.concat([mode])),
+                    )),
+                )),
+                removeLoader,
+                rxjs.map(([content, config, mode]) => {
+                    const $editor = $dom.editor();
+                    content$.next(content);
+                    $editor.classList.remove("hidden");
+                    const editor = window.CodeMirror($editor, {
+                        value: content,
+                        lineNumbers: true,
+                        mode: window.CodeMirror.__mode,
+                        keyMap: ["emacs", "vim"].indexOf(config["editor"]) === -1 ? "sublime" : config["editor"],
+                        lineWrapping: true,
+                        readOnly: acl.indexOf("PUT") === -1 && acl.indexOf("POST") === -1,
+                        foldOptions: { widget: "..." },
+                        matchBrackets: {},
+                        autoCloseBrackets: true,
+                        matchTags: { bothTags: true },
+                        autoCloseTags: true,
+                    });
+                    editor.getWrapperElement().setAttribute("mode", mode);
+                    if (!("ontouchstart" in window)) editor.focus();
+                    if (config["editor"] === "emacs") editor.addKeyMap({
+                        "Ctrl-X Ctrl-C": (cm) => window.history.back(),
+                    });
+                    onDestroy(() => editor.clearHistory());
+                    $dom.menubar().classList.remove("hidden");
+                    editor.execCommand("save");
+                    return editor;
+                }),
+                rxjs.tap((editor) => requestAnimationFrame(() => editor.refresh())),
+            );
         }),
-        rxjs.mergeMap((content) => rxjs.of(window.CONFIG).pipe(
-            rxjs.mergeMap((config) => rxjs.from(loadKeybinding(config.editor)).pipe(rxjs.mapTo(config))),
-            rxjs.map((config) => [content, config]),
-            rxjs.mergeMap((arr) => rxjs.from(loadMode(extname(getFilename()))).pipe(
-                rxjs.map((mode) => arr.concat([mode])),
-            )),
-            rxjs.mergeMap((arr) => options().pipe(
-                rxjs.map((acl) => arr.concat([acl])),
-            )),
-        )),
-        removeLoader,
-        rxjs.map(([content, config, mode, acl]) => {
-            const $editor = $dom.editor();
-            content$.next(content);
-            $editor.classList.remove("hidden");
-            const editor = window.CodeMirror($editor, {
-                value: content,
-                lineNumbers: true,
-                mode: window.CodeMirror.__mode,
-                keyMap: ["emacs", "vim"].indexOf(config["editor"]) === -1 ? "sublime" : config["editor"],
-                lineWrapping: true,
-                readOnly: !/PUT/.test(acl),
-                foldOptions: { widget: "..." },
-                matchBrackets: {},
-                autoCloseBrackets: true,
-                matchTags: { bothTags: true },
-                autoCloseTags: true,
-            });
-            // transition($editor);
-            editor.getWrapperElement().setAttribute("mode", mode);
-            if (!("ontouchstart" in window)) editor.focus();
-            if (config["editor"] === "emacs") editor.addKeyMap({
-                "Ctrl-X Ctrl-C": (cm) => window.history.back(),
-            });
-            onDestroy(() => editor.clearHistory());
-            $dom.menubar().classList.remove("hidden");
-            editor.execCommand("save");
-            return editor;
-        }),
-        // rxjs.tap(() => { debugger; }),
-        rxjs.tap((editor) => requestAnimationFrame(() => editor.refresh())),
         rxjs.catchError(ctrlError()),
         rxjs.share(),
     );

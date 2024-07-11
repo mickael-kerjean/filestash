@@ -152,6 +152,7 @@
     text-align: right;
     left: 0;
     right: 20%;
+    right: calc(50% - 50px);
     margin: 0 auto;
     text-transform: uppercase;
     font-size: 0.95em;

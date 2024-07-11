@@ -1,7 +1,8 @@
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
-import { basename } from "../../lib/path.js";
+import { basename, forwardURLParams } from "../../lib/path.js";
 import notification from "../../components/notification.js";
+import assert from "../../lib/assert.js";
 import t from "../../locales/index.js";
 
 import { currentPath } from "./helper.js";
@@ -30,7 +31,7 @@ const handleError = rxjs.catchError((err) => {
 const trimDirectorySuffix = (name) => name.replace(new RegExp("/$"), "");
 
 export const touch = (path) => ajax({
-    url: `api/files/touch?path=${encodeURIComponent(path)}`,
+    url: withURLParams(`api/files/touch?path=${encodeURIComponent(path)}`),
     method: "POST",
     responseType: "json",
 }).pipe(
@@ -78,7 +79,10 @@ export const ls = (path) => {
             files: responseJSON.results,
             permissions: responseJSON.permissions,
         })),
-        rxjs.tap((data) => fscache().store(path, data)),
+        rxjs.tap((data) => {
+            fscache().store(path, data);
+            hooks.ls.emit({ path, data });
+        }),
     );
 
     return rxjs.combineLatest(
@@ -122,3 +126,33 @@ export const search = (term) => ajax({
 }).pipe(rxjs.map(({ responseJSON }) => ({
     files: responseJSON.results,
 })));
+
+class hook {
+    constructor() {
+        this.list = [];
+        this.id = 0;
+    }
+
+    listen(fn) {
+        if (typeof fn !== "function") assert.fail("hook must be a function");
+        const id = this.id;
+        this.list.push({ id, fn });
+        this.id += 1;
+        return () => {
+            this.list = this.list.filter((obj) => obj.id !== id);
+        }
+    }
+
+    emit(data) {
+        this.list.map(({ fn }) => fn(data));
+    }
+}
+
+export const hooks = {
+    ls: new hook(),
+    mutation: new hook(),
+    // ...
+    // add hooks on a needed basis
+};
+
+const withURLParams = (url) => forwardURLParams(url, ["share"]);

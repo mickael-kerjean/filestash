@@ -107,7 +107,10 @@ function componentLeft(render, { $scroll }) {
             <button data-action="delete"${toggleDependingOnPermission(currentPath(), "delete")} title="${t("Remove")}">
                 ${t("Remove")}
             </button>
-            <button data-action="share" title="${t("Share")}" class="hidden">
+            <button data-action="rename" title="${t("Rename")}"${toggleDependingOnPermission(currentPath(), "rename")}>
+                ${t("Rename")}
+            </button>
+            <button data-action="share" title="${t("Share")}" class="${(CONFIG.enable_share && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
                 ${t("Share")}
             </button>
             <button data-action="embed" class="hidden" title="${t("Embed")}">
@@ -116,9 +119,6 @@ function componentLeft(render, { $scroll }) {
             <button data-action="tag" class="hidden" title="${t("Tag")}">
                 ${t("Tag")}
             </button>
-            <button data-action="rename" title="${t("Rename")}"${toggleDependingOnPermission(currentPath(), "rename")}>
-                ${t("Rename")}
-            </button>
         `))),
         rxjs.tap(($buttons) => animate($buttons, { time: 100, keyframes: slideYIn(5) })),
         rxjs.switchMap(($page) => rxjs.merge(
@@ -126,7 +126,11 @@ function componentLeft(render, { $scroll }) {
                 rxjs.mergeMap(() => rxjs.EMPTY),
             ),
             onClick(qs($page, `[data-action="share"]`)).pipe(rxjs.tap(() => {
-                componentShare(createModal(modalOpt));
+                componentShare(createModal({
+                    withButtonsRight: null,
+                    withButtonsLeft: null,
+                    targetHeight: 315,
+                }), { path: expandSelection()[0].path });
             })),
             onClick(qs($page, `[data-action="embed"]`)).pipe(rxjs.tap(() => {
                 componentEmbed(createModal(modalOpt));
@@ -389,6 +393,7 @@ export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "../../css/designsystem_dropdown.css"),
         loadCSS(import.meta.url, "./ctrl_submenu.css"),
+        loadCSS(import.meta.url, "./modal_share.css"),
     ]);
 }
 

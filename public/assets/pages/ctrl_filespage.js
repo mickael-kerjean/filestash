@@ -1,4 +1,4 @@
-import { createElement, createRender } from "../lib/skeleton/index.js";
+import { createElement, createRender, onDestroy } from "../lib/skeleton/index.js";
 import { navigate } from "../lib/skeleton/router.js";
 import rxjs, { effect } from "../lib/rx.js";
 import { qs } from "../lib/dom.js";
@@ -9,6 +9,8 @@ import componentFilesystem, { init as initFilesystem } from "./filespage/ctrl_fi
 import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.js";
 import componentNewItem, { init as initNewItem } from "./filespage/ctrl_newitem.js";
 import componentUpload, { init as initUpload } from "./filespage/ctrl_upload.js";
+import { init as initCache } from "./filespage/cache.js";
+import { hooks } from "./filespage/model_files.js";
 
 import "../components/breadcrumb.js";
 
@@ -36,14 +38,16 @@ export default WithShell(function(render) {
     // feature3: render the creation menu
     componentNewItem(createRender(qs($page, "[is=\"component_newitem\"]")));
 
-    // feature4: render the upload
-    componentUpload(createRender(qs($page, "[is=\"component_upload\"]")));
+    // feature4: render the upload button
+    onDestroy(hooks.ls.listen(() => {
+        componentUpload(createRender(qs($page, "[is=\"component_upload\"]")));
+    }));
 });
 
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "ctrl_filespage.css"),
-        initShell(), initFilesystem(),
+        initShell(), initFilesystem(), initCache(),
         initSubmenu(), initNewItem(), initUpload(),
     ]);
 }

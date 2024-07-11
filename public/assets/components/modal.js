@@ -36,7 +36,7 @@ const $modal = createElement(`
 `);
 
 class ModalComponent extends window.HTMLElement {
-    trigger($node, { withButtonsLeft = null, withButtonsRight = null, onQuit = (a) => Promise.resolve(a) }) {
+    trigger($node, { withButtonsLeft = null, withButtonsRight = null, targetHeight = null, onQuit = (a) => Promise.resolve(a) }) {
         const close$ = new rxjs.Subject();
 
         // feature: build the dom
@@ -54,9 +54,13 @@ class ModalComponent extends window.HTMLElement {
                 buttonIndex = MODAL_RIGHT_BUTTON;
             }
 
-            if (currentLabel === null) return $button.remove();
-            $button.textContent = currentLabel;
-            $button.onclick = () => close$.next(buttonIndex);
+            if (currentLabel !== null) {
+                $button.classList.remove("hidden");
+                $button.textContent = currentLabel;
+                $button.onclick = () => close$.next(buttonIndex);
+            } else {
+                $button.classList.add("hidden");
+            }
         });
         effect(rxjs.fromEvent($modal, "click").pipe(
             rxjs.filter((e) => e.target.getAttribute("id") === "modal-box"),
@@ -75,13 +79,13 @@ class ModalComponent extends window.HTMLElement {
                 time: 200,
                 keyframes: [
                     { opacity: 1, transform: "translateY(0)" },
-                    { opacity: 0, transform: "translateY(20px)" }
-                ]
+                    { opacity: 0, transform: "translateY(20px)" },
+                ],
             })),
             rxjs.delay(100),
             rxjs.tap(() => animate($modal, {
                 time: 200,
-                keyframes: [{ opacity: 1 }, { opacity: 0 }]
+                keyframes: [{ opacity: 1 }, { opacity: 0 }],
             })),
             rxjs.mapTo([]), applyMutation($modal, "remove"),
             rxjs.tap(free),
@@ -95,16 +99,16 @@ class ModalComponent extends window.HTMLElement {
                 time: 250,
                 keyframes: [
                     { opacity: 0 },
-                    { opacity: 1 }
-                ]
+                    { opacity: 1 },
+                ],
             })),
             rxjs.delay(50),
             rxjs.tap(() => animate($body(), {
                 time: 200,
                 keyframes: [
                     { opacity: 0, transform: "translateY(10px)" },
-                    { opacity: 1, transform: "translateY(0)" }
-                ]
+                    { opacity: 1, transform: "translateY(0)" },
+                ],
             })),
         ));
 
@@ -113,10 +117,11 @@ class ModalComponent extends window.HTMLElement {
             rxjs.startWith(null),
             rxjs.distinct(() => document.body.offsetHeight),
             rxjs.map(() => {
-                let size = 300;
-                const $box = document.querySelector("#modal-box > div");
-                if ($box instanceof window.HTMLElement) size = $box.offsetHeight;
-
+                let size = targetHeight;
+                if (size === null) {
+                    const $box = document.querySelector("#modal-box > div");
+                    if ($box instanceof window.HTMLElement) size = $box.offsetHeight;
+                }
                 size = Math.round((document.body.offsetHeight - size) / 2);
                 if (size < 0) return 0;
                 if (size > 250) return 250;

@@ -49,8 +49,8 @@ function sortByType(files, order) {
         if (aExt === bExt) return sortString(faname, fbname, order);
         return sortString(aExt, bExt, order);
     });
-}
 
+}
 function sortByName(files, order) {
     let tmp;
     return files.sort(function(fileA, fileB) {

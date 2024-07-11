@@ -11,12 +11,13 @@ export function setPermissions(path, value = {}) {
 }
 
 export function calculatePermission(path, action) {
+    const toBool = (n) => n === undefined ? true : false;
     if (!perms$.value[path]) return false;
     switch(action) {
-    case "new-file": return perms$.value[path]["can_create_file"];
-    case "new-folder": return perms$.value[path]["can_create_directory"];
-    case "delete": return perms$.value[path]["can_delete"];
-    case "rename": return perms$.value[path]["can_rename"];
+    case "new-file": return toBool(perms$.value[path]["can_create_file"]);
+    case "new-folder": return toBool(perms$.value[path]["can_create_directory"]);
+    case "delete": return toBool(perms$.value[path]["can_delete"]);
+    case "rename": return toBool(perms$.value[path]["can_rename"]);
     default: return false;
     }
 }
