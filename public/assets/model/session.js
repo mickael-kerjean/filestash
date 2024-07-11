@@ -1,10 +1,11 @@
 import rxjs from "../lib/rx.js";
 import ajax from "../lib/ajax.js";
+import { forwardURLParams } from "../lib/path.js";
 
 export function createSession(authenticationRequest) {
     return ajax({
         method: "POST",
-        url: "./api/session",
+        url: withShare("./api/session"),
         body: authenticationRequest,
         responseType: "json",
     });
@@ -12,7 +13,7 @@ export function createSession(authenticationRequest) {
 
 export function getSession() {
     return ajax({
-        url: "./api/session",
+        url: withShare("api/session"),
         method: "GET",
         responseType: "json"
     }).pipe(
@@ -22,7 +23,9 @@ export function getSession() {
 
 export function deleteSession() {
     return ajax({
-        url: "./api/session",
+        url: withShare("api/session"),
         method: "DELETE"
     });
 }
+
+const withShare = (url) => forwardURLParams(url, ["share"]);

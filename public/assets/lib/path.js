@@ -9,3 +9,12 @@ export function extname(str) {
 export function join(baseURL, segment) {
     return new URL(segment, baseURL).pathname;
 }
+
+export function forwardURLParams(url, allowed = []) {
+    const _url = new URL(location.origin + "/" + url);
+    for (let [key, value] of new URLSearchParams(location.search)) {
+        if (allowed.indexOf(key) < 0) continue;
+        _url.searchParams.set(key, value);
+    }
+    return _url.pathname.substring(1) + _url.search;
+}

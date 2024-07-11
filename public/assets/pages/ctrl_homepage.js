@@ -2,6 +2,7 @@ import { createElement, navigate } from "../lib/skeleton/index.js";
 import { toHref } from "../lib/skeleton/router.js";
 import rxjs, { effect } from "../lib/rx.js";
 import { ApplicationError, AjaxError } from "../lib/error.js";
+import { forwardURLParams } from "../lib/path.js";
 import ctrlError from "./ctrl_error.js";
 
 import { getSession } from "../model/session.js";
@@ -31,8 +32,9 @@ export default function(render) {
             return rxjs.throwError(err);
         }),
         rxjs.tap(({ is_authenticated, home = "/" }) => {
-            if (is_authenticated !== true) return navigate(toHref("/login"));
-            return navigate(toHref(`/files${home}`));
+            // TODO: next?
+            if (is_authenticated !== true) return navigate(forwardURLParams(toHref("/login"), ["share"]));
+            return navigate(forwardURLParams(toHref(`/files${home}`), ["share"]));
         }),
         rxjs.catchError(ctrlError(render)),
     ));

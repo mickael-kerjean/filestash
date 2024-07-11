@@ -39,7 +39,7 @@ export const touch = (path) => ajax({
 );
 
 export const mkdir = (path) => ajax({
-    url: `api/files/mkdir?path=${encodeURIComponent(path)}`,
+    url: withURLParams(`api/files/mkdir?path=${encodeURIComponent(path)}`),
     method: "POST",
     responseType: "json",
 }).pipe(
@@ -48,7 +48,7 @@ export const mkdir = (path) => ajax({
 );
 
 export const rm = (...paths) => rxjs.forkJoin(paths.map((path) => ajax({
-    url: `api/files/rm?path=${encodeURIComponent(path)}`,
+    url: withURLParams(`api/files/rm?path=${encodeURIComponent(path)}`),
     method: "POST",
     responseType: "json",
 }))).pipe(
@@ -57,7 +57,7 @@ export const rm = (...paths) => rxjs.forkJoin(paths.map((path) => ajax({
 );
 
 export const mv = (from, to) => ajax({
-    url: `api/files/mv?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+    url: withURLParams(`api/files/mv?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
     method: "POST",
     responseType: "json",
 }).pipe(
@@ -70,7 +70,7 @@ export const save = (path) => rxjs.of(null).pipe(rxjs.delay(1000));
 export const ls = (path) => {
     const lsFromCache = (path) => rxjs.from(fscache().get(path));
     const lsFromHttp = (path) => ajax({
-        url: `api/files/ls?path=${encodeURIComponent(path)}`,
+        url: withURLParams(`api/files/ls?path=${encodeURIComponent(path)}`),
         method: "GET",
         responseType: "json",
     }).pipe(
