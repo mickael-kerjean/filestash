@@ -267,6 +267,20 @@ export class ShareComponent extends React.Component {
                             type="inline"
                             cond={!!this.state.show_advanced}><Icon name="arrow_top"/></NgIf>
                         <NgIf
+                            type="inline"t("Password") }
+                            placeholder={ t("protect access with a password") }
+                            onChange={this.updateState.bind(this, "password")}
+                            inputType="password"/>
+                    </div>
+
+                    <h2
+                        className="no-select pointer"
+                        onClick={this.updateState.bind(this, "show_advanced", !this.state.show_advanced)}>
+                        { t("Advanced") }
+                        <NgIf
+                            type="inline"
+                            cond={!!this.state.show_advanced}><Icon name="arrow_top"/></NgIf>
+                        <NgIf
                             type="inline"
                             cond={!this.state.show_advanced}><Icon name="arrow_bottom"/></NgIf>
                     </h2>
