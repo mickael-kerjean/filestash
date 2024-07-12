@@ -268,6 +268,7 @@ function loadMode(ext) {
     else if (ext === "properties") mode = "properties";
     else if (ext === "c" || ext === "cpp" || ext === "h") mode = "clike";
     else if (ext === "java") mode = "java";
+    else if (ext === "groovy" || ext === "gvy" || ext === "gy" || ext === "gsh") mode = "groovy";
 
     return before.then(() => loadJS(import.meta.url, `./application_editor/${mode}.js`, { type: "module" }))
         .catch(() => loadJS(import.meta.url, "./application_editor/text.js", { type: "module" }))
