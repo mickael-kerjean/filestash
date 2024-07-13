@@ -20,6 +20,7 @@ const mv = (from, to) => withVirtualLayer(
 
 export default async function ctrlSidebar(render) {
     if (new URL(location).searchParams.get("nav") === "false") return;
+    else if (document.body.clientWidth < 850) return; // do not waste CPU cycle on small devices
 
     const $page = render(createElement(`
         <div class="component_sidebar"><div>
@@ -90,7 +91,6 @@ export default async function ctrlSidebar(render) {
     }
     $files.replaceChildren($tree);
     $page.firstElementChild.scrollTop = state.scrollTop;
-    qs($page, `[data-path="${chunk.toString()}"] a`).classList.add("active");
 
     // feature: smart refresh whenever something happen
     let cleaners = [];
@@ -110,6 +110,13 @@ export default async function ctrlSidebar(render) {
         } catch (err) {}
     }));
     onDestroy(() => cleaners.map((fn) => fn()));
+
+    // feature: highlight current selection
+    const $active = qs($page, `[data-path="${chunk.toString()}"] a`);
+    $active.classList.add("active");
+    if (checkVisible($active) === false) {
+        $active.scrollIntoView({ behavior: "smooth" });
+    }
 }
 
 async function createListOfFiles(path, currentName) {
@@ -156,6 +163,14 @@ export function init() {
     return loadCSS(import.meta.url, "./sidebar.css");
 }
 
+function checkVisible($el) {
+    const rect = $el.getBoundingClientRect();
+    return rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+}
+
 class pathChunk {
     constructor() {
         this.pathname = [""].concat(fromHref(
@@ -168,7 +183,7 @@ class pathChunk {
     }
 
     toString(i) {
-        if (i >= 0) return this.pathname.slice(0,i+1).join("/") + "/";
-        return this.pathname.join("/");
+        if (i >= 0) return decodeURIComponent(this.pathname.slice(0,i+1).join("/") + "/");
+        return decodeURIComponent(this.pathname.join("/"));
     }
 }

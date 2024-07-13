@@ -4,6 +4,9 @@
     box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
     background: white;
 }
+.component_page_connection_form .box form {
+    margin-top: 5px;
+}
 .component_page_connection_form div.buttons {
     display: flex;
     margin: 0px 0px 15px 0px;

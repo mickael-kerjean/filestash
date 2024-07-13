@@ -103,6 +103,7 @@
     "SORT_BY_NAME": "trier par nom",
     "SUPPORT": "support",
     "TAG": "tag",
+    "TAGS": "tags",
     "THERE_IS_NOTHING_HERE": "il n'y a rien ici",
     "THE_LINK_WAS_COPIED_IN_THE_CLIPBOARD": "le lien a été copié dans le presse-papiers",
     "THE_LINK_WONT_BE_VALID_AFTER": "le lien ne sera plus valide après",
@@ -119,5 +120,6 @@
     "YES": "oui",
     "YOU_CANT_DO_THAT": "vous ne pouvez pas faire :)",
     "YOUR_EMAIL_ADDRESS": "votre adresse email",
+    "YOUR_FILES": "vos fichiers",
     "YOUR_MASTER_PASSWORD": "votre mot de passe principal"
 }

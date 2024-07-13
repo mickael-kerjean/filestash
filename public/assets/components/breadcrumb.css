@@ -52,7 +52,7 @@
     position: absolute;
     left: 0;
     background: var(--color);
-    color: white;
+    color: var(--bg-color);
     font-size: 0.8em;
     opacity: 0;
     transform: translateY(5px);

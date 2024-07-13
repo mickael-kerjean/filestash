@@ -40,7 +40,7 @@ export async function init() {
         return Promise.resolve();
     }
     return ajax({
-        url: "/assets/locales/" + selectedLanguage + ".json",
+        url: "assets/locales/" + selectedLanguage + ".json",
         responseType: "json",
     }).pipe(rxjs.tap(({ responseHeaders, response }) => {
         const contentType = responseHeaders["content-type"].trim();

@@ -10,7 +10,7 @@
     .component_filemanager_shell .component_sidebar { width: 300px; }
 }
 @media screen and (min-width: 2000px) {
-    .component_filemanager_shell .component_sidebar { width: 350px; }
+    .component_filemanager_shell .component_sidebar { width: 330px; }
 }
 
 .component_filemanager_shell .component_sidebar > div { direction: ltr; }
