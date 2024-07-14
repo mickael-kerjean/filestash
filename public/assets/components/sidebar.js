@@ -1,5 +1,5 @@
 import { createElement, onDestroy } from "../lib/skeleton/index.js";
-import rxjs, { effect } from "../lib/rx.js";
+import rxjs, { effect, onClick } from "../lib/rx.js";
 import { fromHref, toHref } from "../lib/skeleton/router.js";
 import { qs } from "../lib/dom.js";
 import { animate, opacityIn } from "../lib/animate.js";
@@ -57,14 +57,14 @@ export default async function ctrlSidebar(render) {
         rxjs.of(null),
     ).pipe(rxjs.tap(() => {
         if (!isVisible()) $page.classList.add("hidden");
-        else if (document.body.clientWidth < 1250) $page.classList.add("hidden");
+        else if (document.body.clientWidth < 1100) $page.classList.add("hidden");
         else $page.classList.remove("hidden");
     })));
-    qs($page, `img[alt="close"]`).onclick = () => {
+    effect(onClick(qs($page, `img[alt="close"]`)).pipe(rxjs.tap(() => {
         settingsSave({ visible: false }, "sidebar");
         $page.classList.add("hidden");
         forceRefresh();
-    };
+    })));
 
     // feature: setup the DOM
     const $files = qs($page, `[data-bind="your-files"]`);

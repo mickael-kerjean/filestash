@@ -47,7 +47,10 @@ export default async function(render) {
     const $listAfter = qs($page, ".ifscroll-after");
     const refreshOnResize$ = rxjs.fromEvent(window, "resize").pipe(
         rxjs.startWith(null),
-        rxjs.map(() => [gridSize($list.clientWidth), document.body.clientHeight]),
+        rxjs.map(() => [
+            gridSize($list.clientWidth, document.body.clientWidth),
+            document.body.clientHeight,
+        ]),
         rxjs.distinctUntilChanged((prev, curr) => {
             return prev[0] === curr[0] && prev[1] && curr[1]
         }),
@@ -93,15 +96,15 @@ export default async function(render) {
             switch(view) {
             case "grid":
                 FILE_HEIGHT = 160;
-                COLUMN_PER_ROW = gridSize($list.clientWidth);
+                COLUMN_PER_ROW = gridSize($list.clientWidth, document.body.clientWidth);
                 $list.style.gridTemplateColumns = `repeat(${COLUMN_PER_ROW}, 1fr)`;
-                $list.style.gridGap = document.body.clientWidth > 1300 ? "10px" : "5px";
+                $list.setAttribute("data-type", "grid");
                 break;
             case "list":
                 FILE_HEIGHT = 47;
                 COLUMN_PER_ROW = 1;
                 $list.style.gridTemplateColumns = `repeat(1, 1fr)`;
-                $list.style.gridGap = "2px";
+                $list.setAttribute("data-type", "list");
                 break;
             default:
                 throw new Error("Not Implemented");
@@ -322,11 +325,15 @@ function createLink(file, currentPath) {
     };
 }
 
-function gridSize(size) {
-    const DESIRED_FILE_WIDTH_ON_LARGE_SCREEN = 230;
-    if (size > 850) return Math.floor(size / DESIRED_FILE_WIDTH_ON_LARGE_SCREEN);
-    if (size > 750) return 4;
-    if (size > 550) return 3;
-    if (size > 300) return 2;
+function gridSize(size, windowSize) {
+    const DESIRED_FILE_WIDTH_ON_LARGE_SCREEN = 225;
+    console.log("GS", size, windowSize)
+    if (windowSize > 1100) return Math.max(
+        4,
+        Math.floor(size / DESIRED_FILE_WIDTH_ON_LARGE_SCREEN),
+    );
+    else if (size > 750) return 4;
+    else if (size > 550) return 3;
+    else if (size > 300) return 2;
     return 1;
 }

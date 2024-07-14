@@ -1,6 +1,17 @@
 [is="component_filesystem"] .component_filesystem {
     padding-top: 3px;
 }
+[is="component_filesystem"] .component_filesystem [data-type="list"] {
+    grid-gap: 2px;
+}
+[is="component_filesystem"] .component_filesystem [data-type="grid"] {
+    grid-gap: 5px;
+}
+@media screen and (min-width: 1100px) {
+    [is="component_filesystem"] .component_filesystem [data-type="grid"] {
+        grid-gap: 10px;
+    }
+}
 [is="component_filesystem"] .empty {
     text-align: center;
     font-weight: 100;
