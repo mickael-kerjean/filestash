@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	"bytes"
 	"embed"
 	"errors"
 	"fmt"
@@ -15,6 +16,8 @@ import (
 
 	. "github.com/mickael-kerjean/filestash"
 	. "github.com/mickael-kerjean/filestash/server/common"
+
+	"github.com/bluekeyes/go-gitdiff/gitdiff"
 )
 
 var (
@@ -353,6 +356,51 @@ func CustomCssHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		filePath := JoinPath(chroot, TrimBase(req.URL.Path))
+		head := res.Header()
+
+		// case: patch must be apply because of a "StaticPatch" plugin
+		for _, patch := range Hooks.Get.StaticPatch() {
+			patchFile, err := patch.Open(strings.TrimPrefix(TrimBase(req.URL.Path), "/"))
+			if err != nil {
+				continue
+			}
+			defer patchFile.Close()
+			patchFiles, _, err := gitdiff.Parse(patchFile)
+			if err != nil {
+				Log.Debug("ctrl::static cannot parse patch file - %s", err.Error())
+				break
+			} else if len(patchFiles) != 1 {
+				Log.Debug("ctrl::static unepected patch file size - must be 1, got %d", len(patchFiles))
+				break
+			}
+			origFile, err := WWWPublic.Open(filePath)
+			if err != nil {
+				Log.Debug("ctrl::static cannot open public file - %+v", err.Error())
+				continue
+			}
+			originalBuffer, err := io.ReadAll(origFile)
+			if err != nil {
+				Log.Debug("ctrl::static cannot read public file - %+v", err.Error())
+				continue
+			}
+			var output bytes.Buffer
+			origFile.Close()
+			if err := gitdiff.Apply(
+				&output,
+				bytes.NewReader(originalBuffer),
+				patchFiles[0],
+			); err != nil {
+				Log.Debug("ctrl::static cannot apply patch - %s", err.Error())
+				break
+			}
+			head.Set("Content-Type", GetMimeType(filepath.Ext(filePath)))
+			res.WriteHeader(http.StatusOK)
+			res.Write(output.Bytes())
+			return
+		}
+
+		// case: main path
+		acceptEncoding := req.Header.Get("Accept-Encoding")
 		staticConfig := []struct {
 			ContentType string
 			FileExt     string
@@ -361,9 +409,6 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			{"gzip", ".gz"},
 			{"", ""},
 		}
-
-		head := res.Header()
-		acceptEncoding := req.Header.Get("Accept-Encoding")
 		for _, cfg := range staticConfig {
 			if strings.Contains(acceptEncoding, cfg.ContentType) == false {
 				continue

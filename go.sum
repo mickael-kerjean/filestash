@@ -46,6 +46,8 @@ github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59/go.mod h1:q/89r3U
 github.com/beevik/etree v1.1.0/go.mod h1:r8Aw8JqVegEf0w2fDnATrX9VpkMcyFeM0FhwO62wh+A=
 github.com/beevik/etree v1.4.0 h1:oz1UedHRepuY3p4N5OjE0nK1WLCqtzHf25bxplKOHLs=
 github.com/beevik/etree v1.4.0/go.mod h1:cyWiXwGoasx60gHvtnEh5x8+uIjUVnjWqBvEnhnqKDA=
+github.com/bluekeyes/go-gitdiff v0.7.3 h1:SElKwtm/IQPOwKs0vdowW5uAlip+P+jatagmUU8E0r4=
+github.com/bluekeyes/go-gitdiff v0.7.3/go.mod h1:QpfYYO1E0fTVHVZAZKiRjtSGY9823iCdvGXBcEzHGbM=
 github.com/calebcase/tmpfile v1.0.3 h1:BZrOWZ79gJqQ3XbAQlihYZf/YCV0H4KPIdM5K5oMpJo=
 github.com/calebcase/tmpfile v1.0.3/go.mod h1:UAUc01aHeC+pudPagY/lWvt2qS9ZO5Zzof6/tIUzqeI=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
