@@ -27,6 +27,15 @@
     padding-right: 5px;
     cursor: pointer;
 }
+.component_filemanager_shell .component_sidebar h3 input::placeholder {
+    text-transform: capitalize;
+}
+.component_filemanager_shell .component_sidebar h3 input {
+    border: none;
+    color: var(--dark);
+    font-weight: bold;
+    font-size: inherit;
+}
 .component_filemanager_shell .component_sidebar [data-bind="your-files"] > ul { margin-left: 0px; }
 .component_filemanager_shell .component_sidebar ul {
     margin-top: 0px;
@@ -44,7 +53,12 @@
     padding-left: 5px;
     margin-top: 0px;
 }
-
+.component_filemanager_shell .search .component_sidebar ul {
+    margin: 0;
+}
+.component_filemanager_shell .search .component_sidebar ul li {
+    padding-left: 0;
+}
 .component_filemanager_shell .component_sidebar a {
     display: flex;
     padding: 5px 5px 5px 10px;

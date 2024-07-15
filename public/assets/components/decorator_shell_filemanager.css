@@ -32,11 +32,14 @@
     border-top-right-radius: 30px;
 }
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div > component-breadcrumb > .component_breadcrumb,
-.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] .container {
-    width: 95%;
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div > component-breadcrumb > .component_breadcrumb,
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] .container,
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div > [data-bind="filemanager-children"] .container {
+    width: 98%;
     margin: 0 auto;
     max-width: 815px;
 }
+
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] {
     background: rgba(100,100,100,.05);
 }
@@ -50,10 +53,15 @@
 }
 
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_filesystem"],
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div [is="component_filesystem"],
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_newitem"],
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div [is="component_newitem"],
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div component-menubar,
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div component-menubar,
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div component-breadcrumb,
-.component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_submenu"] .component_submenu {
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div component-breadcrumb,
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_submenu"] .component_submenu,
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div [is="component_submenu"] .component_submenu {
     padding: 0px;
 }
 

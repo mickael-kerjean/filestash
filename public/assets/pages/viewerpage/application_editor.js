@@ -49,15 +49,13 @@ export default async function(render, { acl$ }) {
         acl$,
     ).pipe(
         rxjs.mergeMap(([content, acl]) => {
-            if (content === null || has_binary(content)) {
-                return rxjs.from(initDownloader()).pipe(
-                    removeLoader,
-                    rxjs.mergeMap(() => {
-                        ctrlDownloader(render);
-                        return rxjs.EMPTY;
-                    }),
-                );
-            }
+            if (content === null || has_binary(content)) return rxjs.from(initDownloader()).pipe(
+                removeLoader,
+                rxjs.mergeMap(() => {
+                    ctrlDownloader(render);
+                    return rxjs.EMPTY;
+                }),
+            );
             return rxjs.of(content).pipe(
                 rxjs.mergeMap((content) => rxjs.of(window.CONFIG).pipe(
                     rxjs.mergeMap((config) => rxjs.from(loadKeybinding(config.editor)).pipe(rxjs.mapTo(config))),
@@ -233,8 +231,14 @@ function loadMode(ext) {
     else if (ext === "less" || ext === "scss" || ext === "sass") mode = "sass";
     else if (ext === "js" || ext === "json") mode = "javascript";
     else if (ext === "jsx") mode = "jsx";
-    else if (ext === "php" || ext === "php5" || ext === "php4") mode = "php";
-    else if (ext === "elm") mode = "elm";
+    else if (ext === "php" || ext === "php5" || ext === "php4") {
+        mode = "php";
+        before = Promise.all([
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/xml/xml.js"),
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/javascript/javascript.js"),
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/css/css.js"),
+        ]);
+    } else if (ext === "elm") mode = "elm";
     else if (ext === "erl") mode = "erlang";
     else if (ext === "go") mode = "go";
     else if (ext === "markdown" || ext === "md") {

@@ -149,6 +149,9 @@
 .component_supercheckbox > label {
     font-size: 0.95em;
     font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .component_supercheckbox > label .label {
     margin-left: -5px;

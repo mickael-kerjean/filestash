@@ -1,3 +1,4 @@
+import { toHref } from "./skeleton/router.js";
 import rxjs, { ajax } from "./rx.js";
 import { AjaxError } from "./error.js";
 
@@ -11,14 +12,20 @@ export default function(opts) {
             const result = res.xhr.responseText;
             if (opts.responseType === "json") {
                 const json = JSON.parse(result);
+                res.responseJSON = json;
                 if (json.status !== "ok") {
                     throw new AjaxError("Oups something went wrong", result);
                 }
-                res.responseJSON = json;
             }
             return res;
         }),
-        rxjs.catchError((err) => rxjs.throwError(processError(err.xhr, err))),
+        rxjs.catchError((err) => {
+            if (err.status === 401) {
+                location.href = toHref("/login?next=" + location.pathname + location.hash + location.search);
+                return rxjs.EMPTY;
+            }
+            return rxjs.throwError(processError(err.xhr, err))
+        }),
     );
 }
 

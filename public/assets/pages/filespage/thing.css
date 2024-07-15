@@ -76,6 +76,9 @@
     padding: 2px;
     border-radius: 50px;
 }
+.touch-yes .component_thing .component_checkbox {
+    opacity: 1;
+}
 .component_thing .component_checkbox .indicator {
     top: 7px;
     left: 6px;
@@ -236,6 +239,9 @@
     top: 3px;
     left: 3px;
     transform: translateX(-5px);
+}
+.touch-yes .list > .component_thing.view-grid .component_checkbox {
+    transform: translateX(0px);
 }
 .list > .component_thing.view-grid:hover .component_checkbox,
 .list > .component_thing.view-grid.selected .component_checkbox {

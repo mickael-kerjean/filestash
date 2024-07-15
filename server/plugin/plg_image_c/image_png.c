@@ -45,6 +45,7 @@ int png_to_webp(int inputDesc, int outputDesc, int targetSize) {
   }
   png_init_io(png_ptr, input);
   png_read_info(png_ptr, info_ptr);
+  png_set_strip_alpha(png_ptr);
   png_uint_32 width = png_get_image_width(png_ptr, info_ptr);
   png_uint_32 height = png_get_image_height(png_ptr, info_ptr);
   png_byte color_type = png_get_color_type(png_ptr, info_ptr);
@@ -65,6 +66,7 @@ int png_to_webp(int inputDesc, int outputDesc, int targetSize) {
   int scale_factor = height > targetSize ? height / targetSize : 1;
   png_uint_32 thumb_width = width / scale_factor;
   png_uint_32 thumb_height = height / scale_factor;
+
   if (thumb_width == 0 || thumb_height == 0) {
     ERROR("0 dimensions");
     status = 1;

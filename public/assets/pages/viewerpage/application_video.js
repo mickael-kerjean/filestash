@@ -2,9 +2,10 @@ import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideYIn } from "../../lib/animate.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
-import { qs } from "../../lib/dom.js";
+import { qs, qsa } from "../../lib/dom.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
 import assert from "../../lib/assert.js";
+import { ApplicationError } from "../../lib/error.js";
 
 import Hls from "../../lib/vendor/hlsjs/hls.js";
 
@@ -13,7 +14,7 @@ import ctrlError from "../ctrl_error.js";
 import { transition, getFilename, getDownloadUrl } from "./common.js";
 import { formatTimecode } from "./common_player.js";
 import { ICON } from "./common_icon.js";
-import { renderMenubar, buttonDownload } from "./component_menubar.js";
+import { renderMenubar, buttonDownload, buttonFullscreen } from "./component_menubar.js";
 
 import "../../components/icon.js";
 
@@ -22,10 +23,6 @@ const STATUS_PAUSED = "PAUSED";
 const STATUS_BUFFERING = "BUFFERING";
 
 export default function(render, { mime }) {
-    if (!Hls.isSupported()) {
-        ctrlError()(new Error("browser not supporting hls"));
-        return;
-    }
     const $page = createElement(`
         <div class="component_videoplayer">
             <component-menubar></component-menubar>
@@ -65,7 +62,7 @@ export default function(render, { mime }) {
                     </div>
                 </span>
 
-                <div class="component_pager">
+                <div class="component_pager hidden">
                     <div class="wrapper no-select">
                         <span>
                             <a href="/view/Videos/Animation Movie.webm">
@@ -88,7 +85,11 @@ export default function(render, { mime }) {
         </div>
     `);
     render($page);
-    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
+    renderMenubar(
+        qs($page, "component-menubar"),
+        buttonDownload(getFilename(), getDownloadUrl()),
+        buttonFullscreen(qs($page, "video")),
+    );
     transition(qs($page, ".video_container"));
 
     const $video = qs($page, "video");
@@ -155,21 +156,31 @@ export default function(render, { mime }) {
 
     // feature1: setup the dom
     const setup$ = rxjs.of(null).pipe(
-        rxjs.tap(() => {
+        rxjs.map(() => {
             const hls = new Hls();
             const sources = window.overrides["video-map-sources"]([{
                 src: getDownloadUrl(),
                 type: mime,
             }]);
             for (let i=0; i<sources.length; i++) {
+                if (sources[i].type !== "application/x-mpegURL") {
+                    const $source = document.createElement("source");
+                    $source.setAttribute("type", "video/mp4");
+                    $source.setAttribute("src", sources[i].src);
+                    $video.appendChild($source);
+                    return [{ ...sources[i], type: "video/mp4" }];
+                }
                 hls.loadSource(sources[i].src, sources[i].type);
             }
             hls.attachMedia($video);
+            return sources;
         }),
-        rxjs.mergeMap(() => rxjs.fromEvent($video, "loadeddata")),
-        // rxjs.tap(() => renderMenubar(buildMenubar(
-        //     menubarDownload(),
-        // ))),
+        rxjs.mergeMap((sources) => rxjs.merge(
+            rxjs.fromEvent($video, "loadeddata"),
+            ...[...qsa($page, "source")].map(($source) => rxjs.fromEvent($source, "error").pipe(rxjs.tap((err) => {
+                throw new ApplicationError("NOT_SUPPORTED", JSON.stringify({ mime, sources }, null, 2));
+            }))),
+        )),
         rxjs.mergeMap(() => {
             const $loader = qs($page, ".loader");
             $loader.replaceChildren(createElement(`<img style="height:170px;cursor:pointer;filter:brightness(0.5) invert(1);" src="${ICON.PLAY}" />`));
@@ -181,7 +192,10 @@ export default function(render, { mime }) {
                 ],
             });
             setSeek(0);
-            return rxjs.fromEvent($loader, "click").pipe(rxjs.mapTo($loader));
+            return rxjs.race(
+                rxjs.fromEvent($loader, "click").pipe(rxjs.mapTo($loader)),
+                rxjs.fromEvent(document, "keydown").pipe(rxjs.filter((e) => e.code === "Space"), rxjs.first()),
+            ).pipe(rxjs.mapTo($loader));
         }),
         rxjs.tap(($loader) => {
             $loader.classList.add("hidden");
@@ -190,6 +204,7 @@ export default function(render, { mime }) {
             animate($control, { time: 300, keyframes: slideYIn(5) });
             setStatus(STATUS_PLAYING);
         }),
+        rxjs.catchError(ctrlError()),
         rxjs.share(),
     );
     effect(setup$);

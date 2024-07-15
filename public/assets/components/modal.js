@@ -113,8 +113,10 @@ class ModalComponent extends window.HTMLElement {
         ));
 
         // feature: center horizontally
-        effect(rxjs.fromEvent(window, "resize").pipe(
-            rxjs.startWith(null),
+        effect(rxjs.merge(
+            rxjs.fromEvent(window, "resize"),
+            rxjs.of(null),
+        ).pipe(
             rxjs.distinct(() => document.body.offsetHeight),
             rxjs.map(() => {
                 let size = targetHeight;

@@ -326,14 +326,13 @@ function createLink(file, currentPath) {
 }
 
 function gridSize(size, windowSize) {
-    const DESIRED_FILE_WIDTH_ON_LARGE_SCREEN = 225;
-    console.log("GS", size, windowSize)
+    const DESIRED_FILE_WIDTH_ON_LARGE_SCREEN = 210;
     if (windowSize > 1100) return Math.max(
         4,
         Math.floor(size / DESIRED_FILE_WIDTH_ON_LARGE_SCREEN),
     );
     else if (size > 750) return 4;
-    else if (size > 550) return 3;
+    else if (size > 520) return 3;
     else if (size > 300) return 2;
     return 1;
 }
