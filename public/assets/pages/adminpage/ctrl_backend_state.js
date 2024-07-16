@@ -24,37 +24,28 @@ export function getBackendEnabled() {
 }
 
 export function addBackendEnabled(type) {
-    return backendsEnabled$.pipe(
-        rxjs.first(),
-        rxjs.map((backends) => {
-            const existingLabels = new Set();
-            backends.forEach((obj) => {
-                existingLabels.add(obj.label.toLowerCase());
-            });
-
-            let label = ""; let i = 1;
-            while (true) {
-                label = type + (i === 1 ? "" : ` ${i}`);
-                if (existingLabels.has(label) === false) break;
-                i += 1;
+    return getState().pipe(rxjs.map(({ connections }) => {
+        let label = type;
+        let i = 0;
+        while (true) {
+            if (!connections.find((obj) => obj.label === label)) {
+                break
             }
-
-            const b = backends.concat({ type, label });
-            backendsEnabled$.next(b);
-            return b;
-        }),
-    );
+            i += 1;
+            label = `${type} ${i}`;
+        }
+        const newConnections = connections.concat({ type, label });
+        backendsEnabled$.next(newConnections);
+        return newConnections;
+    }));
 }
 
 export function removeBackendEnabled(labelToRemove) {
-    return backendsEnabled$.pipe(
-        rxjs.first(),
-        rxjs.map((backends) => {
-            const b = backends.filter(({ label }) => label !== labelToRemove);
-            backendsEnabled$.next(b);
-            return b;
-        }),
-    );
+    return getState().pipe(rxjs.map(({ connections }) => {
+        const newConnections = connections.filter(({ label }) => label !== labelToRemove);
+        backendsEnabled$.next(newConnections);
+        return newConnections;
+    }));
 }
 
 const middlewareEnabled$ = new rxjs.ReplaySubject(1);
