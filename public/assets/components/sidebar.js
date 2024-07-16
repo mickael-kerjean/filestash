@@ -1,6 +1,6 @@
 import { createElement, onDestroy } from "../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../lib/rx.js";
-import { fromHref, toHref } from "../lib/skeleton/router.js";
+import { navigate, fromHref, toHref } from "../lib/skeleton/router.js";
 import { qs, qsa } from "../lib/dom.js";
 import { settingsGet, settingsSave } from "../lib/store.js";
 import { loadCSS } from "../helpers/loader.js";
@@ -73,7 +73,7 @@ export default async function ctrlSidebar(render) {
     }
     onDestroy(() => {
         $page.classList.remove("search");
-        state.$cache = $files.firstElementChild.cloneNode(true);
+        state.$cache = $files.firstElementChild?.cloneNode(true);
         state.scrollTop = $page.firstElementChild.scrollTop
     });
     const chunk = new pathChunk();
@@ -84,11 +84,13 @@ export default async function ctrlSidebar(render) {
         const path = chunk.toString(i);
         try {
             const $list = await createListOfFiles(path, arr[i+1], fullpath);
-            const $anchor = i === 0 ?
-                  $tree :
-                  qs($tree, `[data-path="${chunk.toString(i)}"]`);
+            const $anchor = i === 0 ? $tree : qs($tree, `[data-path="${chunk.toString(i)}"]`);
             $anchor.appendChild($list);
-        } catch(err) { console.error("ERROR", i, err) }
+        } catch(err) { // cache isn't reliable, kill everything and refresh
+            $files.remove();
+            await cache().remove("/", false);
+            navigate(location.pathname + location.hash + location.search);
+        }
     }
     $files.replaceChildren($tree);
     $page.firstElementChild.scrollTop = state.scrollTop;
@@ -96,11 +98,13 @@ export default async function ctrlSidebar(render) {
     // feature: smart refresh whenever something happen
     let cleaners = [];
     cleaners.push(hooks.ls.listen(async ({ path }) => {
+        const $list = await createListOfFiles(path);
         try {
             const $ul = qs($page, `[data-path="${path}"] ul`);
-            const $list = await createListOfFiles(path);
             $ul.replaceWith($list);
-        } catch (err) {}
+        } catch (err) { // happens when the cache can't be rely on
+            $files.replaceChildren($list);
+        }
     }));
     cleaners.push(hooks.mutation.listen(async ({ op, path }) => {
         if (["mv", "mkdir", "rm"].indexOf(op) === -1) return;
@@ -113,11 +117,13 @@ export default async function ctrlSidebar(render) {
     onDestroy(() => cleaners.map((fn) => fn()));
 
     // feature: highlight current selection
-    const $active = qs($page, `[data-path="${chunk.toString()}"] a`);
-    $active.classList.add("active");
-    if (checkVisible($active) === false) {
-        $active.scrollIntoView({ behavior: "smooth" });
-    }
+    try {
+        const $active = qs($page, `[data-path="${chunk.toString()}"] a`);
+        $active.classList.add("active");
+        if (checkVisible($active) === false) {
+            $active.scrollIntoView({ behavior: "smooth" });
+        }
+    } catch(err) {}
 
     // feature: quick search
     effect(rxjs.fromEvent(qs($page, "h3 input"), "keydown").pipe(

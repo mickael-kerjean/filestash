@@ -19,13 +19,7 @@ export default function(opts) {
             }
             return res;
         }),
-        rxjs.catchError((err) => {
-            if (err.status === 401) {
-                location.href = toHref("/login?next=" + location.pathname + location.hash + location.search);
-                return rxjs.EMPTY;
-            }
-            return rxjs.throwError(processError(err.xhr, err))
-        }),
+        rxjs.catchError((err) => rxjs.throwError(processError(err.xhr, err))),
     );
 }
 

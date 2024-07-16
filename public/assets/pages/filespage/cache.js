@@ -1,4 +1,4 @@
-import ajax from "../../lib/ajax.js";
+import { getSession } from "../../model/session.js";
 
 class ICache {
     constructor() {}
@@ -173,30 +173,34 @@ class IndexDBCache extends ICache {
 
 let cache = null;
 
-export function clearCache(path) {
-    console.log("TODO: clear cache");
-    // cache.clear(path);
+export async function clearCache(path) { // TODO: remove useless function
+    await cache.remove(path, false);
 }
 
 export async function init() {
     const setup_cache = () => {
         cache = new InMemoryCache();
-        if (!("indexedDB" in window)) return initCacheState();
+        if (!("indexedDB" in window)) return;
 
         cache = new IndexDBCache();
-        return Promise.all([cache.db, initCacheState()]).catch((err) => {
+        return cache.db.catch((err) => {
             if (err === "INDEXEDDB_NOT_SUPPORTED") {
                 // Firefox in private mode act like if it supports indexedDB but
                 // is throwing that string as an error if you try to use it ...
                 // so we fallback with our basic ram cache
                 cache = new DataFromMemory();
-                return initCacheState();
+                return;
             }
             throw err;
         });
     }
-    const setup_session = () => {
-        return Promise.resolve();
+    const setup_session = async () => {
+        if (!backendID) {
+            try {
+                const session = await getSession().toPromise();
+                backendID = session.backendID;
+            } catch (err) {}
+        }
     };
 
     return Promise.all([setup_cache(), setup_session()]);
@@ -213,12 +217,4 @@ export function currentBackend() {
 
 export function currentShare() {
     return new window.URL(location.href).searchParams.get("share") || "";
-}
-
-async function initCacheState() {
-    if (!backendID) {
-        const { responseJSON } = await ajax({ url: "/api/session", responseType: "json" }).toPromise();
-        backendID = responseJSON.result.backendID;
-    }
-    return
 }

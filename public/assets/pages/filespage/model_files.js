@@ -1,8 +1,10 @@
+import { toHref, navigate } from "../../lib/skeleton/router.js";
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 import { basename, forwardURLParams } from "../../lib/path.js";
 import notification from "../../components/notification.js";
 import assert from "../../lib/assert.js";
+import { AjaxError } from "../../lib/error.js";
 import t from "../../locales/index.js";
 
 import { currentPath } from "./helper.js";
@@ -28,6 +30,14 @@ const handleError = rxjs.catchError((err) => {
     notification.error(err);
     throw err;
 });
+const handleErrorRedirectLogin = rxjs.catchError((err) => {
+    if (err instanceof AjaxError && err.err().status === 401) {
+        navigate(toHref("/login?next=" + location.pathname + location.hash + location.search));
+        return rxjs.EMPTY;
+    }
+    throw err;
+});
+
 const trimDirectorySuffix = (name) => name.replace(new RegExp("/$"), "");
 
 export const touch = (path) => ajax({
@@ -75,6 +85,7 @@ export const ls = (path) => {
         method: "GET",
         responseType: "json",
     }).pipe(
+        handleErrorRedirectLogin,
         rxjs.map(({ responseJSON }) => ({
             files: responseJSON.results,
             permissions: responseJSON.permissions,
