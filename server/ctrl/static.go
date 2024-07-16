@@ -394,6 +394,7 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 				break
 			}
 			head.Set("Content-Type", GetMimeType(filepath.Ext(filePath)))
+			head.Set("Cache-Control", "no-cache")
 			res.WriteHeader(http.StatusOK)
 			res.Write(output.Bytes())
 			return
