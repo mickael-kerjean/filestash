@@ -5,8 +5,6 @@ import { get as getConfig } from "../../model/config.js";
 import { get as getAdminConfig } from "./model_config.js";
 import { formObjToJSON$ } from "./helper_form.js";
 
-export { getBackends as getBackendAvailable } from "./model_backend.js";
-
 const backendsEnabled$ = new rxjs.BehaviorSubject();
 
 export async function initStorage() {
@@ -18,6 +16,8 @@ export async function initStorage() {
         }),
     ).toPromise();
 }
+
+export { getBackends as getBackendAvailable } from "./model_backend.js";
 
 export function getBackendEnabled() {
     return backendsEnabled$.asObservable();
