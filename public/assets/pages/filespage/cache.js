@@ -1,3 +1,5 @@
+import ajax from "../../lib/ajax.js";
+
 class ICache {
     constructor() {}
 
@@ -204,7 +206,7 @@ export default function() {
     return cache;
 };
 
-let backendID = "na";
+let backendID = "";
 export function currentBackend() {
     return backendID;
 }
@@ -213,6 +215,10 @@ export function currentShare() {
     return new window.URL(location.href).searchParams.get("share") || "";
 }
 
-function initCacheState() {
-    return Promise.resolve();
+async function initCacheState() {
+    if (!backendID) {
+        const { responseJSON } = await ajax({ url: "/api/session", responseType: "json" }).toPromise();
+        backendID = responseJSON.result.backendID;
+    }
+    return
 }
