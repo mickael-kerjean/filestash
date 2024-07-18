@@ -1,8 +1,8 @@
-body:not(.dark-mode) .component_formviewer {
-}
-
 .component_formviewer {
     background: #525659;
+}
+.dark-mode .component_formviewer {
+    color: rgba(0,0,0,0.5);
 }
 .component_formviewer > .formviewer_container {
     padding-top: 20px;

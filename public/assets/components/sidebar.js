@@ -2,6 +2,7 @@ import { createElement, onDestroy } from "../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../lib/rx.js";
 import { navigate, fromHref, toHref } from "../lib/skeleton/router.js";
 import { qs, qsa } from "../lib/dom.js";
+import { forwardURLParams } from "../lib/path.js";
 import { settingsGet, settingsSave } from "../lib/store.js";
 import { loadCSS } from "../helpers/loader.js";
 import t from "../locales/index.js";
@@ -17,7 +18,7 @@ const mv = (from, to) => withVirtualLayer(
     mvVL(from, to),
 );
 
-export default async function ctrlSidebar(render) {
+export default async function ctrlSidebar(render, nRestart = 0) {
     if (new URL(location).searchParams.get("nav") === "false") return;
     else if (document.body.clientWidth < 850) return;
 
@@ -86,10 +87,10 @@ export default async function ctrlSidebar(render) {
             const $list = await createListOfFiles(path, arr[i+1], fullpath);
             const $anchor = i === 0 ? $tree : qs($tree, `[data-path="${chunk.toString(i)}"]`);
             $anchor.appendChild($list);
-        } catch(err) { // cache isn't reliable, kill everything and refresh
-            $files.remove();
+        } catch(err) {
             await cache().remove("/", false);
-            navigate(location.pathname + location.hash + location.search);
+            if (nRestart < 2) ctrlSidebar(render, nRestart + 1);
+            else throw err;
         }
     }
     $files.replaceChildren($tree);
@@ -102,15 +103,13 @@ export default async function ctrlSidebar(render) {
         try {
             const $ul = qs($page, `[data-path="${path}"] ul`);
             $ul.replaceWith($list);
-        } catch (err) { // happens when the cache can't be rely on
-            $files.replaceChildren($list);
-        }
+        } catch (err) { $files.replaceChildren($list); }
     }));
     cleaners.push(hooks.mutation.listen(async ({ op, path }) => {
         if (["mv", "mkdir", "rm"].indexOf(op) === -1) return;
+        const $list = await createListOfFiles(path);
         try {
             const $ul = qs($page, `[data-path="${path}"] ul`);
-            const $list = await createListOfFiles(path);
             $ul.replaceWith($list);
         } catch (err) {}
     }));
@@ -156,7 +155,7 @@ async function createListOfFiles(path, currentName, fullpath) {
         const currpath = path + whats[i] + "/";
         const $li = createElement(`
             <li data-path="${currpath}" title="${currpath}" class="no-select">
-                <a data-link href="${toHref("/files" + currpath)}" draggable="false">
+                <a data-link href="${forwardURLParams(toHref("/files" + currpath), ["share"])}" draggable="false">
                     <img class="component_icon" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgYXJpYS1oaWRkZW49InRydWUiCiAgIGZvY3VzYWJsZT0iZmFsc2UiCiAgIGNsYXNzPSJvY3RpY29uIG9jdGljb24tZmlsZS1kaXJlY3RvcnktZmlsbCIKICAgdmlld0JveD0iMCAwIDE2IDE2IgogICB3aWR0aD0iMTYiCiAgIGhlaWdodD0iMTYiCiAgIGZpbGw9ImN1cnJlbnRDb2xvciIKICAgc3R5bGU9ImRpc3BsYXk6IGlubGluZS1ibG9jazsgdXNlci1zZWxlY3Q6IG5vbmU7IHZlcnRpY2FsLWFsaWduOiB0ZXh0LWJvdHRvbTsgb3ZlcmZsb3c6IHZpc2libGU7IgogICB2ZXJzaW9uPSIxLjEiCiAgIGlkPSJzdmcxNTgiCiAgIHNvZGlwb2RpOmRvY25hbWU9ImdpdGh1YmZvbGRlci5zdmciCiAgIGlua3NjYXBlOnZlcnNpb249IjEuMi4yIChiMGE4NDg2NTQxLCAyMDIyLTEyLTAxKSIKICAgeG1sbnM6aW5rc2NhcGU9Imh0dHA6Ly93d3cuaW5rc2NhcGUub3JnL25hbWVzcGFjZXMvaW5rc2NhcGUiCiAgIHhtbG5zOnNvZGlwb2RpPSJodHRwOi8vc29kaXBvZGkuc291cmNlZm9yZ2UubmV0L0RURC9zb2RpcG9kaS0wLmR0ZCIKICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogICB4bWxuczpzdmc9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcwogICAgIGlkPSJkZWZzMTYyIiAvPgogIDxzb2RpcG9kaTpuYW1lZHZpZXcKICAgICBpZD0ibmFtZWR2aWV3MTYwIgogICAgIHBhZ2Vjb2xvcj0iI2ZmZmZmZiIKICAgICBib3JkZXJjb2xvcj0iIzAwMDAwMCIKICAgICBib3JkZXJvcGFjaXR5PSIwLjI1IgogICAgIGlua3NjYXBlOnNob3dwYWdlc2hhZG93PSIyIgogICAgIGlua3NjYXBlOnBhZ2VvcGFjaXR5PSIwLjAiCiAgICAgaW5rc2NhcGU6cGFnZWNoZWNrZXJib2FyZD0iMCIKICAgICBpbmtzY2FwZTpkZXNrY29sb3I9IiNkMWQxZDEiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGlua3NjYXBlOnpvb209IjcxLjYyNSIKICAgICBpbmtzY2FwZTpjeD0iNy44MTE1MTgzIgogICAgIGlua3NjYXBlOmN5PSI4IgogICAgIGlua3NjYXBlOndpbmRvdy13aWR0aD0iMjAzNiIKICAgICBpbmtzY2FwZTp3aW5kb3ctaGVpZ2h0PSIxMzk3IgogICAgIGlua3NjYXBlOndpbmRvdy14PSI3IgogICAgIGlua3NjYXBlOndpbmRvdy15PSIzNCIKICAgICBpbmtzY2FwZTp3aW5kb3ctbWF4aW1pemVkPSIxIgogICAgIGlua3NjYXBlOmN1cnJlbnQtbGF5ZXI9InN2ZzE1OCIgLz4KICA8cGF0aAogICAgIGQ9Ik0xLjc1IDFBMS43NSAxLjc1IDAgMCAwIDAgMi43NXYxMC41QzAgMTQuMjE2Ljc4NCAxNSAxLjc1IDE1aDEyLjVBMS43NSAxLjc1IDAgMCAwIDE2IDEzLjI1di04LjVBMS43NSAxLjc1IDAgMCAwIDE0LjI1IDNINy41YS4yNS4yNSAwIDAgMS0uMi0uMWwtLjktMS4yQzYuMDcgMS4yNiA1LjU1IDEgNSAxSDEuNzVaIgogICAgIGlkPSJwYXRoMTU2IgogICAgIHN0eWxlPSJmaWxsOiM1NzU5NWE7ZmlsbC1vcGFjaXR5OjEiIC8+Cjwvc3ZnPgo=" alt="directory">
                     <div>${whats[i]}</div>
                 </a>

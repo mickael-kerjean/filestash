@@ -20,21 +20,23 @@
     color: var(--light);
     font-size: 0.9rem;
     opacity: 0.8;
-    padding-left: 10px;
+    padding-left: 15px;
     text-transform: capitalize;
 }
 .component_filemanager_shell .component_sidebar h3 img {
-    padding-right: 5px;
+    padding-right: 4px;
     cursor: pointer;
 }
 .component_filemanager_shell .component_sidebar h3 input::placeholder {
     text-transform: capitalize;
+    color: var(--color);
 }
 .component_filemanager_shell .component_sidebar h3 input {
     border: none;
-    color: var(--dark);
+    color: var(--color);
     font-weight: bold;
     font-size: inherit;
+    background: inherit;
 }
 .component_filemanager_shell .component_sidebar [data-bind="your-files"] > ul { margin-left: 0px; }
 .component_filemanager_shell .component_sidebar ul {
@@ -56,7 +58,7 @@
 .component_filemanager_shell .search .component_sidebar ul {
     margin: 0;
 }
-.component_filemanager_shell .search .component_sidebar ul li {
+.component_filemanager_shell .search .component_sidebar ul ul li {
     padding-left: 0;
 }
 .component_filemanager_shell .component_sidebar a {

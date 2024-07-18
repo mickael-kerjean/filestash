@@ -9,6 +9,11 @@ import { AjaxError, ApplicationError } from "../lib/error.js";
 
 import "../components/icon.js";
 
+const strToHTML = (str) => str
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll(" ", "&nbsp;");
+
 export default function(render = createRender(qs(document.body, "[role=\"main\"]"))) {
     return function(err) {
         const [msg, trace] = processError(err);
@@ -28,7 +33,7 @@ export default function(render = createRender(qs(document.body, "[role=\"main\"]
                         <p>
                             <button class="light" data-bind="details">${t("More details")}</button>
                             <button class="primary" data-bind="refresh">${t("Refresh")}</button>
-                            <pre class="hidden"><code>${trace}</code></pre>
+                            <pre class="hidden"><code>${strToHTML(trace)}</code></pre>
                         </p>
                     </div>
                 </div>
@@ -95,14 +100,22 @@ const css = `
     font-weight: normal;
     font-weight: 100;
 }
+.error-page button {
+    padding-left: 10px;
+    padding-right: 10px;
+    line-height: 1.2rem;
+    text-transform: capitalize;
+}
 .error-page code {
     margin-top: 5px;
     display: block;
     padding: 10px;
     overflow-x: auto;
+    overflow-y: auto;
     background: #e2e2e2;
     color: var(--dark);
     border-radius: 3px;
+    max-height: 350px;
 }
 .error-page pre {
     margin: 0;
@@ -116,7 +129,6 @@ const css = `
 }
 
 .backnav {
-  font-weight: 100;
   display: inline-block;
   padding: 10px 5px;
 }

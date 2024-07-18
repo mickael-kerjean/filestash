@@ -8,8 +8,9 @@
     grid-gap: 5px;
 }
 @media screen and (min-width: 1100px) {
+    .component_filemanager_shell [data-bind="sidebar"]:not(.hidden) ~ div
     [is="component_filesystem"] .component_filesystem [data-type="grid"] {
-        grid-gap: 10px;
+        grid-gap: 8px;
     }
 }
 [is="component_filesystem"] .empty {

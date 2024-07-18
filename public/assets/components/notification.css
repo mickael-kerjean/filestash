@@ -50,6 +50,7 @@
     .component_notification {
         bottom: 0px;
         left: 0px;
+        right: 0px;
     }
     .component_notification .component_notification--container {
         width: 100%;

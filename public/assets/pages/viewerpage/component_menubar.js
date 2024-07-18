@@ -19,6 +19,9 @@ export default class ComponentMenubar extends window.HTMLElement {
                 </span>
             </div>
         `;
+        if (new URLSearchParams(location.search).get("nav") === "false") {
+            this.firstElementChild.classList.add("inherit-width");
+        }
     }
 
     async connectedCallback() {

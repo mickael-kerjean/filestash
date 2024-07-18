@@ -5,6 +5,12 @@ import { MODAL_RIGHT_BUTTON } from "../../components/modal.js";
 import t from "../../locales/index.js";
 
 export default function(render, removeLabel) {
+    return document.body.classList.contains("touch-yes") ?
+        renderMobile(render, removeLabel) :
+        renderDesktop(render, removeLabel);
+}
+
+function renderDesktop(render, removeLabel) {
     const $modal = createElement(`
         <div>
             <span style="white-space: nowrap;">${t("Confirm by typing")} "${removeLabel}"</span>
@@ -30,12 +36,20 @@ export default function(render, removeLabel) {
         return ret.toPromise();
     }).bind(this, MODAL_RIGHT_BUTTON);
 
-    $input.focus();
-
     effect(rxjs.fromEvent(qs($modal, "form"), "submit").pipe(
         preventDefault(),
         rxjs.tap(pressOK),
     ));
 
     return ret.toPromise();
+}
+
+function renderMobile(render, removeLabel) {
+    return new Promise((done) => {
+        const value = window.prompt(t("Confirm by typing") + ": " + removeLabel, "");
+        if (value !== removeLabel) {
+            return
+        }
+        done();
+    });
 }

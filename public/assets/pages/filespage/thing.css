@@ -230,7 +230,6 @@
     transition: 0.2s ease-out opacity;
     opacity: 0;
 }
-
 .list > .component_thing.view-grid.selected img.thumbnail {
     transform: scale(0.6);
 }
@@ -242,6 +241,9 @@
 }
 .touch-yes .list > .component_thing.view-grid .component_checkbox {
     transform: translateX(0px);
+}
+.touch-yes .list > .component_thing.view-grid .component_checkbox input[type="checkbox"]:not(:checked) ~ span {
+    background-color: inherit;
 }
 .list > .component_thing.view-grid:hover .component_checkbox,
 .list > .component_thing.view-grid.selected .component_checkbox {

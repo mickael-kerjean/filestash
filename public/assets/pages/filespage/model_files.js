@@ -90,9 +90,9 @@ export const ls = (path) => {
             files: responseJSON.results,
             permissions: responseJSON.permissions,
         })),
-        rxjs.tap((data) => {
-            fscache().store(path, data);
-            hooks.ls.emit({ path, data });
+        rxjs.tap(({ files, permissions }) => {
+            fscache().store(path, { files, permissions });
+            hooks.ls.emit({ path, files, permissions });
         }),
     );
 

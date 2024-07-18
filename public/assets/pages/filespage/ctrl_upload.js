@@ -1,36 +1,36 @@
-import { createElement, createFragment, createRender } from "../../lib/skeleton/index.js";
-import { animate, slideYOut } from "../../lib/animate.js";
+import { createElement, createFragment, createRender, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../../lib/rx.js";
+import { animate, slideYOut } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { AjaxError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
 import { currentPath, isNativeFileUpload } from "./helper.js";
-import { calculatePermission } from "./model_acl.js";
+import { getPermission, calculatePermission } from "./model_acl.js";
 import { mkdir, save } from "./model_virtual_layer.js";
 import t from "../../locales/index.js";
 
 const workers$ = new rxjs.BehaviorSubject({ tasks: [], size: null });
 
-export default function(render) {
-    if (!calculatePermission(currentPath(), "new-file")) {
-        return;
-    }
-
-    const $page = createFragment(`
-        <div is="component_filezone"></div>
-        <div is="component_upload_fab"></div>
-    `);
-
+export default async function(render) {
     if (!document.querySelector(`[is="component_upload_queue"]`)) {
         const $queue = createElement(`<div is="component_upload_queue"></div>`);
         document.body.appendChild($queue);
         componentUploadQueue(createRender($queue), { workers$ });
     }
 
-    componentFilezone(createRender($page.children[0]), { workers$ });
-    componentUploadFAB(createRender($page.children[1]), { workers$ });
-    render($page);
+    effect(getPermission().pipe(
+        rxjs.filter(() => calculatePermission(currentPath(), "new-file")),
+        rxjs.tap((a) => {
+            const $page = createFragment(`
+                <div is="component_filezone"></div>
+                <div is="component_upload_fab"></div>
+            `);
+            componentFilezone(createRender($page.children[0]), { workers$ });
+            componentUploadFAB(createRender($page.children[1]), { workers$ });
+            render($page);
+        }),
+    ));
 }
 
 export function init() {
@@ -93,8 +93,6 @@ function componentFilezone(render, { workers$ }) {
 }
 
 const MAX_WORKERS = 4;
-
-// TODO: calculate total
 
 function componentUploadQueue(render, { workers$ }) {
     const $page = createElement(`
