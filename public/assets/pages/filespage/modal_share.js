@@ -42,7 +42,7 @@ export default function(render, { path }) {
     };
 
     // feature: select
-    const toggle = (val) => rxjs.mergeMap(($button) => {
+    const toggle = (val) => rxjs.mergeMap(() => {
         state.form = {};
         role$.next(role$.value === val ? null : val);
         return rxjs.EMPTY;
@@ -150,7 +150,7 @@ async function ctrlExistingShare(render, { load, remove, all, formLinks }) {
                 copyToClipboard(link);
                 notification.info(t("The link was copied in the clipboard"));
             });
-            qs($share, `[alt="delete"]`).onclick = async(e) => {
+            qs($share, `[alt="delete"]`).onclick = async() => {
                 $share.remove();
                 length -= 1;
                 if (length === 0) $content.replaceChildren(createElement(`
@@ -158,7 +158,7 @@ async function ctrlExistingShare(render, { load, remove, all, formLinks }) {
                 `));
                 await remove(shareObj);
             };
-            qs($share, `[alt="edit"]`).onclick = (e) => load(shareObj);
+            qs($share, `[alt="edit"]`).onclick = () => load(shareObj);
             $fragment.appendChild($share);
         });
         $content.replaceChildren($fragment);
@@ -229,7 +229,7 @@ async function ctrlCreateShare(render, { save, formState }) {
     };
     const tmpl = formTmpl({
         renderNode: () => createElement("<div></div>"),
-        renderLeaf: ({ format, label, type }) => {
+        renderLeaf: ({ label, type }) => {
             if (type !== "enable") return createElement("<label></label>");
             const title =
                   label === "users_enable"
@@ -273,7 +273,7 @@ async function ctrlCreateShare(render, { save, formState }) {
     // sync editable custom link input with link id
     effect(rxjs.fromEvent(qs($form, `[name="url"]`), "keyup").pipe(rxjs.tap((e) => {
         id = e.target.value.replaceAll(" ", "-").replace(new RegExp("[^A-Za-z\-]"), "");
-        qs($form.closest(".component_share"), `input[name="create"]`).value = `${location.origin}${toHref("/s/" + id)}`;
+        qs(assert.type($form.closest(".component_share"), window.HTMLElement), `input[name="create"]`).value = `${location.origin}${toHref("/s/" + id)}`;
     })));
 
     // feature: create a shared link
@@ -281,10 +281,11 @@ async function ctrlCreateShare(render, { save, formState }) {
     effect(onClick(qs($page, ".shared-link")).pipe(
         rxjs.first(),
         rxjs.switchMap(async() => {
-            const body = [...new FormData(document.querySelector(".component_share form"))].reduce((acc, [key, value]) => {
-                if (value && key.slice(-7) !== "_enable") acc[key] = value;
-                return acc;
-            }, { id });
+            const body = [...new FormData(assert.type(qs(document.body, ".component_share form"), window.HTMLFormElement))]
+                .reduce((acc, [key, value]) => {
+                    if (value && key.slice(-7) !== "_enable") acc[key] = value;
+                    return acc;
+                }, { id });
             $copy.setAttribute("src", IMAGE.LOADING);
             const link = location.origin + forwardURLParams(toHref(`/s/${id}`), ["share"]);
             await save(body);

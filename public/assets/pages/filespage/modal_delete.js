@@ -44,12 +44,12 @@ function renderDesktop(render, removeLabel) {
     return ret.toPromise();
 }
 
-function renderMobile(render, removeLabel) {
+function renderMobile(_, removeLabel) {
     return new Promise((done) => {
         const value = window.prompt(t("Confirm by typing") + ": " + removeLabel, "");
         if (value !== removeLabel) {
             return;
         }
-        done();
+        done(null);
     });
 }

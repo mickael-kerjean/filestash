@@ -56,7 +56,7 @@ export function createThing({
     name = "",
     type = "N/A",
     time = 0,
-    path = null,
+    path = "",
     size = 0,
     loading = false,
     link = "",
@@ -67,8 +67,7 @@ export function createThing({
 }) {
     const [, ext] = formatFile(name);
     const mime = TYPES.MIME[ext.toLowerCase()];
-    const $thing = $tmpl.cloneNode(true);
-    assert.type($thing, window.HTMLElement);
+    const $thing = assert.type($tmpl.cloneNode(true), window.HTMLElement);
 
     // you might wonder why don't we use querySelector to nicely get the dom nodes? Well,
     // we're in the hot path, better performance here is critical to get 60FPS.

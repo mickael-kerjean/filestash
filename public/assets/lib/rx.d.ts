@@ -7,11 +7,12 @@ import {
     switchMapTo, switchMap,
     BehaviorSubject, Subject, ReplaySubject,
     pipe, share, toArray, distinctUntilChanged, from,
-    combineLatest, shareReplay, repeat, interval, merge,
-    debounceTime, delay, concatMap, distinct, scan, throwError,
-} from "./vendor/rxjs.min.js";
+    combineLatest, shareReplay, race, repeat, interval, merge,
+    debounceTime, debounce, delay, concatMap, distinct, scan, throwError,
+    zip, animationFrames, retry, forkJoin, skip, takeUntil, timer,
+} from "./vendor/rxjs/rxjs.min.js";
 
-import * as rxajax from "./vendor/rxjs-ajax.min.js";
+import * as rxajax from "./vendor/rxjs/rxjs-ajax.min.js";
 
 declare const rxjs: {
     of: typeof of,
@@ -31,6 +32,8 @@ declare const rxjs: {
     fromEvent: typeof fromEvent,
     delay: typeof delay,
     concatMap: typeof concatMap,
+    animationFrames: typeof animationFrames,
+    debounce: typeof debounce,
     debounceTime: typeof debounceTime,
     throwError: typeof throwError,
     interval: typeof interval,
@@ -48,6 +51,13 @@ declare const rxjs: {
     pipe: typeof pipe,
     share: typeof share,
     scan: typeof scan,
+    race: typeof race,
+    retry: typeof retry,
+    zip: typeof zip,
+    forkJoin: typeof forkJoin,
+    skip: typeof skip,
+    takeUntil: typeof takeUntil,
+    timer: typeof timer,
 };
 
 export default rxjs;
@@ -65,3 +75,5 @@ export function stateMutation($node: HTMLElement, attr: string);
 export function preventDefault(): typeof tap;
 
 export function onClick($node: HTMLElement): typeof fromEvent;
+
+export function onLoad($node: HTMLElement): typeof fromEvent;

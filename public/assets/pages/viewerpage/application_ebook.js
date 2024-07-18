@@ -1,6 +1,7 @@
 import { createElement, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
+import assert from "../../lib/assert.js";
 import { loadJS, loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
@@ -46,7 +47,7 @@ export default function(render) {
             book.open(getDownloadUrl());
             await new Promise((done) => rendition.hooks.render.register(() => {
                 rendition$.next(rendition);
-                done();
+                done(null);
             }));
         }),
         removeLoader,
@@ -59,7 +60,7 @@ export default function(render) {
     effect(setup$.pipe(
         rxjs.mergeMap(() => rxjs.merge(
             rxjs.fromEvent(document, "keydown"),
-            rendition$.pipe(rxjs.mergeMap(() => rxjs.fromEvent(qs(document, "iframe").contentDocument.body, "keydown"))),
+            rendition$.pipe(rxjs.mergeMap(() => rxjs.fromEvent(assert.type(qs(document.body, "iframe"), window.HTMLElement).contentDocument.body, "keydown"))),
         )),
         rxjs.map((e) => {
             switch (e.code) {

@@ -4,9 +4,8 @@ import { animate, slideYIn } from "../../lib/animate.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
-import assert from "../../lib/assert.js";
 import { ApplicationError } from "../../lib/error.js";
-
+import assert from "../../lib/assert.js";
 import Hls from "../../lib/vendor/hlsjs/hls.js";
 
 import ctrlError from "../ctrl_error.js";
@@ -170,14 +169,14 @@ export default function(render, { mime }) {
                     $video.appendChild($source);
                     return [{ ...sources[i], type: "video/mp4" }];
                 }
-                hls.loadSource(sources[i].src, sources[i].type);
+                hls.loadSource(sources[i].src);
             }
             hls.attachMedia($video);
             return sources;
         }),
         rxjs.mergeMap((sources) => rxjs.merge(
             rxjs.fromEvent($video, "loadeddata"),
-            ...[...qsa($page, "source")].map(($source) => rxjs.fromEvent($source, "error").pipe(rxjs.tap((err) => {
+            ...[...qsa($page, "source")].map(($source) => rxjs.fromEvent($source, "error").pipe(rxjs.tap(() => {
                 throw new ApplicationError("NOT_SUPPORTED", JSON.stringify({ mime, sources }, null, 2));
             }))),
         )),
@@ -361,7 +360,7 @@ export default function(render, { mime }) {
             if ($video.buffered.length !== $container.children.length) {
                 $container.innerHTML = "";
                 const $fragment = document.createDocumentFragment();
-                Array.apply(null, { length: $video.buffered.length })
+                Array.from({ length: $video.buffered.length })
                     .map(() => $fragment.appendChild(createElement(`
                         <div className="progress-buffer" style=""></div>
                     `)));

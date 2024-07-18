@@ -10,6 +10,8 @@ type AnimationFrames = {
     transform?: string;
     opacity?: number;
     height?: string;
+    width?: string;
+    offset?: number;
 };
 
 export function transition($node: HTMLElement, opts?: TransitionEnter | TransitionLeave): HTMLElement;
@@ -17,6 +19,10 @@ export function transition($node: HTMLElement, opts?: TransitionEnter | Transiti
 export function animate($node: HTMLElement | null, opts: {
     time: number;
     keyframes: AnimationFrames[];
+    easing?: string;
+    fill?: string;
+    onExit?: () => void;
+    onEnter?: () => void;
 }): Promise<void>;
 
 export function slideXIn(dist: number): AnimationFrames[];

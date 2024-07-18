@@ -169,7 +169,7 @@ function componentLeft(render, { $scroll }) {
     ));
 
     effect(getSelection$().pipe(
-        rxjs.filter((selections) => lengthSelection() > 1),
+        rxjs.filter(() => lengthSelection() > 1),
         rxjs.map(() => render(createFragment(`
             <a target="_blank" ${generateLinkAttributes(expandSelection())}><button data-action="download">
                 ${t("Download")}
@@ -184,7 +184,7 @@ function componentLeft(render, { $scroll }) {
                 return rxjs.from(componentDelete(
                     createModal(modalOpt),
                     "remove",
-                )).pipe(rxjs.mergeMap((val) => {
+                )).pipe(rxjs.mergeMap(() => {
                     clearSelection();
                     return rm(...paths);
                 }));
@@ -217,8 +217,8 @@ function componentRight(render) {
         default: throw new Error("NOT_IMPLEMENTED");
         }
     };
-    const defaultSort = () => {
-        return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.SORT}" alt="sort" />`;
+    const defaultSort = (sort) => { // TODO
+        return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.SORT}" alt="${sort}" />`;
     };
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 0),
@@ -320,7 +320,7 @@ function componentRight(render) {
                         rxjs.filter((e) => (e.ctrlKey || e.metaKey) && e.key === "f"),
                         preventDefault(),
                     ),
-                ).pipe(rxjs.map(($el) => qs($page, "input").classList.contains("hidden"))),
+                ).pipe(rxjs.map(() => qs($page, "input").classList.contains("hidden"))),
                 escape$.pipe(rxjs.mapTo(false)),
             ).pipe(
                 rxjs.takeUntil(getSelection$().pipe(rxjs.skip(1))),
@@ -379,12 +379,12 @@ function componentRight(render) {
 
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length >= 1),
-        rxjs.map((selections) => render(createFragment(`
+        rxjs.map(() => render(createFragment(`
             <button data-bind="clear">
                 ${lengthSelection()} <component-icon name="close"></component-icon>
             </button>
         `))),
-        rxjs.mergeMap(($page) => onClick($page, `[data-bind="clear"]`).pipe(
+        rxjs.mergeMap(($page) => onClick(qs($page, `[data-bind="clear"]`)).pipe(
             rxjs.tap(() => clearSelection()),
             rxjs.takeUntil(getSelection$().pipe(rxjs.skip(1))),
         )),

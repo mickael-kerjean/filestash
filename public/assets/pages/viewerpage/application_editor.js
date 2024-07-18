@@ -85,7 +85,7 @@ export default async function(render, { acl$ }) {
                     editor.getWrapperElement().setAttribute("mode", mode);
                     if (!("ontouchstart" in window)) editor.focus();
                     if (config["editor"] === "emacs") editor.addKeyMap({
-                        "Ctrl-X Ctrl-C": (cm) => window.history.back(),
+                        "Ctrl-X Ctrl-C": () => window.history.back(),
                     });
                     onDestroy(() => editor.clearHistory());
                     $dom.menubar().classList.remove("hidden");
@@ -133,7 +133,7 @@ export default async function(render, { acl$ }) {
 
     // feature4: save
     effect(setup$.pipe(
-        rxjs.mergeMap((editor) => new rxjs.Observable((observer) => {
+        rxjs.mergeMap(() => new rxjs.Observable((observer) => {
             window.CodeMirror.commands.save = (cm) => observer.next(cm);
         })),
         rxjs.mergeMap((cm) => {
@@ -152,7 +152,7 @@ export default async function(render, { acl$ }) {
 
     // feature5: save on exit
     effect(setup$.pipe(
-        rxjs.tap((cm) => window.history.block = async(href) => {
+        rxjs.tap((cm) => window.history.block = async() => {
             const block = qs(document.body, "component-breadcrumb").hasAttribute("indicator");
             if (block === false) return false;
             const userAction = await new Promise((done) => {
@@ -213,11 +213,13 @@ export function init() {
 
 function loadMode(ext) {
     let mode = "text";
-    let before = Promise.resolve();
+    let before = Promise.resolve(null);
 
     if (ext === "org" || ext === "org_archive") {
         mode = "orgmode";
-        before = loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/fold/xml-fold.js").then(() => loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/edit/matchtags.js"));
+        before = loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/fold/xml-fold.js")
+            .then(() => loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/edit/matchtags.js"))
+            .then(() => Promise.resolve(null));
     } else if (ext === "sh") mode = "shell";
     else if (ext === "py") mode = "python";
     else if (ext === "html" || ext === "htm") {
@@ -226,7 +228,7 @@ function loadMode(ext) {
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/xml/xml.js"),
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/javascript/javascript.js"),
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/css/css.js"),
-        ]);
+        ]).then(() => Promise.resolve(null));
     } else if (ext === "css") mode = "css";
     else if (ext === "less" || ext === "scss" || ext === "sass") mode = "sass";
     else if (ext === "js" || ext === "json") mode = "javascript";
@@ -237,7 +239,7 @@ function loadMode(ext) {
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/xml/xml.js"),
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/javascript/javascript.js"),
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/css/css.js"),
-        ]);
+        ]).then(() => Promise.resolve(null));
     } else if (ext === "elm") mode = "elm";
     else if (ext === "erl") mode = "erlang";
     else if (ext === "go") mode = "go";
@@ -248,14 +250,14 @@ function loadMode(ext) {
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/gfm/gfm.js"),
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/yaml/yaml.js"),
             loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/mode/overlay.js"),
-        ]);
+        ]).then(() => Promise.resolve(null));
     } else if (ext === "pl" || ext === "pm") mode = "perl";
     else if (ext === "clj") mode = "clojure";
     else if (ext === "el" || ext === "lisp" || ext === "cl" ||
              ext === "emacs") mode = "commonlisp";
     else if (ext === "dockerfile") {
         mode = "dockerfile";
-        before = loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/mode/simple.js");
+        before = loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/mode/simple.js").then(() => Promise.resolve(null));
     } else if (ext === "R") mode = "r";
     else if (ext === "makefile") mode = "cmake";
     else if (ext === "rb") mode = "ruby";
@@ -275,7 +277,7 @@ function loadMode(ext) {
 
     return before.then(() => loadJS(import.meta.url, `./application_editor/${mode}.js`, { type: "module" }))
         .catch(() => loadJS(import.meta.url, "./application_editor/text.js", { type: "module" }))
-        .then((module) => Promise.resolve(mode));
+        .then(() => Promise.resolve(mode));
 }
 
 function loadKeybinding(editor) {

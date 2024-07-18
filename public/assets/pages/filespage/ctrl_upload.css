@@ -97,7 +97,7 @@
     content: ")";
 }
 .component_upload .stats_content .file_row .file_state {
-    width: 40px;
+    width: 50px;
     padding: 3px 0;
 }
 .component_upload .stats_content .file_row .file_control {

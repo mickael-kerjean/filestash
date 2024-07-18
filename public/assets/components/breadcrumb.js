@@ -1,6 +1,7 @@
 import { toHref } from "../lib/skeleton/router.js";
 import { animate, slideYOut, slideYIn, opacityOut } from "../lib/animate.js";
 import { forwardURLParams } from "../lib/path.js";
+import assert from "../lib/assert.js";
 import { loadCSS } from "../helpers/loader.js";
 
 import { extractPath, isDir, isNativeFileUpload } from "../pages/filespage/helper.js";
@@ -64,15 +65,14 @@ class ComponentBreadcrumb extends window.HTMLElement {
             const tasks = [];
             for (let i=0; i<nToAnimate; i++) {
                 const n = previousChunks.length - i - 1;
-                const $chunk = this.querySelector(`.component_path-element.n${n}`);
-                if (!$chunk) throw new Error("component::breadcrumb.js - assertion failed - empty element");
+                const $chunk = assert.type(this.querySelector(`.component_path-element.n${n}`), window.HTMLElement);
                 tasks.push(animate($chunk, { time: 100, keyframes: slideYOut(-10) }));
             }
             await Promise.all(tasks);
         }
 
         // STEP2: setup the actual content
-        this.querySelector(`[data-bind="path"]`).innerHTML = pathChunks.map((chunk, idx) => {
+        assert.type(this.querySelector(`[data-bind="path"]`), window.HTMLElement).innerHTML = pathChunks.map((chunk, idx) => {
             const label = idx === 0 ? (window.CONFIG.name || "Filestash") : chunk;
             const link = pathChunks.slice(0, idx + 1).join("/") + "/";
             const limitSize = (word, highlight = false) => {
@@ -130,8 +130,7 @@ class ComponentBreadcrumb extends window.HTMLElement {
             const nToAnimate = pathChunks.length - previousChunks.length;
             for (let i=0; i<nToAnimate; i++) {
                 const n = pathChunks.length - i - 1;
-                const $chunk = this.querySelector(`.component_path-element.n${n}`);
-                if (!$chunk) throw new Error("component::breadcrumb.js - assertion failed - empty element");
+                const $chunk = assert.type(this.querySelector(`.component_path-element.n${n}`), window.HTMLElement);
                 await animate($chunk, { time: 100, keyframes: slideYIn(-5) });
             }
         }
@@ -141,9 +140,8 @@ class ComponentBreadcrumb extends window.HTMLElement {
         let state = this.hasAttribute("indicator");
         if (state && this.getAttribute("indicator") !== "false") state = true;
 
-        const $indicator = this.querySelector(`[data-bind="path"]`)
-            .lastChild
-            .querySelector("span");
+        let $indicator = assert.type(this.querySelector(`[data-bind="path"]`), window.HTMLElement);
+        $indicator = assert.type($indicator.lastChild.querySelector("span"), window.HTMLElement);
 
         if (state) {
             $indicator.style.opacity = 1;

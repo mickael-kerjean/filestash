@@ -3,7 +3,7 @@ import { toHref } from "../../lib/skeleton/router.js";
 import rxjs, { effect, applyMutation, applyMutations, preventDefault, onClick } from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
-import { animate, slideYIn, transition } from "../../lib/animate.js";
+import { animate, slideYIn, transition, opacityIn } from "../../lib/animate.js";
 import { createForm } from "../../lib/form.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
 import t from "../../locales/index.js";
@@ -48,7 +48,7 @@ export default async function(render) {
         rxjs.map((conns) => conns.map(({ label, n }) => createElement(`<button data-current="${n}">${safe(label)}</button>`))),
         applyMutations($nav, "appendChild"),
         rxjs.tap((conns = []) => { if (conns.length > 1) $nav.classList.remove("hidden"); }),
-        rxjs.tap(() => animate($nav)),
+        rxjs.tap(() => animate($nav, { time: 250, keyframes: opacityIn() })),
     ));
 
     // feature2: select a default storage among all the available ones

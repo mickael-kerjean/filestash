@@ -76,7 +76,7 @@ export const mv = (from, to) => ajax({
     handleError,
 );
 
-export const save = (path) => rxjs.of(null).pipe(rxjs.delay(1000));
+export const save = () => rxjs.of(null).pipe(rxjs.delay(1000));
 
 export const ls = (path) => {
     const lsFromCache = (path) => rxjs.from(fscache().get(path));
@@ -101,7 +101,7 @@ export const ls = (path) => {
         rxjs.merge(
             rxjs.of(null),
             rxjs.merge(rxjs.of(null), rxjs.fromEvent(window, "keydown").pipe( // "r" shorcut
-                rxjs.filter((e) => e.keyCode === 82 && document.activeElement.tagName !== "INPUT"),
+                rxjs.filter((e) => e.keyCode === 82 && assert.type(document.activeElement, window.HTMLElement).tagName !== "INPUT"),
             )).pipe(rxjs.switchMap(() => lsFromHttp(path))),
         ),
     ).pipe(

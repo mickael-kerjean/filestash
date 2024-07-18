@@ -1,15 +1,14 @@
 export default class assert {
     static type(object, type, msg) {
-        if (object instanceof type) return;
-        throw new Error(msg || `assertion failed - unexpected type for ${object.toString()}`);
+        if (!(object instanceof type)) throw new TypeError(msg || `assertion failed - unexpected type for ${object.toString()}`);
+        return object;
     }
 
     static truthy(object, msg) {
-        if (object) return;
-        throw new Error(msg || `assertion failed - object is not truthy`);
+        if (!object) throw new TypeError(msg || `assertion failed - object is not truthy`);
     }
 
     static fail(object, msg) {
-        throw new Error(msg || `assertion failed - ${object}`);
+        throw new TypeError(msg || `assertion failed - ${object}`);
     }
 }

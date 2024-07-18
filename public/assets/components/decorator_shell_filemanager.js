@@ -1,6 +1,7 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
 import { navigate, fromHref } from "../lib/skeleton/router.js";
 import rxjs, { effect } from "../lib/rx.js";
+import assert from "../lib/assert.js";
 import { onDestroy } from "../lib/skeleton/lifecycle.js";
 import { animate, slideYOut } from "../lib/animate.js";
 import { qs } from "../lib/dom.js";
@@ -9,7 +10,7 @@ import { init as initBreadcrumb } from "../components/breadcrumb.js";
 import ctrlSidebar, { init as initSidebar } from "./sidebar.js";
 
 export default function(ctrl) {
-    const urlToPath = (pathname = "") => decodeURIComponent(pathname.split("/").filter((chunk, i) => i !== 1).join("/"));
+    const urlToPath = (pathname = "") => decodeURIComponent(pathname.split("/").filter((_, i) => i !== 1).join("/"));
     const $page = createElement(`
         <div class="component_filemanager_shell" style="flex-direction:row">
             <div data-bind="sidebar"></div>
@@ -42,7 +43,9 @@ export default function(ctrl) {
         // feature3: key shortcut
         const regexStartFiles = new RegExp("^/files/.+");
         effect(rxjs.fromEvent(window, "keydown").pipe(
-            rxjs.filter((e) => regexStartFiles.test(fromHref(location.pathname)) && e.keyCode === 8 && document.activeElement.nodeName !== "INPUT"), // backspace in filemanager
+            rxjs.filter((e) => regexStartFiles.test(fromHref(location.pathname)) &&
+                        e.keyCode === 8 &&
+                        assert.type(document.activeElement, window.HTMLElement).nodeName !== "INPUT"), // backspace in filemanager
             rxjs.tap(() => {
                 const p = location.pathname.replace(new RegExp("/$"), "").split("/");
                 p.pop();

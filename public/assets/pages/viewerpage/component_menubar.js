@@ -20,12 +20,13 @@ export default class ComponentMenubar extends window.HTMLElement {
             </div>
         `;
         if (new URLSearchParams(location.search).get("nav") === "false") {
-            this.firstElementChild.classList.add("inherit-width");
+            const $container = assert.type(this.firstElementChild, window.HTMLElement);
+            $container.classList.add("inherit-width");
         }
     }
 
     async connectedCallback() {
-        const $title = this.querySelector(".titlebar");
+        const $title = assert.type(this.querySelector(".titlebar"), window.HTMLElement);
         this.timeoutID = setTimeout(() => animate($title, {
             time: 250,
             keyframes: slideYIn(2),
@@ -38,7 +39,7 @@ export default class ComponentMenubar extends window.HTMLElement {
     }
 
     render(buttons) {
-        const $item = this.querySelector(".action-item");
+        const $item = assert.type(this.querySelector(".action-item"), window.HTMLElement);
         for (let i=buttons.length-1; i>=0; i--) {
             $item.appendChild(buttons[i]);
         }

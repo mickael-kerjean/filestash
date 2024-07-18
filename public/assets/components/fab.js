@@ -1,4 +1,5 @@
 import { loadCSS } from "../helpers/loader.js";
+import assert from "../lib/assert.js";
 
 export default class ComponentFab extends window.HTMLButtonElement {
     constructor() {
@@ -9,7 +10,7 @@ export default class ComponentFab extends window.HTMLButtonElement {
 
     async render($icon) {
         await loadCSS(import.meta.url, "./fab.css");
-        this.querySelector(".content").replaceChildren($icon);
+        assert.type(this.querySelector(".content"), window.HTMLElement).replaceChildren($icon);
     }
 }
 

@@ -12,8 +12,8 @@ export async function loadJS(baseURL, path, opts = {}) {
     if (document.head.querySelector(`[src="${link.toString()}"]`)) return Promise.resolve();
     document.head.appendChild($script);
     return new Promise((done) => {
-        $script.onload = done;
-        $script.onerror = done;
+        $script.onload = () => done();
+        $script.onerror = () => done();
     });
 }
 

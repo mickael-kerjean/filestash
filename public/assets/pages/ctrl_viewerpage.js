@@ -55,7 +55,7 @@ export default WithShell(async function(render) {
     ));
 
     // feature: cleanup up the design when navbar is not there
-    effect(rxjs.of(new URL(location).searchParams.get("nav")).pipe(
+    effect(rxjs.of(new URL(location.toString()).searchParams.get("nav")).pipe(
         rxjs.filter((value) => value === "false"),
         rxjs.tap(() => {
             $page.parentElement.style.border = "none";

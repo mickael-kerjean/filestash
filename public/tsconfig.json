@@ -25,15 +25,16 @@
         "target": "es2022",
         "typeRoots": []
     },
-    "include": ["assets/boot/*.js", "assets/pages/*.js"],
+    "include": [
+        "assets/boot/*.js",
+        "assets/pages/*.js",
+        "global.d.ts"
+    ],
     "exclude": [
         "**/*.test.js",
         "assets/worker/sw_cache.js",
         "coverage",
         "vite.config.js",
-        "jest.setup.js",
-        "assets/lib/vendor/**",
-        "assets/lib/vendor/hlsjs/hls.js",
-        "assets/lib/vendor/three/*.js"
+        "jest.setup.js"
     ]
 }

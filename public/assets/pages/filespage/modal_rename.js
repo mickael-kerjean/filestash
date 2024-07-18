@@ -48,7 +48,7 @@ function renderDesktop(render, filename) {
     return ret.toPromise();
 }
 
-function renderMobile(render, filename) {
+function renderMobile(_, filename) {
     return new Promise((done) => {
         const value = window.prompt(t("Rename as"), filename);
         if (!value || value === filename) {

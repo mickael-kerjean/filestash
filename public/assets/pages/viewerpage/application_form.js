@@ -78,7 +78,7 @@ export default function(render) {
         ),
     ).pipe(
         rxjs.map((originalState) => {
-            const smod = (key, value) => value || undefined;
+            const smod = (_, value) => value || undefined;
             return JSON.stringify(formObjToJSON(originalState), smod) !== JSON.stringify(formState(), smod);
         }),
         rxjs.mergeMap(async(isSaveButtonVisible) => {

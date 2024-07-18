@@ -1,6 +1,7 @@
 import { createElement, createRender, onDestroy } from "../../lib/skeleton/index.js";
 import { animate, slideYIn } from "../../lib/animate.js";
 import rxjs, { effect, preventDefault } from "../../lib/rx.js";
+import assert from "../../lib/assert.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
@@ -175,7 +176,7 @@ export default async function(render) {
             BLOCK_SIZE, COLUMN_PER_ROW, FILE_HEIGHT,
             MARGIN,
             currentState,
-            height, setHeight,
+            /* height, */ setHeight,
             $list,
         }) => rxjs.fromEvent($page.closest(".scroll-y"), "scroll", { passive: true }).pipe(
             rxjs.map((e) => {
@@ -261,7 +262,10 @@ export default async function(render) {
         rxjs.tap(() => clearSelection()),
     ));
     effect(rxjs.fromEvent(window, "keydown").pipe(
-        rxjs.filter((e) => e.key === "a" && (e.ctrlKey || e.metaKey) && (files$.value || []).length > 0 && document.activeElement.tagName !== "INPUT"),
+        rxjs.filter((e) => e.key === "a" &&
+                    (e.ctrlKey || e.metaKey) &&
+                    (files$.value || []).length > 0 &&
+                    assert.type(document.activeElement, window.HTMLElement).tagName !== "INPUT"),
         preventDefault(),
         rxjs.tap(() => {
             clearSelection();
@@ -283,7 +287,7 @@ export default async function(render) {
             });
         }),
     ));
-    effect(getSelection$().pipe(rxjs.tap((a) => {
+    effect(getSelection$().pipe(rxjs.tap(() => {
         for (const $thing of $page.querySelectorAll(".component_thing")) {
             const checked = isSelected(parseInt($thing.getAttribute("data-n")));
             $thing.classList.add(checked ? "selected" : "not-selected");
@@ -310,7 +314,7 @@ function renderEmpty(render, base64Icon) {
             <p class="label">${t("There is nothing here")}</p>
         </div>
     `);
-    animate(render($page), { keyframes: slideYIn(5) });
+    animate(render($page), { time: 250, keyframes: slideYIn(5) });
 }
 
 export function init() {

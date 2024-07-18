@@ -18,7 +18,7 @@ const STATUS_PLAYING = "PLAYING";
 const STATUS_PAUSED = "PAUSED";
 // const STATUS_BUFFERING = "BUFFERING";
 
-export default function(render, { mime }) {
+export default function(render) {
     const $page = createElement(`
         <div class="component_audioplayer">
             <component-menubar></component-menubar>

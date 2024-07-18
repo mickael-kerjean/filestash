@@ -1,5 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
+import assert from "../../lib/assert.js";
 
 export default function(render) {
     const $component = createElement(`
@@ -9,6 +10,6 @@ export default function(render) {
 
     effect(rxjs.fromEvent(document, "keypress").pipe(
         rxjs.filter((e) => e.key === "i"),
-        rxjs.tap(() => $component.parentElement.classList.toggle("open")),
+        rxjs.tap(() => assert.type($component.parentElement, window.HTMLElement).classList.toggle("open")),
     ));
 }

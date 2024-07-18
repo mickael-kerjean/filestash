@@ -25,13 +25,13 @@ export async function init() {
         selectedLanguage = "zh_tw";
         break;
     default:
-        const userLanguage = navigator.language.split("-")[0];
+        const userLanguage = navigator.language.split("-")[0] || "";
         const idx = [
             "az", "be", "bg", "ca", "cs", "da", "de", "el", "es", "et",
             "eu", "fi", "fr", "gl", "hr", "hu", "id", "is", "it", "ja",
             "ka", "ko", "lt", "lv", "mn", "nb", "nl", "pl", "pt", "ro",
             "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi", "zh",
-        ].indexOf(navigator.language.split("-")[0]);
+        ].indexOf(userLanguage);
         if (idx !== -1) {
             selectedLanguage = userLanguage;
         }

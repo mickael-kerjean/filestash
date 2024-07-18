@@ -27,11 +27,6 @@ const mutationFiles$ = new rxjs.BehaviorSubject({
     // "/home/": [{ name: "test", fn: (file) => file, ...]
 });
 
-window.debug = () => {
-    console.log("VIRTUAL", JSON.stringify(virtualFiles$.value, null, 4));
-    console.log("MUTATION", JSON.stringify(mutationFiles$.value));
-};
-
 class IVirtualLayer {
     before() { throw new Error("NOT_IMPLEMENTED"); }
     async afterSuccess() { throw new Error("NOT_IMPLEMENTED"); }
@@ -73,7 +68,7 @@ export function touch(path) {
             hooks.mutation.emit({ op: "touch", path: basepath });
         }
 
-        async afterError(err, caught) {
+        async afterError() {
             statePop(virtualFiles$, basepath, filename);
             return rxjs.of(fscache().remove(basepath)).pipe(
                 rxjs.mergeMap(() => rxjs.EMPTY),
@@ -110,7 +105,7 @@ export function mkdir(path) {
             hooks.mutation.emit({ op: "mkdir", path: basepath });
         }
 
-        async afterError(err, caught) {
+        async afterError() {
             statePop(virtualFiles$, basepath, dirname);
             return rxjs.of(fscache().remove(basepath)).pipe(
                 rxjs.mergeMap(() => rxjs.EMPTY),

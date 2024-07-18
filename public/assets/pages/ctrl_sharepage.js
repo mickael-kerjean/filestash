@@ -20,7 +20,7 @@ export default function(render) {
     const setState = (newState) => state$.next(newState);
 
     effect(state$.asObservable().pipe(rxjs.mergeMap(({ step, ...state }) => {
-        if (step === null) return verify(render, { shareID, setState });
+        if (step === null) return verify(render, { shareID, setState, body: null });
         else if (step === "password") return ctrlPassword(render, { shareID, setState });
         else if (step === "email") return ctrlEmail(render, { shareID, setState });
         else if (step === "code") return ctrlEmailCodeVerification(render, { shareID, setState });
@@ -81,7 +81,7 @@ function ctrlEmailCodeVerification(render, { shareID, setState }) {
     return ctrlAbstract(render, { shareID, setState, $page });
 }
 
-function verify(render, { shareID, setState, body }) {
+function verify(_, { shareID, setState, body }) {
     return ajax({
         method: "POST",
         url: `api/share/${shareID}/proof`,
@@ -115,7 +115,7 @@ function ctrlAbstract(render, { shareID, setState, $page }) {
         applyMutation(qs($page, "component-icon"), "setAttribute"),
         // STEP2: attempt to login
         rxjs.map(() => ({ type: qs($page, "input").name, value: qs($page, "input").value })),
-        rxjs.switchMap((creds) => verify(render, { body: creds, shareID, setState }).pipe(rxjs.catchError((err) => {
+        rxjs.switchMap((creds) => verify(render, { shareID, body: creds, setState }).pipe(rxjs.catchError((err) => {
             if (err instanceof AjaxError) {
                 switch (err.code()) {
                 case "INTERNAL_SERVER_ERROR":

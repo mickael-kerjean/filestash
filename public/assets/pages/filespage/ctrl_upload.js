@@ -21,13 +21,13 @@ export default async function(render) {
 
     effect(getPermission().pipe(
         rxjs.filter(() => calculatePermission(currentPath(), "new-file")),
-        rxjs.tap((a) => {
+        rxjs.tap(() => {
             const $page = createFragment(`
                 <div is="component_filezone"></div>
                 <div is="component_upload_fab"></div>
             `);
-            componentFilezone(createRender($page.children[0]), { workers$ });
-            componentUploadFAB(createRender($page.children[1]), { workers$ });
+            componentFilezone(createRender(assert.type($page.children[0], window.HTMLElement)), { workers$ });
+            componentUploadFAB(createRender(assert.type($page.children[1], window.HTMLElement)), { workers$ });
             render($page);
         }),
     ));
@@ -61,7 +61,7 @@ function componentUploadFAB(render, { workers$ }) {
 
 function componentFilezone(render, { workers$ }) {
     const selector = `[data-bind="filemanager-children"]`;
-    const $target = document.body.querySelector(selector);
+    const $target = assert.type(document.body.querySelector(selector), window.HTMLElement);
 
     $target.ondragenter = (e) => {
         if (!isNativeFileUpload(e)) return;
@@ -178,7 +178,7 @@ function componentUploadQueue(render, { workers$ }) {
             if (new Date() - last <= 500) return;
             last = new Date();
             const speed = workersSpeed.reduce((acc, el) => acc + el, 0);
-            const $speed = $page.firstElementChild.nextElementSibling.firstElementChild;
+            const $speed = assert.type($page.firstElementChild.nextElementSibling.firstElementChild, window.HTMLElement);
             $speed.textContent = formatSpeed(speed);
         };
     }(new Array(MAX_WORKERS).fill(0)));
@@ -207,7 +207,7 @@ function componentUploadQueue(render, { workers$ }) {
             $close.removeEventListener("click", cancel);
             break;
         case "error":
-            const $retry = $iconRetry.cloneNode(true);
+            const $retry = assert.type($iconRetry.cloneNode(true), window.HTMLElement);
             updateDOMGlobalTitle($page, t("Error"));
             updateDOMGlobalSpeed(nworker, 0);
             updateDOMTaskProgress($task, t("Error"));
@@ -237,7 +237,7 @@ function componentUploadQueue(render, { workers$ }) {
             }
             const $task = qs($page, `[data-path="${task.path}"]`);
             const exec = task.exec({
-                error: (err) => updateDOMWithStatus($task, { status: "error", nworker }),
+                error: () => updateDOMWithStatus($task, { status: "error", nworker, exec: null }),
                 progress: (progress) => updateDOMTaskProgress($task, formatPercent(progress)),
                 speed: (speed) => {
                     updateDOMTaskSpeed($task, speed);
@@ -251,7 +251,7 @@ function componentUploadQueue(render, { workers$ }) {
             } catch (err) {
                 updateDOMWithStatus($task, { exec, status: "error", nworker });
             }
-            updateTotal.incrementCompleted(1);
+            updateTotal.incrementCompleted();
             task.done = true;
 
             if (tasks.length === 0 && // no remaining tasks
@@ -340,7 +340,7 @@ function workerImplFile({ error, progress, speed }) {
                         return;
                     }
                     virtual.afterSuccess();
-                    done();
+                    done(null);
                 };
                 this.xhr.onerror = function(e) {
                     err(new AjaxError("failed", e, "FAILED"));
@@ -360,7 +360,7 @@ function workerImplDirectory({ error, progress }) {
         }
 
         cancel() {
-            this.xhr.abort();
+            if (this.xhr instanceof XMLHttpRequest) this.xhr.abort();
         }
 
         run({ virtual, path }) {
@@ -397,7 +397,7 @@ function workerImplDirectory({ error, progress }) {
                         return;
                     }
                     virtual.afterSuccess();
-                    done();
+                    done(null);
                 };
                 this.xhr.send(null);
             });
@@ -418,7 +418,7 @@ async function processFiles(filelist) {
         if (file.size % 4096 !== 0) {
             return Promise.resolve("file");
         }
-        return new Promise((done, err) => {
+        return new Promise((done) => {
             const reader = new window.FileReader();
             const tid = setTimeout(() => reader.abort(), 1000);
             reader.onload = () => done("file");
@@ -460,7 +460,7 @@ async function processFiles(filelist) {
             };
             break;
         default:
-            assert.fail(`NOT_SUPPORTED type="${type}"`, type);
+            assert.fail(type, `NOT_SUPPORTED type="${type}"`);
         }
         task.virtual.before();
         tasks.push(task);
@@ -476,7 +476,7 @@ async function processItems(itemList) {
         while (queue.length > 0) {
             const entry = queue.shift();
             const path = basepath + entry.fullPath.substring(1);
-            let task = null;
+            let task = {};
             if (entry === null) continue;
             else if (entry.isFile) {
                 const entrySize = await new Promise((done) => entry.getMetadata(({ size }) => done(size)));

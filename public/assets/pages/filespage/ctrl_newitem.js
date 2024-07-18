@@ -66,7 +66,7 @@ export default async function(render) {
             return null;
         }),
         rxjs.filter((val) => val),
-        rxjs.tap(async({ img, alt, targetName }) => {
+        rxjs.tap(async({ img, alt }) => {
             $icon.setAttribute("src", `data:image/svg+xml;base64,${img}`);
             $icon.setAttribute("alt", alt);
             $input.value = "";

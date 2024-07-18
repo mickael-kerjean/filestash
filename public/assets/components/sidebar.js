@@ -18,7 +18,7 @@ const mv = (from, to) => withVirtualLayer(
 );
 
 export default async function ctrlSidebar(render, nRestart = 0) {
-    if (new URL(location).searchParams.get("nav") === "false") return;
+    if (new URL(location.toString()).searchParams.get("nav") === "false") return;
     else if (document.body.clientWidth < 850) return;
 
     const $page = render(createElement(`

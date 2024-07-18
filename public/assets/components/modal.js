@@ -6,7 +6,7 @@ import { qs, qsa } from "../lib/dom.js";
 import { CSS } from "../helpers/loader.js";
 
 export function createModal(opts) {
-    const $dom = document.body.querySelector("component-modal");
+    const $dom = assert.type(qs(document.body, "component-modal"), window.HTMLElement);
     assert.type($dom, ModalComponent);
 
     return ($node, fn) => $dom.trigger($node, { onQuit: fn, ...opts });
@@ -35,14 +35,14 @@ const $modal = createElement(`
 `);
 
 class ModalComponent extends window.HTMLElement {
-    trigger($node, { withButtonsLeft = null, withButtonsRight = null, targetHeight = null, onQuit = (a) => Promise.resolve(a) }) {
+    trigger($node, { withButtonsLeft = null, withButtonsRight = null, targetHeight = 0, onQuit = (a) => Promise.resolve(a) }) {
         const close$ = new rxjs.Subject();
 
         // feature: build the dom
         qs($modal, `[data-bind="body"]`).replaceChildren($node);
         this.replaceChildren($modal);
         qsa($modal, ".component_popup > div.buttons > button").forEach(($button, i) => {
-            assert.truthy(i >= 0 & i <= 2);
+            assert.truthy(i >= 0 && i <= 2);
             let currentLabel = null;
             let buttonIndex = null;
             if (i === 0) {

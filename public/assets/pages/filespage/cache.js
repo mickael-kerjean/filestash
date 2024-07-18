@@ -1,11 +1,11 @@
 import { getSession } from "../../model/session.js";
 
 class ICache {
-    async get(path) { throw new Error("NOT_IMPLEMENTED"); }
+    async get() { throw new Error("NOT_IMPLEMENTED"); }
 
-    async store(path) { throw new Error("NOT_IMPLEMENTED"); }
+    async store() { throw new Error("NOT_IMPLEMENTED"); }
 
-    async remove(path, exact = true) { throw new Error("NOT_IMPLEMENTED"); }
+    async remove() { throw new Error("NOT_IMPLEMENTED"); }
 
     async update(path, fn) {
         const data = await this.get(path);
@@ -70,7 +70,7 @@ class IndexDBCache extends ICache {
             request.onsuccess = (e) => {
                 done(e.target.result);
             };
-            request.onerror = (e) => err(new Error("INDEXEDDB_NOT_SUPPORTED"));
+            request.onerror = () => err(new Error("INDEXEDDB_NOT_SUPPORTED"));
         });
     }
 
@@ -79,9 +79,9 @@ class IndexDBCache extends ICache {
         const tx = db.transaction(this.FILE_PATH, "readonly");
         const store = tx.objectStore(this.FILE_PATH);
         const query = store.get(this._key(path));
-        return await new Promise((done, error) => {
+        return await new Promise((done) => {
             query.onsuccess = (e) => done(query.result || null);
-            query.onerror = () => done();
+            query.onerror = () => done(null);
         });
     }
 
@@ -123,7 +123,7 @@ class IndexDBCache extends ICache {
                         cursor.continue();
                         return;
                     }
-                    done();
+                    done(null);
                 };
                 request.onerror = err;
             });
@@ -131,7 +131,7 @@ class IndexDBCache extends ICache {
 
         const req = store.delete(key);
         return await new Promise((done, err) => {
-            req.onsuccess = () => done();
+            req.onsuccess = () => done(null);
             req.onerror = err;
         });
     }

@@ -36,7 +36,7 @@ export default async function(render) {
             const id = setInterval(() => {
                 if (/download=yes/.test(document.cookie)) return;
                 clearInterval(id);
-                done();
+                done(null);
             }, 200);
         })),
         rxjs.tap(() => setLoading(false)),
