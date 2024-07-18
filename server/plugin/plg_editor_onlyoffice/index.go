@@ -27,6 +27,7 @@ var (
 	plugin_enable    func() bool
 	server_url       func() string
 	can_download     func() bool
+	can_edit		 func() bool
 )
 
 type onlyOfficeCacheData struct {
@@ -72,6 +73,21 @@ func init() {
 			return f
 		}).String()
 	}
+
+	can_edit = func() bool {
+	return Config.Get("features.office.can_edit").Schema(func(f *FormElement) *FormElement {
+		if f == nil {
+			f = &FormElement{}
+		}
+		f.Id = "onlyoffice_can_edit"
+		f.Name = "can_edit"
+		f.Type = "boolean"
+		f.Description = "Enable/Disable editing in onlyoffice"
+		f.Default = true
+		return f
+	}).Bool()
+}
+	
 	can_download = func() bool {
 		return Config.Get("features.office.can_download").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -90,6 +106,7 @@ func init() {
 		plugin_enable()
 		server_url()
 		can_download()
+		can_edit()
 	})
 
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
@@ -346,7 +363,9 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
                   "fileType": "%s",
                   "key": "%s",
                   "permissions": {
-                      "download": %s
+                      "download": %s,
+					  "edit": %t
+					  
                   }
               },
               "editorConfig": {
@@ -385,6 +404,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 			}
 			return "false"
 		}(),
+		can_edit(),
 		filestashServerLocation,
 		oodsMode,
 		userId,
