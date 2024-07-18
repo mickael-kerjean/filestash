@@ -26,7 +26,7 @@ export default function(render, { mime }) {
         </div>
     `);
     render($page);
-    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()))
+    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
 
     const removeLoader = createLoader(qs($page, ".threeviewer_container"));
     effect(rxjs.of(getLoader(mime)).pipe(

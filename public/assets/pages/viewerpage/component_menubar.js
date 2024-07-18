@@ -1,4 +1,4 @@
-import { createElement } from "../../lib/skeleton/index.js"
+import { createElement } from "../../lib/skeleton/index.js";
 import { qs } from "../../lib/dom.js";
 import { animate, slideYIn } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";

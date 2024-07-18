@@ -55,7 +55,7 @@ export default function(render, { mime }) {
         </div>
     `);
     render($page);
-    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()))
+    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
 
     transition(qs($page, ".audioplayer_box"));
 

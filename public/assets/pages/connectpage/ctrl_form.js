@@ -47,7 +47,7 @@ export default async function(render) {
         rxjs.map((conns) => conns.map((conn, i) => ({ ...conn, n: i }))),
         rxjs.map((conns) => conns.map(({ label, n }) => createElement(`<button data-current="${n}">${safe(label)}</button>`))),
         applyMutations($nav, "appendChild"),
-        rxjs.tap((conns = []) => { if (conns.length > 1) $nav.classList.remove("hidden") }),
+        rxjs.tap((conns = []) => { if (conns.length > 1) $nav.classList.remove("hidden"); }),
         rxjs.tap(() => animate($nav)),
     ));
 
@@ -69,7 +69,6 @@ export default async function(render) {
                 middleware: { type: "hidden" },
                 label: { type: "hidden", value: label },
             };
-            const emptyForm = {};
             return backendSpecs[type] || {};
         })),
     )));

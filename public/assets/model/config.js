@@ -14,6 +14,6 @@ export function get() {
 }
 
 export async function init() {
-    let config = await config$.toPromise();
+    const config = await config$.toPromise();
     window.CONFIG = config;
 }

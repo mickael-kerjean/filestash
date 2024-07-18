@@ -1,4 +1,4 @@
-import { createElement, createFragment, createRender, onDestroy } from "../../lib/skeleton/index.js";
+import { createElement, createFragment, createRender } from "../../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../../lib/rx.js";
 import { animate, slideYOut } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
@@ -54,7 +54,7 @@ function componentUploadFAB(render, { workers$ }) {
         </div>
     `);
     effect(rxjs.fromEvent(qs($page, `input[type="file"]`), "change").pipe(
-        rxjs.tap(async (e) => workers$.next(await processFiles(e.target.files))),
+        rxjs.tap(async(e) => workers$.next(await processFiles(e.target.files))),
     ));
     render($page);
 }
@@ -67,7 +67,7 @@ function componentFilezone(render, { workers$ }) {
         if (!isNativeFileUpload(e)) return;
         $target.classList.add("dropzone");
     };
-    $target.ondrop = async (e) => {
+    $target.ondrop = async(e) => {
         if (!isNativeFileUpload(e)) return;
         $target.classList.remove("dropzone");
         e.preventDefault();
@@ -77,7 +77,7 @@ function componentFilezone(render, { workers$ }) {
         } else if (e.dataTransfer.files instanceof window.FileList) {
             workers$.next(await processFiles(e.dataTransfer.files));
         } else {
-            assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js", entry);
+            assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js", e.dataTransfer);
         }
         clearTimeout(loadID);
         render(createFragment(""));
@@ -86,7 +86,7 @@ function componentFilezone(render, { workers$ }) {
         if (!isNativeFileUpload(e)) return;
         if (!(e.relatedTarget === null || // eg: drag outside the window
               !e.relatedTarget.closest(selector) // eg: drag on the breadcrumb, ...
-             )) return;
+        )) return;
         $target.classList.remove("dropzone");
     };
     $target.ondragover = (e) => e.preventDefault();
@@ -134,7 +134,7 @@ function componentUploadQueue(render, { workers$ }) {
 
     // feature1: close the queue
     onClick(qs($page, `img[alt="close"]`)).pipe(
-        rxjs.tap(async (cancel) => {
+        rxjs.tap(async(cancel) => {
             const cleanup = await animate($page, { time: 200, keyframes: slideYOut(50) });
             $content.innerHTML = "";
             $page.classList.add("hidden");
@@ -171,7 +171,7 @@ function componentUploadQueue(render, { workers$ }) {
     const $close = qs($page, `img[alt="close"]`);
     const updateDOMTaskProgress = ($task, text) => $task.firstElementChild.nextElementSibling.textContent = text;
     const updateDOMTaskSpeed = ($task, text) => $task.firstElementChild.firstElementChild.nextElementSibling.textContent = formatSpeed(text);
-    const updateDOMGlobalSpeed = function (workersSpeed) {
+    const updateDOMGlobalSpeed = (function(workersSpeed) {
         let last = 0;
         return (nworker, currentWorkerSpeed) => {
             workersSpeed[nworker] = currentWorkerSpeed;
@@ -181,7 +181,7 @@ function componentUploadQueue(render, { workers$ }) {
             const $speed = $page.firstElementChild.nextElementSibling.firstElementChild;
             $speed.textContent = formatSpeed(speed);
         };
-    }(new Array(MAX_WORKERS).fill(0));
+    }(new Array(MAX_WORKERS).fill(0)));
     const updateDOMGlobalTitle = ($page, text) => $page.firstElementChild.nextElementSibling.childNodes[0].textContent = text;
     const updateDOMWithStatus = ($task, { status, exec, nworker }) => {
         const cancel = () => exec.cancel();
@@ -216,7 +216,7 @@ function componentUploadQueue(render, { workers$ }) {
             $task.classList.remove("todo_color");
             $task.firstElementChild.nextElementSibling.nextElementSibling.firstElementChild.remove();
             $task.firstElementChild.nextElementSibling.nextElementSibling.appendChild($retry);
-            $retry.onclick = () => { console.log("CLICK RETRY"); }
+            $retry.onclick = () => { console.log("CLICK RETRY"); };
             $close.removeEventListener("click", cancel);
             $task.classList.add("error_color");
             break;
@@ -227,8 +227,8 @@ function componentUploadQueue(render, { workers$ }) {
 
     let tasks = [];
     const reservations = new Array(MAX_WORKERS).fill(false);
-    const processWorkerQueue = async (nworker) => {
-        while(tasks.length > 0) {
+    const processWorkerQueue = async(nworker) => {
+        while (tasks.length > 0) {
             updateDOMGlobalTitle($page, t("Running")+"...");
             const task = nextTask(tasks);
             if (!task) {
@@ -248,19 +248,19 @@ function componentUploadQueue(render, { workers$ }) {
             try {
                 await exec.run(task);
                 updateDOMWithStatus($task, { exec, status: "done", nworker });
-            } catch(err) {
+            } catch (err) {
                 updateDOMWithStatus($task, { exec, status: "error", nworker });
             }
             updateTotal.incrementCompleted(1);
             task.done = true;
 
-            if (tasks.length === 0 // no remaining tasks
-                && reservations.filter((t) => t === true).length === 1 // only for the last remaining job
+            if (tasks.length === 0 && // no remaining tasks
+                reservations.filter((t) => t === true).length === 1 // only for the last remaining job
             ) updateDOMGlobalTitle($page, t("Done"));
         }
     };
     const nextTask = (tasks) => {
-        for (let i=0;i<tasks.length;i++) {
+        for (let i=0; i<tasks.length; i++) {
             const possibleTask = tasks[i];
             if (!possibleTask.ready()) continue;
             tasks.splice(i, 1);
@@ -269,9 +269,9 @@ function componentUploadQueue(render, { workers$ }) {
         return null;
     };
     const noFailureAllowed = (fn) => fn().catch(() => noFailureAllowed(fn));
-    workers$.subscribe(async ({ tasks: newTasks }) => {
+    workers$.subscribe(async({ tasks: newTasks }) => {
         tasks = tasks.concat(newTasks); // add new tasks to the pool
-        while(true) {
+        while (true) {
             const nworker = reservations.indexOf(false);
             if (nworker === -1) break; // the pool of workers is already to its max
             reservations[nworker] = true;
@@ -320,12 +320,11 @@ function workerImplFile({ error, progress, speed }) {
 
                     const calculateTime = (p1, pm1) => (p1.timeStamp - pm1.timeStamp)/1000;
                     const calculateBytes = (p1, pm1) => p1.loaded - pm1.loaded;
-                    const lastIdx = this.prevProgress.length - 1;
                     let avgSpeed = 0;
                     for (let i=1; i<this.prevProgress.length; i++) {
                         const p1 = this.prevProgress[i];
                         const pm1 = this.prevProgress[i-1];
-                        avgSpeed += calculateBytes(p1, pm1) / calculateTime(p1, pm1)
+                        avgSpeed += calculateBytes(p1, pm1) / calculateTime(p1, pm1);
                     }
                     avgSpeed = avgSpeed / (this.prevProgress.length - 1);
                     speed(avgSpeed);
@@ -345,12 +344,12 @@ function workerImplFile({ error, progress, speed }) {
                 };
                 this.xhr.onerror = function(e) {
                     err(new AjaxError("failed", e, "FAILED"));
-                    vitual.afterError();
+                    virtual.afterError();
                 };
                 file().then((f) => this.xhr.send(f)).catch((err) => this.xhr.onerror(err));
             });
         }
-    }
+    }();
 }
 
 function workerImplDirectory({ error, progress }) {
@@ -403,12 +402,12 @@ function workerImplDirectory({ error, progress }) {
                 this.xhr.send(null);
             });
         }
-    }
+    }();
 }
 
 async function processFiles(filelist) {
     const tasks = [];
-    let size = 0;
+    // let size = 0; // TODO
     const detectFiletype = (file) => {
         // the 4096 is an heuristic observed and taken from:
         // https://stackoverflow.com/questions/25016442
@@ -424,17 +423,17 @@ async function processFiles(filelist) {
             const tid = setTimeout(() => reader.abort(), 1000);
             reader.onload = () => done("file");
             reader.onabort = () => done("file");
-            reader.onerror = () => { done("directory"); clearTimeout(tid); }
+            reader.onerror = () => { done("directory"); clearTimeout(tid); };
             reader.readAsArrayBuffer(file);
         });
-    }
+    };
     for (const currentFile of filelist) {
         const type = await detectFiletype(currentFile);
         let path = currentPath() + currentFile.name;
         let task = null;
         switch (type) {
         case "file":
-            size += currentFile.size;
+            // size += currentFile.size;
             task = {
                 type: "file",
                 file: () => new Promise((done) => done(currentFile)),
@@ -442,7 +441,8 @@ async function processFiles(filelist) {
                 date: currentFile.lastModified,
                 exec: workerImplFile,
                 virtual: save(path, currentFile.size),
-                done: false, ready: () => true,
+                done: false,
+                ready: () => true,
                 entry: currentFile,
 
             };
@@ -450,11 +450,13 @@ async function processFiles(filelist) {
         case "directory":
             path += "/";
             task = {
-                type: "directory", path,
+                type: "directory",
+                path,
                 date: currentFile.lastModified,
                 exec: workerImplDirectory,
                 virtual: mkdir(path),
-                done: false, ready: () => true,
+                done: false,
+                ready: () => true,
             };
             break;
         default:
@@ -467,10 +469,9 @@ async function processFiles(filelist) {
 }
 
 async function processItems(itemList) {
-    const bfs = async (queue) => {
+    const bfs = async(queue) => {
         const tasks = [];
         let size = 0;
-        let path = "";
         const basepath = currentPath();
         while (queue.length > 0) {
             const entry = queue.shift();
@@ -507,7 +508,7 @@ async function processItems(itemList) {
             }
             task.ready = () => {
                 const isInDirectory = (filepath, folder) => folder.indexOf(filepath) === 0;
-                for (let i=0;i<tasks.length;i++) {
+                for (let i=0; i<tasks.length; i++) {
                     // filter out tasks that are NOT dependencies of the current task
                     if (tasks[i].path === task.path) break;
                     else if (tasks[i].type === "file") continue;
@@ -522,7 +523,7 @@ async function processItems(itemList) {
             tasks.push(task);
         }
         return { tasks, size };
-    }
+    };
     const entries = [];
     for (const item of itemList) entries.push(item.webkitGetAsEntry());
     return await bfs(entries);
@@ -537,8 +538,9 @@ function formatSpeed(bytes, si = true) {
     if (Math.abs(bytes) < thresh) {
         return bytes.toFixed(1) + "B/s";
     }
-    const units = si ? ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"] :
-        ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+    const units = si
+        ? ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
+        : ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
     let u = -1;
     do {
         bytes /= thresh;

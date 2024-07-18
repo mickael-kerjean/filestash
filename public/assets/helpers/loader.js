@@ -1,5 +1,4 @@
 import { get as getRelease } from "../pages/adminpage/model_release.js";
-import { toHref } from "../lib/skeleton/router.js";
 
 let version = null;
 

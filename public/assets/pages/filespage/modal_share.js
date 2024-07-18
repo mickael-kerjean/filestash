@@ -9,7 +9,6 @@ import { randomString } from "../../lib/random.js";
 import { animate } from "../../lib/animate.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
-import { MODAL_RIGHT_BUTTON } from "../../components/modal.js";
 import notification from "../../components/notification.js";
 import t from "../../locales/index.js";
 
@@ -57,10 +56,10 @@ export default function(render, { path }) {
         const ctrl = role$.value === null ? ctrlExistingShare : ctrlCreateShare;
 
         // feature: set active button
-        for (let $button of qs($modal, ".share--content").children) {
-            $button.getAttribute("data-role") === role$.value ?
-                $button.classList.add("active") :
-                $button.classList.remove("active");
+        for (const $button of qs($modal, ".share--content").children) {
+            $button.getAttribute("data-role") === role$.value
+                ? $button.classList.add("active")
+                : $button.classList.remove("active");
         }
 
         // feature: render body and associated events
@@ -68,7 +67,7 @@ export default function(render, { path }) {
             formState: state.form,
             formLinks: state.links,
             load: (data) => {
-                let role = shareObjToRole(data);
+                const role = shareObjToRole(data);
                 state.form = {
                     ...data,
                     url_enable: !!data.url,
@@ -78,16 +77,17 @@ export default function(render, { path }) {
                 };
                 role$.next(role);
             },
-            save: async ({ id, ...data }) => {
+            save: async({ id, ...data }) => {
                 const body = { id, path, ...data, ...roleToShareObj(role$.value) };
                 await ajax({
-                    method: "POST", body,
+                    method: "POST",
+                    body,
                     url: `api/share/${id}`,
                 }).toPromise();
                 state.links.push({ ...body, path: body.path.substring(currentPath().length - 1) });
                 role$.next(null);
             },
-            remove: async ({ id }) => {
+            remove: async({ id }) => {
                 await ajax({
                     method: "DELETE",
                     url: `api/share/${id}`,
@@ -95,7 +95,7 @@ export default function(render, { path }) {
                 state.links = state.links.filter((link) => link.id !== id);
                 role$.next(null);
             },
-            all: async () => {
+            all: async() => {
                 const { responseJSON } = await ajax({
                     url: `api/share?path=` + currentPath(),
                     method: "GET",
@@ -134,7 +134,7 @@ async function ctrlExistingShare(render, { load, remove, all, formLinks }) {
         const $fragment = document.createDocumentFragment();
         const $content = qs($page, ".share--content");
         let length = links.length;
-        links.map((shareObj) => {
+        links.forEach((shareObj) => {
             const $share = createElement(`
                 <div class="link-details no-select">
                     <div class="copy role">${t(shareObjToRole(shareObj))}</div>
@@ -150,14 +150,14 @@ async function ctrlExistingShare(render, { load, remove, all, formLinks }) {
                 copyToClipboard(link);
                 notification.info(t("The link was copied in the clipboard"));
             });
-            qs($share, `[alt="delete"]`).onclick = async (e) => {
+            qs($share, `[alt="delete"]`).onclick = async(e) => {
                 $share.remove();
                 length -= 1;
                 if (length === 0) $content.replaceChildren(createElement(`
                     <component-icon name="loading"></component-icon>
                 `));
                 await remove(shareObj);
-            }
+            };
             qs($share, `[alt="edit"]`).onclick = (e) => load(shareObj);
             $fragment.appendChild($share);
         });
@@ -184,47 +184,47 @@ async function ctrlCreateShare(render, { save, formState }) {
 
     // feature1: setup the shared link form
     const formSpec = {
-        "users_enable": {
-            "type": "enable",
-            "label": t("Only for users"),
-            "target": ["users"],
-            "default": false,
+        users_enable: {
+            type: "enable",
+            label: t("Only for users"),
+            target: ["users"],
+            default: false,
         },
-        "users": {
-            "id": "users",
-            "type": "text",
-            "placeholder": "name0@email.com,name1@email.com",
+        users: {
+            id: "users",
+            type: "text",
+            placeholder: "name0@email.com,name1@email.com",
         },
-        "password_enable": {
-            "label": t("Password"),
-            "type": "enable",
-            "target": ["password"],
-            "default": false,
+        password_enable: {
+            label: t("Password"),
+            type: "enable",
+            target: ["password"],
+            default: false,
         },
-        "password": {
-            "id": "password",
-            "type": "text",
-            "placeholder": t("Password"),
+        password: {
+            id: "password",
+            type: "text",
+            placeholder: t("Password"),
         },
-        "expire_enable": {
-            "label": t("Expiration"),
-            "type": "enable",
-            "target": ["expire"],
-            "default": false,
+        expire_enable: {
+            label: t("Expiration"),
+            type: "enable",
+            target: ["expire"],
+            default: false,
         },
-        "expire": {
-            "id": "expire",
-            "type": "date",
+        expire: {
+            id: "expire",
+            type: "date",
         },
-        "url_enable": {
-            "label": "link",
-            "type": "enable",
-            "target": ["link"],
-            "default": false,
+        url_enable: {
+            label: "link",
+            type: "enable",
+            target: ["link"],
+            default: false,
         },
-        "url": {
-            "id": "link",
-            "type": "text",
+        url: {
+            id: "link",
+            type: "text",
         },
     };
     const tmpl = formTmpl({
@@ -232,11 +232,15 @@ async function ctrlCreateShare(render, { save, formState }) {
         renderLeaf: ({ format, label, type }) => {
             if (type !== "enable") return createElement("<label></label>");
             const title =
-                  label === "users_enable" ? t("Only for users") :
-                  label === "expire_enable" ? t("Expiration") :
-                  label === "password_enable" ? t("Password") :
-                  label === "url_enable" ? t("Custom Link url") :
-                  assert.fail(label, "unknown label");
+                  label === "users_enable"
+                      ? t("Only for users")
+                      : label === "expire_enable"
+                          ? t("Expiration")
+                          : label === "password_enable"
+                              ? t("Password")
+                              : label === "url_enable"
+                                  ? t("Custom Link url")
+                                  : assert.fail(label, "unknown label");
             return createElement(`
                 <div class="component_supercheckbox">
                     <label>
@@ -251,7 +255,7 @@ async function ctrlCreateShare(render, { save, formState }) {
     $body.replaceChildren($form);
     const clientHeight = $body.offsetHeight;
     $body.classList.add("hidden");
-    qs($page, "h2").onclick = async () => { // toggle advanced button
+    qs($page, "h2").onclick = async() => { // toggle advanced button
         if ($body.classList.contains("hidden")) {
             $body.classList.remove("hidden");
             await animate($body, {
@@ -265,7 +269,7 @@ async function ctrlCreateShare(render, { save, formState }) {
             keyframes: [{ height: `${clientHeight}px` }, { height: "0" }],
         });
         $body.classList.add("hidden");
-    }
+    };
     // sync editable custom link input with link id
     effect(rxjs.fromEvent(qs($form, `[name="url"]`), "keyup").pipe(rxjs.tap((e) => {
         id = e.target.value.replaceAll(" ", "-").replace(new RegExp("[^A-Za-z\-]"), "");
@@ -276,11 +280,11 @@ async function ctrlCreateShare(render, { save, formState }) {
     const $copy = qs($page, `[alt="copy"]`);
     effect(onClick(qs($page, ".shared-link")).pipe(
         rxjs.first(),
-        rxjs.switchMap(async () => {
+        rxjs.switchMap(async() => {
             const body = [...new FormData(document.querySelector(".component_share form"))].reduce((acc, [key, value]) => {
                 if (value && key.slice(-7) !== "_enable") acc[key] = value;
                 return acc;
-            }, { id })
+            }, { id });
             $copy.setAttribute("src", IMAGE.LOADING);
             const link = location.origin + forwardURLParams(toHref(`/s/${id}`), ["share"]);
             await save(body);
@@ -298,20 +302,20 @@ async function ctrlCreateShare(render, { save, formState }) {
 
 function roleToShareObj(role) {
     return {
-        can_read: function(r) {
+        can_read: (function(r) {
             if (r === "viewer") return true;
             else if (r === "editor") return true;
             return false;
-        }(role),
-        can_write: function(r) {
+        }(role)),
+        can_write: (function(r) {
             if (r === "editor") return true;
             return false;
-        }(role),
-        can_upload: function(r) {
+        }(role)),
+        can_upload: (function(r) {
             if (r === "uploader") return true;
             else if (r === "editor") return true;
             return false;
-        }(role),
+        }(role)),
     };
 }
 

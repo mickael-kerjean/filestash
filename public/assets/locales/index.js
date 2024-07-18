@@ -4,13 +4,13 @@ let LNG = {};
 
 export default function t(str = "", replacementString, requestedKey) {
     const calculatedKey = str.toUpperCase()
-          .replace(/ /g, "_")
-          .replace(/[^a-zA-Z0-9\-\_\*\{\}\?]/g, "")
-          .replace(/\_+$/, "");
+        .replace(/ /g, "_")
+        .replace(/[^a-zA-Z0-9\-\_\*\{\}\?]/g, "")
+        .replace(/\_+$/, "");
 
-    const value = requestedKey === undefined ?
-          LNG && LNG[calculatedKey] :
-          LNG && LNG[requestedKey];
+    const value = requestedKey === undefined
+        ? LNG && LNG[calculatedKey]
+        : LNG && LNG[requestedKey];
 
     return reformat(
         value || str || "",
@@ -20,7 +20,7 @@ export default function t(str = "", replacementString, requestedKey) {
 
 export async function init() {
     let selectedLanguage = "en";
-    switch(navigator.language) {
+    switch (navigator.language) {
     case "zh-TW":
         selectedLanguage = "zh_tw";
         break;
@@ -32,7 +32,7 @@ export async function init() {
             "ka", "ko", "lt", "lv", "mn", "nb", "nl", "pl", "pt", "ro",
             "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi", "zh",
         ].indexOf(navigator.language.split("-")[0]);
-        if(idx !== -1) {
+        if (idx !== -1) {
             selectedLanguage = userLanguage;
         }
     }
@@ -46,7 +46,7 @@ export async function init() {
         const contentType = responseHeaders["content-type"].trim();
         if (contentType === "application/json") {
             LNG = response;
-            return
+            return;
         }
         throw new Error(`wrong content type '${contentType}'`);
     })).toPromise();

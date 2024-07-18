@@ -1,5 +1,3 @@
-import rxjs from "../../lib/rx.js";
-import ajax from "../../lib/ajax.js";
 import { fromHref } from "../../lib/skeleton/router.js";
 import { transition as transitionLib, slideYIn } from "../../lib/animate.js";
 import { basename, forwardURLParams } from "../../lib/path.js";

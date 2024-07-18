@@ -6,9 +6,9 @@ import { MODAL_RIGHT_BUTTON } from "../../components/modal.js";
 import t from "../../locales/index.js";
 
 export default function(render, filename) {
-    return document.body.classList.contains("touch-yes") ?
-        renderMobile(render, filename) :
-        renderDesktop(render, filename);
+    return document.body.classList.contains("touch-yes")
+        ? renderMobile(render, filename)
+        : renderDesktop(render, filename);
 }
 
 function renderDesktop(render, filename) {
@@ -23,7 +23,7 @@ function renderDesktop(render, filename) {
     `);
     const ret = new rxjs.Subject();
     const $input = qs($modal, "input");
-    const pressOK = render($modal, function (id) {
+    const pressOK = render($modal, function(id) {
         const value = $input.value.trim();
         if (id !== MODAL_RIGHT_BUTTON) {
             return;
@@ -52,7 +52,7 @@ function renderMobile(render, filename) {
     return new Promise((done) => {
         const value = window.prompt(t("Rename as"), filename);
         if (!value || value === filename) {
-            return
+            return;
         }
         done(value);
     });

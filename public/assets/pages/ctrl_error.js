@@ -10,9 +10,9 @@ import { AjaxError, ApplicationError } from "../lib/error.js";
 import "../components/icon.js";
 
 const strToHTML = (str) => str
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll(" ", "&nbsp;");
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll(" ", "&nbsp;");
 
 export default function(render = createRender(qs(document.body, "[role=\"main\"]"))) {
     return function(err) {

@@ -1,4 +1,3 @@
-import { toHref } from "./skeleton/router.js";
 import rxjs, { ajax } from "./rx.js";
 import { AjaxError } from "./error.js";
 

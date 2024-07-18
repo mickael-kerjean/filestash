@@ -1,9 +1,8 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { loadCSS } from "../../helpers/loader.js";
-import assert from "../../lib/assert.js";
-import ctrlError from "../ctrl_error.js";
 import notification from "../../components/notification.js";
+import t from "../../locales/index.js";
 
 import { getCurrentPath } from "./common.js";
 
@@ -17,13 +16,13 @@ export default function(render, { endpoint = "" }) {
 
     effect(rxjs.fromEvent(window, "message").pipe(
         rxjs.filter((event) => event.origin === location.origin),
-        rxjs.tap((event) => { // TODO: notification
+        rxjs.tap((event) => {
             switch (event.data.type) {
             case "notify::info":
-                notify.info(t(event.data.message));
+                notification.info(t(event.data.message));
                 break;
             case "notify::error":
-                notify.error(t(event.data.message));
+                notification.error(t(event.data.message));
                 break;
             }
         }),

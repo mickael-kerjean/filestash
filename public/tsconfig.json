@@ -25,9 +25,15 @@
         "target": "es2022",
         "typeRoots": []
     },
-    "input": ["pages/ctrl_boot.d.ts", "pages/*.js"],
+    "include": ["assets/boot/*.js", "assets/pages/*.js"],
     "exclude": [
-        "**/*.test.js", "assets/worker/sw_cache.js",
-        "coverage", "jest.setup.js"
+        "**/*.test.js",
+        "assets/worker/sw_cache.js",
+        "coverage",
+        "vite.config.js",
+        "jest.setup.js",
+        "assets/lib/vendor/**",
+        "assets/lib/vendor/hlsjs/hls.js",
+        "assets/lib/vendor/three/*.js"
     ]
 }

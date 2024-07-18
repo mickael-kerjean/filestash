@@ -5,9 +5,9 @@ import { MODAL_RIGHT_BUTTON } from "../../components/modal.js";
 import t from "../../locales/index.js";
 
 export default function(render, removeLabel) {
-    return document.body.classList.contains("touch-yes") ?
-        renderMobile(render, removeLabel) :
-        renderDesktop(render, removeLabel);
+    return document.body.classList.contains("touch-yes")
+        ? renderMobile(render, removeLabel)
+        : renderDesktop(render, removeLabel);
 }
 
 function renderDesktop(render, removeLabel) {
@@ -48,7 +48,7 @@ function renderMobile(render, removeLabel) {
     return new Promise((done) => {
         const value = window.prompt(t("Confirm by typing") + ": " + removeLabel, "");
         if (value !== removeLabel) {
-            return
+            return;
         }
         done();
     });

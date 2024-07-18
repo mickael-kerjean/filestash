@@ -1,9 +1,8 @@
-import { createElement, nop } from "../lib/skeleton/index.js";
+import { createElement } from "../lib/skeleton/index.js";
 import assert from "../lib/assert.js";
 import rxjs, { applyMutation } from "../lib/rx.js";
 import { animate } from "../lib/animate.js";
 import { qs, qsa } from "../lib/dom.js";
-import { ApplicationError } from "../lib/error.js";
 import { CSS } from "../helpers/loader.js";
 
 export function createModal(opts) {

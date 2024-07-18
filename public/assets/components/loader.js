@@ -1,5 +1,5 @@
 import { createElement, onDestroy } from "../lib/skeleton/index.js";
-import rxjs, { effect } from "../lib/rx.js";
+import rxjs from "../lib/rx.js";
 import { animate, opacityIn } from "../lib/animate.js";
 
 class Loader extends window.HTMLElement {

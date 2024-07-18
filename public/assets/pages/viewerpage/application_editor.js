@@ -152,7 +152,7 @@ export default async function(render, { acl$ }) {
 
     // feature5: save on exit
     effect(setup$.pipe(
-        rxjs.tap((cm) => window.history.block = async (href) => {
+        rxjs.tap((cm) => window.history.block = async(href) => {
             const block = qs(document.body, "component-breadcrumb").hasAttribute("indicator");
             if (block === false) return false;
             const userAction = await new Promise((done) => {

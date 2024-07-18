@@ -18,10 +18,10 @@ export function animate($node, opts = {}) {
         onEnter = nop, onExit = nop,
     } = opts;
 
-    if ( !$node
-         || typeof $node.animate !== "function"
-         || window.matchMedia(`(prefers-reduced-motion: reduce)`) === true
-         || window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true) {
+    if (!$node ||
+         typeof $node.animate !== "function" ||
+         window.matchMedia(`(prefers-reduced-motion: reduce)`) === true ||
+         window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true) {
         onEnter();
         onExit();
         return Promise.resolve();
@@ -30,12 +30,13 @@ export function animate($node, opts = {}) {
     return new Promise((done) => {
         const handler = $node.animate(keyframes, {
             duration: time,
-            fill, easing,
+            fill,
+            easing,
         });
         handler.onfinish = () => {
             onExit();
             done(() => handler.cancel());
-        }
+        };
     });
 }
 

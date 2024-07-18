@@ -1,6 +1,5 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
 import { navigate } from "../lib/skeleton/router.js";
-import rxjs, { effect } from "../lib/rx.js";
 import { qs } from "../lib/dom.js";
 import { loadCSS } from "../helpers/loader.js";
 import WithShell, { init as initShell } from "../components/decorator_shell_filemanager.js";

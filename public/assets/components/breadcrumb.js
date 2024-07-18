@@ -166,12 +166,12 @@ class ComponentBreadcrumb extends window.HTMLElement {
     setupDragDropTarget() {
         this.querySelectorAll("a.label").forEach(($folder) => {
             const $path = $folder.closest(".component_path-element");
-            $folder.ondrop = async (e) => {
+            $folder.ondrop = async(e) => {
                 $path.classList.remove("highlight");
                 const from = e.dataTransfer.getData("path");
                 let to = $path.getAttribute("data-path");
 
-                const [fromBasepath, fromName] = extractPath(from);
+                const [, fromName] = extractPath(from);
                 to += fromName;
                 if (isDir(from)) to += "/";
                 await mv(from, to).toPromise();

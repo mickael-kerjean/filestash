@@ -1,15 +1,14 @@
 import { createElement, onDestroy } from "../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../lib/rx.js";
-import { navigate, fromHref, toHref } from "../lib/skeleton/router.js";
+import { fromHref, toHref } from "../lib/skeleton/router.js";
 import { qs, qsa } from "../lib/dom.js";
 import { forwardURLParams } from "../lib/path.js";
 import { settingsGet, settingsSave } from "../lib/store.js";
 import { loadCSS } from "../helpers/loader.js";
 import t from "../locales/index.js";
 import cache from "../pages/filespage/cache.js";
-import { hooks } from "../pages/filespage/model_files.js";
+import { hooks, mv as mv$ } from "../pages/filespage/model_files.js";
 import { extractPath, isDir, isNativeFileUpload } from "../pages/filespage/helper.js";
-import { mv as mv$ } from "../pages/filespage/model_files.js";
 import { mv as mvVL, withVirtualLayer } from "../pages/filespage/model_virtual_layer.js";
 
 const state = { scrollTop: 100, $cache: null };
@@ -75,9 +74,9 @@ export default async function ctrlSidebar(render, nRestart = 0) {
     onDestroy(() => {
         $page.classList.remove("search");
         state.$cache = $files.firstElementChild?.cloneNode(true);
-        state.scrollTop = $page.firstElementChild.scrollTop
+        state.scrollTop = $page.firstElementChild.scrollTop;
     });
-    const chunk = new pathChunk();
+    const chunk = new PathChunk();
     const arr = chunk.toArray();
     const fullpath = chunk.toString();
     const $tree = document.createDocumentFragment();
@@ -87,7 +86,7 @@ export default async function ctrlSidebar(render, nRestart = 0) {
             const $list = await createListOfFiles(path, arr[i+1], fullpath);
             const $anchor = i === 0 ? $tree : qs($tree, `[data-path="${chunk.toString(i)}"]`);
             $anchor.appendChild($list);
-        } catch(err) {
+        } catch (err) {
             await cache().remove("/", false);
             if (nRestart < 2) ctrlSidebar(render, nRestart + 1);
             else throw err;
@@ -97,15 +96,15 @@ export default async function ctrlSidebar(render, nRestart = 0) {
     $page.firstElementChild.scrollTop = state.scrollTop;
 
     // feature: smart refresh whenever something happen
-    let cleaners = [];
-    cleaners.push(hooks.ls.listen(async ({ path }) => {
+    const cleaners = [];
+    cleaners.push(hooks.ls.listen(async({ path }) => {
         const $list = await createListOfFiles(path);
         try {
             const $ul = qs($page, `[data-path="${path}"] ul`);
             $ul.replaceWith($list);
         } catch (err) { $files.replaceChildren($list); }
     }));
-    cleaners.push(hooks.mutation.listen(async ({ op, path }) => {
+    cleaners.push(hooks.mutation.listen(async({ op, path }) => {
         if (["mv", "mkdir", "rm"].indexOf(op) === -1) return;
         const $list = await createListOfFiles(path);
         try {
@@ -122,7 +121,7 @@ export default async function ctrlSidebar(render, nRestart = 0) {
         if (checkVisible($active) === false) {
             $active.scrollIntoView({ behavior: "smooth" });
         }
-    } catch(err) {}
+    } catch (err) {}
 
     // feature: quick search
     effect(rxjs.fromEvent(qs($page, "h3 input"), "keydown").pipe(
@@ -136,20 +135,22 @@ export default async function ctrlSidebar(render, nRestart = 0) {
                     return;
                 }
                 $page.classList.add("search");
-                qs($li, "div").textContent.toLowerCase().indexOf(inputValue) === -1 ?
-                    $li.classList.add("hidden") :
-                    $li.classList.remove("hidden");
-            })
+                qs($li, "div").textContent.toLowerCase().indexOf(inputValue) === -1
+                    ? $li.classList.add("hidden")
+                    : $li.classList.remove("hidden");
+            });
         }),
     ));
 }
 
 async function createListOfFiles(path, currentName, fullpath) {
     const r = await cache().get(path);
-    const whats = r === null ? (currentName ? [currentName] : []) : r.files
-          .filter(({ type, name }) => type === "directory" && name[0] !== ".")
-          .map(({ name }) => name)
-          .sort();
+    const whats = r === null
+        ? (currentName ? [currentName] : [])
+        : r.files
+            .filter(({ type, name }) => type === "directory" && name[0] !== ".")
+            .map(({ name }) => name)
+            .sort();
     const $ul = document.createElement("ul");
     for (let i=0; i<whats.length; i++) {
         const currpath = path + whats[i] + "/";
@@ -168,11 +169,11 @@ async function createListOfFiles(path, currentName, fullpath) {
             $link.removeAttribute("data-link");
             continue;
         }
-        $link.ondrop = async (e) => {
+        $link.ondrop = async(e) => {
             $link.classList.remove("highlight");
             const from = e.dataTransfer.getData("path");
             let to = $link.parentElement.getAttribute("data-path");
-            const [fromBasepath, fromName] = extractPath(from);
+            const [, fromName] = extractPath(from);
             to += fromName;
             if (isDir(from)) to += "/";
             if (from === to) return;
@@ -202,7 +203,7 @@ function checkVisible($el) {
         rect.right <= (window.innerWidth || document.documentElement.clientWidth);
 }
 
-class pathChunk {
+class PathChunk {
     constructor() {
         this.pathname = [""].concat(fromHref(
             location.pathname.replace(new RegExp("[^/]*$"), "")
@@ -214,7 +215,7 @@ class pathChunk {
     }
 
     toString(i) {
-        if (i >= 0) return decodeURIComponent(this.pathname.slice(0,i+1).join("/") + "/");
+        if (i >= 0) return decodeURIComponent(this.pathname.slice(0, i+1).join("/") + "/");
         return decodeURIComponent(this.pathname.join("/"));
     }
 }

@@ -7,7 +7,6 @@ export default function(render) {
         </div>
     `);
     render($modal, ({ id }) => {
-        console.log("QUIT", id)
-        if (id !== 1) return;
+        console.log("QUIT", id);
     });
 }

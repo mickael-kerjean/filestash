@@ -138,7 +138,7 @@ export const search = (term) => ajax({
     files: responseJSON.results,
 })));
 
-class hook {
+class Hook {
     constructor() {
         this.list = [];
         this.id = 0;
@@ -151,7 +151,7 @@ class hook {
         this.id += 1;
         return () => {
             this.list = this.list.filter((obj) => obj.id !== id);
-        }
+        };
     }
 
     emit(data) {
@@ -160,8 +160,8 @@ class hook {
 }
 
 export const hooks = {
-    ls: new hook(),
-    mutation: new hook(),
+    ls: new Hook(),
+    mutation: new Hook(),
     // ...
     // add hooks on a needed basis
 };

@@ -29,7 +29,7 @@ export function addBackendEnabled(type) {
         let i = 0;
         while (true) {
             if (!connections.find((obj) => obj.label === label)) {
-                break
+                break;
             }
             i += 1;
             label = `${type} ${i}`;

@@ -1,5 +1,5 @@
-import { createElement, createRender, createFragment, onDestroy, nop } from "../../lib/skeleton/index.js";
-import rxjs, { effect, applyMutation, onClick, preventDefault } from "../../lib/rx.js";
+import { createElement, createRender, createFragment, onDestroy } from "../../lib/skeleton/index.js";
+import rxjs, { effect, onClick, preventDefault } from "../../lib/rx.js";
 import { animate, slideXIn, slideYIn } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs, qsa } from "../../lib/dom.js";
@@ -60,8 +60,8 @@ export default async function(render) {
         rxjs.distinctUntilChanged(),
         rxjs.startWith(false),
         rxjs.tap((scrolling) => scrolling
-                 ? $scroll.classList.add("scrolling")
-                 : $scroll.classList.remove("scrolling")),
+            ? $scroll.classList.add("scrolling")
+            : $scroll.classList.remove("scrolling")),
     ));
 }
 
@@ -72,12 +72,14 @@ function componentLeft(render, { $scroll }) {
         rxjs.mergeMap(() => getPermission()),
         rxjs.map(() => render(createFragment(`
             <button data-action="new-file" title="${t("New File")}"${toggleDependingOnPermission(currentPath(), "new-file")}>
-                ${ window.innerWidth < 410 && t("New File").length > 10 ?
-                    t("New File", null, "NEW_FILE::SHORT") : t("New File") }
+                ${window.innerWidth < 410 && t("New File").length > 10
+        ? t("New File", null, "NEW_FILE::SHORT")
+        : t("New File")}
             </button>
             <button data-action="new-folder" title="${t("New Folder")}"${toggleDependingOnPermission(currentPath(), "new-folder")}>
-                ${ window.innerWidth < 410 && t("New Folder").length > 10 ?
-                    t("New Folder", null, "NEW_FOLDER::SHORT") : t("New Folder") }
+                ${window.innerWidth < 410 && t("New Folder").length > 10
+        ? t("New Folder", null, "NEW_FOLDER::SHORT")
+        : t("New Folder")}
             </button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
@@ -86,7 +88,7 @@ function componentLeft(render, { $scroll }) {
         )),
         rxjs.mergeMap((actionName) => getAction$().pipe(
             rxjs.first(),
-            rxjs.map((currentAction) => actionName == currentAction ? null : actionName),
+            rxjs.map((currentAction) => actionName === currentAction ? null : actionName),
         )),
         rxjs.tap((actionName) => {
             $scroll.scrollTo({
@@ -110,7 +112,7 @@ function componentLeft(render, { $scroll }) {
             <button data-action="rename" title="${t("Rename")}"${toggleDependingOnPermission(currentPath(), "rename")}>
                 ${t("Rename")}
             </button>
-            <button data-action="share" title="${t("Share")}" class="${(CONFIG.enable_share && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
+            <button data-action="share" title="${t("Share")}" class="${(window.CONFIG.enable_share && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
                 ${t("Share")}
             </button>
             <button data-action="embed" class="hidden" title="${t("Embed")}">
@@ -144,7 +146,7 @@ function componentLeft(render, { $scroll }) {
                     createModal(modalOpt),
                     basename(path.replace(new RegExp("/$"), "")),
                 )).pipe(rxjs.mergeMap((val) => {
-                    const [basepath, filename] = extractPath(path);
+                    const [basepath] = extractPath(path);
                     clearSelection();
                     clearCache(path);
                     clearCache(basepath + val);
@@ -156,7 +158,7 @@ function componentLeft(render, { $scroll }) {
                 return rxjs.from(componentDelete(
                     createModal(modalOpt),
                     basename(path.replace(new RegExp("/$"), "")).substr(0, 15),
-                )).pipe(rxjs.mergeMap(() =>{
+                )).pipe(rxjs.mergeMap(() => {
                     const selection = expandSelection()[0].path;
                     clearSelection();
                     clearCache(path);
@@ -204,7 +206,7 @@ function componentRight(render) {
     };
 
     const escape$ = rxjs.fromEvent(window, "keydown").pipe(
-        rxjs.filter(event => event.keyCode === 27),
+        rxjs.filter((event) => event.keyCode === 27),
         rxjs.share(),
     );
 
@@ -273,7 +275,7 @@ function componentRight(render) {
             // feature: sort button
             rxjs.merge(
                 onClick(qs($page, `[data-action="sort"]`)).pipe(rxjs.map(($el) => { // toggle the dropdown
-                    return !$el.nextSibling.classList.contains("active")
+                    return !$el.nextSibling.classList.contains("active");
                 })),
                 escape$.pipe(rxjs.mapTo(false)), // quit the dropdown on esc
                 rxjs.fromEvent(window, "click").pipe( // quit when clicking outside the dropdown
@@ -285,9 +287,9 @@ function componentRight(render) {
                 rxjs.mergeMap((targetStateIsOpen) => {
                     const $sort = qs($page, `[data-target="sort"]`);
                     const $lis = qsa($page, `.dropdown_container li`);
-                    targetStateIsOpen ?
-                        $sort.classList.add("active") :
-                        $sort.classList.remove("active");
+                    targetStateIsOpen
+                        ? $sort.classList.add("active")
+                        : $sort.classList.remove("active");
 
                     return onClick($lis).pipe(
                         rxjs.first(),
@@ -300,7 +302,7 @@ function componentRight(render) {
                                 "sort", $el.getAttribute("data-target"),
                                 "order", order === "asc" ? "des" : "asc",
                             );
-                            [...$lis].map(($li) => {
+                            [...$lis].forEach(($li) => {
                                 const $img = $li.querySelector("img");
                                 if ($img) $img.remove();
                             });
@@ -322,7 +324,7 @@ function componentRight(render) {
                 escape$.pipe(rxjs.mapTo(false)),
             ).pipe(
                 rxjs.takeUntil(getSelection$().pipe(rxjs.skip(1))),
-                rxjs.mergeMap(async (show) => {
+                rxjs.mergeMap(async(show) => {
                     const $input = qs($page, "input");
                     const $searchImg = qs($page, "img");
                     if (show) {
@@ -332,13 +334,13 @@ function componentRight(render) {
                         $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.CROSS);
                         $searchImg.setAttribute("alt", "close");
 
-                        const $listOfButtons = $page.parentElement.firstElementChild.children
-                        for (let $item of $listOfButtons) {
+                        const $listOfButtons = $page.parentElement.firstElementChild.children;
+                        for (const $item of $listOfButtons) {
                             $item.classList.add("hidden");
                         }
                         setAction(null); // reset new file, new folder
                         await animate($input, {
-                            keyframes: [{width: "0px"}, {width: "180px"}],
+                            keyframes: [{ width: "0px" }, { width: "180px" }],
                             time: 200,
                         });
                         $input.focus();
@@ -347,14 +349,14 @@ function componentRight(render) {
                         $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.MAGNIFYING_GLASS);
                         $searchImg.setAttribute("alt", "search");
                         await animate($input, {
-                            keyframes: [{width: "180px"}, {width: "0px"}],
+                            keyframes: [{ width: "180px" }, { width: "0px" }],
                             time: 100,
                         });
                         $input.classList.add("hidden");
-                        const $listOfButtons = $page.parentElement.firstElementChild.children
-                        for (let $item of $listOfButtons) {
+                        const $listOfButtons = $page.parentElement.firstElementChild.children;
+                        for (const $item of $listOfButtons) {
                             $item.classList.remove("hidden");
-                            animate($item, { time: 100, keyframes: slideXIn(5) })
+                            animate($item, { time: 100, keyframes: slideXIn(5) });
                         }
                         setState("search", "");
                     }
@@ -403,12 +405,12 @@ function generateLinkAttributes(selections) {
     if (selections.length === 1) {
         const path = selections[0].path;
         const regDir = new RegExp("/$");
-        filename = regDir.test(path) ?
-            basename(path.replace(regDir, "")) + ".zip" :
-            basename(path);
-        href = "api/files/cat?"
+        filename = regDir.test(path)
+            ? basename(path.replace(regDir, "")) + ".zip"
+            : basename(path);
+        href = "api/files/cat?";
     }
-    href += selections.map(({path}) => "path=" + encodeURIComponent(path)).join("&");
+    href += selections.map(({ path }) => "path=" + encodeURIComponent(path)).join("&");
     return `href="${href}" download="${filename}"`;
 }
 

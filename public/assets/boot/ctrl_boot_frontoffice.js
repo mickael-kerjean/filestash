@@ -1,6 +1,4 @@
-import rxjs, { ajax } from "../lib/rx.js";
 import { toHref } from "../lib/skeleton/router.js";
-// import { setup_cache } from "../helpers/cache.js";
 import { init as setup_loader, loadJS } from "../helpers/loader.js";
 import { init as setup_translation } from "../locales/index.js";
 import { init as setup_config } from "../model/config.js";
@@ -112,5 +110,5 @@ async function setup_history() {
 }
 
 async function setup_title() {
-    document.title = CONFIG.name || "Filestash";
+    document.title = window.CONFIG.name || "Filestash";
 }

@@ -1,6 +1,6 @@
 export function settingsGet(initialValues, prefix = "") {
     const raw = JSON.parse(localStorage.getItem("settings")) || {};
-    let currentSettings = {};
+    const currentSettings = {};
     Object.keys(initialValues).forEach((key) => {
         const settingsKey = prefix ? `${prefix}_${key}` : key;
         if (settingsKey in raw) currentSettings[key] = raw[settingsKey];

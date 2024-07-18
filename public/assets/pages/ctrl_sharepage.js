@@ -85,13 +85,14 @@ function verify(render, { shareID, setState, body }) {
     return ajax({
         method: "POST",
         url: `api/share/${shareID}/proof`,
-        responseType: "json", body,
+        responseType: "json",
+        body,
     }).pipe(rxjs.mergeMap(({ responseJSON }) => {
         const { key = "", path } = responseJSON.result;
         if (key === "") setState({ step: "done", path });
         else setState({ step: key });
 
-        return rxjs.of(!"error" in responseJSON.result)
+        return rxjs.of(!("error" in responseJSON.result));
     }));
 }
 

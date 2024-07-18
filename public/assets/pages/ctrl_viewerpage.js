@@ -46,7 +46,7 @@ export default WithShell(async function(render) {
     render($page);
 
     // feature: render viewer application
-    effect(rxjs.of(CONFIG.mime || {}).pipe(
+    effect(rxjs.of(window.CONFIG.mime || {}).pipe(
         rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
         rxjs.mergeMap(([opener, opts]) => rxjs.from(loadModule(opener)).pipe(rxjs.tap((module) => {
             module.default(createRender($page), { ...opts, acl$: options() });
@@ -68,7 +68,7 @@ export async function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_viewerpage.css"),
         initShell(), initMenubar(), initCache(),
-        rxjs.of(CONFIG.mime || {}).pipe(
+        rxjs.of(window.CONFIG.mime || {}).pipe(
             rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
             rxjs.mergeMap(([opener]) => loadModule(opener)),
             rxjs.mergeMap((module) => typeof module.init === "function"? module.init() : rxjs.EMPTY),

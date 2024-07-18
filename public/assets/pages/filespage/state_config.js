@@ -1,4 +1,3 @@
-import { onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect, preventDefault } from "../../lib/rx.js";
 import { settingsGet, settingsSave } from "../../lib/store.js";
 
@@ -20,7 +19,7 @@ export const setState = (...args) => {
         obj[args[i]] = args[i+1];
         hasChange = true;
     }
-    if (!hasChange) return
+    if (!hasChange) return;
     state$.next(obj);
     settingsSave({
         view: state$.value.view,
@@ -28,7 +27,7 @@ export const setState = (...args) => {
         sort: state$.value.sort,
         order: state$.value.order,
     }, "filespage");
-}
+};
 
 effect(rxjs.fromEvent(window, "keydown").pipe(
     rxjs.filter((e) => e.ctrlKey && e.key === "h"),
