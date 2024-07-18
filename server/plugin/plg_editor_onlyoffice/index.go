@@ -404,7 +404,12 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 			}
 			return "false"
 		}(),
-		can_edit(),
+		func() string {
+			if can_edit() {
+				return "true"
+			}
+			return "false"
+		}(),
 		filestashServerLocation,
 		oodsMode,
 		userId,
