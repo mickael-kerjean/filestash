@@ -223,6 +223,62 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
 		return
 	}
+
+	preloadScripts := []string{
+		"/assets/boot/router_frontoffice.js", "/assets/boot/ctrl_boot_frontoffice.js",
+
+		"/assets/lib/skeleton/index.js", "/assets/lib/skeleton/router.js", "/assets/lib/skeleton/lifecycle.js",
+		"/assets/lib/vendor/rxjs/rxjs.min.js", "/assets/lib/vendor/rxjs/rxjs-ajax.min.js", "/assets/lib/vendor/rxjs/rxjs-shared.min.js",
+		"/assets/lib/rx.js", "/assets/lib/ajax.js",
+		"/assets/lib/path.js", "/assets/lib/error.js", "/assets/lib/assert.js",
+		"/assets/lib/dom.js", "/assets/lib/animate.js",
+
+		"/assets/components/loader.js", "/assets/components/modal.js", "/assets/components/notification.js",
+		"/assets/components/icon.js",
+	}
+	turl := TrimBase(url)
+	if strings.HasPrefix(turl, "/login") {
+		preloadScripts = append(
+			preloadScripts,
+			"/assets/pages/ctrl_connectpage.js",
+			"/assets/pages/connectpage/ctrl_form.js", "/assets/pages/connectpage/ctrl_forkme.js",
+			"/assets/pages/connectpage/ctrl_poweredby.js",
+			"/assets/pages/connectpage/model_config.js", "/assets/pages/connectpage/model_backend.js", "/assets/pages/connectpage/ctrl_form_state.js",
+
+			"/assets/lib/form.js", "/assets/lib/settings.js", "/assets/lib/random.js", "/assets/helpers/log.js",
+			"/assets/model/session.js", "/assets/pages/adminpage/model_release.js",
+			"/assets/components/form.js",
+			"/assets/pages/ctrl_error.js",
+		)
+	} else if strings.HasPrefix(turl, "/files/") {
+		preloadScripts = append(
+			preloadScripts,
+			"/assets/pages/filespage/ctrl_filesystem.js", "/assets/pages/filespage/modal_share.js",
+			"/assets/pages/filespage/ctrl_upload.js", "/assets/components/sidebar.js", "/assets/components/breadcrumb.js",
+			"/assets/lib/form.js", "/assets/components/dropdown.js", "/assets/components/decorator_shell_filemanager.js",
+			"/assets/lib/random.js",
+
+			"/assets/pages/filespage/ctrl_submenu.js", "/assets/pages/filespage/ctrl_newitem.js",
+			"/assets/pages/filespage/cache.js", "/assets/pages/ctrl_filespage.js",
+			"/assets/pages/adminpage/model_release.js", "/assets/pages/filespage/modal_embed.js",
+			"/assets/pages/filespage/thing.js", "/assets/pages/ctrl_error.js", "/assets/pages/filespage/model_virtual_layer.js",
+			"/assets/pages/filespage/model_files.js", "/assets/pages/filespage/helper.js",
+			"/assets/pages/filespage/model_acl.js", "/assets/pages/filespage/state_config.js",
+			"/assets/pages/filespage/state_newthing.js", "/assets/pages/filespage/state_selection.js",
+			"/assets/pages/filespage/modal_delete.js", "/assets/pages/filespage/modal_rename.js", "/assets/pages/filespage/modal_tag.js", "/assets/pages/filespage/modal_embed.js",
+
+			"/assets/components/form.js",
+			"/assets/helpers/log.js", "/assets/lib/error.js", "/assets/model/config.js",
+			"/assets/lib/assert.js", "/assets/model/session.js", "/assets/lib/store.js",
+			"/assets/pages/filespage/state_config.js",
+		)
+	}
+	header := res.Header()
+	for _, href := range preloadScripts {
+		header.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(href)))
+	}
+	header.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
+
 	ServeIndex("index.frontoffice.html")(ctx, res, req)
 }
 
