@@ -22,7 +22,7 @@ export async function navigate(href) {
     }
     delete window.history.block;
     window.history.pushState({
-        ...window.history,
+        ...JSON.parse(JSON.stringify(window.history)),
         previous: window.location.pathname,
     }, "", href);
     triggerPageChange();
