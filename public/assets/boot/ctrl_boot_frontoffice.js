@@ -11,9 +11,8 @@ export default async function main() {
             setup_config(),
             setup_translation(),
             setup_xdg_open(),
-            // setup_cache(), // TODO: dependency on session
             setup_device(),
-            setup_sw(),
+            // setup_sw(), // TODO
             setup_blue_death_screen(),
             setup_loader(),
             setup_history(),
@@ -81,7 +80,7 @@ async function setup_sw() {
         return;
     }
     try {
-        // await window.navigator.serviceWorker.register("/sw_cache.js");
+        await window.navigator.serviceWorker.register("/sw_cache.js");
     } catch (err) {
         report("ServiceWorker registration failed", err);
     }
@@ -91,6 +90,13 @@ async function setup_blue_death_screen() {
     window.onerror = function(msg, url, lineNo, colNo, error) {
         report(msg, error, url, lineNo, colNo);
         $error(msg);
+        if ("serviceWorker" in navigator) navigator.serviceWorker
+            .getRegistrations()
+            .then((registrations) => {
+                for (let registration of registrations) {
+                    registration.unregister();
+                }
+            });
     };
 }
 
