@@ -22,7 +22,7 @@ const IMAGE = {
 };
 
 const TYPES = {
-    MIME: window.CONFIG.mime,
+    MIME: () => window.CONFIG.mime,
     THUMBNAILER: (function() {
         const set = new Set();
         for (let i=0; i<window.CONFIG.thumbnailer.length; i++) {
@@ -66,7 +66,7 @@ export function createThing({
     permissions = {},
 }) {
     const [, ext] = formatFile(name);
-    const mime = TYPES.MIME[ext.toLowerCase()];
+    const mime = TYPES.MIME()[ext.toLowerCase()];
     const $thing = assert.type($tmpl.cloneNode(true), window.HTMLElement);
 
     // you might wonder why don't we use querySelector to nicely get the dom nodes? Well,
