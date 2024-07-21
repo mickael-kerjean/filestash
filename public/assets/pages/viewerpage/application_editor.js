@@ -243,6 +243,7 @@ function loadMode(ext) {
     } else if (ext === "elm") mode = "elm";
     else if (ext === "erl") mode = "erlang";
     else if (ext === "go") mode = "go";
+    else if (ext === "groovy") mode = "groovy";
     else if (ext === "markdown" || ext === "md") {
         mode = "yaml-frontmatter";
         before = Promise.all([

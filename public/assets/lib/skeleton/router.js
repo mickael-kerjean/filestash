@@ -7,7 +7,6 @@ export const fromHref = (href) => trimPrefix(href, base());
 export const toHref = (href) => base() + href;
 
 export async function init($root) {
-    window.addEventListener("DOMContentLoaded", triggerPageChange);
     window.addEventListener("popstate", triggerPageChange);
     $root.addEventListener("click", (e) => {
         const href = _getHref(e.target, $root);

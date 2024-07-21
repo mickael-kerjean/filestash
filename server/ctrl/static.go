@@ -190,9 +190,13 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 	head.Set("Cache-Control", "no-cache")
 	head.Set("Pragma", "no-cache")
 	head.Set("Expires", "0")
-	head.Set("Clear-Site-Data", "cache")
 	for _, href := range preloadScripts {
-		head.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(href)))
+		head.Add(
+			"Link",
+			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(
+				strings.Replace(href, "/assets/", "/assets/"+APP_VERSION+"/", 1),
+			)),
+		)
 	}
 	head.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
 
@@ -281,9 +285,13 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 	head.Set("Cache-Control", "no-cache")
 	head.Set("Pragma", "no-cache")
 	head.Set("Expires", "0")
-	head.Set("Clear-Site-Data", "cache")
 	for _, href := range preloadScripts {
-		head.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(href)))
+		head.Add(
+			"Link",
+			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(
+				strings.Replace(href, "/assets/", "/assets/"+APP_VERSION+"/", 1),
+			)),
+		)
 	}
 	head.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
 
@@ -419,12 +427,20 @@ func CustomCssHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		filePath := JoinPath(chroot, TrimBase(req.URL.Path))
+		filePath := JoinPath(
+			chroot,
+			strings.Replace(
+				TrimBase(req.URL.Path),
+				"assets/"+APP_VERSION+"/",
+				"assets/",
+				1,
+			),
+		)
 		head := res.Header()
 
 		// case: patch must be apply because of a "StaticPatch" plugin
 		for _, patch := range Hooks.Get.StaticPatch() {
-			patchFile, err := patch.Open(strings.TrimPrefix(TrimBase(req.URL.Path), "/"))
+			patchFile, err := patch.Open(strings.TrimPrefix(filePath, "/"))
 			if err != nil {
 				continue
 			}
@@ -532,7 +548,8 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 		head.Set("Content-Type", "text/html")
 		res.WriteHeader(http.StatusOK)
 		template.Must(template.New(indexPath).Parse(string(b))).Execute(res, map[string]any{
-			"base": WithBase("/"),
+			"base":    WithBase("/"),
+			"version": APP_VERSION,
 		})
 	}
 }

@@ -9,6 +9,8 @@ import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.
 import componentNewItem, { init as initNewItem } from "./filespage/ctrl_newitem.js";
 import componentUpload, { init as initUpload } from "./filespage/ctrl_upload.js";
 import { init as initCache } from "./filespage/cache.js";
+import { init as initState } from "./filespage/state_config.js";
+import { init as initThing } from "./filespage/thing.js";
 
 import "../components/breadcrumb.js";
 
@@ -46,5 +48,6 @@ export function init() {
         loadCSS(import.meta.url, "ctrl_filespage.css"),
         initShell(), initFilesystem(), initCache(),
         initSubmenu(), initNewItem(), initUpload(),
+        initState(), initThing(),
     ]);
 }

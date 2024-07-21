@@ -5,30 +5,30 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-        <link rel="stylesheet" href="assets/css/designsystem.css">
+        <link rel="stylesheet" href="assets/{{ .version }}/css/designsystem.css">
         <link rel="stylesheet" href="custom.css">
-        <link rel="icon" href="assets/logo/favicon.svg">
+        <link rel="icon" href="assets/{{ .version}}/logo/favicon.svg">
         <title></title>
     </head>
     <body>
-        <script type="module" src="assets/components/loader.js"></script>
+        <script type="module" src="assets/{{ .version }}/components/loader.js"></script>
         <div role="main" id="app">
             <component-loader delay="500"></component-loader>
         </div>
         <script type="module">
-          import main from "./assets/lib/skeleton/index.js";
-          import routes from "./assets/boot/router_frontoffice.js";
+          import main from "./assets/{{ .version }}/lib/skeleton/index.js";
+          import routes from "./assets/{{ .version }}/boot/router_frontoffice.js";
           main(document.getElementById("app"), routes, {
               spinner: `<component-loader></component-loader>`,
-              beforeStart: import("{{ .base }}assets/boot/ctrl_boot_frontoffice.js"),
+              beforeStart: import("./assets/{{ .version }}/boot/ctrl_boot_frontoffice.js"),
           });
         </script>
 
         <component-modal></component-modal>
-        <script type="module" src="assets/components/modal.js" defer></script>
+        <script type="module" src="./assets/{{ .version }}/components/modal.js" defer></script>
 
         <component-notification></component-notification>
-        <script type="module" src="assets/components/notification.js" defer></script>
+        <script type="module" src="./assets/{{ .version }}/components/notification.js" defer></script>
 
         <noscript>
             <div>
