@@ -186,11 +186,15 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 		"/admin/assets/pages/adminpage/model_config.js", "/admin/assets/pages/adminpage/model_admin_session.js", "/admin/assets/pages/adminpage/model_release.js",
 		"/admin/assets/pages/adminpage/model_audit.js",
 	)
-	header := res.Header()
+	head := res.Header()
+	head.Set("Cache-Control", "no-cache")
+	head.Set("Pragma", "no-cache")
+	head.Set("Expires", "0")
+	head.Set("Clear-Site-Data", "cache")
 	for _, href := range preloadScripts {
-		header.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(href)))
+		head.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(href)))
 	}
-	header.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
+	head.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
 
 	ServeIndex("index.backoffice.html")(ctx, res, req)
 	return
@@ -273,11 +277,15 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 			"/assets/pages/filespage/state_config.js",
 		)
 	}
-	header := res.Header()
+	head := res.Header()
+	head.Set("Cache-Control", "no-cache")
+	head.Set("Pragma", "no-cache")
+	head.Set("Expires", "0")
+	head.Set("Clear-Site-Data", "cache")
 	for _, href := range preloadScripts {
-		header.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(href)))
+		head.Add("Link", fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(href)))
 	}
-	header.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
+	head.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
 
 	ServeIndex("index.frontoffice.html")(ctx, res, req)
 }
@@ -451,6 +459,8 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			}
 			head.Set("Content-Type", GetMimeType(filepath.Ext(filePath)))
 			head.Set("Cache-Control", "no-cache")
+			head.Set("Pragma", "no-cache")
+			head.Set("Expires", "0")
 			res.WriteHeader(http.StatusOK)
 			res.Write(output.Bytes())
 			return
@@ -489,6 +499,9 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			if cfg.ContentType != "" {
 				head.Set("Content-Encoding", cfg.ContentType)
 			}
+			head.Set("Cache-Control", "no-cache")
+			head.Set("Pragma", "no-cache")
+			head.Set("Expires", "0")
 			res.WriteHeader(http.StatusOK)
 			io.Copy(res, file)
 			file.Close()
