@@ -15,6 +15,7 @@ export default async function main() {
             // setup_sw(), // TODO
             setup_blue_death_screen(),
             setup_history(),
+            setup_polyfill(),
         ]);
 
         await Promise.all([ // procedure with dependency on config
@@ -116,4 +117,10 @@ async function setup_history() {
 
 async function setup_title() {
     document.title = window.CONFIG.name || "Filestash";
+}
+
+async function setup_polyfill() {
+    if (!("replaceChildren" in document.body)) {
+        await loadJS(import.meta.url, "../lib/polyfill.js");
+    }
 }

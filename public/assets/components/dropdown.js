@@ -3,12 +3,14 @@ import { animate, slideYIn } from "../lib/animate.js";
 import assert from "../lib/assert.js";
 import { loadCSS } from "../helpers/loader.js";
 
-await loadCSS(import.meta.url, "./dropdown.css");
-
 export default class ComponentDropdown extends HTMLDivElement {
     constructor() {
         super();
         this.render();
+    }
+
+    async connectedCallback() {
+        await loadCSS(import.meta.url, "./dropdown.css");
     }
 
     static get observedAttributes() {
