@@ -1,6 +1,6 @@
-Document.prototype.replaceChildren ||= replaceChildren;
-DocumentFragment.prototype.replaceChildren ||= replaceChildren;
-Element.prototype.replaceChildren ||= replaceChildren;
+Document.prototype.replaceChildren = replaceChildren;
+DocumentFragment.prototype.replaceChildren = replaceChildren;
+Element.prototype.replaceChildren = replaceChildren;
 
 function replaceChildren(...new_children) {
   const { childNodes } = this;
