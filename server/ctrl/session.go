@@ -382,6 +382,10 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 						}
 						return false
 					},
+					"encryptGCM": func(str string, key string) (string, error) {
+						data, err := EncryptAESGCM([]byte(key), []byte(str))
+						return base64.StdEncoding.EncodeToString(data), err
+					},
 				}).
 				Parse(str)
 			mappingToUse[k] = str

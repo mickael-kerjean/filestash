@@ -30,7 +30,7 @@ func EncryptString(secret string, data string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	d, err = encrypt([]byte(secret), d)
+	d, err = EncryptAESGCM([]byte(secret), d)
 	if err != nil {
 		return "", err
 	}
@@ -126,7 +126,7 @@ func QuickString(n int) string {
 	return string(b)
 }
 
-func encrypt(key []byte, plaintext []byte) ([]byte, error) {
+func EncryptAESGCM(key []byte, plaintext []byte) ([]byte, error) {
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
