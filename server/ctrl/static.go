@@ -254,8 +254,7 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 			"/assets/pages/connectpage/model_config.js", "/assets/pages/connectpage/model_backend.js", "/assets/pages/connectpage/ctrl_form_state.js",
 
 			"/assets/lib/form.js", "/assets/lib/settings.js", "/assets/lib/random.js", "/assets/helpers/log.js",
-			"/assets/model/session.js", "/assets/pages/adminpage/model_release.js",
-			"/assets/components/form.js",
+			"/assets/model/session.js", "/assets/components/form.js",
 			"/assets/pages/ctrl_error.js",
 		)
 	} else if strings.HasPrefix(turl, "/files/") {
@@ -268,7 +267,6 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 
 			"/assets/pages/filespage/ctrl_submenu.js", "/assets/pages/filespage/ctrl_newitem.js",
 			"/assets/pages/filespage/cache.js", "/assets/pages/ctrl_filespage.js",
-			"/assets/pages/adminpage/model_release.js", "/assets/pages/filespage/modal_embed.js",
 			"/assets/pages/filespage/thing.js", "/assets/pages/ctrl_error.js", "/assets/pages/filespage/model_virtual_layer.js",
 			"/assets/pages/filespage/model_files.js", "/assets/pages/filespage/helper.js",
 			"/assets/pages/filespage/model_acl.js", "/assets/pages/filespage/state_config.js",
@@ -293,7 +291,6 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 			)),
 		)
 	}
-	head.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
 
 	ServeIndex("index.frontoffice.html")(ctx, res, req)
 }
