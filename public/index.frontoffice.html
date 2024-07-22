@@ -5,13 +5,13 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-        <link rel="stylesheet" href="assets/{{ .version }}/css/designsystem.css">
+        <link rel="stylesheet" href="./assets/{{ .version }}/css/designsystem.css">
         <link rel="stylesheet" href="custom.css">
-        <link rel="icon" href="assets/{{ .version}}/logo/favicon.svg">
+        {{ if eq .license "agpl" }}<link rel="icon" href="./assets/{{ .version}}/logo/favicon.svg">{{ else }}<link rel="icon" href="favicon.ico">{{ end }}
         <title></title>
     </head>
     <body>
-        <script type="module" src="assets/{{ .version }}/components/loader.js"></script>
+        <script type="module" src="./assets/{{ .version }}/components/loader.js"></script>
         <div role="main" id="app">
             <component-loader delay="500"></component-loader>
         </div>
@@ -20,7 +20,7 @@
           import routes from "./assets/{{ .version }}/boot/router_frontoffice.js";
           main(document.getElementById("app"), routes, {
               spinner: `<component-loader></component-loader>`,
-              beforeStart: import("./assets/{{ .version }}/boot/ctrl_boot_frontoffice.js"),
+              beforeStart: import("{{ .base }}assets/{{ .version }}/boot/ctrl_boot_frontoffice.js"),
           });
         </script>
 

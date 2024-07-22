@@ -1,4 +1,3 @@
-import { init as initCSS } from "../helpers/loader.js";
 import { report } from "../helpers/log.js";
 import { $error } from "./common.js";
 
@@ -8,7 +7,6 @@ export default async function main() {
             setup_device(),
             setup_blue_death_screen(),
             setup_history(),
-            setup_css(),
         ]);
         window.dispatchEvent(new window.Event("pagechange"));
     } catch (err) {
@@ -34,8 +32,4 @@ async function setup_blue_death_screen() {
 
 async function setup_history() {
     window.history.replaceState({}, "");
-}
-
-async function setup_css() {
-    return initCSS();
 }

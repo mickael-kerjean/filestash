@@ -1,10 +1,6 @@
-import { get as getRelease } from "../pages/adminpage/model_release.js";
-
-let version = null;
-
 export async function loadJS(baseURL, path, opts = {}) {
     const $script = document.createElement("script");
-    const link = new URL(path, baseURL) + (version ? "?version=" + version : "");
+    const link = new URL(path, baseURL);
     $script.setAttribute("src", link.toString());
     for (const key in opts) {
         $script.setAttribute(key, opts[key]);
@@ -19,7 +15,7 @@ export async function loadJS(baseURL, path, opts = {}) {
 
 export async function loadCSS(baseURL, path) {
     const $style = document.createElement("link");
-    const link = new URL(path, baseURL) + "?version=" + version;
+    const link = new URL(path, baseURL);
     $style.setAttribute("href", link.toString());
     $style.setAttribute("rel", "stylesheet");
     if (document.head.querySelector(`[href="${link.toString()}"]`)) return Promise.resolve();
@@ -31,7 +27,7 @@ export async function loadCSS(baseURL, path) {
 }
 
 export async function loadCSSInline(baseURL, filename) {
-    const res = await fetch(new URL(filename, baseURL).pathname + `?version=${version}`, {
+    const res = await fetch(new URL(filename, baseURL).pathname, {
         cache: "force-cache",
     });
     if (res.status !== 200) return `/* ERROR: ${res.status} */`;
@@ -42,9 +38,4 @@ export async function loadCSSInline(baseURL, filename) {
 export async function CSS(baseURL, ...arrayOfFilenames) {
     const sheets = await Promise.all(arrayOfFilenames.map((filename) => loadCSSInline(baseURL, filename)));
     return sheets.join("\n\n");
-}
-
-export async function init() {
-    const info = await getRelease().toPromise();
-    version = info.version;
 }

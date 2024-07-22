@@ -5,12 +5,12 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="admin/assets/css/designsystem.css">
+        <link rel="stylesheet" href="./admin/assets/css/designsystem.css">
         <link rel="icon" href="favicon.ico">
         <title>Admin Console</title>
     </head>
     <body>
-        <script type="module" src="admin/assets/{{ .version }}/components/loader.js"></script>
+        <script type="module" src="./admin/assets/{{ .version }}/components/loader.js"></script>
         <div role="main" id="app">
             <component-loader delay="500"></component-loader>
         </div>
@@ -20,13 +20,13 @@
           import routes from "./admin/assets/{{ .version }}/boot/router_backoffice.js";
           main(document.getElementById("app"), routes, {
               spinner: `<component-loader></component-loader>`,
-              beforeStart: import("./admin/assets/{{ .version }}/boot/ctrl_boot_backoffice.js"),
+              beforeStart: import("{{ .base }}admin/assets/{{ .version }}/boot/ctrl_boot_backoffice.js"),
           });
         </script>
 
-        <script type="module" src="admin/assets/{{ .version }}/components/modal.js"></script>
+        <script type="module" src="./admin/assets/{{ .version }}/components/modal.js"></script>
         <component-modal></component-modal>
-        <script type="module" src="admin/assets/{{ .version }}/components/notification.js"></script>
+        <script type="module" src="./admin/assets/{{ .version }}/components/notification.js"></script>
         <component-notification></component-notification>
 
         <noscript>

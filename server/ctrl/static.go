@@ -194,7 +194,7 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 		head.Add(
 			"Link",
 			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(
-				strings.Replace(href, "/assets/", "/assets/"+APP_VERSION+"/", 1),
+				strings.Replace(href, "/assets/", "/assets/"+version()+"/", 1),
 			)),
 		)
 	}
@@ -289,7 +289,7 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		head.Add(
 			"Link",
 			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(
-				strings.Replace(href, "/assets/", "/assets/"+APP_VERSION+"/", 1),
+				strings.Replace(href, "/assets/", "/assets/"+version()+"/", 1),
 			)),
 		)
 	}
@@ -431,7 +431,7 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			chroot,
 			strings.Replace(
 				TrimBase(req.URL.Path),
-				"assets/"+APP_VERSION+"/",
+				"assets/"+version()+"/",
 				"assets/",
 				1,
 			),
@@ -515,9 +515,6 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			if cfg.ContentType != "" {
 				head.Set("Content-Encoding", cfg.ContentType)
 			}
-			head.Set("Cache-Control", "no-cache")
-			head.Set("Pragma", "no-cache")
-			head.Set("Expires", "0")
 			res.WriteHeader(http.StatusOK)
 			io.Copy(res, file)
 			file.Close()
@@ -549,7 +546,8 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 		res.WriteHeader(http.StatusOK)
 		template.Must(template.New(indexPath).Parse(string(b))).Execute(res, map[string]any{
 			"base":    WithBase("/"),
-			"version": APP_VERSION,
+			"version": version(),
+			"license": LICENSE,
 		})
 	}
 }
@@ -583,4 +581,8 @@ func InitPluginList(code []byte) {
 			)
 		}
 	}
+}
+
+func version() string {
+	return BUILD_REF[:7]
 }
