@@ -3,7 +3,7 @@ import assert from "../lib/assert.js";
 import rxjs, { applyMutation } from "../lib/rx.js";
 import { animate } from "../lib/animate.js";
 import { qs, qsa } from "../lib/dom.js";
-import { CSS } from "../helpers/loader.js";
+import { loadCSS } from "../helpers/loader.js";
 
 export function createModal(opts) {
     const $dom = assert.type(qs(document.body, "component-modal"), window.HTMLElement);
@@ -16,10 +16,8 @@ export const MODAL_LEFT_BUTTON = 1;
 export const MODAL_RIGHT_BUTTON = 2;
 export const MODAL_QUIT = 0;
 
-const css = await CSS(import.meta.url, "modal.css");
 const $modal = createElement(`
     <div class="component_modal" id="modal-box">
-        <style>${css}</style>
         <div>
             <div class="component_popup">
                 <div class="popup--content">
@@ -35,6 +33,10 @@ const $modal = createElement(`
 `);
 
 class ModalComponent extends window.HTMLElement {
+    async connectedCallback() {
+        await loadCSS(import.meta.url, "./modal.css");
+    }
+
     trigger($node, { withButtonsLeft = null, withButtonsRight = null, targetHeight = 0, onQuit = (a) => Promise.resolve(a) }) {
         const close$ = new rxjs.Subject();
 

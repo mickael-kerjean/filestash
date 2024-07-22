@@ -1,11 +1,10 @@
 import { createElement } from "../lib/skeleton/index.js";
 import { ApplicationError } from "../lib/error.js";
 import { animate, slideYIn, slideYOut } from "../lib/animate.js";
-import { CSS } from "../helpers/loader.js";
+import { loadCSS } from "../helpers/loader.js";
 
 const createNotification = async(msg, type) => createElement(`
     <span class="component_notification">
-        <style>${await CSS(import.meta.url, "notification.css")}</style>
         <div class="no-select">
             <div class="component_notification--container ${type}">
                 <div class="message">${msg}</div>
@@ -19,6 +18,10 @@ const createNotification = async(msg, type) => createElement(`
 
 class NotificationComponent extends window.HTMLElement {
     buffer = [];
+
+    async connectedCallback() {
+        await loadCSS(import.meta.url, "./notification.css");
+    }
 
     async trigger(message, type) {
         if (this.buffer.length > 20) this.buffer.pop(); // failsafe
