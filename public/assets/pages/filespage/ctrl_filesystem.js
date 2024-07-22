@@ -328,7 +328,8 @@ export function init() {
 function createLink(file, currentPath) {
     let path = file.path;
     if (!path) path = currentPath + file.name + (file.type === "directory" ? "/" : "");
-    const link = file.type === "directory" ? "files" + path : "view" + path;
+    let link = file.type === "directory" ? "files" + path : "view" + path;
+    link = link.replaceAll("#", "%23");
     return {
         path,
         link,
