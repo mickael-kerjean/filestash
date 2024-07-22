@@ -13,7 +13,9 @@ export default function(render, removeLabel) {
 function renderDesktop(render, removeLabel) {
     const $modal = createElement(`
         <div>
-            <span style="white-space: nowrap;">${t("Confirm by typing")} "${removeLabel}"</span>
+            <span style="white-space: nowrap;">
+                <span class="no-select">${t("Confirm by typing")} "</span>${removeLabel}<span class="no-select">"</span>
+            </span>
             <form style="margin-top: 10px;">
                 <input class="component_input" type="text" autocomplete="new-password" value="">
                 <div class="modal-error-message"></div>
@@ -35,6 +37,8 @@ function renderDesktop(render, removeLabel) {
         ret.complete();
         return ret.toPromise();
     }).bind(this, MODAL_RIGHT_BUTTON);
+
+    $input.focus();
 
     effect(rxjs.fromEvent(qs($modal, "form"), "submit").pipe(
         preventDefault(),
