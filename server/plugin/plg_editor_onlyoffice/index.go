@@ -27,6 +27,7 @@ var (
 	plugin_enable    func() bool
 	server_url       func() string
 	can_download     func() bool
+	can_edit		 func() bool
 )
 
 type onlyOfficeCacheData struct {
@@ -45,8 +46,8 @@ func init() {
 			}
 			f.Name = "enable"
 			f.Type = "enable"
-			f.Target = []string{"onlyoffice_server", "onlyoffice_can_download"}
-			f.Description = "Enable/Disable the office suite to manage word, excel and powerpoint documents."
+			f.Target = []string{"onlyoffice_server", "onlyoffice_can_download", "onlyoffice_can_edit"}
+			f.Description = "Enable/Disable the office suite and options to manage word, excel and powerpoint documents."
 			f.Default = false
 			if u := os.Getenv("ONLYOFFICE_URL"); u != "" {
 				f.Default = true
@@ -54,6 +55,7 @@ func init() {
 			return f
 		}).Bool()
 	}
+
 	server_url = func() string {
 		return Config.Get("features.office.onlyoffice_server").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -72,6 +74,21 @@ func init() {
 			return f
 		}).String()
 	}
+
+	can_edit = func() bool {
+	return Config.Get("features.office.can_edit").Schema(func(f *FormElement) *FormElement {
+		if f == nil {
+			f = &FormElement{}
+		}
+		f.Id = "onlyoffice_can_edit"
+		f.Name = "can_edit"
+		f.Type = "boolean"
+		f.Description = "Enable/Disable editing in onlyoffice"
+		f.Default = true
+		return f
+	}).Bool()
+}
+	
 	can_download = func() bool {
 		return Config.Get("features.office.can_download").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -90,6 +107,7 @@ func init() {
 		plugin_enable()
 		server_url()
 		can_download()
+		can_edit()
 	})
 
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
@@ -346,7 +364,9 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
                   "fileType": "%s",
                   "key": "%s",
                   "permissions": {
-                      "download": %s
+                      "download": %s,
+					  "edit": %t
+					  
                   }
               },
               "editorConfig": {
@@ -381,6 +401,12 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		key,
 		func() string {
 			if can_download() {
+				return "true"
+			}
+			return "false"
+		}(),
+		func() string {
+			if can_edit() {
 				return "true"
 			}
 			return "false"
