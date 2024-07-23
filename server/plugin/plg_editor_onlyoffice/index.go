@@ -40,21 +40,21 @@ func init() {
 	SECRET_KEY_DERIVATE_FOR_ONLYOFFICE = Hash("ONLYOFFICE_"+SECRET_KEY, len(SECRET_KEY))
 	onlyoffice_cache = cache.New(720*time.Minute, 720*time.Minute)
 	plugin_enable = func() bool {
-	return Config.Get("features.office.enable").Schema(func(f *FormElement) *FormElement {
-		if f == nil {
-			f = &FormElement{}
-		}
-		f.Name = "enable"
-		f.Type = "enable"
-		f.Target = []string{"onlyoffice_server", "onlyoffice_can_download", "onlyoffice_can_edit"}
-		f.Description = "Enable/Disable the office suite and options to manage word, excel and powerpoint documents."
-		f.Default = false
-		if u := os.Getenv("ONLYOFFICE_URL"); u != "" {
-			f.Default = true
-		}
-		return f
-	}).Bool()
-}
+		return Config.Get("features.office.enable").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Name = "enable"
+			f.Type = "enable"
+			f.Target = []string{"onlyoffice_server", "onlyoffice_can_download", "onlyoffice_can_edit"}
+			f.Description = "Enable/Disable the office suite and options to manage word, excel and powerpoint documents."
+			f.Default = false
+			if u := os.Getenv("ONLYOFFICE_URL"); u != "" {
+				f.Default = true
+			}
+			return f
+		}).Bool()
+	}
 
 	server_url = func() string {
 		return Config.Get("features.office.onlyoffice_server").Schema(func(f *FormElement) *FormElement {
