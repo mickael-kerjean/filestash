@@ -9,7 +9,7 @@ import { getCurrentPath } from "./common.js";
 export default function(render, { endpoint = "" }) {
     const $page = createElement(`
         <div class="component_appframe">
-            <iframe src="${endpoint}?path=${encodeURIComponent(getCurrentPath())}"></iframe>
+            <iframe style="width:100%;height:100%" src="${endpoint}?path=${encodeURIComponent(getCurrentPath())}" scrolling="no"></iframe>
         </div>
     `);
     render($page);
