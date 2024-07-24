@@ -43,8 +43,17 @@ export default async function(render, { acl$ }) {
     const removeLoader = createLoader($page);
     const setup$ = rxjs.zip(
         rxjs.race(
+            // when a download takes too long, abort, we don't want to spin for 2 hours
+            // only to find out the user tried to open something that don't even fit in
+            // memory. This also account for terrible network conditions when out in
+            // the bush; we abort after:
+            // TIME_BEFORE_ABORT_EDIT + NETWORK LATENCY seconds
             cat(),
-            ajax("about").pipe(rxjs.delay(TIME_BEFORE_ABORT_EDIT), rxjs.map(() => null)),
+            rxjs.of(null).pipe(
+                rxjs.delay(TIME_BEFORE_ABORT_EDIT),
+                rxjs.mergeMap(() => ajax("about")),
+                rxjs.mapTo(null),
+            ),
         ),
         acl$,
     ).pipe(
