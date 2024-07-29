@@ -365,7 +365,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
                   "key": "%s",
                   "permissions": {
                       "download": %s,
-					  "edit": %t
+					  "edit": %s
 					  
                   }
               },
