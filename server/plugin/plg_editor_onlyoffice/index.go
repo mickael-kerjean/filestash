@@ -48,7 +48,7 @@ func init() {
 			}
 			f.Name = "enable"
 			f.Type = "enable"
-			f.Target = []string{"onlyoffice_server", "onlyoffice_can_chat", "onlyoffice_can_download", "onlyoffice_can_edit"}
+			f.Target = []string{"onlyoffice_server", "onlyoffice_can_chat", "onlyoffice_can_download", "onlyoffice_can_edit", "onlyoffice_can_print"}
 			f.Description = "Enable/Disable the office suite and options to manage word, excel and powerpoint documents."
 			f.Default = false
 			if u := os.Getenv("ONLYOFFICE_URL"); u != "" {
