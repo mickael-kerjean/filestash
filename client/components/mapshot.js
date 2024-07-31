@@ -64,7 +64,7 @@ export class MapShot extends React.Component {
             this.onRefresh();
         }
         const tile_server = this.props.tile ||
-              "https://maps.wikimedia.org/osm-intl/${z}/${x}/${y}.png";
+              "https://tile.openstreetmap.org/${z}/${x}/${y}.png";
         function map_url(lat, lng, zoom) {
             // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenamse
             const n = Math.pow(2, zoom);
