@@ -112,4 +112,6 @@ function _moveHiddenFilesDownward(fileA, fileB) {
     return 0;
 }
 
-export const isNativeFileUpload = (e) => JSON.stringify(e.dataTransfer.types) === "[\"Files\"]";
+export const isNativeFileUpload = (e) => {
+    return JSON.stringify(e.dataTransfer.types.slice(-1)) === "[\"Files\"]";
+}
