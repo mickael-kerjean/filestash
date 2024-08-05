@@ -11,6 +11,7 @@ import { mkdir, save } from "./model_virtual_layer.js";
 import t from "../../locales/index.js";
 
 const workers$ = new rxjs.BehaviorSubject({ tasks: [], size: null });
+const ABORT_ERROR = new AjaxError("aborted", null, "ABORTED");
 
 export default async function(render) {
     if (!document.querySelector(`[is="component_upload_queue"]`)) {
@@ -232,7 +233,7 @@ function componentUploadQueue(render, { workers$ }) {
             updateDOMGlobalTitle($page, t("Running")+"...");
             const task = nextTask(tasks);
             if (!task) {
-                await new Promise((done) => setTimeout(done, 1000));
+                await new Promise((resolve) => setTimeout(resolve, 1000));
                 continue;
             }
             const $task = qs($page, `[data-path="${task.path}"]`);
@@ -299,15 +300,11 @@ function workerImplFile({ error, progress, speed }) {
         }
 
         async run({ file, path, virtual }) {
-            return new Promise((done, err) => {
+            return new Promise((resolve, reject) => {
                 this.xhr = new XMLHttpRequest();
                 this.xhr.open("POST", "api/files/cat?path=" + encodeURIComponent(path));
                 this.xhr.withCredentials = true;
                 this.xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
-                this.xhr.upload.onabort = () => {
-                    err(new AjaxError("aborted", null, "ABORTED"));
-                    error(new AjaxError("aborted", null, "ABORTED"));
-                };
                 this.xhr.upload.onprogress = (e) => {
                     if (!e.lengthComputable) return;
                     const percent = Math.floor(100 * e.loaded / e.total);
@@ -332,18 +329,23 @@ function workerImplFile({ error, progress, speed }) {
                         this.prevProgress.shift();
                     }
                 };
+                this.xhr.upload.onabort = () => {
+                    reject(ABORT_ERROR);
+                    error(ABORT_ERROR);
+                    virtual.afterError();
+                };
                 this.xhr.onload = () => {
                     progress(100);
                     if (this.xhr.status !== 200) {
                         virtual.afterError();
-                        err(new Error(this.xhr.statusText));
+                        reject(new Error(this.xhr.statusText));
                         return;
                     }
                     virtual.afterSuccess();
-                    done(null);
+                    resolve(null);
                 };
                 this.xhr.onerror = function(e) {
-                    err(new AjaxError("failed", e, "FAILED"));
+                    reject(new AjaxError("failed", e, "FAILED"));
                     virtual.afterError();
                 };
                 file().then((f) => this.xhr.send(f)).catch((err) => this.xhr.onerror(err));
@@ -364,13 +366,13 @@ function workerImplDirectory({ error, progress }) {
         }
 
         run({ virtual, path }) {
-            return new Promise((done, err) => {
+            return new Promise((resolve, reject) => {
                 this.xhr = new XMLHttpRequest();
                 this.xhr.open("POST", "api/files/mkdir?path=" + encodeURIComponent(path));
                 this.xhr.withCredentials = true;
                 this.xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
                 this.xhr.onerror = function(e) {
-                    err(new AjaxError("failed", e, "FAILED"));
+                    reject(new AjaxError("failed", e, "FAILED"));
                 };
 
                 let percent = 0;
@@ -383,8 +385,8 @@ function workerImplDirectory({ error, progress }) {
                     progress(percent);
                 }, 100);
                 this.xhr.upload.onabort = () => {
-                    err(new AjaxError("aborted", null, "ABORTED"));
-                    error(new AjaxError("aborted", null, "ABORTED"));
+                    reject(ABORT_ERROR);
+                    error(ABORT_ERROR);
                     clearInterval(id);
                     virtual.afterError();
                 };
@@ -397,7 +399,7 @@ function workerImplDirectory({ error, progress }) {
                         return;
                     }
                     virtual.afterSuccess();
-                    done(null);
+                    resolve(null);
                 };
                 this.xhr.send(null);
             });
@@ -418,12 +420,12 @@ async function processFiles(filelist) {
         if (file.size % 4096 !== 0) {
             return Promise.resolve("file");
         }
-        return new Promise((done) => {
+        return new Promise((resolve) => {
             const reader = new window.FileReader();
             const tid = setTimeout(() => reader.abort(), 1000);
-            reader.onload = () => done("file");
-            reader.onabort = () => done("file");
-            reader.onerror = () => { done("directory"); clearTimeout(tid); };
+            reader.onload = () => resolve("file");
+            reader.onabort = () => resolve("file");
+            reader.onerror = () => { resolve("directory"); clearTimeout(tid); };
             reader.readAsArrayBuffer(file);
         });
     };
@@ -436,7 +438,7 @@ async function processFiles(filelist) {
             // size += currentFile.size;
             task = {
                 type: "file",
-                file: () => new Promise((done) => done(currentFile)),
+                file: () => new Promise((resolve) => resolve(currentFile)),
                 path,
                 date: currentFile.lastModified,
                 exec: workerImplFile,
@@ -479,12 +481,17 @@ async function processItems(itemList) {
             let task = {};
             if (entry === null) continue;
             else if (entry.isFile) {
-                const entrySize = await new Promise((done) => entry.getMetadata(({ size }) => done(size)));
+                const entrySize = await new Promise((resolve) => {
+                    if (typeof entry.getMetadata === "function") {
+                        entry.getMetadata(({ size }) => resolve(size));
+                    }
+                    else resolve(null); // eg: firefox
+                });
                 task = {
                     type: "file",
-                    file: () => new Promise((done, err) => entry.file(
-                        (file) => done(file),
-                        (error) => err(error),
+                    file: () => new Promise((resolve, reject) => entry.file(
+                        (file) => resolve(file),
+                        (error) => reject(error),
                     )),
                     path,
                     exec: workerImplFile,
@@ -500,8 +507,8 @@ async function processItems(itemList) {
                     virtual: mkdir(path),
                     done: false,
                 };
-                queue = queue.concat(await new Promise((done) => {
-                    entry.createReader().readEntries(done);
+                queue = queue.concat(await new Promise((resolve) => {
+                    entry.createReader().readEntries(resolve);
                 }));
             } else {
                 assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js", entry);
