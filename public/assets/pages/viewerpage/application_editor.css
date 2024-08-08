@@ -286,8 +286,8 @@ pre.CodeMirror-line {
 
 .CodeMirror-foldmarker {
     padding-left: 5px;
-    color: var(--color);
-    text-shadow: 1px 1px 10px var(--color);
+    color: var(--color)!important;
+    text-shadow: 1px 1px 10px var(--color)!important;
 }
 
 span.CodeMirror-matchingbracket,
