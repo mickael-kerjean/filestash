@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"strconv"
 )
 
@@ -90,4 +91,29 @@ func CookieName(idx int) string {
 		return COOKIE_NAME_AUTH
 	}
 	return COOKIE_NAME_AUTH + strconv.Itoa(idx)
+}
+
+func FormData(req *http.Request) (map[string]string, error) {
+	_get := req.URL.Query()
+	formData := map[string]string{}
+	switch req.Method {
+	case "GET":
+		for key, element := range _get {
+			if len(element) == 0 {
+				continue
+			}
+			formData[key] = element[0]
+		}
+	case "POST":
+		if err := req.ParseForm(); err != nil {
+			return nil, NewError(err.Error(), 400)
+		}
+		for key, values := range req.Form {
+			if len(values) == 0 {
+				continue
+			}
+			formData[key] = values[0]
+		}
+	}
+	return formData, nil
 }
