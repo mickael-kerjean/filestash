@@ -1,14 +1,15 @@
 import { createElement, createRender } from "../../lib/skeleton/index.js";
-import rxjs, { effect, onLoad } from "../../lib/rx.js";
+import rxjs, { effect, onLoad, onClick } from "../../lib/rx.js";
 import { animate } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { createLoader } from "../../components/loader.js";
+import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 
 import { transition, getFilename, getDownloadUrl } from "./common.js";
 
-import componentMetadata from "./application_image_metadata.js";
+import componentMetadata, { init as initMetadata } from "./application_image_metadata.js";
 import componentPager, { init as initPager } from "./component_pager.js";
 
 import { renderMenubar, buttonDownload, buttonFullscreen } from "./component_menubar.js";
@@ -27,20 +28,28 @@ export default function(render) {
         </div>
     `);
     render($page);
+    transition(qs($page, ".component_image_container"));
+
+    const toggleInfo = () => qs($page, ".images_aside").classList.toggle("open");
+    const $imgContainer = qs($page, ".images_wrapper");
+    const $photo = qs($page, "img.photo");
+    const removeLoader = createLoader($imgContainer);
+    const load$ = new rxjs.BehaviorSubject(null);
+
     renderMenubar(
         qs($page, "component-menubar"),
         buttonDownload(getFilename(), getDownloadUrl()),
         buttonFullscreen(qs($page, ".component_image_container")),
+        buttonInfo({ $img: $photo, toggle: toggleInfo }),
     );
-    transition(qs($page, ".component_image_container"));
 
-    const removeLoader = createLoader(qs($page, ".images_wrapper"));
-    const $photo = qs($page, "img.photo");
     effect(onLoad($photo).pipe(
+        rxjs.tap(() => {
+            load$.next($photo);
+        }),
         removeLoader,
-        rxjs.map(() => $photo),
-        rxjs.tap(($img) => animate($img, {
-            onEnter: () => $img.classList.remove("hidden"),
+        rxjs.tap(() => animate($photo, {
+            onEnter: () => $photo.classList.remove("hidden"),
             time: 300,
             easing: "cubic-bezier(.51,.92,.24,1.15)",
             keyframes: [
@@ -59,7 +68,7 @@ export default function(render) {
                         $img.classList.add("error");
                         $img.parentElement.appendChild(createElement(`
                             <div class="error no-select">
-                                This file format is not supported
+                                ${t("Not Supported")}
                             </div>
                         `));
                     }),
@@ -70,13 +79,26 @@ export default function(render) {
         }),
     ));
 
-    componentMetadata(createRender(qs($page, ".images_aside")));
+    componentMetadata(createRender(qs($page, ".images_aside")), { toggle: toggleInfo, load$ });
     componentPager(createRender(qs($page, ".component_pager")));
+}
+
+function buttonInfo({ $img, toggle }) {
+    const $el = createElement(`
+        <span>
+            <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZyB0cmFuc2Zvcm09Im1hdHJpeCgwLjg4MiwwLDAsMC44ODIsNS45LDUuOSkiPgogICAgPHBhdGggc3R5bGU9ImZpbGw6I2YyZjJmMjtmaWxsLW9wYWNpdHk6MSIgZD0ibSA2Mi4xNjIsMCBjIDYuNjk2LDAgMTAuMDQzLDQuNTY3IDEwLjA0Myw5Ljc4OSAwLDYuNTIyIC01LjgxNCwxMi41NTUgLTEzLjM5MSwxMi41NTUgLTYuMzQ0LDAgLTEwLjA0NSwtMy43NTIgLTkuODY5LC05Ljk0NyBDIDQ4Ljk0NSw3LjE3NiA1My4zNSwwIDYyLjE2MiwwIFogTSA0MS41NDMsMTAwIGMgLTUuMjg3LDAgLTkuMTY0LC0zLjI2MiAtNS40NjMsLTE3LjYxNSBsIDYuMDcsLTI1LjQ1NyBjIDEuMDU3LC00LjA3NyAxLjIzLC01LjcwNyAwLC01LjcwNyAtMS41ODgsMCAtOC40NTEsMi44MTYgLTEyLjUxLDUuNTkgTCAyNyw1Mi40MDYgQyAzOS44NjMsNDEuNDggNTQuNjYyLDM1LjA3MiA2MS4wMDQsMzUuMDcyIGMgNS4yODUsMCA2LjE2OCw2LjM2MSAzLjUyNSwxNi4xNDggTCA1Ny41OCw3Ny45OCBjIC0xLjIzNCw0LjcyOSAtMC43MDMsNi4zNTkgMC41MjcsNi4zNTkgMS41ODYsMCA2Ljc4NywtMS45NjMgMTEuODk2LC02LjA0MSBMIDczLDgyLjM3NyBDIDYwLjQ4OCw5NS4xIDQ2LjgzLDEwMCA0MS41NDMsMTAwIFoiIC8+CiAgPC9nPgo8L3N2Zz4K" alt="info">
+        </span>
+    `);
+    effect(rxjs.merge(
+        onClick($el),
+        rxjs.fromEvent(window, "keydown").pipe(rxjs.filter((e) => e.key === "i")),
+    ).pipe(rxjs.tap(toggle)));
+    return $el;
 }
 
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_image.css"),
-        initPager(), // initMetadata(),
+        initPager(), initMetadata(),
     ]);
 }
