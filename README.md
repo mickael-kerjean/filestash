@@ -72,7 +72,7 @@
 # The core idea
 
 Filestash started as an attempt to solve the Dropbox problem by abstracting the storage aspect so you can "bring your own backend" by implementing this interface:
-```
+```go
 type IBackend interface {
 	Init(params map[string]string, app *App) (IBackend, error) // constructor
 	Ls(path string) ([]os.FileInfo, error)           // list files in a folder
