@@ -23,6 +23,7 @@ pipeline {
             steps {
                 script {
                     docker.image("node:14").inside("--user=root") {
+                        sh "apt update -y && apt install -y brotli"
                         sh "npm install"
                         sh "make build_frontend"
                     }
