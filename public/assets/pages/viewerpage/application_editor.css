@@ -303,7 +303,7 @@ span.CodeMirror-matchingtag {
 
 /* DAR MODE THEME */
 .dark-mode .CodeMirror {
-    background: #242424;
+    background: #232426;
 }
 .dark-mode .CodeMirror, .dark-mode .CodeMirror .CodeMirror-linenumber, .dark-mode .CodeMirror .cm-variable-2, .dark-mode .CodeMirror .cm-variable-3, .dark-mode .CodeMirror .cm-number, .dark-mode .CodeMirror .cm-quote {
     color: #f6f3e8;
