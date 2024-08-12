@@ -63,7 +63,7 @@ function componentBody(render, { load$ }) {
         qs($page, `[data-bind="camera-name"]`).innerText = formatCameraName(metadata) || "-";
 
         if (metadata.location) await componentMap(createRender(qs($page, `[data-bind="map"]`)), { metadata });
-        if (metadata.all) componentMore(createRender(qs($page, `[data-bind="all"]`)), { metadata });
+        componentMore(createRender(qs($page, `[data-bind="all"]`)), { metadata });
     })));
 }
 
@@ -191,7 +191,7 @@ function componentMore(render, { metadata }) {
             return JSON.stringify(metadata.all[str], null, 2);
         }
     };
-    Object.keys(metadata.all).sort((a, b) => {
+    Object.keys(metadata.all || {}).sort((a, b) => {
         if (a.toLowerCase().trim() < b.toLowerCase().trim()) return -1;
         else if (a.toLowerCase().trim() > b.toLowerCase().trim()) return +1;
         return 0;
@@ -253,12 +253,12 @@ const extractExif = ($img) => new Promise((resolve) => EXIF.getData($img, functi
     });
 }));
 
-const formatTime = (t) => t.toLocaleTimeString(
+const formatTime = (t) => t && t.toLocaleTimeString(
     "en-us",
     { weekday: "short", hour: "2-digit", minute: "2-digit" },
 );
 
-const formatDate = (t) => t.toLocaleDateString(
+const formatDate = (t) => t && t.toLocaleDateString(
     navigator.language,
     { day: "numeric", year: "numeric", month: "short", day: "numeric" },
 );
