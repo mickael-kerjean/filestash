@@ -98,7 +98,7 @@ int jpeg_to_jpeg(int inputDesc, int outputDesc, int targetSize) {
   jpeg_config_output.image_width = jpeg_config_input.output_width;
   jpeg_config_output.image_height = jpeg_config_input.output_height;
   jpeg_config_output.input_components = jpeg_config_input.num_components;
-  jpeg_config_output.in_color_space = JCS_RGB;
+  jpeg_config_output.in_color_space = jpeg_config_input.out_color_space;
   jpeg_set_defaults(&jpeg_config_output);
   jpeg_set_quality(&jpeg_config_output, JPEG_QUALITY, TRUE);
   jpeg_start_compress(&jpeg_config_output, TRUE);

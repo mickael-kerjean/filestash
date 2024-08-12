@@ -145,7 +145,8 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     margin: 10px 0;
 }
 .component_imageviewer .component_image_container .images_aside .content .more_container {
-    margin: 10px 0 50px 0;
+    margin: 30px 0 50px 0;
+    padding-bottom: 20px;
 }
 .component_imageviewer .component_image_container .images_aside .content .more_container .meta_key {
     margin: 5px 0;
@@ -182,7 +183,6 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
 .component_imageviewer .error {
     color: var(--dark);
     font-size: 1.3em;
-    margin-top: 10px;
 }
 .component_imageviewer .component_image_container img.error {
     filter: contrast(0.8);
@@ -190,5 +190,5 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     margin: 0 auto;
 }
 .dark-mode .component_imageviewer .component_image_container {
-    background: #242424;
+    background: #232426;
 }

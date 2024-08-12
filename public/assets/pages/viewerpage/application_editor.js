@@ -96,6 +96,11 @@ export default async function(render, { acl$ }) {
                     if (config["editor"] === "emacs") editor.addKeyMap({
                         "Ctrl-X Ctrl-C": () => window.history.back(),
                     });
+                    if (mode === "orgmode") {
+                        const cleanup = CodeMirror.orgmode.init(editor);
+                        onDestroy(cleanup);
+                    }
+
                     onDestroy(() => editor.clearHistory());
                     $dom.menubar().classList.remove("hidden");
                     editor.execCommand("save");
@@ -161,7 +166,7 @@ export default async function(render, { acl$ }) {
 
     // feature5: save on exit
     effect(setup$.pipe(
-        rxjs.tap((cm) => window.history.block = async() => {
+        rxjs.mergeMap((cm) => new Promise((resolve, reject) => window.history.block = async() => {
             const block = qs(document.body, "component-breadcrumb").hasAttribute("indicator");
             if (block === false) return false;
             const userAction = await new Promise((done) => {
@@ -171,7 +176,7 @@ export default async function(render, { acl$ }) {
                 })(
                     createElement(`
                         <div style="text-align:center;padding-bottom:5px;">
-                            Do you want to save the changes ?
+                            ${t("Do you want to save the changes ?")}
                         </div>
                     `),
                     (val) => done(val),
@@ -181,10 +186,17 @@ export default async function(render, { acl$ }) {
                 const $fab = $dom.fab();
                 $fab.render($ICON.LOADING);
                 $fab.disabled = true;
-                await save(cm.getValue()).toPromise();
+                try {
+                    await save(cm.getValue()).toPromise();
+                    resolve();
+                } catch(err) {
+                    reject(err);
+                    return true;
+                }
             }
             return false;
-        }),
+        })),
+        rxjs.catchError(ctrlError()),
     ));
 }
 
@@ -226,9 +238,11 @@ function loadMode(ext) {
 
     if (ext === "org" || ext === "org_archive") {
         mode = "orgmode";
-        before = loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/fold/xml-fold.js")
-            .then(() => loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/edit/matchtags.js"))
-            .then(() => Promise.resolve(null));
+        before = Promise.all([
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/mode/simple.js"),
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/fold/xml-fold.js"),
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/edit/matchtags.js"),
+        ]).then(() => Promise.resolve(null));
     } else if (ext === "sh") mode = "shell";
     else if (ext === "py") mode = "python";
     else if (ext === "html" || ext === "htm") {

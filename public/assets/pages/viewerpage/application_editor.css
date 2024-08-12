@@ -286,8 +286,8 @@ pre.CodeMirror-line {
 
 .CodeMirror-foldmarker {
     padding-left: 5px;
-    color: var(--color);
-    text-shadow: 1px 1px 10px var(--color);
+    color: var(--color)!important;
+    text-shadow: 1px 1px 10px var(--color)!important;
 }
 
 span.CodeMirror-matchingbracket,
@@ -303,7 +303,7 @@ span.CodeMirror-matchingtag {
 
 /* DAR MODE THEME */
 .dark-mode .CodeMirror {
-    background: #242424;
+    background: #232426;
 }
 .dark-mode .CodeMirror, .dark-mode .CodeMirror .CodeMirror-linenumber, .dark-mode .CodeMirror .cm-variable-2, .dark-mode .CodeMirror .cm-variable-3, .dark-mode .CodeMirror .cm-number, .dark-mode .CodeMirror .cm-quote {
     color: #f6f3e8;
