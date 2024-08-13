@@ -11,7 +11,7 @@ export default async function main() {
         window.dispatchEvent(new window.Event("pagechange"));
     } catch (err) {
         console.error(err);
-        const msg = window.navigator.onLine === false ? "OFFLINE" : (err.message || "CAN'T LOAD");
+        const msg = window.navigator.onLine === false ? "OFFLINE" : (err instanceof Error && err.message) || "CAN'T LOAD";
         report("boot::" + msg, err, location.href);
         $error(msg);
     }

@@ -77,7 +77,7 @@ export default async function(render) {
         )),
         rxjs.mergeMap(({ show_hidden, files, ...rest }) => {
             if (show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
-            files = sort(files, rest.sort, rest.order);
+            files = sort(files, rest["sort"], rest["order"]);
             return rxjs.of({ ...rest, files });
         }),
         rxjs.map((data) => ({ ...data, count: count++ })),
@@ -265,7 +265,7 @@ export default async function(render) {
         rxjs.filter((e) => e.key === "a" &&
                     (e.ctrlKey || e.metaKey) &&
                     (files$.value || []).length > 0 &&
-                    assert.type(document.activeElement, window.HTMLElement).tagName !== "INPUT"),
+                    assert.type(document.activeElement, HTMLElement).tagName !== "INPUT"),
         preventDefault(),
         rxjs.tap(() => {
             clearSelection();
@@ -289,10 +289,10 @@ export default async function(render) {
     ));
     effect(getSelection$().pipe(rxjs.tap(() => {
         for (const $thing of $page.querySelectorAll(".component_thing")) {
-            const checked = isSelected(parseInt($thing.getAttribute("data-n")));
+            const checked = isSelected(parseInt(assert.truthy($thing.getAttribute("data-n"))));
             $thing.classList.add(checked ? "selected" : "not-selected");
             $thing.classList.remove(checked ? "not-selected" : "selected");
-            qs($thing, `input[type="checkbox"]`).checked = checked;
+            qs(assert.type($thing, HTMLElement), `input[type="checkbox"]`).checked = checked;
         };
     })));
 

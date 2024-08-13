@@ -16,7 +16,7 @@ const createNotification = async(msg, type) => createElement(`
     </span>
 `);
 
-class NotificationComponent extends window.HTMLElement {
+class NotificationComponent extends HTMLElement {
     buffer = [];
 
     async connectedCallback() {
@@ -28,8 +28,8 @@ class NotificationComponent extends window.HTMLElement {
         this.buffer.push({ message, type });
         if (this.buffer.length !== 1) {
             const $close = this.querySelector(".close");
-            if (!($close instanceof window.HTMLElement) || !$close.onclick) return;
-            $close.onclick(new window.MouseEvent("mousedown"));
+            if (!($close instanceof HTMLElement) || !$close.onclick) return;
+            $close.onclick(new MouseEvent("mousedown"));
             return;
         }
         await this.run();
@@ -46,16 +46,16 @@ class NotificationComponent extends window.HTMLElement {
         });
         const ids = [];
         await Promise.race([
-            new Promise((done) => ids.push(window.setTimeout(() => {
-                done(new window.MouseEvent("mousedown"));
+            new Promise((done) => ids.push(setTimeout(() => {
+                done(new MouseEvent("mousedown"));
             }, this.buffer.length === 1 ? 8000 : 800))),
-            new Promise((done) => ids.push(window.setTimeout(() => {
+            new Promise((done) => ids.push(setTimeout(() => {
                 const $close = $notification.querySelector(".close");
-                if (!($close instanceof window.HTMLElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: notification close button missing");
+                if (!($close instanceof HTMLElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: notification close button missing");
                 $close.onclick = done;
             }, 1000))),
         ]);
-        ids.forEach((id) => window.clearTimeout(id));
+        ids.forEach((id) => clearTimeout(id));
         await animate($notification, {
             keyframes: slideYOut(10),
             time: 200,

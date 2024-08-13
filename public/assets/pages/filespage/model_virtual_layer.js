@@ -30,7 +30,7 @@ const mutationFiles$ = new rxjs.BehaviorSubject({
 class IVirtualLayer {
     before() { throw new Error("NOT_IMPLEMENTED"); }
     async afterSuccess() { throw new Error("NOT_IMPLEMENTED"); }
-    async afterError() { throw new Error("NOT_IMPLEMENTED"); }
+    async afterError() { return rxjs.EMPTY; }
 }
 
 export function withVirtualLayer(ajax$, mutate) {
@@ -51,6 +51,9 @@ export function touch(path) {
     };
 
     return new class TouchVL extends IVirtualLayer {
+        /**
+         * @override
+         */
         before() {
             stateAdd(virtualFiles$, basepath, {
                 ...file,
@@ -58,6 +61,9 @@ export function touch(path) {
             });
         }
 
+        /**
+         * @override
+         */
         async afterSuccess() {
             removeLoading(virtualFiles$, basepath, filename);
             onDestroy(() => statePop(virtualFiles$, basepath, filename));
@@ -68,6 +74,9 @@ export function touch(path) {
             hooks.mutation.emit({ op: "touch", path: basepath });
         }
 
+        /**
+         * @override
+         */
         async afterError() {
             statePop(virtualFiles$, basepath, filename);
             return rxjs.of(fscache().remove(basepath)).pipe(
@@ -87,6 +96,9 @@ export function mkdir(path) {
     };
 
     return new class MkdirVL extends IVirtualLayer {
+        /**
+         * @override
+         */
         before() {
             stateAdd(virtualFiles$, basepath, {
                 ...file,
@@ -95,6 +107,9 @@ export function mkdir(path) {
             statePop(mutationFiles$, basepath, dirname); // case: rm followed by mkdir
         }
 
+        /**
+         * @override
+         */
         async afterSuccess() {
             removeLoading(virtualFiles$, basepath, dirname);
             onDestroy(() => statePop(virtualFiles$, basepath, dirname));
@@ -105,6 +120,9 @@ export function mkdir(path) {
             hooks.mutation.emit({ op: "mkdir", path: basepath });
         }
 
+        /**
+         * @override
+         */
         async afterError() {
             statePop(virtualFiles$, basepath, dirname);
             return rxjs.of(fscache().remove(basepath)).pipe(
@@ -124,6 +142,9 @@ export function save(path, size) {
     };
 
     return new class SaveVL extends IVirtualLayer {
+        /**
+         * @override
+         */
         before() {
             stateAdd(virtualFiles$, basepath, {
                 ...file,
@@ -132,6 +153,9 @@ export function save(path, size) {
             statePop(mutationFiles$, basepath, filename); // eg: rm followed by save
         }
 
+        /**
+         * @override
+         */
         async afterSuccess() {
             removeLoading(virtualFiles$, basepath, filename);
             onDestroy(() => statePop(virtualFiles$, basepath, filename));
@@ -142,6 +166,9 @@ export function save(path, size) {
             hooks.mutation.emit({ op: "save", path: basepath });
         }
 
+        /**
+         * @override
+         */
         async afterError() {
             statePop(virtualFiles$, basepath, filename);
             return rxjs.EMPTY;
@@ -160,6 +187,9 @@ export function rm(...paths) {
     }
 
     return new class RmVL extends IVirtualLayer {
+        /**
+         * @override
+         */
         before() {
             for (let i=0; i<arr.length; i+=2) {
                 stateAdd(mutationFiles$, arr[i], {
@@ -176,6 +206,9 @@ export function rm(...paths) {
             }
         }
 
+        /**
+         * @override
+         */
         async afterSuccess() {
             for (let i=0; i<arr.length; i+=2) {
                 stateAdd(mutationFiles$, arr[i], {
@@ -208,6 +241,9 @@ export function rm(...paths) {
             if (arr.length > 0) hooks.mutation.emit({ op: "rm", path: arr[0] });
         }
 
+        /**
+         * @override
+         */
         async afterError() {
             for (let i=0; i<arr.length; i+=2) {
                 stateAdd(mutationFiles$, arr[i], {
@@ -232,6 +268,9 @@ export function mv(fromPath, toPath) {
     let type = null;
 
     return new class MvVL extends IVirtualLayer {
+        /**
+         * @override
+         */
         before() {
             if (fromBasepath === toBasepath) this._beforeSamePath();
             else this._beforeSamePath();
@@ -270,6 +309,9 @@ export function mv(fromPath, toPath) {
             });
         }
 
+        /**
+         * @override
+         */
         async afterSuccess() {
             fscache().remove(fromPath, false);
             if (fromBasepath === toBasepath) await this._afterSuccessSamePath();
@@ -325,6 +367,9 @@ export function mv(fromPath, toPath) {
             hooks.mutation.emit({ op: "mv", path: toBasepath });
         }
 
+        /**
+         * @override
+         */
         async afterError() {
             statePop(mutationFiles$, fromBasepath, fromName);
             if (fromBasepath !== toBasepath) {

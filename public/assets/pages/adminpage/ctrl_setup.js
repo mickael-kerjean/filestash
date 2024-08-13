@@ -193,7 +193,6 @@ function componentStep2(render) {
         rxjs.filter((config) => config["log"]["telemetry"] !== true),
         rxjs.mergeMap(async(config) => {
             const enabled = await componentTelemetryPopup(createModal({ withButtonsRight: "OK" }));
-            console.log(enabled);
             if (enabled === false) return null;
             config["log"]["telemetry"] = enabled;
             return config;

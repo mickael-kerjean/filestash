@@ -1,0 +1,48 @@
+.component_tag input {
+    font-size: 1.2em;
+}
+.component_tag input::placeholder {
+    font-weight: 100;
+}
+.component_tag .box {
+    display: flex;
+    background: var(--bg-color);
+    transition: background 0.1s ease;
+    padding: 5px 10px;
+    border-radius: 3px;
+}
+.component_tag .box.active {
+    background: var(--primary);
+    color: var(--color);
+}
+.component_tag .box > div {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.component_tag .box img {
+    width: 20px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 50%;
+    margin-left: 5px;
+}
+.component_tag .box img[alt="close"] {
+    width: 14px;
+    padding: 3px;
+}
+.component_tag .box .count {
+    opacity: 0.5;
+    font-size: 0.9rem;
+}
+.component_tag .box .count:before {
+    content: "[";
+}
+.component_tag .box .count:after {
+    content: "]";
+}
+
+.component_tag .scroll-y {
+    overflow-y: auto !important;
+    max-height: 200px;
+}

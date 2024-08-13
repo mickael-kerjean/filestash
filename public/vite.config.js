@@ -6,13 +6,7 @@ export default defineConfig(({ comand, mode }) => {
         test: {
             global: true,
             environment: "jsdom",
-            setupFiles: ["./test/setup.js"],
-        },
-        coverage: {
-            reporter: ["html"],
-            exclude: [
-                "./assets/lib/vendor/**"
-            ],
+            setupFiles: ["./vite.setup.js"],
         }
     };
 });

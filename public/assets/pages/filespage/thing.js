@@ -70,7 +70,7 @@ export function createThing({
 }) {
     const [, ext] = formatFile(name);
     const mime = TYPES.MIME[ext.toLowerCase()];
-    const $thing = assert.type($tmpl.cloneNode(true), window.HTMLElement);
+    const $thing = assert.type($tmpl.cloneNode(true), HTMLElement);
 
     // you might wonder why don't we use querySelector to nicely get the dom nodes? Well,
     // we're in the hot path, better performance here is critical to get 60FPS.
@@ -107,9 +107,9 @@ export function createThing({
 
         $img.src = "api/files/cat?path=" + encodeURIComponent(path) + "&thumbnail=true" + location.search.replace("?", "&");
         $img.loaded = false;
-        const t = new Date();
+        const t = new Date().getTime();
         $img.onload = async() => {
-            const duration = new Date() - t;
+            const duration = new Date().getTime() - t;
             $img.loaded = true;
             await Promise.all([
                 animate($img, {

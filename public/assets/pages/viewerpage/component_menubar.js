@@ -7,7 +7,7 @@ import assert from "../../lib/assert.js";
 
 import "../../components/dropdown.js";
 
-export default class ComponentMenubar extends window.HTMLElement {
+export default class ComponentMenubar extends HTMLElement {
     constructor() {
         super();
         this.classList.add("component_menubar");
@@ -20,13 +20,13 @@ export default class ComponentMenubar extends window.HTMLElement {
             </div>
         `;
         if (new URLSearchParams(location.search).get("nav") === "false") {
-            const $container = assert.type(this.firstElementChild, window.HTMLElement);
+            const $container = assert.type(this.firstElementChild, HTMLElement);
             $container.classList.add("inherit-width");
         }
     }
 
     async connectedCallback() {
-        const $title = assert.type(this.querySelector(".titlebar"), window.HTMLElement);
+        const $title = assert.type(this.querySelector(".titlebar"), HTMLElement);
         this.timeoutID = setTimeout(() => animate($title, {
             time: 250,
             keyframes: slideYIn(2),
@@ -39,7 +39,7 @@ export default class ComponentMenubar extends window.HTMLElement {
     }
 
     render(buttons) {
-        const $item = assert.type(this.querySelector(".action-item"), window.HTMLElement);
+        const $item = assert.type(this.querySelector(".action-item"), HTMLElement);
         for (let i=buttons.length-1; i>=0; i--) {
             $item.appendChild(buttons[i]);
         }

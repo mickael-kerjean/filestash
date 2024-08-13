@@ -6,7 +6,7 @@ import { qs, qsa } from "../lib/dom.js";
 import { loadCSS } from "../helpers/loader.js";
 
 export function createModal(opts) {
-    const $dom = assert.type(qs(document.body, "component-modal"), window.HTMLElement);
+    const $dom = assert.type(qs(document.body, "component-modal"), HTMLElement);
     assert.type($dom, ModalComponent);
 
     return ($node, fn) => $dom.trigger($node, { onQuit: fn, ...opts });
@@ -32,7 +32,7 @@ const $modal = createElement(`
     </div>
 `);
 
-class ModalComponent extends window.HTMLElement {
+class ModalComponent extends HTMLElement {
     async connectedCallback() {
         await loadCSS(import.meta.url, "./modal.css");
     }
@@ -123,7 +123,7 @@ class ModalComponent extends window.HTMLElement {
                 let size = targetHeight;
                 if (size === null) {
                     const $box = document.querySelector("#modal-box > div");
-                    if ($box instanceof window.HTMLElement) size = $box.offsetHeight;
+                    if ($box instanceof HTMLElement) size = $box.offsetHeight;
                 }
                 size = Math.round((document.body.offsetHeight - size) / 2);
                 if (size < 0) return 0;

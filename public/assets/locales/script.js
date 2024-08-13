@@ -17,7 +17,7 @@ function mainReorderKey(argv) {
 function mainAddTranslationKey(argv) {
     const key = argv[3];
     const filepath = argv[2];
-    if (!filepath) throw new Error("missing args")
+    if (!filepath) throw new Error("missing args");
     else if (!key) return;
 
     const json = JSON.parse(fs.readFileSync(filepath));
@@ -28,6 +28,6 @@ function mainAddTranslationKey(argv) {
 
 // usage: find *.json -type f -exec node script.js {} \;
 (function() {
-    mainAddTranslationKey(process.argv)
-    mainReorderKey(process.argv)
-})()
+    mainAddTranslationKey(process.argv);
+    mainReorderKey(process.argv);
+})();

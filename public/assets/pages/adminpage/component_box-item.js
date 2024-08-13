@@ -1,6 +1,6 @@
 import { ApplicationError } from "../../lib/error.js";
 
-class BoxItem extends window.HTMLDivElement {
+class BoxItem extends HTMLElement {
     constructor() {
         super();
         this.attributeChangedCallback();
@@ -42,4 +42,4 @@ class BoxItem extends window.HTMLDivElement {
     }
 }
 
-customElements.define("box-item", BoxItem, { extends: "div" });
+customElements.define("box-item", BoxItem);

@@ -1,8 +1,8 @@
 const triggerPageChange = () => window.dispatchEvent(new window.Event("pagechange"));
-const trimPrefix = (value, prefix) => value.startsWith(prefix) ? value.slice(prefix.length) : value;
+const trimPrefix = (value = "", prefix) => value.startsWith(prefix) ? value.slice(prefix.length) : value;
 
-const _base = window.document.head.querySelector("base").getAttribute("href").replace(new RegExp("/$"), "");
-export const base = () => _base;
+const _base = window.document.head.querySelector("base")?.getAttribute("href")?.replace(new RegExp("/$"), "");
+export const base = () => _base || "";
 export const fromHref = (href) => trimPrefix(href, base());
 export const toHref = (href) => base() + href;
 

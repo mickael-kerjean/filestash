@@ -2,15 +2,14 @@ import "../../../lib/vendor/codemirror/addon/mode/simple.js";
 import {
     org_cycle, org_shifttab, org_metaleft, org_metaright, org_meta_return, org_metaup,
     org_metadown, org_insert_todo_heading, org_shiftleft, org_shiftright, fold, unfold,
-    isFold, org_set_fold, org_shiftmetaleft, org_shiftmetaright,
+    isFold, org_shiftmetaleft, org_shiftmetaright,
 } from "./emacs-org.js";
-import { getCurrentPath } from "../common.js";
 import { join } from "../../../lib/path.js";
 import { currentShare } from "../../filespage/cache.js";
 
 window.CodeMirror.__mode = "orgmode";
 
-CodeMirror.defineSimpleMode("orgmode", {
+window.CodeMirror.defineSimpleMode("orgmode", {
     start: [
         { regex: /(\*\s)(TODO|DOING|WAITING|NEXT|PENDING|)(CANCELLED|CANCELED|CANCEL|DONE|REJECTED|STOP|STOPPED|)(\s+\[\#[A-C]\]\s+|)(.*?)(?:(\s{10,}|))(\:[\S]+\:|)$/, sol: true, token: ["header level1 org-level-star", "header level1 org-todo", "header level1 org-done", "header level1 org-priority", "header level1", "header level1 void", "header level1 comment"] },
         { regex: /(\*{1,}\s)(TODO|DOING|WAITING|NEXT|PENDING|)(CANCELLED|CANCELED|CANCEL|DEFERRED|DONE|REJECTED|STOP|STOPPED|)(\s+\[\#[A-C]\]\s+|)(.*?)(?:(\s{10,}|))(\:[\S]+\:|)$/, sol: true, token: ["header org-level-star", "header org-todo", "header org-done", "header org-priority", "header", "header void", "header comment"] },
@@ -34,7 +33,7 @@ CodeMirror.defineSimpleMode("orgmode", {
     ],
 });
 
-CodeMirror.registerHelper("fold", "orgmode", function(cm, start) {
+window.CodeMirror.registerHelper("fold", "orgmode", function(cm, start) {
     // init
     const levelToMatch = headerLevel(start.line);
 
@@ -54,21 +53,21 @@ CodeMirror.registerHelper("fold", "orgmode", function(cm, start) {
     }
 
     return {
-        from: CodeMirror.Pos(start.line, cm.getLine(start.line).length),
-        to: CodeMirror.Pos(end, cm.getLine(end).length),
+        from: window.CodeMirror.Pos(start.line, cm.getLine(start.line).length),
+        to: window.CodeMirror.Pos(end, cm.getLine(end).length),
     };
 
     function headerLevel(lineNo) {
         const line = cm.getLine(lineNo);
         const match = /^\*+/.exec(line);
-        if (match && match.length === 1 && /header/.test(cm.getTokenTypeAt(CodeMirror.Pos(lineNo, 0)))) {
+        if (match && match.length === 1 && /header/.test(cm.getTokenTypeAt(window.CodeMirror.Pos(lineNo, 0)))) {
             return match[0].length;
         }
         return null;
     }
 });
 
-CodeMirror.registerGlobalHelper("fold", "drawer", function(mode) {
+window.CodeMirror.registerGlobalHelper("fold", "drawer", function(mode) {
     return mode.name === "orgmode";
 }, function(cm, start) {
     const drawer = isBeginningOfADrawer(start.line);
@@ -85,8 +84,8 @@ CodeMirror.registerGlobalHelper("fold", "drawer", function(mode) {
     }
 
     return {
-        from: CodeMirror.Pos(start.line, cm.getLine(start.line).length),
-        to: CodeMirror.Pos(end, cm.getLine(end).length),
+        from: window.CodeMirror.Pos(start.line, cm.getLine(start.line).length),
+        to: window.CodeMirror.Pos(end, cm.getLine(end).length),
     };
 
     function isBeginningOfADrawer(lineNo) {
@@ -103,9 +102,9 @@ CodeMirror.registerGlobalHelper("fold", "drawer", function(mode) {
     }
 });
 
-CodeMirror.registerHelper("orgmode", "init", (editor) => {
+window.CodeMirror.registerHelper("orgmode", "init", (editor) => {
     editor.setOption("extraKeys", {
-        "Tab": (cm) => org_cycle(cm),
+        Tab: (cm) => org_cycle(cm),
         "Shift-Tab": (cm) => org_shifttab(cm),
         "Alt-Left": (cm) => org_metaleft(cm),
         "Alt-Right": (cm) => org_metaright(cm),
@@ -126,15 +125,15 @@ CodeMirror.registerHelper("orgmode", "init", (editor) => {
     // fold everything except headers by default
     editor.operation(function() {
         for (let i = 0; i < editor.lineCount(); i++) {
-            if (/header/.test(editor.getTokenTypeAt(CodeMirror.Pos(i, 0))) === false) {
-                fold(editor, CodeMirror.Pos(i, 0));
+            if (/header/.test(editor.getTokenTypeAt(window.CodeMirror.Pos(i, 0))) === false) {
+                fold(editor, window.CodeMirror.Pos(i, 0));
             }
         }
     });
-    return CodeMirror.orgmode.destroy.bind(this, editor);
+    return window.CodeMirror.orgmode.destroy.bind(this, editor);
 });
 
-CodeMirror.registerHelper("orgmode", "destroy", (editor) => {
+window.CodeMirror.registerHelper("orgmode", "destroy", (editor) => {
     editor.off("mousedown", toggleHandler);
     editor.off("touchstart", toggleHandler);
     editor.off("gutterClick", foldLine);
@@ -272,7 +271,7 @@ function toggleHandler(cm, e) {
             if (/^https?\:\/\//.test(src)) {
                 $img.src = src;
             } else {
-                let path = join(location, src).replace(/^\/view/, "");
+                const path = join(location, src).replace(/^\/view/, "");
                 $img.src = "/api/files/cat?path=" + path;
                 const share = currentShare();
                 if (share) $img.src += "&share=" + share;

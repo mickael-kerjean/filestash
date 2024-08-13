@@ -1,4 +1,5 @@
 interface Window {
+    chrome: object;
     overrides: {
         [key: string]: any;
         "xdg-open"?: (mime: string) => void;

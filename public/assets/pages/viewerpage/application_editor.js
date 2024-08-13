@@ -97,7 +97,7 @@ export default async function(render, { acl$ }) {
                         "Ctrl-X Ctrl-C": () => window.history.back(),
                     });
                     if (mode === "orgmode") {
-                        const cleanup = CodeMirror.orgmode.init(editor);
+                        const cleanup = window.CodeMirror.orgmode.init(editor);
                         onDestroy(cleanup);
                     }
 
@@ -189,7 +189,7 @@ export default async function(render, { acl$ }) {
                 try {
                     await save(cm.getValue()).toPromise();
                     resolve();
-                } catch(err) {
+                } catch (err) {
                     reject(err);
                     return true;
                 }

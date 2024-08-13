@@ -3,3 +3,5 @@ interface Window {
         Book: new (options: any) => any;
     };
 }
+
+export default function(any): void;

@@ -36,7 +36,7 @@ export default async function(render) {
     const init$ = getMiddlewareAvailable().pipe(
         rxjs.first(),
         rxjs.map((specs) => Object.keys(specs).map((label) => createElement(`
-            <div is="box-item" data-label="${label}"></div>
+            <box-item data-label="${label}"></box-item>
         `))),
         rxjs.tap(() => {
             qs($page, "h2").classList.remove("hidden");

@@ -1,17 +1,38 @@
+import assert from "../../lib/assert.js";
 import { getSession } from "../../model/session.js";
 
 class ICache {
-    async get() { throw new Error("NOT_IMPLEMENTED"); }
+    /**
+     * @param {string} _path
+     * @return {Promise<any>}
+     */
+    async get(_path) { throw new Error("NOT_IMPLEMENTED"); }
 
-    async store() { throw new Error("NOT_IMPLEMENTED"); }
+    /**
+     * @param {string} _path
+     * @param {any} _data
+     * @return {Promise<void>}
+     */
+    async store(_path, _data) { throw new Error("NOT_IMPLEMENTED"); }
 
+    /**
+     * @return {Promise<void>}
+     */
     async remove() { throw new Error("NOT_IMPLEMENTED"); }
 
+    /**
+     * @param {string} path
+     * @param {function(any): any} fn
+     * @return {Promise<void>}
+     */
     async update(path, fn) {
         const data = await this.get(path);
         return this.store(path, fn(data || {}));
     }
 
+    /**
+     * @return {Promise<void>}
+     */
     async destroy() { throw new Error("NOT_IMPLEMENTED"); }
 }
 
@@ -21,14 +42,23 @@ class InMemoryCache extends ICache {
         this.data = {};
     }
 
+    /**
+     * @override
+     */
     async get(path) {
         return this.data[this._key(path)] || null;
     }
 
+    /**
+     * @override
+     */
     async store(path, obj) {
         this.data[this._key(path)] = obj;
     }
 
+    /**
+     * @override
+     */
     async remove(path, exact = true) {
         if (!path) {
             this.data = {};
@@ -46,6 +76,9 @@ class InMemoryCache extends ICache {
         }
     }
 
+    /**
+     * @override
+     */
     async destroy() {
         this.data = {};
     }
@@ -58,7 +91,7 @@ class InMemoryCache extends ICache {
 class IndexDBCache extends ICache {
     DB_VERSION = 5;
     FILE_PATH = "file_path";
-    db = null;
+    /** @type {Promise<IDBDatabase> | null} */ db = null;
 
     constructor() {
         super();
@@ -68,25 +101,31 @@ class IndexDBCache extends ICache {
 
         this.db = new Promise((done, err) => {
             request.onsuccess = (e) => {
-                done(e.target.result);
+                done(assert.truthy(e.target).result);
             };
             request.onerror = () => err(new Error("INDEXEDDB_NOT_SUPPORTED"));
         });
     }
 
+    /**
+     * @override
+     */
     async get(path) {
-        const db = await this.db;
+        const db = assert.truthy(await this.db);
         const tx = db.transaction(this.FILE_PATH, "readonly");
         const store = tx.objectStore(this.FILE_PATH);
         const query = store.get(this._key(path));
         return await new Promise((done) => {
-            query.onsuccess = (e) => done(query.result || null);
+            query.onsuccess = () => done(query.result || null);
             query.onerror = () => done(null);
         });
     }
 
+    /**
+     * @override
+     */
     async store(path, value = {}) {
-        const db = await this.db;
+        const db = assert.truthy(await this.db);
         const tx = db.transaction(this.FILE_PATH, "readwrite");
         const store = tx.objectStore(this.FILE_PATH);
 
@@ -103,8 +142,11 @@ class IndexDBCache extends ICache {
         });
     }
 
+    /**
+     * @override
+     */
     async remove(path, exact = true) {
-        const db = await this.db;
+        const db = assert.truthy(await this.db);
         const tx = db.transaction(this.FILE_PATH, "readwrite");
         const store = tx.objectStore(this.FILE_PATH);
         const key = this._key(path);
@@ -179,7 +221,7 @@ export async function init() {
         cache = new InMemoryCache();
         if (!("indexedDB" in window)) return;
 
-        cache = new IndexDBCache();
+        cache = assert.truthy(new IndexDBCache());
         return cache.db.catch((err) => {
             if (err.message === "INDEXEDDB_NOT_SUPPORTED") {
                 // Firefox in private mode act like if it supports indexedDB but
