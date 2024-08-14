@@ -50,10 +50,17 @@ pipeline {
                         sh "cat access.log | grep -vz \"WARN\""
                         sh "cat access.log | grep -vz \"ERR\""
                     }
-                    // test frontend
+                    // test frontend old
                     docker.image("node:14").inside("--user=root") {
                         sh "cd ./test/unit_js && npm install"
                         sh "cd ./test/unit_js && npm test"
+                    }
+                    // test frontend new
+                    docker.image("node:20").inside("--user=root") {
+                        sh "cd public && npm install"
+                        // sh "cd public && npm run lint"
+                        sh "cd public && npm run check"
+                        // sh "cd public && npm run test"
                     }
                     // test backend
                     docker.image("golang:1.21-bookworm").inside("--user=root") {
