@@ -30,17 +30,20 @@ export default function(render) {
     render($page);
     transition(qs($page, ".component_image_container"));
 
-    const toggleInfo = () => qs($page, ".images_aside").classList.toggle("open");
     const $imgContainer = qs($page, ".images_wrapper");
     const $photo = qs($page, "img.photo");
     const removeLoader = createLoader($imgContainer);
     const load$ = new rxjs.BehaviorSubject(null);
+    const toggleInfo = () => {
+        qs($page, ".images_aside").classList.toggle("open");
+        componentMetadata(createRender(qs($page, ".images_aside")), { toggle: toggleInfo, load$ });
+    };
 
     renderMenubar(
         qs($page, "component-menubar"),
         buttonDownload(getFilename(), getDownloadUrl()),
         buttonFullscreen(qs($page, ".component_image_container")),
-        buttonInfo({ $img: $photo, toggle: toggleInfo }),
+        buttonInfo({ toggle: toggleInfo }),
     );
 
     effect(onLoad($photo).pipe(
@@ -59,7 +62,7 @@ export default function(render) {
             ],
         })),
         rxjs.catchError((err) => {
-            if (err.target instanceof window.HTMLElement && err.type === "error") {
+            if (err.target instanceof HTMLElement && err.type === "error") {
                 return rxjs.of($photo).pipe(
                     removeLoader,
                     rxjs.tap(($img) => {
@@ -79,11 +82,10 @@ export default function(render) {
         }),
     ));
 
-    componentMetadata(createRender(qs($page, ".images_aside")), { toggle: toggleInfo, load$ });
     componentPager(createRender(qs($page, ".component_pager")));
 }
 
-function buttonInfo({ $img, toggle }) {
+function buttonInfo({ toggle }) {
     const $el = createElement(`
         <span>
             <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZyB0cmFuc2Zvcm09Im1hdHJpeCgwLjg4MiwwLDAsMC44ODIsNS45LDUuOSkiPgogICAgPHBhdGggc3R5bGU9ImZpbGw6I2YyZjJmMjtmaWxsLW9wYWNpdHk6MSIgZD0ibSA2Mi4xNjIsMCBjIDYuNjk2LDAgMTAuMDQzLDQuNTY3IDEwLjA0Myw5Ljc4OSAwLDYuNTIyIC01LjgxNCwxMi41NTUgLTEzLjM5MSwxMi41NTUgLTYuMzQ0LDAgLTEwLjA0NSwtMy43NTIgLTkuODY5LC05Ljk0NyBDIDQ4Ljk0NSw3LjE3NiA1My4zNSwwIDYyLjE2MiwwIFogTSA0MS41NDMsMTAwIGMgLTUuMjg3LDAgLTkuMTY0LC0zLjI2MiAtNS40NjMsLTE3LjYxNSBsIDYuMDcsLTI1LjQ1NyBjIDEuMDU3LC00LjA3NyAxLjIzLC01LjcwNyAwLC01LjcwNyAtMS41ODgsMCAtOC40NTEsMi44MTYgLTEyLjUxLDUuNTkgTCAyNyw1Mi40MDYgQyAzOS44NjMsNDEuNDggNTQuNjYyLDM1LjA3MiA2MS4wMDQsMzUuMDcyIGMgNS4yODUsMCA2LjE2OCw2LjM2MSAzLjUyNSwxNi4xNDggTCA1Ny41OCw3Ny45OCBjIC0xLjIzNCw0LjcyOSAtMC43MDMsNi4zNTkgMC41MjcsNi4zNTkgMS41ODYsMCA2Ljc4NywtMS45NjMgMTEuODk2LC02LjA0MSBMIDczLDgyLjM3NyBDIDYwLjQ4OCw5NS4xIDQ2LjgzLDEwMCA0MS41NDMsMTAwIFoiIC8+CiAgPC9nPgo8L3N2Zz4K" alt="info">

@@ -11,7 +11,7 @@ export function join(baseURL, segment) {
 }
 
 export function forwardURLParams(url, allowed = []) {
-    const _url = new URL(location.origin + "/" + url);
+    const _url = new URL(window.location.origin + "/" + url);
     for (const [key, value] of new URLSearchParams(location.search)) {
         if (allowed.indexOf(key) < 0) continue;
         _url.searchParams.set(key, value);

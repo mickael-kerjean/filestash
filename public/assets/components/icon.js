@@ -1,4 +1,4 @@
-class Icon extends window.HTMLElement {
+class Icon extends HTMLElement {
     static get observedAttributes() {
         return ["name"];
     }

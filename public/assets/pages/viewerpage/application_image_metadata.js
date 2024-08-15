@@ -1,7 +1,6 @@
-import { createElement, createRender, onDestroy } from "../../lib/skeleton/index.js";
-import rxjs, { effect, onClick, onLoad } from "../../lib/rx.js";
+import { createElement, createRender } from "../../lib/skeleton/index.js";
+import rxjs, { effect, onClick } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
-import assert from "../../lib/assert.js";
 import t from "../../locales/index.js";
 import { loadJS, loadCSS } from "../../helpers/loader.js";
 
@@ -30,7 +29,7 @@ function componentHeader(render, { toggle }) {
     `);
     render($header);
 
-    effect(onClick($header, `[alt="close"]`).pipe(rxjs.tap(toggle)));
+    effect(onClick(qs($header, `[alt="close"]`)).pipe(rxjs.tap(toggle)));
 }
 
 function componentBody(render, { load$ }) {
@@ -54,7 +53,7 @@ function componentBody(render, { load$ }) {
     `);
     render($page);
 
-    effect(load$.pipe(rxjs.tap(async ($img) => {
+    effect(load$.pipe(rxjs.tap(async($img) => {
         if (!$img) return;
         const metadata = await extractExif($img);
         qs($page, `[data-bind="date"]`).innerText = formatDate(metadata.date) || "-";
@@ -63,7 +62,7 @@ function componentBody(render, { load$ }) {
         qs($page, `[data-bind="camera-name"]`).innerText = formatCameraName(metadata) || "-";
 
         if (metadata.location) await componentMap(createRender(qs($page, `[data-bind="map"]`)), { metadata });
-        if (metadata.all) componentMore(createRender(qs($page, `[data-bind="all"]`)), { metadata });
+        componentMore(createRender(qs($page, `[data-bind="all"]`)), { metadata });
     })));
 }
 
@@ -72,7 +71,7 @@ async function componentMap(render, { metadata }) {
         if (!d || d.length !== 4) return null;
         const [degrees, minutes, seconds, direction] = d;
         const dd = degrees + minutes/60 + seconds/(60*60);
-        return direction == "S" || direction == "W" ? -dd : dd;
+        return direction === "S" || direction === "W" ? -dd : dd;
     };
     const lat = DMSToDD(metadata.location[0]);
     const lng = DMSToDD(metadata.location[1]);
@@ -100,9 +99,11 @@ async function componentMap(render, { metadata }) {
 
     await new Promise((resolve) => setTimeout(resolve, 500));
     const TILE_SERVER = "https://tile.openstreetmap.org/${z}/${x}/${y}.png";
-    const TILE_SIZE = parseInt($page.clientWidth / 3 * 100) / 100;
+    const TILE_SIZE = Math.floor($page.clientWidth / 3 * 100) / 100;
+    if (TILE_SIZE === 0) return;
     $page.style.height = "${TILE_SIZE*3}px;";
-    const mapper = function map_url(lat, lng, zoom) {
+    const defaultTo = (val, def) => val === undefined ? val : def;
+    const mapper = (function map_url(lat, lng, zoom) {
         // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenamse
         const n = Math.pow(2, zoom);
         const tile_numbers = [
@@ -113,19 +114,21 @@ async function componentMap(render, { metadata }) {
         return {
             tile: function(tile_server, x = 0, y = 0) {
                 return tile_server
-                    .replace("${x}", Math.floor(tile_numbers[0])+x)
-                    .replace("${y}", Math.floor(tile_numbers[1])+y)
+                    .replace("${x}", Math.floor(tile_numbers[0] || 0)+x)
+                    .replace("${y}", Math.floor(tile_numbers[1] || 0)+y)
                     .replace("${z}", Math.floor(zoom));
             },
             position: function() {
+                const t0 = defaultTo(tile_numbers[0], 0);
+                const t1 = defaultTo(tile_numbers[1], 0);
                 return [
-                    tile_numbers[0] - Math.floor(tile_numbers[0]),
-                    tile_numbers[1] - Math.floor(tile_numbers[1]),
+                    t0 - Math.floor(t0),
+                    t1 - Math.floor(t1),
                 ];
             },
         };
-    }(lat, lng, 11);
-    const center = (position, i) => parseInt(TILE_SIZE * (1 + position[i]) * 1000)/1000;
+    }(lat, lng, 11));
+    const center = (position, i) => Math.floor(TILE_SIZE * (1 + position[i]) * 1000)/1000;
     const $tiles = createElement(`
         <div class="bigpicture">
             <div class="line">
@@ -146,9 +149,10 @@ async function componentMap(render, { metadata }) {
         </div>
     `);
     qs($page, `[data-bind="maptile"]`).appendChild($tiles);
+    const pos = mapper.position();
     qs($page, ".marker").setAttribute("style", `
-        left: ${TILE_SIZE * (1 + mapper.position()[0]) - 15}px;
-        top: ${TILE_SIZE * (1 + mapper.position()[1]) - 30}px;
+        left: ${TILE_SIZE * (1 + defaultTo(pos[0], 0)) - 15}px;
+        top: ${TILE_SIZE * (1 + defaultTo(pos[1], 0)) - 30}px;
     `);
     $tiles.setAttribute("style", `transform-origin: ${center(mapper.position(), 0)}px ${center(mapper.position(), 1)}px;`);
 }
@@ -166,13 +170,13 @@ function componentMore(render, { metadata }) {
     const formatValue = (str) => {
         if (!metadata.all || metadata.all[str] === undefined) return "-";
         if (typeof metadata.all[str] === "number") {
-            return parseInt(metadata.all[str]*100)/100;
+            return Math.floor(metadata.all[str]*100)/100;
         } else if (metadata.all[str].denominator !== undefined &&
                    metadata.all[str].numerator !== undefined) {
             if (metadata.all[str].denominator === 1) {
                 return metadata.all[str].numerator;
             } else if (metadata.all[str].numerator > metadata.all[str].denominator) {
-                return parseInt(
+                return Math.floor(
                     metadata.all[str].numerator * 10 / metadata.all[str].denominator,
                 ) / 10;
             } else {
@@ -191,12 +195,12 @@ function componentMore(render, { metadata }) {
             return JSON.stringify(metadata.all[str], null, 2);
         }
     };
-    Object.keys(metadata.all).sort((a, b) => {
+    Object.keys(metadata.all || {}).sort((a, b) => {
         if (a.toLowerCase().trim() < b.toLowerCase().trim()) return -1;
         else if (a.toLowerCase().trim() > b.toLowerCase().trim()) return +1;
         return 0;
-    }).map((key) => {
-        switch(key) {
+    }).forEach((key) => {
+        switch (key) {
         case "undefined":
         case "thumbnail":
             break;
@@ -218,18 +222,25 @@ export function init() {
     ]);
 }
 
-const extractExif = ($img) => new Promise((resolve) => EXIF.getData($img, function(data) {
-    const metadata = EXIF.getAllTags(this);
-    const to_date = (str) => {
-        if (!str) return null;
-        return new Date(...str.split(/[ :]/));
+const extractExif = ($img) => new Promise((resolve) => window.EXIF.getData($img, function() {
+    const metadata = window.EXIF.getAllTags($img);
+    const to_date = (str = "") => {
+        const digits = str.split(/[ :]/).map((digit) => parseInt(digit));
+        return new Date(
+            digits[0] || 0,
+            digits[1] || 0,
+            digits[2] || 0,
+            digits[3] || 0,
+            digits[4] || 0,
+            digits[5] || 0,
+        );
     };
     resolve({
         date: to_date(
             metadata["DateTime"] || metadata["DateTimeDigitized"] ||
                 metadata["DateTimeOriginal"] || metadata["GPSDateStamp"],
         ),
-        location: metadata["GPSLatitude"] && metadata["GPSLongitude"] && [
+        location: (metadata["GPSLatitude"] && metadata["GPSLongitude"] && [
             [
                 metadata["GPSLatitude"][0], metadata["GPSLatitude"][1],
                 metadata["GPSLatitude"][2], metadata["GPSLatitudeRef"],
@@ -238,34 +249,34 @@ const extractExif = ($img) => new Promise((resolve) => EXIF.getData($img, functi
                 metadata["GPSLongitude"][0], metadata["GPSLongitude"][1],
                 metadata["GPSLongitude"][2], metadata["GPSLongitudeRef"],
             ],
-        ] || null,
+        ]) || null,
         maker: metadata["Make"] || null,
         model: metadata["Model"] || null,
         focal: metadata["FocalLength"] || null,
         aperture: metadata["FNumber"] || null,
         shutter: metadata["ExposureTime"] || null,
         iso: metadata["ISOSpeedRatings"] || null,
-        dimension: metadata["PixelXDimension"] && metadata["PixelYDimension"] && [
+        dimension: (metadata["PixelXDimension"] && metadata["PixelYDimension"] && [
             metadata["PixelXDimension"],
             metadata["PixelYDimension"],
-        ] || null,
+        ]) || null,
         all: Object.keys(metadata).length === 0 ? null : metadata,
     });
 }));
 
-const formatTime = (t) => t.toLocaleTimeString(
+const formatTime = (t) => t?.toLocaleTimeString(
     "en-us",
     { weekday: "short", hour: "2-digit", minute: "2-digit" },
 );
 
-const formatDate = (t) => t.toLocaleDateString(
+const formatDate = (t) => t?.toLocaleDateString(
     navigator.language,
-    { day: "numeric", year: "numeric", month: "short", day: "numeric" },
+    { year: "numeric", month: "short", day: "numeric" },
 );
 
 const formatCameraSettings = (metadata) => {
-    let str = format("model", metadata);
-    const f = format("focal", metadata)
+    const str = format("model", metadata);
+    const f = format("focal", metadata);
     if (!f) return str;
     return `${str} (${f})`;
 };
@@ -280,17 +291,17 @@ const formatCameraName = (metadata) => {
 
 const format = (key, metadata) => {
     if (!metadata[key]) return "";
-    switch(key) {
+    switch (key) {
     case "focal":
         return `${metadata.focal}mm`;
     case "iso":
         return `ISO${metadata.iso}`;
     case "aperture":
-        return "ƒ"+parseInt(metadata.aperture*10)/10;
+        return `ƒ${Math.floor(metadata.aperture*10)/10}`;
     case "shutter":
         if (metadata.shutter > 60) return metadata.shutter+"m";
         else if (metadata.shutter > 1) return metadata.shutter+"s";
-        return "1/"+parseInt(metadata.shutter.denominator / metadata.shutter.numerator)+"s";
+        return `1/${Math.floor(metadata.shutter.denominator / metadata.shutter.numerator)}s`;
     case "dimension":
         if (metadata.dimension.length !== 2 || !metadata.dimension[0] || !metadata.dimension[1]) return "-";
         return metadata.dimension[0]+"x"+metadata.dimension[1];

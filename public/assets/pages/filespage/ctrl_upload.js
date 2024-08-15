@@ -27,8 +27,8 @@ export default async function(render) {
                 <div is="component_filezone"></div>
                 <div is="component_upload_fab"></div>
             `);
-            componentFilezone(createRender(assert.type($page.children[0], window.HTMLElement)), { workers$ });
-            componentUploadFAB(createRender(assert.type($page.children[1], window.HTMLElement)), { workers$ });
+            componentFilezone(createRender(assert.type($page.children[0], HTMLElement)), { workers$ });
+            componentUploadFAB(createRender(assert.type($page.children[1], HTMLElement)), { workers$ });
             render($page);
         }),
     ));
@@ -62,7 +62,7 @@ function componentUploadFAB(render, { workers$ }) {
 
 function componentFilezone(render, { workers$ }) {
     const selector = `[data-bind="filemanager-children"]`;
-    const $target = assert.type(document.body.querySelector(selector), window.HTMLElement);
+    const $target = assert.type(qs(document.body, selector), HTMLElement);
 
     $target.ondragenter = (e) => {
         if (!isNativeFileUpload(e)) return;
@@ -78,7 +78,7 @@ function componentFilezone(render, { workers$ }) {
         } else if (e.dataTransfer.files instanceof window.FileList) {
             workers$.next(await processFiles(e.dataTransfer.files));
         } else {
-            assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js", e.dataTransfer);
+            assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js");
         }
         clearTimeout(loadID);
         render(createFragment(""));
@@ -134,15 +134,13 @@ function componentUploadQueue(render, { workers$ }) {
     };
 
     // feature1: close the queue
-    onClick(qs($page, `img[alt="close"]`)).pipe(
-        rxjs.tap(async(cancel) => {
-            const cleanup = await animate($page, { time: 200, keyframes: slideYOut(50) });
-            $content.innerHTML = "";
-            $page.classList.add("hidden");
-            updateTotal.reset();
-            cleanup();
-        }),
-    ).subscribe();
+    onClick(qs($page, `img[alt="close"]`)).pipe(rxjs.tap(async() => {
+        const cleanup = await animate($page, { time: 200, keyframes: slideYOut(50) });
+        $content.innerHTML = "";
+        $page.classList.add("hidden");
+        updateTotal.reset();
+        cleanup();
+    })).subscribe();
 
     // feature2: setup the task queue in the dom
     workers$.subscribe(({ tasks }) => {
@@ -150,7 +148,7 @@ function componentUploadQueue(render, { workers$ }) {
         updateTotal.addToTotal(tasks.length);
         const $fragment = document.createDocumentFragment();
         for (let i = 0; i<tasks.length; i++) {
-            const $task = $file.cloneNode(true);
+            const $task = assert.type($file.cloneNode(true), HTMLElement);
             $fragment.appendChild($task);
             $task.setAttribute("data-path", tasks[i]["path"]);
             $task.firstElementChild.firstElementChild.textContent = tasks[i]["path"]; // qs($todo, ".file_path span.path")
@@ -176,10 +174,10 @@ function componentUploadQueue(render, { workers$ }) {
         let last = 0;
         return (nworker, currentWorkerSpeed) => {
             workersSpeed[nworker] = currentWorkerSpeed;
-            if (new Date() - last <= 500) return;
-            last = new Date();
+            if (new Date().getTime() - last <= 500) return;
+            last = new Date().getTime();
             const speed = workersSpeed.reduce((acc, el) => acc + el, 0);
-            const $speed = assert.type($page.firstElementChild.nextElementSibling.firstElementChild, window.HTMLElement);
+            const $speed = assert.type($page.firstElementChild?.nextElementSibling?.firstElementChild, HTMLElement);
             $speed.textContent = formatSpeed(speed);
         };
     }(new Array(MAX_WORKERS).fill(0)));
@@ -208,7 +206,7 @@ function componentUploadQueue(render, { workers$ }) {
             $close.removeEventListener("click", cancel);
             break;
         case "error":
-            const $retry = assert.type($iconRetry.cloneNode(true), window.HTMLElement);
+            const $retry = assert.type($iconRetry.cloneNode(true), HTMLElement);
             updateDOMGlobalTitle($page, t("Error"));
             updateDOMGlobalSpeed(nworker, 0);
             updateDOMTaskProgress($task, t("Error"));
@@ -276,7 +274,7 @@ function componentUploadQueue(render, { workers$ }) {
             const nworker = reservations.indexOf(false);
             if (nworker === -1) break; // the pool of workers is already to its max
             reservations[nworker] = true;
-            noFailureAllowed(processWorkerQueue.bind(this, nworker)).then(() => reservations[nworker] = false);
+            noFailureAllowed(processWorkerQueue.bind(null, nworker)).then(() => reservations[nworker] = false);
         }
     });
 }
@@ -295,17 +293,24 @@ function workerImplFile({ error, progress, speed }) {
             this.prevProgress = [];
         }
 
+        /**
+         * @override
+         */
         cancel() {
-            this.xhr.abort();
+            assert.type(this.xhr, XMLHttpRequest).abort();
         }
 
+        /**
+         * @override
+         */
         async run({ file, path, virtual }) {
+            const xhr = new XMLHttpRequest();
+            this.xhr = xhr;
             return new Promise((resolve, reject) => {
-                this.xhr = new XMLHttpRequest();
-                this.xhr.open("POST", "api/files/cat?path=" + encodeURIComponent(path));
-                this.xhr.withCredentials = true;
-                this.xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
-                this.xhr.upload.onprogress = (e) => {
+                xhr.open("POST", "api/files/cat?path=" + encodeURIComponent(path));
+                xhr.withCredentials = true;
+                xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
+                xhr.upload.onprogress = (e) => {
                     if (!e.lengthComputable) return;
                     const percent = Math.floor(100 * e.loaded / e.total);
                     progress(percent);
@@ -329,26 +334,26 @@ function workerImplFile({ error, progress, speed }) {
                         this.prevProgress.shift();
                     }
                 };
-                this.xhr.upload.onabort = () => {
+                xhr.upload.onabort = () => {
                     reject(ABORT_ERROR);
                     error(ABORT_ERROR);
                     virtual.afterError();
                 };
-                this.xhr.onload = () => {
+                xhr.onload = () => {
                     progress(100);
-                    if (this.xhr.status !== 200) {
+                    if (xhr.status !== 200) {
                         virtual.afterError();
-                        reject(new Error(this.xhr.statusText));
+                        reject(new Error(xhr.statusText));
                         return;
                     }
                     virtual.afterSuccess();
                     resolve(null);
                 };
-                this.xhr.onerror = function(e) {
+                xhr.onerror = function(e) {
                     reject(new AjaxError("failed", e, "FAILED"));
                     virtual.afterError();
                 };
-                file().then((f) => this.xhr.send(f)).catch((err) => this.xhr.onerror(err));
+                file().then((f) => xhr.send(f)).catch((err) => xhr.onerror && xhr.onerror(err));
             });
         }
     }();
@@ -361,17 +366,24 @@ function workerImplDirectory({ error, progress }) {
             this.xhr = null;
         }
 
+        /**
+         * @override
+         */
         cancel() {
-            if (this.xhr instanceof XMLHttpRequest) this.xhr.abort();
+            assert.type(this.xhr, XMLHttpRequest).abort();
         }
 
+        /**
+         * @override
+         */
         run({ virtual, path }) {
+            const xhr = new XMLHttpRequest();
+            this.xhr = xhr;
             return new Promise((resolve, reject) => {
-                this.xhr = new XMLHttpRequest();
-                this.xhr.open("POST", "api/files/mkdir?path=" + encodeURIComponent(path));
-                this.xhr.withCredentials = true;
-                this.xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
-                this.xhr.onerror = function(e) {
+                xhr.open("POST", "api/files/mkdir?path=" + encodeURIComponent(path));
+                xhr.withCredentials = true;
+                xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
+                xhr.onerror = function(e) {
                     reject(new AjaxError("failed", e, "FAILED"));
                 };
 
@@ -384,24 +396,24 @@ function workerImplDirectory({ error, progress }) {
                     }
                     progress(percent);
                 }, 100);
-                this.xhr.upload.onabort = () => {
+                xhr.upload.onabort = () => {
                     reject(ABORT_ERROR);
                     error(ABORT_ERROR);
                     clearInterval(id);
                     virtual.afterError();
                 };
-                this.xhr.onload = () => {
+                xhr.onload = () => {
                     clearInterval(id);
                     progress(100);
-                    if (this.xhr.status !== 200) {
+                    if (xhr.status !== 200) {
                         virtual.afterError();
-                        err(new Error(this.xhr.statusText));
+                        reject(new Error(xhr.statusText));
                         return;
                     }
                     virtual.afterSuccess();
                     resolve(null);
                 };
-                this.xhr.send(null);
+                xhr.send(null);
             });
         }
     }();
@@ -462,8 +474,9 @@ async function processFiles(filelist) {
             };
             break;
         default:
-            assert.fail(type, `NOT_SUPPORTED type="${type}"`);
+            assert.fail(`NOT_SUPPORTED type="${type}"`);
         }
+        task = assert.truthy(task);
         task.virtual.before();
         tasks.push(task);
     }
@@ -497,6 +510,7 @@ async function processItems(itemList) {
                     exec: workerImplFile,
                     virtual: save(path, entrySize),
                     done: false,
+                    ready: () => false,
                 };
                 size += entrySize;
             } else if (entry.isDirectory) {
@@ -506,12 +520,13 @@ async function processItems(itemList) {
                     exec: workerImplDirectory,
                     virtual: mkdir(path),
                     done: false,
+                    ready: () => false,
                 };
                 queue = queue.concat(await new Promise((resolve) => {
                     entry.createReader().readEntries(resolve);
                 }));
             } else {
-                assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js", entry);
+                assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js");
             }
             task.ready = () => {
                 const isInDirectory = (filepath, folder) => folder.indexOf(filepath) === 0;

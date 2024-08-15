@@ -45,7 +45,7 @@ export default function(ctrl) {
         effect(rxjs.fromEvent(window, "keydown").pipe(
             rxjs.filter((e) => regexStartFiles.test(fromHref(location.pathname)) &&
                         e.keyCode === 8 &&
-                        assert.type(document.activeElement, window.HTMLElement).nodeName !== "INPUT"), // backspace in filemanager
+                        assert.type(document.activeElement, HTMLElement).nodeName !== "INPUT"), // backspace in filemanager
             rxjs.tap(() => {
                 const p = location.pathname.replace(new RegExp("/$"), "").split("/");
                 p.pop();

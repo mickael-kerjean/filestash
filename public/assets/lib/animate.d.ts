@@ -23,7 +23,7 @@ export function animate($node: HTMLElement | null, opts: {
     fill?: string;
     onExit?: () => void;
     onEnter?: () => void;
-}): Promise<void>;
+}): Promise<() => void>;
 
 export function slideXIn(dist: number): AnimationFrames[];
 

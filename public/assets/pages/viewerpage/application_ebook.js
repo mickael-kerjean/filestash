@@ -60,7 +60,7 @@ export default function(render) {
     effect(setup$.pipe(
         rxjs.mergeMap(() => rxjs.merge(
             rxjs.fromEvent(document, "keydown"),
-            rendition$.pipe(rxjs.mergeMap(() => rxjs.fromEvent(assert.type(qs(document.body, "iframe"), window.HTMLElement).contentDocument.body, "keydown"))),
+            rendition$.pipe(rxjs.mergeMap(() => rxjs.fromEvent(assert.type(qs(document.body, "iframe"), HTMLElement).contentDocument.body, "keydown"))),
         )),
         rxjs.map((e) => {
             switch (e.code) {

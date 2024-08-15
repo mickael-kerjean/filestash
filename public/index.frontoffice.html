@@ -9,10 +9,10 @@
         <link rel="stylesheet" href="custom.css">
         {{ if eq .license "agpl" }}
         <script>
-        class NyanCatLoader extends window.HTMLElement {
+        class NyanCatLoader extends HTMLElement {
             connectedCallback() {
                 this.innerHTML = this.render();
-                this.timeout = window.setTimeout(function(){
+                this.timeout = setTimeout(function(){
                     const $rbw = document.querySelector("#rbw .w");
                     $rbw.innerHTML = $rbw.innerHTML.repeat(10);
 
@@ -22,7 +22,7 @@
             }
 
             disconnectedCallback() {
-                window.clearTimeout(this.timeout);
+                clearTimeout(this.timeout);
             }
 
             render() {

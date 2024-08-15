@@ -2,6 +2,7 @@ import { createElement, createRender, createFragment, onDestroy } from "../../li
 import rxjs, { effect, onClick, preventDefault } from "../../lib/rx.js";
 import { animate, slideXIn, slideYIn } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
+import assert from "../../lib/assert.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { basename } from "../../lib/path.js";
 import t from "../../locales/index.js";
@@ -51,7 +52,7 @@ export default async function(render) {
     render($page);
     onDestroy(() => clearSelection());
 
-    const $scroll = $page.closest(".scroll-y");
+    const $scroll = assert.type($page.closest(".scroll-y"), HTMLElement);
     componentLeft(createRender(qs($page, ".action.left")), { $scroll });
     componentRight(createRender(qs($page, ".action.right")));
 
@@ -112,13 +113,13 @@ function componentLeft(render, { $scroll }) {
             <button data-action="rename" title="${t("Rename")}"${toggleDependingOnPermission(currentPath(), "rename")}>
                 ${t("Rename")}
             </button>
-            <button data-action="share" title="${t("Share")}" class="${(window.CONFIG.enable_share && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
+            <button data-action="share" title="${t("Share")}" class="${(window.CONFIG["enable_share"] && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
                 ${t("Share")}
             </button>
-            <button data-action="embed" class="hidden" title="${t("Embed")}">
+            <button data-action="embed" title="${t("Embed")}">
                 ${t("Embed")}
             </button>
-            <button data-action="tag" class="hidden" title="${t("Tag")}">
+            <button data-action="tag" title="${t("Tag")}">
                 ${t("Tag")}
             </button>
         `))),
@@ -396,6 +397,7 @@ export function init() {
         loadCSS(import.meta.url, "../../css/designsystem_dropdown.css"),
         loadCSS(import.meta.url, "./ctrl_submenu.css"),
         loadCSS(import.meta.url, "./modal_share.css"),
+        loadCSS(import.meta.url, "./modal_tag.css"),
     ]);
 }
 
@@ -407,10 +409,10 @@ function generateLinkAttributes(selections) {
         const regDir = new RegExp("/$");
         const isDir = regDir.test(path);
         if (isDir) {
-            filename = basename(path.replace(regDir, "")) + ".zip"
+            filename = basename(path.replace(regDir, "")) + ".zip";
         } else {
             filename = basename(path);
-            href = "api/files/cat?"
+            href = "api/files/cat?";
         }
     }
     href += selections.map(({ path }) => "path=" + encodeURIComponent(path)).join("&");

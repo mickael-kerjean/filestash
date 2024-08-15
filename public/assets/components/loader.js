@@ -2,10 +2,10 @@ import { createElement, onDestroy } from "../lib/skeleton/index.js";
 import rxjs from "../lib/rx.js";
 import { animate, opacityIn } from "../lib/animate.js";
 
-class Loader extends window.HTMLElement {
+class Loader extends HTMLElement {
     constructor() {
         super();
-        this.timeout = window.setTimeout(() => {
+        this.timeout = setTimeout(() => {
             this.innerHTML = this.render({
                 inline: this.hasAttribute("inlined"),
             });
@@ -13,7 +13,7 @@ class Loader extends window.HTMLElement {
     }
 
     disconnectedCallback() {
-        window.clearTimeout(this.timeout);
+        clearTimeout(this.timeout);
     }
 
     render({ inline }) {
@@ -61,7 +61,7 @@ export function createLoader($parent, opts = {}) {
                 <component-icon name="loading"></component-icon>
             </div>
     `);
-    const id = window.setTimeout(() => {
+    const id = setTimeout(() => {
         append($icon);
         animate($icon, { time: 750, keyframes: opacityIn() });
     }, wait);

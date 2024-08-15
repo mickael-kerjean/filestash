@@ -36,7 +36,7 @@ function renderDesktop(render, removeLabel) {
         ret.next();
         ret.complete();
         return ret.toPromise();
-    }).bind(this, MODAL_RIGHT_BUTTON);
+    }).bind(null, MODAL_RIGHT_BUTTON);
 
     $input.focus();
 

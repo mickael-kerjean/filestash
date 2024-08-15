@@ -91,7 +91,7 @@
 /* Font stuff */
 .CodeMirror {
     font-size: 16px;
-    font-family: 'Source Code Pro', monospace;
+    font-family: "Source Code Pro", monospace;
 }
 
 .cm-s-default .cm-header {

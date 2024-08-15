@@ -13,10 +13,10 @@ const mv = (from, to) => withVirtualLayer(
     mvVL(from, to),
 );
 
-class ComponentBreadcrumb extends window.HTMLElement {
+class ComponentBreadcrumb extends HTMLElement {
     constructor() {
         super();
-        if (new window.URL(location.href).searchParams.get("nav") === "false") {
+        if (new URL(location.href).searchParams.get("nav") === "false") {
             this.disabled = true;
             return;
         }
@@ -65,15 +65,15 @@ class ComponentBreadcrumb extends window.HTMLElement {
             const tasks = [];
             for (let i=0; i<nToAnimate; i++) {
                 const n = previousChunks.length - i - 1;
-                const $chunk = assert.type(this.querySelector(`.component_path-element.n${n}`), window.HTMLElement);
+                const $chunk = assert.type(this.querySelector(`.component_path-element.n${n}`), HTMLElement);
                 tasks.push(animate($chunk, { time: 100, keyframes: slideYOut(-10) }));
             }
             await Promise.all(tasks);
         }
 
         // STEP2: setup the actual content
-        assert.type(this.querySelector(`[data-bind="path"]`), window.HTMLElement).innerHTML = pathChunks.map((chunk, idx) => {
-            const label = idx === 0 ? (window.CONFIG.name || "Filestash") : chunk;
+        assert.type(this.querySelector(`[data-bind="path"]`), HTMLElement).innerHTML = pathChunks.map((chunk, idx) => {
+            const label = idx === 0 ? (window.CONFIG["name"] || "Filestash") : chunk;
             const link = pathChunks.slice(0, idx + 1).join("/") + "/";
             const limitSize = (word, highlight = false) => {
                 if (highlight === true && word.length > 30) {
@@ -130,7 +130,7 @@ class ComponentBreadcrumb extends window.HTMLElement {
             const nToAnimate = pathChunks.length - previousChunks.length;
             for (let i=0; i<nToAnimate; i++) {
                 const n = pathChunks.length - i - 1;
-                const $chunk = assert.type(this.querySelector(`.component_path-element.n${n}`), window.HTMLElement);
+                const $chunk = assert.type(this.querySelector(`.component_path-element.n${n}`), HTMLElement);
                 await animate($chunk, { time: 100, keyframes: slideYIn(-5) });
             }
         }
@@ -140,8 +140,8 @@ class ComponentBreadcrumb extends window.HTMLElement {
         let state = this.hasAttribute("indicator");
         if (state && this.getAttribute("indicator") !== "false") state = true;
 
-        let $indicator = assert.type(this.querySelector(`[data-bind="path"]`), window.HTMLElement);
-        $indicator = assert.type($indicator.lastChild.querySelector("span"), window.HTMLElement);
+        let $indicator = assert.type(this.querySelector(`[data-bind="path"]`), HTMLElement);
+        $indicator = assert.type($indicator.lastChild.querySelector("span"), HTMLElement);
 
         if (state) {
             $indicator.style.opacity = 1;
@@ -162,8 +162,9 @@ class ComponentBreadcrumb extends window.HTMLElement {
     }
 
     setupDragDropTarget() {
-        this.querySelectorAll("a.label").forEach(($folder) => {
-            const $path = $folder.closest(".component_path-element");
+        this.querySelectorAll("a.label").forEach(($elmnt) => {
+            const $folder = assert.type($elmnt, HTMLElement);
+            const $path = assert.truthy($folder.closest(".component_path-element"));
             $folder.ondrop = async(e) => {
                 $path.classList.remove("highlight");
                 const from = e.dataTransfer.getData("path");

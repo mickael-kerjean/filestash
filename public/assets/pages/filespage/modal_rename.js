@@ -33,7 +33,7 @@ function renderDesktop(render, filename) {
         }
         ret.next(value);
         ret.complete();
-    }).bind(this, MODAL_RIGHT_BUTTON);
+    }).bind(null, MODAL_RIGHT_BUTTON);
 
     const ext = extname(filename);
     $input.value = filename;

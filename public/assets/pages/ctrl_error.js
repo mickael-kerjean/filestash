@@ -18,7 +18,7 @@ export default function(render = createRender(qs(document.body, "[role=\"main\"]
     return function(err) {
         const [msg, trace] = processError(err);
 
-        const link = forwardURLParams(calculateBacklink(fromHref(location.pathname)), ["share"]);
+        const link = forwardURLParams(calculateBacklink(fromHref(window.location.pathname)), ["share"]);
         const $page = createElement(`
             <div>
                 <style>${css}</style>
@@ -32,7 +32,7 @@ export default function(render = createRender(qs(document.body, "[role=\"main\"]
                         <h2>${t(msg)}</h2>
                         <p>
                             <button class="light" data-bind="details">${t("More details")}</button>
-                            <button class="primary" data-bind="refresh">${t("Refresh")}</button>
+                            <button class="primary" data-bind="refresh">${t("Reload")}</button>
                             <pre class="hidden"><code>${strToHTML(trace)}</code></pre>
                         </p>
                     </div>

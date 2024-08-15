@@ -25,8 +25,8 @@ export default function(render) {
         else if (step === "email") return ctrlEmail(render, { shareID, setState });
         else if (step === "code") return ctrlEmailCodeVerification(render, { shareID, setState });
         else if (step === "done") {
-            if (isDir(state.path)) navigate(toHref(`/files/?share=${shareID}`));
-            else navigate(toHref(`/view/${basename(state.path)}?share=${shareID}&nav=false`));
+            if (isDir(state["path"])) navigate(toHref(`/files/?share=${shareID}`));
+            else navigate(toHref(`/view/${basename(state["path"])}?share=${shareID}&nav=false`));
             return rxjs.EMPTY;
         }
         else assert.fail(`unknown step: "${step}"`);

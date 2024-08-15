@@ -19,19 +19,19 @@ const getFn = (obj, arg0, ...args) => {
 };
 
 export function applyMutation($node, ...keys) {
-    assert.type($node, window.HTMLElement);
+    assert.type($node, HTMLElement);
     const execute = getFn($node, ...keys);
     return rxjs.tap((val) => Array.isArray(val) ? execute(...val) : execute(val));
 }
 
 export function applyMutations($node, ...keys) {
-    assert.type($node, window.HTMLElement);
+    assert.type($node, HTMLElement);
     const execute = getFn($node, ...keys);
     return rxjs.tap((vals) => vals.forEach((val) => execute(val)));
 }
 
 export function stateMutation($node, attr) {
-    assert.type($node, window.HTMLElement);
+    assert.type($node, HTMLElement);
     return rxjs.tap((val) => $node[attr] = val);
 }
 
@@ -41,19 +41,19 @@ export function preventDefault() {
 
 export function onClick($node) {
     const sideE = ($node) => {
-        assert.type($node, window.HTMLElement);
+        assert.type($node, HTMLElement);
         return rxjs.fromEvent($node, "click").pipe(
             rxjs.map(() => $node)
         );
     };
-    if ($node instanceof window.NodeList) return rxjs.merge(
+    if ($node instanceof NodeList) return rxjs.merge(
         ...[...$node].map(($n) => sideE($n)),
     );
     return sideE($node);
 }
 
 export function onLoad($node) {
-    assert.type($node, window.HTMLElement);
+    assert.type($node, HTMLElement);
     return new rxjs.Observable((observer) => {
         $node.onload = () => {
             observer.next($node);

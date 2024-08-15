@@ -101,7 +101,7 @@ export function getState() {
             if (!authType) return config;
 
             const $formIDP = document.querySelector(`[data-bind="idp"]`);
-            if (!($formIDP instanceof window.HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: idp isn't a form");
+            if (!($formIDP instanceof HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: idp isn't a form");
             let formValues = [...new FormData($formIDP)];
             config.middleware.identity_provider = {
                 type: authType,
@@ -121,7 +121,7 @@ export function getState() {
             };
 
             const $formAM = document.querySelector(`[data-bind="attribute-mapping"]`);
-            if (!($formAM instanceof window.HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: attribute mapping isn't a form");
+            if (!($formAM instanceof HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: attribute mapping isn't a form");
             formValues = [...new FormData($formAM)];
             config.middleware.attribute_mapping = {
                 related_backend: (formValues.shift() || [])[1],

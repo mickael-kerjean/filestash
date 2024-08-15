@@ -78,7 +78,7 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            if (!($input instanceof HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
             else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
 
@@ -135,7 +135,7 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            if (!($input instanceof HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
             else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
@@ -151,14 +151,14 @@ export function $renderInput(options = {}) {
                 </div>
             `);
             const $input = $div.querySelector("input");
-            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            if (!($input instanceof HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
             else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
 
             const $icon = $div.querySelector("component-icon");
-            if ($icon instanceof window.HTMLElement) {
+            if ($icon instanceof HTMLElement) {
                 $icon.onclick = function(e) {
-                    if (!(e.target instanceof window.HTMLElement)) return;
+                    if (!(e.target instanceof HTMLElement)) return;
                     const $input = e.target?.parentElement?.previousElementSibling;
                     if (!$input) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
                     if ($input.getAttribute("type") === "password") $input.setAttribute("type", "text");
@@ -174,7 +174,7 @@ export function $renderInput(options = {}) {
                     rows="8"
                 ></textarea>
             `);
-            if (!($textarea instanceof window.HTMLTextAreaElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            if (!($textarea instanceof HTMLTextAreaElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
             else if (value) $textarea.value = value;
             attrs.map((setAttribute) => setAttribute($textarea));
             return $textarea;
@@ -187,7 +187,7 @@ export function $renderInput(options = {}) {
                     readonly
                 />
             `);
-            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            if (!($input instanceof HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
             else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
@@ -196,7 +196,7 @@ export function $renderInput(options = {}) {
             const $input = createElement(`
                 <input type="hidden" />
             `);
-            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            if (!($input instanceof HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
             else if (value) $input.value = value;
             $input.setAttribute("name", path.join("."));
             return $input;
@@ -219,7 +219,7 @@ export function $renderInput(options = {}) {
             const $select = createElement(`
                 <select class="component_select"></select>
             `);
-            if (!($select instanceof window.HTMLSelectElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            if (!($select instanceof HTMLSelectElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
             else if (value) $select.value = value || props.default;
             attrs.map((setAttribute) => setAttribute($select));
             (options || []).forEach((name) => {
@@ -242,7 +242,7 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            if (!($input instanceof HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
             else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
@@ -254,7 +254,7 @@ export function $renderInput(options = {}) {
                     class="component_input"
                 />
             `);
-            if (!($input instanceof window.HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            if (!($input instanceof HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
             else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
