@@ -4,9 +4,9 @@ import { settingsGet, settingsSave } from "../../lib/store.js";
 let state$ = null;
 export function init() {
     state$ = new rxjs.BehaviorSubject(settingsGet({
-        view: window.CONFIG.default_view || "grid",
-        show_hidden: window.CONFIG.display_hidden || false,
-        sort: window.CONFIG.default_sort || "type",
+        view: window.CONFIG["default_view"] || "grid",
+        show_hidden: window.CONFIG["display_hidden"] || false,
+        sort: window.CONFIG["default_sort"] || "type",
         order: null,
         search: "",
     }, "filespage"));

@@ -9,3 +9,5 @@ interface Window {
     env?: string;
     chrome: object;
 }
+
+export default function(any): void;

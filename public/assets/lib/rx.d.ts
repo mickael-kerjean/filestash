@@ -1,7 +1,7 @@
-import type { Observer } from "rx-core";
+import type { Observer, Observable as coreObservable } from "rx-core";
 
 import {
-    Observable, fromEvent, startWith,
+    fromEvent, startWith, Observable,
     catchError, tap, first, of,
     map, mapTo, filter, mergeMap, EMPTY, empty,
     switchMapTo, switchMap,
@@ -74,6 +74,6 @@ export function stateMutation($node: HTMLElement, attr: string);
 
 export function preventDefault(): typeof tap;
 
-export function onClick($node: HTMLElement): typeof fromEvent;
+export function onClick($node: HTMLElement): ReturnType<typeof fromEvent>;
 
-export function onLoad($node: HTMLElement): typeof fromEvent;
+export function onLoad($node: HTMLElement): void;

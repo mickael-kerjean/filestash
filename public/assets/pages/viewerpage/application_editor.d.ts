@@ -7,3 +7,5 @@ interface Window {
         };
     };
 }
+
+export default function(any): void;

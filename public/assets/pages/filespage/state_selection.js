@@ -24,7 +24,6 @@ const selection$ = new rxjs.BehaviorSubject([
 onDestroy(clearSelection);
 
 export function addSelection({ shift = false, n = 0, ...rest }) {
-    // console.log(n, shift)
     const selections = selection$.value;
     const selection = { type: shift ? "range" : "anchor", n, ...rest };
 

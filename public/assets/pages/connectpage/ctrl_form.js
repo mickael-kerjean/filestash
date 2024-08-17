@@ -4,6 +4,7 @@ import rxjs, { effect, applyMutation, applyMutations, preventDefault, onClick } 
 import ajax from "../../lib/ajax.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
 import { animate, slideYIn, transition, opacityIn } from "../../lib/animate.js";
+import assert from "../../lib/assert.js";
 import { createForm } from "../../lib/form.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
 import t from "../../locales/index.js";
@@ -128,7 +129,7 @@ export default async function(render) {
     const toggleLoader = (hide) => {
         if (hide) {
             $page.classList.add("hidden");
-            $page.parentElement.appendChild($loader);
+            assert.truthy($page.parentElement).appendChild($loader);
         } else {
             $loader.remove();
             $page.classList.remove("hidden");
@@ -216,7 +217,7 @@ export default async function(render) {
     // feature7: empty connection handling
     effect(connections$.pipe(
         rxjs.filter((conns) => conns.length === 0),
-        rxjs.mergeMap((a) => Promise.reject(new Error("no backend selected"))),
+        rxjs.mergeMap(() => Promise.reject(new Error("there is nothing here"))), // TODO: check translation?
         rxjs.catchError(ctrlError()),
     ));
 }

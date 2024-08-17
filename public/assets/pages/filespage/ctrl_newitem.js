@@ -1,4 +1,4 @@
-import { createElement } from "../../lib/skeleton/index.js";
+import { createElement, nop } from "../../lib/skeleton/index.js";
 import rxjs, { effect, onClick, preventDefault } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { animate } from "../../lib/animate.js";
@@ -71,7 +71,7 @@ export default async function(render) {
             $icon.setAttribute("alt", alt);
             $input.value = "";
             $input.nextSibling.setAttribute("name", alt);
-            let done = Promise.resolve();
+            let done = Promise.resolve(nop);
             if ($node.classList.contains("hidden")) done = animate($node, {
                 keyframes: [{ height: `0px` }, { height: "50px" }],
                 time: 100,

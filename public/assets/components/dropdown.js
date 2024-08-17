@@ -3,7 +3,7 @@ import { animate, slideYIn } from "../lib/animate.js";
 import assert from "../lib/assert.js";
 import { loadCSS } from "../helpers/loader.js";
 
-export default class ComponentDropdown extends HTMLDivElement {
+export default class ComponentDropdown extends HTMLElement {
     constructor() {
         super();
         this.render();
@@ -78,9 +78,9 @@ export default class ComponentDropdown extends HTMLDivElement {
         `));
 
         const setActive = () => this.classList.toggle("active");
-        assert.type(this.querySelector(".dropdown_button"), window.HTMLElement).onclick = () => {
+        assert.type(this.querySelector(".dropdown_button"), HTMLElement).onclick = () => {
             setActive();
-            animate(assert.type(this.querySelector(".dropdown_container"), window.HTMLElement), {
+            animate(assert.type(this.querySelector(".dropdown_container"), HTMLElement), {
                 time: 100,
                 keyframes: slideYIn(2),
             });
@@ -88,4 +88,4 @@ export default class ComponentDropdown extends HTMLDivElement {
     }
 }
 
-customElements.define("component-dropdown", ComponentDropdown, { extends: "div" });
+customElements.define("component-dropdown", ComponentDropdown);

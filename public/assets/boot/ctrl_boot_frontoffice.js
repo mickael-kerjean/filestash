@@ -12,7 +12,6 @@ export default async function main() {
             setup_translation(),
             setup_xdg_open(),
             setup_device(),
-            // setup_sw(), // TODO
             setup_blue_death_screen(),
             setup_history(),
             setup_polyfill(),
@@ -26,7 +25,7 @@ export default async function main() {
         window.dispatchEvent(new window.Event("pagechange"));
     } catch (err) {
         console.error(err);
-        const msg = window.navigator.onLine === false ? "OFFLINE" : (err.message || "CAN'T LOAD");
+        const msg = window.navigator.onLine === false ? "OFFLINE" : (err instanceof Error && err.message) || "CAN'T LOAD";
         report(msg, err, location.href);
         $error(msg);
     }
@@ -69,23 +68,6 @@ async function setup_device() {
     });
 }
 
-async function setup_sw() { // eslint-disable-line no-unused-vars
-    if (!("serviceWorker" in window.navigator)) return;
-
-    if (window.navigator.userAgent.indexOf("Mozilla/") !== -1 &&
-        window.navigator.userAgent.indexOf("Firefox/") !== -1 &&
-        window.navigator.userAgent.indexOf("Gecko/") !== -1) {
-        // Firefox was acting weird with service worker so we disabled it
-        // see: https://github.com/mickael-kerjean/filestash/issues/255
-        return;
-    }
-    try {
-        await window.navigator.serviceWorker.register("/sw_cache.js");
-    } catch (err) {
-        report("ServiceWorker registration failed", err);
-    }
-}
-
 async function setup_blue_death_screen() {
     window.onerror = function(msg, url, lineNo, colNo, error) {
         report(msg, error, url, lineNo, colNo);
@@ -116,7 +98,7 @@ async function setup_history() {
 }
 
 async function setup_title() {
-    document.title = window.CONFIG.name || "Filestash";
+    document.title = window.CONFIG["name"] || "Filestash";
 }
 
 async function setup_polyfill() {

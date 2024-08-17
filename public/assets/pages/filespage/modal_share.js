@@ -36,9 +36,10 @@ export default function(render, { path }) {
     render($modal);
     const ret = new rxjs.Subject();
     const role$ = new rxjs.BehaviorSubject(null);
+
     const state = {
-        form: {},
-        links: null,
+        /** @type {object} */ form: {},
+        /** @type {any[] | null} */ links: null,
     };
 
     // feature: select
@@ -84,7 +85,12 @@ export default function(render, { path }) {
                     body,
                     url: `api/share/${id}`,
                 }).toPromise();
-                state.links.push({ ...body, path: body.path.substring(currentPath().length - 1) });
+                ;
+                // if (state.links === null) assert.fail("ttest");
+                assert.truthy(state.links).push({
+                    ...body,
+                    path: body.path.substring(currentPath().length - 1),
+                });
                 role$.next(null);
             },
             remove: async({ id }) => {
@@ -92,7 +98,7 @@ export default function(render, { path }) {
                     method: "DELETE",
                     url: `api/share/${id}`,
                 }).toPromise();
-                state.links = state.links.filter((link) => link.id !== id);
+                state.links = (state.links || []).filter((link) => link && link.id !== id);
                 role$.next(null);
             },
             all: async() => {
@@ -240,7 +246,7 @@ async function ctrlCreateShare(render, { save, formState }) {
                               ? t("Password")
                               : label === "url_enable"
                                   ? t("Custom Link url")
-                                  : assert.fail(label, "unknown label");
+                                  : assert.fail("unknown label");
             return createElement(`
                 <div class="component_supercheckbox">
                     <label>
@@ -273,7 +279,7 @@ async function ctrlCreateShare(render, { save, formState }) {
     // sync editable custom link input with link id
     effect(rxjs.fromEvent(qs($form, `[name="url"]`), "keyup").pipe(rxjs.tap((e) => {
         id = e.target.value.replaceAll(" ", "-").replace(new RegExp("[^A-Za-z\-]"), "");
-        qs(assert.type($form.closest(".component_share"), window.HTMLElement), `input[name="create"]`).value = `${location.origin}${toHref("/s/" + id)}`;
+        qs(assert.type($form.closest(".component_share"), HTMLElement), `input[name="create"]`).value = `${location.origin}${toHref("/s/" + id)}`;
     })));
 
     // feature: create a shared link
@@ -281,7 +287,7 @@ async function ctrlCreateShare(render, { save, formState }) {
     effect(onClick(qs($page, ".shared-link")).pipe(
         rxjs.first(),
         rxjs.switchMap(async() => {
-            const body = [...new FormData(assert.type(qs(document.body, ".component_share form"), window.HTMLFormElement))]
+            const body = [...new FormData(assert.type(qs(document.body, ".component_share form"), HTMLFormElement))]
                 .reduce((acc, [key, value]) => {
                     if (value && key.slice(-7) !== "_enable") acc[key] = value;
                     return acc;
@@ -328,7 +334,7 @@ function shareObjToRole({ can_read, can_write, can_upload }) {
     } else if (can_read === true && can_write === true && can_upload === true) {
         return "editor";
     }
-    return null;
+    return undefined;
 }
 
 export function copyToClipboard(str) {

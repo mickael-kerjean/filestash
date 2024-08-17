@@ -101,7 +101,7 @@ export const ls = (path) => {
         rxjs.merge(
             rxjs.of(null),
             rxjs.merge(rxjs.of(null), rxjs.fromEvent(window, "keydown").pipe( // "r" shorcut
-                rxjs.filter((e) => e.keyCode === 82 && assert.type(document.activeElement, window.HTMLElement).tagName !== "INPUT"),
+                rxjs.filter((e) => e.keyCode === 82 && assert.type(document.activeElement, HTMLElement).tagName !== "INPUT"),
             )).pipe(rxjs.switchMap(() => lsFromHttp(path))),
         ),
     ).pipe(
