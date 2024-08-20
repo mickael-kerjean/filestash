@@ -51,7 +51,7 @@ export default async function(render) {
     effect(init$.pipe(
         rxjs.concatMap(() => getMiddlewareEnabled()),
         rxjs.filter((backend) => !!backend),
-        rxjs.tap((backend) => qsa($page, `[is="box-item"]`).forEach(($button) => {
+        rxjs.tap((backend) => qsa($page, "box-item").forEach(($button) => {
             $button.getAttribute("data-label") === backend
                 ? $button.classList.add("active")
                 : $button.classList.remove("active");
