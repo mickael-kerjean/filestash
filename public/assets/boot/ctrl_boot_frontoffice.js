@@ -53,7 +53,7 @@ function $error(msg) {
 /// /////////////////////////////////////////
 async function setup_xdg_open() {
     window.overrides = {};
-    return loadJS(import.meta.url, toHref("/overrides/xdg-open.js"));
+    return loadJS(import.meta.url, toHref("overrides/xdg-open.js"));
 }
 
 async function setup_device() {

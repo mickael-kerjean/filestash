@@ -179,7 +179,7 @@ class FileSystem {
         if (paths.length === 1 && filetype(paths[0]) === "file") {
             url = appendShareToUrl("/api/files/cat?path=" + prepare(paths[0]) + "&name=" + basename(paths[0]));
         }
-        window.open(url);
+        window.open(window.globalConfig.BaseUrl + url);
         return Promise.resolve();
     }
     unzip(paths, signal) {
@@ -201,7 +201,7 @@ class FileSystem {
 
     url(path) {
         const url = appendShareToUrl("/api/files/cat?path=" + prepare(path));
-        return Promise.resolve(url);
+        return Promise.resolve(window.globalConfig.BaseUrl + url);
     }
 
     save(path, file) {

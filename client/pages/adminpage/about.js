@@ -7,7 +7,7 @@ import "./about.scss";
 export function AboutPage() {
     useEffect(() => {
         const controller = new AbortController();
-        fetch("/about", { signal: controller.signal })
+        fetch(window.globalConfig.BaseUrl + "/about", { signal: controller.signal })
             .then((r) => r.text())
             .then((r) => {
                 const a = document.createElement("html")

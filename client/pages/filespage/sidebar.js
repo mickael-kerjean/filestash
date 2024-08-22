@@ -29,19 +29,19 @@ export function Sidebar({ path }) {
                 <Icon name="arrow_right" />
             </div>
             <ul>
-                <li><img src="/assets/icons/folder.svg" />test</li>
+                <li><img src={window.globalConfig.BaseUrl + "/assets/icons/folder.svg"} />test</li>
                 <ul>
-                    <li className="active"><img src="/assets/icons/folder.svg" />level2_1</li>
+                    <li className="active"><img src= {window.globalConfig.BaseUrl + "/assets/icons/folder.svg"} />level2_1</li>
                     <ul>
-                        <li><img src="/assets/icons/folder.svg" />level2_1</li>
-                        <li><img src="/assets/icons/folder.svg" />level2_2</li>
+                        <li><img src={window.globalConfig.BaseUrl + "/assets/icons/folder.svg"} />level2_1</li>
+                        <li><img src={window.globalConfig.BaseUrl + "/assets/icons/folder.svg"} />level2_2</li>
                     </ul>
-                    <li><img src="/assets/icons/folder.svg" />level2_2</li>
+                    <li><img src={window.globalConfig.BaseUrl + "/assets/icons/folder.svg"} />level2_2</li>
                 </ul>
-                <li><img src="/assets/icons/folder.svg" />test</li>
-                <li><img src="/assets/icons/folder.svg" />test2</li>
-                <li><img src="/assets/icons/folder.svg" />test3</li>
-                <li><img src="/assets/icons/folder.svg" />test4</li>
+                <li><img src={window.globalConfig.BaseUrl + "/assets/icons/folder.svg"} />test</li>
+                <li><img src={window.globalConfig.BaseUrl + "/assets/icons/folder.svg"} />test2</li>
+                <li><img src={window.globalConfig.BaseUrl + "/assets/icons/folder.svg"} />test3</li>
+                <li><img src={window.globalConfig.BaseUrl + "/assets/icons/folder.svg"} />test4</li>
             </ul>
         </div>
     );

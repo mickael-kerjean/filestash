@@ -14,6 +14,8 @@ build_frontend:
 build_frontend_old:
 	NODE_ENV=production npm run build
 	mkdir -p ./server/ctrl/static/www/canary/
+	sed -i "s|<script defer=\"defer\" src=\"|&{{ .base }}|g" ./server/ctrl/static/www/index.html
+	rm ./server/ctrl/static/www/index.html.br ./server/ctrl/static/www/index.html.gz 
 	cp -R ./public/assets ./server/ctrl/static/www/canary/
 	cp -R ./public/*.html ./server/ctrl/static/www/canary/
 

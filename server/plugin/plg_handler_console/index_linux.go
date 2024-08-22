@@ -325,7 +325,7 @@ func AppScript(pathPrefix string) string {
         var websocket = new WebSocket(
             (location.protocol === "https:" ? "wss://" : "ws://") +
             location.hostname + ((location.port) ? (":" + location.port) : "") +
-            "` + pathPrefix + `socket"
+            "` + WithBaseUrl(pathPrefix) + `socket"
         );
         websocket.binaryType = "arraybuffer";
 

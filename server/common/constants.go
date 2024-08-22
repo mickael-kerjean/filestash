@@ -9,9 +9,9 @@ import (
 //go:generate go run ../generator/constants.go
 var (
 	APP_VERSION       = "v0.5"
-	COOKIE_NAME_AUTH  = "auth"
-	COOKIE_NAME_PROOF = "proof"
-	COOKIE_NAME_ADMIN = "admin"
+	COOKIE_NAME_AUTH  = "filestash_auth"
+	COOKIE_NAME_PROOF = "filestash_proof"
+	COOKIE_NAME_ADMIN = "filestash_admin"
 	COOKIE_PATH_ADMIN = "/admin/api/"
 	COOKIE_PATH       = "/api/"
 	URL_SETUP         = "/admin/setup"
@@ -39,8 +39,9 @@ func init() {
 	CERT_PATH = filepath.Join(rootPath, CERT_PATH)
 	TMP_PATH = filepath.Join(rootPath, TMP_PATH)
 	base = strings.TrimSuffix(base, "/")
-	COOKIE_PATH_ADMIN = WithBase(COOKIE_PATH_ADMIN)
-	COOKIE_PATH = WithBase(COOKIE_PATH)
+	base_url = strings.TrimSuffix(base_url, "/")
+	COOKIE_PATH_ADMIN = WithBaseUrl(COOKIE_PATH_ADMIN)
+	COOKIE_PATH = WithBaseUrl(COOKIE_PATH)
 	URL_SETUP = WithBase(URL_SETUP)
 
 	// STEP2: initialise the config
@@ -76,12 +77,25 @@ func InitSecretDerivate(secret string) {
 }
 
 var base = os.Getenv("FILESTASH_BASE")
+// base_url, may differ from base, if the app is behind a reverse proxy(nginx)
+var base_url = os.Getenv("FILESTASH_BASEURL")
 
 func WithBase(href string) string {
 	if base == "" {
 		return href
 	}
 	return base + href
+}
+
+func WithBaseUrl(href string) string {
+	if base_url == "" {
+		return href
+	}
+	return base_url + href
+}
+
+func ReturnBaseUrl() string {
+	return base_url
 }
 
 func TrimBase(href string) string {

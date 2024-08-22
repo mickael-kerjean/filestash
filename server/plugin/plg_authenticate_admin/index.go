@@ -50,7 +50,7 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte(Page(`
-      <form action="` + WithBase("/api/session/auth/") + `" method="post">
+      <form action="` + WithBaseUrl("/api/session/auth/") + `" method="post">
         <label>
           <input type="password" name="password" value="" placeholder="Admin Password" />
         </label>

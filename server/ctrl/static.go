@@ -47,7 +47,7 @@ func LegacyStaticHandler(_path string) func(*App, http.ResponseWriter, *http.Req
 func LegacyIndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) { // TODO: migrate away
 	url := TrimBase(req.URL.Path)
 	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
-		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
+		http.Redirect(res, req, WithBaseUrl(URL_SETUP), http.StatusTemporaryRedirect)
 		return
 	} else if url != "/" && strings.HasPrefix(url, "/s/") == false &&
 		strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
@@ -123,7 +123,19 @@ func legacyServeFile(res http.ResponseWriter, req *http.Request, filePath string
 			head.Set("Content-Encoding", cfg.ContentType)
 		}
 		res.WriteHeader(statusCode)
-		io.Copy(res, file)
+		if filePath != "/index.html" {
+			io.Copy(res, file)
+		} else {
+			// compile the template
+			b, err := io.ReadAll(file)
+			if err != nil {
+				SendErrorResult(res, err)
+				return
+			}
+			template.Must(template.New("index.html").Parse(string(b))).Execute(res, map[string]any{
+				"base": WithBaseUrl(""),
+			})
+		}
 		file.Close()
 		return
 	}
@@ -138,7 +150,7 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 		return
 	}
 	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
-		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
+		http.Redirect(res, req, WithBaseUrl(URL_SETUP), http.StatusTemporaryRedirect)
 		return
 	}
 	preloadScripts := []string{
@@ -193,12 +205,12 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 	for _, href := range preloadScripts {
 		head.Add(
 			"Link",
-			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(
+			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBaseUrl(
 				strings.Replace(href, "/assets/", "/assets/"+version()+"/", 1),
 			)),
 		)
 	}
-	head.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
+	head.Add("Link", `<`+ WithBaseUrl("/about") +`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
 
 	ServeIndex("index.backoffice.html")(ctx, res, req)
 	return
@@ -228,7 +240,7 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		return
 	}
 	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
-		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
+		http.Redirect(res, req, WithBaseUrl(URL_SETUP), http.StatusTemporaryRedirect)
 		return
 	}
 
@@ -286,7 +298,7 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 	for _, href := range preloadScripts {
 		head.Add(
 			"Link",
-			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(
+			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBaseUrl(
 				strings.Replace(href, "/assets/", "/assets/"+version()+"/", 1),
 			)),
 		)
@@ -371,6 +383,7 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		Checksum   []string
 		License    string
 		Plugins    []string
+		base       string
 	}{
 		Version:    fmt.Sprintf("Filestash %s.%s", APP_VERSION, BUILD_DATE),
 		CommitHash: BUILD_REF,
@@ -384,6 +397,7 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 			strings.Join(listOfPlugins["enterprise"], " "),
 			strings.Join(listOfPlugins["custom"], " "),
 		},
+		base: WithBaseUrl(""),
 	})
 }
 
@@ -394,12 +408,12 @@ func ManifestHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
     "short_name": "%s",
     "icons": [
         {
-            "src": "/assets/logo/android-chrome-192x192.png",
+            "src": "%s/assets/logo/android-chrome-192x192.png",
             "type": "image/png",
             "sizes": "192x192"
         },
         {
-            "src": "/assets/logo/android-chrome-512x512.png",
+            "src": "%s/assets/logo/android-chrome-512x512.png",
              "type": "image/png",
              "sizes": "512x512"
         }
@@ -409,7 +423,8 @@ func ManifestHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
     "orientation": "any",
     "display": "standalone",
     "start_url": "/"
-}`, Config.Get("general.name"), Config.Get("general.name"))))
+}`, Config.Get("general.name"), Config.Get("general.name"),
+    ReturnBaseUrl(), ReturnBaseUrl() )))
 }
 
 func RobotsHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -542,7 +557,7 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 		head.Set("Content-Type", "text/html")
 		res.WriteHeader(http.StatusOK)
 		template.Must(template.New(indexPath).Parse(string(b))).Execute(res, map[string]any{
-			"base":    WithBase("/"),
+			"base":    WithBaseUrl(""),
 			"version": version(),
 			"license": LICENSE,
 		})

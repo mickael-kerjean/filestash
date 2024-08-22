@@ -8,6 +8,9 @@ import load from "little-loader";
 
 import "./assets/css/reset.scss";
 
+// change webpack public path
+__webpack_require__.p = window.globalConfig.BaseUrl + "/";
+
 (function() {
     Promise.all([
         setup_dom(), setup_translation(), setup_xdg_open(), setup_cache(),
@@ -95,7 +98,7 @@ if ("serviceWorker" in navigator) {
             // see: https://github.com/mickael-kerjean/filestash/issues/255
             return;
         }
-        navigator.serviceWorker.register("/sw_cache.js").catch(function(err) {
+        navigator.serviceWorker.register(window.globalConfig.BaseUrl + "/sw_cache.js").catch(function(err) {
             console.error("ServiceWorker registration failed:", err);
         });
     });
@@ -105,7 +108,7 @@ if ("serviceWorker" in navigator) {
 window.overrides = {};
 function setup_xdg_open() {
     return new Promise((done, err) => {
-        load("/overrides/xdg-open.js", () => done());
+        load(window.globalConfig.BaseUrl + "/overrides/xdg-open.js", () => done());
     });
 }
 

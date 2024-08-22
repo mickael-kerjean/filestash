@@ -101,7 +101,7 @@ func RedirectSharedLoginIfNeeded(fn HandlerFunc) HandlerFunc {
 
 		share, err := _extractShare(req)
 		if err != nil || share_id != share.Id {
-			http.Redirect(res, req, fmt.Sprintf("/s/%s?next=%s", share_id, req.URL.Path), http.StatusTemporaryRedirect)
+			http.Redirect(res, req, fmt.Sprintf("%s/s/%s?next=%s", ReturnBaseUrl(), share_id, req.URL.Path), http.StatusTemporaryRedirect)
 			return
 		}
 		fn(ctx, res, req)

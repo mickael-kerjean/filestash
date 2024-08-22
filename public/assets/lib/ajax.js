@@ -1,3 +1,4 @@
+import { toHref } from "./skeleton/router.js";
 import rxjs, { ajax } from "./rx.js";
 import { AjaxError } from "./error.js";
 
@@ -6,6 +7,7 @@ export default function(opts) {
     else if (typeof opts !== "object") throw new Error("unsupported call");
     if (!opts.headers) opts.headers = {};
     opts.headers["X-Requested-With"] = "XmlHttpRequest";
+    opts.url = toHref("/" + opts.url);
     return ajax({ withCredentials: true, ...opts, responseType: "text" }).pipe(
         rxjs.map((res) => {
             const result = res.xhr.responseText;

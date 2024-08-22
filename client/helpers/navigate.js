@@ -19,7 +19,7 @@ export function goToViewer(history, path, state) {
 
 export const URL_LOGIN = "/login";
 export function goToLogin(history) {
-    history.push(URL_EDIT);
+    history.push(URL_LOGIN);
     return Promise.resolve("ok");
 }
 

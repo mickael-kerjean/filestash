@@ -80,7 +80,7 @@ function SideMenu(props) {
     const [version, setVersion] = useState(null);
     useEffect(() => {
         const controller = new AbortController();
-        fetch("/about", { signal: controller.signal }).then((r) => {
+        fetch(window.globalConfig.BaseUrl + "/about", { signal: controller.signal }).then((r) => {
             setVersion(r.headers.get("X-Powered-By").replace(/^Filestash\/([v\.0-9]*).*$/, "$1"))
         })
         return () => controller.abort();
@@ -96,7 +96,7 @@ function SideMenu(props) {
                 ) : (
                     <NavLink to="/" className="header">
                         <Icon name="arrow_left" />
-                        <img src="/assets/logo/android-chrome-512x512.png" />
+                        <img src= {window.globalConfig.BaseUrl + "/assets/logo/android-chrome-512x512.png"} />
                     </NavLink>
                 )
             }

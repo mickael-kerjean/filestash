@@ -34,13 +34,13 @@ function ConnectPageComponent({ error, history }) {
         if ("middleware" in formData) {
             setIsLoading(true);
             Session.middleware(formData).then((url) => {
-                window.location.href = url;
+                window.location.href = window.globalConfig.BaseUrl + url;
             }).catch((err) => error(err));
             return;
         } else if ("oauth2" in formData) {
             setIsLoading(true);
             Session.oauth2(formData["oauth2"], _GET["next"]).then((url) => {
-                window.location.href = url;
+                window.location.href = window.globalConfig.BaseUrl + url;
             }).catch((err) => error(err));
             return;
         }

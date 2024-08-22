@@ -5,8 +5,8 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-        <link rel="stylesheet" href="./assets/{{ .version }}/css/designsystem.css">
-        <link rel="stylesheet" href="custom.css">
+        <link rel="stylesheet" href="{{ .base }}/assets/{{ .version }}/css/designsystem.css">
+        <link rel="stylesheet" href="{{ .base }}/custom.css">
         {{ if eq .license "agpl" }}
         <script>
         class NyanCatLoader extends HTMLElement {
@@ -187,14 +187,14 @@
         }
         customElements.define("component-nyan", NyanCatLoader);
         </script>
-        <link rel="icon" href="./assets/{{ .version}}/logo/favicon.svg">
+        <link rel="icon" href="{{ .base }}/assets/{{ .version}}/logo/favicon.svg">
         {{ else }}
-        <link rel="icon" href="favicon.ico">
+        <link rel="icon" href="{{ .base }}/favicon.ico">
         {{ end }}
         <title></title>
     </head>
     <body>
-        <script type="module" src="./assets/{{ .version }}/components/loader.js"></script>
+        <script type="module" src="{{ .base }}/assets/{{ .version }}/components/loader.js"></script>
         <div role="main" id="app">
           {{ if eq .license "agpl" }}
           <component-nyan></component-nyan>
@@ -203,8 +203,8 @@
           {{ end }}
         </div>
         <script type="module">
-          import main from "./assets/{{ .version }}/lib/skeleton/index.js";
-          import routes from "./assets/{{ .version }}/boot/router_frontoffice.js";
+          import main from "{{ .base }}/assets/{{ .version }}/lib/skeleton/index.js";
+          import routes from "{{ .base }}/assets/{{ .version }}/boot/router_frontoffice.js";
           main(document.getElementById("app"), routes, {
               spinner: `<component-loader></component-loader>`,
               beforeStart: import("{{ .base }}assets/{{ .version }}/boot/ctrl_boot_frontoffice.js"),
@@ -212,10 +212,10 @@
         </script>
 
         <component-modal></component-modal>
-        <script type="module" src="./assets/{{ .version }}/components/modal.js" defer></script>
+        <script type="module" src="{{ .base }}/assets/{{ .version }}/components/modal.js" defer></script>
 
         <component-notification></component-notification>
-        <script type="module" src="./assets/{{ .version }}/components/notification.js" defer></script>
+        <script type="module" src="{{ .base }}/assets/{{ .version }}/components/notification.js" defer></script>
 
         <noscript>
             <div>

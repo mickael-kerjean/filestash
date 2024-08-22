@@ -23,8 +23,8 @@ const AdminPage = () => (
 
 export default function AppRouter() {
     return (
-        <div style={{ height: "100%" }}>
-            <BrowserRouter>
+        <div style={{ height: "100%" }}> 
+            <BrowserRouter basename={window.globalConfig.BaseUrl}> 
                 <Switch>
                     <Route exact path={URL_HOME} component={HomePage} />
                     <Route path={`${URL_SHARE}/:id*`} component={SharePage} />

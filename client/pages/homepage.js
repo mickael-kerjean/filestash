@@ -20,14 +20,14 @@ function HomePageComponent({ error }) {
                 setRedirection(res.home ? `/files${res.home}` : "/files");
                 return;
             }
-            setRedirection("/login");
-        }).catch((err) => setRedirection("/login"));
+            setRedirection(window.globalConfig.BaseUrl + "/login");
+        }).catch((err) => setRedirection(window.globalConfig.BaseUrl + "/login"));
     }, []);
 
     if (!redirection) {
         return ( <div> <Loader /> </div> );
     }
-    if (redirection === "/login") {
+    if (redirection === window.globalConfig.BaseUrl + "/login") {
         location.href = redirection;
         return (<div></div>);
     }
