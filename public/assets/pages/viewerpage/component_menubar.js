@@ -91,7 +91,7 @@ export function buttonFullscreen($screen) {
 
 export function renderMenubar($menubar, ...buttons) {
     assert.type($menubar, ComponentMenubar);
-    $menubar.render(buttons);
+    $menubar.render(buttons.filter(($button) => $button));
 }
 
 export async function init() {

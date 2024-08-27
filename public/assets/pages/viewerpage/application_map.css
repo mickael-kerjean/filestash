@@ -1,0 +1,16 @@
+#map .leaflet-control-attribution { display: none; }
+#map { height: 100%; z-index: 2; }
+
+#map .leaflet-popup-content-wrapper {
+    border-radius: 2px;
+}
+#map .leaflet-popup-content-wrapper, #map .leaflet-popup-tip {
+    box-shadow: 0 3px 14px rgba(0,0,0,0.15);
+}
+#map .leaflet-control-layers-list { user-select: none; }
+
+#map .leaflet-control-measure .leaflet-control-measure-toggle { opacity: 0.6; }
+#map .leaflet-control-scale {
+    margin-left: 10px;
+    margin-bottom: 10px;
+}

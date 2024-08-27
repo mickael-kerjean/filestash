@@ -37,6 +37,8 @@ function loadModule(appName) {
         return import("./viewerpage/application_3d.js");
     case "appframe":
         return import("./viewerpage/application_iframe.js");
+    case "map":
+        return import("./viewerpage/application_map.js");
     default:
         throw new ApplicationError("Internal Error", `Unknown opener app "${appName}" at "${getCurrentPath()}"`);
     }
