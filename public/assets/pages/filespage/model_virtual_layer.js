@@ -2,7 +2,7 @@ import { onDestroy } from "../../lib/skeleton/index.js";
 import rxjs from "../../lib/rx.js";
 import fscache from "./cache.js";
 import { hooks } from "./model_files.js";
-import { extractPath, isDir } from "./helper.js";
+import { extractPath, isDir, currentPath } from "./helper.js";
 
 /*
  * The virtual files is used to rerender the list of files in a particular location. That's used
@@ -157,7 +157,8 @@ export function save(path, size) {
          * @override
          */
         async afterSuccess() {
-            removeLoading(virtualFiles$, basepath, filename);
+            if (basepath === currentPath()) removeLoading(virtualFiles$, basepath, filename);
+            else onDestroy(() => removeLoading(virtualFiles$, basepath, filename));
             onDestroy(() => statePop(virtualFiles$, basepath, filename));
             await fscache().update(basepath, ({ files = [], ...rest }) => ({
                 files: files.concat([file]),
