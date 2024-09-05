@@ -351,6 +351,7 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	  </table>
 
 	  <style>
+		body.common_response_page { background: var(--bg-color); }
 		table { margin: 0 auto; font-family: monospace; opacity: 0.8; max-width: 1000px; width: 95%;}
 		table td { text-align: right; padding-left: 10px; vertical-align: top; }
         table td span.small { font-size:0.8rem; }
