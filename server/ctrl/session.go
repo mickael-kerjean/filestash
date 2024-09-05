@@ -120,6 +120,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if Config.Get("features.protection.iframe").String() != "" {
 			c.Secure = true
 			c.SameSite = http.SameSiteNoneMode
+			c.Partitioned = true
 			if f := req.Header.Get("Referer"); f != "" && strings.HasPrefix(f, "https://") == false {
 				Log.Warning("you are trying to access Filestash from a non secure origin ('%s') and with iframe enabled. Either use SSL or disable iframe from the admin console.", f)
 			}
@@ -162,10 +163,11 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 			break
 		}
 		http.SetCookie(res, &http.Cookie{
-			Name:   CookieName(index),
-			Value:  "",
-			MaxAge: -1,
-			Path:   COOKIE_PATH,
+			Name:        CookieName(index),
+			Value:       "",
+			MaxAge:      -1,
+			Path:        COOKIE_PATH,
+			Partitioned: true,
 		})
 		index++
 	}
@@ -288,12 +290,13 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	if req.Method == "GET" && _get.Get("action") == "redirect" {
 		if label := _get.Get("label"); label != "" {
 			http.SetCookie(res, &http.Cookie{
-				Name:     SSOCookieName,
-				Value:    label + "::" + _get.Get("state"),
-				MaxAge:   60 * 10,
-				Path:     COOKIE_PATH,
-				HttpOnly: true,
-				SameSite: http.SameSiteLaxMode,
+				Name:        SSOCookieName,
+				Value:       label + "::" + _get.Get("state"),
+				MaxAge:      60 * 10,
+				Path:        COOKIE_PATH,
+				HttpOnly:    true,
+				SameSite:    http.SameSiteLaxMode,
+				Partitioned: true,
 			})
 		}
 		if err := plugin.EntryPoint(idpParams, req, res); err != nil {
@@ -437,20 +440,22 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		return
 	}
 	http.SetCookie(res, &http.Cookie{
-		Name:     COOKIE_NAME_AUTH,
-		Value:    obfuscate,
-		MaxAge:   60 * Config.Get("general.cookie_timeout").Int(),
-		Path:     COOKIE_PATH,
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		Name:        COOKIE_NAME_AUTH,
+		Value:       obfuscate,
+		MaxAge:      60 * Config.Get("general.cookie_timeout").Int(),
+		Path:        COOKIE_PATH,
+		HttpOnly:    true,
+		SameSite:    http.SameSiteStrictMode,
+		Partitioned: true,
 	})
 	http.SetCookie(res, &http.Cookie{
-		Name:     SSOCookieName,
-		Value:    "",
-		MaxAge:   -1,
-		Path:     COOKIE_PATH,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		Name:        SSOCookieName,
+		Value:       "",
+		MaxAge:      -1,
+		Path:        COOKIE_PATH,
+		HttpOnly:    true,
+		SameSite:    http.SameSiteLaxMode,
+		Partitioned: true,
 	})
 	redirectURI := templateBind["next"]
 	if redirectURI == "" {

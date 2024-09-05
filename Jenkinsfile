@@ -27,7 +27,7 @@ pipeline {
                         sh "npm install"
                         sh "make build_frontend"
                     }
-                    docker.image("golang:1.21-bookworm").inside("--user=root") {
+                    docker.image("golang:1.23-bookworm").inside("--user=root") {
                         // prepare: todo - statically compile plg_image_c so we don't have to do this to pass the e2e tests
                         sh "sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go"
                         // build
@@ -42,7 +42,7 @@ pipeline {
             steps {
                 script {
                     // smoke test
-                    docker.image("golang:1.21-bookworm").inside("--user=root") {
+                    docker.image("golang:1.23-bookworm").inside("--user=root") {
                         sh 'timeout 5 ./dist/filestash > access.log || code=$?; if [ $code -ne 124 ]; then exit $code; fi'
                         sh "cat access.log"
                         sh "cat access.log | grep -q \"\\[http\\] starting\""
@@ -63,7 +63,7 @@ pipeline {
                         // sh "cd public && npm run test"
                     }
                     // test backend
-                    docker.image("golang:1.21-bookworm").inside("--user=root") {
+                    docker.image("golang:1.23-bookworm").inside("--user=root") {
                         sh "cp ./test/assets/* /tmp/"
                         sh "go generate ./test/unit_go/..."
                         sh "go get ./..."
