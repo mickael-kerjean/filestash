@@ -73,7 +73,7 @@ export function http_post(url, data, type = "json", params) {
                 return;
             }
 
-            const bearerToken = xhr.getResponseHeader("bearer");
+            const bearerToken = xhr.getResponseHeader("Bearer");
             if (bearerToken) window.BEARER_TOKEN = bearerToken;
 
             try {
