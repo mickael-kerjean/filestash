@@ -36,14 +36,15 @@ func (this Admin) Setup() Form {
 
 func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
+	getParams := "?label=" + req.URL.Query().Get("label") + "&state=" + req.URL.Query().Get("state")
 	switch idpParams["strategy"] {
 	case "direct":
 		res.WriteHeader(http.StatusOK)
-		res.Write([]byte(Page(`<h2 style="display:none;">PASSTHROUGH</h2><script>location.href = "/api/session/auth/"</script>`)))
+		res.Write([]byte(Page(`<h2 style="display:none;">PASSTHROUGH</h2><script>location.href = "` + WithBase("/api/session/auth/") + getParams + `"</script>`)))
 	case "password_only":
 		res.WriteHeader(http.StatusOK)
 		res.Write([]byte(Page(`
-      <form action="` + WithBase("/api/session/auth/") + `" method="post">
+      <form action="` + WithBase("/api/session/auth/"+getParams) + `" method="post">
         <label>
           <input type="password" name="password" value="" placeholder="Password" />
         </label>
@@ -52,7 +53,7 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 	case "username_and_password":
 		res.WriteHeader(http.StatusOK)
 		res.Write([]byte(Page(`
-      <form action="` + WithBase("/api/session/auth/") + `" method="post">
+      <form action="` + WithBase("/api/session/auth/"+getParams) + `" method="post">
         <label>
           <input type="text" name="user" value="" placeholder="User" />
         </label>
