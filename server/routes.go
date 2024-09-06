@@ -100,7 +100,6 @@ func Build(a App) *mux.Router {
 	} else { // TODO: remove this after migration is done
 		r.PathPrefix(WithBase("/assets")).Handler(http.HandlerFunc(NewMiddlewareChain(ServeFile("/"), middlewares, a))).Methods("GET")
 		r.HandleFunc(WithBase("/favicon.ico"), NewMiddlewareChain(ServeFile("/assets/logo/"), middlewares, a)).Methods("GET")
-		r.HandleFunc(WithBase("/sw_cache.js"), NewMiddlewareChain(ServeFile("/assets/worker/"), middlewares, a)).Methods("GET")
 	}
 
 	// Other endpoints

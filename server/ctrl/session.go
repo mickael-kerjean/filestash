@@ -123,6 +123,9 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 			index++
 		}
 	}
+	if Config.Get("features.protection.iframe").String() != "" {
+		res.Header().Set("bearer", obfuscate)
+	}
 	if home != "" {
 		SendSuccessResult(res, home)
 		return

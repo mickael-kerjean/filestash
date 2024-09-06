@@ -12,7 +12,10 @@ export default function(render) {
 
     effect(deleteSession().pipe(
         rxjs.mergeMap(setup_config),
-        rxjs.tap(() => window.CONFIG["logout"] ? location.href = window.CONFIG["logout"] : navigate(toHref("/"))),
+        rxjs.tap(() => {
+            delete window.BEARER_TOKEN;
+            window.CONFIG["logout"] ? location.href = window.CONFIG["logout"] : navigate(toHref("/"))
+        }),
         rxjs.catchError(ctrlError(render)),
     ));
 }
