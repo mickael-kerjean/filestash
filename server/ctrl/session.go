@@ -434,6 +434,10 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
+	redirectURI := templateBind["next"]
+	if redirectURI == "" {
+		redirectURI = WithBase("/")
+	}
 	http.SetCookie(res, applyCookieRules(http.Cookie{ // TODO: deprecate SSOCookieName
 		Name:   SSOCookieName,
 		Value:  "",
@@ -447,11 +451,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		Path:   COOKIE_PATH,
 	}, req))
 	if Config.Get("features.protection.iframe").String() != "" {
-		res.Header().Set("bearer", obfuscate)
-	}
-	redirectURI := templateBind["next"]
-	if redirectURI == "" {
-		redirectURI = WithBase("/")
+		redirectURI += "#bearer=" + obfuscate
 	}
 	http.Redirect(res, req, redirectURI, http.StatusTemporaryRedirect)
 }
