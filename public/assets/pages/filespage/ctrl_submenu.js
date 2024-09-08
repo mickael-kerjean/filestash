@@ -116,10 +116,10 @@ function componentLeft(render, { $scroll }) {
             <button data-action="share" title="${t("Share")}" class="${(window.CONFIG["enable_share"] && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
                 ${t("Share")}
             </button>
-            <button data-action="embed" title="${t("Embed")}">
+            <button data-action="embed" title="${t("Embed")}" class="hidden">
                 ${t("Embed")}
             </button>
-            <button data-action="tag" title="${t("Tag")}">
+            <button data-action="tag" title="${t("Tag")}" class="hidden">
                 ${t("Tag")}
             </button>
         `))),
