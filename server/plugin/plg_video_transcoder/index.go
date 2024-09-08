@@ -75,53 +75,54 @@ func init() {
 
 	Hooks.Register.Onload(func() {
 		blacklist_format()
-		if plugin_enable() == false {
-			return
-		} else if ffmpegIsInstalled == false {
+		plugin_enable()
+
+		cachePath := GetAbsolutePath(VideoCachePath)
+		os.RemoveAll(cachePath)
+		os.MkdirAll(cachePath, os.ModePerm)
+		if ffmpegIsInstalled == false {
 			Log.Warning("[plugin video transcoder] ffmpeg needs to be installed")
 			return
 		} else if ffprobeIsInstalled == false {
 			Log.Warning("[plugin video transcoder] ffprobe needs to be installed")
 			return
 		}
-
-		cachePath := GetAbsolutePath(VideoCachePath)
-		os.RemoveAll(cachePath)
-		os.MkdirAll(cachePath, os.ModePerm)
-
-		Hooks.Register.ProcessFileContentBeforeSend(hls_playlist)
-		Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
-			r.PathPrefix("/hls/hls_{segment}.ts").Handler(NewMiddlewareChain(
-				hls_transcode,
-				[]Middleware{SecureHeaders},
-				*app,
-			)).Methods("GET")
-			return nil
-		})
-
-		Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
-			r.HandleFunc(OverrideVideoSourceMapper, func(res http.ResponseWriter, req *http.Request) {
-				res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
-				res.Write([]byte(`window.overrides["video-map-sources"] = function(sources){`))
-				res.Write([]byte(`    return sources.map(function(source){`))
-
-				blacklists := strings.Split(blacklist_format(), ",")
-				for i := 0; i < len(blacklists); i++ {
-					blacklists[i] = strings.TrimSpace(blacklists[i])
-					res.Write([]byte(fmt.Sprintf(`if(source.type == "%s"){ return source; } `, GetMimeType("."+blacklists[i]))))
-				}
-				res.Write([]byte(`        source.src = source.src + "&transcode=hls";`))
-				res.Write([]byte(`        source.type = "application/x-mpegURL";`))
-				res.Write([]byte(`        return source;`))
-				res.Write([]byte(`    })`))
-				res.Write([]byte(`}`))
-			})
-			return nil
-		})
 	})
+
+	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+		r.HandleFunc(OverrideVideoSourceMapper, func(res http.ResponseWriter, req *http.Request) {
+			res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
+			if plugin_enable() == false {
+				return
+			}
+			res.Write([]byte(`window.overrides["video-map-sources"] = function(sources){`))
+			res.Write([]byte(`    return sources.map(function(source){`))
+
+			blacklists := strings.Split(blacklist_format(), ",")
+			for i := 0; i < len(blacklists); i++ {
+				blacklists[i] = strings.TrimSpace(blacklists[i])
+				res.Write([]byte(fmt.Sprintf(`if(source.type == "%s"){ return source; } `, GetMimeType("."+blacklists[i]))))
+			}
+			res.Write([]byte(`        source.src = source.src + "&transcode=hls";`))
+			res.Write([]byte(`        source.type = "application/x-mpegURL";`))
+			res.Write([]byte(`        return source;`))
+			res.Write([]byte(`    })`))
+			res.Write([]byte(`}`))
+		})
+		return nil
+	})
+	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+		r.PathPrefix("/hls/hls_{segment}.ts").Handler(NewMiddlewareChain(
+			hlsTranscodeHandler,
+			[]Middleware{SecureHeaders},
+			*app,
+		)).Methods("GET")
+		return nil
+	})
+	Hooks.Register.ProcessFileContentBeforeSend(hlsPlaylistHandler)
 }
 
-func hls_playlist(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
 	query := req.URL.Query()
 	if query.Get("transcode") != "hls" {
 		return reader, nil
@@ -171,7 +172,10 @@ func hls_playlist(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req 
 	return NewReadCloserFromBytes([]byte(response)), nil
 }
 
-func hls_transcode(ctx *App, res http.ResponseWriter, req *http.Request) {
+func hlsTranscodeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if plugin_enable() == false {
+		return
+	}
 	segmentNumber, err := strconv.Atoi(mux.Vars(req)["segment"])
 	if err != nil {
 		Log.Info("[plugin hls] invalid segment request '%s'", mux.Vars(req)["segment"])

@@ -281,7 +281,10 @@ export default function(render, { mime }) {
 
     // feature6: player control - keyboard shortcut
     effect(setup$.pipe(
-        rxjs.switchMap(() => rxjs.fromEvent(document, "keydown").pipe(rxjs.map((e) => e.code))),
+        rxjs.switchMap(() => rxjs.merge(
+            rxjs.fromEvent(document, "keydown").pipe(rxjs.map((e) => e.code)),
+            rxjs.fromEvent($video, "click").pipe(rxjs.mapTo("Space")),
+        )),
         rxjs.tap((code) => {
             switch (code) {
             case "Space":
