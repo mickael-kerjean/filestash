@@ -30,16 +30,20 @@ export default async function(render) {
 
     const map = window.L.map("map");
 
-    await cat().pipe(rxjs.mergeMap(async(content) => {
-        switch (extname(getFilename())) {
-        case "geojson":
-            return loadGeoJSON(map, content);
-        case "wms":
-            return loadWMS(map, content);
-        default:
-            throw new Error("Not Supported");
-        }
-    })).toPromise();
+
+    const fileview = [getFilename()];
+    for (let i=0; i<fileview.length; i++) {
+        await cat(fileview[i]).pipe(rxjs.mergeMap(async(content) => {
+            switch (extname(fileview[i])) {
+            case "geojson":
+                return loadGeoJSON(map, content);
+            case "wms":
+                return loadWMS(map, content);
+            default:
+                throw new Error("Not Supported");
+            }
+        })).toPromise();
+    }
 
     for (let i=0; i<PLUGINS.length; i++) {
         await import(`./application_map/${PLUGINS[i]}.js`)
@@ -63,7 +67,7 @@ function loadGeoJSON(map, content) {
     const geojson = window.L.geoJSON(JSON.parse(content), {
         onEachFeature: (feature, shape) => {
             n += 1;
-            if (n > 100) return;
+            if (n > 10000) return;
             const { group = "global", ...props } = feature.properties || {};
             const featureObject = (function() {
                 if (props["name"]) shape = shape.bindPopup(props["name"]);
