@@ -199,7 +199,6 @@ export default async function(render) {
                 rxjs.tap(() => toggleLoader(true)),
                 rxjs.mergeMap(() => createSession(formData)),
                 rxjs.tap(({ responseJSON, responseHeaders }) => {
-                    if (responseHeaders.bearer) window.BEARER_TOKEN = responseHeaders.bearer; // see ctrl_boot_frontoffice.js -> setup_iframe
                     let redirectURL = toHref("/files/");
                     const GET = getURLParams();
                     if (GET["next"]) redirectURL = GET["next"];

@@ -15,7 +15,6 @@ export default async function main() {
             setup_blue_death_screen(),
             setup_history(),
             setup_polyfill(),
-            setup_iframe(),
         ]);
 
         await Promise.all([ // procedure with dependency on config
@@ -106,23 +105,4 @@ async function setup_polyfill() {
     if (!("replaceChildren" in document.body)) {
         await loadJS(import.meta.url, "../lib/polyfill.js");
     }
-}
-
-// In safari and duck duck go browser, cross domain iframe cannot inject cookies,
-// see https://support.apple.com/en-au/guide/safari/sfri40732/mac
-// hopefully one day, they provide support for partitioned cookie and we can remove this code
-// but until that happens we had to find a way to inject authorisation within ../lib/ajax.js
-async function setup_iframe() {
-    if (window.self === window.top) return;
-
-    window.addEventListener("pagechange", async() => {
-        if (location.hash === "") return; // happy path
-
-        const token = new URLSearchParams(location.hash.replace(new RegExp("^#"), "?")).get("bearer");
-        if (token) window.BEARER_TOKEN = token;
-
-        if (location.pathname === toHref("/logout")) {
-            delete window.BEARER_TOKEN;
-        }
-    });
 }
