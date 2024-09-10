@@ -8,7 +8,10 @@ export function getSession() {
         method: "GET",
         responseType: "json"
     }).pipe(
-        rxjs.map(({ responseJSON }) => responseJSON.result)
+        rxjs.map(({ responseJSON }) => responseJSON.result),
+        rxjs.tap(({ authorization }) => {
+            if (authorization) window.BEARER_TOKEN = authorization;
+        }),
     );
 }
 

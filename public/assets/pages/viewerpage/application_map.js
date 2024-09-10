@@ -30,7 +30,6 @@ export default async function(render) {
 
     const map = window.L.map("map");
 
-
     const fileview = [getFilename()];
     for (let i=0; i<fileview.length; i++) {
         await cat(fileview[i]).pipe(rxjs.mergeMap(async(content) => {

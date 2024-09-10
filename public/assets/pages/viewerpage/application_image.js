@@ -1,11 +1,15 @@
-import { createElement, createRender } from "../../lib/skeleton/index.js";
+import { createElement, createRender, onDestroy } from "../../lib/skeleton/index.js";
+import { toHref } from "../../lib/skeleton/router.js";
 import rxjs, { effect, onLoad, onClick } from "../../lib/rx.js";
 import { animate } from "../../lib/animate.js";
+import { extname } from "../../lib/path.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
 import { createLoader } from "../../components/loader.js";
+import notification from "../../components/notification.js";
 import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
+import { Chromecast } from "../../model/chromecast.js";
 
 import { transition, getFilename, getDownloadUrl } from "./common.js";
 
@@ -44,6 +48,7 @@ export default function(render) {
         buttonDownload(getFilename(), getDownloadUrl()),
         buttonFullscreen(qs($page, ".component_image_container")),
         buttonInfo({ toggle: toggleInfo }),
+        buttonChromecast(getFilename(), getDownloadUrl()),
     );
 
     effect(onLoad($photo).pipe(
@@ -85,6 +90,13 @@ export default function(render) {
     componentPager(createRender(qs($page, ".component_pager")));
 }
 
+export function init() {
+    return Promise.all([
+        loadCSS(import.meta.url, "./application_image.css"),
+        initPager(), initMetadata(),
+    ]);
+}
+
 function buttonInfo({ toggle }) {
     const $el = createElement(`
         <span>
@@ -98,9 +110,51 @@ function buttonInfo({ toggle }) {
     return $el;
 }
 
-export function init() {
-    return Promise.all([
-        loadCSS(import.meta.url, "./application_image.css"),
-        initPager(), initMetadata(),
-    ]);
+function buttonChromecast(filename, downloadURL) {
+    const context = Chromecast.context();
+    if (!context) return;
+
+    const chromecastSetup = (event) => {
+        switch (event.sessionState) {
+        case window.cast.framework.SessionState.SESSION_STARTED:
+            chromecastLoader();
+            break;
+        }
+    };
+    const chromecastLoader = () => {
+        const session = Chromecast.session();
+        if (!session) return;
+
+        const link = Chromecast.createLink("/" + toHref(downloadURL));
+        const media = new window.chrome.cast.media.MediaInfo(
+            link,
+            window.CONFIG.mime[extname(filename)],
+        );
+        media.metadata = new window.chrome.cast.media.PhotoMediaMetadata();
+        media.metadata.title = filename;
+        media.metadata.images = [
+            new window.chrome.cast.Image(location.origin + "/" + toHref("/assets/icons/photo.png")),
+        ];
+        try {
+            const req = Chromecast.createRequest(media);
+            session.loadMedia(req);
+        } catch (err) {
+            console.error(err);
+            notification.error(t("Cannot establish a connection"));
+        }
+    };
+
+    context.addEventListener(
+        window.cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+        chromecastSetup,
+    );
+    onDestroy(() => context.removeEventListener(
+        window.cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+        chromecastSetup,
+    ));
+
+    const media = Chromecast.media();
+    if (media && media.media && media.media.mediaCategory === "IMAGE") chromecastLoader();
+
+    return document.createElement("google-cast-launcher");
 }

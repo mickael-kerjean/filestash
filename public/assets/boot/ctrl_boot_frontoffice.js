@@ -82,17 +82,6 @@ async function setup_blue_death_screen() {
     };
 }
 
-// async function setup_chromecast() {
-//     if (!window.CONFIG["enable_chromecast"]) {
-//         return Promise.resolve();
-//     } else if (!("chrome" in window)) {
-//         return Promise.resolve();
-//     } else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-//         return Promise.resolve();
-//     }
-//     return window.Chromecast.init();
-// }
-
 async function setup_history() {
     window.history.replaceState({}, "");
 }
