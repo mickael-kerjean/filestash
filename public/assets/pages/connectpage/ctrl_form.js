@@ -199,7 +199,7 @@ export default async function(render) {
                 rxjs.tap(() => toggleLoader(true)),
                 rxjs.mergeMap(() => createSession(formData)),
                 rxjs.tap(({ responseJSON, responseHeaders }) => {
-                    if (responseHeaders.bearer) window.BEARER_TOKEN = responseHeaders.bearer; // fix https://support.apple.com/en-au/guide/safari/sfri40732/mac
+                    if (responseHeaders.bearer) window.BEARER_TOKEN = responseHeaders.bearer; // see ctrl_boot_frontoffice.js -> setup_iframe
                     let redirectURL = toHref("/files/");
                     const GET = getURLParams();
                     if (GET["next"]) redirectURL = GET["next"];

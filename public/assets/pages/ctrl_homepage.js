@@ -24,8 +24,6 @@ export default function(render) {
     }
 
     // feature2: redirect user where it makes most sense
-    const token = new URLSearchParams(location.hash.replace(new RegExp("^#"), "?")).get("bearer");
-    if (token) window.BEARER_TOKEN = token;
     effect(getSession().pipe(
         rxjs.catchError((err) => {
             if (err instanceof AjaxError && err.err().status === 401) {
