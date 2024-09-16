@@ -1,3 +1,8 @@
+<p align="center">
+    <strong>Annoucement: <strong> Filestash is now my full time job and I'm building in public <br>
+    <a href="https://www.youtube.com/watch?v=lt5I42E3YCU">https://www.youtube.com/watch?v=lt5I42E3YCU</a>
+</p>
+
 ![screenshot](https://raw.githubusercontent.com/mickael-kerjean/filestash_images/master/.assets/photo.jpg)
 
 <p align="center">
