@@ -1,5 +1,5 @@
 <p align="center">
-    <strong>Annoucement: I'm jumping on this project full time will build in public</strong>
+    <strong>Annoucement: Filestash is now my full time job and I'm building in public</strong>
     <br><a href="https://www.youtube.com/watch?v=6G60_My7Tgs">https://www.youtube.com/watch?v=6G60_My7Tgs</a>
 </p>
 
