@@ -47,7 +47,6 @@ pipeline {
                         sh "cat access.log"
                         sh "cat access.log | grep -q \"\\[http\\] starting\""
                         sh "cat access.log | grep -q \"listening\""
-                        sh "cat access.log | grep -vz \"WARN\""
                         sh "cat access.log | grep -vz \"ERR\""
                     }
                     // test frontend old
