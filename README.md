@@ -62,6 +62,12 @@
 - [Installation](https://www.filestash.app/docs/install-and-upgrade/)
 - [FAQ](https://www.filestash.app/docs/faq/)
 
+# Self-Hosting Filestash
+
+### Elestio
+
+[![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/filestash)
+
 # Screenshots
 <p align="center">
     <a href="https://demo.filestash.app">
