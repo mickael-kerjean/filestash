@@ -14,7 +14,7 @@ RUN apk add make git gzip brotli && \
     cd public && make compress
 
 # STEP3: BUILD THE BACKEND
-FROM golang:1.21-bookworm AS builder_backend
+FROM golang:1.23-bookworm AS builder_backend
 WORKDIR /home/
 COPY --from=builder_frontend /home/ ./
 RUN apt-get update > /dev/null && \
