@@ -16,7 +16,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//go:generate sh -c "go run ../generator/emacs-el.go > export_generated.go && go fmt export_generated.go"
+//go:generate go run ../generator/emacs-el.go
 var EmacsElConfig string = ""
 
 func FileExport(ctx *App, res http.ResponseWriter, req *http.Request) {
