@@ -86,12 +86,13 @@ pipeline {
                 sh "docker build --no-cache -t machines/filestash:latest-amd64 ./docker/"
                 sh "docker push machines/filestash:latest-amd64"
 
-                // arm
-                sh "docker buildx build --platform linux/arm64 -t machines/filestash:latest-arm64 ./docker/"
+                // // arm
+                // sh "docker buildx build --platform linux/arm64 -t machines/filestash:latest-arm64 ./docker/"
 
                 // create final image
                 sh "docker manifest rm machines/filestash:latest || true"
-                sh "docker manifest create machines/filestash:latest --amend machines/filestash:latest-amd64 --amend machines/filestash:latest-arm64v8"
+                // sh "docker manifest create machines/filestash:latest --amend machines/filestash:latest-amd64 --amend machines/filestash:latest-arm64v8"
+                sh "docker manifest create machines/filestash:latest --amend machines/filestash:latest-amd64"
                 sh "docker manifest push machines/filestash:latest"
             }
         }
