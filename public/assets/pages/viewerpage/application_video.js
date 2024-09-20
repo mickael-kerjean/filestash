@@ -156,7 +156,11 @@ export default function(render, { mime }) {
     // feature1: setup the dom
     const setup$ = rxjs.of(null).pipe(
         rxjs.map(() => {
-            const hls = new Hls();
+            const loadPolicy = { default: { maxLoadTimeMs: 3600000, maxTimeToFirstByteMs: Infinity, timeoutRetry: { maxNumRetry: 0 } } };
+            const hls = new Hls({
+                debug: !!new URLSearchParams(location.search).get("debug"),
+                manifestLoadPolicy: loadPolicy,
+            });
             const sources = window.overrides["video-map-sources"]([{
                 src: getDownloadUrl(),
                 type: mime,
