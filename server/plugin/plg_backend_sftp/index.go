@@ -24,7 +24,7 @@ type Sftp struct {
 func init() {
 	Backend.Register("sftp", Sftp{})
 
-	SftpCache = NewAppCache()
+	SftpCache = NewAppCache(1, 1)
 	SftpCache.OnEvict(func(key string, value interface{}) {
 		c := value.(*Sftp)
 		if c == nil {
