@@ -55,6 +55,7 @@ export default AdminHOC(async function(render) {
     // feature: handle form change
     effect(init$.pipe(
         useForm$(() => qsa($container, "[data-bind=\"form\"] [name]")),
+        rxjs.debounceTime(250),
         rxjs.mergeMap((formState) => config$.pipe(
             rxjs.first(),
             rxjs.map((formSpec) => mutateForm(formSpec, formState)),

@@ -8,7 +8,14 @@ build_init:
 	go generate -x ./server/...
 
 build_frontend:
+	make build_frontend_old
+	cd public && make compress
+
+build_frontend_old:
 	NODE_ENV=production npm run build
+	mkdir -p ./server/ctrl/static/www/canary/
+	cp -R ./public/assets ./server/ctrl/static/www/canary/
+	cp -R ./public/*.html ./server/ctrl/static/www/canary/
 
 build_backend:
 	CGO_ENABLED=1 go build --tags "fts5" -o dist/filestash cmd/main.go

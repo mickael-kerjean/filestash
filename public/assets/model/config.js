@@ -2,7 +2,7 @@ import rxjs from "../lib/rx.js";
 import ajax from "../lib/ajax.js";
 
 const config$ = ajax({
-    url: "/api/config",
+    url: "api/config",
     method: "GET",
     responseType: "json",
 }).pipe(
@@ -11,4 +11,9 @@ const config$ = ajax({
 
 export function get() {
     return config$;
+}
+
+export async function init() {
+    const config = await config$.toPromise();
+    window.CONFIG = config;
 }

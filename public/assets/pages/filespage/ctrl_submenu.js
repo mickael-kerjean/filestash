@@ -1,7 +1,8 @@
-import { createElement, createRender, createFragment, onDestroy, nop } from "../../lib/skeleton/index.js";
-import rxjs, { effect, applyMutation, onClick, preventDefault } from "../../lib/rx.js";
+import { createElement, createRender, createFragment, onDestroy } from "../../lib/skeleton/index.js";
+import rxjs, { effect, onClick, preventDefault } from "../../lib/rx.js";
 import { animate, slideXIn, slideYIn } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
+import assert from "../../lib/assert.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { basename } from "../../lib/path.js";
 import t from "../../locales/index.js";
@@ -21,13 +22,25 @@ import { getAction$, setAction } from "./state_newthing.js";
 import { setState, getState$ } from "./state_config.js";
 import { clearCache } from "./cache.js";
 import { getPermission, calculatePermission } from "./model_acl.js";
-import { rm, mv } from "./model_files.js";
 import { currentPath, extractPath } from "./helper.js";
+
+import { rm as rm$, mv as mv$ } from "./model_files.js";
+import { rm as rmVL, mv as mvVL, withVirtualLayer } from "./model_virtual_layer.js";
 
 const modalOpt = {
     withButtonsRight: t("OK"),
     withButtonsLeft: t("CANCEL"),
 };
+
+const rm = (...paths) => withVirtualLayer(
+    rm$(...paths),
+    rmVL(...paths),
+);
+
+const mv = (from, to) => withVirtualLayer(
+    mv$(from, to),
+    mvVL(from, to),
+);
 
 export default async function(render) {
     const $page = createElement(`
@@ -39,7 +52,7 @@ export default async function(render) {
     render($page);
     onDestroy(() => clearSelection());
 
-    const $scroll = $page.closest(".scroll-y");
+    const $scroll = assert.type($page.closest(".scroll-y"), HTMLElement);
     componentLeft(createRender(qs($page, ".action.left")), { $scroll });
     componentRight(createRender(qs($page, ".action.right")));
 
@@ -48,8 +61,8 @@ export default async function(render) {
         rxjs.distinctUntilChanged(),
         rxjs.startWith(false),
         rxjs.tap((scrolling) => scrolling
-                 ? $scroll.classList.add("scrolling")
-                 : $scroll.classList.remove("scrolling")),
+            ? $scroll.classList.add("scrolling")
+            : $scroll.classList.remove("scrolling")),
     ));
 }
 
@@ -60,12 +73,14 @@ function componentLeft(render, { $scroll }) {
         rxjs.mergeMap(() => getPermission()),
         rxjs.map(() => render(createFragment(`
             <button data-action="new-file" title="${t("New File")}"${toggleDependingOnPermission(currentPath(), "new-file")}>
-                ${ window.innerWidth < 410 && t("New File").length > 10 ?
-                    t("New File", null, "NEW_FILE::SHORT") : t("New File") }
+                ${window.innerWidth < 410 && t("New File").length > 10
+        ? t("New File", null, "NEW_FILE::SHORT")
+        : t("New File")}
             </button>
             <button data-action="new-folder" title="${t("New Folder")}"${toggleDependingOnPermission(currentPath(), "new-folder")}>
-                ${ window.innerWidth < 410 && t("New Folder").length > 10 ?
-                    t("New Folder", null, "NEW_FOLDER::SHORT") : t("New Folder") }
+                ${window.innerWidth < 410 && t("New Folder").length > 10
+        ? t("New Folder", null, "NEW_FOLDER::SHORT")
+        : t("New Folder")}
             </button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
@@ -74,7 +89,7 @@ function componentLeft(render, { $scroll }) {
         )),
         rxjs.mergeMap((actionName) => getAction$().pipe(
             rxjs.first(),
-            rxjs.map((currentAction) => actionName == currentAction ? null : actionName),
+            rxjs.map((currentAction) => actionName === currentAction ? null : actionName),
         )),
         rxjs.tap((actionName) => {
             $scroll.scrollTo({
@@ -95,17 +110,17 @@ function componentLeft(render, { $scroll }) {
             <button data-action="delete"${toggleDependingOnPermission(currentPath(), "delete")} title="${t("Remove")}">
                 ${t("Remove")}
             </button>
-            <button data-action="share" title="${t("Share")}" class="hidden">
-                ${t("Share")}
-            </button>
-            <button data-action="embed" class="hidden" title="${t("Embed")}">
-                ${t("Embed")}
-            </button>
-            <button data-action="tag" class="hidden" title="${t("Tag")}">
-                ${t("Tag")}
-            </button>
             <button data-action="rename" title="${t("Rename")}"${toggleDependingOnPermission(currentPath(), "rename")}>
                 ${t("Rename")}
+            </button>
+            <button data-action="share" title="${t("Share")}" class="${(window.CONFIG["enable_share"] && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
+                ${t("Share")}
+            </button>
+            <button data-action="embed" title="${t("Embed")}" class="hidden">
+                ${t("Embed")}
+            </button>
+            <button data-action="tag" title="${t("Tag")}" class="hidden">
+                ${t("Tag")}
             </button>
         `))),
         rxjs.tap(($buttons) => animate($buttons, { time: 100, keyframes: slideYIn(5) })),
@@ -114,7 +129,11 @@ function componentLeft(render, { $scroll }) {
                 rxjs.mergeMap(() => rxjs.EMPTY),
             ),
             onClick(qs($page, `[data-action="share"]`)).pipe(rxjs.tap(() => {
-                componentShare(createModal(modalOpt));
+                componentShare(createModal({
+                    withButtonsRight: null,
+                    withButtonsLeft: null,
+                    targetHeight: 315,
+                }), { path: expandSelection()[0].path });
             })),
             onClick(qs($page, `[data-action="embed"]`)).pipe(rxjs.tap(() => {
                 componentEmbed(createModal(modalOpt));
@@ -122,37 +141,36 @@ function componentLeft(render, { $scroll }) {
             onClick(qs($page, `[data-action="tag"]`)).pipe(rxjs.tap(() => {
                 componentTag(createModal(modalOpt));
             })),
-            onClick(qs($page, `[data-action="rename"]`)).pipe(
-                rxjs.mergeMap(() => componentRename(
+            onClick(qs($page, `[data-action="rename"]`)).pipe(rxjs.mergeMap(() => {
+                const path = expandSelection()[0].path;
+                return rxjs.from(componentRename(
                     createModal(modalOpt),
-                    basename(expandSelection()[0].path.replace(new RegExp("/$"), "")),
-                )),
-                rxjs.mergeMap((val) => {
-                    const path = expandSelection()[0].path;
-                    const [basepath, filename] = extractPath(path);
+                    basename(path.replace(new RegExp("/$"), "")),
+                )).pipe(rxjs.mergeMap((val) => {
+                    const [basepath] = extractPath(path);
                     clearSelection();
                     clearCache(path);
                     clearCache(basepath + val);
                     return mv(path, basepath + val);
-                }),
-            ),
-            onClick(qs($page, `[data-action="delete"]`)).pipe(
-                rxjs.mergeMap(() => componentDelete(
+                }));
+            })),
+            onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.mergeMap(() => {
+                const path = expandSelection()[0].path;
+                return rxjs.from(componentDelete(
                     createModal(modalOpt),
-                    basename(expandSelection()[0].path.replace(new RegExp("/$"), "")).substr(0, 15),
-                )),
-                rxjs.mergeMap((val) => {
+                    basename(path.replace(new RegExp("/$"), "")).substr(0, 15),
+                )).pipe(rxjs.mergeMap(() => {
                     const selection = expandSelection()[0].path;
                     clearSelection();
-                    clearCache(selection);
+                    clearCache(path);
                     return rm(selection);
-                }),
-            ),
+                }));
+            })),
         )),
     ));
 
     effect(getSelection$().pipe(
-        rxjs.filter((selections) => lengthSelection() > 1),
+        rxjs.filter(() => lengthSelection() > 1),
         rxjs.map(() => render(createFragment(`
             <a target="_blank" ${generateLinkAttributes(expandSelection())}><button data-action="download">
                 ${t("Download")}
@@ -162,14 +180,16 @@ function componentLeft(render, { $scroll }) {
             </button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
-            onClick(qs($page, `[data-action="delete"]`)).pipe(
-                rxjs.mergeMap(() => componentDelete(createModal(modalOpt), "remove")),
-                rxjs.mergeMap((val) => {
-                    const selections = expandSelection().map(({ path }) => path);
+            onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.mergeMap(() => {
+                const paths = expandSelection().map(({ path }) => path);
+                return rxjs.from(componentDelete(
+                    createModal(modalOpt),
+                    "remove",
+                )).pipe(rxjs.mergeMap(() => {
                     clearSelection();
-                    return rm(...selections);
-                }),
-            ),
+                    return rm(...paths);
+                }));
+            })),
         )),
     ));
 }
@@ -187,13 +207,24 @@ function componentRight(render) {
     };
 
     const escape$ = rxjs.fromEvent(window, "keydown").pipe(
-        rxjs.filter(event => event.keyCode === 27),
+        rxjs.filter((event) => event.keyCode === 27),
         rxjs.share(),
     );
 
+    const defaultLayout = (view) => {
+        switch (view) {
+        case "grid": return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.LIST_VIEW}" alt="grid" />`;
+        case "list": return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.GRID_VIEW}" alt="list" />`;
+        default: throw new Error("NOT_IMPLEMENTED");
+        }
+    };
+    const defaultSort = (sort) => { // TODO
+        return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.SORT}" alt="${sort}" />`;
+    };
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length === 0),
-        rxjs.map(() => render(createFragment(`
+        rxjs.mergeMap(() => getState$().pipe(rxjs.first())),
+        rxjs.map(({ view, sort }) => render(createFragment(`
             <form style="display: inline-block;" onsubmit="event.preventDefault()">
                 <input class="hidden" placeholder="${t("search")}" name="q" style="
                     background: transparent;
@@ -206,10 +237,10 @@ function componentRight(render) {
                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.MAGNIFYING_GLASS}" alt="search" />
             </button>
             <button data-action="view" title="${t("Layout")}">
-                <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.LIST_VIEW}" alt="list" />
+                ${defaultLayout(view)}
             </button>
             <button data-action="sort" title="${t("Sort")}">
-                <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.SORT}" alt="sort" />
+                ${defaultSort(sort)}
             </button>
             <div class="component_dropdown view sort" data-target="sort">
                 <div class="dropdown_container">
@@ -233,19 +264,19 @@ function componentRight(render) {
             onClick(qs($page, `[data-action="view"]`)).pipe(rxjs.tap(($button) => {
                 const $img = $button.querySelector("img");
                 if ($img.getAttribute("alt") === "list") {
-                    setState("view", "list");
-                    $img.setAttribute("alt", "grid");
-                    $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.GRID_VIEW);
-                } else {
                     setState("view", "grid");
-                    $img.setAttribute("alt", "list");
+                    $img.setAttribute("alt", "grid");
                     $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.LIST_VIEW);
+                } else {
+                    setState("view", "list");
+                    $img.setAttribute("alt", "list");
+                    $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.GRID_VIEW);
                 }
             })),
             // feature: sort button
             rxjs.merge(
                 onClick(qs($page, `[data-action="sort"]`)).pipe(rxjs.map(($el) => { // toggle the dropdown
-                    return !$el.nextSibling.classList.contains("active")
+                    return !$el.nextSibling.classList.contains("active");
                 })),
                 escape$.pipe(rxjs.mapTo(false)), // quit the dropdown on esc
                 rxjs.fromEvent(window, "click").pipe( // quit when clicking outside the dropdown
@@ -257,9 +288,9 @@ function componentRight(render) {
                 rxjs.mergeMap((targetStateIsOpen) => {
                     const $sort = qs($page, `[data-target="sort"]`);
                     const $lis = qsa($page, `.dropdown_container li`);
-                    targetStateIsOpen ?
-                        $sort.classList.add("active") :
-                        $sort.classList.remove("active");
+                    targetStateIsOpen
+                        ? $sort.classList.add("active")
+                        : $sort.classList.remove("active");
 
                     return onClick($lis).pipe(
                         rxjs.first(),
@@ -272,7 +303,7 @@ function componentRight(render) {
                                 "sort", $el.getAttribute("data-target"),
                                 "order", order === "asc" ? "des" : "asc",
                             );
-                            [...$lis].map(($li) => {
+                            [...$lis].forEach(($li) => {
                                 const $img = $li.querySelector("img");
                                 if ($img) $img.remove();
                             });
@@ -290,11 +321,11 @@ function componentRight(render) {
                         rxjs.filter((e) => (e.ctrlKey || e.metaKey) && e.key === "f"),
                         preventDefault(),
                     ),
-                ).pipe(rxjs.map(($el) => qs($page, "input").classList.contains("hidden"))),
+                ).pipe(rxjs.map(() => qs($page, "input").classList.contains("hidden"))),
                 escape$.pipe(rxjs.mapTo(false)),
             ).pipe(
                 rxjs.takeUntil(getSelection$().pipe(rxjs.skip(1))),
-                rxjs.mergeMap(async (show) => {
+                rxjs.mergeMap(async(show) => {
                     const $input = qs($page, "input");
                     const $searchImg = qs($page, "img");
                     if (show) {
@@ -304,13 +335,13 @@ function componentRight(render) {
                         $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.CROSS);
                         $searchImg.setAttribute("alt", "close");
 
-                        const $listOfButtons = $page.parentElement.firstElementChild.children
-                        for (let $item of $listOfButtons) {
+                        const $listOfButtons = $page.parentElement.firstElementChild.children;
+                        for (const $item of $listOfButtons) {
                             $item.classList.add("hidden");
                         }
                         setAction(null); // reset new file, new folder
                         await animate($input, {
-                            keyframes: [{width: "0px"}, {width: "180px"}],
+                            keyframes: [{ width: "0px" }, { width: "180px" }],
                             time: 200,
                         });
                         $input.focus();
@@ -319,14 +350,14 @@ function componentRight(render) {
                         $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.MAGNIFYING_GLASS);
                         $searchImg.setAttribute("alt", "search");
                         await animate($input, {
-                            keyframes: [{width: "180px"}, {width: "0px"}],
+                            keyframes: [{ width: "180px" }, { width: "0px" }],
                             time: 100,
                         });
                         $input.classList.add("hidden");
-                        const $listOfButtons = $page.parentElement.firstElementChild.children
-                        for (let $item of $listOfButtons) {
+                        const $listOfButtons = $page.parentElement.firstElementChild.children;
+                        for (const $item of $listOfButtons) {
                             $item.classList.remove("hidden");
-                            animate($item, { time: 100, keyframes: slideXIn(5) })
+                            animate($item, { time: 100, keyframes: slideXIn(5) });
                         }
                         setState("search", "");
                     }
@@ -349,12 +380,12 @@ function componentRight(render) {
 
     effect(getSelection$().pipe(
         rxjs.filter((selections) => selections.length >= 1),
-        rxjs.map((selections) => render(createFragment(`
+        rxjs.map(() => render(createFragment(`
             <button data-bind="clear">
                 ${lengthSelection()} <component-icon name="close"></component-icon>
             </button>
         `))),
-        rxjs.mergeMap(($page) => onClick($page, `[data-bind="clear"]`).pipe(
+        rxjs.mergeMap(($page) => onClick(qs($page, `[data-bind="clear"]`)).pipe(
             rxjs.tap(() => clearSelection()),
             rxjs.takeUntil(getSelection$().pipe(rxjs.skip(1))),
         )),
@@ -365,21 +396,26 @@ export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "../../css/designsystem_dropdown.css"),
         loadCSS(import.meta.url, "./ctrl_submenu.css"),
+        loadCSS(import.meta.url, "./modal_share.css"),
+        loadCSS(import.meta.url, "./modal_tag.css"),
     ]);
 }
 
 function generateLinkAttributes(selections) {
     let filename = "archive.zip";
-    let href = "/api/files/zip?";
+    let href = "api/files/zip?";
     if (selections.length === 1) {
         const path = selections[0].path;
         const regDir = new RegExp("/$");
-        filename = regDir.test(path) ?
-            basename(path.replace(regDir, "")) + ".zip" :
-            basename(path);
-        href = "/api/files/cat?"
+        const isDir = regDir.test(path);
+        if (isDir) {
+            filename = basename(path.replace(regDir, "")) + ".zip";
+        } else {
+            filename = basename(path);
+            href = "api/files/cat?";
+        }
     }
-    href += selections.map(({path}) => "path=" + encodeURIComponent(path)).join("&");
+    href += selections.map(({ path }) => "path=" + encodeURIComponent(path)).join("&");
     return `href="${href}" download="${filename}"`;
 }
 

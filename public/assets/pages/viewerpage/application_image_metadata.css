@@ -1,0 +1,79 @@
+component-icon[name="loading"] {
+    display: block;
+    text-align: center;
+    padding-top: 50px;
+}
+component-icon[name="loading"] img { height: 30px; }
+
+.component_mapshot {
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+.component_mapshot .wrapper {
+    position: relative;
+}
+.component_mapshot .wrapper .marker {
+    position: absolute;
+    z-index: 1;
+}
+.component_mapshot .wrapper .marker img {
+    width: 30px;
+    height: 30px;
+}
+.component_mapshot .wrapper:hover .bigpicture {
+    transition: 0.4s ease transform;
+    transform: scale(3);
+}
+.component_mapshot .wrapper .bigpicture {
+    transition: 0.2s ease transform;
+}
+.component_mapshot .wrapper .bigpicture .line {
+    display: flex;
+    width: 33.33%;
+}
+.component_mapshot .wrapper .bigpicture .line img {
+    filter: grayscale(90%);
+}
+.component_mapshot .wrapper .bigpicture .line .btl {
+    border-top-left-radius: 2px;
+}
+.component_mapshot .wrapper .bigpicture .line .btr {
+    border-top-right-radius: 2px;
+}
+.component_mapshot .wrapper .bigpicture .line .bbl {
+    border-bottom-left-radius: 2px;
+}
+.component_mapshot .wrapper .bigpicture .line .bbr {
+    border-bottom-right-radius: 2px;
+}
+.component_mapshot .wrapper .mapshot_placeholder {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    border-radius: 2px;
+    background: var(--color);
+}
+.component_mapshot .wrapper .mapshot_placeholder span {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+.component_mapshot .wrapper .mapshot_placeholder span .component_loader, .component_mapshot .wrapper .mapshot_placeholder span div {
+    margin: auto;
+    color: var(--light);
+}
+.component_mapshot .wrapper .mapshot_placeholder span .component_loader svg, .component_mapshot .wrapper .mapshot_placeholder span div svg {
+    height: 50px;
+}
+.component_mapshot.loaded .mapshot_placeholder {
+    display: none;
+}
+.component_mapshot.error .mapshot_placeholder.loading {
+    display: none;
+}

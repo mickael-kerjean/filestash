@@ -10,7 +10,7 @@ const adminSession$ = rxjs.merge(
         rxjs.fromEvent(document, "visibilitychange").pipe(rxjs.filter(() => !document.hidden)),
     ).pipe(
         rxjs.startWith(null),
-        rxjs.mergeMap(() => ajax({ url: "/admin/api/session", responseType: "json" })),
+        rxjs.mergeMap(() => ajax({ url: "admin/api/session", responseType: "json" })),
         rxjs.map(({ responseJSON }) => responseJSON.result),
     )
 ).pipe(
@@ -24,7 +24,7 @@ export function isAdmin$() {
 
 export function authenticate$(body) {
     return ajax({
-        url: "/admin/api/session",
+        url: "admin/api/session",
         method: "POST",
         body,
         responseType: "json"

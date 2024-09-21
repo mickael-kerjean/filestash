@@ -1,11 +1,10 @@
 import { createElement } from "../lib/skeleton/index.js";
 import { ApplicationError } from "../lib/error.js";
 import { animate, slideYIn, slideYOut } from "../lib/animate.js";
-import { CSS } from "../helpers/loader.js";
+import { loadCSS } from "../helpers/loader.js";
 
 const createNotification = async(msg, type) => createElement(`
     <span class="component_notification">
-        <style>${await CSS(import.meta.url, "notification.css")}</style>
         <div class="no-select">
             <div class="component_notification--container ${type}">
                 <div class="message">${msg}</div>
@@ -17,16 +16,20 @@ const createNotification = async(msg, type) => createElement(`
     </span>
 `);
 
-class NotificationComponent extends window.HTMLElement {
+class NotificationComponent extends HTMLElement {
     buffer = [];
+
+    async connectedCallback() {
+        await loadCSS(import.meta.url, "./notification.css");
+    }
 
     async trigger(message, type) {
         if (this.buffer.length > 20) this.buffer.pop(); // failsafe
         this.buffer.push({ message, type });
         if (this.buffer.length !== 1) {
             const $close = this.querySelector(".close");
-            if (!($close instanceof window.HTMLElement) || !$close.onclick) return;
-            $close.onclick(new window.MouseEvent("mousedown"));
+            if (!($close instanceof HTMLElement) || !$close.onclick) return;
+            $close.onclick(new MouseEvent("mousedown"));
             return;
         }
         await this.run();
@@ -43,16 +46,16 @@ class NotificationComponent extends window.HTMLElement {
         });
         const ids = [];
         await Promise.race([
-            new Promise((done) => ids.push(window.setTimeout(() => {
-                done(new window.MouseEvent("mousedown"));
+            new Promise((done) => ids.push(setTimeout(() => {
+                done(new MouseEvent("mousedown"));
             }, this.buffer.length === 1 ? 8000 : 800))),
-            new Promise((done) => ids.push(window.setTimeout(() => {
+            new Promise((done) => ids.push(setTimeout(() => {
                 const $close = $notification.querySelector(".close");
-                if (!($close instanceof window.HTMLElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: notification close button missing");
+                if (!($close instanceof HTMLElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: notification close button missing");
                 $close.onclick = done;
             }, 1000))),
         ]);
-        ids.forEach((id) => window.clearTimeout(id));
+        ids.forEach((id) => clearTimeout(id));
         await animate($notification, {
             keyframes: slideYOut(10),
             time: 200,

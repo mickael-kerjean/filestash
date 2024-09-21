@@ -7,10 +7,12 @@ import t from "../../locales/index.js";
 import { transition, getFilename, getDownloadUrl } from "./common.js";
 
 import "../../components/icon.js";
+import "./component_menubar.js";
 
 export default async function(render) {
     const $page = createElement(`
         <div class="component_filedownloader">
+            <component-menubar></component-menubar>
             <div class="download_button no-select">
                 <a download="${getFilename()}" href="${getDownloadUrl()}">${t("DOWNLOAD")}</a>
                 <component-icon name="loading" class="hidden"></component-icon>
@@ -34,7 +36,7 @@ export default async function(render) {
             const id = setInterval(() => {
                 if (/download=yes/.test(document.cookie)) return;
                 clearInterval(id);
-                done();
+                done(null);
             }, 200);
         })),
         rxjs.tap(() => setLoading(false)),

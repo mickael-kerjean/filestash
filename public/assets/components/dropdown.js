@@ -1,13 +1,16 @@
 import { createFragment } from "../lib/skeleton/index.js";
 import { animate, slideYIn } from "../lib/animate.js";
+import assert from "../lib/assert.js";
 import { loadCSS } from "../helpers/loader.js";
 
-await loadCSS(import.meta.url, "./dropdown.css");
-
-export default class ComponentDropdown extends HTMLDivElement {
+export default class ComponentDropdown extends HTMLElement {
     constructor() {
         super();
         this.render();
+    }
+
+    async connectedCallback() {
+        await loadCSS(import.meta.url, "./dropdown.css");
     }
 
     static get observedAttributes() {
@@ -75,9 +78,9 @@ export default class ComponentDropdown extends HTMLDivElement {
         `));
 
         const setActive = () => this.classList.toggle("active");
-        this.querySelector(".dropdown_button").onclick = () => {
+        assert.type(this.querySelector(".dropdown_button"), HTMLElement).onclick = () => {
             setActive();
-            animate(this.querySelector(".dropdown_container"), {
+            animate(assert.type(this.querySelector(".dropdown_container"), HTMLElement), {
                 time: 100,
                 keyframes: slideYIn(2),
             });
@@ -85,4 +88,4 @@ export default class ComponentDropdown extends HTMLDivElement {
     }
 }
 
-customElements.define("component-dropdown", ComponentDropdown, { extends: "div" });
+customElements.define("component-dropdown", ComponentDropdown);

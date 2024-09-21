@@ -6,15 +6,16 @@ export default function(opts) {
     else if (typeof opts !== "object") throw new Error("unsupported call");
     if (!opts.headers) opts.headers = {};
     opts.headers["X-Requested-With"] = "XmlHttpRequest";
+    if (window.BEARER_TOKEN) opts.headers["Authorization"] = `Bearer ${window.BEARER_TOKEN}`;
     return ajax({ withCredentials: true, ...opts, responseType: "text" }).pipe(
         rxjs.map((res) => {
             const result = res.xhr.responseText;
             if (opts.responseType === "json") {
                 const json = JSON.parse(result);
+                res.responseJSON = json;
                 if (json.status !== "ok") {
                     throw new AjaxError("Oups something went wrong", result);
                 }
-                res.responseJSON = json;
             }
             return res;
         }),

@@ -2,7 +2,7 @@ import rxjs from "../lib/rx.js";
 import ajax from "../lib/ajax.js";
 
 const backend$ = ajax({
-    url: "/api/backend",
+    url: "api/backend",
     method: "GET",
     responseType: "json"
 }).pipe(

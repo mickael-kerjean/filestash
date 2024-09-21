@@ -13,6 +13,8 @@ export function opener(file = "", mimes) {
         return ["editor", { mime }];
     } else if (mime === "application/pdf") {
         return ["pdf", { mime }];
+    } else if (mime === "image/svg+xml") {
+        return ["editor", { mime }];
     } else if (type === "image") {
         return ["image", { mime }];
     } else if (["application/javascript", "application/xml", "application/json",
@@ -22,6 +24,8 @@ export function opener(file = "", mimes) {
         return ["audio", { mime }];
     } else if (mime === "application/x-form") {
         return ["form", { mime }];
+    } else if (mime === "application/geo+json" || mime === "application/vnd.ogc.wms_xml") {
+        return ["map", { mime }];
     } else if (type === "video" || mime === "application/ogg") {
         return ["video", { mime }];
     } else if (["application/epub+zip"].indexOf(mime) !== -1) {
@@ -35,5 +39,5 @@ export function opener(file = "", mimes) {
 }
 
 function getMimeType(file, mimes = {}) {
-    return mimes[file.split(".")[1]] || "text/plain";
+    return mimes[file.split(".").slice(-1)[0]] || "text/plain";
 }

@@ -1,4 +1,4 @@
-import { onDestroy } from "./skeleton/index.js";
+import { onDestroy, nop } from "./skeleton/index.js";
 
 export function transition($node, opts = {}) {
     const {
@@ -11,18 +11,32 @@ export function transition($node, opts = {}) {
 }
 
 export function animate($node, opts = {}) {
-    const { time = 250, keyframes = opacityIn(), fill = "forwards", easing = "ease" } = opts;
+    const {
+        time = 250,
+        keyframes = opacityIn(),
+        fill = "forwards", easing = "ease",
+        onEnter = nop, onExit = nop,
+    } = opts;
 
-    if (!$node) return Promise.resolve();
-    else if (typeof $node.animate !== "function") return Promise.resolve();
-    else if (window.matchMedia(`(prefers-reduced-motion: reduce)`) === true || window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true) return Promise.resolve();
-
+    if (!$node ||
+         typeof $node.animate !== "function" ||
+         window.matchMedia(`(prefers-reduced-motion: reduce)`) === true ||
+         window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true) {
+        onEnter();
+        onExit();
+        return Promise.resolve();
+    }
+    onEnter();
     return new Promise((done) => {
-        $node.animate(keyframes, {
+        const handler = $node.animate(keyframes, {
             duration: time,
             fill,
             easing,
-        }).onfinish = done;
+        });
+        handler.onfinish = () => {
+            onExit();
+            done(() => handler.cancel());
+        };
     });
 }
 

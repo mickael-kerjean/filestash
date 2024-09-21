@@ -6,6 +6,7 @@ export function http_get(url, type = "json", params) {
         xhr.open("GET", url, true);
         xhr.withCredentials = true;
         xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
+        if (window.BEARER_TOKEN) xhr.setRequestHeader("Authorization", `Bearer ${window.BEARER_TOKEN}`);
         xhr.onerror = function() {
             handle_error_response(xhr, err);
         };
@@ -51,6 +52,7 @@ export function http_post(url, data, type = "json", params) {
         xhr.open("POST", url, true);
         xhr.withCredentials = true;
         xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
+        if (window.BEARER_TOKEN) xhr.setRequestHeader("Authorization", `Bearer ${window.BEARER_TOKEN}`);
         if (data && type === "json") {
             data = JSON.stringify(data);
             xhr.setRequestHeader("Content-Type", "application/json");
@@ -70,6 +72,10 @@ export function http_post(url, data, type = "json", params) {
                 handle_error_response(xhr, err);
                 return;
             }
+
+            const bearerToken = xhr.getResponseHeader("Bearer");
+            if (bearerToken) window.BEARER_TOKEN = bearerToken;
+
             try {
                 const data = JSON.parse(xhr.responseText);
                 if (data.status !== "ok") {
@@ -98,6 +104,7 @@ export function http_delete(url) {
         xhr.open("DELETE", url, true);
         xhr.withCredentials = true;
         xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
+        if (window.BEARER_TOKEN) xhr.setRequestHeader("Authorization", `Bearer ${window.BEARER_TOKEN}`);
         xhr.onerror = function() {
             handle_error_response(xhr, err);
         };
@@ -129,6 +136,7 @@ export function http_options(url) {
         xhr.open("OPTIONS", url, true);
         xhr.withCredentials = true;
         xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
+        if (window.BEARER_TOKEN) xhr.setRequestHeader("Authorization", `Bearer ${window.BEARER_TOKEN}`);
         xhr.onerror = function() {
             handle_error_response(xhr, err);
         };

@@ -234,6 +234,26 @@ func (this Get) Onload() []func() {
 	return afterload
 }
 
+var middlewares []func(HandlerFunc) HandlerFunc
+
+func (this Register) Middleware(m func(HandlerFunc) HandlerFunc) {
+	middlewares = append(middlewares, m)
+}
+
+func (this Get) Middleware() []func(HandlerFunc) HandlerFunc {
+	return middlewares
+}
+
+var staticOverrides []fs.FS
+
+func (this Register) StaticPatch(folder fs.FS) {
+	staticOverrides = append(staticOverrides, folder)
+}
+
+func (this Get) StaticPatch() []fs.FS {
+	return staticOverrides
+}
+
 func init() {
 	Hooks.Register.FrontendOverrides(OverrideVideoSourceMapper)
 }

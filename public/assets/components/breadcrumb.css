@@ -52,14 +52,14 @@
     position: absolute;
     left: 0;
     background: var(--color);
-    color: white;
+    color: var(--bg-color);
     font-size: 0.8em;
     opacity: 0;
     transform: translateY(5px);
     border-radius: 3px;
     white-space: nowrap;
     padding: 3px 10px !important;
-    margin: 23px 0px 5px 0px;
+    margin: 25px 0px 5px 0px;
 }
 .component_breadcrumb .component_path-element .component_path-element-wrapper {
     font-size: 18px;
@@ -79,7 +79,7 @@
 }
 
 /* Phone like devices */
-body.touch-yes [is="component-breadcrumb"] .ul span {
+body.touch-yes component-breadcrumb .ul span {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
@@ -87,13 +87,13 @@ body.touch-yes [is="component-breadcrumb"] .ul span {
     -moz-box-sizing: border-box;
     white-space: nowrap;
 }
-body.touch-yes [is="component-breadcrumb"] .ul span::-webkit-scrollbar {
+body.touch-yes component-breadcrumb .ul span::-webkit-scrollbar {
     height: 0px;
 }
-body.touch-yes [is="component-breadcrumb"] .ul span::-webkit-scrollbar-track {
+body.touch-yes component-breadcrumb .ul span::-webkit-scrollbar-track {
     background: var(--super-light);
 }
-body.touch-yes [is="component-breadcrumb"] .ul span::-webkit-scrollbar-thumb {
+body.touch-yes component-breadcrumb .ul span::-webkit-scrollbar-thumb {
     background: #d2d2d2;
     border-radius: 1px;
 }

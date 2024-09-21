@@ -37,7 +37,7 @@ class ChromecastManager {
     // }
 
     createRequest(mediaInfo, authorization) {
-        if (!authorization) Promise.error(new Error("Invalid account"));
+        if (!authorization) Promise.reject(new Error("Invalid account"));
 
         // TODO: it would be much much nicer to set the authorization in an HTTP header
         // but this would require to create a custom web receiver app, setup accounts on

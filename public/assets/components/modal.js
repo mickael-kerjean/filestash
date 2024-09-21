@@ -1,13 +1,12 @@
-import { createElement, nop } from "../lib/skeleton/index.js";
+import { createElement } from "../lib/skeleton/index.js";
 import assert from "../lib/assert.js";
 import rxjs, { applyMutation } from "../lib/rx.js";
 import { animate } from "../lib/animate.js";
 import { qs, qsa } from "../lib/dom.js";
-import { ApplicationError } from "../lib/error.js";
-import { CSS } from "../helpers/loader.js";
+import { loadCSS } from "../helpers/loader.js";
 
 export function createModal(opts) {
-    const $dom = document.body.querySelector("component-modal");
+    const $dom = assert.type(qs(document.body, "component-modal"), HTMLElement);
     assert.type($dom, ModalComponent);
 
     return ($node, fn) => $dom.trigger($node, { onQuit: fn, ...opts });
@@ -17,10 +16,8 @@ export const MODAL_LEFT_BUTTON = 1;
 export const MODAL_RIGHT_BUTTON = 2;
 export const MODAL_QUIT = 0;
 
-const css = await CSS(import.meta.url, "modal.css");
 const $modal = createElement(`
     <div class="component_modal" id="modal-box">
-        <style>${css}</style>
         <div>
             <div class="component_popup">
                 <div class="popup--content">
@@ -35,15 +32,19 @@ const $modal = createElement(`
     </div>
 `);
 
-class ModalComponent extends window.HTMLElement {
-    trigger($node, { withButtonsLeft = null, withButtonsRight = null, onQuit = (a) => Promise.resolve(a) }) {
+class ModalComponent extends HTMLElement {
+    async connectedCallback() {
+        await loadCSS(import.meta.url, "./modal.css");
+    }
+
+    trigger($node, { withButtonsLeft = null, withButtonsRight = null, targetHeight = 0, onQuit = (a) => Promise.resolve(a) }) {
         const close$ = new rxjs.Subject();
 
         // feature: build the dom
         qs($modal, `[data-bind="body"]`).replaceChildren($node);
         this.replaceChildren($modal);
         qsa($modal, ".component_popup > div.buttons > button").forEach(($button, i) => {
-            assert.truthy(i >= 0 & i <= 2);
+            assert.truthy(i >= 0 && i <= 2);
             let currentLabel = null;
             let buttonIndex = null;
             if (i === 0) {
@@ -54,9 +55,13 @@ class ModalComponent extends window.HTMLElement {
                 buttonIndex = MODAL_RIGHT_BUTTON;
             }
 
-            if (currentLabel === null) return $button.remove();
-            $button.textContent = currentLabel;
-            $button.onclick = () => close$.next(buttonIndex);
+            if (currentLabel !== null) {
+                $button.classList.remove("hidden");
+                $button.textContent = currentLabel;
+                $button.onclick = () => close$.next(buttonIndex);
+            } else {
+                $button.classList.add("hidden");
+            }
         });
         effect(rxjs.fromEvent($modal, "click").pipe(
             rxjs.filter((e) => e.target.getAttribute("id") === "modal-box"),
@@ -68,53 +73,58 @@ class ModalComponent extends window.HTMLElement {
         ));
 
         // feature: closing the modal
+        const $body = () => qs($modal, "div > div");
         effect(close$.pipe(
             rxjs.mergeMap((data) => onQuit(data) || Promise.resolve()),
-            rxjs.tap(() => animate(qs($modal, "div > div"), {
+            rxjs.tap(() => animate($body(), {
                 time: 200,
                 keyframes: [
                     { opacity: 1, transform: "translateY(0)" },
-                    { opacity: 0, transform: "translateY(20px)" }
-                ]
+                    { opacity: 0, transform: "translateY(20px)" },
+                ],
             })),
             rxjs.delay(100),
             rxjs.tap(() => animate($modal, {
                 time: 200,
-                keyframes: [{ opacity: 1 }, { opacity: 0 }]
+                keyframes: [{ opacity: 1 }, { opacity: 0 }],
             })),
             rxjs.mapTo([]), applyMutation($modal, "remove"),
             rxjs.tap(free),
         ));
 
         // feature: animate opening
-        effect(rxjs.of(["opacity", "0"]).pipe(
-            applyMutation(qs($modal, "div > div"), "style", "setProperty"),
+        effect(rxjs.of(null).pipe(
             rxjs.tap(() => animate($modal, {
+                onEnter: () => $body().style.setProperty("opacity", "0"),
+                onExit: () => $body().style.setProperty("opacity", "1"),
                 time: 250,
                 keyframes: [
                     { opacity: 0 },
-                    { opacity: 1 }
-                ]
+                    { opacity: 1 },
+                ],
             })),
             rxjs.delay(50),
-            rxjs.tap(() => animate(qs($modal, "div > div"), {
+            rxjs.tap(() => animate($body(), {
                 time: 200,
                 keyframes: [
                     { opacity: 0, transform: "translateY(10px)" },
-                    { opacity: 1, transform: "translateY(0)" }
-                ]
+                    { opacity: 1, transform: "translateY(0)" },
+                ],
             })),
         ));
 
         // feature: center horizontally
-        effect(rxjs.fromEvent(window, "resize").pipe(
-            rxjs.startWith(null),
+        effect(rxjs.merge(
+            rxjs.fromEvent(window, "resize"),
+            rxjs.of(null),
+        ).pipe(
             rxjs.distinct(() => document.body.offsetHeight),
             rxjs.map(() => {
-                let size = 300;
-                const $box = document.querySelector("#modal-box > div");
-                if ($box instanceof window.HTMLElement) size = $box.offsetHeight;
-
+                let size = targetHeight;
+                if (size === null) {
+                    const $box = document.querySelector("#modal-box > div");
+                    if ($box instanceof HTMLElement) size = $box.offsetHeight;
+                }
                 size = Math.round((document.body.offsetHeight - size) / 2);
                 if (size < 0) return 0;
                 if (size > 250) return 250;

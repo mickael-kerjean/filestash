@@ -6,7 +6,7 @@ const isSaving$ = new rxjs.BehaviorSubject(false);
 const config$ = isSaving$.pipe(
     rxjs.filter((loading) => !loading),
     rxjs.switchMapTo(ajax({
-        url: "/admin/api/config",
+        url: "admin/api/config",
         method: "GET",
         responseType: "json"
     })),
@@ -31,7 +31,7 @@ export function save() {
         rxjs.tap(() => isSaving$.next(true)),
         rxjs.debounceTime(800),
         rxjs.mergeMap((formData) => ajax({
-            url: "/admin/api/config",
+            url: "admin/api/config",
             method: "POST",
             responseType: "json",
             body: formData,

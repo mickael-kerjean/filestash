@@ -1,7 +1,6 @@
 import rxjs from "../../lib/rx.js";
 import { onDestroy } from "../../lib/skeleton/index.js";
-import { ApplicationError } from "../../lib/error.js";
-import { currentPath, extractPath } from "./helper.js";
+import { extractPath } from "./helper.js";
 
 /*
  * CAUTION: Use a lot of caution if you change this file as it's easy for a bug to slip in and be responsible
@@ -25,14 +24,13 @@ const selection$ = new rxjs.BehaviorSubject([
 onDestroy(clearSelection);
 
 export function addSelection({ shift = false, n = 0, ...rest }) {
-    // console.log(n, shift)
     const selections = selection$.value;
     const selection = { type: shift ? "range" : "anchor", n, ...rest };
 
     // case1: select a single file/folder
     if (selection.type === "anchor") {
         selection$.next(selections.concat([selection]));
-        return
+        return;
     }
     // case2: range selection
     const last = selection$.value[selections.length - 1] || { n: 0, type: "anchor" };
@@ -49,7 +47,7 @@ export function addSelection({ shift = false, n = 0, ...rest }) {
 }
 
 export function clearSelection() {
-    if (selection$.value.length > 0) selection$.next([])
+    if (selection$.value.length > 0) selection$.next([]);
 }
 
 export function getSelection$() {
@@ -59,7 +57,7 @@ export function getSelection$() {
 export function isSelected(n) {
     let isChecked = false;
     const selections = selection$.value;
-    for (let i=0;i<selections.length;i++) {
+    for (let i=0; i<selections.length; i++) {
         if (selections[i].type === "anchor" && selections[i].n === n) {
             isChecked = !isChecked;
         }
@@ -122,7 +120,6 @@ function _selectionHelper(fn) {
     }
     return fn(set);
 }
-
 
 function isBetween(n, lowerBound, higherBound) {
     return n <= Math.max(higherBound, lowerBound) && n >= Math.min(lowerBound, higherBound);

@@ -1,13 +1,16 @@
+import { toHref, navigate } from "../../lib/skeleton/router.js";
 import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
+import { basename, forwardURLParams } from "../../lib/path.js";
 import notification from "../../components/notification.js";
+import assert from "../../lib/assert.js";
+import { AjaxError } from "../../lib/error.js";
+import t from "../../locales/index.js";
 
+import { currentPath } from "./helper.js";
 import { setPermissions } from "./model_acl.js";
 import fscache from "./cache.js";
-import {
-    rm as cacheRm, mv as cacheMv, save as cacheSave,
-    touch as cacheTouch, mkdir as cacheMkdir, ls as middlewareLs,
-} from "./cache_transcient.js";
+import { ls as middlewareLs } from "./model_virtual_layer.js";
 
 /*
  * The naive approach would be to make an API call and refresh the screen after an action
@@ -22,63 +25,75 @@ import {
  *   3. the new file is being persisted in the screen if the API call is a success
  */
 
-const errorNotification = rxjs.catchError((err) => {
+const handleSuccess = (text) => rxjs.tap(() => notification.info(text));
+const handleError = rxjs.catchError((err) => {
     notification.error(err);
     throw err;
 });
+const handleErrorRedirectLogin = rxjs.catchError((err) => {
+    if (err instanceof AjaxError && err.err().status === 401) {
+        navigate(toHref("/login?next=" + location.pathname + location.hash + location.search));
+        return rxjs.EMPTY;
+    }
+    throw err;
+});
 
-export function touch(path) {
-    const ajax$ = ajax({
-        url: `/api/files/touch?path=${encodeURIComponent(path)}`,
-        method: "POST",
-        responseType: "json",
-    }).pipe(errorNotification);
-    return cacheTouch(ajax$, path);
-}
+const trimDirectorySuffix = (name) => name.replace(new RegExp("/$"), "");
 
-export function mkdir(path) {
-    const ajax$ = ajax({
-        url: `/api/files/mkdir?path=${encodeURIComponent(path)}`,
-        method: "POST",
-        responseType: "json",
-    }).pipe(errorNotification);
-    return cacheMkdir(ajax$, path);
-}
+export const touch = (path) => ajax({
+    url: withURLParams(`api/files/touch?path=${encodeURIComponent(path)}`),
+    method: "POST",
+    responseType: "json",
+}).pipe(
+    handleSuccess(t("A file named '{{VALUE}}' was created", basename(path))),
+    handleError,
+);
 
-export function rm(...paths) {
-    const ajax$ = rxjs.forkJoin(paths.map((path) => ajax({
-        url: `/api/files/rm?path=${encodeURIComponent(path)}`,
-        method: "POST",
-        responseType: "json",
-    }).pipe(errorNotification)));
-    return cacheRm(ajax$, ...paths);
-}
+export const mkdir = (path) => ajax({
+    url: withURLParams(`api/files/mkdir?path=${encodeURIComponent(path)}`),
+    method: "POST",
+    responseType: "json",
+}).pipe(
+    handleSuccess(t("A folder named '{{VALUE}}' was created", basename(trimDirectorySuffix(path)))),
+    handleError,
+);
 
-export function mv(from, to) {
-    const ajax$ = ajax({
-        url: `/api/files/mv?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
-        method: "POST",
-        responseType: "json",
-    }).pipe(errorNotification);
-    return cacheMv(ajax$, from, to);
-}
+export const rm = (...paths) => rxjs.forkJoin(paths.map((path) => ajax({
+    url: withURLParams(`api/files/rm?path=${encodeURIComponent(path)}`),
+    method: "POST",
+    responseType: "json",
+}))).pipe(
+    handleSuccess(paths.length > 1 ? t("All Done!") : t("The file '{{VALUE}}' was deleted", basename(trimDirectorySuffix(paths[0])))),
+    handleError,
+);
 
-export function save(path) { // TODO
-    return rxjs.of(null).pipe(rxjs.delay(1000));
-}
+export const mv = (from, to) => ajax({
+    url: withURLParams(`api/files/mv?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
+    method: "POST",
+    responseType: "json",
+}).pipe(
+    handleSuccess(t("The file '{{VALUE}}' was renamed", basename(trimDirectorySuffix(from)))),
+    handleError,
+);
 
-export function ls(path) {
+export const save = () => rxjs.of(null).pipe(rxjs.delay(1000));
+
+export const ls = (path) => {
     const lsFromCache = (path) => rxjs.from(fscache().get(path));
     const lsFromHttp = (path) => ajax({
-        url: `/api/files/ls?path=${encodeURIComponent(path)}`,
+        url: withURLParams(`api/files/ls?path=${encodeURIComponent(path)}`),
         method: "GET",
         responseType: "json",
     }).pipe(
+        handleErrorRedirectLogin,
         rxjs.map(({ responseJSON }) => ({
             files: responseJSON.results,
             permissions: responseJSON.permissions,
         })),
-        rxjs.tap((data) => fscache().store(path, data)),
+        rxjs.tap(({ files, permissions }) => {
+            fscache().store(path, { files, permissions });
+            hooks.ls.emit({ path, files, permissions });
+        }),
     );
 
     return rxjs.combineLatest(
@@ -86,7 +101,7 @@ export function ls(path) {
         rxjs.merge(
             rxjs.of(null),
             rxjs.merge(rxjs.of(null), rxjs.fromEvent(window, "keydown").pipe( // "r" shorcut
-                rxjs.filter((e) => e.keyCode === 82 && document.activeElement.tagName !== "INPUT"),
+                rxjs.filter((e) => e.keyCode === 82 && assert.type(document.activeElement, HTMLElement).tagName !== "INPUT"),
             )).pipe(rxjs.switchMap(() => lsFromHttp(path))),
         ),
     ).pipe(
@@ -114,14 +129,41 @@ export function ls(path) {
         rxjs.tap(({ permissions }) => setPermissions(path, permissions)),
         middlewareLs(path),
     );
+};
+
+export const search = (term) => ajax({
+    url: `api/files/search?path=${encodeURIComponent(currentPath())}&q=${encodeURIComponent(term)}`,
+    responseType: "json"
+}).pipe(rxjs.map(({ responseJSON }) => ({
+    files: responseJSON.results,
+})));
+
+class Hook {
+    constructor() {
+        this.list = [];
+        this.id = 0;
+    }
+
+    listen(fn) {
+        if (typeof fn !== "function") assert.fail("hook must be a function");
+        const id = this.id;
+        this.list.push({ id, fn });
+        this.id += 1;
+        return () => {
+            this.list = this.list.filter((obj) => obj.id !== id);
+        };
+    }
+
+    emit(data) {
+        this.list.map(({ fn }) => fn(data));
+    }
 }
 
-export function search(term) {
-    const path = location.pathname.replace(new RegExp("^/files/"), "/");
-    return ajax({
-        url: `/api/files/search?path=${encodeURIComponent(path)}&q=${encodeURIComponent(term)}`,
-        responseType: "json"
-    }).pipe(rxjs.map(({ responseJSON }) => ({
-        files: responseJSON.results,
-    })));
-}
+export const hooks = {
+    ls: new Hook(),
+    mutation: new Hook(),
+    // ...
+    // add hooks on a needed basis
+};
+
+const withURLParams = (url) => forwardURLParams(url, ["share"]);

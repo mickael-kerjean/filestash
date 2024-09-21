@@ -34,12 +34,13 @@ func init() {
 		Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
 			if GetMimeType(req.URL.Query().Get("path")) != "image/svg+xml" {
 				return reader, nil
-			} else if disable_svg() == true {
-				return reader, ErrNotAllowed
+			} else if disable_svg() == false {
+				return reader, nil
 			}
 
 			// XSS
 			(*res).Header().Set("Content-Security-Policy", "script-src 'none'; default-src 'none'; img-src 'self'")
+			(*res).Header().Set("Content-Type", "text/plain")
 			// XML bomb
 			txt, _ := ioutil.ReadAll(reader)
 			if regexp.MustCompile("(?is)entity").Match(txt) {

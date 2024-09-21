@@ -123,7 +123,7 @@
     border-color: rgba(0, 0, 0, 0.05);
     border-style: solid;
     border-radius: 3px;
-    margin: 15px 0;
+    margin: 15px 0 0 0;
 }
 
 .component_page_admin .formbuilder h2 ~ div > div > label,
@@ -168,7 +168,7 @@
 }
 .component_page_admin .formbuilder_password img.component_icon {
     border: 2px solid rgba(0, 0, 0, 0.05);
-    height: 18px;
+    height: 19px;
     border-left: none;
     background: rgba(0, 0, 0, 0.05);
     border-top-right-radius: 3px;

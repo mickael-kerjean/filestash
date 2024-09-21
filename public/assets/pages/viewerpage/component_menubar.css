@@ -1,0 +1,78 @@
+.component_menubar {
+    background: var(--dark);
+    color: #f1f1f1;
+    position: relative;
+    display: block;
+    box-shadow: 0 0px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    z-index: 4;
+    text-align: left;
+}
+.component_menubar .container {
+    padding: 0;
+    color: var(--bg-color);
+    font-size: 0.9em;
+}
+.component_menubar .container.inherit-width { max-width: inherit!important; }
+.component_menubar .container > span {
+    display: flex;
+}
+.component_menubar .titlebar {
+    flex: 1;
+    padding: 8px 0;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.3px;
+    padding-left: 5px;
+}
+.component_menubar .action-item {
+    padding-right: 10px;
+    display: flex;
+    align-items: center;
+}
+.component_menubar .action-item .component_icon {
+    height: 19px;
+    width: 19px;
+    cursor: pointer;
+    padding: 0 3px;
+}
+.component_menubar .action-item .download-button .component_icon {
+    padding-right: 1px;
+}
+
+.dark-mode .component_menubar {
+    background: var(--bg-color);
+}
+.dark-mode .component_menubar .container {
+    color: inherit;
+}
+
+.touch-yes .component_menubar .action-item .component_icon {
+    height: 21px;
+    width: 21px;
+}
+
+/* icons in additional menu */
+.component_menubar .action-item [is="component-dropdown"] .dropdown_button {
+    border: none;
+    padding: 2px 0px;
+    margin: 0;
+}
+
+/* chromecast */
+:root {
+    --disconnected-color: #F2F2F2;
+    --connected-color: var(--primary);
+}
+
+google-cast-launcher {
+    display: inline-block;
+    height: 23px;
+    width: 23px;
+    cursor: pointer;
+    padding: 0 5px;
+    position: relative;
+    top: 1px;
+    cursor: pointer;
+}

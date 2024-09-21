@@ -5,8 +5,6 @@ import { get as getConfig } from "../../model/config.js";
 import { get as getAdminConfig } from "./model_config.js";
 import { formObjToJSON$ } from "./helper_form.js";
 
-export { getBackends as getBackendAvailable } from "./model_backend.js";
-
 const backendsEnabled$ = new rxjs.BehaviorSubject();
 
 export async function initStorage() {
@@ -19,42 +17,35 @@ export async function initStorage() {
     ).toPromise();
 }
 
+export { getBackends as getBackendAvailable } from "./model_backend.js";
+
 export function getBackendEnabled() {
     return backendsEnabled$.asObservable();
 }
 
 export function addBackendEnabled(type) {
-    return backendsEnabled$.pipe(
-        rxjs.first(),
-        rxjs.map((backends) => {
-            const existingLabels = new Set();
-            backends.forEach((obj) => {
-                existingLabels.add(obj.label.toLowerCase());
-            });
-
-            let label = ""; let i = 1;
-            while (true) {
-                label = type + (i === 1 ? "" : ` ${i}`);
-                if (existingLabels.has(label) === false) break;
-                i += 1;
+    return getState().pipe(rxjs.map(({ connections }) => {
+        let label = type;
+        let i = 0;
+        while (true) {
+            if (!connections.find((obj) => obj.label === label)) {
+                break;
             }
-
-            const b = backends.concat({ type, label });
-            backendsEnabled$.next(b);
-            return b;
-        }),
-    );
+            i += 1;
+            label = `${type} ${i}`;
+        }
+        const newConnections = connections.concat({ type, label });
+        backendsEnabled$.next(newConnections);
+        return newConnections;
+    }));
 }
 
 export function removeBackendEnabled(labelToRemove) {
-    return backendsEnabled$.pipe(
-        rxjs.first(),
-        rxjs.map((backends) => {
-            const b = backends.filter(({ label }) => label !== labelToRemove);
-            backendsEnabled$.next(b);
-            return b;
-        }),
-    );
+    return getState().pipe(rxjs.map(({ connections }) => {
+        const newConnections = connections.filter(({ label }) => label !== labelToRemove);
+        backendsEnabled$.next(newConnections);
+        return newConnections;
+    }));
 }
 
 const middlewareEnabled$ = new rxjs.ReplaySubject(1);
@@ -100,7 +91,7 @@ export function getState() {
         }),
         rxjs.map((config) => { // middleware
             const authType = document
-                .querySelector(`[data-bind="authentication_middleware"] [is="box-item"].active`)
+                .querySelector(`[data-bind="authentication_middleware"] box-item.active`)
                 ?.getAttribute("data-label");
 
             config.middleware = {
@@ -110,7 +101,7 @@ export function getState() {
             if (!authType) return config;
 
             const $formIDP = document.querySelector(`[data-bind="idp"]`);
-            if (!($formIDP instanceof window.HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: idp isn't a form");
+            if (!($formIDP instanceof HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: idp isn't a form");
             let formValues = [...new FormData($formIDP)];
             config.middleware.identity_provider = {
                 type: authType,
@@ -130,7 +121,7 @@ export function getState() {
             };
 
             const $formAM = document.querySelector(`[data-bind="attribute-mapping"]`);
-            if (!($formAM instanceof window.HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: attribute mapping isn't a form");
+            if (!($formAM instanceof HTMLFormElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: attribute mapping isn't a form");
             formValues = [...new FormData($formAM)];
             config.middleware.attribute_mapping = {
                 related_backend: (formValues.shift() || [])[1],

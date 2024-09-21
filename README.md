@@ -1,3 +1,8 @@
+<p align="center">
+    <strong>Annoucement: Filestash is now my full time job and I'm building in public</strong>
+    <br><a href="https://www.youtube.com/watch?v=6G60_My7Tgs">https://www.youtube.com/watch?v=6G60_My7Tgs</a>
+</p>
+
 ![screenshot](https://raw.githubusercontent.com/mickael-kerjean/filestash_images/master/.assets/photo.jpg)
 
 <p align="center">
@@ -72,7 +77,7 @@
 # The core idea
 
 Filestash started as an attempt to solve the Dropbox problem by abstracting the storage aspect so you can "bring your own backend" by implementing this interface:
-```
+```go
 type IBackend interface {
 	Init(params map[string]string, app *App) (IBackend, error) // constructor
 	Ls(path string) ([]os.FileInfo, error)           // list files in a folder
@@ -101,5 +106,6 @@ Some outside the box example of this "filesystem as a framework" ideas we've don
 
 # Credits
 - [Contributors](https://github.com/mickael-kerjean/filestash/graphs/contributors) and folks developing [awesome libraries](https://github.com/mickael-kerjean/filestash/blob/master/go.mod)
+- This project is tested with BrowserStack
 - Logo derived from the work of [ssnjrthegr8](https://github.com/ssnjrthegr8), Iconography from [flaticon](https://www.flaticon.com/), [fontawesome](https://fontawesome.com) and [material](https://material.io/icons/)
 - [libvips](https://github.com/libvips/libvips) and [libraw](https://github.com/LibRaw/LibRaw). Those libraries are statically compiled in Filestash. Instructions to build Filestash is available [here](https://github.com/mickael-kerjean/filestash/blob/master/.drone.yml) and instructions to create your own static library for libvips and libraw is to be found [here](https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_image_light/deps)

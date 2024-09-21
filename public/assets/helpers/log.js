@@ -1,12 +1,12 @@
-export function report(msg, error, link, lineNo, columnNo) {
+export function report(msg, err, link, lineNo, columnNo) {
     if (window.navigator.onLine === false) return Promise.resolve();
-    let url = "/report?";
+    let url = "./report?";
     url += "url=" + encodeURIComponent(location.href) + "&";
     url += "msg=" + encodeURIComponent(msg) + "&";
     url += "from=" + encodeURIComponent(link) + "&";
     url += "from.lineNo=" + lineNo + "&";
     url += "from.columnNo=" + columnNo;
-    if (error) url += "error=" + encodeURIComponent(error.message) + "&";
+    if (err instanceof Error) url += "error=" + encodeURIComponent(err.message) + "&";
 
     return fetch(url, { method: "post" }).catch(() => {});
 }

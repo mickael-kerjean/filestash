@@ -3,15 +3,16 @@ import rxjs, { effect, applyMutation, onClick } from "../../lib/rx.js";
 import { animate, slideXIn, opacityOut } from "../../lib/animate.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { loadCSS } from "../../helpers/loader.js";
-import { createForm } from "../../lib/form.js";
+import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 import ctrlError from "../ctrl_error.js";
 
-import { transition, getFile$, saveFile$ } from "./common.js";
+import { transition } from "./common.js";
 import { $ICON } from "./common_fab.js";
+import { cat, save } from "./model_files.js";
+import "./component_menubar.js";
 
 import "../../components/icon.js";
-import "../../components/menubar.js";
 import "../../components/fab.js";
 
 export default function(render) {
@@ -35,7 +36,7 @@ export default function(render) {
     const file$ = new rxjs.ReplaySubject(1);
 
     // feature1: setup the dom
-    effect(getFile$().pipe(
+    effect(cat().pipe(
         rxjs.map((content) => JSON.parse(content)),
         rxjs.mergeMap((formSpec) => rxjs.from(createForm(formSpec, formTmpl({
             renderLeaf: ({ label, format, description, required }) => createElement(`
@@ -61,7 +62,7 @@ export default function(render) {
             }),
             rxjs.mapTo(formSpec),
         )),
-        rxjs.tap((formSpec) => file$.next(formObjToJSON(formSpec))),
+        rxjs.tap((formSpec) => file$.next(formSpec)),
         rxjs.catchError(ctrlError()),
     ));
 
@@ -77,8 +78,8 @@ export default function(render) {
         ),
     ).pipe(
         rxjs.map((originalState) => {
-            const smod = (key, value) => value || undefined;
-            return JSON.stringify(originalState, smod) !== JSON.stringify(formState(), smod);
+            const smod = (_, value) => value || undefined;
+            return JSON.stringify(formObjToJSON(originalState), smod) !== JSON.stringify(formState(), smod);
         }),
         rxjs.mergeMap(async(isSaveButtonVisible) => {
             if (isSaveButtonVisible && $fab.classList.contains("hidden")) {
@@ -99,13 +100,17 @@ export default function(render) {
             $fab.render($ICON.LOADING);
             $fab.disabled = true;
         }),
-        rxjs.mergeMap(($fab) => rxjs.of(JSON.stringify(formState())).pipe(
-            saveFile$(),
-            rxjs.mergeMap(() => getFile$().pipe(rxjs.tap((formSpec) => file$.next(JSON.parse(formSpec))))),
+        rxjs.mergeMap(() => file$.pipe(
+            rxjs.first(),
+            rxjs.map((formSpec) => mutateForm(formSpec, formState())),
+            rxjs.mergeMap((formSpec) => save(formSpec).pipe(
+                rxjs.tap(() => file$.next(formSpec)),
+            )),
         )),
         rxjs.tap(() => {
             $fab.render($ICON.SAVING);
             $fab.removeAttribute("disabled");
+            $fab.classList.add("hidden");
         }),
         rxjs.catchError(ctrlError()),
     ));
@@ -119,6 +124,7 @@ const formObjToJSON = (o, level = 0) => {
     const obj = Object.assign({}, o);
     Object.keys(obj).forEach((key) => {
         const t = obj[key];
+        if (typeof t !== "object") throw new Error("MALFORMED FORM");
         if ("label" in t && "type" in t && "default" in t && "value" in t) {
             obj[key] = obj[key].value;
         } else {

@@ -13,11 +13,15 @@
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
 }
+.dark-mode .component_upload {
+    color: var(--bg-color);
+}
+
 .component_upload h2 {
     padding: 20px 20px 5px 20px;
     margin: 0 0 5px 0;
     font-size: 1.2em;
-    font-weight: 100;
+    font-weight: normal;
 }
 .component_upload h2 .percent {
     color: var(--emphasis-primary);
@@ -28,13 +32,13 @@
 }
 .component_upload h2 .count_block span.grandTotal {
     font-size: 0.8em;
-    color: var(--emphasis-secondary);
+    opacity: 0.8;
 }
 .component_upload h2 .count_block span.grandTotal:before {
     content: "/";
 }
 .component_upload h2 .count_block span.completed {
-    color: var(--emphasis-secondary);
+    opacity: 0.8;
 }
 .component_upload h2 .component_icon {
     cursor: pointer;
@@ -66,7 +70,7 @@
     color: var(--error);
 }
 .component_upload .stats_content .todo_color {
-    color: var(--light);
+    opacity: 0.7;
 }
 .component_upload .stats_content .file_row {
     display: flex;
@@ -79,7 +83,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding: 3px 0;
+    padding: 3px 3px 3px 0;
 }
 .component_upload .stats_content .file_row .file_path .speed {
     font-size: 0.7rem;
@@ -93,7 +97,7 @@
     content: ")";
 }
 .component_upload .stats_content .file_row .file_state {
-    width: 40px;
+    width: 50px;
     padding: 3px 0;
 }
 .component_upload .stats_content .file_row .file_control {

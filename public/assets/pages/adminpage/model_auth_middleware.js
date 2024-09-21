@@ -2,7 +2,7 @@ import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 
 const model$ = ajax({
-    url: "/admin/api/middlewares/authentication",
+    url: "admin/api/middlewares/authentication",
     method: "GET",
     responseType: "json"
 }).pipe(

@@ -204,3 +204,7 @@ func (s *Share) UnmarshallJSON(b []byte) error {
 	}
 	return nil
 }
+
+type HandlerFunc func(*App, http.ResponseWriter, *http.Request)
+
+type Middleware func(HandlerFunc) HandlerFunc

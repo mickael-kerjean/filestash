@@ -1,8 +1,10 @@
 import { createElement, navigate } from "../../lib/skeleton/index.js";
+import { toHref } from "../../lib/skeleton/router.js";
 import rxjs, { effect, applyMutation, applyMutations, preventDefault, onClick } from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
-import { animate, slideYIn, transition } from "../../lib/animate.js";
+import { animate, slideYIn, transition, opacityIn } from "../../lib/animate.js";
+import assert from "../../lib/assert.js";
 import { createForm } from "../../lib/form.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
 import t from "../../locales/index.js";
@@ -46,8 +48,8 @@ export default async function(render) {
         rxjs.map((conns) => conns.map((conn, i) => ({ ...conn, n: i }))),
         rxjs.map((conns) => conns.map(({ label, n }) => createElement(`<button data-current="${n}">${safe(label)}</button>`))),
         applyMutations($nav, "appendChild"),
-        rxjs.tap((conns = []) => { if (conns.length > 1) $nav.classList.remove("hidden") }),
-        rxjs.tap(() => animate($nav)),
+        rxjs.tap((conns = []) => { if (conns.length > 1) $nav.classList.remove("hidden"); }),
+        rxjs.tap(() => animate($nav, { time: 250, keyframes: opacityIn() })),
     ));
 
     // feature2: select a default storage among all the available ones
@@ -68,7 +70,6 @@ export default async function(render) {
                 middleware: { type: "hidden" },
                 label: { type: "hidden", value: label },
             };
-            const emptyForm = {};
             return backendSpecs[type] || {};
         })),
     )));
@@ -128,7 +129,7 @@ export default async function(render) {
     const toggleLoader = (hide) => {
         if (hide) {
             $page.classList.add("hidden");
-            $page.parentElement.appendChild($loader);
+            assert.truthy($page.parentElement).appendChild($loader);
         } else {
             $loader.remove();
             $page.classList.remove("hidden");
@@ -167,7 +168,7 @@ export default async function(render) {
     ).pipe(
         rxjs.mergeMap((formData) => { // CASE 1: authentication middleware flow
             if (!("middleware" in formData)) return rxjs.of(formData);
-            let url = "/api/session/auth/?action=redirect";
+            let url = "api/session/auth/?action=redirect";
             url += "&label=" + formData["label"];
             const p = getURLParams();
             if (Object.keys(p).length > 0) {
@@ -198,10 +199,10 @@ export default async function(render) {
                 rxjs.tap(() => toggleLoader(true)),
                 rxjs.mergeMap(() => createSession(formData)),
                 rxjs.tap(({ responseJSON }) => {
-                    let redirectURL = "/files/";
+                    let redirectURL = toHref("/files/");
                     const GET = getURLParams();
                     if (GET["next"]) redirectURL = GET["next"];
-                    else if (responseJSON.result) redirectURL = "/files" + responseJSON.result;
+                    else if (responseJSON.result) redirectURL = toHref("/files" + responseJSON.result);
                     navigate(redirectURL);
                 }),
                 rxjs.catchError((err) => {
@@ -216,7 +217,7 @@ export default async function(render) {
     // feature7: empty connection handling
     effect(connections$.pipe(
         rxjs.filter((conns) => conns.length === 0),
-        rxjs.mergeMap((a) => Promise.reject(new Error("no backend selected"))),
+        rxjs.mergeMap(() => Promise.reject(new Error("there is nothing here"))), // TODO: check translation?
         rxjs.catchError(ctrlError()),
     ));
 }

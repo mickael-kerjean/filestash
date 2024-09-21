@@ -1,0 +1,194 @@
+.component_share h2 {
+    margin: 0 0 5px 0;
+    font-size: 1.2em;
+    font-weight: 100;
+    display: flex;
+    justify-content: space-between;
+}
+.component_share h2 .component_icon {
+    width: 24px;
+}
+.component_share component-icon {
+    display: block;
+    text-align: center;
+    margin: 20px 0 30px 0;
+}
+.component_share component-icon .component_icon[alt="loading"] {
+    width: 24px;
+}
+
+.component_share .copy {
+    cursor: copy;
+}
+
+.component_share .share--content {
+    margin-bottom: 10px;
+}
+.component_share .share--content.link-type {
+    display: flex;
+    flex-direction: row;
+}
+.component_share .share--content.link-type > div {
+    cursor: pointer;
+    text-align: center;
+    margin-right: 4px;
+    padding: 15px 0;
+    width: 100%;
+    border-radius: 3px;
+    color: rgba(0, 0, 0, 0.3);
+    text-shadow: 0px 0px 1px var(--color);
+    background: var(--bg-color);
+    background-position: center;
+}
+.dark-mode .component_share .share--content.link-type > div {
+    background: var(--color);
+    color: rgba(0,0,0,0.6);
+}
+.component_share .share--content.link-type > div.active {
+    background: var(--primary);
+}
+.component_share .share--content.link-type > div:hover {
+    transition: background 0.4s;
+    background: var(--primary) radial-gradient(circle, transparent 1%, var(--emphasis-primary) 1%) center/15000%;
+}
+.component_share .share--content.link-type > div:active {
+    background-color: #00000033;
+    background-size: 100%;
+    transition: background 0s;
+}
+.component_share .share--content.existing-links {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.component_share .share--content.existing-links .link-details {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 5px;
+    border: 2px solid var(--super-light);
+    border-left: none;
+    border-right: none;
+    margin-top: -2px;
+    line-height: 20px;
+}
+.touch-yes .component_share .share--content.existing-links .link-details {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+.component_share .share--content.existing-links .link-details .role {
+    margin-right: 5px;
+    padding-right: 5px;
+    font-size: 0.8em;
+    opacity: 0.6;
+    min-width: 75px;
+    text-transform: uppercase;
+}
+.component_share .share--content.existing-links .link-details .path {
+    font-size: 0.9em;
+    flex-grow: 2;
+    width: 100%;
+    white-space: nowrap;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    text-overflow: ellipsis;
+}
+.component_share .share--content.existing-links .link-details .link-details--icons {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: nowrap;
+}
+.component_share .share--content.existing-links .link-details .component_icon {
+    width: 20px;
+    cursor: pointer;
+}
+.touch-yes .component_share .share--content.existing-links .link-details .component_icon {
+    padding: 0 3px;
+}
+.component_share .share--content.advanced-settings, .component_share .share--content.restrictions {
+    max-height: 115px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 5px;
+}
+
+.component_share .share--content.existing-links {
+    min-height: 80px;
+}
+.component_share .shared-link {
+    display: flex;
+    justify-content: space-between;
+    font-size: .9em;
+    background: var(--bg-color);
+    border: 2px solid var(--primary);
+    color: var(--dark);
+    border-radius: 4px;
+    padding: 0px 5px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+.dark-mode .component_share .shared-link { background: var(--color); }
+.component_share .shared-link input {
+    flex-grow: 1;
+    border: none;
+    height: 25px;
+    font-family: arial;
+    font-size: 1rem;
+    box-sizing: border-box;
+    background: inherit;
+    color: inherit;
+}
+.touch-yes .component_share .shared-link input {
+    height: 30px;
+}
+.component_share .shared-link button {
+    padding: 0 2px;
+}
+.component_share .shared-link img {
+    width: 16px;
+    padding-bottom: 1px;
+}
+.component_share .formbuilder label {
+    display: block;
+}
+.component_share .formbuilder input {
+    background: var(--bg-color);
+    color: var(--color);
+    padding: 5px;
+    border-radius: 4px;
+    border: none;
+}
+.component_share .formbuilder input:focus {
+    border: none;
+}
+
+.component_supercheckbox > label {
+    font-size: 0.95em;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.component_supercheckbox > label .label {
+    margin-left: -5px;
+}
+.component_supercheckbox > label input {
+    margin-right: 5px;
+    margin-top: 2px;
+}
+
+.component_supercheckbox > div > input {
+    width: calc(100% - 10px);
+    box-sizing: border-box;
+    margin-bottom: 5px;
+    border: none;
+    border-radius: 3px;
+    font-size: 0.9em;
+    padding: 3px 5px;
+    color: var(--color);
+    background: var(--bg-color);
+    border-bottom: 0;
+}
+
+.dark-mode .component_share .component_checkbox span {
+    background-color: var(--color);
+    border: 2px solid var(--color);
+}

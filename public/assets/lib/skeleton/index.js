@@ -59,7 +59,7 @@ async function load(route, opts) {
 export function createElement(str) {
     const $n = window.document.createElement("div");
     $n.innerHTML = str;
-    if (!($n.firstElementChild instanceof window.HTMLElement)) throw new Error("createElement - unexpected type");
+    if (!($n.firstElementChild instanceof HTMLElement)) throw new Error("createElement - unexpected type");
     return $n.firstElementChild;
 }
 
@@ -73,10 +73,10 @@ export function createFragment(str) {
 }
 
 export function createRender($parent) {
-    if (!($parent instanceof window.HTMLElement)) throw new Error(`assert failed: createRender on non HTMLElement`);
+    if (!($parent instanceof HTMLElement)) throw new Error(`assert failed: createRender on non HTMLElement`);
     return ($view) => {
-        if ($view instanceof window.HTMLElement) $parent.replaceChildren($view);
-        else if ($view instanceof window.DocumentFragment) $parent.replaceChildren($view);
+        if ($view instanceof HTMLElement) $parent.replaceChildren($view);
+        else if ($view instanceof DocumentFragment) $parent.replaceChildren($view);
         else throw new Error(`Unknown view type: ${typeof $view}`);
         return $parent;
     };

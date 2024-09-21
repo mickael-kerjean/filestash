@@ -3,25 +3,25 @@ import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideXIn, opacityOut } from "../../lib/animate.js";
 import { qs } from "../../lib/dom.js";
 import { createLoader } from "../../components/loader.js";
-import { createModal } from "../../components/modal.js";
+import { createModal, MODAL_RIGHT_BUTTON } from "../../components/modal.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import ajax from "../../lib/ajax.js";
 import { extname } from "../../lib/path.js";
-import { get as getConfig } from "../../model/config.js";
+import t from "../../locales/index.js";
 
 import ctrlError from "../ctrl_error.js";
 import ctrlDownloader, { init as initDownloader } from "./application_downloader.js";
-import { getFile$, saveFile$, transition, getFilename, getCurrentPath } from "./common.js";
+import { getFilename, getDownloadUrl } from "./common.js";
 import { $ICON } from "./common_fab.js";
-import { fileOptions } from "./model_files.js";
+import { cat, save } from "./model_files.js";
 
-import "../../components/menubar.js";
+import { renderMenubar, buttonDownload } from "./component_menubar.js";
 import "../../components/fab.js";
 import "../../components/icon.js";
 
 const TIME_BEFORE_ABORT_EDIT = 5000;
 
-export default async function(render) {
+export default async function(render, { acl$ }) {
     const $page = createElement(`
         <div class="component_ide">
             <component-menubar class="hidden"></component-menubar>
@@ -29,71 +29,86 @@ export default async function(render) {
             <button is="component-fab" class="hidden"></button>
         </div>
     `);
+    const $dom = {
+        editor: () => qs($page, ".component_editor"),
+        menubar: () => qs($page, "component-menubar"),
+        fab: () => qs($page, `[is="component-fab"]`),
+    };
     render($page);
+    renderMenubar($dom.menubar(), buttonDownload(getFilename(), getDownloadUrl()));
 
-    const $editor = qs($page, ".component_editor");
-    const $menubar = qs($page, "component-menubar");
-    const $fab = qs($page, `[is="component-fab"]`);
-    const getConfig$ = getConfig().pipe(rxjs.shareReplay(1));
     const content$ = new rxjs.ReplaySubject(1);
 
     // feature1: setup the dom
     const removeLoader = createLoader($page);
-    const setup$ = rxjs.race(
-        getFile$(),
-        ajax("/about").pipe(rxjs.delay(TIME_BEFORE_ABORT_EDIT), rxjs.map(() => null)),
+    const setup$ = rxjs.zip(
+        rxjs.race(
+            // when a download takes too long, abort, we don't want to spin for 2 hours
+            // only to find out the user tried to open something that don't even fit in
+            // memory. This also account for terrible network conditions when out in
+            // the bush; we abort after:
+            // TIME_BEFORE_ABORT_EDIT + NETWORK LATENCY seconds
+            cat(),
+            rxjs.of(null).pipe(
+                rxjs.delay(TIME_BEFORE_ABORT_EDIT),
+                rxjs.mergeMap(() => ajax("about")),
+                rxjs.mapTo(null),
+            ),
+        ),
+        acl$,
     ).pipe(
-        rxjs.mergeMap((content) => {
-            if (content === null || has_binary(content)) {
-                return rxjs.from(initDownloader()).pipe(
-                    removeLoader,
-                    rxjs.mergeMap(() => {
-                        ctrlDownloader(render);
-                        return rxjs.EMPTY;
-                    }),
-                );
-            }
-            return rxjs.of(content);
+        rxjs.mergeMap(([content, acl]) => {
+            if (content === null || has_binary(content)) return rxjs.from(initDownloader()).pipe(
+                removeLoader,
+                rxjs.mergeMap(() => {
+                    ctrlDownloader(render);
+                    return rxjs.EMPTY;
+                }),
+            );
+            return rxjs.of(content).pipe(
+                rxjs.mergeMap((content) => rxjs.of(window.CONFIG).pipe(
+                    rxjs.mergeMap((config) => rxjs.from(loadKeybinding(config.editor)).pipe(rxjs.mapTo(config))),
+                    rxjs.map((config) => [content, config]),
+                    rxjs.mergeMap((arr) => rxjs.from(loadMode(extname(getFilename()))).pipe(
+                        rxjs.map((mode) => arr.concat([mode])),
+                    )),
+                )),
+                removeLoader,
+                rxjs.map(([content, config, mode]) => {
+                    const $editor = $dom.editor();
+                    content$.next(content);
+                    $editor.classList.remove("hidden");
+                    const editor = window.CodeMirror($editor, {
+                        value: content,
+                        lineNumbers: true,
+                        mode: window.CodeMirror.__mode,
+                        keyMap: ["emacs", "vim"].indexOf(config["editor"]) === -1 ? "sublime" : config["editor"],
+                        lineWrapping: true,
+                        readOnly: acl.indexOf("PUT") === -1 && acl.indexOf("POST") === -1,
+                        foldOptions: { widget: "..." },
+                        matchBrackets: {},
+                        autoCloseBrackets: true,
+                        matchTags: { bothTags: true },
+                        autoCloseTags: true,
+                    });
+                    editor.getWrapperElement().setAttribute("mode", mode);
+                    if (!("ontouchstart" in window)) editor.focus();
+                    if (config["editor"] === "emacs") editor.addKeyMap({
+                        "Ctrl-X Ctrl-C": () => window.history.back(),
+                    });
+                    if (mode === "orgmode") {
+                        const cleanup = window.CodeMirror.orgmode.init(editor);
+                        onDestroy(cleanup);
+                    }
+
+                    onDestroy(() => editor.clearHistory());
+                    $dom.menubar().classList.remove("hidden");
+                    editor.execCommand("save");
+                    return editor;
+                }),
+                rxjs.tap((editor) => requestAnimationFrame(() => editor.refresh())),
+            );
         }),
-        rxjs.mergeMap((content) => getConfig$.pipe(
-            rxjs.mergeMap((config) => rxjs.from(loadKeybinding(config.editor)).pipe(rxjs.mapTo(config))),
-            rxjs.map((config) => [content, config]),
-            rxjs.mergeMap((arr) => rxjs.from(loadMode(extname(getFilename()))).pipe(
-                rxjs.map((mode) => arr.concat([mode])),
-            )),
-            rxjs.mergeMap((arr) => fileOptions(getCurrentPath()).pipe(
-                rxjs.map((acl) => arr.concat([acl])),
-            )),
-        )),
-        removeLoader,
-        rxjs.map(([content, config, mode, acl]) => {
-            content$.next(content);
-            $editor.classList.remove("hidden");
-            const editor = window.CodeMirror($editor, {
-                value: content,
-                lineNumbers: true,
-                mode: window.CodeMirror.__mode,
-                keyMap: ["emacs", "vim"].indexOf(config["editor"]) === -1 ? "sublime" : config["editor"],
-                lineWrapping: true,
-                readOnly: !/PUT/.test(acl),
-                foldOptions: { widget: "..." },
-                matchBrackets: {},
-                autoCloseBrackets: true,
-                matchTags: { bothTags: true },
-                autoCloseTags: true,
-            });
-            transition($editor);
-            editor.getWrapperElement().setAttribute("mode", mode);
-            if (!("ontouchstart" in window)) editor.focus();
-            if (config["editor"] === "emacs") editor.addKeyMap({
-                "Ctrl-X Ctrl-C": (cm) => window.history.back(),
-            });
-            onDestroy(() => editor.clearHistory());
-            $menubar.classList.remove("hidden");
-            editor.execCommand("save");
-            return editor;
-        }),
-        rxjs.tap((editor) => requestAnimationFrame(() => editor.refresh())),
         rxjs.catchError(ctrlError()),
         rxjs.share(),
     );
@@ -111,8 +126,9 @@ export default async function(render) {
         rxjs.switchMap((editor) => new rxjs.Observable((observer) => editor.on("change", (cm) => observer.next(cm)))),
         rxjs.mergeMap((editor) => content$.pipe(rxjs.map((oldContent) => [editor, editor.getValue(), oldContent]))),
         rxjs.tap(async([editor, newContent = "", oldContent = ""]) => {
+            const $fab = $dom.fab();
             if ($fab.disabled) return;
-            const $breadcrumb = qs(document.body, `[is="component-breadcrumb"]`);
+            const $breadcrumb = qs(document.body, "component-breadcrumb");
             if (newContent === oldContent) {
                 await animate($fab, { time: 100, keyframes: opacityOut() });
                 $fab.classList.add("hidden");
@@ -131,51 +147,56 @@ export default async function(render) {
 
     // feature4: save
     effect(setup$.pipe(
-        rxjs.mergeMap((editor) => new rxjs.Observable((observer) => {
+        rxjs.mergeMap(() => new rxjs.Observable((observer) => {
             window.CodeMirror.commands.save = (cm) => observer.next(cm);
         })),
         rxjs.mergeMap((cm) => {
+            const $fab = $dom.fab();
             $fab.classList.remove("hidden");
             $fab.render($ICON.LOADING);
             $fab.disabled = true;
-            return rxjs.of(cm.getValue()).pipe(
-                saveFile$(),
-                rxjs.tap((content) => {
-                    $fab.removeAttribute("disabled");
-                    content$.next(content);
-                }),
-            );
+            const content = cm.getValue();
+            return save(content).pipe(rxjs.tap(() => {
+                $fab.removeAttribute("disabled");
+                content$.next(content);
+            }));
         }),
         rxjs.catchError(ctrlError()),
     ));
 
     // feature5: save on exit
     effect(setup$.pipe(
-        rxjs.tap((cm) => window.history.block = async(href) => {
-            const block = qs(document.body, `[is="component-breadcrumb"]`).hasAttribute("indicator");
+        rxjs.mergeMap((cm) => new Promise((resolve, reject) => window.history.block = async() => {
+            const block = qs(document.body, "component-breadcrumb").hasAttribute("indicator");
             if (block === false) return false;
-
-            // confirm.now(
-            //     <div style={{ textAlign: "center", paddingBottom: "5px" }}>
-            //         { t("Do you want to save the changes ?") }
-            //     </div>,
-            //     () =>{
-            //         return this.save()
-            //             .then(() => this.props.history.push(nextLocation));
-            //     },
-            //     () => {
-            //         this.props.needSavingUpdate(false)
-            //             .then(() => this.props.history.push(nextLocation));
-            //     },
-            // );
-            return new Promise((done) => {
-                createModal(createElement(`
-                <div style="text-align:center;padding-bottom:5px;">
-                    Do you want to save the changes ?
-                </div>
-            `, { onQuit: () => { done(false); } }));
+            const userAction = await new Promise((done) => {
+                createModal({
+                    withButtonsRight: t("Yes"),
+                    withButtonsLeft: t("No"),
+                })(
+                    createElement(`
+                        <div style="text-align:center;padding-bottom:5px;">
+                            ${t("Do you want to save the changes ?")}
+                        </div>
+                    `),
+                    (val) => done(val),
+                );
             });
-        }),
+            if (userAction === MODAL_RIGHT_BUTTON) {
+                const $fab = $dom.fab();
+                $fab.render($ICON.LOADING);
+                $fab.disabled = true;
+                try {
+                    await save(cm.getValue()).toPromise();
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                    return true;
+                }
+            }
+            return false;
+        })),
+        rxjs.catchError(ctrlError()),
     ));
 }
 
@@ -213,11 +234,15 @@ export function init() {
 
 function loadMode(ext) {
     let mode = "text";
-    let before = Promise.resolve();
+    let before = Promise.resolve(null);
 
     if (ext === "org" || ext === "org_archive") {
         mode = "orgmode";
-        before = loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/fold/xml-fold.js").then(() => loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/edit/matchtags.js"));
+        before = Promise.all([
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/mode/simple.js"),
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/fold/xml-fold.js"),
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/edit/matchtags.js"),
+        ]).then(() => Promise.resolve(null));
     } else if (ext === "sh") mode = "shell";
     else if (ext === "py") mode = "python";
     else if (ext === "html" || ext === "htm") {
@@ -226,15 +251,22 @@ function loadMode(ext) {
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/xml/xml.js"),
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/javascript/javascript.js"),
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/css/css.js"),
-        ]);
+        ]).then(() => Promise.resolve(null));
     } else if (ext === "css") mode = "css";
     else if (ext === "less" || ext === "scss" || ext === "sass") mode = "sass";
     else if (ext === "js" || ext === "json") mode = "javascript";
     else if (ext === "jsx") mode = "jsx";
-    else if (ext === "php" || ext === "php5" || ext === "php4") mode = "php";
-    else if (ext === "elm") mode = "elm";
+    else if (ext === "php" || ext === "php5" || ext === "php4") {
+        mode = "php";
+        before = Promise.all([
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/xml/xml.js"),
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/javascript/javascript.js"),
+            loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/css/css.js"),
+        ]).then(() => Promise.resolve(null));
+    } else if (ext === "elm") mode = "elm";
     else if (ext === "erl") mode = "erlang";
     else if (ext === "go") mode = "go";
+    else if (ext === "groovy") mode = "groovy";
     else if (ext === "markdown" || ext === "md") {
         mode = "yaml-frontmatter";
         before = Promise.all([
@@ -242,14 +274,14 @@ function loadMode(ext) {
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/gfm/gfm.js"),
             loadJS(import.meta.url, "../../lib/vendor/codemirror/mode/yaml/yaml.js"),
             loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/mode/overlay.js"),
-        ]);
+        ]).then(() => Promise.resolve(null));
     } else if (ext === "pl" || ext === "pm") mode = "perl";
     else if (ext === "clj") mode = "clojure";
     else if (ext === "el" || ext === "lisp" || ext === "cl" ||
              ext === "emacs") mode = "commonlisp";
     else if (ext === "dockerfile") {
         mode = "dockerfile";
-        before = loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/mode/simple.js");
+        before = loadJS(import.meta.url, "../../lib/vendor/codemirror/addon/mode/simple.js").then(() => Promise.resolve(null));
     } else if (ext === "R") mode = "r";
     else if (ext === "makefile") mode = "cmake";
     else if (ext === "rb") mode = "ruby";
@@ -269,7 +301,7 @@ function loadMode(ext) {
 
     return before.then(() => loadJS(import.meta.url, `./application_editor/${mode}.js`, { type: "module" }))
         .catch(() => loadJS(import.meta.url, "./application_editor/text.js", { type: "module" }))
-        .then((module) => Promise.resolve(mode));
+        .then(() => Promise.resolve(mode));
 }
 
 function loadKeybinding(editor) {

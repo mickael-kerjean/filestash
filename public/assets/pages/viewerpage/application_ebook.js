@@ -1,13 +1,14 @@
 import { createElement, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
+import assert from "../../lib/assert.js";
 import { loadJS, loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
-import { getDownloadUrl } from "./common.js";
+import { getFilename, getDownloadUrl } from "./common.js";
 
-import "../../components/menubar.js";
+import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
 export default function(render) {
     const $page = createElement(`
@@ -17,12 +18,16 @@ export default function(render) {
         </div>
     `);
     render($page);
+    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
 
-    const removeLoader = createLoader($page);
     const rendition$ = new rxjs.ReplaySubject(1);
 
     // feature1: setup the dom
-    const setup$ = rxjs.of(qs($page, `[data-bind="epub"]`)).pipe(
+    const $epub = qs($page, `[data-bind="epub"]`);
+    const removeLoader = createLoader($page, {
+        append: ($loader) => $page.insertBefore($loader, qs($page, ".ebookviewer_container")),
+    });
+    const setup$ = rxjs.of($epub).pipe(
         rxjs.mergeMap(async($epub) => {
             const book = new window.ePub.Book({
                 replacements: "blobUrl",
@@ -40,12 +45,10 @@ export default function(render) {
                 rendition.destroy();
             });
             book.open(getDownloadUrl());
-            await new Promise((done) => {
-                rendition.hooks.render.register(() => {
-                    rendition$.next(rendition);
-                    done();
-                });
-            });
+            await new Promise((done) => rendition.hooks.render.register(() => {
+                rendition$.next(rendition);
+                done(null);
+            }));
         }),
         removeLoader,
         rxjs.catchError(ctrlError()),
@@ -57,7 +60,7 @@ export default function(render) {
     effect(setup$.pipe(
         rxjs.mergeMap(() => rxjs.merge(
             rxjs.fromEvent(document, "keydown"),
-            rendition$.pipe(rxjs.mergeMap(() => rxjs.fromEvent(qs(document, "iframe").contentDocument.body, "keydown"))),
+            rendition$.pipe(rxjs.mergeMap(() => rxjs.fromEvent(assert.type(qs(document.body, "iframe"), HTMLElement).contentDocument.body, "keydown"))),
         )),
         rxjs.map((e) => {
             switch (e.code) {

@@ -6,9 +6,6 @@ import (
 	"time"
 )
 
-type HandlerFunc func(*App, http.ResponseWriter, *http.Request)
-type Middleware func(HandlerFunc) HandlerFunc
-
 func init() {
 	Hooks.Register.Onload(func() {
 		go func() {
@@ -59,4 +56,11 @@ func (w *ResponseWriter) Write(b []byte) (int, error) {
 		w.status = 200
 	}
 	return w.ResponseWriter.Write(b)
+}
+
+func PluginInjector(fn HandlerFunc) HandlerFunc {
+	for _, middleware := range Hooks.Get.Middleware() {
+		fn = middleware(fn)
+	}
+	return fn
 }

@@ -1,0 +1,90 @@
+.component_filemanager_shell .component_sidebar {
+    width: 250px;
+    padding: 3px 7px 25px 0px;
+    overflow-y: scroll;
+    height: 100%;
+    direction:rtl;
+    box-sizing: border-box;
+}
+@media screen and (min-width: 1600px) {
+    .component_filemanager_shell .component_sidebar { width: 300px; }
+}
+@media screen and (min-width: 2000px) {
+    .component_filemanager_shell .component_sidebar { width: 330px; }
+}
+
+.component_filemanager_shell .component_sidebar > div { direction: ltr; }
+.component_filemanager_shell .component_sidebar h3 {
+    display: flex;
+    margin-bottom: 10px;
+    color: var(--light);
+    font-size: 0.9rem;
+    opacity: 0.8;
+    padding-left: 15px;
+    text-transform: capitalize;
+}
+.component_filemanager_shell .component_sidebar h3 img {
+    padding-right: 4px;
+    cursor: pointer;
+}
+.component_filemanager_shell .component_sidebar h3 input::placeholder {
+    text-transform: capitalize;
+    color: var(--color);
+}
+.component_filemanager_shell .component_sidebar h3 input {
+    border: none;
+    color: var(--color);
+    font-weight: bold;
+    font-size: inherit;
+    background: inherit;
+}
+.component_filemanager_shell .component_sidebar [data-bind="your-files"] > ul { margin-left: 0px; }
+.component_filemanager_shell .component_sidebar ul {
+    margin-top: 0px;
+    padding: 0;
+    margin: 0 0 0 5px;
+    list-style-type: none;
+}
+@media screen and (min-width: 1600px) {
+    .component_filemanager_shell .component_sidebar ul { margin-left: 7px; }
+}
+@media screen and (min-width: 2000px) {
+    .component_filemanager_shell .component_sidebar ul { margin-left: 10px; }
+}
+.component_filemanager_shell .component_sidebar ul li {
+    padding-left: 5px;
+    margin-top: 0px;
+}
+.component_filemanager_shell .search .component_sidebar ul {
+    margin: 0;
+}
+.component_filemanager_shell .search .component_sidebar ul ul li {
+    padding-left: 0;
+}
+.component_filemanager_shell .component_sidebar a {
+    display: flex;
+    padding: 5px 5px 5px 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.component_filemanager_shell .component_sidebar a:hover, .component_filemanager_shell .component_sidebar a.active {
+    background: var(--border);
+    border-radius: 3px;
+}
+.component_filemanager_shell .component_sidebar a.highlight {
+    color: var(--bg-color);
+    background: var(--dark);
+    border-radius: 3px;
+}
+.component_filemanager_shell .component_sidebar .component_icon {
+    width: 16px;
+    height: 22px;
+    padding-right: 5px;
+    opacity: 0.85;
+}
+.component_filemanager_shell .component_sidebar a > div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 2px;
+}

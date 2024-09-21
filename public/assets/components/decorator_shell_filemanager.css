@@ -3,40 +3,8 @@
     height: 100%;
     background: white;
 }
-.component_filemanager_shell .component_sidebar {
-    width: 220px;
-    padding: 20px 7px 0 7px;
-}
-.component_filemanager_shell .component_sidebar > h3 {
-    margin-bottom: 5px;
-    color: var(--light);
-    font-size: 0.95rem;
-    opacity: 0.8;
-    padding-left: 10px;
-    text-transform: capitalize;
-}
-.component_filemanager_shell .component_sidebar > div {
-    min-height: 50px;
-}
-.component_filemanager_shell .component_sidebar > div > * {
-    display: flex;
-    align-items: center;
-    padding: 5px 0px 5px 10px;
-    width: 100%;
-    box-sizing: border-box;
-}
-.component_filemanager_shell .component_sidebar > div > *:hover {
-    background: var(--border);
-    border-radius: 3px;
-}
-.component_filemanager_shell .component_sidebar > div .component_icon {
-    width: 20px;
-    height: 20px;
-    padding-right: 5px;
-}
 
-
-.component_filemanager_shell [is="component-breadcrumb"]:hover ~ [data-bind="filemanager-children"],
+.component_filemanager_shell component-breadcrumb:hover ~ [data-bind="filemanager-children"],
 .component_filemanager_shell [data-bind="sidebar"]:hover ~ div > [data-bind="filemanager-children"] {
     border-color: var(--border);
 }
@@ -46,8 +14,8 @@
     border-left: 2px solid;
     border-color: transparent;
     transition: 0.5s ease border-top-left-radius, 0.5s ease border-top-right-radius, 1s ease border-color;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 0px;
     display: flex;
     height: 100%;
     overflow: hidden;
@@ -63,33 +31,37 @@
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
 }
-.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [is="component-breadcrumb"] > .component_breadcrumb,
-.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] .container {
-    width: 95%;
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > component-breadcrumb > .component_breadcrumb,
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div > component-breadcrumb > .component_breadcrumb,
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] .container,
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div > [data-bind="filemanager-children"] .container {
+    width: 98%;
     margin: 0 auto;
     max-width: 815px;
 }
+
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] {
     background: rgba(100,100,100,.05);
 }
 
-/* .component_filemanager_shell [data-bind="filemanager-children"] .container, */
-/* .component_filemanager_shell [is="component-breadcrumb"] .container { */
-/*     max-width: 2100px; */
-/* } */
-
 .component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_filesystem"],
 .component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_newitem"],
 .component_filemanager_shell [data-bind="sidebar"] ~ div component-menubar,
-.component_filemanager_shell [data-bind="sidebar"] ~ div [is="component-breadcrumb"],
+.component_filemanager_shell [data-bind="sidebar"] ~ div component-breadcrumb,
 .component_filemanager_shell [data-bind="sidebar"] ~ div [is="component_submenu"] .component_submenu{
     padding: 0 30px;
 }
 
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_filesystem"],
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div [is="component_filesystem"],
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_newitem"],
-.component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component-breadcrumb"],
-.component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_submenu"] .component_submenu {
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div [is="component_newitem"],
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div component-menubar,
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div component-menubar,
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div component-breadcrumb,
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div component-breadcrumb,
+.component_filemanager_shell [data-bind="sidebar"].hidden ~ div [is="component_submenu"] .component_submenu,
+.component_filemanager_shell [data-bind="sidebar"]:empty ~ div [is="component_submenu"] .component_submenu {
     padding: 0px;
 }
 

@@ -6,7 +6,7 @@ const routes = {
     "/files/.*": "/pages/ctrl_filespage.js",
     "/view/.*": "/pages/ctrl_viewerpage.js",
     // /tags/.* -> "pages/ctrl_tags.js",
-    // /s/.* -> "/pages/ctrl_share.js",
+    "/s/.*": "/pages/ctrl_sharepage.js",
 
     "": "/pages/ctrl_notfound.js",
 };

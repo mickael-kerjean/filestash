@@ -14,6 +14,8 @@ function HomePageComponent({ error }) {
             error(new Error(t(p.get("error"))));
             return;
         }
+        const token = new URLSearchParams(location.hash.replace(new RegExp("^#"), "?")).get("bearer");
+        if (token) window.BEARER_TOKEN = token;
 
         Session.currentUser().then((res) => {
             if (res && res.is_authenticated === true) {

@@ -76,6 +76,9 @@
     padding: 2px;
     border-radius: 50px;
 }
+.touch-yes .component_thing .component_checkbox {
+    opacity: 1;
+}
 .component_thing .component_checkbox .indicator {
     top: 7px;
     left: 6px;
@@ -131,6 +134,11 @@
     padding: 0;
     margin: 0;
     display: block;
+    border-radius: 3px;
+}
+.list > .component_thing.view-grid > img.component_icon.thumbnail.placeholder {
+    position: absolute;
+    top: 0;
 }
 .list > .component_thing.view-grid > img.component_icon {
     padding: 30px;
@@ -147,6 +155,7 @@
     text-align: right;
     left: 0;
     right: 20%;
+    right: calc(50% - 50px);
     margin: 0 auto;
     text-transform: uppercase;
     font-size: 0.95em;
@@ -170,7 +179,6 @@
 }
 .list > .component_thing.view-grid .component_filename {
     letter-spacing: -0.5px;
-    z-index: -1;
     position: absolute;
     bottom: 2px;
     left: 2px;
@@ -214,10 +222,11 @@
 .list > .component_thing.view-grid.not-selected:hover .image_layer {
     background: var(--border);
 }
-.list > .component_thing.view-grid.not-selected.preview:hover .component_filename {
+
+.list > .component_thing.view-grid.not-selected:hover .thumbnail ~ .component_filename {
     opacity: 1;
 }
-.list > .component_thing.view-grid.not-selected.preview .component_filename {
+.list > .component_thing.view-grid.not-selected .thumbnail ~ .component_filename {
     transition: 0.2s ease-out opacity;
     opacity: 0;
 }
@@ -229,6 +238,12 @@
     top: 3px;
     left: 3px;
     transform: translateX(-5px);
+}
+.touch-yes .list > .component_thing.view-grid .component_checkbox {
+    transform: translateX(0px);
+}
+.touch-yes .list > .component_thing.view-grid .component_checkbox input[type="checkbox"]:not(:checked) ~ span {
+    background-color: inherit;
 }
 .list > .component_thing.view-grid:hover .component_checkbox,
 .list > .component_thing.view-grid.selected .component_checkbox {

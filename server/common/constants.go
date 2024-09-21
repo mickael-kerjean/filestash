@@ -3,10 +3,11 @@ package common
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 //go:generate go run ../generator/constants.go
-const (
+var (
 	APP_VERSION       = "v0.5"
 	COOKIE_NAME_AUTH  = "auth"
 	COOKIE_NAME_PROOF = "proof"
@@ -37,6 +38,10 @@ func init() {
 	FTS_PATH = filepath.Join(rootPath, FTS_PATH)
 	CERT_PATH = filepath.Join(rootPath, CERT_PATH)
 	TMP_PATH = filepath.Join(rootPath, TMP_PATH)
+	base = strings.TrimSuffix(base, "/")
+	COOKIE_PATH_ADMIN = WithBase(COOKIE_PATH_ADMIN)
+	COOKIE_PATH = WithBase(COOKIE_PATH)
+	URL_SETUP = WithBase(URL_SETUP)
 
 	// STEP2: initialise the config
 	os.MkdirAll(GetAbsolutePath(CERT_PATH), os.ModePerm)
@@ -68,4 +73,20 @@ func InitSecretDerivate(secret string) {
 	SECRET_KEY_DERIVATE_FOR_ADMIN = Hash("ADMIN_"+SECRET_KEY, len(SECRET_KEY))
 	SECRET_KEY_DERIVATE_FOR_USER = Hash("USER_"+SECRET_KEY, len(SECRET_KEY))
 	SECRET_KEY_DERIVATE_FOR_HASH = Hash("HASH_"+SECRET_KEY, len(SECRET_KEY))
+}
+
+var base = os.Getenv("FILESTASH_BASE")
+
+func WithBase(href string) string {
+	if base == "" {
+		return href
+	}
+	return base + href
+}
+
+func TrimBase(href string) string {
+	if base == "" {
+		return href
+	}
+	return strings.TrimPrefix(href, base)
 }

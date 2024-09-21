@@ -26,7 +26,12 @@ var (
 	onlyoffice_cache *cache.Cache
 	plugin_enable    func() bool
 	server_url       func() string
+	can_chat		 func() bool
+	can_copy		 func() bool
+	can_comment		 func() bool
 	can_download     func() bool
+	can_edit		 func() bool
+	can_print		 func() bool
 )
 
 type onlyOfficeCacheData struct {
@@ -45,8 +50,8 @@ func init() {
 			}
 			f.Name = "enable"
 			f.Type = "enable"
-			f.Target = []string{"onlyoffice_server", "onlyoffice_can_download"}
-			f.Description = "Enable/Disable the office suite to manage word, excel and powerpoint documents."
+			f.Target = []string{"onlyoffice_server", "onlyoffice_can_chat", "onlyoffice_can_copy", "onlyoffice_can_comment", "onlyoffice_can_download", "onlyoffice_can_edit", "onlyoffice_can_print"}
+			f.Description = "Enable/Disable the office suite and options to manage word, excel and powerpoint documents."
 			f.Default = false
 			if u := os.Getenv("ONLYOFFICE_URL"); u != "" {
 				f.Default = true
@@ -54,6 +59,7 @@ func init() {
 			return f
 		}).Bool()
 	}
+
 	server_url = func() string {
 		return Config.Get("features.office.onlyoffice_server").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -72,6 +78,63 @@ func init() {
 			return f
 		}).String()
 	}
+
+	can_chat = func() bool {
+		return Config.Get("features.office.can_chat").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "onlyoffice_can_chat"
+			f.Name = "can_chat"
+			f.Type = "boolean"
+			f.Description = "Enable/Disable chat in onlyoffice"
+			f.Default = true
+			return f
+		}).Bool()
+	}
+	
+	can_copy = func() bool {
+		return Config.Get("features.office.can_copy").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "onlyoffice_can_copy"
+			f.Name = "can_copy"
+			f.Type = "boolean"
+			f.Description = "Enable/Disable copy text in onlyoffice"
+			f.Default = true
+			return f
+		}).Bool()
+	}
+	
+	can_comment = func() bool {
+		return Config.Get("features.office.can_comment").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "onlyoffice_can_comment"
+			f.Name = "can_comment"
+			f.Type = "boolean"
+			f.Description = "Enable/Disable comments in onlyoffice"
+			f.Default = true
+			return f
+		}).Bool()
+	}
+	
+	can_edit = func() bool {
+		return Config.Get("features.office.can_edit").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "onlyoffice_can_edit"
+			f.Name = "can_edit"
+			f.Type = "boolean"
+			f.Description = "Enable/Disable editing in onlyoffice"
+			f.Default = true
+			return f
+		}).Bool()
+	}
+	
 	can_download = func() bool {
 		return Config.Get("features.office.can_download").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -85,11 +148,29 @@ func init() {
 			return f
 		}).Bool()
 	}
+	can_print = func() bool {
+		return Config.Get("features.office.can_print").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "onlyoffice_can_print"
+			f.Name = "can_print"
+			f.Type = "boolean"
+			f.Description = "Enable/Disable printing in onlyoffice"
+			f.Default = true
+			return f
+		}).Bool()
+	}
 
 	Hooks.Register.Onload(func() {
 		plugin_enable()
 		server_url()
+		can_chat()
+		can_copy()
+		can_comment()
 		can_download()
+		can_edit()
+		can_print()
 	})
 
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
@@ -346,7 +427,13 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
                   "fileType": "%s",
                   "key": "%s",
                   "permissions": {
-                      "download": %s
+				  	  "chat": %s,
+		 			  "copy": %s,
+					  "comment": %s,
+                      "download": %s,
+					  "edit": %s,
+	   				  "print": %s
+					  
                   }
               },
               "editorConfig": {
@@ -380,7 +467,37 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		filetype,
 		key,
 		func() string {
+			if can_chat() {
+				return "true"
+			}
+			return "false"
+		}(),
+		func() string {
+			if can_copy() {
+				return "true"
+			}
+			return "false"
+		}(),
+		func() string {
+			if can_comment() {
+				return "true"
+			}
+			return "false"
+		}(),
+		func() string {
 			if can_download() {
+				return "true"
+			}
+			return "false"
+		}(),
+		func() string {
+			if can_edit() {
+				return "true"
+			}
+			return "false"
+		}(),
+		func() string {
+			if can_print() {
 				return "true"
 			}
 			return "false"

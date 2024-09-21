@@ -30,7 +30,7 @@ export default async function(render) {
     const init$ = getBackendAvailable().pipe(
         rxjs.tap(() => $available.innerHTML = ""),
         rxjs.mergeMap((specs) => Promise.all(Object.keys(specs).map((label) => createElement(`
-            <div is="box-item" data-label="${label}"></div>
+            <box-item data-label="${label}"></box-item>
         `)))),
         applyMutations($available, "appendChild"),
         rxjs.share(),
@@ -47,7 +47,7 @@ export default async function(render) {
             });
             return enabledSet;
         }),
-        rxjs.tap((backends) => qsa($page, "[is=\"box-item\"]").forEach(($button) => {
+        rxjs.tap((backends) => qsa($page, "box-item").forEach(($button) => {
             backends.has($button.getAttribute("data-label"))
                 ? $button.classList.add("active")
                 : $button.classList.remove("active");

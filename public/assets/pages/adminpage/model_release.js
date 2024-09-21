@@ -2,7 +2,7 @@ import rxjs from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 
 const release$ = ajax({
-    url: "/about",
+    url: "about",
     responseType: "text",
 }).pipe(rxjs.shareReplay(1));
 
@@ -15,6 +15,6 @@ export function get() {
                 html: a.querySelector("table")?.outerHTML,
                 version: responseHeaders["x-powered-by"].trim().replace(/^Filestash\/([v\.0-9]*).*$/, "$1")
             };
-        })
+        }),
     );
 }

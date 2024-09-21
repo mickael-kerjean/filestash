@@ -1,11 +1,21 @@
 {
     "compilerOptions": {
         "allowJs": true,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "alwaysStrict": true,
         "checkJs": true,
+        "exactOptionalPropertyTypes": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
         "noEmit": true,
+        "noErrorTruncation": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noImplicitAny": false,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noUncheckedIndexedAccess": true,
@@ -13,9 +23,7 @@
         "strictPropertyInitialization": true,
         "strictBindCallApply": true,
         "strictFunctionTypes": true,
-        "strict": false,
-        "allowUnreachableCode": false,
-        "allowUnusedLabels": false,
+        "strict": true,
         "lib": [
             "dom",
             "dom.iterable",
@@ -25,9 +33,16 @@
         "target": "es2022",
         "typeRoots": []
     },
-    "input": ["pages/ctrl_boot.d.ts", "pages/*.js"],
+    "include": [
+        "assets/boot/*.js",
+        "assets/pages/*.js",
+        "global.d.ts"
+    ],
     "exclude": [
-        "**/*.test.js", "assets/worker/sw_cache.js",
-        "coverage", "jest.setup.js"
+        "**/*.test.js",
+        "assets/worker/sw_cache.js",
+        "coverage",
+        "vite.config.js",
+        "jest.setup.js"
     ]
 }

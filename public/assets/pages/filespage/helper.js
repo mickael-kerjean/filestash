@@ -1,8 +1,9 @@
 import { extname } from "../../lib/path.js";
+import { fromHref } from "../../lib/skeleton/router.js";
 
-const regexCurrentPath = new RegExp("^/files")
+const regexCurrentPath = new RegExp("^/files");
 export function currentPath() {
-    return decodeURIComponent(location.pathname.replace(regexCurrentPath, ""));
+    return decodeURIComponent(fromHref(location.pathname).replace(regexCurrentPath, ""));
 }
 
 const regexDir = new RegExp("/$");
@@ -18,7 +19,7 @@ export function extractPath(path) {
 }
 
 export function sort(files, type, order) {
-    switch(type) {
+    switch (type) {
     case "name": return sortByName(files, order);
     case "date": return sortByDate(files, order);
     default: return sortByType(files, order);
@@ -49,7 +50,6 @@ function sortByType(files, order) {
         return sortString(aExt, bExt, order);
     });
 }
-
 function sortByName(files, order) {
     let tmp;
     return files.sort(function(fileA, fileB) {
@@ -111,3 +111,5 @@ function _moveHiddenFilesDownward(fileA, fileB) {
     if (!aIsHidden && bIsHidden) return -1;
     return 0;
 }
+
+export const isNativeFileUpload = (e) => JSON.stringify(e.dataTransfer.types.slice(-1)) === "[\"Files\"]";

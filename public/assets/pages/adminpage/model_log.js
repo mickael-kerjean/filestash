@@ -9,7 +9,7 @@ const log$ = ajax({
 );
 
 export function url(logSize = 0) {
-    return "/admin/api/logs" + (logSize ? `?maxSize=${logSize}` : "");
+    return "admin/api/logs" + (logSize ? `?maxSize=${logSize}` : "");
 }
 
 export function get() {

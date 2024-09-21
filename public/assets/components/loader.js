@@ -1,11 +1,11 @@
-import { createElement } from "../lib/skeleton/index.js";
-import rxjs, { effect } from "../lib/rx.js";
+import { createElement, onDestroy } from "../lib/skeleton/index.js";
+import rxjs from "../lib/rx.js";
 import { animate, opacityIn } from "../lib/animate.js";
 
-class Loader extends window.HTMLElement {
+class Loader extends HTMLElement {
     constructor() {
         super();
-        this.timeout = window.setTimeout(() => {
+        this.timeout = setTimeout(() => {
             this.innerHTML = this.render({
                 inline: this.hasAttribute("inlined"),
             });
@@ -13,7 +13,7 @@ class Loader extends window.HTMLElement {
     }
 
     disconnectedCallback() {
-        window.clearTimeout(this.timeout);
+        clearTimeout(this.timeout);
     }
 
     render({ inline }) {
@@ -45,29 +45,33 @@ class Loader extends window.HTMLElement {
 
 customElements.define("component-loader", Loader);
 export function createLoader($parent, opts = {}) {
-    const { wait = 250 } = opts;
-    const cancel = effect(new rxjs.Observable((observer) => {
-        const $icon = createElement(`
+    const {
+        wait = 250,
+        append = ($loader) => $parent.appendChild($loader),
+    } = opts;
+    const $icon = createElement(`
             <div class="component_loader">
                 <style>
                     .component_loader {
                         display: block;
                         text-align: center;
-                        margin-top: 25px;
+                        margin-top: 100px;
                     }
                 </style>
                 <component-icon name="loading"></component-icon>
             </div>
-        `);
-        const id = window.setTimeout(() => {
-            $parent.replaceChildren($icon);
-            animate($icon, { time: 750, keyframes: opacityIn() });
-        }, wait);
-        return () => {
-            clearTimeout(id);
-            $icon.remove();
-        };
-    }));
+    `);
+    const id = setTimeout(() => {
+        append($icon);
+        animate($icon, { time: 750, keyframes: opacityIn() });
+    }, wait);
+
+    const cancel = () => {
+        clearTimeout(id);
+        $icon.remove();
+    };
+
+    onDestroy(() => cancel());
     return rxjs.tap(() => cancel());
 }
 

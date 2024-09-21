@@ -11,4 +11,5 @@ type App struct {
 	Share         Share
 	Context       context.Context
 	Authorization string
+	Languages     []string
 }
