@@ -58,6 +58,11 @@ func (this AzureBlob) LoginForm() Form {
 				Type:        "password",
 				Placeholder: "Account Key",
 			},
+			FormElement{
+				Name:        "path",
+				Type:        "text",
+				Placeholder: "Path",
+			},
 		},
 	}
 }
