@@ -86,7 +86,7 @@ export function createThing({
     $thing.setAttribute("data-n", n);
     $thing.setAttribute("data-path", path);
     $thing.classList.add("view-" + view);
-    $time.textContent = formatTime(new Date(time));
+    $time.textContent = formatTime(time);
     $img.setAttribute("src", (type === "file" ? IMAGE.FILE : IMAGE.FOLDER));
     $label.textContent = name;
 
@@ -192,7 +192,9 @@ export function createThing({
     return $thing;
 }
 
-function formatTime(date) {
+function formatTime(unixTime) {
+    if (unixTime <= 0) return "";
+    const date = new Date(unixTime);
     if (!date) return "";
     // Intl.DateTimeFormat is slow and in the hot path, so
     // let's render date manually if possible
