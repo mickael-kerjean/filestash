@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 
@@ -23,7 +24,7 @@ func init() {
 	Backend.Register("azure", &AzureBlob{})
 }
 
-func (this AzureBlob) Init(params map[string]string, app *App) (IBackend, error) {
+func (this *AzureBlob) Init(params map[string]string, app *App) (IBackend, error) {
 	cred, err := container.NewSharedKeyCredential(params["account_name"], params["account_key"])
 	if err != nil {
 		Log.Debug("plg_backend_azure::new_cred_error %s", err.Error())
@@ -40,7 +41,7 @@ func (this AzureBlob) Init(params map[string]string, app *App) (IBackend, error)
 	return this, nil
 }
 
-func (this AzureBlob) LoginForm() Form {
+func (this *AzureBlob) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			FormElement{
@@ -67,7 +68,7 @@ func (this AzureBlob) LoginForm() Form {
 	}
 }
 
-func (this AzureBlob) Ls(path string) ([]os.FileInfo, error) {
+func (this *AzureBlob) Ls(path string) ([]os.FileInfo, error) {
 	files := make([]os.FileInfo, 0)
 	ap := this.path(path)
 
@@ -82,6 +83,8 @@ func (this AzureBlob) Ls(path string) ([]os.FileInfo, error) {
 				files = append(files, File{
 					FName: *blob.Name,
 					FType: "directory",
+					FTime: blob.Properties.LastModified.Unix(),
+					FSize: -1,
 				})
 			}
 		}
@@ -101,12 +104,16 @@ func (this AzureBlob) Ls(path string) ([]os.FileInfo, error) {
 			files = append(files, File{
 				FName: filepath.Base(*blob.Name),
 				FType: "directory",
+				FTime: -1,
+				FSize: -1,
 			})
 		}
 		for _, blob := range resp.ListBlobsHierarchySegmentResponse.Segment.BlobItems {
 			files = append(files, File{
 				FName: filepath.Base(*blob.Name),
 				FType: "file",
+				FTime: blob.Properties.LastModified.Unix(),
+				FSize: *blob.Properties.ContentLength,
 			})
 		}
 	}
@@ -115,19 +122,81 @@ func (this AzureBlob) Ls(path string) ([]os.FileInfo, error) {
 
 func (this AzureBlob) Cat(path string) (io.ReadCloser, error) {
 	ap := this.path(path)
-	resp, err := this.client.DownloadStream(
-		this.ctx,
-		ap.containerName,
-		ap.blobName,
-		nil,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return resp.Body, nil
+	return &azureFilecat{
+		offset: 0,
+		ctx:    this.ctx,
+		ap:     ap,
+		client: this.client,
+		reader: nil,
+	}, nil
 }
 
-func (this AzureBlob) Mkdir(path string) error {
+type azureFilecat struct {
+	offset int64
+	ctx    context.Context
+	ap     azurePath
+	reader io.ReadCloser
+	client *azblob.Client
+	mu     sync.Mutex
+}
+
+func (this *azureFilecat) Read(p []byte) (n int, err error) {
+	this.mu.Lock()
+	defer this.mu.Unlock()
+	if this.reader == nil {
+		resp, err := this.client.DownloadStream(
+			this.ctx,
+			this.ap.containerName,
+			this.ap.blobName,
+			&azblob.DownloadStreamOptions{
+				Range: azblob.HTTPRange{
+					Offset: this.offset,
+				},
+			},
+		)
+		if err != nil {
+			return 0, err
+		}
+		this.reader = resp.Body
+	}
+	return this.reader.Read(p)
+}
+
+func (this *azureFilecat) Seek(offset int64, whence int) (int64, error) {
+	this.mu.Lock()
+	defer this.mu.Unlock()
+	if offset < 0 {
+		return this.offset, os.ErrInvalid
+	}
+
+	switch whence {
+	case io.SeekStart:
+	case io.SeekCurrent:
+		offset += this.offset
+	case io.SeekEnd:
+		props, err := this.client.ServiceClient().NewContainerClient(this.ap.containerName).NewBlockBlobClient(this.ap.blobName).GetProperties(this.ctx, nil)
+		if err != nil {
+			return this.offset, err
+		}
+		offset += *props.ContentLength
+	default:
+		return this.offset, ErrNotImplemented
+	}
+
+	this.offset = offset
+	return this.offset, nil
+}
+
+func (this *azureFilecat) Close() error {
+	this.mu.Lock()
+	defer this.mu.Unlock()
+	if this.reader == nil {
+		return nil
+	}
+	return this.reader.Close()
+}
+
+func (this *AzureBlob) Mkdir(path string) error {
 	ap := this.path(path)
 	if ap.blobName == "" {
 		_, err := this.client.CreateContainer(this.ctx, ap.containerName, nil)
@@ -137,7 +206,7 @@ func (this AzureBlob) Mkdir(path string) error {
 	return err
 }
 
-func (this AzureBlob) Rm(path string) error {
+func (this *AzureBlob) Rm(path string) error {
 	ap := this.path(path)
 	if ap.blobName == "" {
 		_, err := this.client.DeleteContainer(this.ctx, ap.containerName, nil)
@@ -165,15 +234,15 @@ func (this AzureBlob) Rm(path string) error {
 	return nil
 }
 
-func (this AzureBlob) Mv(from string, to string) error {
+func (this *AzureBlob) Mv(from string, to string) error {
 	return ErrNotSupported
 }
 
-func (this AzureBlob) Touch(path string) error {
+func (this *AzureBlob) Touch(path string) error {
 	return this.Save(path, strings.NewReader(""))
 }
 
-func (this AzureBlob) Save(path string, file io.Reader) error {
+func (this *AzureBlob) Save(path string, file io.Reader) error {
 	ap := this.path(path)
 	_, err := this.client.UploadStream(
 		this.ctx, ap.containerName, ap.blobName, file,
@@ -182,7 +251,7 @@ func (this AzureBlob) Save(path string, file io.Reader) error {
 	return err
 }
 
-func (this AzureBlob) Meta(path string) Metadata {
+func (this *AzureBlob) Meta(path string) Metadata {
 	if path == "/" {
 		return Metadata{
 			CanCreateFile: NewBool(false),
