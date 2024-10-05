@@ -218,6 +218,7 @@ func (this *AzureBlob) Rm(path string) error {
 	}
 	pager := this.client.NewListBlobsFlatPager(ap.containerName, &container.ListBlobsFlatOptions{
 		Include: container.ListBlobsInclude{Snapshots: true, Versions: true},
+		Prefix:  &ap.blobName,
 	})
 	for pager.More() {
 		resp, err := pager.NextPage(this.ctx)
@@ -225,7 +226,7 @@ func (this *AzureBlob) Rm(path string) error {
 			return err
 		}
 		for _, blob := range resp.Segment.BlobItems {
-			_, err := this.client.DeleteBlob(this.ctx, ap.containerName, *blob.Name, nil)
+			_, err := this.client.DeleteBlob(context.Background(), ap.containerName, *blob.Name, nil)
 			if err != nil {
 				return err
 			}
