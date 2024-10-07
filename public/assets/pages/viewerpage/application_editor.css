@@ -1,24 +1,23 @@
+/* https://github.com/codemirror/codemirror5/issues/4895 */
 .component_editor {
-    display: flex;
-    flex-grow: 1;
-    min-height: 0;
-    width: 100%;
-}
-.component_editor > div {
-    width: 100%;
     position: relative;
+    flex-grow: 1;
 }
-.component_editor > div #editor {
-    width: 100%;
+.component_editor .CodeMirror {
     position: absolute;
-    left: 0;
     top: 0;
     bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+}
+
+/* UX Integration */
+.CodeMirror-scroll {
+    -webkit-overflow-scrolling: touch;
 }
 
 .CodeMirror {
-    width: 100%;
-    height: 100%;
     color: #3b4045;
     background: var(--bg-color);
 }
@@ -26,10 +25,6 @@
 .CodeMirror-sizer > div {
     padding-top: 4px;
     padding-bottom: 5px;
-}
-
-.CodeMirror-scroll {
-    -webkit-overflow-scrolling: touch;
 }
 
 .CodeMirror-foldmarker {
