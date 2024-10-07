@@ -111,7 +111,8 @@ export function mkdir(path) {
          * @override
          */
         async afterSuccess() {
-            removeLoading(virtualFiles$, basepath, dirname);
+            if (basepath === currentPath()) removeLoading(virtualFiles$, basepath, dirname);
+            else onDestroy(() => removeLoading(virtualFiles$, basepath, dirname));
             onDestroy(() => statePop(virtualFiles$, basepath, dirname));
             await fscache().update(basepath, ({ files = [], ...rest }) => ({
                 files: files.concat([file]),
