@@ -25,6 +25,7 @@
 .component_thing .file-details > span {
     display: inline-block;
     width: calc(100% - 130px);
+    max-width: 750px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
