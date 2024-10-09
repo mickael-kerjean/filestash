@@ -470,14 +470,6 @@ const ActionButton = (props) => {
                     className="component_updater--icon" />
             </NgIf>
             {
-                /canary/.test(location.search) ? (
-                    <span type="inline">
-                        <Icon
-                            name="tag"
-                            onClick={onTag}
-                            className="component_updater--icon" />
-                    </span>
-                ) : (
                     <NgIf
                         type="inline"
                         cond={props.can_delete !== false}>
@@ -486,7 +478,6 @@ const ActionButton = (props) => {
                             onClick={onDelete}
                             className="component_updater--icon" />
                     </NgIf>
-                )
             }
             <NgIf
                 type="inline"
