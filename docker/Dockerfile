@@ -1,8 +1,13 @@
 # STEP1: CLONE THE CODE
 FROM alpine:latest as builder_prepare
 WORKDIR /home/
-RUN apk add git && \
-    git clone --depth 1 https://github.com/mickael-kerjean/filestash
+ARG GIT_REPO=https://github.com/mickael-kerjean/filestash
+ARG GIT_REF=master
+RUN apk add --no-cache git && \
+    git init filestash && \
+    git -C filestash remote add origin ${GIT_REPO} && \
+    git -C filestash fetch --depth 1 origin ${GIT_REF} && \
+    git -C filestash checkout FETCH_HEAD
 
 # STEP2: BUILD THE FRONTEND
 FROM node:18-alpine AS builder_frontend
