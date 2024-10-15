@@ -60,6 +60,7 @@ func SessionStart(fn HandlerFunc) HandlerFunc {
 		}
 		ctx.Authorization = _extractAuthorization(req)
 		if ctx.Session, err = _extractSession(req, ctx); err != nil {
+			RecoverFromBadCookie(res)
 			SendErrorResult(res, err)
 			return
 		}
@@ -282,7 +283,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Share.Auth)
 		if err != nil {
 			// This typically happen when changing the secret key
-			return session, nil
+			return session, ErrNotAuthorized
 		}
 		err = json.Unmarshal([]byte(str), &session)
 		if IsDirectory(ctx.Share.Path) {
@@ -310,7 +311,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	if err != nil {
 		// This typically happen when changing the secret key
 		Log.Debug("middleware::session decrypt error '%s'", err.Error())
-		return session, nil
+		return session, ErrNotAuthorized
 	}
 	if err = json.Unmarshal([]byte(str), &session); err != nil {
 		return session, err
