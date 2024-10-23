@@ -1,5 +1,6 @@
 import { createElement, createFragment, createRender } from "../../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../../lib/rx.js";
+import { forwardURLParams } from "../../lib/path.js";
 import { animate, slideYOut } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
@@ -307,7 +308,13 @@ function workerImplFile({ error, progress, speed }) {
             const xhr = new XMLHttpRequest();
             this.xhr = xhr;
             return new Promise((resolve, reject) => {
-                xhr.open("POST", "api/files/cat?path=" + encodeURIComponent(path));
+                xhr.open(
+                    "POST",
+                    forwardURLParams(
+                        "api/files/cat?path=" + encodeURIComponent(path),
+                        ["share"],
+                    ),
+                );
                 xhr.withCredentials = true;
                 xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
                 xhr.upload.onprogress = (e) => {
@@ -380,7 +387,13 @@ function workerImplDirectory({ error, progress }) {
             const xhr = new XMLHttpRequest();
             this.xhr = xhr;
             return new Promise((resolve, reject) => {
-                xhr.open("POST", "api/files/mkdir?path=" + encodeURIComponent(path));
+                xhr.open(
+                    "POST",
+                    forwardURLParams(
+                        "api/files/mkdir?path=" + encodeURIComponent(path),
+                        ["share"],
+                    ),
+                );
                 xhr.withCredentials = true;
                 xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
                 xhr.onerror = function(e) {
