@@ -102,7 +102,6 @@ async function componentMap(render, { metadata }) {
     const TILE_SIZE = Math.floor($page.clientWidth / 3 * 100) / 100;
     if (TILE_SIZE === 0) return;
     $page.style.height = "${TILE_SIZE*3}px;";
-    const defaultTo = (val, def) => val === undefined ? val : def;
     const mapper = (function map_url(lat, lng, zoom) {
         // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenamse
         const n = Math.pow(2, zoom);
@@ -119,16 +118,13 @@ async function componentMap(render, { metadata }) {
                     .replace("${z}", Math.floor(zoom));
             },
             position: function() {
-                const t0 = defaultTo(tile_numbers[0], 0);
-                const t1 = defaultTo(tile_numbers[1], 0);
                 return [
-                    t0 - Math.floor(t0),
-                    t1 - Math.floor(t1),
+                    tile_numbers[0] - Math.floor(tile_numbers[0]),
+                    tile_numbers[1] - Math.floor(tile_numbers[1]),
                 ];
             },
         };
     }(lat, lng, 11));
-    const center = (position, i) => Math.floor(TILE_SIZE * (1 + position[i]) * 1000)/1000;
     const $tiles = createElement(`
         <div class="bigpicture">
             <div class="line">
@@ -151,9 +147,10 @@ async function componentMap(render, { metadata }) {
     qs($page, `[data-bind="maptile"]`).appendChild($tiles);
     const pos = mapper.position();
     qs($page, ".marker").setAttribute("style", `
-        left: ${TILE_SIZE * (1 + defaultTo(pos[0], 0)) - 15}px;
-        top: ${TILE_SIZE * (1 + defaultTo(pos[1], 0)) - 30}px;
+        left: ${TILE_SIZE * (1 + pos[0]) - 15}px;
+        top: ${TILE_SIZE * (1 + pos[1]) - 30}px;
     `);
+    const center = (position, i) => Math.floor(TILE_SIZE * (1 + position[i]) * 1000)/1000;
     $tiles.setAttribute("style", `transform-origin: ${center(mapper.position(), 0)}px ${center(mapper.position(), 1)}px;`);
 }
 
