@@ -160,6 +160,7 @@
 	"tk": "application/x-tcl",
 	"ts": "text/plain",
 	"txt": "text/plain",
+	"url": "application/x-url",
 	"vcf": "text/vcard",
 	"vrml": "application/x-vrml",
 	"war": "application/java-archive",

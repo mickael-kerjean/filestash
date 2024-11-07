@@ -32,6 +32,8 @@ export function opener(file = "", mimes) {
         return ["ebook", { mime }];
     } else if (type === "model" || ["application/object", "application/fbx"].indexOf(mime) !== -1) {
         return ["3d", { mime }];
+    } else if (mime === "application/x-url") {
+        return ["url", { mime }];
     } else if (type === "application") {
         return ["download", { mime }];
     }
