@@ -1,6 +1,7 @@
 import { createElement, navigate } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { ApplicationError } from "../../lib/error.js";
+import assert from "../../lib/assert.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 import { cat } from "./model_files.js";
@@ -22,8 +23,9 @@ export default function(render) {
                     return;
                 }
                 location.href = url;
-            } catch(err) {
-                throw new ApplicationError("Not Valid", err);
+            } catch (err) {
+                const message = assert.type(err, window.Error).message;
+                throw new ApplicationError("Not Valid", message);
             }
         }),
         rxjs.catchError(ctrlError()),
