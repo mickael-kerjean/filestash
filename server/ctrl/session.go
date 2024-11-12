@@ -109,13 +109,12 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 		} else {
 			end = len(obfuscate)
 		}
-		c := http.Cookie{
+		http.SetCookie(res, applyCookieRules(&http.Cookie{
 			Name:   CookieName(index),
 			Value:  obfuscate[index*value_limit : end],
 			MaxAge: 60 * Config.Get("general.cookie_timeout").Int(),
 			Path:   COOKIE_PATH,
-		}
-		http.SetCookie(res, applyCookieRules(c, req))
+		}, req))
 		if end == len(obfuscate) {
 			break
 		} else {
@@ -155,7 +154,7 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			break
 		}
-		http.SetCookie(res, applyCookieRules(http.Cookie{
+		http.SetCookie(res, applyCookieRules(&http.Cookie{
 			Name:   CookieName(index),
 			Value:  "",
 			MaxAge: -1,
@@ -279,13 +278,19 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 
 	// Step1: Entrypoint of the authentication process is handled by the plugin
 	if req.Method == "GET" && _get.Get("action") == "redirect" {
-		if label := _get.Get("label"); label != "" { // TODO: remove when we finish migration of auth plugins without cookie
-			http.SetCookie(res, applyCookieRules(http.Cookie{
-				Name:   SSOCookieName,
-				Value:  label + "::" + _get.Get("state"),
-				MaxAge: 60 * 10,
-				Path:   COOKIE_PATH,
-			}, req))
+		if label := _get.Get("label"); label != "" {
+			http.SetCookie(
+				res,
+				applyCookieSameSiteRule(
+					applyCookieRules(&http.Cookie{
+						Name:   SSOCookieName,
+						Value:  label + "::" + _get.Get("state"),
+						MaxAge: 60 * 10,
+						Path:   COOKIE_PATH,
+					}, req),
+					http.SameSiteDefaultMode,
+				),
+			)
 		}
 		if err := plugin.EntryPoint(idpParams, req, res); err != nil {
 			Log.Error("entrypoint - %s", err.Error())
@@ -340,6 +345,8 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	} else if l := req.URL.Query().Get("label"); l != "" {
 		label = l
 		state = req.URL.Query().Get("state")
+	} else {
+		Log.Warning("session::authMiddleware action=callback_error err=missing_label url=%s", req.URL.String())
 	}
 	if decodedState, err := base64.StdEncoding.DecodeString(state); err == nil {
 		stateStruct := map[string]string{}
@@ -438,13 +445,13 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	if redirectURI == "" {
 		redirectURI = WithBase("/")
 	}
-	http.SetCookie(res, applyCookieRules(http.Cookie{ // TODO: deprecate SSOCookieName
+	http.SetCookie(res, applyCookieRules(&http.Cookie{ // TODO: deprecate SSOCookieName
 		Name:   SSOCookieName,
 		Value:  "",
 		MaxAge: -1,
 		Path:   COOKIE_PATH,
 	}, req))
-	http.SetCookie(res, applyCookieRules(http.Cookie{
+	http.SetCookie(res, applyCookieRules(&http.Cookie{
 		Name:   COOKIE_NAME_AUTH,
 		Value:  obfuscate,
 		MaxAge: 60 * Config.Get("general.cookie_timeout").Int(),
@@ -456,7 +463,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	http.Redirect(res, req, redirectURI, http.StatusTemporaryRedirect)
 }
 
-func applyCookieRules(cookie http.Cookie, req *http.Request) *http.Cookie {
+func applyCookieRules(cookie *http.Cookie, req *http.Request) *http.Cookie {
 	cookie.HttpOnly = true
 	cookie.SameSite = http.SameSiteStrictMode
 	if Config.Get("features.protection.iframe").String() != "" {
@@ -468,5 +475,10 @@ func applyCookieRules(cookie http.Cookie, req *http.Request) *http.Cookie {
 			Log.Warning("you are trying to access Filestash from a non secure origin ('%s') and with iframe enabled. Either use SSL or disable iframe from the admin console.", f)
 		}
 	}
-	return &cookie
+	return cookie
+}
+
+func applyCookieSameSiteRule(cookie *http.Cookie, sameSiteValue http.SameSite) *http.Cookie {
+	cookie.SameSite = sameSiteValue
+	return cookie
 }
