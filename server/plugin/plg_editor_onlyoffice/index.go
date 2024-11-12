@@ -92,7 +92,7 @@ func init() {
 			return f
 		}).Bool()
 	}
-	
+
 	can_copy = func() bool {
 		return Config.Get("features.office.can_copy").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -106,7 +106,7 @@ func init() {
 			return f
 		}).Bool()
 	}
-	
+
 	can_comment = func() bool {
 		return Config.Get("features.office.can_comment").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -120,7 +120,7 @@ func init() {
 			return f
 		}).Bool()
 	}
-	
+
 	can_edit = func() bool {
 		return Config.Get("features.office.can_edit").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -134,7 +134,7 @@ func init() {
 			return f
 		}).Bool()
 	}
-	
+
 	can_download = func() bool {
 		return Config.Get("features.office.can_download").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -411,7 +411,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
   <body>
     <style> body { margin: 0; } body, html{ height: 100%%; } iframe { width: 100%%; height: 100%%; } </style>
     <div id="placeholder"></div>
-    <script type="text/javascript" src="/onlyoffice/static/web-apps/apps/api/documents/api.js"></script>
+    <script type="text/javascript" src="%s/web-apps/apps/api/documents/api.js"></script>
     <script>
       if("DocsAPI" in window) loadApplication();
       else sendError("[error] Can't reach the onlyoffice server");
@@ -433,7 +433,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
                       "download": %s,
 					  "edit": %s,
 	   				  "print": %s
-					  
+
                   }
               },
               "editorConfig": {
@@ -460,6 +460,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
     </script>
   </body>
 </html>`,
+		server_url(), // Use this function to support custom domain url for Onlyoffice if specified.
 		contentType,
 		oodsDevice,
 		filename,
