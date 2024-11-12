@@ -10,6 +10,7 @@ services:
     - GDRIVE_CLIENT_SECRET=<gdrive_secret>
     - DROPBOX_CLIENT_ID=<dropbox_key>
     - ONLYOFFICE_URL=http://onlyoffice
+    - CANARY=true
     ports:
     - "8334:8334"
     volumes:
