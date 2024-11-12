@@ -26,6 +26,7 @@
     letter-spacing: 0;
     border-radius: 5px;
     line-height: 15px;
+    min-width: 50px;
 }
 [is="component_submenu"] .component_submenu .action button img {
     width: 15px;
