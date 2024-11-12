@@ -86,7 +86,6 @@ export default function(render, { path }) {
                     url: `api/share/${id}`,
                 }).toPromise();
                 ;
-                // if (state.links === null) assert.fail("ttest");
                 assert.truthy(state.links).push({
                     ...body,
                     path: body.path.substring(currentPath().length - 1),
@@ -103,11 +102,18 @@ export default function(render, { path }) {
             },
             all: async() => {
                 const { responseJSON } = await ajax({
-                    url: `api/share?path=` + currentPath(),
+                    url: `api/share?path=` + encodeURIComponent(path),
                     method: "GET",
                     responseType: "json",
                 }).toPromise();
-                state.links = responseJSON.results;
+                const currentFolder = path.replace(new RegExp("/$"), "").split("/").pop();
+                const sharedLinkIsFolder = new RegExp("/$").test(path);
+                state.links = responseJSON.results.map((obj) => {
+                    obj.path = sharedLinkIsFolder ?
+                        `./${currentFolder}${obj.path}` :
+                        `./${currentFolder}`;
+                    return obj;
+                });
                 return responseJSON.results;
             },
         });
@@ -144,7 +150,7 @@ async function ctrlExistingShare(render, { load, remove, all, formLinks }) {
             const $share = createElement(`
                 <div class="link-details no-select">
                     <div class="copy role">${t(shareObjToRole(shareObj))}</div>
-                    <div class="copy path">.${shareObj.path}</div>
+                    <div class="copy path" title="${shareObj.path}">${shareObj.path}</div>
                     <div class="link-details--icons">
                         <img class="component_icon" draggable="false" src="${IMAGE.DELETE}" alt="delete">
                         <img class="component_icon" draggable="false" src="${IMAGE.EDIT}" alt="edit">

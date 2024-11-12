@@ -39,6 +39,10 @@
     text-shadow: 0px 0px 1px var(--color);
     background: var(--bg-color);
     background-position: center;
+    line-height: 1rem;
+    align-items: center;
+    justify-content: center;
+    display: flex;
 }
 .dark-mode .component_share .share--content.link-type > div {
     background: var(--color);
@@ -75,6 +79,9 @@
     padding-bottom: 5px;
 }
 .component_share .share--content.existing-links .link-details .role {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
     margin-right: 5px;
     padding-right: 5px;
     font-size: 0.8em;
