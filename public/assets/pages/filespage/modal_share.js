@@ -112,8 +112,11 @@ export default function(render, { path }) {
                         ? `./${currentFolder}${obj.path}`
                         : `./${currentFolder}`;
                     return obj;
+                }).sort((a, b) => {
+                    if (a.path === b.path) return a.id > b.id ? 1 : -1;
+                    return a.path > b.path ? 1 : -1;
                 });
-                return responseJSON.results;
+                return state.links;
             },
         });
     })));
