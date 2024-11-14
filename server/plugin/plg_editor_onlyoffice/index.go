@@ -3,12 +3,6 @@ package plg_editor_onlyoffice
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/ctrl"
-	. "github.com/mickael-kerjean/filestash/server/middleware"
-	"github.com/mickael-kerjean/filestash/server/model"
-	"github.com/patrickmn/go-cache"
 	"io"
 	"net"
 	"net/http"
@@ -17,7 +11,16 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/ctrl"
+	"github.com/mickael-kerjean/filestash/server/middleware"
+	"github.com/mickael-kerjean/filestash/server/model"
+
+	"github.com/gorilla/mux"
+	"github.com/patrickmn/go-cache"
 )
 
 var (
@@ -26,12 +29,12 @@ var (
 	onlyoffice_cache *cache.Cache
 	plugin_enable    func() bool
 	server_url       func() string
-	can_chat		 func() bool
-	can_copy		 func() bool
-	can_comment		 func() bool
+	can_chat         func() bool
+	can_copy         func() bool
+	can_comment      func() bool
 	can_download     func() bool
-	can_edit		 func() bool
-	can_print		 func() bool
+	can_edit         func() bool
+	can_print        func() bool
 )
 
 type onlyOfficeCacheData struct {
@@ -88,11 +91,11 @@ func init() {
 			f.Name = "can_chat"
 			f.Type = "boolean"
 			f.Description = "Enable/Disable chat in onlyoffice"
-			f.Default = true
+			f.Default = false
 			return f
 		}).Bool()
 	}
-	
+
 	can_copy = func() bool {
 		return Config.Get("features.office.can_copy").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -102,11 +105,11 @@ func init() {
 			f.Name = "can_copy"
 			f.Type = "boolean"
 			f.Description = "Enable/Disable copy text in onlyoffice"
-			f.Default = true
+			f.Default = false
 			return f
 		}).Bool()
 	}
-	
+
 	can_comment = func() bool {
 		return Config.Get("features.office.can_comment").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -116,11 +119,11 @@ func init() {
 			f.Name = "can_comment"
 			f.Type = "boolean"
 			f.Description = "Enable/Disable comments in onlyoffice"
-			f.Default = true
+			f.Default = false
 			return f
 		}).Bool()
 	}
-	
+
 	can_edit = func() bool {
 		return Config.Get("features.office.can_edit").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -134,7 +137,7 @@ func init() {
 			return f
 		}).Bool()
 	}
-	
+
 	can_download = func() bool {
 		return Config.Get("features.office.can_download").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -157,7 +160,7 @@ func init() {
 			f.Name = "can_print"
 			f.Type = "boolean"
 			f.Description = "Enable/Disable printing in onlyoffice"
-			f.Default = true
+			f.Default = false
 			return f
 		}).Bool()
 	}
@@ -181,9 +184,9 @@ func init() {
 
 		r.HandleFunc(
 			COOKIE_PATH+"onlyoffice/iframe",
-			NewMiddlewareChain(
+			middleware.NewMiddlewareChain(
 				IframeContentHandler,
-				[]Middleware{SessionStart, LoggedInOnly},
+				[]Middleware{middleware.SessionStart, middleware.LoggedInOnly},
 				*app,
 			),
 		).Methods("GET")
@@ -252,6 +255,7 @@ func StaticHandler(res http.ResponseWriter, req *http.Request) {
 
 func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if plugin_enable() == false {
+		Log.Warning("plg_editor_onlyoffice::handler request_disabled")
 		return
 	}
 	if model.CanRead(ctx) == false {
@@ -401,7 +405,8 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 	}(path)
 	filetype = strings.TrimPrefix(filepath.Ext(filename), ".")
 	onlyoffice_cache.Set(key, &onlyOfficeCacheData{path, ctx.Backend.Save, ctx.Backend.Cat}, cache.DefaultExpiration)
-	res.Write([]byte(fmt.Sprintf(`<!DOCTYPE html>
+
+	tmpl, err := template.New("onlyoffice").Parse(`<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -409,7 +414,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
    <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
-    <style> body { margin: 0; } body, html{ height: 100%%; } iframe { width: 100%%; height: 100%%; } </style>
+    <style> body { margin: 0; } body, html{ height: 100%; } iframe { width: 100%; height: 100%; } </style>
     <div id="placeholder"></div>
     <script type="text/javascript" src="/onlyoffice/static/web-apps/apps/api/documents/api.js"></script>
     <script>
@@ -418,35 +423,34 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 
       function loadApplication() {
           new DocsAPI.DocEditor("placeholder", {
-              "token": "foobar",
-              "documentType": "%s",
-              "type": "%s",
+              "token": "{{ .token }}",
+              "documentType": "{{ .contentType }}",
+              "type": "{{ .device }}",
               "document": {
-                  "title": "%s",
-                  "url": "%s/onlyoffice/content?key=%s",
-                  "fileType": "%s",
-                  "key": "%s",
+                  "title": "{{ .filename }}",
+                  "url": "{{ .base }}/onlyoffice/content?key={{ .key }}",
+                  "fileType": "{{ .filetype }}",
+                  "key": "{{ .key }}",
                   "permissions": {
-				  	  "chat": %s,
-		 			  "copy": %s,
-					  "comment": %s,
-                      "download": %s,
-					  "edit": %s,
-	   				  "print": %s
-					  
+				  	  "chat": {{ .can_chat }},
+		 			  "copy": {{ .can_copy }},
+					  "comment": {{ .can_comment }},
+                      "download": {{ .can_download }},
+					  "edit": {{ .can_edit }},
+	   				  "print": {{ .can_print }}
                   }
               },
               "editorConfig": {
-                  "callbackUrl": "%s/onlyoffice/event",
-                  "mode": "%s",
+                  "callbackUrl": "{{ .base }}/onlyoffice/event",
+                  "mode": "{{ .mode }}",
                   "customization": {
                       "autosave": false,
                       "forcesave": true,
                       "compactHeader": true
                   },
                   "user": {
-                      "id": "%s",
-                      "name": "%s"
+                      "id": "{{ .userID }}",
+                      "name": "{{ .userName }}"
                   }
               }
           });
@@ -459,54 +463,34 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
       }
     </script>
   </body>
-</html>`,
-		contentType,
-		oodsDevice,
-		filename,
-		filestashServerLocation, key,
-		filetype,
-		key,
-		func() string {
-			if can_chat() {
-				return "true"
-			}
-			return "false"
-		}(),
-		func() string {
-			if can_copy() {
-				return "true"
-			}
-			return "false"
-		}(),
-		func() string {
-			if can_comment() {
-				return "true"
-			}
-			return "false"
-		}(),
-		func() string {
-			if can_download() {
-				return "true"
-			}
-			return "false"
-		}(),
-		func() string {
-			if can_edit() {
-				return "true"
-			}
-			return "false"
-		}(),
-		func() string {
-			if can_print() {
-				return "true"
-			}
-			return "false"
-		}(),
-		filestashServerLocation,
-		oodsMode,
-		userId,
-		username,
-	)))
+</html>
+`)
+	if err != nil {
+		res.Write([]byte(err.Error()))
+		return
+	}
+	if err := tmpl.Execute(res, map[string]interface{}{
+		"base":         filestashServerLocation,
+		"can_chat":     can_chat(),
+		"can_copy":     can_copy(),
+		"can_comment":  can_comment(),
+		"can_download": can_download(),
+		"can_edit":     can_edit(),
+		"can_print":    can_print(),
+		"contentType":  contentType,
+		"device":       oodsDevice,
+		"filename":     filename,
+		"filetype":     filetype,
+		"key":          key,
+		"mode":         oodsMode,
+		"token":        "foobar",
+		"type":         contentType,
+		"userID":       userId,
+		"userName":     username,
+	}); err != nil {
+		res.Write([]byte(err.Error()))
+		return
+	}
 }
 
 func FetchContentHandler(res http.ResponseWriter, req *http.Request) {
