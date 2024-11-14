@@ -174,6 +174,7 @@ export default async function(render) {
             if (Object.keys(p).length > 0) {
                 url += "&state=" + btoa(JSON.stringify(p));
             }
+            toggleLoader(true);
             location.href = url;
             return rxjs.EMPTY;
         }),
