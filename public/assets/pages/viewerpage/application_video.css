@@ -32,16 +32,40 @@ body:not(.dark-mode) .component_videoplayer {
     border-radius: 3px;
     margin: auto;
     position: relative;
-    width: 800px;
 }
 .component_videoplayer .video_container .video_screen .video_wrapper {
+    width: 800px;
     height: 450px;
 }
+@media (max-width: 850px) { .component_videoplayer .video_container .video_screen .video_wrapper { max-width: 600px; }}
+@media (max-width: 650px) { .component_videoplayer .video_container .video_screen .video_wrapper { max-width: 500px; max-height: 400px; }}
+@media (max-width: 550px) { .component_videoplayer .video_container .video_screen .video_wrapper { max-width: 450px; max-height: 350px; }}
+@media (max-width: 500px) { .component_videoplayer .video_container .video_screen .video_wrapper { max-width: 350px; max-height: 300px; }}
+@media (max-width: 370px) { .component_videoplayer .video_container .video_screen .video_wrapper { max-width: 250px; max-height: 200px; }}
+@media (max-height: 650px) {
+    .component_videoplayer .video_container .video_screen .video_wrapper { max-width: 600px; height: 420px; }
+    .component_videoplayer .video_container { padding: 10px 10px 10px 10px; }
+}
+@media (max-height: 550px) { .component_videoplayer .video_container .video_screen .video_wrapper { height: 330px; }}
+@media (max-height: 445px) { .component_videoplayer .video_container .video_screen .video_wrapper { height: 250px; }}
+@media (max-height: 370px) { .component_videoplayer .video_container .video_screen .video_wrapper { height: 200px; }}
+@media (max-height: 310px) { .component_videoplayer .video_container .video_screen .video_wrapper { height: 100px; }}
+
 .component_videoplayer .video_container .video_screen .loader {
     position: absolute;
-    top: 30%;
+    top: calc(50% - 85px);
     width: 100%;
 }
+.component_videoplayer .video_container .video_screen .loader > img {
+    height: 170px;
+    cursor: pointer;
+    filter: brightness(0.5) invert(1);
+}
+@media (max-width: 700px) or (max-height: 650px) {
+    .component_videoplayer .video_container .video_screen .loader > img { height: 100px; }
+    .component_videoplayer .video_container .video_screen .loader { top: calc(50% - 60px); }
+}
+
 .component_videoplayer .video_container .video_screen.is-casting-yes .videoplayer_control, .component_videoplayer .video_container .video_screen.video-state-pause .videoplayer_control, .component_videoplayer .video_container .video_screen.video-state-buffer .videoplayer_control, .component_videoplayer .video_container .video_screen.video-state-play:hover .videoplayer_control {
     opacity: 1;
     transition: 0.1s opacity ease;

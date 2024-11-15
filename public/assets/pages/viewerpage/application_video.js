@@ -28,7 +28,7 @@ export default function(render, { mime }) {
             <div class="video_container">
                 <span>
                     <div class="video_screen video-state-pause is-casting-no">
-                        <div class="video_wrapper" style="max-height: 819px;">
+                        <div class="video_wrapper">
                             <video></video>
                         </div>
                         <div class="loader no-select">
@@ -186,7 +186,7 @@ export default function(render, { mime }) {
         )),
         rxjs.mergeMap(() => {
             const $loader = qs($page, ".loader");
-            $loader.replaceChildren(createElement(`<img style="height:170px;cursor:pointer;filter:brightness(0.5) invert(1);" src="${ICON.PLAY}" />`));
+            $loader.replaceChildren(createElement(`<img src="${ICON.PLAY}" />`));
             animate($loader, {
                 time: 150,
                 keyframes: [
