@@ -53,7 +53,7 @@ async function ctrlPDFJs(render) {
     render($page);
 
     const $container = qs($page, `[data-bind="pdf"]`);
-    const createBr = () => $container.appendChild(document.createElement("br"));
+    const createBr = () => $container.appendChild(createElement(`<div style="height:${document.body.clientWidth > 600 ? 20 : 5}px">&nbsp;</div>`));
     const removeLoader = createLoader($container);
     const base = qs(document.head, "base").getAttribute("href");
     effect(rxjs.from(window.pdfjsLib.getDocument(base + getDownloadUrl()).promise).pipe(
@@ -62,9 +62,13 @@ async function ctrlPDFJs(render) {
             createBr();
             for (let i=0; i<pdf.numPages; i++) {
                 const page = await pdf.getPage(i + 1);
+                const marginLeftRight = (document.body.clientWidth > 600 ? 50 : 15);
                 const viewport = page.getViewport({
                     scale: Math.min(
-                        Math.max(document.body.clientWidth - 200, 0),
+                        Math.max(
+                            document.body.clientWidth - marginLeftRight,
+                            0,
+                        ),
                         800,
                     ) / page.getViewport({ scale: 1 }).width,
                 });
