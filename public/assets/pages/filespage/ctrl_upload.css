@@ -80,9 +80,6 @@
 }
 .component_upload .stats_content .file_row .file_path {
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     padding: 3px 3px 3px 0;
 }
 .component_upload .stats_content .file_row .file_path .speed {

@@ -151,8 +151,8 @@ async function ctrlListShares(render, { load, remove, all, formLinks }) {
         links.forEach((shareObj) => {
             const $share = createElement(`
                 <div class="link-details no-select">
-                    <div class="copy role">${t(shareObjToRole(shareObj))}</div>
-                    <div class="copy path" title="${shareObj.path}">${shareObj.path}</div>
+                    <div class="copy role ellipsis">${t(shareObjToRole(shareObj))}</div>
+                    <div class="copy path ellipsis" title="${shareObj.path}">${shareObj.path}</div>
                     <div class="link-details--icons">
                         <img class="component_icon" draggable="false" src="${IMAGE.DELETE}" alt="delete">
                         <img class="component_icon" draggable="false" src="${IMAGE.EDIT}" alt="edit">
@@ -264,7 +264,7 @@ async function ctrlCreateShare(render, { save, formState }) {
                                   : assert.fail("unknown label");
             return createElement(`
                 <div class="component_supercheckbox">
-                    <label>
+                    <label class="ellipsis">
                         <span data-bind="children"></span>
                         <span class="label">${title}</span>
                     </label>

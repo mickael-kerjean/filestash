@@ -42,7 +42,7 @@ export default function(render) {
             renderLeaf: ({ label, format, description, required }) => createElement(`
                 <label class="no-select">
                     <div>
-                        <span>
+                        <span class="ellipsis">
                             ${format(label)}
                             ` + (required === true ? `<span class="mandatory">*</span>`: "") +`
                         </span>

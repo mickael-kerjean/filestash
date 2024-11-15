@@ -83,8 +83,5 @@
     opacity: 0.85;
 }
 .component_filemanager_shell .component_sidebar a > div {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     padding-left: 2px;
 }

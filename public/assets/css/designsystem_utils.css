@@ -32,3 +32,9 @@
 .flex {
     display: flex;
 }
+
+.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

@@ -26,9 +26,6 @@
     display: inline-block;
     width: calc(100% - 130px);
     max-width: 750px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     vertical-align: bottom;
     color: inherit;
 }
@@ -171,9 +168,6 @@
     text-align: center;
     min-width: 20px;
     max-width: 65px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 .list > .component_thing .info_extension span:empty {
     display: none;

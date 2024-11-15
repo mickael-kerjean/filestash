@@ -14,7 +14,7 @@ export default class ComponentMenubar extends HTMLElement {
         this.innerHTML = `
             <div class="container">
                 <span>
-                    <div class="titlebar" style="opacity:0">${getFilename()}</div>
+                    <div class="titlebar ellipsis" style="opacity:0">${getFilename()}</div>
                     <div class="action-item no-select"></div>
                 </span>
             </div>

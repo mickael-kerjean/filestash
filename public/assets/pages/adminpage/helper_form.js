@@ -5,7 +5,7 @@ export function renderLeaf({ format, label, description }) {
     return createElement(`
         <label class="no-select">
             <div class="flex">
-                <span>
+                <span class="ellipsis">
                     ${format(label)}:
                 </span>
                 <div style="width:100%;" data-bind="children"></div>

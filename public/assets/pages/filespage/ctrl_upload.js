@@ -114,7 +114,7 @@ function componentUploadQueue(render, { workers$ }) {
     const $content = qs($page, ".stats_content");
     const $file = createElement(`
         <div class="file_row todo_color">
-            <div class="file_path"><span class="path"></span><span class="speed no-select"></span></div>
+            <div class="file_path ellipsis"><span class="path"></span><span class="speed no-select"></span></div>
             <div class="file_state no-select"></div>
             <div class="file_control no-select"></div>
         </div>

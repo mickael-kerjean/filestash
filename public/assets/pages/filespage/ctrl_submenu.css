@@ -39,9 +39,6 @@
 }
 [is="component_submenu"] .component_submenu .action.left {
     margin-right: 2px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     display: flex;
 }
 [is="component_submenu"] .component_submenu .action.left button {

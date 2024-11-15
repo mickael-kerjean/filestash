@@ -126,9 +126,6 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
 .component_imageviewer .component_image_container .images_aside .content .content_box > div {
     margin: 3px 0;
     width: calc(100% - 40px);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 .component_imageviewer .component_image_container .images_aside .content .content_box .component_icon {
     height: 30px;
@@ -149,13 +146,13 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     padding-bottom: 20px;
 }
 .component_imageviewer .component_image_container .images_aside .content .more_container .meta_key {
+    display: flex;
+    justify-content: space-between;
     margin: 5px 0;
     border-top: 1px dashed var(--color);
     padding-top: 5px;
-    clear: both;
 }
 .component_imageviewer .component_image_container .images_aside .content .more_container .meta_key .title {
-    float: left;
     margin-right: 5px;
 }
 .component_imageviewer .component_image_container .images_aside .content .more_container .meta_key .value {

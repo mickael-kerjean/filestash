@@ -20,9 +20,6 @@
     flex: 1;
     padding: 8px 0;
     width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     letter-spacing: 0.3px;
     padding-left: 5px;
 }

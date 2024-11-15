@@ -17,9 +17,6 @@
 }
 .component_tag .box > div {
     flex-grow: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 .component_tag .box img {
     width: 20px;

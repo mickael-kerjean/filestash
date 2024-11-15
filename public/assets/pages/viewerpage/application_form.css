@@ -48,9 +48,6 @@
     text-align: right;
     padding-right: 15px;
     color: var(--dark);
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
 }
 @media screen and (max-width: 470px) {
     .component_formviewer > .formviewer_container .box .formbuilder label.no-select > div > span {
