@@ -42,7 +42,6 @@ export default async function ctrlSidebar(render, nRestart = 0) {
     // feature: visibility of the sidebar
     const forceRefresh = () => window.dispatchEvent(new Event("resize"));
     const isVisible = () => settingsGet({ visible: true }, "sidebar").visible;
-    if (isVisible() === false) $page.classList.add("hidden");
     effect(rxjs.merge(rxjs.fromEvent(window, "keydown")).pipe(
         rxjs.filter((e) => e.key === "b" && e.ctrlKey === true),
         rxjs.tap(() => {

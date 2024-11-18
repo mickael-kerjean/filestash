@@ -13,7 +13,7 @@ export default function(ctrl) {
     const urlToPath = (pathname = "") => decodeURIComponent(pathname.split("/").filter((_, i) => i !== 1).join("/"));
     const $page = createElement(`
         <div class="component_filemanager_shell" style="flex-direction:row">
-            <div data-bind="sidebar"></div>
+            <div data-bind="sidebar" class="hidden"></div>
             <div style="width:100%;display: flex; flex-direction: column;">
                 <component-breadcrumb path="${urlToPath(history.state.previous)}"></component-breadcrumb>
                 <div data-bind="filemanager-children"></div>
