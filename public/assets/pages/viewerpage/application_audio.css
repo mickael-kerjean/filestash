@@ -89,6 +89,7 @@ body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
     float: right;
     padding-right: 25px;
     margin-top: -5px;
+    line-height: 1rem;
 }
 .component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .timecode #separator {
     padding: 0 5px;
@@ -108,7 +109,7 @@ body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
 }
 .component_audioplayer > .audioplayer_container .audioplayer_box .component_icon[alt="loading"] {
     position: absolute;
-    margin: 50px 0px;
+    margin: 50px -60px;
 }
 .component_audioplayer > .audioplayer_container .audioplayer_box .chromecast_loader .component_icon[alt="loading"] {
     margin: 0;
@@ -118,7 +119,7 @@ body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
 }
 .component_audioplayer > .audioplayer_container .audioplayer_box .percent {
     position: absolute;
-    margin: 100px 0px;
+    margin: 100px -60px;
     width: 120px;
     font-size: 1.4rem;
 }
