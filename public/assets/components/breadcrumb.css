@@ -22,6 +22,15 @@
 .component_breadcrumb .breadcrumb .ul div, .component_breadcrumb .breadcrumb .ul .li {
     display: inline-block;
 }
+.component_breadcrumb .breadcrumb [alt="sidebar-open"] {
+    margin-left: -21px;
+    margin-right: 5px;
+    cursor: pointer;
+    display: none;
+}
+@media screen and (min-width: 1100px) {
+    .component_breadcrumb .breadcrumb [alt="sidebar-open"] { display: block; }
+}
 .component_breadcrumb .component_logout {
     align-self: center;
     padding-right: 10px;
@@ -105,6 +114,9 @@ body.touch-yes component-breadcrumb .ul span::-webkit-scrollbar-thumb {
 
 body.touch-no .component_path-element-wrapper a.label:hover {
     background: var(--border);
+}
+body.touch-no .component_breadcrumb img[alt="sidebar-open"]:hover {
+    filter: drop-shadow(0px 0px 4px #e2e2e2);
 }
 body.touch-no .component_path-element-wrapper a.label:hover span.title {
     opacity: 1;

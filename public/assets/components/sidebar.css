@@ -23,6 +23,9 @@
     padding-left: 15px;
     text-transform: capitalize;
 }
+body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
+    filter: drop-shadow(0px 0px 4px #e2e2e2);
+}
 .component_filemanager_shell .component_sidebar h3 img {
     padding-right: 4px;
     cursor: pointer;
