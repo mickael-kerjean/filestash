@@ -126,7 +126,6 @@ export default function(render) {
         wavesurfer.backend.source.stop(0);
         wavesurfer.backend.disconnectSource();
         wavesurfer.backend.createSource();
-        wavesurfer.backend.startPosition = newTime;
         wavesurfer.backend.source.start(0, newTime);
     };
 
@@ -186,10 +185,9 @@ export default function(render) {
     );
     effect(ready$.pipe(rxjs.tap((wavesurfer) => {
         wavesurfer.backend.createSource();
-        wavesurfer.backend.startPosition = 0;
-        wavesurfer.backend.lastPlay = 0;
         wavesurfer.backend.source.start(0, 0);
         wavesurfer.backend.ac.suspend();
+        currentTime$.next([0, wavesurfer.backend.ac.currentTime]);
     })));
 
     // feature4: hint of song progress
