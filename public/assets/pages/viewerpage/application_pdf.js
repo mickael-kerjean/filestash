@@ -63,6 +63,7 @@ async function ctrlPDFJs(render) {
             for (let i=0; i<pdf.numPages; i++) {
                 const page = await pdf.getPage(i + 1);
                 const marginLeftRight = (document.body.clientWidth > 600 ? 50 : 15);
+                const ratio = window.devicePixelRatio || 1;
                 const viewport = page.getViewport({
                     scale: Math.min(
                         Math.max(
@@ -70,11 +71,13 @@ async function ctrlPDFJs(render) {
                             0,
                         ),
                         800,
-                    ) / page.getViewport({ scale: 1 }).width,
+                    ) / page.getViewport({ scale: 1 / ratio }).width,
                 });
                 const $canvas = document.createElement("canvas");
                 $canvas.height = viewport.height;
                 $canvas.width = viewport.width;
+                $canvas.style.width = Math.floor(viewport.width / ratio) + "px";
+                $canvas.style.height = Math.floor(viewport.height / ratio) + "px";
                 $container.appendChild($canvas);
                 if (window.env === "test") $canvas.getContext = () => null;
                 await page.render({
