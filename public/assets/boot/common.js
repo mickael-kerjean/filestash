@@ -2,7 +2,7 @@ export function $error(msg) {
     const $code = document.createElement("code");
     $code.style.display = "block";
     $code.style.margin = "20px 0";
-    $code.style.fontSize = "1.3rem";
+    $code.style.fontSize = "1.2rem";
     $code.style.padding = "0 10% 0 10%";
     $code.textContent = msg;
 
