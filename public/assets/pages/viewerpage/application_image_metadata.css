@@ -1,9 +1,9 @@
-component-icon[name="loading"] {
+.component_imageviewer .images_aside component-icon[name="loading"] {
     display: block;
     text-align: center;
-    padding-top: 50px;
+    padding-top: 25px;
 }
-component-icon[name="loading"] img { height: 30px; }
+.component_imageviewer .images_aside component-icon[name="loading"] img { height: 30px; }
 
 .component_mapshot {
     overflow: hidden;
