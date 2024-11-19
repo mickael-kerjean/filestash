@@ -271,7 +271,7 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 			"/assets/pages/filespage/model_files.js", "/assets/pages/filespage/helper.js",
 			"/assets/pages/filespage/model_acl.js", "/assets/pages/filespage/state_config.js",
 			"/assets/pages/filespage/state_newthing.js", "/assets/pages/filespage/state_selection.js",
-			"/assets/pages/filespage/modal_delete.js", "/assets/pages/filespage/modal_rename.js", "/assets/pages/filespage/modal_tag.js", "/assets/pages/filespage/modal_embed.js",
+			"/assets/pages/filespage/modal_delete.js", "/assets/pages/filespage/modal_rename.js", "/assets/pages/filespage/modal_tag.js",
 
 			"/assets/components/form.js",
 			"/assets/helpers/log.js", "/assets/lib/error.js", "/assets/model/config.js",

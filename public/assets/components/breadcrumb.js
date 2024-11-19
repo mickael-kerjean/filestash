@@ -119,7 +119,7 @@ class ComponentBreadcrumb extends HTMLElement {
             return `
                 <div class="component_path-element n${idx}" data-path="${pathChunks.slice(0, idx+1).join("/") + "/"}">
                     <div class="li component_path-element-wrapper">
-                        <a class="label" href="${forwardURLParams(toHref("/files") + link, ["share"])}" data-link>
+                        <a class="label" href="${forwardURLParams(toHref("/files") + link, ["share", "canary"])}" data-link>
                             ${tmpl}
                         </a>
                         <div class="component_separator">

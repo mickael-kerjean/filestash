@@ -1,4 +1,4 @@
-import { createElement, onDestroy } from "../lib/skeleton/index.js";
+import { createElement, createRender, onDestroy } from "../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../lib/rx.js";
 import { fromHref, toHref } from "../lib/skeleton/router.js";
 import { qs, qsa } from "../lib/dom.js";
@@ -29,13 +29,11 @@ export default async function ctrlSidebar(render, nRestart = 0) {
             </h3>
             <div data-bind="your-files"></div>
 
-            <!--
-            <h3>${t("Shared Drive")}</h3>
-            <div></div>
-
-            <h3>${t("Tags")}</h3>
-            <div></div>
-            -->
+            <h3>
+                <img src="data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjE2IiB2aWV3Qm94PSIwIDAgMTYgMTYiIHZlcnNpb249IjEuMSIgd2lkdGg9IjE2IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPg0KICAgIDxwYXRoIHN0eWxlPSJmaWxsOiAjNTc1OTVhOyIgZD0iTTEgNy43NzVWMi43NUMxIDEuNzg0IDEuNzg0IDEgMi43NSAxaDUuMDI1Yy40NjQgMCAuOTEuMTg0IDEuMjM4LjUxM2w2LjI1IDYuMjVhMS43NSAxLjc1IDAgMCAxIDAgMi40NzRsLTUuMDI2IDUuMDI2YTEuNzUgMS43NSAwIDAgMS0yLjQ3NCAwbC02LjI1LTYuMjVBMS43NTIgMS43NTIgMCAwIDEgMSA3Ljc3NVptMS41IDBjMCAuMDY2LjAyNi4xMy4wNzMuMTc3bDYuMjUgNi4yNWEuMjUuMjUgMCAwIDAgLjM1NCAwbDUuMDI1LTUuMDI1YS4yNS4yNSAwIDAgMCAwLS4zNTRsLTYuMjUtNi4yNWEuMjUuMjUgMCAwIDAtLjE3Ny0uMDczSDIuNzVhLjI1LjI1IDAgMCAwLS4yNS4yNVpNNiA1YTEgMSAwIDEgMSAwIDIgMSAxIDAgMCAxIDAtMloiPjwvcGF0aD4NCjwvc3ZnPg0K" alt="tag">
+                ${t("Tags")}
+            </h3>
+            <div data-bind="your-tags"></div>
         </div></div>
     `));
 
@@ -70,6 +68,14 @@ export default async function ctrlSidebar(render, nRestart = 0) {
         forceRefresh();
     })));
 
+    // fature: navigation pane
+    ctrlNavigationPane(render, { $sidebar, nRestart });
+
+    // feature: tag viewer
+    ctrlTagPane(createRender(qs($sidebar, `[data-bind="your-tags"]`)));
+}
+
+async function ctrlNavigationPane(render, { $sidebar, nRestart }) {
     // feature: setup the DOM
     const $files = qs($sidebar, `[data-bind="your-files"]`);
     if (state.$cache) {
@@ -88,7 +94,7 @@ export default async function ctrlSidebar(render, nRestart = 0) {
     for (let i = 0; i<arr.length-1; i++) {
         const path = chunk.toString(i);
         try {
-            const $list = await createListOfFiles(path, arr[i+1], fullpath);
+            const $list = await _createListOfFiles(path, arr[i+1], fullpath);
             const $anchor = i === 0 ? $tree : qs($tree, `[data-path="${chunk.toString(i)}"]`);
             $anchor.appendChild($list);
         } catch (err) {
@@ -103,7 +109,7 @@ export default async function ctrlSidebar(render, nRestart = 0) {
     // feature: smart refresh whenever something happen
     const cleaners = [];
     cleaners.push(hooks.ls.listen(async({ path }) => {
-        const $list = await createListOfFiles(path);
+        const $list = await _createListOfFiles(path);
         try {
             const $ul = qs($sidebar, `[data-path="${path}"] ul`);
             $ul.replaceWith($list);
@@ -111,7 +117,7 @@ export default async function ctrlSidebar(render, nRestart = 0) {
     }));
     cleaners.push(hooks.mutation.listen(async({ op, path }) => {
         if (["mv", "mkdir", "rm"].indexOf(op) === -1) return;
-        const $list = await createListOfFiles(path);
+        const $list = await _createListOfFiles(path);
         try {
             const $ul = qs($sidebar, `[data-path="${path}"] ul`);
             $ul.replaceWith($list);
@@ -133,7 +139,7 @@ export default async function ctrlSidebar(render, nRestart = 0) {
         rxjs.debounceTime(200),
         rxjs.tap((e) => {
             const inputValue = e.target.value.toLowerCase();
-            qsa($sidebar, "li a").forEach(($li) => {
+            qsa($sidebar, "[data-bind=\"your-files\"] li a").forEach(($li) => {
                 if (inputValue === "") {
                     $li.classList.remove("hidden");
                     $sidebar.classList.remove("search");
@@ -148,7 +154,7 @@ export default async function ctrlSidebar(render, nRestart = 0) {
     ));
 }
 
-async function createListOfFiles(path, currentName, fullpath) {
+async function _createListOfFiles(path, currentName, fullpath) {
     const r = await cache().get(path);
     const whats = r === null
         ? (currentName ? [currentName] : [])
@@ -161,7 +167,7 @@ async function createListOfFiles(path, currentName, fullpath) {
         const currpath = path + whats[i] + "/";
         const $li = createElement(`
             <li data-path="${currpath}" title="${currpath}" class="no-select">
-                <a data-link href="${forwardURLParams(toHref("/files" + currpath), ["share"])}" draggable="false">
+                <a data-link href="${forwardURLParams(toHref("/files" + currpath), ["share", "canary"])}" draggable="false">
                     <img class="component_icon" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgYXJpYS1oaWRkZW49InRydWUiCiAgIGZvY3VzYWJsZT0iZmFsc2UiCiAgIGNsYXNzPSJvY3RpY29uIG9jdGljb24tZmlsZS1kaXJlY3RvcnktZmlsbCIKICAgdmlld0JveD0iMCAwIDE2IDE2IgogICB3aWR0aD0iMTYiCiAgIGhlaWdodD0iMTYiCiAgIGZpbGw9ImN1cnJlbnRDb2xvciIKICAgc3R5bGU9ImRpc3BsYXk6IGlubGluZS1ibG9jazsgdXNlci1zZWxlY3Q6IG5vbmU7IHZlcnRpY2FsLWFsaWduOiB0ZXh0LWJvdHRvbTsgb3ZlcmZsb3c6IHZpc2libGU7IgogICB2ZXJzaW9uPSIxLjEiCiAgIGlkPSJzdmcxNTgiCiAgIHNvZGlwb2RpOmRvY25hbWU9ImdpdGh1YmZvbGRlci5zdmciCiAgIGlua3NjYXBlOnZlcnNpb249IjEuMi4yIChiMGE4NDg2NTQxLCAyMDIyLTEyLTAxKSIKICAgeG1sbnM6aW5rc2NhcGU9Imh0dHA6Ly93d3cuaW5rc2NhcGUub3JnL25hbWVzcGFjZXMvaW5rc2NhcGUiCiAgIHhtbG5zOnNvZGlwb2RpPSJodHRwOi8vc29kaXBvZGkuc291cmNlZm9yZ2UubmV0L0RURC9zb2RpcG9kaS0wLmR0ZCIKICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogICB4bWxuczpzdmc9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcwogICAgIGlkPSJkZWZzMTYyIiAvPgogIDxzb2RpcG9kaTpuYW1lZHZpZXcKICAgICBpZD0ibmFtZWR2aWV3MTYwIgogICAgIHBhZ2Vjb2xvcj0iI2ZmZmZmZiIKICAgICBib3JkZXJjb2xvcj0iIzAwMDAwMCIKICAgICBib3JkZXJvcGFjaXR5PSIwLjI1IgogICAgIGlua3NjYXBlOnNob3dwYWdlc2hhZG93PSIyIgogICAgIGlua3NjYXBlOnBhZ2VvcGFjaXR5PSIwLjAiCiAgICAgaW5rc2NhcGU6cGFnZWNoZWNrZXJib2FyZD0iMCIKICAgICBpbmtzY2FwZTpkZXNrY29sb3I9IiNkMWQxZDEiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGlua3NjYXBlOnpvb209IjcxLjYyNSIKICAgICBpbmtzY2FwZTpjeD0iNy44MTE1MTgzIgogICAgIGlua3NjYXBlOmN5PSI4IgogICAgIGlua3NjYXBlOndpbmRvdy13aWR0aD0iMjAzNiIKICAgICBpbmtzY2FwZTp3aW5kb3ctaGVpZ2h0PSIxMzk3IgogICAgIGlua3NjYXBlOndpbmRvdy14PSI3IgogICAgIGlua3NjYXBlOndpbmRvdy15PSIzNCIKICAgICBpbmtzY2FwZTp3aW5kb3ctbWF4aW1pemVkPSIxIgogICAgIGlua3NjYXBlOmN1cnJlbnQtbGF5ZXI9InN2ZzE1OCIgLz4KICA8cGF0aAogICAgIGQ9Ik0xLjc1IDFBMS43NSAxLjc1IDAgMCAwIDAgMi43NXYxMC41QzAgMTQuMjE2Ljc4NCAxNSAxLjc1IDE1aDEyLjVBMS43NSAxLjc1IDAgMCAwIDE2IDEzLjI1di04LjVBMS43NSAxLjc1IDAgMCAwIDE0LjI1IDNINy41YS4yNS4yNSAwIDAgMS0uMi0uMWwtLjktMS4yQzYuMDcgMS4yNiA1LjU1IDEgNSAxSDEuNzVaIgogICAgIGlkPSJwYXRoMTU2IgogICAgIHN0eWxlPSJmaWxsOiM1NzU5NWE7ZmlsbC1vcGFjaXR5OjEiIC8+Cjwvc3ZnPgo=" alt="directory">
                     <div class="ellipsis">${whats[i]}</div>
                 </a>
@@ -195,6 +201,43 @@ async function createListOfFiles(path, currentName, fullpath) {
     }
     return $ul;
 }
+
+async function ctrlTagPane(render) {
+    const $page = createElement(`
+        <ul>
+            <li data-bind="taglist"></li>
+        </ul>
+    `);
+    render($page);
+
+    // only enable this pane in canary mode until it's actually ready
+    if (new URLSearchParams(location.search).get("canary") !== "true") {
+        $page.classList.add("hidden");
+        $page.parentElement.previousElementSibling.classList.add("hidden");
+        return;
+    }
+
+    const tags = [
+        { name: t("Bookmark"), color: "green" },
+        { name: "important", color: "red" },
+        { name: "foobar", color: "saddlebrown" },
+    ];
+    const $tmpl = (name, color) => createElement(`
+        <a data-link href="/tags/${name}/?canary=true" draggable="false">
+                <svg class="component_icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="50" style="opacity: 0.25; fill: ${color};" />
+                </svg>
+            <div class="ellipsis">${name}</div>
+        </a>
+    `);
+    const $fragment = document.createDocumentFragment();
+    tags.forEach(({ name, color }) => {
+        $fragment.appendChild($tmpl(name, color));
+    });
+    qs($page, `[data-bind="taglist"]`).appendChild($fragment);
+
+}
+
 
 export function init() {
     return loadCSS(import.meta.url, "./sidebar.css");

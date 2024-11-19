@@ -12,7 +12,6 @@ import "../../components/icon.js";
 import { createModal } from "../../components/modal.js";
 
 import componentShare from "./modal_share.js";
-import componentEmbed from "./modal_embed.js";
 import componentTag from "./modal_tag.js";
 import componentRename from "./modal_rename.js";
 import componentDelete from "./modal_delete.js";
@@ -116,10 +115,7 @@ function componentLeft(render, { $scroll }) {
             <button data-action="share" title="${t("Share")}" class="${(window.CONFIG["enable_share"] && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
                 ${t("Share")}
             </button>
-            <button data-action="embed" title="${t("Embed")}" class="hidden">
-                ${t("Embed")}
-            </button>
-            <button data-action="tag" title="${t("Tag")}" class="hidden">
+            <button data-action="tag" title="${t("Tag")}" class="${new URLSearchParams(location.search).get("canary") === 'true' ? "" : "hidden"}">
                 ${t("Tag")}
             </button>
         `))),
@@ -135,11 +131,12 @@ function componentLeft(render, { $scroll }) {
                     targetHeight: 315,
                 }), { path: expandSelection()[0].path });
             })),
-            onClick(qs($page, `[data-action="embed"]`)).pipe(rxjs.tap(() => {
-                componentEmbed(createModal(modalOpt));
-            })),
             onClick(qs($page, `[data-action="tag"]`)).pipe(rxjs.tap(() => {
-                componentTag(createModal(modalOpt));
+                componentTag(createModal({
+                    ...modalOpt,
+                    withButtonsLeft: null,
+                    withButtonsRight: null,
+                }, { path: expandSelection()[0].path }));
             })),
             onClick(qs($page, `[data-action="rename"]`)).pipe(rxjs.mergeMap(() => {
                 const path = expandSelection()[0].path;

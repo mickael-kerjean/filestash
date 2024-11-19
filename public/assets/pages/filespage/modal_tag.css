@@ -1,19 +1,26 @@
+.component_tag {
+    font-size: 1rem;
+}
 .component_tag input {
-    font-size: 1.2em;
+    font-size: 1.15rem;
+    border: 2px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 5px;
+    color: var(--color);
 }
 .component_tag input::placeholder {
-    font-weight: 100;
+    color: rgba(0,0,0,0.2);
 }
 .component_tag .box {
     display: flex;
     background: var(--bg-color);
     transition: background 0.1s ease;
-    padding: 5px 10px;
+    padding: 2px 5px 2px 8px;
     border-radius: 3px;
+    font-size: 0.95rem;
 }
 .component_tag .box.active {
     background: var(--primary);
-    color: var(--color);
 }
 .component_tag .box > div {
     flex-grow: 1;
@@ -26,17 +33,7 @@
 }
 .component_tag .box img[alt="close"] {
     width: 14px;
-    padding: 3px;
-}
-.component_tag .box .count {
-    opacity: 0.5;
-    font-size: 0.9rem;
-}
-.component_tag .box .count:before {
-    content: "[";
-}
-.component_tag .box .count:after {
-    content: "]";
+    padding: 5px;
 }
 
 .component_tag .scroll-y {
