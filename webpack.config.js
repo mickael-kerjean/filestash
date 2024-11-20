@@ -99,10 +99,10 @@ const config = {
 
 
 if (process.env.NODE_ENV === "production") {
-    config.plugins.push(new UglifyJSPlugin({
-        sourceMap: false,
-        extractComments: true,
-    }));
+    // config.plugins.push(new UglifyJSPlugin({
+    //     sourceMap: false,
+    //     extractComments: true,
+    // }));
     config.plugins.push(new CompressionPlugin({
         asset: "[path].gz[query]",
         algorithm: "gzip",
