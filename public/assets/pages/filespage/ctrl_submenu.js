@@ -115,7 +115,7 @@ function componentLeft(render, { $scroll }) {
             <button data-action="share" title="${t("Share")}" class="${(window.CONFIG["enable_share"] && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
                 ${t("Share")}
             </button>
-            <button data-action="tag" title="${t("Tag")}" class="${new URLSearchParams(location.search).get("canary") === 'true' ? "" : "hidden"}">
+            <button data-action="tag" title="${t("Tag")}" class="${new URLSearchParams(location.search).get("canary") === "true" ? "" : "hidden"}">
                 ${t("Tag")}
             </button>
         `))),
@@ -136,7 +136,7 @@ function componentLeft(render, { $scroll }) {
                     ...modalOpt,
                     withButtonsLeft: null,
                     withButtonsRight: null,
-                }, { path: expandSelection()[0].path }));
+                }), { path: expandSelection()[0].path });
             })),
             onClick(qs($page, `[data-action="rename"]`)).pipe(rxjs.mergeMap(() => {
                 const path = expandSelection()[0].path;

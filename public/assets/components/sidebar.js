@@ -1,5 +1,6 @@
 import { createElement, createRender, onDestroy } from "../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../lib/rx.js";
+import assert from "../lib/assert.js";
 import { fromHref, toHref } from "../lib/skeleton/router.js";
 import { qs, qsa } from "../lib/dom.js";
 import { forwardURLParams } from "../lib/path.js";
@@ -53,7 +54,7 @@ export default async function ctrlSidebar(render, nRestart = 0) {
         rxjs.of(null),
     ).pipe(rxjs.tap(() => {
         const $breadcrumbButton = qs(document.body, "[alt=\"sidebar-open\"]");
-        if (document.body.clientWidth < 1100) $sidebar.classList.add("hidden")
+        if (document.body.clientWidth < 1100) $sidebar.classList.add("hidden");
         else if (isVisible()) {
             $sidebar.classList.remove("hidden");
             $breadcrumbButton.classList.add("hidden");
@@ -213,7 +214,8 @@ async function ctrlTagPane(render) {
     // only enable this pane in canary mode until it's actually ready
     if (new URLSearchParams(location.search).get("canary") !== "true") {
         $page.classList.add("hidden");
-        $page.parentElement.previousElementSibling.classList.add("hidden");
+        const orFail = (something) => assert.type(something, HTMLElement);
+        orFail(orFail($page.parentElement).previousElementSibling).classList.add("hidden");
         return;
     }
 
@@ -235,9 +237,7 @@ async function ctrlTagPane(render) {
         $fragment.appendChild($tmpl(name, color));
     });
     qs($page, `[data-bind="taglist"]`).appendChild($fragment);
-
 }
-
 
 export function init() {
     return loadCSS(import.meta.url, "./sidebar.css");
