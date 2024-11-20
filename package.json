@@ -63,6 +63,7 @@
     "style-loader": "^0.20.2",
     "uglifyjs-webpack-plugin": "^1.2.5",
     "url-loader": "^0.6.2",
+    "vm-browserify": "^1.1.2",
     "webpack": "^5.87.0",
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-cli": "^5.1.4",

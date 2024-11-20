@@ -91,6 +91,7 @@ const config = {
             "crypto": require.resolve("crypto-browserify"),
             "buffer": require.resolve("buffer/"),
             "stream": require.resolve("stream-browserify"),
+            "vm": require.resolve("vm-browserify"),
         },
     },
     mode: process.env.NODE_ENV || "production",
@@ -98,10 +99,10 @@ const config = {
 
 
 if (process.env.NODE_ENV === "production") {
-    config.plugins.push(new UglifyJSPlugin({
-        sourceMap: false,
-        extractComments: true,
-    }));
+    // config.plugins.push(new UglifyJSPlugin({
+    //     sourceMap: false,
+    //     extractComments: true,
+    // }));
     config.plugins.push(new CompressionPlugin({
         asset: "[path].gz[query]",
         algorithm: "gzip",
