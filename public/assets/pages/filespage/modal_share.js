@@ -65,7 +65,10 @@ export default function(render, { path }) {
 
         // feature: render body and associated events
         ctrl(createRender(qs($modal, `[data-bind="share-body"]`)), {
-            formState: state.form,
+            formState: {
+                path,
+                ...state.form,
+            },
             formLinks: state.links,
             load: (data) => {
                 const role = shareObjToRole(data);
