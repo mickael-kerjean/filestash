@@ -303,15 +303,52 @@ function workerImplFile({ error, progress, speed }) {
 
         /**
          * @override
+         * TODO: retry logic on failed upload would be nice
          */
         async run({ file, path, virtual }) {
+            const _file = await file();
+            const chunkSize = (CONFIG.upload_chunk_size || 0) *1024*1024;
+            const numberOfChunks = Math.ceil(_file.size / chunkSize);
+            if (chunkSize === 0 || numberOfChunks === 0 || numberOfChunks === 1) {
+                await this._execute({ file: _file, path, virtual, chunk: null, progress });
+                return;
+            }
+            for (let i=0; i<numberOfChunks; i++) {
+                const offset = chunkSize * i;
+                const chunk = numberOfChunks - i - 1;
+                await this._execute({
+                    file: _file.slice(offset, offset+chunkSize),
+                    virtual: {
+                        before: () => {
+                            if (i === 0) virtual.before();
+                        },
+                        afterSuccess: () => {
+                            if (i === numberOfChunks - 1) virtual.afterSuccess();
+                        },
+                        afterError: () => virtual.afterError(),
+                    },
+                    progress: (p) => {
+                        const chunksAlreadyDownloaded = i * chunkSize;
+                        const currentChunkDownloaded = p / 100 * (
+                            i !== numberOfChunks - 1 ? chunkSize : _file.size % chunkSize
+                        );
+                        progress(Math.floor(100 * (chunksAlreadyDownloaded + currentChunkDownloaded) / _file.size));
+                    },
+                    chunk, path,
+                });
+                this.prevProgress = [];
+            }
+        }
+
+        _execute({ file, path, virtual, chunk, progress }) {
             const xhr = new XMLHttpRequest();
             this.xhr = xhr;
             return new Promise((resolve, reject) => {
                 xhr.open(
                     "POST",
                     forwardURLParams(
-                        "api/files/cat?path=" + encodeURIComponent(path),
+                        "api/files/cat?path=" + encodeURIComponent(path)
+                            + (chunk === null ? "" : `&chunk=${chunk}`),
                         ["share"],
                     ),
                 );
@@ -360,7 +397,7 @@ function workerImplFile({ error, progress, speed }) {
                     reject(new AjaxError("failed", e, "FAILED"));
                     virtual.afterError();
                 };
-                file().then((f) => xhr.send(f)).catch((err) => xhr.onerror && xhr.onerror(err));
+                xhr.send(file);
             });
         }
     }();

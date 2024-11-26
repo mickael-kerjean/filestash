@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -66,6 +67,7 @@ func init() {
 		zip_timeout()
 		disable_csp()
 	})
+	initChunkedUploader()
 }
 
 func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -395,6 +397,8 @@ func FileAccess(ctx *App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
+var chunkedUploadCache AppCache
+
 func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
@@ -435,14 +439,99 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	err = ctx.Backend.Save(path, req.Body)
-	req.Body.Close()
+	// There is 2 ways to save something:
+	// - case1: regular upload, we just insert the file in the pipe
+	chunk := req.URL.Query().Get("chunk")
+	if chunk == "" {
+		err = ctx.Backend.Save(path, req.Body)
+		req.Body.Close()
+		if err != nil {
+			Log.Debug("save::backend '%s'", err.Error())
+			SendErrorResult(res, NewError(err.Error(), 403))
+			return
+		}
+		SendSuccessResult(res, nil)
+		return
+	}
+	// - case2: chunked upload. In this scenario, the frontend send the file in chunks, the
+	//   only assumption being that upload is complete when the "chunk" param is "0"
+	n, err := strconv.Atoi(chunk)
 	if err != nil {
-		Log.Debug("save::backend '%s'", err.Error())
+		SendErrorResult(res, NewError(err.Error(), 403))
+	}
+	ctx.Session["path"] = path
+
+	var uploader *chunkedUpload
+	if c := chunkedUploadCache.Get(ctx.Session); c == nil {
+		uploader = createChunkedUploader(ctx.Backend.Save, path)
+		chunkedUploadCache.Set(ctx.Session, uploader)
+	} else {
+		uploader = c.(*chunkedUpload)
+	}
+	if _, err := uploader.Next(req.Body); err != nil {
 		SendErrorResult(res, NewError(err.Error(), 403))
 		return
 	}
+	if n == 0 {
+		if err = uploader.Close(); err != nil {
+			SendErrorResult(res, NewError(err.Error(), 403))
+			return
+		}
+		chunkedUploadCache.Del(ctx.Session)
+		SendSuccessResult(res, nil)
+		return
+	}
 	SendSuccessResult(res, nil)
+}
+
+func createChunkedUploader(save func(path string, file io.Reader) error, path string) *chunkedUpload {
+	r, w := io.Pipe()
+	done := make(chan error, 1)
+	go func() {
+		done <- save(path, r)
+	}()
+	return &chunkedUpload{
+		fn:     save,
+		stream: w,
+		done:   done,
+	}
+}
+
+func initChunkedUploader() {
+	chunkedUploadCache = NewAppCache(60*24, 1)
+	chunkedUploadCache.OnEvict(func(key string, value interface{}) {
+		c := value.(*chunkedUpload)
+		if c == nil {
+			Log.Warning("ctrl::files::chunked::cleanup nil on close")
+			return
+		}
+		if err := c.Close(); err != nil {
+			Log.Warning("ctrl::files::chunked::cleanup action=close err=%s", err.Error())
+			return
+		}
+	})
+}
+
+type chunkedUpload struct {
+	fn     func(path string, file io.Reader) error
+	stream *io.PipeWriter
+	done   chan error
+	once   sync.Once
+}
+
+func (this *chunkedUpload) Next(body io.ReadCloser) (int64, error) {
+	n, err := io.Copy(this.stream, body)
+	body.Close()
+	return n, err
+}
+
+func (this *chunkedUpload) Close() error {
+	this.stream.Close()
+	err := <-this.done
+	this.once.Do(func() {
+		close(this.done)
+	})
+	return err
 }
 
 func FileMv(ctx *App, res http.ResponseWriter, req *http.Request) {
