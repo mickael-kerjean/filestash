@@ -108,5 +108,9 @@ func SaveConfig(v []byte) error {
 		configStr = val
 	}
 	file.Write(PrettyPrint([]byte(configStr)))
+	if err = file.Sync(); err != nil {
+		file.Close()
+		return err
+	}
 	return file.Close()
 }
