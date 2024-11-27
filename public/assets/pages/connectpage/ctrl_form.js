@@ -19,8 +19,8 @@ import backend$ from "./model_backend.js";
 import { setCurrentBackend, getCurrentBackend, getURLParams } from "./ctrl_form_state.js";
 
 const connections$ = config$.pipe(
-    rxjs.map(({ connections = [], auth = [] }) => connections.map((conn) => {
-        conn.middleware = auth.indexOf(conn.label) >= 0;
+    rxjs.map(({ connections, auth }) => (connections || []).map((conn) => {
+        conn.middleware = (auth || []).indexOf(conn.label) >= 0;
         return conn;
     })),
     rxjs.shareReplay(1),
