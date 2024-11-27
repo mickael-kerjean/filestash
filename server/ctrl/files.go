@@ -438,6 +438,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
+	res.Header().Set("Connection", "Close")
 
 	// There is 2 ways to save something:
 	// - case1: regular upload, we just insert the file in the pipe
