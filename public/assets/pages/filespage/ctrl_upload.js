@@ -330,7 +330,7 @@ function workerImplFile({ error, progress, speed }) {
                     progress: (p) => {
                         const chunksAlreadyDownloaded = i * chunkSize;
                         const currentChunkDownloaded = p / 100 * (
-                            i !== numberOfChunks - 1 ? chunkSize : _file.size % chunkSize
+                            i !== numberOfChunks - 1 ? chunkSize : (_file.size % chunkSize) || chunkSize
                         );
                         progress(Math.floor(100 * (chunksAlreadyDownloaded + currentChunkDownloaded) / _file.size));
                     },
