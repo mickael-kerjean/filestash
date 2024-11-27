@@ -307,7 +307,7 @@ function workerImplFile({ error, progress, speed }) {
          */
         async run({ file, path, virtual }) {
             const _file = await file();
-            const chunkSize = (CONFIG.upload_chunk_size || 0) *1024*1024;
+            const chunkSize = (window.CONFIG["upload_chunk_size"] || 0) *1024*1024;
             const numberOfChunks = Math.ceil(_file.size / chunkSize);
             if (chunkSize === 0 || numberOfChunks === 0 || numberOfChunks === 1) {
                 await this._execute({ file: _file, path, virtual, chunk: null, progress });
@@ -334,7 +334,8 @@ function workerImplFile({ error, progress, speed }) {
                         );
                         progress(Math.floor(100 * (chunksAlreadyDownloaded + currentChunkDownloaded) / _file.size));
                     },
-                    chunk, path,
+                    chunk,
+                    path,
                 });
                 this.prevProgress = [];
             }
@@ -347,8 +348,8 @@ function workerImplFile({ error, progress, speed }) {
                 xhr.open(
                     "POST",
                     forwardURLParams(
-                        "api/files/cat?path=" + encodeURIComponent(path)
-                            + (chunk === null ? "" : `&chunk=${chunk}`),
+                        "api/files/cat?path=" + encodeURIComponent(path) +
+                            (chunk === null ? "" : `&chunk=${chunk}`),
                         ["share"],
                     ),
                 );
