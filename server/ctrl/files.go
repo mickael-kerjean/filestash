@@ -441,8 +441,8 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	// There is 2 ways to save something:
 	// - case1: regular upload, we just insert the file in the pipe
-	chunk := req.URL.Query().Get("chunk")
-	if chunk == "" {
+	proto := req.URL.Query().Get("proto")
+	if proto == "" && req.Method == http.MethodPost {
 		err = ctx.Backend.Save(path, req.Body)
 		req.Body.Close()
 		if err != nil {
@@ -453,39 +453,83 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendSuccessResult(res, nil)
 		return
 	}
-	// - case2: chunked upload. In this scenario, the frontend send the file in chunks, the
-	//   only assumption being that upload is complete when the "chunk" param is "0"
-	n, err := strconv.Atoi(chunk)
-	if err != nil {
-		SendErrorResult(res, NewError(err.Error(), 403))
-	}
-	ctx.Session["path"] = path
-	res.Header().Set("Connection", "Close")
 
-	var uploader *chunkedUpload
-	if c := chunkedUploadCache.Get(ctx.Session); c == nil {
-		uploader = createChunkedUploader(ctx.Backend.Save, path)
+	// - case2: chunked upload which implements the TUS protocol:
+	//   https://www.ietf.org/archive/id/draft-tus-httpbis-resumable-uploads-protocol-00.html
+	h := res.Header()
+	ctx.Session["path"] = path
+	if proto == "tus" && req.Method == http.MethodPost {
+		if c := chunkedUploadCache.Get(ctx.Session); c != nil {
+			chunkedUploadCache.Del(ctx.Session)
+		}
+		size, err := strconv.ParseUint(req.Header.Get("Upload-Length"), 10, 0)
+		if err != nil {
+			SendErrorResult(res, ErrNotValid)
+			return
+		}
+		uploader := createChunkedUploader(ctx.Backend.Save, path, size)
 		chunkedUploadCache.Set(ctx.Session, uploader)
-	} else {
-		uploader = c.(*chunkedUpload)
-	}
-	if _, err := uploader.Next(req.Body); err != nil {
-		SendErrorResult(res, NewError(err.Error(), 403))
+		h.Set("Content-Length", "0")
+		h.Set("Location", req.URL.String())
+		res.WriteHeader(http.StatusCreated)
 		return
 	}
-	if n == 0 {
-		if err = uploader.Close(); err != nil {
+	if proto == "tus" && req.Method == http.MethodHead {
+		c := chunkedUploadCache.Get(ctx.Session)
+		if c == nil {
+			SendErrorResult(res, ErrNotFound)
+			return
+		}
+		offset, length := c.(*chunkedUpload).Meta()
+		h.Set("Upload-Offset", fmt.Sprintf("%d", offset))
+		h.Set("Upload-Length", fmt.Sprintf("%d", length))
+		res.WriteHeader(http.StatusOK)
+		return
+	}
+	if proto == "tus" && req.Method == http.MethodPatch {
+		requestOffset, err := strconv.ParseUint(req.Header.Get("Upload-Offset"), 10, 0)
+		if err != nil {
+			SendErrorResult(res, ErrNotValid)
+			return
+		}
+		c := chunkedUploadCache.Get(ctx.Session)
+		if c == nil {
+			SendErrorResult(res, ErrNotFound)
+			return
+		}
+		uploader := c.(*chunkedUpload)
+		initialOffset, totalSize := uploader.Meta()
+		if initialOffset != requestOffset {
+			SendErrorResult(res, ErrNotValid)
+			return
+		}
+		if err := uploader.Next(req.Body); err != nil {
 			SendErrorResult(res, NewError(err.Error(), 403))
 			return
 		}
-		chunkedUploadCache.Del(ctx.Session)
-		SendSuccessResult(res, nil)
+		newOffset, _ := uploader.Meta()
+		if newOffset > totalSize {
+			uploader.Close()
+			chunkedUploadCache.Del(ctx.Session)
+			Log.Warning("ctrl::files::tus error=assert_offset size=%d old_offset=%d new_offset=%d", totalSize, initialOffset, newOffset)
+			SendErrorResult(res, NewError("aborted - offset larger than total size", 403))
+			return
+		} else if newOffset == totalSize {
+			if err := uploader.Close(); err != nil {
+				SendErrorResult(res, ErrNotValid)
+				return
+			}
+			chunkedUploadCache.Del(ctx.Session)
+		}
+		h.Set("Connection", "Close")
+		h.Set("Upload-Offset", fmt.Sprintf("%d", newOffset))
+		res.WriteHeader(http.StatusNoContent)
 		return
 	}
-	SendSuccessResult(res, nil)
+	SendErrorResult(res, ErrNotImplemented)
 }
 
-func createChunkedUploader(save func(path string, file io.Reader) error, path string) *chunkedUpload {
+func createChunkedUploader(save func(path string, file io.Reader) error, path string, size uint64) *chunkedUpload {
 	r, w := io.Pipe()
 	done := make(chan error, 1)
 	go func() {
@@ -495,6 +539,8 @@ func createChunkedUploader(save func(path string, file io.Reader) error, path st
 		fn:     save,
 		stream: w,
 		done:   done,
+		offset: 0,
+		size:   size,
 	}
 }
 
@@ -516,14 +562,20 @@ func initChunkedUploader() {
 type chunkedUpload struct {
 	fn     func(path string, file io.Reader) error
 	stream *io.PipeWriter
+	offset uint64
+	size   uint64
 	done   chan error
 	once   sync.Once
+	mu     sync.Mutex
 }
 
-func (this *chunkedUpload) Next(body io.ReadCloser) (int64, error) {
+func (this *chunkedUpload) Next(body io.ReadCloser) error {
 	n, err := io.Copy(this.stream, body)
 	body.Close()
-	return n, err
+	this.mu.Lock()
+	this.offset += uint64(n)
+	this.mu.Unlock()
+	return err
 }
 
 func (this *chunkedUpload) Close() error {
@@ -533,6 +585,12 @@ func (this *chunkedUpload) Close() error {
 		close(this.done)
 	})
 	return err
+}
+
+func (this *chunkedUpload) Meta() (uint64, uint64) {
+	this.mu.Lock()
+	defer this.mu.Unlock()
+	return this.offset, this.size
 }
 
 func FileMv(ctx *App, res http.ResponseWriter, req *http.Request) {

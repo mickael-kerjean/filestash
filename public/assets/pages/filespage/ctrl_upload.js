@@ -1,4 +1,5 @@
 import { createElement, createFragment, createRender } from "../../lib/skeleton/index.js";
+import { toHref } from "../../lib/skeleton/router.js";
 import rxjs, { effect, onClick } from "../../lib/rx.js";
 import { forwardURLParams } from "../../lib/path.js";
 import { animate, slideYOut } from "../../lib/animate.js";
@@ -291,7 +292,6 @@ function workerImplFile({ error, progress, speed }) {
         constructor() {
             super();
             this.xhr = null;
-            this.prevProgress = [];
         }
 
         /**
@@ -303,58 +303,75 @@ function workerImplFile({ error, progress, speed }) {
 
         /**
          * @override
-         * TODO: retry logic on failed upload would be nice
          */
         async run({ file, path, virtual }) {
             const _file = await file();
             const chunkSize = (window.CONFIG["upload_chunk_size"] || 0) *1024*1024;
             const numberOfChunks = Math.ceil(_file.size / chunkSize);
+
+            // Case1: basic upload
             if (chunkSize === 0 || numberOfChunks === 0 || numberOfChunks === 1) {
-                await this._execute({ file: _file, path, virtual, chunk: null, progress });
+                try {
+                    await this._http(toHref(`/api/files/cat?path=${path}`), {
+                        method: "POST",
+                        body: _file,
+                        progress,
+                    });
+                    virtual.afterSuccess();
+                } catch (err) {
+                    error(err);
+                    virtual.afterError();
+                }
                 return;
             }
-            for (let i=0; i<numberOfChunks; i++) {
-                const offset = chunkSize * i;
-                const chunk = numberOfChunks - i - 1;
-                await this._execute({
-                    file: _file.slice(offset, offset+chunkSize),
-                    virtual: {
-                        before: () => {
-                            if (i === 0) virtual.before();
-                        },
-                        afterSuccess: () => {
-                            if (i === numberOfChunks - 1) virtual.afterSuccess();
-                        },
-                        afterError: () => virtual.afterError(),
-                    },
-                    progress: (p) => {
-                        const chunksAlreadyDownloaded = i * chunkSize;
-                        const currentChunkDownloaded = p / 100 * (
-                            i !== numberOfChunks - 1 ? chunkSize : (_file.size % chunkSize) || chunkSize
-                        );
-                        progress(Math.floor(100 * (chunksAlreadyDownloaded + currentChunkDownloaded) / _file.size));
-                    },
-                    chunk,
-                    path,
+
+            // Case2: chunked upload => TUS: https://www.ietf.org/archive/id/draft-tus-httpbis-resumable-uploads-protocol-00.html
+            try {
+                let resp = await this._http(toHref(`/api/files/cat?path=${path}&proto=tus`), {
+                    method: "POST",
+                    headers: { "Upload-Length": _file.size },
+                    progress: (n) => progress(n),
                 });
-                this.prevProgress = [];
+                const url = resp.headers.location;
+                if (!url.startsWith(toHref("/api/files/cat?"))) {
+                    throw new Error("Internal Error");
+                    return
+                }
+                for (let i=0; i<numberOfChunks; i++) {
+                    const offset = chunkSize * i;
+                    const chunk = numberOfChunks - i - 1;
+                    resp = await this._http(url, {
+                        method: "PATCH",
+                        headers: { "Upload-Offset": offset },
+                        body: _file.slice(offset, offset + chunkSize),
+                        progress: (p) => {
+                            const chunksAlreadyDownloaded = i * chunkSize;
+                            const currentChunkDownloaded = p / 100 * (
+                                i !== numberOfChunks - 1 ? chunkSize : (_file.size % chunkSize) || chunkSize
+                            );
+                            progress(Math.floor(100 * (chunksAlreadyDownloaded + currentChunkDownloaded) / _file.size));
+                        },
+                    });
+                }
+                virtual.afterSuccess();
+            } catch (err) {
+                error(err);
+                virtual.afterError();
+                if (err !== ABORT_ERROR) throw new Error(err);
             }
         }
 
-        _execute({ file, path, virtual, chunk, progress }) {
+        _http(url, { method, headers, body, progress }) {
             const xhr = new XMLHttpRequest();
+            this.prevProgress = [];
             this.xhr = xhr;
             return new Promise((resolve, reject) => {
-                xhr.open(
-                    "POST",
-                    forwardURLParams(
-                        "api/files/cat?path=" + encodeURIComponent(path) +
-                            (chunk === null ? "" : `&chunk=${chunk}`),
-                        ["share"],
-                    ),
-                );
-                xhr.withCredentials = true;
+                xhr.open(method, forwardURLParams(url, ["share"]));
                 xhr.setRequestHeader("X-Requested-With", "XmlHttpRequest");
+                xhr.withCredentials = true;
+                for (let key in headers) {
+                    xhr.setRequestHeader(key, headers[key]);
+                }
                 xhr.upload.onprogress = (e) => {
                     if (!e.lengthComputable) return;
                     const percent = Math.floor(100 * e.loaded / e.total);
@@ -379,28 +396,30 @@ function workerImplFile({ error, progress, speed }) {
                         this.prevProgress.shift();
                     }
                 };
-                xhr.upload.onabort = () => {
-                    reject(ABORT_ERROR);
-                    error(ABORT_ERROR);
-                    virtual.afterError();
-                };
+                xhr.upload.onabort = () => reject(ABORT_ERROR);
                 xhr.onload = () => {
-                    progress(100);
-                    if (xhr.status !== 200) {
-                        virtual.afterError();
+                    if ([200, 201, 204].indexOf(xhr.status) === -1) {
                         reject(new Error(xhr.statusText));
                         return;
                     }
-                    virtual.afterSuccess();
-                    resolve(null);
+                    progress(100);
+                    resolve({
+                        status: xhr.status,
+                        headers: xhr.getAllResponseHeaders()
+                            .split("\r\n")
+                            .reduce((acc, el) => {
+                                const tmp = el.split(": "); acc[tmp[0]] = tmp[1]
+                                return acc;
+                            }, {})
+                    });
                 };
-                xhr.onerror = function(e) {
+                xhr.onerror = (e) => {
                     reject(new AjaxError("failed", e, "FAILED"));
-                    virtual.afterError();
                 };
-                xhr.send(file);
+                xhr.send(body);
             });
         }
+
     }();
 }
 
