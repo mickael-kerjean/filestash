@@ -186,7 +186,7 @@ function componentUploadQueue(render, { workers$ }) {
             $speed.textContent = formatSpeed(speed);
         };
     }(new Array(MAX_WORKERS).fill(0)));
-    const updateDOMGlobalTitle = ($page, text) => $page.firstElementChild.nextElementSibling.childNodes[0].textContent = text;
+    const updateDOMGlobalTitle = ($page, text) => $page.firstElementChild.nextElementSibling.firstChild.textContent = text;
     const updateDOMWithStatus = ($task, { status, exec, nworker }) => {
         const executeMutation = (status) => {
             switch (status) {

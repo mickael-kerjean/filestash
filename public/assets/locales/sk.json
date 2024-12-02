@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "nesprávny účet",
     "INVALID_PASSWORD": "nesprávne heslo",
     "LAYOUT": "rozloženie",
+    "LOADING": "načítava sa",
     "LOCATION": "umiestnenie",
     "MISSING_DEPENDENCY": "chýba závislosť",
     "MORE_DETAILS": "viac podrobností",

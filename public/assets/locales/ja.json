@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "利用できないアカウント",
     "INVALID_PASSWORD": "利用できないパスワード",
     "LAYOUT": "レイアウト",
+    "LOADING": "ローディング",
     "LOCATION": "場所",
     "MISSING_DEPENDENCY": "依存関係が不足しています",
     "MORE_DETAILS": "詳細",

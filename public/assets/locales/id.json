@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "akun tidak berlaku",
     "INVALID_PASSWORD": "kata sandi salah",
     "LAYOUT": "tata letak",
+    "LOADING": "memuat",
     "LOCATION": "lokasi",
     "MISSING_DEPENDENCY": "hilang ketergantungan",
     "MORE_DETAILS": "lebih detail",

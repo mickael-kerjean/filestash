@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "无效账户",
     "INVALID_PASSWORD": "无效密码",
     "LAYOUT": "布局",
+    "LOADING": "加载中",
     "LOCATION": "位置",
     "MISSING_DEPENDENCY": "缺少依赖",
     "MORE_DETAILS": "更多详情",

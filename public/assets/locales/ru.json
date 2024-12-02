@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "неверный аккаунт",
     "INVALID_PASSWORD": "Неверный пароль",
     "LAYOUT": "макет",
+    "LOADING": "загрузка",
     "LOCATION": "расположение",
     "MISSING_DEPENDENCY": "отсутствует зависимость",
     "MORE_DETAILS": "подробности",

@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "잘못된 계정",
     "INVALID_PASSWORD": "유효하지 않은 비밀번호",
     "LAYOUT": "공들여 나열한 것",
+    "LOADING": "로딩 중",
     "LOCATION": "위치",
     "MISSING_DEPENDENCY": "의존성 누락",
     "MORE_DETAILS": "자세한 내용",

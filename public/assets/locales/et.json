@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "kehtetu konto",
     "INVALID_PASSWORD": "vale parool",
     "LAYOUT": "paigutus",
+    "LOADING": "laadimine",
     "LOCATION": "asukoht",
     "MISSING_DEPENDENCY": "puudub sõltuvus",
     "MORE_DETAILS": "rohkem üksikasju",

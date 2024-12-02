@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "ogiltigt konto",
     "INVALID_PASSWORD": "felaktigt lösenord",
     "LAYOUT": "layout",
+    "LOADING": "laddar",
     "LOCATION": "lokalisering",
     "MISSING_DEPENDENCY": "saknas beroende",
     "MORE_DETAILS": "mer information",

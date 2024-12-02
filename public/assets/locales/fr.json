@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "compte invalide",
     "INVALID_PASSWORD": "mot de passe incorrect",
     "LAYOUT": "disposition",
+    "LOADING": "chargement",
     "LOCATION": "position",
     "MISSING_DEPENDENCY": "dépendance manquante",
     "MORE_DETAILS": "plus de détails",

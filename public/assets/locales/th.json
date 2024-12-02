@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "บัญชีไม่ถูกต้อง",
     "INVALID_PASSWORD": "รหัสผ่านไม่ถูกต้อง",
     "LAYOUT": "รูปแบบ",
+    "LOADING": "กำลังโหลด",
     "LOCATION": "ที่ตั้ง",
     "MISSING_DEPENDENCY": "ขาดการพึ่งพา",
     "MORE_DETAILS": "รายละเอียดเพิ่มเติม",

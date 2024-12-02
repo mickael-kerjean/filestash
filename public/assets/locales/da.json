@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "ugyldig konto",
     "INVALID_PASSWORD": "forkert kodeord",
     "LAYOUT": "",
+    "LOADING": "indlæser",
     "LOCATION": "Beliggenhed",
     "MISSING_DEPENDENCY": "manglende afhængighed",
     "MORE_DETAILS": "",

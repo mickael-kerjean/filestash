@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "virheellinen tili",
     "INVALID_PASSWORD": "väärä salasana",
     "LAYOUT": "asettelu",
+    "LOADING": "ladataan",
     "LOCATION": "sijainti",
     "MISSING_DEPENDENCY": "puuttuva riippuvuus",
     "MORE_DETAILS": "lisätietoja",

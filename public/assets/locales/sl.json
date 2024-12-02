@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "neveljaven račun",
     "INVALID_PASSWORD": "Neveljavno geslo",
     "LAYOUT": "postavitev",
+    "LOADING": "nalaganje",
     "LOCATION": "lokacijo",
     "MISSING_DEPENDENCY": "manjka odvisnost",
     "MORE_DETAILS": "več podrobnosti",

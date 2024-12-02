@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "μη έγκυρος λογαριασμός",
     "INVALID_PASSWORD": "Λανθασμένος κωδικός",
     "LAYOUT": "διάταξη",
+    "LOADING": "φόρτωση",
     "LOCATION": "τοποθεσία",
     "MISSING_DEPENDENCY": "λείπει εξάρτηση",
     "MORE_DETAILS": "λεπτομέρειες",

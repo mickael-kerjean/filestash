@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "ógildur reikningur",
     "INVALID_PASSWORD": "ógilt lykilorð",
     "LAYOUT": "útlit",
+    "LOADING": "hleður",
     "LOCATION": "staðsetningu",
     "MISSING_DEPENDENCY": "vantar ósjálfstæði",
     "MORE_DETAILS": "meiri upplýsingar",

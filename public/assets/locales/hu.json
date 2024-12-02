@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "Érvénytelen fiók",
     "INVALID_PASSWORD": "Érvénytelen jelszó",
     "LAYOUT": "elrendezés",
+    "LOADING": "betöltés",
     "LOCATION": "elhelyezkedés",
     "MISSING_DEPENDENCY": "hiányzik a függőség",
     "MORE_DETAILS": "Részletek",

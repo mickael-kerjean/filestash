@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "хүчингүй данс",
     "INVALID_PASSWORD": "Нууц үг буруу байна",
     "LAYOUT": "төлөвлөлт",
+    "LOADING": "ачаалж байна",
     "LOCATION": "байршил",
     "MISSING_DEPENDENCY": "хамаарал алдагдсан",
     "MORE_DETAILS": "дэлгэрэнгүй мэдээлэл",

@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "compte no vàlid",
     "INVALID_PASSWORD": "contrasenya invàlida",
     "LAYOUT": "disseny",
+    "LOADING": "carregant",
     "LOCATION": "ubicació",
     "MISSING_DEPENDENCY": "falta dependència",
     "MORE_DETAILS": "més detalls",

@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "無效帳戶",
     "INVALID_PASSWORD": "無效的密碼",
     "LAYOUT": "佈局",
+    "LOADING": "加載中",
     "LOCATION": "位置",
     "MISSING_DEPENDENCY": "缺少相依性",
     "MORE_DETAILS": "更多細節",

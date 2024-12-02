@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "Неважећи рачун",
     "INVALID_PASSWORD": "неважећа лозинка",
     "LAYOUT": "распоред",
+    "LOADING": "учитавање",
     "LOCATION": "локацију",
     "MISSING_DEPENDENCY": "недостаје зависност",
     "MORE_DETAILS": "више детаља",

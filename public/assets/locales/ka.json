@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "არასწორი ანგარიში",
     "INVALID_PASSWORD": "არასწორი პაროლი",
     "LAYOUT": "განლაგება",
+    "LOADING": "ჩატვირთვა",
     "LOCATION": "ადგილმდებარეობა",
     "MISSING_DEPENDENCY": "დაკარგული დამოკიდებულება",
     "MORE_DETAILS": "მეტი დეტალი",

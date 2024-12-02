@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "ugyldig konto",
     "INVALID_PASSWORD": "ugyldig passord",
     "LAYOUT": "oppsett",
+    "LOADING": "laster",
     "LOCATION": "plassering",
     "MISSING_DEPENDENCY": "mangler avhengighet",
     "MORE_DETAILS": "mer informasjon",

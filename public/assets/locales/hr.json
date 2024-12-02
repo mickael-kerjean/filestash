@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "nevažeći račun",
     "INVALID_PASSWORD": "Netočna zaporka",
     "LAYOUT": "izgled",
+    "LOADING": "učitavanje",
     "LOCATION": "mjesto",
     "MISSING_DEPENDENCY": "nedostaje ovisnost",
     "MORE_DETAILS": "više detalja",

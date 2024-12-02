@@ -55,6 +55,7 @@
     "INVALID_ACCOUNT": "cuenta no válida",
     "INVALID_PASSWORD": "contraseña inválida",
     "LAYOUT": "diseño",
+    "LOADING": "cargando",
     "LOCATION": "ubicación",
     "MISSING_DEPENDENCY": "falta dependencia",
     "MORE_DETAILS": "más detalles",
