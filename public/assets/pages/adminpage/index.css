@@ -98,7 +98,7 @@
 }
 .component_page_admin .page_container a {
     color: var(--dark);
-    border-bottom: 1px dashed var(--dark);
+    border-bottom: 1px dashed rgba(0,0,0,0.1);
 }
 .component_page_admin .page_container pre {
     font-family: 'Source Code Pro', monospace;

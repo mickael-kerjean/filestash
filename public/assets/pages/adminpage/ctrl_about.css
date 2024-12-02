@@ -2,10 +2,24 @@
   padding-top: 50px;
   overflow-x: auto;
 }
-.component_page_about table td {
-    min-width: 100px;
-    padding: 10px 0;
-}
 .component_page_about .small {
     font-size: 0.9rem;
+    padding: 0 5px;
+}
+.component_page_about table {
+    border-spacing: 0px 20px;
+}
+.component_page_about td {
+    vertical-align: top;
+}
+.component_page_about td br {
+    content: "";
+    margin: 15px;
+    display: block;
+}
+.component_page_about td:first-of-type {
+    font-weight: bold;
+}
+.component_page_about td:first-of-type:after {
+    content: ": ";
 }
