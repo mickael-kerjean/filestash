@@ -252,8 +252,7 @@ export function rm(...paths) {
                     name: arr[i+1],
                     fn: (file) => {
                         if (file.name === arr[i+1]) {
-                            delete file.loading;
-                            delete file.last;
+                            file = { ...file, loading: false, last: false };
                         }
                         return file;
                     },
@@ -324,7 +323,9 @@ export function mv(fromPath, toPath) {
             stateAdd(mutationFiles$, fromBasepath, {
                 name: fromName,
                 fn: (file) => {
-                    if (file.name === toName) delete file.loading;
+                    if (file.name === toName) {
+                        file = { ...file, loading: false };
+                    }
                     return file;
                 },
             });
@@ -386,29 +387,43 @@ export function ls(path) {
     return rxjs.pipe(
         // case1: file mutation = update a file state, typically to add a loading state to an
         //                        file or remove it entirely
-        rxjs.switchMap(({ files, ...res }) => mutationFiles$.pipe(rxjs.mergeMap((fns) => {
-            const shouldContinue = !!(fns[path] && fns[path].length > 0);
-            if (!shouldContinue) return rxjs.of({ ...res, files });
-            for (let i=files.length-1; i>=0; i--) {
-                for (let j=0; j<fns[path].length; j++) {
-                    files[i] = fns[path][j].fn(files[i]);
-                    if (!files[i]) {
-                        files.splice(i, 1);
-                        break;
+        rxjs.switchMap(({ files, ...res }) => mutationFiles$.pipe(
+            rxjs.map((all) => all[path]),
+            rxjs.mergeMap((fns) => {
+                const shouldContinue = !!(fns && fns.length > 0);
+                if (!shouldContinue) return rxjs.of({ ...res, files });
+                for (let i=files.length-1; i>=0; i--) {
+                    for (let j=0; j<fns.length; j++) {
+                        files[i] = fns[j].fn(files[i]);
+                        if (!files[i]) {
+                            files.splice(i, 1);
+                            break;
+                        }
                     }
                 }
-            }
-            return rxjs.of({ ...res, files });
-        }))),
+                return rxjs.of({ ...res, files });
+            }),
+        )),
         // case2: virtual files = additional files we want to see displayed in the UI
-        rxjs.switchMap(({ files, ...res }) => virtualFiles$.pipe(rxjs.mergeMap((virtualFiles) => {
-            const shouldContinue = !!(virtualFiles[path] && virtualFiles[path].length > 0);
-            if (!shouldContinue) return rxjs.of({ ...res, files });
-            return rxjs.of({
-                ...res,
-                files: files.concat(virtualFiles[path]),
-            });
-        }))),
+        rxjs.switchMap(({ files, ...res }) => virtualFiles$.pipe(
+            rxjs.map((all) => all[path] || []),
+            rxjs.distinctUntilChanged((prev, curr) => { // we only want to get notified of changes within "path"
+                if (prev.length !== curr.length) return false;
+                for (let i=0; i<prev.length; i++) {
+                    if (prev[i].name !== curr[i].name) return false;
+                    else if (prev[i].type !== curr[i].type) return false;
+                    else if (prev[i].loading !== curr[i].loading) return false;
+                }
+                return true;
+            }),
+            rxjs.mergeMap((virtualFiles) => {
+                if (virtualFiles.length === 0) return rxjs.of({ ...res, files });
+                return rxjs.of({
+                    ...res,
+                    files: files.concat(virtualFiles),
+                });
+            }),
+        )),
     );
 }
 
@@ -423,7 +438,9 @@ function stateAdd(behavior, path, obj) {
             break;
         }
     }
-    if (!alreadyKnown) arr.push(obj);
+    if (!alreadyKnown) {
+        arr = arr.concat([obj]);
+    }
     behavior.next({
         ...behavior.value,
         [path]: arr,
@@ -452,7 +469,9 @@ function removeLoading(behavior, path, filename) {
     virtualFiles$.next({
         ...virtualFiles$.value,
         [path]: arr.map((file) => {
-            if (file.name === filename) delete file.loading;
+            if (file.name === filename) {
+                return { ...file, loading: false };
+            }
             return file;
         }),
     });
