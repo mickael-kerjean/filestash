@@ -66,6 +66,9 @@
     overflow-x: hidden;
     font-size: 0.85em;
 }
+.component_upload .stats_content:empty {
+    display: none;
+}
 .component_upload .stats_content .error_color {
     color: var(--error);
 }

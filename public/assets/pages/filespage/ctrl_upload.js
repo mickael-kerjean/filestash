@@ -74,7 +74,7 @@ function componentFilezone(render, { workers$ }) {
         if (!isNativeFileUpload(e)) return;
         $target.classList.remove("dropzone");
         e.preventDefault();
-        const loadID = setTimeout(() => render(createElement("<div>LOADING</div>")), 2000);
+        workers$.next({ loading: true });
         if (e.dataTransfer.items instanceof window.DataTransferItemList) {
             workers$.next(await processItems(e.dataTransfer.items));
         } else if (e.dataTransfer.files instanceof window.FileList) {
@@ -82,8 +82,6 @@ function componentFilezone(render, { workers$ }) {
         } else {
             assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js");
         }
-        clearTimeout(loadID);
-        render(createFragment(""));
     };
     $target.ondragleave = (e) => {
         if (!isNativeFileUpload(e)) return;
@@ -145,7 +143,12 @@ function componentUploadQueue(render, { workers$ }) {
     })).subscribe();
 
     // feature2: setup the task queue in the dom
-    workers$.subscribe(({ tasks }) => {
+    workers$.subscribe(({ tasks, loading = false, size }) => {
+        if (loading) {
+            $page.classList.remove("hidden");
+            updateDOMGlobalTitle($page, t("Loading")+ "...");
+            return;
+        }
         if (tasks.length === 0) return;
         updateTotal.addToTotal(tasks.length);
         const $fragment = document.createDocumentFragment();
@@ -158,8 +161,8 @@ function componentUploadQueue(render, { workers$ }) {
             $task.firstElementChild.nextElementSibling.classList.add("file_state_todo"); // qs($todo, ".file_state")
             $task.firstElementChild.nextElementSibling.textContent = t("Waiting");
         }
-        $page.classList.remove("hidden");
         $content.appendChild($fragment);
+        $content.classList.remove("hidden");
     });
 
     // feature3: process tasks
@@ -286,7 +289,8 @@ function componentUploadQueue(render, { workers$ }) {
         return null;
     };
     const noFailureAllowed = (fn) => fn().catch(() => noFailureAllowed(fn));
-    workers$.subscribe(async({ tasks: newTasks }) => {
+    workers$.subscribe(async({ tasks: newTasks, loading = false }) => {
+        if (loading) return;
         tasks = tasks.concat(newTasks); // add new tasks to the pool
         while (true) {
             const nworker = reservations.indexOf(false);
@@ -323,13 +327,12 @@ function workerImplFile({ progress, speed }) {
          */
         async run({ file, path, virtual }) {
             const _file = await file();
-            const executeJob = (firstRun) => this.prepareJob({ file: _file, path, virtual, firstRun });
-            this.retry = () => executeJob(false);
-            return executeJob(true);
+            const executeJob = () => this.prepareJob({ file: _file, path, virtual });
+            this.retry = () => executeJob();
+            return executeJob();
         }
 
-        async prepareJob({ file, path, virtual, firstRun }) {
-            if (firstRun === false) virtual.before();
+        async prepareJob({ file, path, virtual }) {
             const chunkSize = (window.CONFIG["upload_chunk_size"] || 0) *1024*1024;
             const numberOfChunks = Math.ceil(file.size / chunkSize);
 
@@ -409,13 +412,12 @@ function workerImplDirectory({ progress }) {
          * @override
          */
         async run({ virtual, path }) {
-            const executeJob = (firstRun) => this.prepareJob({ virtual, path, firstRun });
-            this.retry = () => executeJob(false);
-            return executeJob(true);
+            const executeJob = () => this.prepareJob({ virtual, path });
+            this.retry = () => executeJob();
+            return executeJob();
         }
 
-        async prepareJob({ virtual, path, firstRun }) {
-            if (firstRun === false) virtual.before();
+        async prepareJob({ virtual, path }) {
             let percent = 0;
             const id = setInterval(() => {
                 percent += 10;
@@ -508,7 +510,7 @@ function executeHttp(url, { method, headers, body, progress, speed }) {
 
 async function processFiles(filelist) {
     const tasks = [];
-    // let size = 0; // TODO
+    let size = 0;
     const detectFiletype = (file) => {
         // the 4096 is an heuristic observed and taken from:
         // https://stackoverflow.com/questions/25016442
@@ -534,7 +536,6 @@ async function processFiles(filelist) {
         let task = null;
         switch (type) {
         case "file":
-            // size += currentFile.size;
             task = {
                 type: "file",
                 file: () => new Promise((resolve) => resolve(currentFile)),
@@ -545,8 +546,8 @@ async function processFiles(filelist) {
                 done: false,
                 ready: () => true,
                 entry: currentFile,
-
             };
+            size += currentFile.size;
             break;
         case "directory":
             path += "/";
@@ -559,15 +560,15 @@ async function processFiles(filelist) {
                 done: false,
                 ready: () => true,
             };
+            size += 4096;
             break;
         default:
             assert.fail(`NOT_SUPPORTED type="${type}"`);
         }
         task = assert.truthy(task);
-        task.virtual.before();
         tasks.push(task);
     }
-    return { tasks, size: 0 };
+    return { tasks, size };
 }
 
 async function processItems(itemList) {
@@ -609,9 +610,12 @@ async function processItems(itemList) {
                     done: false,
                     ready: () => false,
                 };
-                queue = queue.concat(await new Promise((resolve) => {
-                    entry.createReader().readEntries(resolve);
-                }));
+                const reader = entry.createReader();
+                let q = [];
+                do {
+                    q = await new Promise((resolve) => reader.readEntries(resolve));
+                    queue = queue.concat(q);
+                } while (q.length > 0);
             } else {
                 assert.fail("NOT_IMPLEMENTED - unknown entry type in ctrl_upload.js");
             }
@@ -642,7 +646,7 @@ function formatPercent(number) {
     return `${number}%`;
 }
 
-function formatSpeed(bytes, si = true) {
+function formatSize(bytes, si = true) {
     const thresh = si ? 1000 : 1024;
     if (Math.abs(bytes) < thresh) {
         return bytes.toFixed(1) + "B/s";
@@ -655,5 +659,8 @@ function formatSpeed(bytes, si = true) {
         bytes /= thresh;
         ++u;
     } while (Math.abs(bytes) >= thresh && u < units.length - 1);
-    return bytes.toFixed(1) + units[u] + "/s";
+    return bytes.toFixed(1) + units[u];
+}
+function formatSpeed(bytes, si = true) {
+    return formatSize(bytes, si)+ "/s";
 }
