@@ -2,6 +2,7 @@ package plg_video_thumbnail
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -59,7 +60,7 @@ func (this *ffmpegThumbnail) Generate(reader io.ReadCloser, ctx *App, res *http.
 		errBuff bytes.Buffer
 		fullURL = strings.Replace(
 			fmt.Sprintf("http://127.0.0.1:%d%s?%s", Config.Get("general.port").Int(), req.URL.Path, req.URL.RawQuery),
-			"&thumbnail=true", "", 1,
+			"&thumbnail=true", "&origin=plg_video_thumbnail", 1,
 		)
 		cacheName = "thumb_" + GenerateID(ctx.Session) + "_" + QuickHash(req.URL.Query().Get("path"), 10) + ".jpeg"
 		cachePath = GetAbsolutePath(VideoCachePath, cacheName)
@@ -73,17 +74,17 @@ func (this *ffmpegThumbnail) Generate(reader io.ReadCloser, ctx *App, res *http.
 	}
 
 	cmd := exec.CommandContext(req.Context(), "ffmpeg", []string{
-		"-headers", "cookie: " + req.Header.Get("Cookie"),
+		"-hide_banner", "-headers", "cookie: " + req.Header.Get("Cookie") + "\r\n",
 		"-skip_frame", "nokey",
 		"-i", fullURL, "-y",
 		"-an", "-sn",
-		"-vf", "thumbnail, scale=320:320: force_original_aspect_ratio=decrease", "-vsync", "passthrough", "-frames:v", "1",
+		"-vf", "thumbnail, scale=320:320: force_original_aspect_ratio=decrease", "-fps_mode", "passthrough", "-frames:v", "1",
 		"-c:v", "mjpeg", cachePath,
 	}...)
 	cmd.Stderr = &errBuff
 	if err := cmd.Run(); err != nil {
 		if req.Context().Err() == nil {
-			Log.Error("plg_video_thumbnail::generate::run err=%s", errBuff.String())
+			Log.Debug("plg_video_thumbnail::generate::run path=%s err=%s", req.URL.Query().Get("path"), base64.StdEncoding.EncodeToString(errBuff.Bytes()))
 			return nil, err
 		}
 		return nil, err

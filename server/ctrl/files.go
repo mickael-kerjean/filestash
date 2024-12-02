@@ -286,6 +286,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 				SendErrorResult(res, err)
 				return
 			}
+			file_cache.Set(ctx.Session, tmpPath)
 			if _, err = io.Copy(f, file); err != nil {
 				f.Close()
 				file.Close()
@@ -293,14 +294,20 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 				SendErrorResult(res, err)
 				return
 			}
-			f.Close()
-			file.Close()
-			if f, err = os.OpenFile(tmpPath, os.O_RDONLY, os.ModePerm); err != nil {
+			if err = f.Sync(); err != nil {
+				f.Close()
+				file.Close()
 				Log.Debug("cat::range2 '%s'", err.Error())
 				SendErrorResult(res, err)
 				return
 			}
-			file_cache.Set(ctx.Session, tmpPath)
+			f.Close()
+			file.Close()
+			if f, err = os.OpenFile(tmpPath, os.O_RDONLY, os.ModePerm); err != nil {
+				Log.Debug("cat::range3 '%s'", err.Error())
+				SendErrorResult(res, err)
+				return
+			}
 			if fi, err := f.Stat(); err == nil {
 				contentLength = fi.Size()
 			}
