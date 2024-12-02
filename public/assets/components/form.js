@@ -68,7 +68,7 @@ export function $renderInput(options = {}) {
             $node.setAttribute("spellcheck", "off");
         });
         if (required) attrs.push(($node) => $node.setAttribute("required", ""));
-        if (readonly) attrs.push(($node) => $node.setAttribute("readonly", ""));
+        if (readonly) attrs.push(($node) => $node.setAttribute("disabled", ""));
 
         switch (type) {
         case "text": {

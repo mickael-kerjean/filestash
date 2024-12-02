@@ -19,10 +19,8 @@
     border-color: var(--emphasis-primary)!important;
 }
 
-input.component_input[readonly], textarea.component_textarea[readonly] {
-    border-bottom-style: dashed;
+input.component_input[disabled], textarea.component_textarea[disabled] {
     cursor: pointer;
-    font-style: italic;
     opacity: 0.8;
 }
 

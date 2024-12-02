@@ -11,7 +11,7 @@ export function setPermissions(path, value = {}) {
 }
 
 export function calculatePermission(path, action) {
-    const toBool = (n) => n === undefined;
+    const toBool = (n) => n === undefined ? true : n;
     if (!perms$.value[path]) return false;
     switch (action) {
     case "new-file": return toBool(perms$.value[path]["can_create_file"]);

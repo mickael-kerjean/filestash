@@ -61,3 +61,12 @@
 .component_formviewer > .formviewer_container .box .formbuilder label.no-select > div div.description a {
     border-bottom: 1px dashed var(--color);
 }
+
+.component_formviewer .formbuilder .component_input[disabled],
+.component_formviewer .formbuilder .component_textarea[disabled],
+.component_formviewer .formbuilder .component_select[disabled] {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
+    padding-left: 7px;
+    border-color: rgba(0, 0, 0, 0.02);
+}

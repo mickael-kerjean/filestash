@@ -5,6 +5,7 @@ import { qs, qsa } from "../../lib/dom.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
+import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
 import { transition } from "./common.js";
@@ -15,7 +16,7 @@ import "./component_menubar.js";
 import "../../components/icon.js";
 import "../../components/fab.js";
 
-export default function(render) {
+export default function(render, { acl$ }) {
     const $page = createElement(`
         <div class="component_formviewer">
             <component-menubar></component-menubar>
@@ -36,8 +37,15 @@ export default function(render) {
     const file$ = new rxjs.ReplaySubject(1);
 
     // feature1: setup the dom
+    const removeLoader = createLoader($page);
     effect(cat().pipe(
         rxjs.map((content) => JSON.parse(content)),
+        rxjs.mergeMap((formSpec) => acl$.pipe(rxjs.map((acl) => {
+            if (acl.indexOf("POST") === -1) {
+                return readOnlyForm(formSpec);
+            }
+            return formSpec;
+        }))),
         rxjs.mergeMap((formSpec) => rxjs.from(createForm(formSpec, formTmpl({
             renderLeaf: ({ label, format, description, required }) => createElement(`
                 <label class="no-select">
@@ -55,6 +63,7 @@ export default function(render) {
                 </label>
             `),
         }))).pipe(
+            removeLoader,
             applyMutation(qs($page, "form"), "replaceChildren"),
             rxjs.tap(() => {
                 $container.classList.remove("hidden");
@@ -133,3 +142,14 @@ const formObjToJSON = (o, level = 0) => {
     });
     return obj;
 };
+
+function readOnlyForm(formSpec) {
+    if ("type" in formSpec) {
+        formSpec["readonly"] = true;
+        return formSpec;
+    }
+    for (let key in formSpec) {
+        formSpec[key] = readOnlyForm(formSpec[key]);
+    }
+    return formSpec;
+}

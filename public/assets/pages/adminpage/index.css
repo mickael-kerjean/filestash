@@ -139,18 +139,12 @@
     border-radius: 3px;
     padding-left: 5px;
 }
-.component_page_admin .formbuilder .component_input[readonly],
-.component_page_admin .formbuilder .component_textarea[readonly],
-.component_page_admin .formbuilder .component_select[readonly] {
-    background: var(--dark);
-    color: var(--light);
-}
-.component_page_admin .formbuilder .component_input:not([readonly]):hover,
-.component_page_admin .formbuilder .component_input:not([readonly]):focus,
-.component_page_admin .formbuilder .component_textarea:not([readonly]):hover,
-.component_page_admin .formbuilder .component_textarea:not([readonly]):focus,
-.component_page_admin .formbuilder .component_select:not([readonly]):hover,
-.component_page_admin .formbuilder .component_select:not([readonly]):focus {
+.component_page_admin .formbuilder .component_input:not([disabled]):hover,
+.component_page_admin .formbuilder .component_input:not([disabled]):focus,
+.component_page_admin .formbuilder .component_textarea:not([disabled]):hover,
+.component_page_admin .formbuilder .component_textarea:not([disabled]):focus,
+.component_page_admin .formbuilder .component_select:not([disabled]):hover,
+.component_page_admin .formbuilder .component_select:not([disabled]):focus {
     background: rgba(0, 0, 0, 0.07);
 }
 .component_page_admin form .formbuilder_password:focus-within img.component_icon,
