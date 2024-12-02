@@ -250,7 +250,9 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 			}
 			file, err = plgHandler.Generate(file, ctx, &res, req)
 			if err != nil {
-				Log.Debug("cat::thumbnailer '%s'", err.Error())
+				if req.Context().Err() == nil {
+					Log.Debug("cat::thumbnailer '%s'", err.Error())
+				}
 				SendErrorResult(res, err)
 				return
 			}

@@ -32,14 +32,19 @@ var (
 )
 
 func init() {
-	ffmpegIsInstalled := false
-	ffprobeIsInstalled := false
-	if _, err := exec.LookPath("ffmpeg"); err == nil {
-		ffmpegIsInstalled = true
+	if _, err := exec.LookPath("ffmpeg"); err != nil {
+		Hooks.Register.Onload(func() {
+			Log.Warning("plg_video_thumbnail::init error=ffmpeg_not_installed")
+		})
+		return
 	}
-	if _, err := exec.LookPath("ffprobe"); err == nil {
-		ffprobeIsInstalled = true
+	if _, err := exec.LookPath("ffprobe"); err != nil {
+		Hooks.Register.Onload(func() {
+			Log.Warning("plg_video_thumbnail::init error=ffprobe_not_installed")
+		})
+		return
 	}
+
 	plugin_enable = func() bool {
 		return Config.Get("features.video.enable_transcoder").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -50,9 +55,6 @@ func init() {
 			f.Target = []string{"transcoding_blacklist_format"}
 			f.Description = "Enable/Disable on demand video transcoding. The transcoder"
 			f.Default = true
-			if ffmpegIsInstalled == false || ffprobeIsInstalled == false {
-				f.Default = false
-			}
 			return f
 		}).Bool()
 	}
@@ -80,13 +82,6 @@ func init() {
 		cachePath := GetAbsolutePath(VideoCachePath)
 		os.RemoveAll(cachePath)
 		os.MkdirAll(cachePath, os.ModePerm)
-		if ffmpegIsInstalled == false {
-			Log.Warning("[plugin video transcoder] ffmpeg needs to be installed")
-			return
-		} else if ffprobeIsInstalled == false {
-			Log.Warning("[plugin video transcoder] ffprobe needs to be installed")
-			return
-		}
 	})
 
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
