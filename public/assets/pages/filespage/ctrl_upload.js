@@ -57,7 +57,10 @@ function componentUploadFAB(render, { workers$ }) {
         </div>
     `);
     effect(rxjs.fromEvent(qs($page, `input[type="file"]`), "change").pipe(
-        rxjs.tap(async(e) => workers$.next(await processFiles(e.target.files))),
+        rxjs.tap(async(e) => {
+            workers$.next({ loading: true });
+            workers$.next(await processFiles(e.target.files))
+        }),
     ));
     render($page);
 }
@@ -555,7 +558,6 @@ async function processFiles(filelist) {
                 virtual: save(path, currentFile.size),
                 done: false,
                 ready: () => true,
-                entry: currentFile,
             };
             size += currentFile.size;
             break;
