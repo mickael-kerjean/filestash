@@ -98,7 +98,13 @@
 }
 .component_page_admin .page_container a {
     color: var(--dark);
-    border-bottom: 1px dashed rgba(0,0,0,0.1);
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: rgba(0, 0, 0, 0.3);
+}
+.component_page_admin .page_container a:hover {
+    opacity: 0.8;
+    transition: opacity 0.2s;
 }
 .component_page_admin .page_container pre {
     font-family: 'Source Code Pro', monospace;
