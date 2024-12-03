@@ -4,7 +4,15 @@
 }
 .component_page_about .small {
     font-size: 0.9rem;
-    padding: 0 5px;
+    padding: 0px 2px;
+}
+.component_page_about a {
+    padding: 0 2px;
+}
+.component_page_about a:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 .component_page_about table {
     border-spacing: 0px 20px;

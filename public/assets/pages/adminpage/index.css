@@ -105,6 +105,7 @@
 .component_page_admin .page_container a:hover {
     opacity: 0.8;
     transition: opacity 0.2s;
+    text-shadow: 0 0 #000000aa;
 }
 .component_page_admin .page_container pre {
     font-family: 'Source Code Pro', monospace;
