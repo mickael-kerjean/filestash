@@ -335,13 +335,17 @@ function workerImplFile({ progress, speed }) {
         async prepareJob({ file, path, virtual }) {
             const chunkSize = (window.CONFIG["upload_chunk_size"] || 0) *1024*1024;
             const numberOfChunks = Math.ceil(file.size / chunkSize);
+            const headersNoCache = {
+                "Cache-Control": "no-store",
+                "Pragma": "no-cache",
+            };
 
             // Case1: basic upload
             if (chunkSize === 0 || numberOfChunks === 0 || numberOfChunks === 1) {
                 try {
                     await executeHttp.call(this, toHref(`/api/files/cat?path=${encodeURIComponent(path)}`), {
                         method: "POST",
-                        headers: {},
+                        headers: { ...headersNoCache },
                         body: file,
                         progress,
                         speed,
@@ -359,7 +363,10 @@ function workerImplFile({ progress, speed }) {
             try {
                 let resp = await executeHttp.call(this, toHref(`/api/files/cat?path=${encodeURIComponent(path)}&proto=tus`), {
                     method: "POST",
-                    headers: { "Upload-Length": file.size },
+                    headers: {
+                        "Upload-Length": file.size,
+                        ...headersNoCache,
+                    },
                     body: null,
                     progress: (n) => progress(n),
                     speed,
@@ -372,7 +379,10 @@ function workerImplFile({ progress, speed }) {
                     const offset = chunkSize * i;
                     resp = await executeHttp.call(this, url, {
                         method: "PATCH",
-                        headers: { "Upload-Offset": offset },
+                        headers: {
+                            "Upload-Offset": offset,
+                            ...headersNoCache,
+                        },
                         body: file.slice(offset, offset + chunkSize),
                         progress: (p) => {
                             const chunksAlreadyDownloaded = i * chunkSize;

@@ -496,6 +496,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if proto == "tus" && req.Method == http.MethodPatch {
+		h.Set("Connection", "Close")
 		requestOffset, err := strconv.ParseUint(req.Header.Get("Upload-Offset"), 10, 0)
 		if err != nil {
 			SendErrorResult(res, ErrNotValid)
@@ -530,7 +531,6 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 			}
 			chunkedUploadCache.Del(ctx.Session)
 		}
-		h.Set("Connection", "Close")
 		h.Set("Upload-Offset", fmt.Sprintf("%d", newOffset))
 		res.WriteHeader(http.StatusNoContent)
 		return
