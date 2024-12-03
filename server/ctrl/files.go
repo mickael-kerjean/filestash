@@ -409,6 +409,11 @@ func FileAccess(ctx *App, res http.ResponseWriter, req *http.Request) {
 var chunkedUploadCache AppCache
 
 func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
+	h := res.Header()
+	h.Set("Cache-Control", "no-store")
+	h.Set("Pragma", "no-cache")
+	h.Set("Connection", "Close")
+
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		Log.Debug("save::path '%s'", err.Error())
@@ -465,7 +470,6 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	// - case2: chunked upload which implements the TUS protocol:
 	//   https://www.ietf.org/archive/id/draft-tus-httpbis-resumable-uploads-protocol-00.html
-	h := res.Header()
 	ctx.Session["path"] = path
 	if proto == "tus" && req.Method == http.MethodPost {
 		if c := chunkedUploadCache.Get(ctx.Session); c != nil {
@@ -496,7 +500,6 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if proto == "tus" && req.Method == http.MethodPatch {
-		h.Set("Connection", "Close")
 		requestOffset, err := strconv.ParseUint(req.Header.Get("Upload-Offset"), 10, 0)
 		if err != nil {
 			SendErrorResult(res, ErrNotValid)
