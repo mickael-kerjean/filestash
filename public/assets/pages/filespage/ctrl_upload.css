@@ -83,12 +83,14 @@
 }
 .component_upload .stats_content .file_row .file_path {
     flex: 1;
-    padding: 3px 3px 3px 0;
+    padding: 0px 3px 0px 0;
+    line-height: 25px;
 }
 .component_upload .stats_content .file_row .file_path .speed {
     font-size: 0.7rem;
     opacity: 0.7;
     padding-left: 5px;
+    line-height: 0.7rem;
 }
 .component_upload .stats_content .file_row .file_path .speed:not(:empty):before {
     content: "(";
@@ -98,20 +100,27 @@
 }
 .component_upload .stats_content .file_row .file_state {
     width: 50px;
-    padding: 3px 0;
+    line-height: 25px;
+    text-align: right;
+    padding-right: 3px;
 }
 .component_upload .stats_content .file_row .file_control {
     width: 25px;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    margin-left: -2px;
+    margin-right: -2px;
 }
 .component_upload .stats_content .file_row .file_control img {
     display: none;
     cursor: pointer;
-    height: 24px;
-    width: 24px;
+    height: 22px;
+    width: 22px;
 }
 .component_upload .stats_content .file_row:hover .file_control img {
     display: inherit;
-    padding-top: 1px;
+    padding-top: 3px;
 }
 
 /***********************/
