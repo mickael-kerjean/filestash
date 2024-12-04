@@ -416,14 +416,14 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
-		Log.Debug("save::path '%s'", err.Error())
+		Log.Debug("files::save action=path_builder err=%s", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
 
 	if model.CanEdit(ctx) == false {
 		if model.CanUpload(ctx) == false {
-			Log.Debug("save::permission 'permission denied'")
+			Log.Debug("files::save action=permission_upload err=permission_denied")
 			SendErrorResult(res, ErrPermissionDenied)
 			return
 		}
@@ -432,13 +432,13 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		root, filename := SplitPath(path)
 		entries, err := ctx.Backend.Ls(root)
 		if err != nil {
-			Log.Debug("ls::permission 'permission denied'")
+			Log.Debug("files::save action=permission_ls err=%s", err.Error())
 			SendErrorResult(res, ErrPermissionDenied)
 			return
 		}
 		for i := 0; i < len(entries); i++ {
 			if entries[i].Name() == filename {
-				Log.Debug("ls::permission 'conflict'")
+				Log.Debug("files::save action=permission_ls err=already_exist")
 				SendErrorResult(res, ErrConflict)
 				return
 			}
@@ -447,7 +447,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
 		if err = auth.Save(ctx, path); err != nil {
-			Log.Info("save::auth '%s'", err.Error())
+			Log.Info("files::save action=middleware err=%s", err.Error())
 			SendErrorResult(res, ErrNotAuthorized)
 			return
 		}
@@ -460,7 +460,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		err = ctx.Backend.Save(path, req.Body)
 		req.Body.Close()
 		if err != nil {
-			Log.Debug("save::backend '%s'", err.Error())
+			Log.Debug("files::save action=backend_save err=%s", err.Error())
 			SendErrorResult(res, NewError(err.Error(), 403))
 			return
 		}
@@ -470,10 +470,13 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	// - case2: chunked upload which implements the TUS protocol:
 	//   https://www.ietf.org/archive/id/draft-tus-httpbis-resumable-uploads-protocol-00.html
-	ctx.Session["path"] = path
+	cacheKey := map[string]string{
+		"path":    path,
+		"session": GenerateID(ctx.Session),
+	}
 	if proto == "tus" && req.Method == http.MethodPost {
-		if c := chunkedUploadCache.Get(ctx.Session); c != nil {
-			chunkedUploadCache.Del(ctx.Session)
+		if c := chunkedUploadCache.Get(cacheKey); c != nil {
+			chunkedUploadCache.Del(cacheKey)
 		}
 		size, err := strconv.ParseUint(req.Header.Get("Upload-Length"), 10, 0)
 		if err != nil {
@@ -481,14 +484,14 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 			return
 		}
 		uploader := createChunkedUploader(ctx.Backend.Save, path, size)
-		chunkedUploadCache.Set(ctx.Session, uploader)
+		chunkedUploadCache.Set(cacheKey, uploader)
 		h.Set("Content-Length", "0")
 		h.Set("Location", req.URL.String())
 		res.WriteHeader(http.StatusCreated)
 		return
 	}
 	if proto == "tus" && req.Method == http.MethodHead {
-		c := chunkedUploadCache.Get(ctx.Session)
+		c := chunkedUploadCache.Get(cacheKey)
 		if c == nil {
 			SendErrorResult(res, ErrNotFound)
 			return
@@ -505,7 +508,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 			SendErrorResult(res, ErrNotValid)
 			return
 		}
-		c := chunkedUploadCache.Get(ctx.Session)
+		c := chunkedUploadCache.Get(cacheKey)
 		if c == nil {
 			SendErrorResult(res, ErrNotFound)
 			return
@@ -513,26 +516,28 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		uploader := c.(*chunkedUpload)
 		initialOffset, totalSize := uploader.Meta()
 		if initialOffset != requestOffset {
+			Log.Debug("files::save::tus action=uploader.next path=%s err=offset_missmatch", path)
 			SendErrorResult(res, ErrNotValid)
 			return
-		}
-		if err := uploader.Next(req.Body); err != nil {
+		} else if err := uploader.Next(req.Body); err != nil {
+			Log.Debug("files::save::tus action=uploader.next path=%s err=%s", path, err.Error())
 			SendErrorResult(res, NewError(err.Error(), 403))
 			return
 		}
 		newOffset, _ := uploader.Meta()
 		if newOffset > totalSize {
 			uploader.Close()
-			chunkedUploadCache.Del(ctx.Session)
-			Log.Warning("ctrl::files::tus error=assert_offset size=%d old_offset=%d new_offset=%d", totalSize, initialOffset, newOffset)
+			chunkedUploadCache.Del(cacheKey)
+			Log.Warning("files::save::tus path=%s err=assert_offset size=%d old_offset=%d new_offset=%d", path, totalSize, initialOffset, newOffset)
 			SendErrorResult(res, NewError("aborted - offset larger than total size", 403))
 			return
 		} else if newOffset == totalSize {
 			if err := uploader.Close(); err != nil {
+				Log.Debug("files::save::tus action=uploader.close err=%s", err.Error())
 				SendErrorResult(res, ErrNotValid)
 				return
 			}
-			chunkedUploadCache.Del(ctx.Session)
+			chunkedUploadCache.Del(cacheKey)
 		}
 		h.Set("Upload-Offset", fmt.Sprintf("%d", newOffset))
 		res.WriteHeader(http.StatusNoContent)

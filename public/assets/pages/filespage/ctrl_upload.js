@@ -114,6 +114,7 @@ function componentUploadQueue(render, { workers$ }) {
         </div>
     `);
     render($page);
+
     const $content = qs($page, ".stats_content");
     const $file = createElement(`
         <div class="file_row todo_color">
@@ -192,6 +193,7 @@ function componentUploadQueue(render, { workers$ }) {
     }(new Array(MAX_WORKERS).fill(0)));
     const updateDOMGlobalTitle = ($page, text) => $page.firstElementChild.nextElementSibling.firstChild.textContent = text;
     const updateDOMWithStatus = ($task, { status, exec, nworker }) => {
+        const cancel = () => exec.cancel();
         const executeMutation = (status) => {
             switch (status) {
             case "todo":
@@ -205,11 +207,11 @@ function componentUploadQueue(render, { workers$ }) {
                 $task.setAttribute("data-status", "running");
                 $task.firstElementChild.nextElementSibling.nextElementSibling.replaceChildren($stop);
                 $stop.onclick = () => {
-                    exec.cancel();
+                    cancel();
                     $task.removeAttribute("data-status");
                     $task.firstElementChild.nextElementSibling.nextElementSibling.classList.add("hidden");
                 };
-                $close.addEventListener("click", exec.cancel);
+                $close.addEventListener("click", cancel, { once: true });
                 break;
             case "done":
                 updateDOMGlobalTitle($page, t("Done"));
@@ -220,7 +222,7 @@ function componentUploadQueue(render, { workers$ }) {
                 $task.removeAttribute("data-status");
                 $task.classList.remove("todo_color");
                 $task.firstElementChild.nextElementSibling.nextElementSibling.classList.add("hidden");
-                $close.removeEventListener("click", exec.cancel);
+                $close.removeEventListener("click", cancel);
                 break;
             case "error":
                 const $retry = assert.type($iconRetry.cloneNode(true), HTMLElement);
@@ -245,7 +247,7 @@ function componentUploadQueue(render, { workers$ }) {
                         executeMutation("error");
                     }
                 };
-                $close.removeEventListener("click", exec.cancel);
+                $close.removeEventListener("click", cancel);
                 break;
             default:
                 assert.fail(`UNEXPECTED_STATUS status="${status}" path="${$task.getAttribute("path")}"`);
@@ -270,7 +272,6 @@ function componentUploadQueue(render, { workers$ }) {
             // step2: validate the task is ready to run now
             const $tasks = qsa($page, `[data-path="${task.path}"][data-status="running"]`);
             if ($tasks.length > 0) {
-                debugger;
                 await new Promise((resolve) => setTimeout(resolve, 1000));
                 tasks.unshift(task);
                 continue;
@@ -314,12 +315,13 @@ function componentUploadQueue(render, { workers$ }) {
     workers$.subscribe(async({ tasks: newTasks, loading = false }) => {
         if (loading) return;
         tasks = tasks.concat(newTasks); // add new tasks to the pool
-        while (true) {
+        while (!$page.classList.contains("hidden")) {
             const nworker = reservations.indexOf(false);
             if (nworker === -1) break; // the pool of workers is already to its max
             reservations[nworker] = true;
             noFailureAllowed(processWorkerQueue.bind(null, nworker)).then(() => reservations[nworker] = false);
         }
+        reservations.fill(false);
     });
 }
 
@@ -342,6 +344,7 @@ function workerImplFile({ progress, speed }) {
          */
         cancel() {
             assert.type(this.xhr, XMLHttpRequest).abort();
+            this.xhr = null;
         }
 
         /**
@@ -398,6 +401,7 @@ function workerImplFile({ progress, speed }) {
                     throw new Error("Internal Error");
                 }
                 for (let i=0; i<numberOfChunks; i++) {
+                    if (this.xhr === null) break;
                     const offset = chunkSize * i;
                     resp = await executeHttp.call(this, url, {
                         method: "PATCH",

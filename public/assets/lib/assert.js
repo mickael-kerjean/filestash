@@ -7,7 +7,8 @@ export default class assert {
      * @throws {TypeError}
      */
     static type(object, type, msg) {
-        if (!(object instanceof type)) throw new TypeError(msg || `assertion failed - unexpected type for ${object.toString()}`);
+        if (object === undefined) throw new TypeError(msg || "assertion failed - undefined object");
+        if (!(object instanceof type)) throw new TypeError(msg || `assertion failed - unexpected type for ${JSON.stringify(object)}`);
         return object;
     }
 
