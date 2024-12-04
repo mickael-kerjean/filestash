@@ -4,7 +4,7 @@ import rxjs, { effect, onClick } from "../../lib/rx.js";
 import { forwardURLParams } from "../../lib/path.js";
 import { animate, slideYOut } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
-import { qs } from "../../lib/dom.js";
+import { qs, qsa } from "../../lib/dom.js";
 import { AjaxError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
 import { currentPath, isNativeFileUpload } from "./helper.js";
@@ -202,9 +202,11 @@ function componentUploadQueue(render, { workers$ }) {
                 updateDOMTaskProgress($task, formatPercent(0));
                 $task.classList.remove("error_color");
                 $task.classList.add("todo_color");
+                $task.setAttribute("data-status", "running");
                 $task.firstElementChild.nextElementSibling.nextElementSibling.replaceChildren($stop);
                 $stop.onclick = () => {
                     exec.cancel();
+                    $task.removeAttribute("data-status");
                     $task.firstElementChild.nextElementSibling.nextElementSibling.classList.add("hidden");
                 };
                 $close.addEventListener("click", exec.cancel);
@@ -215,6 +217,7 @@ function componentUploadQueue(render, { workers$ }) {
                 updateDOMGlobalSpeed(nworker, 0);
                 updateDOMTaskSpeed($task, 0);
                 $task.removeAttribute("data-path");
+                $task.removeAttribute("data-status");
                 $task.classList.remove("todo_color");
                 $task.firstElementChild.nextElementSibling.nextElementSibling.classList.add("hidden");
                 $close.removeEventListener("click", exec.cancel);
@@ -227,6 +230,7 @@ function componentUploadQueue(render, { workers$ }) {
                 updateDOMTaskSpeed($task, 0);
 
                 $task.removeAttribute("data-path");
+                $task.removeAttribute("data-status");
                 $task.classList.remove("todo_color");
                 $task.classList.add("error_color");
                 $task.firstElementChild.nextElementSibling.nextElementSibling.firstElementChild.remove();
@@ -255,11 +259,24 @@ function componentUploadQueue(render, { workers$ }) {
     const processWorkerQueue = async(nworker) => {
         while (tasks.length > 0) {
             updateDOMGlobalTitle($page, t("Running")+"...");
+
+            // step1: retrieve next task
             const task = nextTask(tasks);
             if (!task) {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
                 continue;
             }
+
+            // step2: validate the task is ready to run now
+            const $tasks = qsa($page, `[data-path="${task.path}"][data-status="running"]`);
+            if ($tasks.length > 0) {
+                debugger;
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+                tasks.unshift(task);
+                continue;
+            }
+
+            // step3: process the task through its entire lifecycle
             const $task = qs($page, `[data-path="${task.path}"]`);
             const exec = task.exec({
                 progress: (progress) => updateDOMTaskProgress($task, formatPercent(progress)),
@@ -278,6 +295,7 @@ function componentUploadQueue(render, { workers$ }) {
             updateTotal.incrementCompleted();
             task.done = true;
 
+            // step4: execute only at task completion
             if (tasks.length === 0 && // no remaining tasks
                 reservations.filter((t) => t === true).length === 1 // only for the last remaining job
             ) updateDOMGlobalTitle($page, t("Done"));
