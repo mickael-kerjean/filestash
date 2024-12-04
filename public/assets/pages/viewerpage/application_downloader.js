@@ -9,7 +9,7 @@ import { transition, getFilename, getDownloadUrl } from "./common.js";
 import "../../components/icon.js";
 import "./component_menubar.js";
 
-export default async function(render) {
+export default async function(render, { acl$ }) {
     const $page = createElement(`
         <div class="component_filedownloader">
             <component-menubar></component-menubar>
@@ -41,6 +41,7 @@ export default async function(render) {
         })),
         rxjs.tap(() => setLoading(false)),
     ));
+    effect(acl$);
 }
 
 export function init() {
