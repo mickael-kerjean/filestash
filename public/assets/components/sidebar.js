@@ -35,7 +35,7 @@ export default async function ctrlSidebar(render, nRestart = 0) {
                 ${t("Tags")}
             </h3>
             <div data-bind="your-tags"></div>
-        </div></div>
+        </div>
     `));
 
     // feature: visibility of the sidebar
