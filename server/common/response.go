@@ -140,8 +140,8 @@ func Page(stuff string) string {
       h1 { font-weight: 200; line-height: 1em; font-size: 40px; }
       p { opacity: 0.8; font-size: 1.05em; }
       form { max-width: 450px; margin: 0 auto; padding: 0 10px; text-align: left; }
-      button { padding: 11px 0px; width: 100%; background: #466372; color: white; margin-top: 10px; cursor: pointer; font-weight: bold; border: none; border-radius: 2px; box-shadow: 2px 2px 2px rgb(0 0 0 / 15%); }
-      input, textarea { display: block; margin: 8px 0; border: none; outline: none; padding: 13px 15px; box-shadow: 2px 2px 2px rgb(0 0 0 / 5%); min-width: 100%; max-width: 100%; max-height: 80px; box-sizing: border-box; border-radius: 2px; }
+      button { padding: 11px 0px; width: 100%; background: #466372; color: white; margin-top: 10px; cursor: pointer; font-weight: bold; border: none; border-radius: 2px; box-shadow: 2px 2px 2px rgb(0 0 0 / 5%); }
+      input:not([type="checkbox"]), textarea { display: block; margin: 8px 0; border: none; outline: none; padding: 13px 15px; box-shadow: 2px 2px 2px rgb(0 0 0 / 1%); min-width: 100%; max-width: 100%; max-height: 80px; box-sizing: border-box; border-radius: 2px; }
       input, textarea, body { color: #313538; }
       input, textarea, button { font-size: inherit; }
     </style>
