@@ -43,7 +43,7 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 	r.IsAuth = true
 	r.Home = NewString(home)
-	r.Backend = GenerateID(ctx.Session)
+	r.Backend = Hash(GenerateID(ctx.Session)+ctx.Session["path"], 20)
 	if ctx.Share.Id == "" && Config.Get("features.protection.enable_chromecast").Bool() {
 		r.Authorization = ctx.Authorization
 	}
