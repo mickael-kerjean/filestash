@@ -27,12 +27,13 @@ func (this SimpleAuth) Setup() Form {
 			{
 				Name: "banner",
 				Type: "hidden",
-				Description: `Manage your team members and their account permissions by visiting [/admin/simple-user-management](/admin/simple-user-management).
-
-= STATS =
-- total users: ` + fmt.Sprintf("%d", n) + `
-- active users: ` + fmt.Sprintf("%d", a) + `
-`,
+				Description: fmt.Sprintf(`Manage your team members and their account permissions by visiting [/admin/simple-user-management](/admin/simple-user-management).
+<pre>
+STATS:
+┌─────────────┐   ┌──────────────┐
+│ TOTAL USERS │   │ ACTIVE USERS │
+|    %.4d     │   |     %.4d     │
+└─────────────┘   └──────────────┘</pre>`, n, a),
 			},
 			{
 				Name:  "type",

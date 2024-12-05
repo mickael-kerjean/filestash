@@ -184,3 +184,9 @@
     margin-bottom: 15px;
     padding: 10px;
 }
+.component_page_admin .formbuilder .banner pre {
+    background: inherit;
+    color: inherit;
+    padding: 0;
+    margin: 0;
+}
