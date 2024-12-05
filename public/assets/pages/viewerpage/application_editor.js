@@ -61,7 +61,7 @@ export default async function(render, { acl$ }) {
             if (content === null || has_binary(content)) return rxjs.from(initDownloader()).pipe(
                 removeLoader,
                 rxjs.mergeMap(() => {
-                    ctrlDownloader(render);
+                    ctrlDownloader(render, { acl$ });
                     return rxjs.EMPTY;
                 }),
             );
