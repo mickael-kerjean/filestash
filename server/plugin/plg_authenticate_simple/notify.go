@@ -10,6 +10,25 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
+func isEmailSetup() bool {
+	if Config.Get("email.from").String() == "" {
+		return false
+	}
+	if Config.Get("email.server").String() == "" {
+		return false
+	}
+	if Config.Get("email.port").Int() == 0 {
+		return false
+	}
+	if Config.Get("email.username").String() == "" {
+		return false
+	}
+	if Config.Get("email.password").String() == "" {
+		return false
+	}
+	return true
+}
+
 func sendInvitateMail(user User) error {
 	cfg, err := getPluginData()
 	if err != nil {

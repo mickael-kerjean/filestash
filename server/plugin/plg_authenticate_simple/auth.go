@@ -12,16 +12,17 @@ import (
 type SimpleAuth struct{}
 
 func (this SimpleAuth) Setup() Form {
-	n := 0
-	a := 0
+	nUsers := 0
+	aUsers := 0
 	if users, err := getUsers(); err == nil {
-		n = len(users)
+		nUsers = len(users)
 		for i := range users {
 			if users[i].Disabled == false {
-				a += 1
+				aUsers += 1
 			}
 		}
 	}
+
 	return Form{
 		Elmnts: []FormElement{
 			{
@@ -33,7 +34,11 @@ STATS:
 ┌─────────────┐   ┌──────────────┐
 │ TOTAL USERS │   │ ACTIVE USERS │
 |    %.4d     │   |     %.4d     │
-└─────────────┘   └──────────────┘</pre>`, n, a),
+└─────────────┘   └──────────────┘
+
+MANAGEMENT GUI: <a href="/admin/simple-user-management">/admin/simple-user-management</a>
+EMAIL SERVER  : %t
+</pre>`, nUsers, aUsers, isEmailSetup()),
 			},
 			{
 				Name:  "type",
