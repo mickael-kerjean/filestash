@@ -125,6 +125,12 @@ export async function createForm(node, opts) {
 
 function withMarkdown(obj) {
     if (!("description" in obj)) return obj;
-    obj["description"] = obj["description"].replace(/\[([^\]]+)\]\(([^)]+)\)/g, "<a target=\"_blank\" href=\"$2\">$1</a>");
+    obj["description"] = toMarkdown(obj["description"]);
     return obj;
+}
+
+function toMarkdown(str = "") {
+    str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "<a href=\"$2\">$1</a>");
+    str = str.replaceAll("\n", "<br>");
+    return str;
 }

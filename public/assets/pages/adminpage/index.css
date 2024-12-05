@@ -177,3 +177,10 @@
 .component_page_admin .formbuilder textarea::placeholder {
     opacity: 0.6;
 }
+.component_page_admin .formbuilder .banner {
+    background: var(--bg-color);
+    border: 2px solid rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+    margin-bottom: 15px;
+    padding: 10px;
+}

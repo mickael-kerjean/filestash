@@ -1,8 +1,13 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs from "../../lib/rx.js";
 
-export function renderLeaf({ format, label, description }) {
-    return createElement(`
+export function renderLeaf({ format, label, description, type }) {
+    if (label === "banner") return createElement(`
+        <div class="banner">
+            ${description}
+        </div>
+    `);
+    const $el = createElement(`
         <label class="no-select">
             <div class="flex">
                 <span class="ellipsis">
@@ -10,14 +15,18 @@ export function renderLeaf({ format, label, description }) {
                 </span>
                 <div style="width:100%;" data-bind="children"></div>
             </div>
-            <div class="flex">
-                <span class="nothing"></span>
-                <div style="width:100%;">
-                    <div class="description">${(description || "").replaceAll("\n", "<br>")}</div>
-                </div>
-            </div>
         </label>
     `);
+    if (type === "hidden") $el.classList.add("hidden");
+    if (description) $el.appendChild(createElement(`
+        <div class="flex">
+            <span class="nothing"></span>
+            <div style="width:100%;">
+                <div class="description">${description}</div>
+            </div>
+        </div>
+    `));
+    return $el;
 }
 
 export function useForm$($inputNodeList) {
