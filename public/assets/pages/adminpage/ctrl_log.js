@@ -15,7 +15,7 @@ export default AdminHOC(async function(render) {
             <div class="component_logger"></div>
 
             <h2>Activity Report</h2>
-            <div class="component_reporter"></div>
+            <div class="component_audit"></div>
         <div>
     `);
     render(transition($page));
@@ -23,5 +23,5 @@ export default AdminHOC(async function(render) {
 
     componentLogViewer(createRender($page.querySelector(".component_logviewer")));
     componentLogForm(createRender($page.querySelector(".component_logger")));
-    componentAuditor(createRender($page.querySelector(".component_reporter")));
+    componentAuditor(createRender($page.querySelector(".component_audit")));
 });

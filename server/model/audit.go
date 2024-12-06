@@ -65,6 +65,7 @@ func (this SimpleAudit) Query(ctx *App, searchParams map[string]string) (AuditQu
                 background: var(--error); color: var(--super-light);
                 padding: 15px 15px;
                 border-radius: 2px;
+                margin-top: 15px;
             }
         </style>
         <div id="alert-audit-missing">
