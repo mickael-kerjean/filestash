@@ -1,4 +1,4 @@
-package plg_authenticate_simple
+package plg_authenticate_local
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 
 func getPluginData() (pluginConfig, error) {
 	var cfg pluginConfig
-	if Config.Get("middleware.identity_provider.type").String() != "simple" {
+	if Config.Get("middleware.identity_provider.type").String() != "local" {
 		Log.Warning("plg_authenticate_simple::disable msg=middleware_is_not_enabled")
 		return cfg, ErrMissingDependency
 	}
@@ -30,7 +30,7 @@ func getPluginData() (pluginConfig, error) {
 }
 
 func savePluginData(cfg pluginConfig) error {
-	if Config.Get("middleware.identity_provider.type").String() != "simple" {
+	if Config.Get("middleware.identity_provider.type").String() != "local" {
 		Log.Warning("plg_authenticate_simple::disable msg=middleware_is_not_enabled")
 		return ErrMissingDependency
 	}

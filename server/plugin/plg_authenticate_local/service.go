@@ -1,4 +1,4 @@
-package plg_authenticate_simple
+package plg_authenticate_local
 
 import (
 	"sort"
@@ -53,7 +53,8 @@ func updateUser(user User) error {
 				}
 				user.Password = string(p)
 			}
-			users[i] = user
+			users[i].Disabled = user.Disabled
+			users[i].Role = user.Role
 			return saveUsers(users)
 		}
 	}

@@ -1,4 +1,4 @@
-package plg_authenticate_simple
+package plg_authenticate_local
 
 import (
 	"bytes"
