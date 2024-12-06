@@ -104,7 +104,7 @@ window.CodeMirror.registerGlobalHelper("fold", "drawer", function(mode) {
 
 window.CodeMirror.registerHelper("orgmode", "init", (editor) => {
     editor.setOption("extraKeys", {
-        Tab: (cm) => org_cycle(cm),
+        "Tab": (cm) => org_cycle(cm),
         "Shift-Tab": (cm) => org_shifttab(cm),
         "Alt-Left": (cm) => org_metaleft(cm),
         "Alt-Right": (cm) => org_metaright(cm),

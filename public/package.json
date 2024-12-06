@@ -67,6 +67,10 @@
           "allowTemplateLiterals": true
         }
       ],
+      "quote-props": [
+        "error",
+        "consistent"
+      ],
       "indent": [
         "error",
         4

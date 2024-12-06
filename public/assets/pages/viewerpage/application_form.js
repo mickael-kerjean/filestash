@@ -148,7 +148,7 @@ function readOnlyForm(formSpec) {
         formSpec["readonly"] = true;
         return formSpec;
     }
-    for (let key in formSpec) {
+    for (const key in formSpec) {
         formSpec[key] = readOnlyForm(formSpec[key]);
     }
     return formSpec;

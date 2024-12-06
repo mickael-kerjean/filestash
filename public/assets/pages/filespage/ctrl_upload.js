@@ -362,7 +362,7 @@ function workerImplFile({ progress, speed }) {
             const numberOfChunks = Math.ceil(file.size / chunkSize);
             const headersNoCache = {
                 "Cache-Control": "no-store",
-                "Pragma": "no-cache"
+                "Pragma": "no-cache",
             };
 
             // Case1: basic upload
