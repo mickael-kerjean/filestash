@@ -295,6 +295,11 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 	ServeIndex("index.frontoffice.html")(ctx, res, req)
 }
 
+func ServeFavicon(ctx *App, res http.ResponseWriter, req *http.Request) {
+	r, _ := http.NewRequest(http.MethodGet, "/favicon.svg", nil)
+	ServeFile("/assets/logo/")(ctx, res, r)
+}
+
 func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if strings.Contains(req.Header.Get("accept"), "text/html") {
 		res.WriteHeader(http.StatusNotFound)
