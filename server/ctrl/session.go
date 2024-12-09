@@ -377,21 +377,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			}
 			tmpl, err := template.
 				New("ctrl::session::auth_middleware").
-				Funcs(map[string]interface{}{
-					"contains": func(str string, match string) bool {
-						splits := strings.Split(str, ",")
-						for _, split := range splits {
-							if split == match {
-								return true
-							}
-						}
-						return false
-					},
-					"encryptGCM": func(str string, key string) (string, error) {
-						data, err := EncryptAESGCM([]byte(key), []byte(str))
-						return base64.StdEncoding.EncodeToString(data), err
-					},
-				}).
+				Funcs(tmplFuncs).
 				Parse(str)
 			mappingToUse[k] = str
 			if err != nil {
