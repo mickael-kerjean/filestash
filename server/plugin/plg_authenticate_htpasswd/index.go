@@ -26,6 +26,13 @@ func (this Htpasswd) Setup() Form {
 	return Form{
 		Elmnts: []FormElement{
 			{
+				Name: "banner",
+				Type: "hidden",
+				Description: `Inspired by Apache, the htpasswd plugin uses the content of a .htpasswd file to authenticate users. It displays a username and password login page, verifying credentials against the provided htpasswd data.
+
+The plugin exposes 2 variables: {{ .user }} and {{ .password }} which can be used in the attribute mapping section to create rules tailored to your specific use case. Examples of this can be found [in the documentation](https://www.filestash.app/docs/install-and-upgrade/#advanced-authentication---facade-pattern)`,
+			},
+			{
 				Name:  "type",
 				Type:  "hidden",
 				Value: "htpasswd",
@@ -41,9 +48,7 @@ test5:$5$RkdUxGLHGhmrO0yj$K6bCqmB.OPR7KM4i5eiAG.mxFyhElLNdthSL.dreqN5
 test6:$1$vuUKD.37$R6eCPFBa6lKIVfnkABveB1`,
 				Default: "",
 				Description: `The list of users who are granted access using either or both the htpasswd file format or the /etc/shadow file format. To generate a password:
-'openssl passwd -6' or 'mkpasswd -m SHA-512' or the htpasswd cli tool.
-
-This plugin exposes {{ .user }} and {{ .password }} for the attribute mapping section`,
+'openssl passwd -6' or 'mkpasswd -m SHA-512' or the htpasswd cli tool.`,
 			},
 		},
 	}

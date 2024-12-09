@@ -15,6 +15,14 @@ func (this Ldap) Setup() Form {
 	return Form{
 		Elmnts: []FormElement{
 			{
+				Name: "banner",
+				Type: "hidden",
+				Description: `This enterprise SSO plugin delegates authentication to an LDAP server, presenting users with a username and password login page. Their credentials are then verified against your LDAP directory.
+
+The plugin exposes the LDAP attribute of the authenticated users which can be used in the attribute mapping section to create rules tailored to your specific use case, see the documentation [on the website](https://www.filestash.app/setup-ldap.html).
+`,
+			},
+			{
 				Name:  "type",
 				Type:  "hidden",
 				Value: "ldap",
@@ -22,37 +30,38 @@ func (this Ldap) Setup() Form {
 			{
 				Name:        "Hostname",
 				Type:        "text",
-				ReadOnly:    true,
-				Placeholder: "plugin available in the enterprise release",
+				Value:       "",
+				Placeholder: "eg: ldap.example.com",
 			},
 			{
 				Name:        "Port",
 				Type:        "text",
-				ReadOnly:    true,
-				Placeholder: "plugin available in the enterprise release",
+				Value:       "",
+				Placeholder: "eg: 389",
 			},
 			{
 				Name:        "Bind DN",
 				Type:        "text",
-				ReadOnly:    true,
-				Placeholder: "plugin available in the enterprise release",
+				Value:       "",
+				Placeholder: "Bind DN",
 			},
 			{
 				Name:        "Bind DN Password",
-				Type:        "text",
-				ReadOnly:    true,
-				Placeholder: "plugin available in the enterprise release",
+				Type:        "password",
+				Value:       "",
+				Placeholder: "Bind CN Password",
 			},
 			{
 				Name:        "Base DN",
 				Type:        "text",
-				ReadOnly:    true,
-				Placeholder: "plugin available in the enterprise release",
-				Description: `This plugin is to integrate with your LDAP server. After successfully authenticating to your IDP, the attributes relating to the user will be available in the attribute mapping section either by:
-&nbsp;&nbsp;1. copying those attributes in any field: {{ .sAMAccountName }} {{ .cn }} {{ .userPrincipalName }} {{ .mail }}, ...
-&nbsp;&nbsp;2. create custom rules based on some attributes like this: {{ if contains .memberOf "cn=admins" }}adminuser{{ else }}regularuser{{ end }} or {{ if eq .userPrincipalName "root" }}adminuser{{ else }}regularuser{{ end }}
-
-[Purchase the enterprise edition](https://www.filestash.app/purchase-enterprise-selfhosted.html)`,
+				Value:       "",
+				Placeholder: "Base DN",
+			},
+			{
+				Name:        "Search Filter",
+				Type:        "text",
+				Value:       "",
+				Placeholder: "default: (&(objectclass=person)(|(uid={{.username}})(mail={{.username}})(sAMAccountName={{.username}})))",
 			},
 		},
 	}
@@ -61,7 +70,7 @@ func (this Ldap) Setup() Form {
 func (this Ldap) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
 	http.Redirect(
 		res, req,
-		"/?error=ldap is available for enterprise customer, see https://www.filestash.app/pricing/?modal=enterprise",
+		"https://www.filestash.app/purchase-enterprise-selfhosted.html",
 		http.StatusTemporaryRedirect,
 	)
 	return nil

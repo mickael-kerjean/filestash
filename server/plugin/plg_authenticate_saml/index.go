@@ -15,35 +15,42 @@ func (this Saml) Setup() Form {
 	return Form{
 		Elmnts: []FormElement{
 			{
+				Name: "banner",
+				Type: "hidden",
+				Description: `This enterprise SSO plugin delegates authentication to a SAML compliant Identity Provider (IDP). It exposes the attributes of the authenticated user, which can then be used in the attribute mapping section to create rules tailored to your specific use case. See the [full documentation](https://www.filestash.app/setup-saml.html).
+`,
+			},
+			{
 				Name:  "type",
 				Type:  "hidden",
 				Value: "saml",
 			},
 			{
+				Name:        "IDP Metadata",
+				Type:        "long_text",
+				Value:       "",
+				Placeholder: "Paste the metadata from your IDP",
+				Description: `if your IDP asks for some information before giving the metadata file, use these:
+- entityID: http://localhost:8334/saml/metadata
+- assertionConsumerService (acs): http://localhost:8334/saml/acs
+- singleLogoutService (slo): http://localhost:8334/saml/slo`,
+			},
+			{
 				Name:        "SP Metadata",
 				Type:        "text",
 				ReadOnly:    true,
-				Placeholder: "plugin available in the enterprise release",
-			},
-			{
-				Name:        "IDP Metadata",
-				Type:        "text",
-				ReadOnly:    true,
-				Placeholder: "plugin available in the enterprise release",
-				Description: `This plugin is to integrate with your IDP using SAML Single Sign-On. After having authenticated to your IDP, all the information about the user sent by your IDP will be available in the attribute mapping section either by:
-&nbsp;&nbsp;1. copying those attributes in any field: {{ .mail }}, {{ .uid }}, {{ .givenName }}
-&nbsp;&nbsp;2. create custom rules based on some attributes like this: {{ if eq .role "admin" }}adminuser{{ else }}regularuser{{ end }}
-
-[Purchase the enterprise edition](https://www.filestash.app/purchase-enterprise-selfhosted.html)`,
+				Value:       "",
+				Placeholder: "visit: /saml/metadata",
+				Description: "The metadata file will be available under /saml/metadata once you've entered a valid IDP metadata which should come from your IDP",
 			},
 		},
 	}
 }
 
 func (this Saml) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
-	http.Redirect( // TODO
+	http.Redirect(
 		res, req,
-		"/?error=saml is available for enterprise customer, see https://www.filestash.app/pricing/?modal=enterprise",
+		"https://www.filestash.app/purchase-enterprise-selfhosted.html",
 		http.StatusTemporaryRedirect,
 	)
 	return nil
