@@ -128,3 +128,8 @@
 .component_dashboard .component_storagebackend form {
     width: calc(100% - 15px);
 }
+
+.component_dashboard [data-bind="authentication_middleware"] .component_checkbox {
+    position: relative;
+    top: 5px;
+}
