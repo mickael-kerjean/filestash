@@ -343,12 +343,9 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		<tr>
           <td> Plugins </td>
           <td>
-            {{ $oss := (index .Plugins 0) }}
-            {{ $enterprise := (index .Plugins 1) }}
-            {{ $custom := (index .Plugins 2) }}
             STANDARD[<span class="small">{{ renderPlugin (index .Plugins 0) .CommitHash }}</span>]
             <br/>
-            EXTENDED[<span class="small">{{ renderPlugin (index .Plugins 1) "" }}</span>]
+            ENTERPRISE[<span class="small">{{ renderPlugin (index .Plugins 1) "" }}</span>]
             <br/>
             CUSTOM[<span class="small">{{ renderPlugin (index .Plugins 2) "" }}</span>]
           </td>
@@ -556,32 +553,22 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 }
 
 func InitPluginList(code []byte) {
-	listOfPackages := regexp.MustCompile(`github.com/mickael-kerjean/([^\"]+)`).FindAllString(string(code), -1)
-	for _, packageName := range listOfPackages {
-		if packageName == "github.com/mickael-kerjean/filestash/server/common" {
-			continue
+	listOfPackages := regexp.MustCompile(`\t_?\s*\"(github.com/[^\"]+)`).FindAllStringSubmatch(string(code), -1)
+	for _, packageNameMatch := range listOfPackages {
+		if len(packageNameMatch) != 2 {
+			Log.Error("ctrl::static error=assertion_failed msg=invalid_match_size arg=%d", len(packageNameMatch))
 		}
+		packageName := packageNameMatch[1]
+		packageShortName := filepath.Base(packageName)
 
 		if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/server/plugin/") {
-			listOfPlugins["oss"] = append(
-				listOfPlugins["oss"],
-				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/server/plugin/"),
-			)
+			listOfPlugins["oss"] = append(listOfPlugins["oss"], packageShortName)
 		} else if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/plugins/") {
-			listOfPlugins["enterprise"] = append(
-				listOfPlugins["enterprise"],
-				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/plugins/"),
-			)
+			listOfPlugins["enterprise"] = append(listOfPlugins["enterprise"], packageShortName)
 		} else if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/customers/") {
-			listOfPlugins["custom"] = append(
-				listOfPlugins["custom"],
-				strings.TrimPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/customers/"),
-			)
+			listOfPlugins["custom"] = append(listOfPlugins["custom"], packageShortName)
 		} else {
-			listOfPlugins["custom"] = append(
-				listOfPlugins["custom"],
-				packageName,
-			)
+			listOfPlugins["custom"] = append(listOfPlugins["custom"], packageShortName)
 		}
 	}
 }
