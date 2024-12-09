@@ -343,7 +343,7 @@ function workerImplFile({ progress, speed }) {
          * @override
          */
         cancel() {
-            assert.type(this.xhr, XMLHttpRequest).abort();
+            if (this.xhr) assert.type(this.xhr, XMLHttpRequest).abort();
             this.xhr = null;
         }
 
