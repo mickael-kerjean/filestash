@@ -3,6 +3,7 @@ import rxjs, { effect } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { loadCSS } from "../../helpers/loader.js";
 import t from "../../locales/index.js";
+import ctrlError from "../ctrl_error.js";
 
 import { transition, getFilename, getDownloadUrl } from "./common.js";
 
@@ -41,7 +42,9 @@ export default async function(render, { acl$ }) {
         })),
         rxjs.tap(() => setLoading(false)),
     ));
-    effect(acl$);
+    effect(acl$.pipe(
+        rxjs.catchError(ctrlError()),
+    ));
 }
 
 export function init() {
