@@ -329,7 +329,7 @@ function createLink(file, currentPath) {
     let path = file.path;
     if (!path) path = currentPath + file.name + (file.type === "directory" ? "/" : "");
     let link = file.type === "directory" ? "files" + path : "view" + path;
-    link = link.replaceAll("#", "%23");
+    link = encodeURIComponent(link).replaceAll("%2F", "/");
     return {
         path,
         link,

@@ -7,7 +7,8 @@ export function extname(str) {
 }
 
 export function join(baseURL, segment) {
-    return new URL(segment, baseURL).pathname;
+    const url = new URL(segment, baseURL);
+    return decodeURIComponent(url.pathname + url.hash);
 }
 
 export function forwardURLParams(url, allowed = []) {

@@ -183,9 +183,10 @@ async function ctrlListShares(render, { load, remove, all, formLinks }) {
 }
 
 async function ctrlCreateShare(render, { save, formState }) {
+    const enc = (p) => encodeURIComponent(p).replaceAll("%2F", "/");
     if (formState.path) formState.path = join(
-        location.origin + currentPath(),
-        formState.path,
+        location.origin + enc(currentPath()),
+        enc(formState.path),
     );
     let id = formState.id || randomString(7);
     const $page = createElement(`
