@@ -20,7 +20,13 @@ services:
     restart: always
     environment:
     - "extra_params=--o:ssl.enable=false"
-    - "aliasgroup1=http://app:8334"
+    command:
+    - /bin/bash
+    - -c
+    - |
+         curl -o /usr/share/coolwsd/browser/dist/branding-desktop.css https://gist.githubusercontent.com/mickael-kerjean/bc1f57cd312cf04731d30185cc4e7ba2/raw/d706dcdf23c21441e5af289d871b33defc2770ea/destop.css
+         /bin/su -s /bin/bash -c '/start-collabora-online.sh' cool
+    user: root
     ports:
     - "9980:9980"
 
