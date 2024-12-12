@@ -12,6 +12,7 @@ import (
 	"text/template"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/ctrl"
 	"github.com/mickael-kerjean/filestash/server/middleware"
 	"github.com/mickael-kerjean/filestash/server/model"
 
@@ -95,7 +96,12 @@ func WOPIExecute(w http.ResponseWriter, r *http.Request) func(func(*App, string,
 		}
 		middleware.NewMiddlewareChain(
 			func(ctx *App, w http.ResponseWriter, r *http.Request) {
-				fn(ctx, string(p), w)
+				fullpath, err := ctrl.PathBuilder(ctx, string(p))
+				if err != nil {
+					SendErrorResult(w, err)
+					return
+				}
+				fn(ctx, fullpath, w)
 			},
 			[]Middleware{middleware.SessionStart},
 			App{},
