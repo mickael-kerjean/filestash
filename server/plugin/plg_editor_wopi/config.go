@@ -51,7 +51,7 @@ func origin() string {
 		f.Id = "filestash_server"
 		f.Name = "filestash_server"
 		f.Type = "text"
-		f.Description = "Location of your Filestash server from the point of view of the office server if different from the configured host."
+		f.Description = "Location of your Filestash server from the point of view of the office server. Keep blank if you don't use fancy networking via docker/k8s,..."
 		f.Default = "http://app:8334"
 		f.Placeholder = "Eg: http://app:8334"
 		if u := os.Getenv("OFFICE_FILESTASH_URL"); u != "" {
@@ -61,3 +61,22 @@ func origin() string {
 		return f
 	}).String()
 }
+
+// func iframe_url() string {
+// 	return Config.Get("features.office.iframe_url").Schema(func(f *FormElement) *FormElement {
+// 		if f == nil {
+// 			f = &FormElement{}
+// 		}
+// 		f.Id = "filestash_server"
+// 		f.Name = "filestash_server"
+// 		f.Type = "text"
+// 		f.Description = "Location of the office server from the point of view of the browser"
+// 		f.Default = "http://localhost:9980"
+// 		f.Placeholder = "Eg: http://localhost:9980"
+// 		if u := os.Getenv("OFFICE_IFRAME_URL"); u != "" {
+// 			f.Default = u
+// 			f.Placeholder = fmt.Sprintf("Default: '%s'", u)
+// 		}
+// 		return f
+// 	}).String()
+// }
