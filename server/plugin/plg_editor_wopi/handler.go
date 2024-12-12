@@ -43,7 +43,11 @@ var WOPIOverrides = `
 `
 
 func WOPIHandler_CheckFileInfo(w http.ResponseWriter, r *http.Request) {
-	WOPIExecute(w, r)(func(ctx *App, fullpath string) {
+	if plugin_enable() == false {
+		SendErrorResult(w, ErrNotFound)
+		return
+	}
+	WOPIExecute(w, r)(func(ctx *App, fullpath string, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(map[string]any{
 			"BaseFileName":     filepath.Base(fullpath),
@@ -59,7 +63,7 @@ func WOPIHandler_CheckFileInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func WOPIHandler_GetFile(w http.ResponseWriter, r *http.Request) {
-	WOPIExecute(w, r)(func(ctx *App, fullpath string) {
+	WOPIExecute(w, r)(func(ctx *App, fullpath string, w http.ResponseWriter) {
 		f, err := ctx.Backend.Cat(fullpath)
 		if err != nil {
 			SendErrorResult(w, err)
@@ -71,7 +75,7 @@ func WOPIHandler_GetFile(w http.ResponseWriter, r *http.Request) {
 
 func WOPIHandler_PutFile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	WOPIExecute(w, r)(func(ctx *App, fullpath string) {
+	WOPIExecute(w, r)(func(ctx *App, fullpath string, w http.ResponseWriter) {
 		err := ctx.Backend.Save(fullpath, r.Body)
 		if err != nil {
 			SendErrorResult(w, err)
@@ -81,8 +85,8 @@ func WOPIHandler_PutFile(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func WOPIExecute(w http.ResponseWriter, r *http.Request) func(func(*App, string)) {
-	return func(fn func(*App, string)) {
+func WOPIExecute(w http.ResponseWriter, r *http.Request) func(func(*App, string, http.ResponseWriter)) {
+	return func(fn func(*App, string, http.ResponseWriter)) {
 		path64 := mux.Vars(r)["path64"]
 		p, err := base64.StdEncoding.DecodeString(path64)
 		if err != nil {
@@ -91,7 +95,7 @@ func WOPIExecute(w http.ResponseWriter, r *http.Request) func(func(*App, string)
 		}
 		middleware.NewMiddlewareChain(
 			func(ctx *App, w http.ResponseWriter, r *http.Request) {
-				fn(ctx, string(p))
+				fn(ctx, string(p), w)
 			},
 			[]Middleware{middleware.SessionStart},
 			App{},
@@ -206,14 +210,23 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	myURL := "http://"
-	if Config.Get("general.force_ssl").Bool() {
-		myURL = "https://"
+	myURL := origin()
+	if myURL == "" {
+		myURL := "http://"
+		if Config.Get("general.force_ssl").Bool() {
+			myURL = "https://"
+		}
+		myURL += Config.Get("general.host").String()
 	}
-	myURL += Config.Get("general.host").String()
 	p := u.Query()
 	p.Set("WOPISrc", myURL+"/api/wopi/files/"+base64.StdEncoding.EncodeToString([]byte(fullpath)))
 	p.Set("access_token", ctx.Authorization)
 	u.RawQuery = p.Encode()
+	if newHost := rewrite_url(); newHost != "" {
+		if p, err := url.Parse(newHost); err == nil {
+			u.Host = p.Host
+			u.Scheme = p.Scheme
+		}
+	}
 	return u.String(), nil
 }
