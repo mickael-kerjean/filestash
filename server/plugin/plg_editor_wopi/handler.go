@@ -210,7 +210,6 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	Log.Stdout("GOT URLSSRC %+v", u)
 	myURL := origin()
 	if myURL == "" {
 		myURL := "http://"
@@ -222,15 +221,12 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 	p := u.Query()
 	p.Set("WOPISrc", myURL+"/api/wopi/files/"+base64.StdEncoding.EncodeToString([]byte(fullpath)))
 	p.Set("access_token", ctx.Authorization)
-	Log.Stdout("url0 %+v", u)
 	u.RawQuery = p.Encode()
-	Log.Stdout("url1 %+v", u)
 	if newHost := rewrite_url(); newHost != "" {
 		if p, err := url.Parse(newHost); err == nil {
 			u.Host = p.Host
 			u.Scheme = p.Scheme
 		}
 	}
-	Log.Stdout("url2 %+v", u)
 	return u.String(), nil
 }
