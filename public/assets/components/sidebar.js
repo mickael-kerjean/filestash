@@ -19,8 +19,7 @@ const mv = (from, to) => withVirtualLayer(
 );
 
 export default async function ctrlSidebar(render, nRestart = 0) {
-    if (new URL(location.toString()).searchParams.get("nav") === "false") return;
-    else if (document.body.clientWidth < 850) return;
+    if (!shouldDisplay()) return;
 
     const $sidebar = render(createElement(`
         <div class="component_sidebar"><div>
@@ -249,6 +248,13 @@ function checkVisible($el) {
         rect.left >= 0 &&
         rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
         rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+}
+
+function shouldDisplay() {
+    if (new URL(location.toString()).searchParams.get("nav") === "false") return false;
+    else if (window.self !== window.top) return false;
+    else if (document.body.clientWidth < 850) return false;
+    return true;
 }
 
 class PathChunk {
