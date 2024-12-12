@@ -2,24 +2,27 @@ version: '2'
 services:
   app:
     container_name: filestash
-    image: machines/filestash
+    image: machines/filestash:latest
     restart: always
     environment:
-    - APPLICATION_URL=
-    - GDRIVE_CLIENT_ID=<gdrive_client>
-    - GDRIVE_CLIENT_SECRET=<gdrive_secret>
-    - DROPBOX_CLIENT_ID=<dropbox_key>
-    - ONLYOFFICE_URL=http://onlyoffice
+    - APPLICATION_URL=127.0.0.1:8334
     - CANARY=true
+    - OFFICE_URL=http://127.0.0.1:9980
+    - OFFICE_FILESTASH_URL=http://app:8334
     ports:
     - "8334:8334"
     volumes:
     - filestash:/app/data/state/
 
-  onlyoffice:
-    container_name: filestash_oods
-    image: onlyoffice/documentserver:7.1
+  wopi_server:
+    container_name: filestash_wopi
+    image: collabora/code:24.04.10.2.1
     restart: always
+    environment:
+    - "extra_params=--o:ssl.enable=false"
+    - "aliasgroup1=http://app:8334"
+    ports:
+    - "9980:9980"
 
 volumes:
     filestash: {}

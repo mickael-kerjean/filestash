@@ -11,5 +11,6 @@ func init() {
 	Hooks.Register.Onload(func() {
 		plugin_enable()
 		server_url()
+		origin()
 	})
 }
