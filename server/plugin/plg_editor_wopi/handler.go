@@ -43,6 +43,10 @@ var WOPIOverrides = `
 `
 
 func WOPIHandler_CheckFileInfo(w http.ResponseWriter, r *http.Request) {
+	if plugin_enable() == false {
+		SendErrorResult(w, ErrNotFound)
+		return
+	}
 	WOPIExecute(w, r)(func(ctx *App, fullpath string, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(map[string]any{
@@ -206,7 +210,7 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	myURL = origin()
+	myURL := origin()
 	if myURL == "" {
 		myURL := "http://"
 		if Config.Get("general.force_ssl").Bool() {
