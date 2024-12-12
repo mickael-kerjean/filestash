@@ -35,7 +35,7 @@ var WOPIRoutes = func(r *mux.Router, app *App) error {
 }
 
 var WOPIOverrides = `
-    if(mime === "application/word" || mime === "application/msword" ||
+    if (mime === "application/word" || mime === "application/msword" ||
         mime === "application/vnd.oasis.opendocument.text" || mime === "application/vnd.oasis.opendocument.spreadsheet" ||
         mime === "application/excel" || mime === "application/vnd.ms-excel" || mime === "application/powerpoint" ||
         mime === "application/vnd.ms-powerpoint" || mime === "application/vnd.oasis.opendocument.presentation" ) {
@@ -88,8 +88,12 @@ func WOPIHandler_PutFile(w http.ResponseWriter, r *http.Request) {
 
 func WOPIExecute(w http.ResponseWriter, r *http.Request) func(func(*App, string, http.ResponseWriter)) {
 	return func(fn func(*App, string, http.ResponseWriter)) {
-		path64 := mux.Vars(r)["path64"]
-		p, err := base64.StdEncoding.DecodeString(path64)
+		tmp := strings.SplitN(mux.Vars(r)["path64"], "::", 2)
+		if len(tmp) != 2 {
+			SendErrorResult(w, ErrNotValid)
+			return
+		}
+		p, err := base64.StdEncoding.DecodeString(tmp[1])
 		if err != nil {
 			SendErrorResult(w, ErrNotValid)
 			return
@@ -225,7 +229,11 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 		myURL += Config.Get("general.host").String()
 	}
 	p := u.Query()
-	p.Set("WOPISrc", myURL+"/api/wopi/files/"+base64.StdEncoding.EncodeToString([]byte(fullpath)))
+	backendID := GenerateID(map[string]string{
+		"id":   GenerateID(ctx.Session),
+		"path": fullpath,
+	})
+	p.Set("WOPISrc", myURL+"/api/wopi/files/"+backendID+"::"+base64.StdEncoding.EncodeToString([]byte(fullpath)))
 	p.Set("access_token", ctx.Authorization)
 	u.RawQuery = p.Encode()
 	if newHost := rewrite_url(); newHost != "" {
