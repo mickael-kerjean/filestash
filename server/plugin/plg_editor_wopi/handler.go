@@ -225,7 +225,12 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 	Log.Stdout("url0 %+v", u)
 	u.RawQuery = p.Encode()
 	Log.Stdout("url1 %+v", u)
-	u.Host = "127.0.0.1:9980" // TODO: ???
+	if newHost := rewrite_url(); newHost != "" {
+		if p, err := url.Parse(urlsrc); err == nil {
+			u.Host = p.Host
+			u.Scheme = p.Scheme
+		}
+	}
 	Log.Stdout("url2 %+v", u)
 	return u.String(), nil
 }

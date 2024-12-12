@@ -8,6 +8,7 @@ func init() {
 	Hooks.Register.Onload(func() {
 		server_url()
 		origin()
+		rewrite_url()
 		if plugin_enable() {
 			Hooks.Register.XDGOpen(WOPIOverrides)
 		}

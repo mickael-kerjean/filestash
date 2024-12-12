@@ -14,7 +14,7 @@ func plugin_enable() bool {
 		}
 		f.Name = "enable"
 		f.Type = "enable"
-		f.Target = []string{"office_server", "filestash_server"}
+		f.Target = []string{"office_server", "filestash_server", "rewrite_discovery_url"}
 		f.Description = "Enable/Disable the wopi office suite and options to manage word, excel and powerpoint documents."
 		f.Default = false
 		if u := os.Getenv("OFFICE_URL"); u != "" {
@@ -62,21 +62,21 @@ func origin() string {
 	}).String()
 }
 
-// func iframe_url() string {
-// 	return Config.Get("features.office.iframe_url").Schema(func(f *FormElement) *FormElement {
-// 		if f == nil {
-// 			f = &FormElement{}
-// 		}
-// 		f.Id = "filestash_server"
-// 		f.Name = "filestash_server"
-// 		f.Type = "text"
-// 		f.Description = "Location of the office server from the point of view of the browser"
-// 		f.Default = "http://localhost:9980"
-// 		f.Placeholder = "Eg: http://localhost:9980"
-// 		if u := os.Getenv("OFFICE_IFRAME_URL"); u != "" {
-// 			f.Default = u
-// 			f.Placeholder = fmt.Sprintf("Default: '%s'", u)
-// 		}
-// 		return f
-// 	}).String()
-// }
+func rewrite_url() string {
+	return Config.Get("features.office.rewrite_discovery_url").Schema(func(f *FormElement) *FormElement {
+		if f == nil {
+			f = &FormElement{}
+		}
+		f.Id = "rewrite_discovery_url"
+		f.Name = "rewrite_discovery_url"
+		f.Type = "text"
+		f.Description = "Rewrite the discovery URL to something else. Typical example is a deployment via docker where your office server resolve via http://wopi_service:9980 but such URL would be unknown when given to a browser. Keep empty if you're not doing a docker / k8s deployment"
+		f.Default = ""
+		f.Placeholder = "Eg: http://localhost:9980"
+		if u := os.Getenv("OFFICE_REWRITE_URL"); u != "" {
+			f.Default = u
+			f.Placeholder = fmt.Sprintf("Default: '%s'", u)
+		}
+		return f
+	}).String()
+}
