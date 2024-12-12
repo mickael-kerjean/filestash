@@ -5,6 +5,7 @@ import ajax from "../../lib/ajax.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
 import { animate, slideYIn, transition, opacityIn } from "../../lib/animate.js";
 import assert from "../../lib/assert.js";
+import { forwardURLParams } from "../../lib/path.js";
 import { createForm } from "../../lib/form.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
 import t from "../../locales/index.js";
@@ -204,7 +205,7 @@ export default async function(render) {
                     const GET = getURLParams();
                     if (GET["next"]) redirectURL = GET["next"];
                     else if (responseJSON.result) redirectURL = toHref("/files" + responseJSON.result);
-                    navigate(redirectURL);
+                    navigate(forwardURLParams(redirectURL, ["nav"]));
                 }),
                 rxjs.catchError((err) => {
                     toggleLoader(false);
