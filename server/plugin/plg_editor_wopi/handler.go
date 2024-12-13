@@ -131,17 +131,34 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
   <body>
     <style> body { margin: 0; } body, html{ height: 100%; } iframe { width: 100%; height: 100%; background: white; } </style>
     <iframe frameborder="0" src="{{ .server }}" class="hidden"></iframe>
+
+    <script type="module" src="/assets/components/loader.js"></script>
+    <component-loader />
     <script>
+        const postChild = (data) => $iframe.contentWindow.postMessage(JSON.stringify(data), "*");
+        const postParent = (data) => window.parent.postMessage(JSON.stringify(data));
+
         const $iframe = document.querySelector("iframe");
-        window.post = (data) => $iframe.contentWindow.postMessage(JSON.stringify(data), "*");
+        $iframe.onerror = () => postParent({type: "error", msg: "Not Found" });
+
         window.addEventListener("message", (event) => {
             let msg = JSON.parse(event.data);
             if (!msg) return;
-            if (msg.MessageId === "App_LoadingStatus" && msg.Values.Status === "Initialized") {
-                requestAnimationFrame(() => $iframe.classList.remove("hidden"));
-                post({ MessageId: "Host_PostmessageReady" });
+            switch(msg.MessageId) {
+                case "App_LoadingStatus": if (msg.Values.Status === "Initialized") {
+                        postChild({ MessageId: "Host_PostmessageReady" });
+                        requestAnimationFrame(() => $iframe.classList.remove("hidden"));
+                        document.querySelector("component-loader").remove();
+                    }
+                    break;
+                case "Action_Load_Resp": if (msg.Values.errorMsg) {
+                        postParent({ type: "error", msg: msg.Values.errorMsg });
+                    }
+                    break;
+                default:
+                    console.log("postMessage:", msg);
+                    break;
             }
-            console.log("MESSAGE WINDOW", msg); // TODO: loader handling
         });
     </script>
   </body>
