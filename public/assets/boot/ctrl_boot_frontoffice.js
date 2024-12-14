@@ -21,6 +21,7 @@ export default async function main() {
         await Promise.all([ // procedure with dependency on config
             setup_chromecast(),
             setup_title(),
+            verify_origin(),
         ]);
 
         window.dispatchEvent(new window.Event("pagechange"));
@@ -77,4 +78,22 @@ async function setup_polyfill() {
     if (!("replaceChildren" in document.body)) {
         await loadJS(import.meta.url, "../lib/polyfill.js");
     }
+}
+
+async function verify_origin() {
+    const origin = window.CONFIG["origin"];
+
+    // happy path
+    if (!origin) return;
+    else if (location.origin === origin) return;
+
+    // non happy path
+    const u = new URL(origin);
+    if (u.host === location.host) return;
+    else if (u.hostname === location.hostname) return;
+
+    setTimeout(() => {
+        location.href = origin + location.pathname + location.search;
+    }, 1000);
+    throw new Error("Redirecting to " + origin);
 }

@@ -367,6 +367,7 @@ func (this *Configuration) Export() interface{} {
 		AuthMiddleware          []string          `json:"auth"`
 		Thumbnailer             []string          `json:"thumbnailer"`
 		EnableChromecast        bool              `json:"enable_chromecast"`
+		Origin                  string            `json:"origin"`
 	}{
 		Editor:                  this.Get("general.editor").String(),
 		ForkButton:              this.Get("general.fork_button").Bool(),
@@ -403,6 +404,17 @@ func (this *Configuration) Export() interface{} {
 			return tArray
 		}(),
 		EnableChromecast: this.Get("features.protection.enable_chromecast").Bool(),
+		Origin: func() string {
+			host := this.Get("general.host").String()
+			if host == "" {
+				return ""
+			}
+			scheme := "http://"
+			if this.Get("general.force_ssl").Bool() {
+				scheme = "https://"
+			}
+			return scheme + host
+		}(),
 	}
 }
 

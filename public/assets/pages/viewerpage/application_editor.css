@@ -50,7 +50,7 @@
 
 /* SEARCH */
 .CodeMirror-dialog {
-    position: fixed;
+    position: sticky;
     left: 0;
     right: 0;
     background: #525659;
@@ -77,6 +77,9 @@
     background: transparent;
     width: 20em;
     color: white;
+    font-family: inherit;
+    padding-left: 5px;
+    font-size: inherit;
 }
 
 .CodeMirror-dialog button {
