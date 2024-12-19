@@ -1,6 +1,7 @@
 import { createElement, createRender, createFragment, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect, onClick, preventDefault } from "../../lib/rx.js";
 import { animate, slideXIn, slideYIn } from "../../lib/animate.js";
+import { forwardURLParams } from "../../lib/path.js";
 import { loadCSS } from "../../helpers/loader.js";
 import assert from "../../lib/assert.js";
 import { qs, qsa } from "../../lib/dom.js";
@@ -413,6 +414,7 @@ function generateLinkAttributes(selections) {
         }
     }
     href += selections.map(({ path }) => "path=" + encodeURIComponent(path)).join("&");
+    href = forwardURLParams(href, ["share"]);
     return `href="${href}" download="${filename}"`;
 }
 
