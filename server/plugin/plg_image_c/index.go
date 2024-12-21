@@ -109,8 +109,10 @@ func runner(fn func(uintptr, uintptr, int)) func(io.ReadCloser, int) (io.ReadClo
 			logErrors(inputGo.Close(), "plg_image_c::inputGo")
 			logErrors(outputC.Close(), "plg_image_c::outputC")
 		}()
-		io.Copy(tmpw, inputGo)
-		logErrors(tmpw.Close(), "plg_image_c::tmpw")
+		go func() {
+			io.Copy(tmpw, inputGo)
+			logErrors(tmpw.Close(), "plg_image_c::tmpw")
+		}()
 		return outputGo, nil
 	}
 }
