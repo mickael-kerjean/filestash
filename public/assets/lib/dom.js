@@ -1,12 +1,12 @@
 export function qs($node, selector) {
-    if (!$node) throw new Error("undefined node");
+    if (!$node) throw new TypeError("undefined node");
     const $target = $node.querySelector(selector);
-    if (!$target) throw new Error(`undefined node for selector '${selector}'`);
+    if (!$target) throw new DOMException(`undefined node for selector '${selector}'`, "NotFoundError");
     return $target;
 }
 
 export function qsa($node, selector) {
-    if (!$node) throw new Error("undefined node");
+    if (!$node) throw new TypeError("undefined node");
     return $node.querySelectorAll(selector);
 }
 

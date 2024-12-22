@@ -61,6 +61,9 @@ export default async function ctrlSidebar(render, nRestart = 0) {
             $sidebar.classList.add("hidden");
             $breadcrumbButton.classList.remove("hidden");
         }
+    }), rxjs.catchError((err) => {
+        if (err instanceof DOMException) return rxjs.EMPTY;
+        throw err;
     })));
     effect(onClick(qs($sidebar, `img[alt="close"]`)).pipe(rxjs.tap(() => {
         settingsSave({ visible: false }, "sidebar");
@@ -100,6 +103,7 @@ async function ctrlNavigationPane(render, { $sidebar, nRestart }) {
         } catch (err) {
             await cache().remove("/", false);
             if (nRestart < 2) ctrlSidebar(render, nRestart + 1);
+            else if (err instanceof DOMException) {}
             else throw err;
         }
     }
