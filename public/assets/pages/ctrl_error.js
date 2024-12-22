@@ -14,7 +14,14 @@ const strToHTML = (str) => str
     .replaceAll(">", "&gt;")
     .replaceAll(" ", "&nbsp;");
 
-export default function(render = createRender(qs(document.body, "[role=\"main\"]"))) {
+export default function(render) {
+    let hasBack = true;
+    if (!render) {
+        render = createRender(document.body);
+        try { render = createRender(qs(document.body, "[role=\"main\"]")); }
+        catch (err) { hasBack = false; }
+    }
+
     return function(err) {
         const [msg, trace] = processError(err);
 
@@ -22,7 +29,7 @@ export default function(render = createRender(qs(document.body, "[role=\"main\"]
         const $page = createElement(`
             <div>
                 <style>${css}</style>
-                <a href="${link}" class="backnav">
+                <a href="${link}" class="backnav ${!hasBack && "hidden"}">
                     <component-icon name="arrow_left"></component-icon>
                     ${t("home")}
                 </a>

@@ -32,6 +32,20 @@ func StaticHeaders(fn HandlerFunc) HandlerFunc {
 	})
 }
 
+func PublicCORS(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
+		header := res.Header()
+		header.Set("Access-Control-Allow-Origin", "*")
+		header.Set("Access-Control-Allow-Headers", "x-requested-with")
+		if req.Method == http.MethodOptions {
+			header.Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+			res.WriteHeader(http.StatusNoContent)
+			return
+		}
+		fn(ctx, res, req)
+	})
+}
+
 func IndexHeaders(fn HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()

@@ -1,5 +1,6 @@
 import rxjs, { ajax } from "./rx.js";
 import { AjaxError } from "./error.js";
+import { isSDK, urlSDK } from "../helpers/sdk.js";
 
 export default function(opts) {
     if (typeof opts === "string") opts = { url: opts, withCredentials: true };
@@ -7,6 +8,12 @@ export default function(opts) {
     if (!opts.headers) opts.headers = {};
     opts.headers["X-Requested-With"] = "XmlHttpRequest";
     if (window.BEARER_TOKEN) opts.headers["Authorization"] = `Bearer ${window.BEARER_TOKEN}`;
+
+    if (isSDK()) {
+        if (["/api/config"].indexOf(opts.url) === -1) opts.withCredentials = false;
+        opts.url = urlSDK(opts.url);
+    }
+
     return ajax({ withCredentials: true, ...opts, responseType: "text" }).pipe(
         rxjs.map((res) => {
             const result = res.xhr.responseText;

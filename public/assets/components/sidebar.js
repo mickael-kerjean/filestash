@@ -102,8 +102,8 @@ async function ctrlNavigationPane(render, { $sidebar, nRestart }) {
             $anchor.appendChild($list);
         } catch (err) {
             await cache().remove("/", false);
-            if (nRestart < 2) ctrlSidebar(render, nRestart + 1);
-            else if (err instanceof DOMException) {}
+            if (err instanceof DOMException) return;
+            else if (nRestart < 2) ctrlSidebar(render, nRestart + 1);
             else throw err;
         }
     }

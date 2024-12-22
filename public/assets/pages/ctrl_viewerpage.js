@@ -9,8 +9,8 @@ import { init as initMenubar } from "./viewerpage/component_menubar.js";
 import { init as initCache } from "./filespage/cache.js";
 
 import ctrlError from "./ctrl_error.js";
+import { getFilename, getDownloadUrl, getCurrentPath } from "./viewerpage/common.js";
 import { opener } from "./viewerpage/mimetype.js";
-import { getCurrentPath } from "./viewerpage/common.js";
 import { options } from "./viewerpage/model_files.js";
 
 import "../components/breadcrumb.js";
@@ -54,7 +54,7 @@ export default WithShell(async function(render) {
     effect(rxjs.of(window.CONFIG["mime"] || {}).pipe(
         rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
         rxjs.mergeMap(([opener, opts]) => rxjs.from(loadModule(opener)).pipe(rxjs.tap((module) => {
-            module.default(createRender($page), { ...opts, acl$: options() });
+            module.default(createRender($page), { ...opts, acl$: options(), getFilename, getDownloadUrl });
         }))),
         rxjs.catchError(ctrlError()),
     ));

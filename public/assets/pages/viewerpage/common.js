@@ -7,7 +7,7 @@ export function transition($node) {
 }
 
 export function getFilename() {
-    return basename(getCurrentPath()) || "untitled.dat";
+    return basename(getCurrentPath()) || "&nbsp;";
 }
 
 export function getDownloadUrl() {

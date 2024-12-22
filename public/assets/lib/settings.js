@@ -1,8 +1,8 @@
 const settings = JSON.parse(window.localStorage.getItem("settings") || "null") || {};
 
-export function settings_get(key) {
+export function settings_get(key, def = null) {
     if (settings[key] === undefined) {
-        return null;
+        return def;
     }
     return settings[key];
 }

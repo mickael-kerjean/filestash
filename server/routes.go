@@ -90,15 +90,15 @@ func Build(a App) *mux.Router {
 
 	// Application Resources
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, PluginInjector}
-	r.HandleFunc(WithBase("/api/config"), NewMiddlewareChain(PublicConfigHandler, middlewares, a)).Methods("GET")
 	r.HandleFunc(WithBase("/api/backend"), NewMiddlewareChain(AdminBackend, middlewares, a)).Methods("GET")
-	middlewares = []Middleware{StaticHeaders, SecureHeaders, PluginInjector}
+	r.HandleFunc(WithBase("/api/config"), NewMiddlewareChain(PublicConfigHandler, append(middlewares, PublicCORS), a)).Methods("GET", "OPTIONS")
+	middlewares = []Middleware{StaticHeaders, SecureHeaders, PublicCORS, PluginInjector}
 	if os.Getenv("CANARY") == "" { // TODO: remove after migration is done
-		r.PathPrefix(WithBase("/assets")).Handler(http.HandlerFunc(NewMiddlewareChain(LegacyStaticHandler("/"), middlewares, a))).Methods("GET")
+		r.PathPrefix(WithBase("/assets")).Handler(http.HandlerFunc(NewMiddlewareChain(LegacyStaticHandler("/"), middlewares, a))).Methods("GET", "OPTIONS")
 		r.HandleFunc(WithBase("/favicon.ico"), NewMiddlewareChain(LegacyStaticHandler("/assets/logo/"), middlewares, a)).Methods("GET")
 		r.HandleFunc(WithBase("/sw_cache.js"), NewMiddlewareChain(LegacyStaticHandler("/assets/worker/"), middlewares, a)).Methods("GET")
 	} else { // TODO: remove this after migration is done
-		r.PathPrefix(WithBase("/assets")).Handler(http.HandlerFunc(NewMiddlewareChain(ServeFile("/"), middlewares, a))).Methods("GET")
+		r.PathPrefix(WithBase("/assets")).Handler(http.HandlerFunc(NewMiddlewareChain(ServeFile("/"), middlewares, a))).Methods("GET", "OPTIONS")
 		r.HandleFunc(WithBase("/favicon.ico"), NewMiddlewareChain(ServeFavicon, middlewares, a)).Methods("GET")
 	}
 

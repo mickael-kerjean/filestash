@@ -2,7 +2,7 @@ import { createElement } from "../../lib/skeleton/index.js";
 import { qs } from "../../lib/dom.js";
 import { animate, slideYIn } from "../../lib/animate.js";
 import { loadCSS } from "../../helpers/loader.js";
-import { getFilename } from "./common.js";
+import { isSDK } from "../../helpers/sdk.js";
 import assert from "../../lib/assert.js";
 
 import "../../components/dropdown.js";
@@ -14,7 +14,7 @@ export default class ComponentMenubar extends HTMLElement {
         this.innerHTML = `
             <div class="container">
                 <span>
-                    <div class="titlebar ellipsis" style="opacity:0">${getFilename()}</div>
+                    <div class="titlebar ellipsis" style="opacity:0">${this.getAttribute("filename") || "&nbsp;"}</div>
                     <div class="action-item no-select"></div>
                 </span>
             </div>
@@ -45,6 +45,12 @@ export default class ComponentMenubar extends HTMLElement {
         }
         animate($item, { time: 250, keyframes: slideYIn(2) });
     }
+
+    add($button) {
+        const $item = assert.type(this.querySelector(".action-item"), HTMLElement);
+        $item.prepend($button);
+        animate($button, { time: 250, keyframes: slideYIn(2) });
+    }
 }
 
 export function buttonDownload(name, link) {
@@ -61,6 +67,7 @@ export function buttonDownload(name, link) {
     `);
     const $img = qs($el, "img");
     qs($el, "a").onclick = () => {
+        if (isSDK()) return;
         document.cookie = "download=yes; path=/; max-age=120;";
         $img.setAttribute("src", ICON.LOADING);
         const id = setInterval(() => {
@@ -92,6 +99,7 @@ export function buttonFullscreen($screen) {
 export function renderMenubar($menubar, ...buttons) {
     assert.type($menubar, ComponentMenubar);
     $menubar.render(buttons.filter(($button) => $button));
+    return $menubar;
 }
 
 export async function init() {

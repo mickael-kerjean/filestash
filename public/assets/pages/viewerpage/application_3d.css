@@ -1,3 +1,47 @@
-.component_3dviewer {
-    background: #525659;
+.component_3dviewer .threeviewer_container {
+    position: relative;
+    overflow: hidden;
+}
+
+.component_3dviewer .threeviewer_container, .component_3dviewer .threeviewer_container .drawarea {
+    height: 100%;
+}
+
+.component_3dviewer .toolbar.open {
+    transition: 0.3s ease transform;
+    transform: translateX(0px);
+    height: 300px;
+}
+.component_3dviewer .toolbar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translateX(250px);
+    transition: 0.1s ease transform;
+    border-left: 1px solid #e2e2e205;
+    background: #e2e2e205;
+    color: var(--dark);
+    width: 250px;
+    z-index: 1;
+    padding-top: 20px;
+}
+
+.component_3dviewer .toolbar label {
+    display: block;
+    text-transform: capitalize;
+    margin-bottom: -5px;
+}
+
+.component_3dviewer .toolbar label .component_checkbox {
+    margin-top: -10px;
+}
+
+.component_3dviewer .toolbar label .text {
+    margin-left: -10px;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: calc(100% - 25px);
+    cursor: pointer;
 }

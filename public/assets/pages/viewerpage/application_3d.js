@@ -1,38 +1,42 @@
-import { createElement, onDestroy } from "../../lib/skeleton/index.js";
+import { createElement, createRender, nop } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { loadCSS } from "../../helpers/loader.js";
-import { join } from "../../lib/path.js";
 import { createLoader } from "../../components/loader.js";
-import { getFilename, getDownloadUrl } from "./common.js";
-
-import * as THREE from "../../lib/vendor/three/three.module.js";
-import { OrbitControls } from "../../lib/vendor/three/OrbitControls.js";
-import { GLTFLoader } from "../../lib/vendor/three/GLTFLoader.js";
-import { OBJLoader } from "../../lib/vendor/three/OBJLoader.js";
-import { STLLoader } from "../../lib/vendor/three/STLLoader.js";
-import { FBXLoader } from "../../lib/vendor/three/FBXLoader.js";
-import { Rhino3dmLoader } from "../../lib/vendor/three/3DMLoader.js";
+import ctrlError from "../ctrl_error.js";
 
 import componentDownloader, { init as initDownloader } from "./application_downloader.js";
-
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
-export default function(render, { mime }) {
+import setup3D, { getLoader } from "./application_3d/init.js";
+import withLight from "./application_3d/scene_light.js";
+import withCube from "./application_3d/scene_cube.js";
+import ctrlToolbar from "./application_3d/toolbar.js";
+
+export default async function(render, { mime, acl$, getDownloadUrl = nop, getFilename = nop, hasCube = true, hasMenubar = true }) {
     const $page = createElement(`
         <div class="component_3dviewer">
-            <component-menubar></component-menubar>
-            <div class="threeviewer_container"></div>
+            <component-menubar filename="${getFilename() || ""}" class="${!hasMenubar && "hidden"}"></component-menubar>
+            <div class="threeviewer_container">
+              <div class="drawarea"></div>
+              <div class="toolbar scroll-y"></div>
+            </div>
         </div>
     `);
     render($page);
-    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
 
-    const removeLoader = createLoader(qs($page, ".threeviewer_container"));
-    effect(rxjs.of(getLoader(mime)).pipe(
+    const $menubar = renderMenubar(
+        qs($page, "component-menubar"),
+        buttonDownload(getFilename(), getDownloadUrl()),
+    );
+    const $draw = qs($page, ".drawarea");
+    const $toolbar = qs($page, ".toolbar");
+
+    const removeLoader = createLoader($draw);
+    await effect(rxjs.of(getLoader(mime)).pipe(
         rxjs.mergeMap(([loader, createMesh]) => {
             if (!loader) {
-                componentDownloader(render);
+                componentDownloader(render, { mime, acl$ });
                 return rxjs.EMPTY;
             }
             return rxjs.of([loader, createMesh]);
@@ -44,81 +48,46 @@ export default function(render, { mime }) {
             (err) => observer.error(err),
         ))),
         removeLoader,
-        rxjs.mergeMap((mesh) => {
-            // setup the dom
-            const renderer = new THREE.WebGLRenderer();
-            renderer.setSize($page.clientWidth, $page.clientHeight);
-            renderer.setClearColor(0x525659);
-            qs($page, ".threeviewer_container").appendChild(renderer.domElement);
-
-            // setup the scene
-            const scene = new THREE.Scene();
-            scene.add(mesh);
-
-            // setup the main threeJS components: camera, controls & lighting
-            const camera = new THREE.PerspectiveCamera(45, $page.clientWidth / $page.clientHeight, 1, 1000);
-            const controls = new OrbitControls(camera, renderer.domElement);
-            [
-                new THREE.AmbientLight(0xffffff, 1.5),
-                new THREE.DirectionalLight(0xffffff, 1.5),
-                new THREE.DirectionalLight(0xffffff, 1.5),
-            ].forEach((light, i) => {
-                if (i === 1) light.position.set(100, 100, 100);
-                else if (i === 2) light.position.set(-100, -100, -100);
-                scene.add(light);
-            });
-
-            // center everything
-            const box = new THREE.Box3().setFromObject(mesh);
-            const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-            camera.position.set(center.x, center.y, center.z + Math.max(size.x, size.y, size.z) * 1.8);
-            controls.target.copy(center);
-
-            // resize handler
-            const onResize = () => {
-                camera.aspect = $page.clientWidth / $page.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize($page.clientWidth, $page.clientHeight);
-            };
-            window.addEventListener("resize", onResize);
-            onDestroy(() => window.removeEventListener("resize", onResize));
-
-            return rxjs.animationFrames().pipe(rxjs.tap(() => {
-                controls.update();
-                renderer.render(scene, camera);
-            }));
-        }),
+        rxjs.mergeMap((mesh) => create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube })),
+        rxjs.catchError(ctrlError()),
     ));
 }
 
-function getLoader(mime) {
-    const identity = (s) => s;
-    switch (mime) {
-    case "application/object":
-        return [new OBJLoader(), identity];
-    case "model/3dm":
-        const loader = new Rhino3dmLoader();
-        loader.setLibraryPath(join(import.meta.url, "../../lib/vendor/three/rhino3dm/"));
-        return [loader, identity];
-    case "model/gtlt-binary":
-    case "model/gltf+json":
-        return [new GLTFLoader(), (gltf) => gltf.scene];
-    case "model/stl":
-        return [new STLLoader(), (geometry) => new THREE.Mesh(
-            geometry,
-            new THREE.MeshPhongMaterial(),
-        )];
-    case "application/fbx":
-        return [new FBXLoader(), identity];
-    default:
-        return [null, null];
-    }
+function create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube }) {
+    const refresh = [];
+    const { renderer, camera, scene, controls, box } = setup3D({
+        $page: $draw,
+        mesh,
+        refresh,
+        $menubar,
+    });
+
+    withLight({ scene, box });
+    if (hasCube) withCube({ camera, renderer, refresh, controls });
+    ctrlToolbar(createRender($toolbar), {
+        mesh,
+        controls,
+        camera,
+        refresh,
+        $menubar,
+        $toolbar,
+    });
+
+    return rxjs.animationFrames().pipe(rxjs.tap(() => {
+        refresh.forEach((fn) => fn());
+    }));
 }
 
-export function init() {
+export function init($root) {
+    const priors = ($root && [
+        $root.classList.add("component_page_viewerpage"),
+        loadCSS(import.meta.url, "./component_menubar.css"),
+        loadCSS(import.meta.url, "../ctrl_viewerpage.css"),
+    ]);
+
     return Promise.all([
         loadCSS(import.meta.url, "./application_3d.css"),
         initDownloader(),
+        ...priors,
     ]);
 }
