@@ -9,7 +9,7 @@ export function isSDK() {
 export function urlSDK(url) {
     const importURL = new URL(import.meta.url);
     if (new RegExp("^/").test(url) === false) {
-        url = "/" + url
+        url = "/" + url;
     }
     return importURL.origin + url;
 }

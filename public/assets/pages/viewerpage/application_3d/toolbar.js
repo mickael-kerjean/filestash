@@ -42,26 +42,16 @@ function buildDOM($fragment, child, left, { camera, controls }) {
         </label>
     `);
     qs($label, "input").onchange = () => child.visible = !child.visible;
-    let block = false; let blockID = null;
     $label.onclick = async(e) => {
         if (e.target.nodeName === "INPUT" || e.target.classList.contains("component_checkbox")) return;
         e.preventDefault(); e.stopPropagation();
-        block = true;
-        clearTimeout(blockID);
-        blockID = setTimeout(() => block = false, 2000);
-        $label.onmouseenter();
+        getRootObject(child).traverse((c) => {
+            if (!c.material) return;
+            c.material.opacity = c.id === child.id || c.parent.id === child.id ? 1 : 0.2;
+            c.material.depthWrite = c.material.opacity === 1;
+        });
         await flyTo({ mesh: child, camera, controls });
     };
-    $label.onmouseenter = () => block === false && getRootObject(child).traverse((c) => {
-        if (!c.material) return;
-        c.material.opacity = c.id === child.id || c.parent.id === child.id ? 1 : 0.2;
-        c.material.depthWrite = c.material.opacity === 1;
-    });
-    $label.onmouseleave = () => block === false && getRootObject(child).traverse((c) => {
-        if (!c.material) return;
-        c.material.depthWrite = true;
-        c.material.opacity = 1;
-    });
     $fragment.appendChild($label);
 }
 
