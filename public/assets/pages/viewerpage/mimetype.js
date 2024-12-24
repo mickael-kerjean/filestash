@@ -24,7 +24,7 @@ export function opener(file = "", mimes) {
         return ["audio", { mime }];
     } else if (mime === "application/x-form") {
         return ["form", { mime }];
-    } else if (mime === "application/geo+json" || mime === "application/vnd.ogc.wms_xml") {
+    } else if (mime === "application/geo+json" || mime === "application/vnd.ogc.wms_xml" || mime === "application/vnd.shp") {
         return ["map", { mime }];
     } else if (type === "video" || mime === "application/ogg") {
         return ["video", { mime }];

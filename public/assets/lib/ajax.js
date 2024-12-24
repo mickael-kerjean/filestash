@@ -5,6 +5,7 @@ import { isSDK, urlSDK } from "../helpers/sdk.js";
 export default function(opts) {
     if (typeof opts === "string") opts = { url: opts, withCredentials: true };
     else if (typeof opts !== "object") throw new Error("unsupported call");
+
     if (!opts.headers) opts.headers = {};
     opts.headers["X-Requested-With"] = "XmlHttpRequest";
     if (window.BEARER_TOKEN) opts.headers["Authorization"] = `Bearer ${window.BEARER_TOKEN}`;
@@ -14,13 +15,17 @@ export default function(opts) {
         opts.url = urlSDK(opts.url);
     }
 
-    return ajax({ withCredentials: true, ...opts, responseType: "text" }).pipe(
+    const responseType = opts.responseType === "json" ? "text" : opts.responseType;
+    return ajax({
+        withCredentials: true,
+        ...opts,
+        responseType,
+    }).pipe(
         rxjs.map((res) => {
-            const result = res.xhr.responseText;
             if (opts.responseType === "json") {
-                const json = JSON.parse(result);
-                res.responseJSON = json;
-                if (json.status !== "ok") {
+                const result = res.xhr.responseText;
+                res.responseJSON = JSON.parse(result);
+                if (res.responseJSON.status !== "ok") {
                     throw new AjaxError("Oups something went wrong", result);
                 }
             }
@@ -31,6 +36,14 @@ export default function(opts) {
 }
 
 function processError(xhr, err) {
+    let responseText = "";
+    try {
+        responseText = xhr?.responseText;
+    } catch (err) {
+        if (err.name === "InvalidStateError") {} // InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').
+        else throw err;
+    }
+
     const response = (function(content) {
         let message = content;
         try {
@@ -46,10 +59,9 @@ function processError(xhr, err) {
             };
         }
         return message || { message: "empty response" };
-    })(xhr?.responseText || "");
+    })(responseText);
 
     const message = response.message || null;
-
     if (window.navigator.onLine === false) {
         return new AjaxError("Connection Lost", err, "NO_INTERNET");
     }
@@ -85,14 +97,14 @@ function processError(xhr, err) {
             err, "CONFLICT"
         );
     case 0:
-        switch (xhr?.responseText) {
+        switch (responseText) {
         case "":
             return new AjaxError(
                 "Service unavailable, if the problem persist, contact your administrator",
                 err, "INTERNAL_SERVER_ERROR"
             );
         default:
-            return new AjaxError(xhr.responseText, err, "INTERNAL_SERVER_ERROR");
+            return new AjaxError(responseText, err, "INTERNAL_SERVER_ERROR");
         }
     default:
         return new AjaxError(message || "Oups something went wrong", err);

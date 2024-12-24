@@ -1,12 +1,13 @@
-import { createElement } from "../../lib/skeleton/index.js";
-import rxjs from "../../lib/rx.js";
+import { createElement, nop } from "../../lib/skeleton/index.js";
+import rxjs, { effect } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { extname } from "../../lib/path.js";
+import ajax from "../../lib/ajax.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
-import { getFilename, getDownloadUrl } from "./common.js";
+import { createLoader } from "../../components/loader.js";
 
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
-import { cat } from "./model_files.js";
+import ctrlError from "../ctrl_error.js";
 
 const DEFAULT_TILE_SERVER = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"; // "https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png",
 
@@ -15,10 +16,10 @@ const PLUGINS = [
     // ... add more plugins via frontend override
 ];
 
-export default async function(render) {
+export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop }) {
     const $page = createElement(`
         <div class="component_map">
-            <component-menubar></component-menubar>
+            <component-menubar filename="${getFilename() || ""}"></component-menubar>
             <div id="map"></div>
         </div>
     `);
@@ -29,20 +30,18 @@ export default async function(render) {
     );
 
     const map = window.L.map("map");
-
-    const fileview = [getFilename()];
-    for (let i=0; i<fileview.length; i++) {
-        await cat(fileview[i]).pipe(rxjs.mergeMap(async(content) => {
-            switch (extname(fileview[i])) {
-            case "geojson":
-                return loadGeoJSON(map, content);
-            case "wms":
-                return loadWMS(map, content);
-            default:
-                throw new Error("Not Supported");
-            }
-        })).toPromise();
-    }
+    const removeLoader = createLoader(qs($page, "#map"));
+    await effect(ajax({ url: getDownloadUrl(), responseType: "arraybuffer" }).pipe(
+        rxjs.map(({ response }) => response),
+        rxjs.mergeMap(async(data) => { switch(mime) {
+            case "application/geo+json": return loadGeoJSON(map, JSON.parse(new TextDecoder().decode(data)));
+            case "application/vnd.ogc.wms_xml": return loadWMS(map, new TextDecoder().decode(data));
+            case "application/vnd.shp": return await loadSHP(map, data);
+            default: throw new Error(`Insupported mime type: '${mime}'`);
+        }}),
+        removeLoader,
+        rxjs.catchError(ctrlError()),
+    ));
 
     for (let i=0; i<PLUGINS.length; i++) {
         await import(`./application_map/${PLUGINS[i]}.js`)
@@ -50,11 +49,17 @@ export default async function(render) {
     }
 }
 
-export async function init() {
+export async function init($root) {
+    const priors = ($root && [
+        $root.classList.add("component_page_viewerpage"),
+        loadCSS(import.meta.url, "./component_menubar.css"),
+        loadCSS(import.meta.url, "../ctrl_viewerpage.css"),
+    ]);
     await Promise.all([
         loadJS(import.meta.url, "../../lib/vendor/leaflet/leaflet.js"),
         loadCSS(import.meta.url, "../../lib/vendor/leaflet/leaflet.css"),
         loadCSS(import.meta.url, "./application_map.css"),
+        ...priors,
     ]);
 }
 
@@ -63,7 +68,7 @@ function loadGeoJSON(map, content) {
 
     const overlay = { global: window.L.layerGroup([]) };
     let n = 0;
-    const geojson = window.L.geoJSON(JSON.parse(content), {
+    const geojson = window.L.geoJSON(content, {
         onEachFeature: (feature, shape) => {
             n += 1;
             if (n > 10000) return;
@@ -128,4 +133,14 @@ function loadWMS(map, content) {
     map.setView([0, 0], 1);
     window.L.tileLayer.wms(svcURL, { layers: _layer }).addTo(map);
     window.L.control.layers(baseLayers, {}).addTo(map);
+}
+
+async function loadSHP(map, content) {
+    const module = await import("../../lib/vendor/shp-to-geojson.browser.js");
+    const shp = new module.default({});
+    shp._shpBuffer = module.Buffer.from(content);
+    shp._tableBuffer = module.Buffer.from(new ArrayBuffer(16));
+    shp._init();
+    await shp.load();
+    loadGeoJSON(map, shp.getGeoJson());
 }
