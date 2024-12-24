@@ -9,11 +9,6 @@ import { AjaxError, ApplicationError } from "../lib/error.js";
 
 import "../components/icon.js";
 
-const strToHTML = (str) => str
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll(" ", "&nbsp;");
-
 export default function(render) {
     let hasBack = true;
     if (!render) {
@@ -25,7 +20,10 @@ export default function(render) {
     return function(err) {
         const [msg, trace] = processError(err);
 
-        const link = forwardURLParams(calculateBacklink(fromHref(window.location.pathname)), ["share"]);
+        let link = forwardURLParams(calculateBacklink(fromHref(window.location.pathname)), ["share"]);
+        if (err instanceof AjaxError && err.err().status === 401) {
+            link = fromHref("/login?next=" + encodeURIComponent(forwardURLParams(fromHref(window.location.pathname), ["share"])));
+        }
         const $page = createElement(`
             <div>
                 <style>${css}</style>
@@ -40,7 +38,7 @@ export default function(render) {
                         <p>
                             <button class="light" data-bind="details">${t("More details")}</button>
                             <button class="primary" data-bind="refresh">${t("Reload")}</button>
-                            <pre class="hidden"><code>${strToHTML(trace)}</code></pre>
+                            <pre class="hidden"><code>${formatTrace(trace)}</code></pre>
                         </p>
                     </div>
                 </div>
@@ -90,6 +88,17 @@ trace:   ${err.stack || "N/A"}`;
     }
     return [msg, trace.trim()];
 }
+
+function formatTrace(str) {
+    return str
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll(" ", "&nbsp;")
+        .split("\n")
+        .map((line) => line.indexOf("/lib/vendor/") === -1 ? line : `<span style="opacity:0.25">${line}</span>`)
+        .join("\n");
+}
+
 
 const css = `
 .error-page {
