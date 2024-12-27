@@ -99,7 +99,6 @@ function formatTrace(str) {
         .join("\n");
 }
 
-
 const css = `
 .error-page {
   width: 80%;

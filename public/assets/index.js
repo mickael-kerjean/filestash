@@ -47,7 +47,7 @@ function execute(module, $app, opts) {
 
 function poweredBy($app) {
     return createElement(`
-        <div style="position: absolute; bottom: 0; left: 0; font-size: 0.9rem; display: inline-block;">
+        <div style="position: absolute; bottom: 0; left: 0; font-size: 0.9rem; display: inline-block; z-index: 2">
             Powered By <a href="https://www.filestash.app" style="text-decoration:underline;">Filestash</a>
         </div>
     `);

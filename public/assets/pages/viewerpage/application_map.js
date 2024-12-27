@@ -1,7 +1,6 @@
 import { createElement, nop } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
-import { extname } from "../../lib/path.js";
 import ajax from "../../lib/ajax.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
@@ -33,12 +32,14 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
     const removeLoader = createLoader(qs($page, "#map"));
     await effect(ajax({ url: getDownloadUrl(), responseType: "arraybuffer" }).pipe(
         rxjs.map(({ response }) => response),
-        rxjs.mergeMap(async(data) => { switch(mime) {
+        rxjs.mergeMap(async(data) => {
+            switch (mime) {
             case "application/geo+json": return loadGeoJSON(map, JSON.parse(new TextDecoder().decode(data)));
             case "application/vnd.ogc.wms_xml": return loadWMS(map, new TextDecoder().decode(data));
             case "application/vnd.shp": return await loadSHP(map, data);
             default: throw new Error(`Insupported mime type: '${mime}'`);
-        }}),
+            }
+        }),
         removeLoader,
         rxjs.catchError(ctrlError()),
     ));

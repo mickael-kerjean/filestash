@@ -39,29 +39,22 @@ function processError(xhr, err) {
     let responseText = "";
     try {
         responseText = xhr?.responseText;
-    } catch (err) {
-        if (err.name === "InvalidStateError") {} // InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').
-        else throw err;
-    }
+        // InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').
+    } catch (err) {}
 
-    const response = (function(content) {
-        let message = content;
+    const message = (function(content) {
         try {
-            message = JSON.parse(content);
+            return JSON.parse(content).message;
         } catch (err) {
-            return {
-                message: Array.from(new Set(
-                    content.replace(/<[^>]*>/g, "")
-                        .replace(/\n{2,}/, "\n")
-                        .trim()
-                        .split("\n")
-                )).join(" ")
-            };
+            return Array.from(new Set(
+                content.replace(/<[^>]*>/g, "")
+                    .replace(/\n{2,}/, "\n")
+                    .trim()
+                    .split("\n")
+            )).join(" ");
         }
-        return message || { message: "empty response" };
     })(responseText);
 
-    const message = response.message || null;
     if (window.navigator.onLine === false) {
         return new AjaxError("Connection Lost", err, "NO_INTERNET");
     }

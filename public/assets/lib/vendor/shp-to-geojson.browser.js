@@ -1,3 +1,4 @@
+// @ts-nocheck
 function createCommonjsModule(fn) {
   var module = { exports: {} };
 	return fn(module, module.exports), module.exports;
@@ -2740,3 +2741,4 @@ class BrowserShp extends Shp {
 
 export { BrowserShp as default };
 export const Buffer = buffer.Buffer;
+export const DBase = Properties;

@@ -127,6 +127,9 @@
       ],
       "no-template-curly-in-string": [
         "off"
+      ],
+      "new-cap": [
+        "off"
       ]
     }
   },
