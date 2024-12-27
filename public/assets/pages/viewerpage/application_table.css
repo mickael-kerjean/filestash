@@ -1,0 +1,86 @@
+.component_tableviewer {
+    height: 100%;
+    background: var(--bg-color);
+}
+.component_tableviewer component-menubar input[type="search"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: inherit;
+    border-radius: 3px;
+    margin-right: 5px;
+    margin-top: 2px;
+    padding-left: 3px;
+}
+.component_tableviewer input[type="search"]::-webkit-search-cancel-button {
+  appearance: none;
+}
+.component_tableviewer .component_table_container {
+    height: 100%;
+    position: relative;
+}
+.component_tableviewer .table {
+    font-family: monospace;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    white-space: nowrap;
+    display: block;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+}
+.component_tableviewer .table .thead {
+    overflow-x: scroll;
+    scrollbar-width: none;
+}
+.component_tableviewer .table .tbody {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.component_tableviewer .thead > div, .component_tableviewer .tbody > div {
+    display: block;
+}
+
+.component_tableviewer .table .thead .th {
+    padding: 10px 10px;
+    font-weight: normal;
+    display: inline-block;
+    position: sticky;
+    top: 0;
+    background: var(--dark);
+    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+.component_tableviewer .table .thead .th img {
+    height: 13px;
+    border-radius: 5px;
+    position: absolute;
+    margin-top: 4px;
+    right: 7px;
+    cursor: pointer;
+    transition: ease transform 0.2s;
+    filter: contrast(1) invert(1);
+}
+.component_tableviewer .table .tbody .td {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-top: -1px;
+    display: inline-block;
+    padding: 5px 10px;
+    line-height: 17px;
+    height: 17px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+.component_tableviewer .table .tbody .td .empty {
+    opacity: 0.4;
+}
+
+.component_tableviewer .table .tbody .tr:hover .td {
+    background: var(--border);
+}
