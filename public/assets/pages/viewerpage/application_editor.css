@@ -31,6 +31,13 @@
     padding: 5px;
 }
 
+.CodeMirror .CodeMirror-cursor{
+    background-color: rgba(198,200,204,0.65);
+}
+.CodeMirror .cm-vim-message {
+    color: var(--error)!important;
+}
+
 /* HIDE LINE NUMBERS ON MOBILE */
 @media screen and (max-width: 400px) {
     .CodeMirror-sizer {
