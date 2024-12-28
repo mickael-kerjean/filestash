@@ -9,6 +9,7 @@ export const toHref = (href) => base() + href;
 export async function init($root) {
     window.addEventListener("popstate", triggerPageChange);
     $root.addEventListener("click", (e) => {
+        if (e.ctrlKey || e.metaKey) return;
         const href = _getHref(e.target, $root);
         return !href ? null : e.preventDefault() || navigate(href);
     });
