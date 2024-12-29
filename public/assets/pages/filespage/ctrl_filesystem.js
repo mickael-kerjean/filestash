@@ -137,7 +137,7 @@ export default async function(render) {
             /// ///////////////////////////////////
             // CASE 1: virtual scroll isn't enabled
             if (files.length <= VIRTUAL_SCROLL_MINIMUM_TRIGGER) {
-                return rxjs.EMPTY;
+                return rxjs.of({ virtual: false });
             }
 
             /// ///////////////////////////////////
@@ -157,6 +157,7 @@ export default async function(render) {
             setHeight(0);
             const top = ($node) => $node.getBoundingClientRect().top;
             return rxjs.of({
+                virtual: true,
                 files,
                 read_only,
                 path,
@@ -176,9 +177,14 @@ export default async function(render) {
             BLOCK_SIZE, COLUMN_PER_ROW, FILE_HEIGHT,
             MARGIN,
             currentState,
-            /* height, */ setHeight,
+            setHeight,
             $list,
-        }) => rxjs.fromEvent($page.closest(".scroll-y"), "scroll", { passive: true }).pipe(
+            virtual,
+        }) => (
+            virtual ?
+                rxjs.fromEvent($page.closest(".scroll-y"), "scroll", { passive: true }) :
+                rxjs.EMPTY
+        ).pipe(
             rxjs.map((e) => {
                 // 0-------------0-----------1-----------2-----------3 ....
                 //    [padding]     $block1     $block2     $block3    ....
