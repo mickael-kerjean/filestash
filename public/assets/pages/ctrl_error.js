@@ -1,5 +1,5 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
-import { toHref, fromHref } from "../lib/skeleton/router.js";
+import { toHref, fromHref, navigate } from "../lib/skeleton/router.js";
 import { forwardURLParams } from "../lib/path.js";
 import rxjs, { effect, applyMutation } from "../lib/rx.js";
 import { qs } from "../lib/dom.js";
@@ -20,8 +20,9 @@ export default function(render) {
     return function(err) {
         const [msg, trace] = processError(err);
 
+        const shouldRedirectLogin = err instanceof AjaxError && err.err().status === 401;
         let link = forwardURLParams(calculateBacklink(fromHref(window.location.pathname)), ["share"]);
-        if (err instanceof AjaxError && err.err().status === 401) {
+        if (shouldRedirectLogin) {
             link = fromHref("/login?next=" + encodeURIComponent(forwardURLParams(fromHref(window.location.pathname), ["share"])));
         }
         const $page = createElement(`
@@ -57,7 +58,7 @@ export default function(render) {
         const $refresh = qs($page, "button[data-bind=\"refresh\"]");
         if (shouldHideRefreshButton) $refresh.remove();
         else effect(rxjs.fromEvent($refresh, "click").pipe(
-            rxjs.tap(() => location.reload())
+            rxjs.tap(() => shouldRedirectLogin ? navigate(link) : location.reload()),
         ));
 
         return rxjs.EMPTY;

@@ -7,6 +7,7 @@ export default function(opts) {
     else if (typeof opts !== "object") throw new Error("unsupported call");
 
     if (!opts.headers) opts.headers = {};
+    if (!opts.responseType) opts.responseType = "text";
     opts.headers["X-Requested-With"] = "XmlHttpRequest";
     if (window.BEARER_TOKEN) opts.headers["Authorization"] = `Bearer ${window.BEARER_TOKEN}`;
 
