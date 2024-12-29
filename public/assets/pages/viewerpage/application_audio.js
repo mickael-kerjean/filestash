@@ -12,16 +12,16 @@ import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
 import { ICON } from "./common_icon.js";
 import { formatTimecode } from "./common_player.js";
-import { transition, getFilename, getDownloadUrl } from "./common.js";
+import { transition } from "./common.js";
 
 const STATUS_PLAYING = "PLAYING";
 const STATUS_PAUSED = "PAUSED";
 const STATUS_BUFFERING = "BUFFERING";
 
-export default function(render) {
+export default function(render, { getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_audioplayer">
-            <component-menubar></component-menubar>
+            <component-menubar filename="${getFilename()}"></component-menubar>
             <div class="audioplayer_container">
                 <div class="audioplayer_box">
                     <div data-bind="loader" class="hidde">

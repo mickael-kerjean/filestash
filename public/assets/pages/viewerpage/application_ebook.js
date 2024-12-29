@@ -6,14 +6,12 @@ import { loadJS, loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
-import { getFilename, getDownloadUrl } from "./common.js";
-
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
-export default function(render) {
+export default function(render, { getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_ebookviewer">
-            <component-menubar></component-menubar>
+            <component-menubar filename="${getFilename()}"></component-menubar>
             <div class="ebookviewer_container" data-bind="epub"></div>
         </div>
     `);

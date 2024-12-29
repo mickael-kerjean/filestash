@@ -11,17 +11,17 @@ import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 import { Chromecast } from "../../model/chromecast.js";
 
-import { transition, getFilename, getDownloadUrl } from "./common.js";
+import { transition } from "./common.js";
 
 import componentMetadata, { init as initMetadata } from "./application_image_metadata.js";
 import componentPager, { init as initPager } from "./component_pager.js";
 
 import { renderMenubar, buttonDownload, buttonFullscreen } from "./component_menubar.js";
 
-export default function(render) {
+export default function(render, { getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_imageviewer">
-            <component-menubar></component-menubar>
+            <component-menubar filename="${getFilename()}"></component-menubar>
             <div class="component_image_container">
                 <div class="images_wrapper">
                     <img class="photo idle hidden" src="${getDownloadUrl()}&size=${window.innerWidth}">

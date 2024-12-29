@@ -6,22 +6,22 @@ import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { join } from "../../lib/path.js";
 import ctrlError from "../ctrl_error.js";
 
-import { transition, getFilename, getDownloadUrl } from "./common.js";
+import { transition } from "./common.js";
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
 import "../../components/icon.js";
 
 const hasNativePDF = "application/pdf" in window.navigator.mimeTypes && !!window.chrome;
 
-export default async function(render) {
+export default async function(render, opts) {
     const ctrl = hasNativePDF ? ctrlPDFNative : ctrlPDFJs;
-    ctrl(render);
+    ctrl(render, opts);
 }
 
-function ctrlPDFNative(render) {
+function ctrlPDFNative(render, { getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_pdfviewer">
-            <component-menubar></component-menubar>
+            <component-menubar filename="${getFilename()}"></component-menubar>
             <div data-bind="pdf">
                 <embed
                     class="hidden"
@@ -43,10 +43,10 @@ function ctrlPDFNative(render) {
     ));
 }
 
-async function ctrlPDFJs(render) {
+async function ctrlPDFJs(render, { getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_pdfviewer">
-            <component-menubar></component-menubar>
+            <component-menubar filename="${getFilename()}"></component-menubar>
             <div data-bind="pdf"></div>
         </div>
     `);

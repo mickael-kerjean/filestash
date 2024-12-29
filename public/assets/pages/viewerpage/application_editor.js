@@ -11,7 +11,6 @@ import t from "../../locales/index.js";
 
 import ctrlError from "../ctrl_error.js";
 import ctrlDownloader, { init as initDownloader } from "./application_downloader.js";
-import { getFilename, getDownloadUrl } from "./common.js";
 import { $ICON } from "./common_fab.js";
 import { cat, save } from "./model_files.js";
 
@@ -21,10 +20,10 @@ import "../../components/icon.js";
 
 const TIME_BEFORE_ABORT_EDIT = 5000;
 
-export default async function(render, { acl$ }) {
+export default async function(render, { acl$, getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_ide">
-            <component-menubar class="hidden"></component-menubar>
+            <component-menubar filename="${getFilename()}" class="hidden"></component-menubar>
             <div class="component_editor hidden"></div>
             <button is="component-fab" class="hidden"></button>
         </div>

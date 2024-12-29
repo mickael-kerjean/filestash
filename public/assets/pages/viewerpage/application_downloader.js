@@ -5,15 +5,14 @@ import { loadCSS } from "../../helpers/loader.js";
 import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 
-import { transition, getFilename, getDownloadUrl } from "./common.js";
-
+import { transition } from "./common.js";
 import "../../components/icon.js";
 import "./component_menubar.js";
 
-export default async function(render, { acl$ }) {
+export default async function(render, { acl$, getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_filedownloader">
-            <component-menubar></component-menubar>
+            <component-menubar filename="${getFilename()}"></component-menubar>
             <div class="download_button no-select">
                 <a download="${getFilename()}" href="${getDownloadUrl()}">${t("DOWNLOAD")}</a>
                 <component-icon name="loading" class="hidden"></component-icon>

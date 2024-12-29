@@ -16,10 +16,10 @@ import "./component_menubar.js";
 import "../../components/icon.js";
 import "../../components/fab.js";
 
-export default function(render, { acl$ }) {
+export default function(render, { acl$, getFilename }) {
     const $page = createElement(`
         <div class="component_formviewer">
-            <component-menubar></component-menubar>
+            <component-menubar filename="${getFilename()}"></component-menubar>
             <div class="formviewer_container hidden">
                 <form class="sticky box"></form>
             </div>

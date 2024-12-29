@@ -10,7 +10,7 @@ import Hls from "../../lib/vendor/hlsjs/hls.js";
 
 import ctrlError from "../ctrl_error.js";
 
-import { transition, getFilename, getDownloadUrl } from "./common.js";
+import { transition } from "./common.js";
 import { formatTimecode } from "./common_player.js";
 import { ICON } from "./common_icon.js";
 import { renderMenubar, buttonDownload, buttonFullscreen } from "./component_menubar.js";
@@ -21,10 +21,10 @@ const STATUS_PLAYING = "PLAYING";
 const STATUS_PAUSED = "PAUSED";
 const STATUS_BUFFERING = "BUFFERING";
 
-export default function(render, { mime }) {
+export default function(render, { mime, getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_videoplayer">
-            <component-menubar></component-menubar>
+            <component-menubar filename="${getFilename()}"></component-menubar>
             <div class="video_container">
                 <span>
                     <div class="video_screen video-state-pause is-casting-no">
