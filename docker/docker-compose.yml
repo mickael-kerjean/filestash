@@ -5,10 +5,11 @@ services:
     image: machines/filestash:latest
     restart: always
     environment:
-    - APPLICATION_URL=127.0.0.1:8334
+    - APPLICATION_URL=
     - CANARY=true
-    - OFFICE_URL=http://127.0.0.1:9980
+    - OFFICE_URL=http://wopi_server:9980
     - OFFICE_FILESTASH_URL=http://app:8334
+    - OFFICE_REWRITE_URL=http://127.0.0.1:9980
     ports:
     - "8334:8334"
     volumes:
@@ -20,6 +21,7 @@ services:
     restart: always
     environment:
     - "extra_params=--o:ssl.enable=false"
+    - aliasgroup1="https://.*:443"
     command:
     - /bin/bash
     - -c
