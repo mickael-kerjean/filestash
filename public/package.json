@@ -130,6 +130,9 @@
       ],
       "new-cap": [
         "off"
+      ],
+      "accessor-pairs": [
+        "off"
       ]
     }
   },

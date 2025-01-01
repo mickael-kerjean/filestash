@@ -181,9 +181,9 @@ export default async function(render) {
             $list,
             virtual,
         }) => (
-            virtual ?
-                rxjs.fromEvent($page.closest(".scroll-y"), "scroll", { passive: true }) :
-                rxjs.EMPTY
+            virtual
+                ? rxjs.fromEvent($page.closest(".scroll-y"), "scroll", { passive: true })
+                : rxjs.EMPTY
         ).pipe(
             rxjs.map((e) => {
                 // 0-------------0-----------1-----------2-----------3 ....

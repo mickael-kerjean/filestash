@@ -3,11 +3,14 @@ import rxjs, { effect } from "../../lib/rx.js";
 import { qs, qsa } from "../../lib/dom.js";
 import ajax from "../../lib/ajax.js";
 import { loadCSS } from "../../helpers/loader.js";
+import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
+import { getLoader } from "./application_table/loader.js";
+import { transition } from "./common.js";
 
-export default async function(render, { getDownloadUrl = nop, getFilename = nop, hasMenubar = true }) {
+export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, hasMenubar = true }) {
     const $page = createElement(`
         <div class="component_tableviewer">
             <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>
@@ -33,29 +36,21 @@ export default async function(render, { getDownloadUrl = nop, getFilename = nop,
     // feature: initial render
     const init$ = ajax({ url: getDownloadUrl(), responseType: "arraybuffer" }).pipe(
         rxjs.mergeMap(async({ response }) => {
-            const module = await import("../../lib/vendor/shp-to-geojson.browser.js");
-            const data = new module.DBase(module.Buffer.from(response));
-
-            const dummy = [];
-            // const dummy = new Array(50).fill({}).map((_, i) => ({
-            //     fieldName: "dummy"+i,
-            //     fieldLength: 4,
-            // }));
-            data.properties = data.properties.concat(dummy);
+            const table = new (await getLoader(mime))(response);
 
             // build head
             const $tr = createElement(`<div class="tr"></div>`);
-            data.properties.forEach(({ fieldName, fieldLength }) => {
+            table.getHeader().forEach(({ name, size }) => {
                 const $th = createElement(`
-                    <div title="${fieldName}" class="${withCenter("th ellipsis", fieldLength)}" style="${styleCell(fieldLength, fieldName, padding)}">
-                        ${fieldName}
+                    <div title="${name}" class="${withCenter("th ellipsis", size)}" style="${styleCell(size, name, padding)}">
+                        ${name}
                         <img class="no-select" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+CiAgPHBhdGggc3R5bGU9ImZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MC41MzMzMzMyMSIgZD0ibSA3LjcwNSw4LjA0NSA0LjU5LDQuNTggNC41OSwtNC41OCAxLjQxLDEuNDEgLTYsNiAtNiwtNiB6IiAvPgogIDxwYXRoIGZpbGw9Im5vbmUiIGQ9Ik0wLS4yNWgyNHYyNEgweiIgLz4KPC9zdmc+Cg==" />
                     </div>
                 `);
                 let ascending = null;
                 qs($th, "img").onclick = (e) => {
                     ascending = !ascending;
-                    sortBy(qsa($dom.tbody, `.tr [data-column="${fieldName}"]`), ascending);
+                    sortBy(qsa($dom.tbody, `.tr [data-column="${name}"]`), ascending);
                     qsa(e.target.closest(".tr"), "img").forEach(($img) => {
                         $img.style.transform = "rotate(0deg)";
                     });
@@ -66,18 +61,24 @@ export default async function(render, { getDownloadUrl = nop, getFilename = nop,
             $dom.thead.appendChild($tr);
 
             // build body
-            for (let i =0; i<data.recordLength; i++) {
-                const row = data.getRowProperties(i);
+            const body = table.getBody();
+            body.forEach((obj) => {
                 const $tr = createElement(`<div class="tr"></div>`);
-                data.properties.forEach(({ fieldName, fieldLength }) => {
+                table.getHeader().forEach(({ name, size }) => {
                     $tr.appendChild(createElement(`
-                        <div data-column="${fieldName}" title="${row[fieldName]}" class="${withCenter("td ellipsis", fieldLength)}" style="${styleCell(fieldLength, fieldName, padding)}">
-                            ${row[fieldName] || "<span class=\"empty\">-</span>"}
+                        <div data-column="${name}" title="${obj[name]}" class="${withCenter("td ellipsis", size)}" style="${styleCell(size, name, padding)}">
+                            ${obj[name] || "<span class=\"empty\">-</span>"}
                         </div>
                     `));
                 });
                 $dom.tbody.appendChild($tr);
-            }
+            });
+            if (body.length === 0) $dom.tbody.appendChild(createElement(`
+                <h3 class="center no-select" style="opacity:0.2; margin-top:30px">
+                    ${t("Empty")}
+                </h3>
+            `));
+            transition($dom.tbody.parentElement);
         }),
         rxjs.share(),
         rxjs.catchError(ctrlError()),
