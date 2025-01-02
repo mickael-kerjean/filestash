@@ -8,7 +8,7 @@ import ctrlError from "../ctrl_error.js";
 import componentDownloader, { init as initDownloader } from "./application_downloader.js";
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
-import setup3D, { getLoader } from "./application_3d/init.js";
+import setup3D, { getLoader, is2D } from "./application_3d/init.js";
 import withLight from "./application_3d/scene_light.js";
 import withCube from "./application_3d/scene_cube.js";
 import ctrlToolbar from "./application_3d/toolbar.js";
@@ -36,7 +36,7 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
     await effect(rxjs.of(getLoader(mime)).pipe(
         rxjs.mergeMap(([loader, createMesh]) => {
             if (!loader) {
-                componentDownloader(render, { mime, acl$ });
+                componentDownloader(render, { mime, acl$, getFilename, getDownloadUrl });
                 return rxjs.EMPTY;
             }
             return rxjs.of([loader, createMesh]);
@@ -48,22 +48,23 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
             (err) => observer.error(err),
         ))),
         removeLoader,
-        rxjs.mergeMap((mesh) => create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube })),
+        rxjs.mergeMap((mesh) => create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube, mime })),
         rxjs.catchError(ctrlError()),
     ));
 }
 
-function create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube }) {
+function create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube, mime }) {
     const refresh = [];
     const { renderer, camera, scene, controls, box } = setup3D({
         $page: $draw,
         mesh,
         refresh,
         $menubar,
+        mime,
     });
 
     withLight({ scene, box });
-    if (hasCube) withCube({ camera, renderer, refresh, controls });
+    if (hasCube && !is2D(mime)) withCube({ camera, renderer, refresh, controls });
     ctrlToolbar(createRender($toolbar), {
         mesh,
         controls,

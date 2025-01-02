@@ -9,9 +9,10 @@ import { GLTFLoader } from "../../../lib/vendor/three/GLTFLoader.js";
 import { OBJLoader } from "../../../lib/vendor/three/OBJLoader.js";
 import { STLLoader } from "../../../lib/vendor/three/STLLoader.js";
 import { FBXLoader } from "../../../lib/vendor/three/FBXLoader.js";
+import { SVGLoader } from "../../../lib/vendor/three/SVGLoader.js";
 import { Rhino3dmLoader } from "../../../lib/vendor/three/3DMLoader.js";
 
-export default function({ $page, $menubar, mesh, refresh }) {
+export default function({ $page, $menubar, mesh, refresh, mime }) {
     // setup the dom
     const renderer = new THREE.WebGLRenderer({ antialias: true, shadowMapEnabled: true });
     renderer.setSize($page.clientWidth, $page.clientHeight);
@@ -33,9 +34,11 @@ export default function({ $page, $menubar, mesh, refresh }) {
         45,
         $page.clientWidth / $page.clientHeight,
         Math.max(0.1, maxDim / 100),
-        maxDim * 10,
+        maxDim * 1000,
     );
     const controls = new OrbitControls(camera, renderer.domElement);
+    if (is2D(mime)) controls.enableRotate = false;
+
     scene.add(mesh);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
@@ -61,7 +64,6 @@ export default function({ $page, $menubar, mesh, refresh }) {
         $menubar.add($button);
     }
 
-    // sizing of the window
     const onResize = () => {
         camera.aspect = $page.clientWidth / $page.clientHeight;
         camera.updateProjectionMatrix();
@@ -70,7 +72,6 @@ export default function({ $page, $menubar, mesh, refresh }) {
     window.addEventListener("resize", onResize);
     onDestroy(() => window.removeEventListener("resize", onResize));
 
-    // stuff we refresh constantly
     const clock = new THREE.Clock();
     refresh.push(() => {
         controls.update();
@@ -79,6 +80,10 @@ export default function({ $page, $menubar, mesh, refresh }) {
     });
 
     return { renderer, scene, camera, controls, box };
+}
+
+export function is2D(mime) {
+    return ["image/svg+xml"].indexOf(mime) !== -1;
 }
 
 export function getLoader(mime) {
@@ -123,6 +128,26 @@ export function getLoader(mime) {
             if (geometry.hasColors) material.vertexColors = true;
             else material.color = material.emissive;
             return new THREE.Mesh(geometry, material);
+        }];
+    case "image/svg+xml":
+        return [new SVGLoader(), (obj) => {
+            const group = new THREE.Group();
+            for (let i=0; i<obj.paths.length; i++) {
+                const path = obj.paths[i];
+                const material = new THREE.MeshBasicMaterial({
+                    color: path.color,
+                    side: THREE.DoubleSide,
+                    depthWrite: false
+                });
+                const shapes = SVGLoader.createShapes(path);
+                for (let j=0; j<shapes.length; j++) {
+                    const shape = shapes[j];
+                    const geometry = new THREE.ShapeGeometry(shape);
+                    const mesh = new THREE.Mesh(geometry, material);
+                    group.add(mesh);
+                }
+            }
+            return group;
         }];
     case "application/fbx":
         return [new FBXLoader(), (obj) => {
