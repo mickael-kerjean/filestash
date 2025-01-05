@@ -15,11 +15,11 @@ import { Rhino3dmLoader } from "../../../lib/vendor/three/3DMLoader.js";
 export default function({ $page, $menubar, mesh, refresh, mime }) {
     // setup the dom
     const renderer = new THREE.WebGLRenderer({ antialias: true, shadowMapEnabled: true });
-    renderer.setSize($page.clientWidth, $page.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setClearColor(0xf5f5f5);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(0xf5f5f5);
+    renderer.setSize($page.clientWidth, $page.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
     $page.appendChild(renderer.domElement);
 
     // center everything
@@ -30,6 +30,7 @@ export default function({ $page, $menubar, mesh, refresh, mime }) {
 
     // setup the scene, camera and controls
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf2f2f4);
     const camera = new THREE.PerspectiveCamera(
         45,
         $page.clientWidth / $page.clientHeight,
@@ -37,15 +38,22 @@ export default function({ $page, $menubar, mesh, refresh, mime }) {
         maxDim * 1000,
     );
     const controls = new OrbitControls(camera, renderer.domElement);
-    if (is2D(mime)) controls.enableRotate = false;
+    controls.zoomToCursor = true;
+    if (is2D(mime)) {
+        controls.enableRotate = false;
+        controls.mouseButtons = {
+            LEFT: THREE.MOUSE.PAN,
+            MIDDLE: THREE.MOUSE.DOLLY,
+            RIGHT: THREE.MOUSE.ORBIT
+        };
+    }
 
     scene.add(mesh);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
-    camera.position.set(center.x, center.y, center.z + maxDim * 1.8);
+    camera.position.set(center.x, center.y, center.z + maxDim * (is2D(mime) ? 1.3 : 1.8));
     controls.target.copy(center);
 
-    // enable animation if present
     const mixer = new THREE.AnimationMixer(mesh);
     if (mesh.animations.length > 0) {
         const ICON = {
@@ -83,7 +91,7 @@ export default function({ $page, $menubar, mesh, refresh, mime }) {
 }
 
 export function is2D(mime) {
-    return ["image/svg+xml"].indexOf(mime) !== -1;
+    return ["image/svg+xml", "application/acad"].indexOf(mime) !== -1;
 }
 
 export function getLoader(mime) {
@@ -93,6 +101,7 @@ export function getLoader(mime) {
         return [
             new OBJLoader(),
             (obj) => {
+                obj.name = "All";
                 obj.traverse((child) => {
                     if (child.isMesh) {
                         child.material = new THREE.MeshPhongMaterial({
@@ -130,30 +139,65 @@ export function getLoader(mime) {
             return new THREE.Mesh(geometry, material);
         }];
     case "image/svg+xml":
-        return [new SVGLoader(), (obj) => {
+        const createMaterial = (color, opacity = 1) => new THREE.MeshBasicMaterial({
+            color: new THREE.Color().setStyle(color),
+            opacity,
+            transparent: true,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+            wireframe: false,
+        });
+        const threecolor = (color) => {
+            if (color && color.substr && color.substr(0, 4) === "RGB(") {
+                function componentToHex(c) {
+                    const hex = c.toString(16);
+                    return hex.length === 1 ? "0" + hex : hex;
+                }
+                const [r, g, b] = color.replace(/^RGB\(/, "").replace(/\)/, "").split(",").map((i) => parseInt(i));
+                return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+            }
+            return color;
+        };
+        return [new SVGLoader(), (data) => {
             const group = new THREE.Group();
-            for (let i=0; i<obj.paths.length; i++) {
-                const path = obj.paths[i];
-                const material = new THREE.MeshBasicMaterial({
-                    color: path.color,
-                    side: THREE.DoubleSide,
-                    depthWrite: false
-                });
-                const shapes = SVGLoader.createShapes(path);
-                for (let j=0; j<shapes.length; j++) {
-                    const shape = shapes[j];
-                    const geometry = new THREE.ShapeGeometry(shape);
-                    const mesh = new THREE.Mesh(geometry, material);
-                    group.add(mesh);
+            group.name = "All";
+            group.scale.y *= -1;
+            let renderOrder = 0;
+            for (const path of data.paths) {
+                const fillColor = threecolor(path.userData.style.fill);
+                if (fillColor !== undefined && fillColor !== "none") {
+                    const material = createMaterial(
+                        fillColor,
+                        path.userData.style.fillOpacity,
+                    );
+                    const shapes = SVGLoader.createShapes(path);
+                    for (const shape of shapes) {
+                        const mesh = new THREE.Mesh(
+                            new THREE.ShapeGeometry(shape),
+                            material,
+                        );
+                        mesh.renderOrder = renderOrder++;
+                        group.add(mesh);
+                    }
+                }
+                const strokeColor = threecolor(path.userData.style.stroke);
+                if (strokeColor !== undefined && strokeColor !== "none") {
+                    const material = createMaterial(strokeColor);
+                    for (const subPath of path.subPaths) {
+                        const geometry = SVGLoader.pointsToStroke(subPath.getPoints(), path.userData.style);
+                        if (geometry) {
+                            const mesh = new THREE.Mesh(geometry, material);
+                            mesh.renderOrder = renderOrder++;
+                            group.add(mesh);
+                        }
+                    }
                 }
             }
             return group;
         }];
     case "application/fbx":
         return [new FBXLoader(), (obj) => {
-            obj.traverse((child) => {
-                // console.log(child);
-            });
+            obj.name = "All";
             return obj;
         }];
     default:

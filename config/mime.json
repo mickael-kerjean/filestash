@@ -39,6 +39,8 @@
 	"dotm": "application/vnd.ms-word.template.macroEnabled.12",
 	"dpkg": "application/dpkg-www-installer",
 	"ds_store": "application/octet-stream",
+	"dxf": "application/dxf",
+	"dwg": "application/acad",
 	"ear": "application/java-archive",
 	"eot": "application/vnd.ms-fontobject",
 	"eps": "application/postscript",
