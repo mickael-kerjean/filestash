@@ -14,7 +14,9 @@
   color: inherit;
   border-bottom: 2px solid rgba(70, 99, 114, 0.1);
   transition: border-color 0.2s ease-out;
+  height: 31px;
 }
+
 .component_input:focus, .component_select:focus, .component_input:focus ~ component-icon img {
     border-color: var(--emphasis-primary)!important;
 }

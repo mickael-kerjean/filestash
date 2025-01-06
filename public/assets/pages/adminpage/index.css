@@ -146,18 +146,22 @@
     border-radius: 3px;
     padding-left: 5px;
 }
+.component_page_admin .formbuilder .component_input,
+.component_page_admin .formbuilder .component_select{
+    height: 33px;
+}
 .component_page_admin .formbuilder .component_input:not([disabled]):hover,
 .component_page_admin .formbuilder .component_input:not([disabled]):focus,
 .component_page_admin .formbuilder .component_textarea:not([disabled]):hover,
 .component_page_admin .formbuilder .component_textarea:not([disabled]):focus,
 .component_page_admin .formbuilder .component_select:not([disabled]):hover,
 .component_page_admin .formbuilder .component_select:not([disabled]):focus {
-    background: rgba(0, 0, 0, 0.07);
+    background: rgba(0, 0, 0, 0.08);
 }
 .component_page_admin form .formbuilder_password:focus-within img.component_icon,
 .component_page_admin form .formbuilder_password:hover img.component_icon{
     border-color: rgba(0, 0, 0, 0.05);
-    background: rgba(0, 0, 0, 0.07);
+    background: rgba(0, 0, 0, 0.08);
 }
 .component_page_admin .formbuilder .formbuilder_password .component_input {
     border-right: none;
@@ -168,7 +172,7 @@
     border: 2px solid rgba(0, 0, 0, 0.05);
     height: 19px;
     border-left: none;
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.07);
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
     padding-right: 5px;
