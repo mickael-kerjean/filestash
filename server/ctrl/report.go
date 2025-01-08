@@ -22,6 +22,7 @@ func WellKnownSecurityHandler(ctx *App, res http.ResponseWriter, req *http.Reque
 
 func HealthHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Access-Control-Allow-Origin", "*")
+	res.Header().Set("Content-Type", "application/json")
 	// CHECK 1: open the config file
 	file, err := os.OpenFile(
 		GetAbsolutePath(CONFIG_PATH, "config.json"),
