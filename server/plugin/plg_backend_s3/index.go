@@ -211,7 +211,7 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 				if i == 0 && *object.Key == p.path {
 					continue
 				}
-				size := 0
+				var size int64 = 0
 				if object.Size != nil {
 					size = *object.Size
 				}
