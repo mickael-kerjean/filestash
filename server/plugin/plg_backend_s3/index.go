@@ -213,7 +213,7 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 				}
 				size := 0
 				if object.Size != nil {
-					size = *object.Size
+					size = int(*object.Size)
 				}
 				files = append(files, &File{
 					FName: filepath.Base(*object.Key),
