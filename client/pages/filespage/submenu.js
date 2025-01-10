@@ -8,6 +8,7 @@ import {
 } from "../../components/";
 import { debounce, alert, confirm, prompt, notify } from "../../helpers/";
 import { Files } from "../../model/";
+import { ShareComponent } from "./share";
 import { t } from "../../locales/";
 import "./submenu.scss";
 class SubmenuComponent extends React.Component {
@@ -125,6 +126,13 @@ class SubmenuComponent extends React.Component {
         }
     }
 
+    onShareRequest(filename) {
+        alert.now(
+            <ShareComponent path={this.props.file.path} type={this.props.file.type} />,
+            (ok) => {},
+        );
+    }
+
     render() {
         return (
             <div className={"component_submenu" + (this.props.selected.length > 0 || this.state.search_input_visible ? " sticky" : "")}>
@@ -143,6 +151,13 @@ class SubmenuComponent extends React.Component {
                             onClick={this.onNew.bind(this, "directory")}
                             type="inline">
                             { window.innerWidth < 410 && t("New Folder").length > 10 ? t("New Folder", null, "NEW_FOLDER::SHORT") : t("New Folder") }
+                        </NgIf>
+                        <NgIf
+                            className="button-share"
+                            cond={this.props.metadata.can_share !== false && window.CONFIG.enable_share === true && this.props.selected.length === 0}
+                            onClick={this.onShareRequest.bind(this)}
+                            type="inline">
+                            { t("Share") }
                         </NgIf>
                         <NgIf
                             className="button-download"
