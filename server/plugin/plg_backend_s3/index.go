@@ -211,11 +211,15 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 				if i == 0 && *object.Key == p.path {
 					continue
 				}
+				size := 0
+				if object.Size != nil {
+					size = *object.Size
+				}
 				files = append(files, &File{
 					FName: filepath.Base(*object.Key),
 					FType: "file",
 					FTime: object.LastModified.Unix(),
-					FSize: *object.Size,
+					FSize: size,
 				})
 			}
 			for _, object := range objs.CommonPrefixes {
