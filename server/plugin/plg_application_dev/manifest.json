@@ -1,0 +1,11 @@
+{
+    "author": "Filestash Pty Ltd",
+    "version": "v0.0",
+    "modules": [
+        {
+            "type": "xdg-open",
+            "mime": "application/x-archive",
+            "application": "table"
+        }
+    ]
+}

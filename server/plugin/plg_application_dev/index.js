@@ -1,5 +1,5 @@
-import assert from "../../../lib/assert.js";
-import loadWASM, { writeFS, readFS } from "../../../helpers/loader_wasm.js";
+import assert from "../../assets/lib/assert.js";
+import loadWASM, { writeFS, readFS } from "../../assets/helpers/loader_wasm.js";
 
 export default async function(ITable) {
     const { instance } = await loadWASM(import.meta.url, "./loader_symbol.wasm");

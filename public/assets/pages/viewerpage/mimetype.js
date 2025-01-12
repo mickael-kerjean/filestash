@@ -1,3 +1,5 @@
+import { get as getPlugin } from "../../model/plugin.js";
+
 export function opener(file = "", mimes) {
     const mime = getMimeType(file, mimes);
     const type = mime.split("/")[0];
@@ -9,12 +11,16 @@ export function opener(file = "", mimes) {
         }
     }
 
+    const p = getPlugin(mime);
+    if (p) return [
+        p[0],
+        { mime, loader: p[1] },
+    ];
+
     if (type === "text") {
         return ["editor", { mime }];
     } else if (mime === "application/pdf") {
         return ["pdf", { mime }];
-    } else if (type === "model" || ["image/svg+xml", "application/object", "application/fbx"].indexOf(mime) !== -1) {
-        return ["3d", { mime }];
     } else if (type === "image") {
         return ["image", { mime }];
     } else if (["application/javascript", "application/xml", "application/json",
@@ -32,8 +38,6 @@ export function opener(file = "", mimes) {
         return ["ebook", { mime }];
     } else if (mime === "application/x-url") {
         return ["url", { mime }];
-    } else if (["application/dbf", "application/x-archive"].indexOf(mime) !== -1) {
-        return ["table", { mime }];
     } else if (type === "application" && mime !== "application/text") {
         return ["download", { mime }];
     }

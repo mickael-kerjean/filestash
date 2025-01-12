@@ -1,0 +1,36 @@
+{
+    "author": "Filestash Pty Ltd",
+    "version": "v0.0",
+    "modules": [
+        {
+            "type": "xdg-open",
+            "mime": "application/fbx",
+            "entrypoint": "/index_fbx.js",
+            "application": "3d"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "model/gltf-binary",
+            "entrypoint": "/index_gltf.js",
+            "application": "3d"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "application/object",
+            "entrypoint": "/index_obj.js",
+            "application": "3d"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "model/stl",
+            "entrypoint": "/index_stl.js",
+            "application": "3d"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "image/svg+xml",
+            "entrypoint": "/index_svg.js",
+            "application": "3d"
+        }
+    ]
+}

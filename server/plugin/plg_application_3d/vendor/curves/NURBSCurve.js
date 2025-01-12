@@ -3,7 +3,7 @@ import {
 	Curve,
 	Vector3,
 	Vector4
-} from '../three.module.js';
+} from '../../../../assets/lib/vendor/three/three.module.js';
 import * as NURBSUtils from './NURBSUtils.js';
 
 /**
