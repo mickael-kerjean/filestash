@@ -55,7 +55,7 @@ func (w WebDav) LoginForm() Form {
 			FormElement{
 				Name:        "url",
 				Type:        "text",
-				Placeholder: "Address*",
+				Placeholder: "Address",
 			},
 			FormElement{
 				Name:        "username",

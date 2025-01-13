@@ -101,6 +101,7 @@
     "SORT": "종류",
     "SORT_BY_DATE": "날짜별로 정렬",
     "SORT_BY_NAME": "이름으로 정렬",
+    "SORT_BY_SIZE": "크기별로 정렬",
     "SORT_BY_TYPE": "유형별로 정렬",
     "STARRED": "별표가 붙은",
     "SUPPORT": "지원",

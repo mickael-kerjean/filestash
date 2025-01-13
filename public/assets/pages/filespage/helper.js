@@ -22,6 +22,7 @@ export function sort(files, type, order) {
     switch (type) {
     case "name": return sortByName(files, order);
     case "date": return sortByDate(files, order);
+    case "size": return sortBySize(files, order);
     default: return sortByType(files, order);
     }
 }
@@ -72,6 +73,21 @@ function sortByDate(files, order) {
             return sortString(fileA.name, fileB.name, order);
         }
         return sortNumber(fileA.time, fileB.time, order);
+    });
+}
+
+function sortBySize(files, order) {
+    let tmp;
+    return files.sort(function(fileA, fileB) {
+        tmp = _moveFolderUpward(fileA, fileB);
+        if (tmp !== 0) return tmp;
+        tmp = _moveHiddenFilesDownward(fileA, fileB);
+        if (tmp !== 0) return tmp;
+
+        if (fileB.size === fileA.size) {
+            return sortString(fileA.name, fileB.name, order);
+        }
+        return sortNumber(fileA.size, fileB.size, order);
     });
 }
 

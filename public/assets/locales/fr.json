@@ -101,6 +101,7 @@
     "SORT": "trier",
     "SORT_BY_DATE": "trier par date",
     "SORT_BY_NAME": "trier par nom",
+    "SORT_BY_SIZE": "trier par taille",
     "SORT_BY_TYPE": "trier par type",
     "STARRED": "favoris",
     "SUPPORT": "assistance",

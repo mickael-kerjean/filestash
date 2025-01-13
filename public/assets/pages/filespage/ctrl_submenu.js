@@ -252,6 +252,9 @@ function componentRight(render) {
                         <li data-target="name">
                             ${t("Sort By Name")}
                         </li>
+                        <li data-target="size">
+                            ${t("Sort By Size")}
+                        </li>
                     </ul>
                 </div>
             </div>
