@@ -20,6 +20,7 @@ var (
 var (
 	CONFIG_PATH = "state/config/"
 	CERT_PATH   = "state/certs/"
+	PLUGIN_PATH = "state/plugins/"
 	DB_PATH     = "state/db/"
 	FTS_PATH    = "state/search/"
 	LOG_PATH    = "state/log/"
@@ -38,6 +39,7 @@ func init() {
 	FTS_PATH = filepath.Join(rootPath, FTS_PATH)
 	CERT_PATH = filepath.Join(rootPath, CERT_PATH)
 	TMP_PATH = filepath.Join(rootPath, TMP_PATH)
+	PLUGIN_PATH = filepath.Join(rootPath, PLUGIN_PATH)
 	base = strings.TrimSuffix(base, "/")
 	COOKIE_PATH_ADMIN = WithBase(COOKIE_PATH_ADMIN)
 	COOKIE_PATH = WithBase(COOKIE_PATH)
@@ -48,6 +50,7 @@ func init() {
 	os.MkdirAll(GetAbsolutePath(DB_PATH), os.ModePerm)
 	os.MkdirAll(GetAbsolutePath(FTS_PATH), os.ModePerm)
 	os.MkdirAll(GetAbsolutePath(LOG_PATH), os.ModePerm)
+	os.MkdirAll(GetAbsolutePath(PLUGIN_PATH), os.ModePerm)
 	os.RemoveAll(GetAbsolutePath(TMP_PATH))
 	os.MkdirAll(GetAbsolutePath(TMP_PATH), os.ModePerm)
 }

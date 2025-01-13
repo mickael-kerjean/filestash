@@ -4,11 +4,19 @@ import { qs, qsa } from "../../lib/dom.js";
 import ajax from "../../lib/ajax.js";
 import { loadCSS } from "../../helpers/loader.js";
 import t from "../../locales/index.js";
+import { get as getPlugin } from "../../model/plugin.js";
 import ctrlError from "../ctrl_error.js";
 
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
-import { getLoader } from "./application_table/loader.js";
 import { transition } from "./common.js";
+
+const MAX_ROWS = 200;
+
+class ITable {
+    contructor() {}
+    getHeader() { throw new Error("NOT_IMPLEMENTED"); }
+    getBody() { throw new Error("NOT_IMPLEMENTED"); }
+}
 
 export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, hasMenubar = true }) {
     const $page = createElement(`
@@ -32,76 +40,51 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
         tbody: qs($page, ".tbody"),
     };
     const padding = 10;
+    const STATE = {
+        header: {},
+        body: [],
+        rows: [],
+    };
 
     // feature: initial render
     const init$ = ajax({ url: getDownloadUrl(), responseType: "arraybuffer" }).pipe(
         rxjs.mergeMap(async({ response }) => {
-            const table = new (await getLoader(mime))(response);
+            const loader = getPlugin(mime);
+            if (!loader) throw new TypeError(`unsupported mimetype "${mime}"`);
+            const [_, url] = loader;
+            const module = await import(url);
+            const table = new (await module.default(ITable))(response, { $menubar });
+            STATE.header = table.getHeader();
+            STATE.body = table.getBody();
+            STATE.rows = STATE.body;
 
-            // build head
-            const $tr = createElement(`<div class="tr"></div>`);
-            table.getHeader().forEach(({ name, size }) => {
-                const $th = createElement(`
-                    <div title="${name}" class="${withCenter("th ellipsis", size)}" style="${styleCell(size, name, padding)}">
-                        ${name}
-                        <img class="no-select" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+CiAgPHBhdGggc3R5bGU9ImZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MC41MzMzMzMyMSIgZD0ibSA3LjcwNSw4LjA0NSA0LjU5LDQuNTggNC41OSwtNC41OCAxLjQxLDEuNDEgLTYsNiAtNiwtNiB6IiAvPgogIDxwYXRoIGZpbGw9Im5vbmUiIGQ9Ik0wLS4yNWgyNHYyNEgweiIgLz4KPC9zdmc+Cg==" />
-                    </div>
-                `);
-                let ascending = null;
-                qs($th, "img").onclick = (e) => {
-                    ascending = !ascending;
-                    sortBy(qsa($dom.tbody, `.tr [data-column="${name}"]`), ascending);
-                    qsa(e.target.closest(".tr"), "img").forEach(($img) => {
-                        $img.style.transform = "rotate(0deg)";
-                    });
-                    if (ascending) e.target.style.transform = "rotate(180deg)";
-                };
-                $tr.appendChild($th);
-            });
-            $dom.thead.appendChild($tr);
-
-            // build body
-            const body = table.getBody();
-            body.forEach((obj) => {
-                const $tr = createElement(`<div class="tr"></div>`);
-                table.getHeader().forEach(({ name, size }) => {
-                    $tr.appendChild(createElement(`
-                        <div data-column="${name}" title="${obj[name]}" class="${withCenter("td ellipsis", size)}" style="${styleCell(size, name, padding)}">
-                            ${obj[name] || "<span class=\"empty\">-</span>"}
-                        </div>
-                    `));
-                });
-                $dom.tbody.appendChild($tr);
-            });
-            if (body.length === 0) $dom.tbody.appendChild(createElement(`
-                <h3 class="center no-select" style="opacity:0.2; margin-top:30px">
-                    ${t("Empty")}
-                </h3>
-            `));
-            transition($dom.tbody.parentElement);
+            buildHead(STATE, $dom, padding);
+            buildRows(STATE.rows.slice(0, MAX_ROWS), STATE.header, $dom.tbody, padding, true, false);
         }),
-        rxjs.share(),
         rxjs.catchError(ctrlError()),
+        rxjs.share(),
     );
     effect(init$);
 
     // feature: search
     const $search = createElement(`<input type="search" placeholder="search">`);
-    $menubar.add($search);
-    effect(rxjs.fromEvent($search, "keydown").pipe(
-        rxjs.debounceTime(200),
+    effect(init$.pipe(
+        rxjs.tap(() => $menubar.add($search)),
+        rxjs.mergeMap(() => rxjs.fromEvent($search, "keydown").pipe(rxjs.debounceTime(200))),
         rxjs.tap((e) => {
-            const terms = e.target.value.toLowerCase().split(" ");
-            qsa($page, ".table .tbody .tr").forEach(($row) => {
-                const str = $row.innerText.toLowerCase();
+            const terms = e.target.value.toLowerCase().trim().split(" ");
+            $dom.tbody.scrollTo(0, 0);
+            if (terms === "") STATE.rows = STATE.body;
+            else STATE.rows = STATE.body.filter((row) => {
+                const line = Object.values(row).join("").toLowerCase();
                 for (let i=0; i<terms.length; i++) {
-                    if (str.indexOf(terms[i]) === -1) {
-                        $row.classList.add("hidden");
-                        return;
+                    if (line.indexOf(terms[i]) === -1) {
+                        return false;
                     }
                 }
-                $row.classList.remove("hidden");
+                return true;
             });
+            buildRows(STATE.rows.slice(0, MAX_ROWS), STATE.header, $dom.tbody, padding, false, true);
         }),
     ));
 
@@ -113,12 +96,26 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
         rxjs.tap(() => $dom.tbody.scrollTo($dom.thead.scrollLeft, $dom.tbody.scrollTop))
     ));
 
+    // feature: infinite scroll
+    effect(rxjs.fromEvent($dom.tbody, "scroll").pipe(
+        rxjs.mergeMap(async (e) => {
+            const scrollBottom = e.target.scrollHeight - (e.target.scrollTop + e.target.clientHeight);
+            if (scrollBottom > 0) return;
+            else if (STATE.rows.length <= MAX_ROWS) return;
+            else if (STATE.rows.length <= $dom.tbody.children.length) return;
+
+            const current = $dom.tbody.children.length;
+            const newRows = STATE.rows.slice(current, current + 10);
+            buildRows(newRows, STATE.header, $dom.tbody, padding, false, false);
+        }),
+    ));
+
     // feature: make the last column to always fit the viewport
     effect(rxjs.merge(
         init$,
         init$.pipe(
             rxjs.mergeMap(() => rxjs.fromEvent(window, "resize")),
-            rxjs.debounceTime(100),
+            rxjs.debounce((e) => e.debounce === false ? rxjs.of(null) : rxjs.timer(100)),
         ),
     ).pipe(
         rxjs.tap(() => resizeLastColumnIfNeeded({
@@ -140,6 +137,61 @@ export function init() {
     ]);
 }
 
+async function buildRows(rows, legends, $tbody, padding, isInit, withClear) {
+    if (withClear) $tbody.innerHTML = "";
+    for (let i=0; i<rows.length; i++) {
+        const obj = rows[i];
+        const $tr = createElement(`<div class="tr"></div>`);
+        legends.forEach(({ name, size }, i) => {
+            $tr.appendChild(createElement(`
+                <div data-column="${name}" title="${obj[name]}" class="${withCenter("td ellipsis", size, i === legends.length -1)}" style="${styleCell(size, name, padding)}">
+                    ${obj[name] || "<span class=\"empty\">-</span>"}
+                </div>
+            `));
+        });
+        $tbody.appendChild($tr);
+    }
+    $tbody.style.opacity = "0";
+    if (rows.length === 0) $tbody.appendChild(createElement(`
+        <h3 class="center no-select" style="opacity:0.2; margin-top:30px">
+            ${t("Empty")}
+        </h3>
+    `));
+    if (!isInit) {
+        const e = new Event("resize");
+        e.debounce = false;
+        window.dispatchEvent(e);
+        await new Promise(requestAnimationFrame);
+    }
+    $tbody.style.opacity = "1";
+    if (isInit) transition($tbody.parentElement);
+}
+
+function buildHead(STATE, $dom, padding) {
+    const $tr = createElement(`<div class="tr"></div>`);
+    STATE.header.forEach(({ name, size }, i) => {
+        const $th = createElement(`
+            <div title="${name}" class="${withCenter("th ellipsis", size, i === STATE.header.length - 1)}" style="${styleCell(size, name, padding)}">
+                ${name}
+                <img class="no-select" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+CiAgPHBhdGggc3R5bGU9ImZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MC41MzMzMzMyMSIgZD0ibSA3LjcwNSw4LjA0NSA0LjU5LDQuNTggNC41OSwtNC41OCAxLjQxLDEuNDEgLTYsNiAtNiwtNiB6IiAvPgogIDxwYXRoIGZpbGw9Im5vbmUiIGQ9Ik0wLS4yNWgyNHYyNEgweiIgLz4KPC9zdmc+Cg==" />
+            </div>
+        `);
+        let ascending = null;
+        qs($th, "img").onclick = (e) => {
+            ascending = !ascending;
+            STATE.rows = sortBy(STATE.rows, ascending, name);
+            qsa(e.target.closest(".tr"), "img").forEach(($img) => {
+                $img.style.transform = "rotate(0deg)";
+            });
+            if (ascending) e.target.style.transform = "rotate(180deg)";
+            $dom.tbody.scrollTo(0, 0);
+            buildRows(STATE.rows.slice(0, MAX_ROWS), STATE.header, $dom.tbody, padding, false, true);
+        };
+        $tr.appendChild($th);
+    });
+    $dom.thead.appendChild($tr);
+}
+
 function styleCell(l, name, padding) {
     const maxSize = 40;
     const charSize = 7;
@@ -148,8 +200,8 @@ function styleCell(l, name, padding) {
     return `width: ${sizeInChar*charSize+padding*2}px;`;
 }
 
-function withCenter(className, fieldLength) {
-    if (fieldLength > 4) return className;
+function withCenter(className, fieldLength, isLast) {
+    if (fieldLength > 4 || isLast) return className;
     return `${className} center`;
 }
 
@@ -157,20 +209,17 @@ function resizeLastColumnIfNeeded({ $target, $childs, padding = 0 }) {
     const fullWidth = $target.clientWidth;
     let currWidth = 0;
     $childs.childNodes.forEach(($node) => currWidth += $node.clientWidth);
-    if (currWidth < fullWidth) {
+    if (currWidth < fullWidth && $childs.lastChild !== null) {
         const lastWidth = ($childs.lastChild.clientWidth - padding * 2) + fullWidth - currWidth;
         $childs.lastChild.setAttribute("style", `width: ${lastWidth}px`);
     }
 }
 
-function sortBy($columns, ascending) {
+function sortBy(rows, ascending, key) {
     const o = ascending ? 1 : -1;
-    const $new = [...$columns].sort(($el1, $el2) => {
-        if ($el1.innerText === $el2.innerText) return 0;
-        else if ($el1.innerText < $el2.innerText) return -o;
+    return rows.sort((a, b) => {
+        if (a[key] === b[key]) return 0;
+        else if (a[key] < b[key]) return -o
         return o;
     });
-    const $root = $columns[0].parentElement.parentElement;
-    $root.innerHTML = "";
-    $new.forEach(($node) => $root.appendChild($node.parentElement));
 }

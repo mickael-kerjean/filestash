@@ -2,28 +2,27 @@ import { toHref } from "../lib/skeleton/router.js";
 import { loadJS } from "../helpers/loader.js";
 import { init as setup_translation } from "../locales/index.js";
 import { init as setup_config } from "../model/config.js";
+import { init as setup_plugin } from "../model/plugin.js";
 import { init as setup_chromecast } from "../model/chromecast.js";
 import { report } from "../helpers/log.js";
 import { $error } from "./common.js";
 
 export default async function main() {
     try {
-        await Promise.all([ // procedure with no outside dependencies
-            setup_config(),
+        await Promise.all([
+            setup_config().then(() => Promise.all([
+                setup_chromecast(),
+                setup_title(),
+                verify_origin(),
+            ])),
             setup_translation(),
             setup_xdg_open(),
             setup_device(),
             setup_blue_death_screen(),
             setup_history(),
             setup_polyfill(),
+            setup_plugin(),
         ]);
-
-        await Promise.all([ // procedure with dependency on config
-            setup_chromecast(),
-            setup_title(),
-            verify_origin(),
-        ]);
-
         window.dispatchEvent(new window.Event("pagechange"));
     } catch (err) {
         console.error(err);

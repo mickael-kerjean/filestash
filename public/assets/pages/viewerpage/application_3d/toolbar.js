@@ -1,8 +1,8 @@
 import { createElement } from "../../../lib/skeleton/index.js";
 import { qs } from "../../../lib/dom.js";
-import * as THREE from "../../../lib/vendor/three/three.module.js";
+import * as THREE from "../../../../lib/vendor/three/three.module.js";
 
-export default function(render, { camera, controls, mesh, $menubar, $toolbar }) {
+export default function(render, { camera, controls, mesh, $menubar, $toolbar, is2D }) {
     if (mesh.children.length <= 1) return;
 
     $menubar.add(buttonLayers({ $toolbar }));
@@ -10,7 +10,7 @@ export default function(render, { camera, controls, mesh, $menubar, $toolbar }) 
         document.createDocumentFragment(),
         mesh,
         0,
-        { camera, controls }
+        { camera, controls, is2D }
     ));
 }
 
@@ -25,13 +25,15 @@ function createChild($fragment, mesh, child = 0, opts) {
     buildDOM($fragment, mesh, child, opts);
     if (mesh.children.length > 0 && child < 4) {
         for (let i=0; i<mesh.children.length; i++) {
-            createChild($fragment, mesh.children[i], child + 1, opts);
+            if (mesh.children[i].type === "Group" || !!mesh.children[i].name) {
+                createChild($fragment, mesh.children[i], child + 1, opts);
+            }
         }
     }
     return $fragment;
 }
 
-function buildDOM($fragment, child, left, { camera, controls }) {
+function buildDOM($fragment, child, left, { camera, controls, is2D }) {
     const $label = createElement(`
         <label class="no-select" style="padding-left: ${left*20}px">
             <div class="component_checkbox">
@@ -43,7 +45,8 @@ function buildDOM($fragment, child, left, { camera, controls }) {
     `);
     qs($label, "input").onchange = () => child.visible = !child.visible;
     $label.onclick = async(e) => {
-        if (e.target.nodeName === "INPUT" || e.target.classList.contains("component_checkbox")) return;
+        if (is2D()) return;
+        else if (e.target.nodeName === "INPUT" || e.target.classList.contains("component_checkbox")) return;
         e.preventDefault(); e.stopPropagation();
         getRootObject(child).traverse((c) => {
             if (!c.material) return;

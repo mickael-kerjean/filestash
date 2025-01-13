@@ -43,7 +43,7 @@ import {
 	VectorKeyframeTrack,
 	SRGBColorSpace,
 	ShapeUtils
-} from './three.module.js';
+} from '../../../assets/lib/vendor/three/three.module.js';
 import * as fflate from './libs/fflate.module.js';
 import { NURBSCurve } from './curves/NURBSCurve.js';
 

@@ -48,7 +48,7 @@ EMSCRIPTEN_KEEPALIVE int execute(int fdinput, int fdoutput) {
         return 1;
     }
     if (strncmp(magic, ARMAG, SARMAG) != 0) {
-        fprintf(stderr, "ERROR file is not of the expected shape");
+        fprintf(stderr, "ERROR bad magic value");
         fclose(finput);
         fclose(foutput);
         return 1;
@@ -81,6 +81,7 @@ EMSCRIPTEN_KEEPALIVE int execute(int fdinput, int fdoutput) {
         fseek(finput, (size + 1) & ~1, SEEK_CUR);
     }
 
+    fprintf(stdout, "hello world!\n");
     fflush(foutput);
     fclose(foutput);
     fclose(finput);
