@@ -27,8 +27,8 @@ export default function({ THREE, $page, $menubar, mesh, refresh, is2D }) {
         maxDim * 1000,
     );
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.zoomToCursor = true;
     if (is2D()) {
+        controls.zoomToCursor = true;
         controls.enableRotate = false;
         controls.mouseButtons = {
             LEFT: THREE.MOUSE.PAN,

@@ -68,7 +68,7 @@ export default function(render) {
 function processError(err) {
     let msg, trace;
     if (err instanceof AjaxError) {
-        msg = t(err.message);
+        msg = t(err.code());
         trace = `
 type:    ${err.type()}
 code:    ${err.code()}

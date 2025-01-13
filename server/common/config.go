@@ -368,6 +368,7 @@ func (this *Configuration) Export() interface{} {
 		Thumbnailer             []string          `json:"thumbnailer"`
 		EnableChromecast        bool              `json:"enable_chromecast"`
 		Origin                  string            `json:"origin"`
+		Version                 string            `json:"version"`
 	}{
 		Editor:                  this.Get("general.editor").String(),
 		ForkButton:              this.Get("general.fork_button").Bool(),
@@ -415,6 +416,7 @@ func (this *Configuration) Export() interface{} {
 			}
 			return scheme + host
 		}(),
+		Version: BUILD_REF[:7],
 	}
 }
 

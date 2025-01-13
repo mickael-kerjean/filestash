@@ -194,7 +194,7 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 		head.Add(
 			"Link",
 			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(
-				strings.Replace(href, "/assets/", "/assets/"+version()+"/", 1),
+				strings.Replace(href, "/assets/", "/assets/"+BUILD_REF+"/", 1),
 			)),
 		)
 	}
@@ -287,7 +287,7 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		head.Add(
 			"Link",
 			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(
-				strings.Replace(href, "/assets/", "/assets/"+version()+"/", 1),
+				strings.Replace(href, "/assets/", "/assets/"+BUILD_REF+"/", 1),
 			)),
 		)
 	}
@@ -431,7 +431,7 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			chroot,
 			strings.Replace(
 				TrimBase(req.URL.Path),
-				"assets/"+version()+"/",
+				"assets/"+BUILD_REF+"/",
 				"assets/",
 				1,
 			),
@@ -546,7 +546,7 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 		res.WriteHeader(http.StatusOK)
 		template.Must(template.New(indexPath).Parse(string(b))).Execute(res, map[string]any{
 			"base":    WithBase("/"),
-			"version": version(),
+			"version": BUILD_REF,
 			"license": LICENSE,
 		})
 	}
@@ -571,8 +571,4 @@ func InitPluginList(code []byte) {
 			listOfPlugins["custom"] = append(listOfPlugins["custom"], packageShortName)
 		}
 	}
-}
-
-func version() string {
-	return BUILD_REF[:7]
 }

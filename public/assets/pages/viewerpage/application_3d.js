@@ -1,9 +1,11 @@
 import { createElement, createRender, nop } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
+import { AjaxError } from "../../lib/error.js";
 import { load as loadPlugin } from "../../model/plugin.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
+import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 
 import componentDownloader, { init as initDownloader } from "./application_downloader.js";
@@ -63,7 +65,15 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
                 hasCube, mime, is2D: loader.is2D,
             })),
         )),
-        rxjs.catchError(ctrlError()),
+        rxjs.catchError((err) => {
+            let _err = err;
+            if (err.response.status === 401) {
+                _err = new Error(err.message);
+                _err.status = err.response.status;
+                _err = new AjaxError(err.message, _err, "Not Authorised");
+            }
+            return ctrlError()(_err);
+        }),
     ));
 }
 

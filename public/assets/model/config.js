@@ -9,11 +9,12 @@ const config$ = ajax({
     rxjs.map(({ responseJSON }) => responseJSON.result),
 );
 
-export function get() {
-    return config$;
-}
-
 export async function init() {
     const config = await config$.toPromise();
     window.CONFIG = config;
+}
+
+export function get(key) {
+    if (key) return window.CONFIG[key];
+    return window.CONFIG;
 }
