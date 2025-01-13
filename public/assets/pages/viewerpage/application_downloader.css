@@ -11,7 +11,7 @@ body.dark-mode .component_filedownloader {
 }
 
 .component_filedownloader .download_button {
-    background: var(--dark);
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 3px;
     display: inline-block;
     color: rgba(255,255,255,0.6);
