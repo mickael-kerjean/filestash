@@ -56,14 +56,15 @@ func init() {
 }
 
 var (
-	BUILD_REF                     string
-	BUILD_DATE                    string
-	LICENSE                       string = "agpl"
-	SECRET_KEY                    string
-	SECRET_KEY_DERIVATE_FOR_PROOF string
-	SECRET_KEY_DERIVATE_FOR_ADMIN string
-	SECRET_KEY_DERIVATE_FOR_USER  string
-	SECRET_KEY_DERIVATE_FOR_HASH  string
+	BUILD_REF                         string
+	BUILD_DATE                        string
+	LICENSE                           string = "agpl"
+	SECRET_KEY                        string
+	SECRET_KEY_DERIVATE_FOR_PROOF     string
+	SECRET_KEY_DERIVATE_FOR_ADMIN     string
+	SECRET_KEY_DERIVATE_FOR_USER      string
+	SECRET_KEY_DERIVATE_FOR_HASH      string
+	SECRET_KEY_DERIVATE_FOR_SIGNATURE string
 )
 
 /*
@@ -76,6 +77,7 @@ func InitSecretDerivate(secret string) {
 	SECRET_KEY_DERIVATE_FOR_ADMIN = Hash("ADMIN_"+SECRET_KEY, len(SECRET_KEY))
 	SECRET_KEY_DERIVATE_FOR_USER = Hash("USER_"+SECRET_KEY, len(SECRET_KEY))
 	SECRET_KEY_DERIVATE_FOR_HASH = Hash("HASH_"+SECRET_KEY, len(SECRET_KEY))
+	SECRET_KEY_DERIVATE_FOR_SIGNATURE = Hash("SGN_"+SECRET_KEY, len(SECRET_KEY))
 }
 
 var base = os.Getenv("FILESTASH_BASE")

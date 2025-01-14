@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
 	"strings"
 	"text/template"
 	"time"
@@ -351,6 +352,33 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	if decodedState, err := base64.StdEncoding.DecodeString(state); err == nil {
 		stateStruct := map[string]string{}
 		json.Unmarshal(decodedState, &stateStruct)
+
+		// check variables are "legit"
+		attributes := ""
+		signature := ""
+		fields := strings.Split(Config.Get("features.protection.signature").String(), ",")
+		for k, v := range stateStruct {
+			if k == "signature" {
+				signature = v
+			}
+			if slices.Contains(fields, k) {
+				attributes += fmt.Sprintf("%s[%s] ", k, v)
+			}
+		}
+		attributes = strings.TrimSpace(attributes)
+		v, err := DecryptString(SECRET_KEY_DERIVATE_FOR_SIGNATURE, signature)
+		if err != nil || attributes != v {
+			v, _ = EncryptString(SECRET_KEY_DERIVATE_FOR_SIGNATURE, attributes)
+			Log.Debug("callback signature is required, signature=%s", v)
+			http.Redirect(
+				res, req,
+				WithBase("/?error=Invalid%20Signature&trace=signature is not correct"),
+				http.StatusTemporaryRedirect,
+			)
+			return
+		}
+
+		// populate variable
 		for key, value := range stateStruct {
 			if templateBind[key] != "" {
 				continue
