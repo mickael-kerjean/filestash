@@ -1,4 +1,4 @@
-import { createElement } from "../../../lib/skeleton/index.js";
+import { createElement } from "../../../assets/lib/skeleton/index.js";
 
 const PERCENT = "85%";
 
