@@ -14,6 +14,10 @@ export async function init() {
     window.CONFIG = config;
 }
 
+export function query() {
+    return config$;
+}
+
 export function get(key) {
     if (key) return window.CONFIG[key];
     return window.CONFIG;

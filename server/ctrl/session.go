@@ -365,17 +365,18 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 				attributes += fmt.Sprintf("%s[%s] ", k, v)
 			}
 		}
-		attributes = strings.TrimSpace(attributes)
-		v, err := DecryptString(SECRET_KEY_DERIVATE_FOR_SIGNATURE, signature)
-		if err != nil || attributes != v {
-			v, _ = EncryptString(SECRET_KEY_DERIVATE_FOR_SIGNATURE, attributes)
-			Log.Debug("callback signature is required, signature=%s", v)
-			http.Redirect(
-				res, req,
-				WithBase("/?error=Invalid%20Signature&trace=signature is not correct"),
-				http.StatusTemporaryRedirect,
-			)
-			return
+		if attributes = strings.TrimSpace(attributes); attributes != "" {
+			v, err := DecryptString(SECRET_KEY_DERIVATE_FOR_SIGNATURE, signature)
+			if err != nil || attributes != v {
+				v, _ = EncryptString(SECRET_KEY_DERIVATE_FOR_SIGNATURE, attributes)
+				Log.Debug("callback signature is required, signature=%s", v)
+				http.Redirect(
+					res, req,
+					WithBase("/?error=Invalid%20Signature&trace=signature is not correct"),
+					http.StatusTemporaryRedirect,
+				)
+				return
+			}
 		}
 
 		// populate variable

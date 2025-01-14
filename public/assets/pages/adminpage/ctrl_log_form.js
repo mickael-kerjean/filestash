@@ -5,7 +5,7 @@ import { createForm, mutateForm } from "../../lib/form.js";
 import { generateSkeleton } from "../../components/skeleton.js";
 import notification from "../../components/notification.js";
 import { formTmpl } from "../../components/form.js";
-import { get as getConfig } from "../../model/config.js";
+import { query as getConfig } from "../../model/config.js";
 
 import { get as getAdminConfig, save as saveConfig } from "./model_config.js";
 import { renderLeaf, useForm$, formObjToJSON$ } from "./helper_form.js";

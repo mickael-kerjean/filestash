@@ -43,6 +43,8 @@ function loadModule(appName) {
         return import("./viewerpage/application_url.js");
     case "table":
         return import("./viewerpage/application_table.js");
+    case "skeleton":
+        return import("./viewerpage/application_skeleton.js");
     default:
         throw new ApplicationError("Internal Error", `Unknown opener app "${appName}" at "${getCurrentPath()}"`);
     }

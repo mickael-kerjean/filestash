@@ -88,4 +88,5 @@ export default class ComponentDropdown extends HTMLElement {
     }
 }
 
-customElements.define("component-dropdown", ComponentDropdown);
+if (!customElements.get("component-dropdown"))
+    customElements.define("component-dropdown", ComponentDropdown);

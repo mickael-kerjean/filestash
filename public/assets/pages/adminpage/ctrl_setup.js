@@ -6,7 +6,7 @@ import { transition, animate, zoomIn, slideXOut, slideXIn } from "../../lib/anim
 import bcrypt from "../../lib/vendor/bcrypt.js";
 import { CSS } from "../../helpers/loader.js";
 import { createModal, MODAL_RIGHT_BUTTON } from "../../components/modal.js";
-import { get as getConfig } from "../../model/config.js";
+import { query as getConfig } from "../../model/config.js";
 import ctrlError from "../ctrl_error.js";
 
 import { get as getAdminConfig, save as saveConfig } from "./model_config.js";

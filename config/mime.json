@@ -80,6 +80,8 @@
 	"json": "application/json",
 	"kar": "audio/midi",
 	"kdc": "image/x-kodak-kdc",
+	"kicad_pcb": "application/vnd.kicad-pcb",
+	"kicad_sch": "application/vnd.kicad-sch",
 	"kml": "application/vnd.google-earth.kml+xml",
 	"kmz": "application/vnd.google-earth.kmz",
 	"m3u8": "application/vnd.apple.mpegurl",

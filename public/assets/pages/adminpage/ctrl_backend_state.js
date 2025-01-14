@@ -1,7 +1,7 @@
 import rxjs from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
-import { get as getConfig } from "../../model/config.js";
+import { query as getConfig } from "../../model/config.js";
 import { get as getAdminConfig } from "./model_config.js";
 import { formObjToJSON$ } from "./helper_form.js";
 

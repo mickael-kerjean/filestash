@@ -79,12 +79,13 @@ export function buttonDownload(name, link) {
     return $el;
 }
 
-export function buttonFullscreen($screen) {
-    let fullscreen = null;
-    if ("webkitRequestFullscreen" in document.body) {
-        fullscreen = () => $screen.webkitRequestFullscreen();
-    } else if ("mozRequestFullScreen" in document.body) {
-        fullscreen = () => $screen.mozRequestFullScreen();
+export function buttonFullscreen($screen, fullscreen = null) {
+    if (fullscreen === null) {
+        if ("webkitRequestFullscreen" in document.body) {
+            fullscreen = () => $screen.webkitRequestFullscreen();
+        } else if ("mozRequestFullScreen" in document.body) {
+            fullscreen = () => $screen.mozRequestFullScreen();
+        }
     }
     if (!fullscreen) return;
     const $el = createElement(`
@@ -106,4 +107,5 @@ export async function init() {
     return loadCSS(import.meta.url, "./component_menubar.css");
 }
 
-customElements.define("component-menubar", ComponentMenubar);
+if (!customElements.get("component-menubar"))
+    customElements.define("component-menubar", ComponentMenubar);
