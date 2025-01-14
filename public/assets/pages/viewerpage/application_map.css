@@ -14,3 +14,6 @@
     margin-left: 10px;
     margin-bottom: 10px;
 }
+#map .leaflet-popup-content {
+    margin: 10px 20px 10px 15px;
+}
