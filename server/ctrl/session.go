@@ -387,6 +387,13 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			templateBind[key] = value
 		}
 	}
+	redirectURI := templateBind["next"]
+	if redirectURI == "" {
+		redirectURI = WithBase("/")
+	}
+	if templateBind["nav"] != "" {
+		redirectURI += "?nav=" + templateBind["nav"]
+	}
 
 	// Step3: create a backend connection object
 	session, err := func(tb map[string]string) (map[string]string, error) {
@@ -455,10 +462,6 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		Log.Debug("session::authMiddleware 'encryption error - %s", err.Error())
 		SendErrorResult(res, ErrNotValid)
 		return
-	}
-	redirectURI := templateBind["next"]
-	if redirectURI == "" {
-		redirectURI = WithBase("/")
 	}
 	http.SetCookie(res, applyCookieRules(&http.Cookie{ // TODO: deprecate SSOCookieName
 		Name:   SSOCookieName,
