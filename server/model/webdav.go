@@ -105,6 +105,12 @@ func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error
 		return this.webdavFile.Stat()
 	}
 	fullname := this.fullpath(name)
+	if isMicrosoftWebDAVClient(this.req) && this.req.Method == "PROPFIND" {
+		if name == "" {
+			fullname = this.chroot
+		}
+		fullname = EnforceDirectory(fullname)
+	}
 	if fullname == "" {
 		return nil, os.ErrNotExist
 	}
@@ -327,4 +333,8 @@ func NewWebdavLock() webdav.LockSystem {
 		lock = webdav.NewMemLS()
 	}
 	return lock
+}
+
+func isMicrosoftWebDAVClient(req *http.Request) bool {
+	return strings.HasPrefix(req.Header.Get("User-Agent"), "Microsoft-WebDAV-MiniRedir/")
 }
