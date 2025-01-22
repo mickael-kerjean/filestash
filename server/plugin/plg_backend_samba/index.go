@@ -70,8 +70,8 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		return nil, err
 	}
 
-	s := &Samba{nil, make(map[string]*smb2.Share, 0)}
-	s.session, err = (&smb2.Dialer{
+	smb.share = make(map[string]*smb2.Share, 0)
+	smb.session, err = (&smb2.Dialer{
 		Initiator: &smb2.NTLMInitiator{
 			User: func() string {
 				if params["username"] == "" {
@@ -88,7 +88,7 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		return nil, err
 	}
 	if params["share"] == "" {
-		names, err := s.session.ListSharenames()
+		names, err := smb.session.ListSharenames()
 		if err != nil {
 			Log.Debug("plg_backend_samba::list host[%s] err[%s]", host, err.Error())
 			return nil, err
@@ -97,17 +97,17 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 			if strings.HasSuffix(name, "$") {
 				continue
 			}
-			if m, err := s.session.Mount(name); err == nil {
-				s.share[name] = m
+			if m, err := smb.session.Mount(name); err == nil {
+				smb.share[name] = m
 			}
 		}
 	} else {
-		if m, err := s.session.Mount(params["share"]); err == nil {
-			s.share[params["share"]] = m
+		if m, err := smb.session.Mount(params["share"]); err == nil {
+			smb.share[params["share"]] = m
 		}
 	}
-	SambaCache.Set(params, s)
-	return s, nil
+	SambaCache.Set(params, &smb)
+	return &smb, nil
 }
 
 func (smb Samba) LoginForm() Form {
