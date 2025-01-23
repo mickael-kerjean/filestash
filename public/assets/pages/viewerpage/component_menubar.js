@@ -50,6 +50,7 @@ export default class ComponentMenubar extends HTMLElement {
         const $item = assert.type(this.querySelector(".action-item"), HTMLElement);
         $item.prepend($button);
         animate($button, { time: 250, keyframes: slideYIn(2) });
+        return $button;
     }
 }
 

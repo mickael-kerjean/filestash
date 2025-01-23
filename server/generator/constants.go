@@ -26,6 +26,6 @@ func init() {
     BUILD_REF = "%s"
     BUILD_DATE = "%s"
 }
-	`, b.String()[0:7], time.Now().Format("20060102"))))
+	`, b.String(), time.Now().Format("20060102"))))
 	f.Close()
 }
