@@ -1,3 +1,6 @@
+const DEBUG = false;
+const log = (msg) => DEBUG && console.log(msg);
+
 export default async function(baseURL, path, opts = {}) {
     const wasi = new Wasi();
     const wasm = await WebAssembly.instantiateStreaming(
@@ -43,11 +46,18 @@ export function readFS(fd) {
     return file.buffer.subarray(0, end);
 }
 
+export function clearFS() {
+    Object.keys(FS).forEach((key) => {
+        if (key > 2) delete FS[key];
+    });
+    nextFd = 3;
+}
+
 function getFile(path) {
     const allFds = Object.keys(FS);
     for (let i=allFds.length - 1; i>0; i--) {
         if (FS[allFds[i]].path === path) {
-            console.log(`fileopen fd=${i} path=${path}`);
+            log(`  fileopen fd=${i} path=${path}`);
             return FS[allFds[i]];
         }
     }
@@ -84,7 +94,7 @@ export const syscalls = {
         console.log(`Stubbed __syscall_stat64 called with pathPtr=${pathPtr}, bufPtr=${bufPtr}`);
         return 0; // Return 0 for a successful call
     },
-    __syscall_lstat64:  () => {
+    __syscall_lstat64: () => {
         console.log(`Stubbed __syscall_lstat64 called`);
         return -1;
     },
@@ -182,7 +192,14 @@ export class Wasi {
         if (fd === 1 || fd === 2) {
             let msg = fd === 1? "stdout: " : "stderr: ";
             msg += new TextDecoder().decode(readFS(fd));
-            FS[fd] = { buffer: new Uint8Array(0), position: 0, path: "" };
+            console.log(msg);
+            FS[fd] = {
+                buffer: new Uint8Array(0),
+                position: 0,
+                path: FS[fd].path || "",
+            };
+        } else {
+            log(`wasi::fd_write fd=${fd}`);
         }
         return 0;
     }
@@ -204,7 +221,7 @@ export class Wasi {
                 length,
                 file.buffer.length - file.position,
             );
-            if (bytesToRead <= 0) {
+            if (bytesToRead < 0) {
                 break;
             }
             memory.set(
@@ -214,6 +231,7 @@ export class Wasi {
             file.position += bytesToRead;
             totalBytesRead += bytesToRead;
         }
+        log(`wasi::fd_read fd=${fd} iovs_len=${iovs_len} totalBytesRead=${totalBytesRead}`);
         new DataView(this.#instance.exports.memory.buffer).setUint32(
             nread,
             totalBytesRead,
@@ -222,7 +240,8 @@ export class Wasi {
         return 0;
     }
 
-    fd_seek(fd, offsetBigInt, whence) {
+    fd_seek(fd, offsetBigInt, _, whence) {
+        log(`wasi::fd_seek fd=${fd} offset=${offsetBigInt} whence=${whence}`);
         const offset = Number(offsetBigInt);
         const file = FS[fd];
         if (!file) {
@@ -283,7 +302,6 @@ export class Wasi {
     }
 
     __syscall_openat(dirFd, pathPtr, flags, mode) {
-        console.debug(`openat called with dirFd=${dirFd}, pathPtr=${pathPtr}, flags=${flags}, mode=${mode}`);
         const memory = new Uint8Array(this.#instance.exports.memory.buffer);
         let path = "";
         for (let i = pathPtr; memory[i] !== 0; i++) {
@@ -292,15 +310,15 @@ export class Wasi {
         const allFds = Object.keys(FS);
         for (let i=allFds.length - 1; i>0; i--) {
             if (FS[allFds[i]].path === path) {
-                console.log(`fileopen fd=${i} path=${path}`);
+                log(`  syscall::openat::result fd=${i} path=${path}`);
                 return i;
             }
         }
-        return -1;
+        throw new Error("Unknown file for __syscall_openat");
     }
 
     __syscall_stat64(pathPtr, buf) {
-        console.log(`stat64`);
+        log(`  syscall::stat64 pathPtr=${pathPtr}, bufPtr=${buf}`);
         const memory = new Uint8Array(this.#instance.exports.memory.buffer);
         let path = "";
         for (let i = pathPtr; memory[i] !== 0; i++) {
@@ -309,11 +327,6 @@ export class Wasi {
         const file = getFile(path);
         const HEAP32 = new Int32Array(this.#instance.exports.memory.buffer);
         const HEAPU32 = new Uint32Array(this.#instance.exports.memory.buffer);
-
-        const tempI64 = [0, 0];
-        const tempDouble = 0;
-
-        // Dummy stat data
         const stat = {
             dev: 1,
             ino: 42,
@@ -329,47 +342,32 @@ export class Wasi {
             mtime: new Date(),
             ctime: new Date(),
         };
-        // Fill the buffer
         HEAP32[(buf >> 2)] = stat.dev;
         HEAP32[((buf + 4) >> 2)] = stat.mode;
         HEAPU32[((buf + 8) >> 2)] = stat.nlink;
         HEAP32[((buf + 12) >> 2)] = stat.uid;
         HEAP32[((buf + 16) >> 2)] = stat.gid;
         HEAP32[((buf + 20) >> 2)] = stat.rdev;
-        HEAP32[((buf + 24) >> 2)] = stat.size & 0xFFFFFFFF; // Lower 32 bits
-        HEAP32[((buf + 28) >> 2)] = Math.floor(stat.size / 4294967296); // Upper 32 bits
+        HEAP32[((buf + 24) >> 2)] = stat.size & 0xFFFFFFFF;
+        HEAP32[((buf + 28) >> 2)] = Math.floor(stat.size / 4294967296);
         HEAP32[((buf + 32) >> 2)] = stat.blksize;
         HEAP32[((buf + 36) >> 2)] = stat.blocks;
-
-        // Write timestamps
-        const atimeSeconds = Math.floor(stat.atime.getTime() / 1000);
-        const atimeNanos = (stat.atime.getTime() % 1000) * 1e6;
-        HEAP32[((buf + 40) >> 2)] = atimeSeconds;
-        HEAP32[((buf + 44) >> 2)] = 0; // Upper 32 bits of atime
-        HEAP32[((buf + 48) >> 2)] = atimeNanos;
-
-        const mtimeSeconds = Math.floor(stat.mtime.getTime() / 1000);
-        const mtimeNanos = (stat.mtime.getTime() % 1000) * 1e6;
-        HEAP32[((buf + 56) >> 2)] = mtimeSeconds;
-        HEAP32[((buf + 60) >> 2)] = 0; // Upper 32 bits of mtime
-        HEAP32[((buf + 64) >> 2)] = mtimeNanos;
-
-        const ctimeSeconds = Math.floor(stat.ctime.getTime() / 1000);
-        const ctimeNanos = (stat.ctime.getTime() % 1000) * 1e6;
-        HEAP32[((buf + 72) >> 2)] = ctimeSeconds;
-        HEAP32[((buf + 76) >> 2)] = 0; // Upper 32 bits of ctime
-        HEAP32[((buf + 80) >> 2)] = ctimeNanos;
-
-        // Dummy inode
-        HEAP32[((buf + 88) >> 2)] = stat.ino & 0xFFFFFFFF; // Lower 32 bits
-        HEAP32[((buf + 92) >> 2)] = Math.floor(stat.ino / 4294967296); // Upper 32 bits
-
-        console.debug(`Stubbed __syscall_stat64 called with pathPtr=${pathPtr}, bufPtr=${buf}`);
+        HEAP32[((buf + 40) >> 2)] = Math.floor(stat.atime.getTime() / 1000);
+        HEAP32[((buf + 44) >> 2)] = 0;
+        HEAP32[((buf + 48) >> 2)] = (stat.atime.getTime() % 1000) * 1e6;
+        HEAP32[((buf + 56) >> 2)] = Math.floor(stat.mtime.getTime() / 1000);
+        HEAP32[((buf + 60) >> 2)] = 0;
+        HEAP32[((buf + 64) >> 2)] = (stat.mtime.getTime() % 1000) * 1e6;
+        HEAP32[((buf + 72) >> 2)] = Math.floor(stat.ctime.getTime() / 1000);
+        HEAP32[((buf + 76) >> 2)] = 0;
+        HEAP32[((buf + 80) >> 2)] = (stat.ctime.getTime() % 1000) * 1e6;
+        HEAP32[((buf + 88) >> 2)] = stat.ino & 0xFFFFFFFF;
+        HEAP32[((buf + 92) >> 2)] = Math.floor(stat.ino / 4294967296);
         return 0;
     }
 
     __cxa_throw(ptr, type, destructor) {
-        console.error(`Exception thrown at ptr=${ptr}, type=${type}, destructor=${destructor}`);
+        console.error(`  syscall::cxa_throw ptr=${ptr}, type=${type}, destructor=${destructor}`);
         throw new Error("WebAssembly exception");
     }
 

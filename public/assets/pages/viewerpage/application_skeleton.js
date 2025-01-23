@@ -5,6 +5,7 @@ import { load as loadPlugin } from "../../model/plugin.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
+import componentDownloader, { init as initDownloader } from "./application_downloader.js";
 
 export default function(render, { mime, getFilename, getDownloadUrl, acl$ }) {
     const $page = createElement(`
@@ -35,5 +36,6 @@ export default function(render, { mime, getFilename, getDownloadUrl, acl$ }) {
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_skeleton.css"),
+        initDownloader(),
     ]);
 }

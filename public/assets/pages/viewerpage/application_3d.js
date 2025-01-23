@@ -5,7 +5,6 @@ import { AjaxError } from "../../lib/error.js";
 import { load as loadPlugin } from "../../model/plugin.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
-import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 
 import componentDownloader, { init as initDownloader } from "./application_downloader.js";
@@ -18,7 +17,6 @@ import withCube from "./application_3d/scene_cube.js";
 import ctrlToolbar from "./application_3d/toolbar.js";
 
 class I3DLoader {
-    constructor() {}
     load() { throw new Error("NOT_IMPLEMENTED"); }
     transform() { throw new Error("NOT_IMPLEMENTED"); }
     is2D() { return false; }
@@ -45,7 +43,7 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
 
     const removeLoader = createLoader($draw);
     await effect(rxjs.from(loadPlugin(mime)).pipe(
-        rxjs.mergeMap(async (loader) => {
+        rxjs.mergeMap(async(loader) => {
             if (!loader) {
                 componentDownloader(render, { mime, acl$, getFilename, getDownloadUrl });
                 return rxjs.EMPTY;
@@ -59,11 +57,7 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
             (err) => observer.error(err),
         )).pipe(
             removeLoader,
-            rxjs.mergeMap((mesh) => create3DScene({
-                mesh,
-                $draw, $toolbar, $menubar,
-                hasCube, mime, is2D: loader.is2D,
-            })),
+            rxjs.mergeMap((mesh) => create3DScene({ mime, mesh, is2D: loader.is2D, $draw, $toolbar, $menubar, hasCube })),
         )),
         rxjs.catchError((err) => {
             let _err = err;

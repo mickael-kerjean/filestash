@@ -22,7 +22,7 @@ export function get(mime) {
 export async function load(mime) {
     const specs = plugins[mime];
     if (!specs) return null;
-    const [_, url] = specs;
+    const [, url] = specs;
     const module = await import(url);
     return module.default;
 }
