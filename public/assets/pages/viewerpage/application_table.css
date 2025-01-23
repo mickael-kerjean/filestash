@@ -34,6 +34,7 @@
 .component_tableviewer .table .thead {
     overflow-x: scroll;
     scrollbar-width: none;
+    border-bottom: 1px solid var(--border);
 }
 .component_tableviewer .table .tbody {
     flex: 1;
@@ -46,15 +47,13 @@
 }
 
 .component_tableviewer .table .thead .th {
-    padding: 10px 10px;
+    padding: 5px 10px;
     font-weight: normal;
     display: inline-block;
     position: sticky;
     top: 0;
-    background: var(--dark);
-    opacity: 0.9;
-    color: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 0px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    opacity: 0.8;
+    text-transform: capitalize;
 }
 .component_tableviewer .table .thead .th img {
     height: 13px;
@@ -64,8 +63,12 @@
     right: 7px;
     cursor: pointer;
     transition: ease transform 0.2s;
+    filter: contrast(1) invert(0);
+}
+.dark-mode .component_tableviewer .table .thead .th img {
     filter: contrast(1) invert(1);
 }
+
 .component_tableviewer .table .tbody .td {
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);

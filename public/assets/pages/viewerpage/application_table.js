@@ -70,7 +70,10 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
     const $search = createElement(`<input type="search" placeholder="search">`);
     effect(init$.pipe(
         rxjs.tap(() => $menubar.add($search)),
-        rxjs.mergeMap(() => rxjs.fromEvent($search, "keydown").pipe(rxjs.debounceTime(200))),
+        rxjs.mergeMap(() => rxjs.fromEvent($search, "keyup").pipe(rxjs.debounce((e) => {
+            if (!e.target.value) return rxjs.of(null);
+            return rxjs.timer(300);
+        }))),
         rxjs.tap((e) => {
             const terms = e.target.value.toLowerCase().trim().split(" ");
             $dom.tbody.scrollTo(0, 0);
