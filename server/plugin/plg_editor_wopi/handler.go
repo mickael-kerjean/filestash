@@ -87,20 +87,34 @@ func WOPIHandler_PutFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func WOPIExecute(w http.ResponseWriter, r *http.Request) func(func(*App, string, http.ResponseWriter)) {
-	return func(fn func(*App, string, http.ResponseWriter)) {
-		tmp := strings.SplitN(mux.Vars(r)["path64"], "::", 2)
-		if len(tmp) != 2 {
+	extractInfo := func(encodedString string) (path string, shareID string) {
+		tmp := strings.Split(encodedString, "::") // eg: backendID::b64(path)::shareID
+		if len(tmp) < 2 {
 			SendErrorResult(w, ErrNotValid)
 			return
 		}
-		p, err := base64.StdEncoding.DecodeString(tmp[1])
+		bpath, err := base64.StdEncoding.DecodeString(tmp[1])
 		if err != nil {
+			return "", ""
+		} else if len(tmp) > 2 {
+			shareID = tmp[2]
+		}
+		return string(bpath), shareID
+	}
+	return func(fn func(*App, string, http.ResponseWriter)) {
+		path, shareID := extractInfo(mux.Vars(r)["path64"])
+		if path == "" {
 			SendErrorResult(w, ErrNotValid)
 			return
+		}
+		if shareID != "" {
+			urlQuery := r.URL.Query()
+			urlQuery.Set("share", shareID)
+			r.URL.RawQuery = urlQuery.Encode()
 		}
 		middleware.NewMiddlewareChain(
 			func(ctx *App, w http.ResponseWriter, r *http.Request) {
-				fullpath, err := ctrl.PathBuilder(ctx, string(p))
+				fullpath, err := ctrl.PathBuilder(ctx, path)
 				if err != nil {
 					SendErrorResult(w, err)
 					return
@@ -237,20 +251,25 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	myURL := origin()
-	if myURL == "" {
-		myURL := "http://"
+	wopiSRC := origin()
+	if wopiSRC == "" {
+		wopiSRC := "http://"
 		if Config.Get("general.force_ssl").Bool() {
-			myURL = "https://"
+			wopiSRC = "https://"
 		}
-		myURL += Config.Get("general.host").String()
+		wopiSRC += Config.Get("general.host").String()
 	}
-	p := u.Query()
-	backendID := GenerateID(map[string]string{
+	wopiSRC += "/api/wopi/files/"
+	wopiSRC += GenerateID(map[string]string{
 		"id":   GenerateID(ctx.Session),
 		"path": fullpath,
 	})
-	p.Set("WOPISrc", myURL+"/api/wopi/files/"+backendID+"::"+base64.StdEncoding.EncodeToString([]byte(fullpath)))
+	wopiSRC += "::" + base64.StdEncoding.EncodeToString([]byte(fullpath))
+	if ctx.Share.Id != "" {
+		wopiSRC += "::" + ctx.Share.Id
+	}
+	p := u.Query()
+	p.Set("WOPISrc", wopiSRC)
 	p.Set("access_token", ctx.Authorization)
 	u.RawQuery = p.Encode()
 	if newHost := rewrite_url(); newHost != "" {

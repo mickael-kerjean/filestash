@@ -1,5 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
+import { forwardURLParams } from "../../lib/path.js";
 import { loadCSS } from "../../helpers/loader.js";
 import notification from "../../components/notification.js";
 import t from "../../locales/index.js";
@@ -8,9 +9,10 @@ import ctrlError from "../ctrl_error.js";
 import { getCurrentPath } from "./common.js";
 
 export default function(render, { endpoint = "" }) {
+    const url = forwardURLParams(`${endpoint}?path=${encodeURIComponent(getCurrentPath())}`, ["share"]);
     const $page = createElement(`
         <div class="component_appframe">
-            <iframe style="width:100%;height:100%" src="${endpoint}?path=${encodeURIComponent(getCurrentPath())}" scrolling="no"></iframe>
+            <iframe style="width:100%;height:100%" src="${url}" scrolling="no"></iframe>
         </div>
     `);
     render($page);
