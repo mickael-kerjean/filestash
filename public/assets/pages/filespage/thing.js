@@ -64,8 +64,8 @@ export function createThing({
     loading = false,
     link = "",
     view = "",
+    search = "",
     n = 0,
-    read_only = false,
     permissions = {},
 }) {
     const [, ext] = formatFile(name);
@@ -138,8 +138,9 @@ export function createThing({
         $link.setAttribute("href", "#");
         $extension.innerHTML = "";
         return $thing;
-    } else if (read_only === true) {
+    } else if (search !== "") {
         $checkbox.classList.add("hidden");
+        if (view === "list") $img.style.visibility = "initial";
         return $thing;
     } else if (type === "hidden") {
         $thing.classList.add("hidden");

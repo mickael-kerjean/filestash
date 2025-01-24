@@ -67,10 +67,10 @@ export default async function(render) {
                 $listBefore.setAttribute("style", "");
                 $listAfter.setAttribute("style", "");
                 return search(state.search).pipe(rxjs.map(({ files }) => ({
-                    files, read_only: true, ...state, ...rest,
+                    files, ...state, ...rest,
                 })), removeLoader);
             }
-            return rxjs.of({ files, read_only: false, ...state, ...rest });
+            return rxjs.of({ files, ...state, ...rest });
         }))),
         rxjs.mergeMap((obj) => getPermission(path).pipe(
             rxjs.map((permissions) => ({ ...obj, permissions })),
@@ -88,10 +88,10 @@ export default async function(render) {
                 renderEmpty(createRender(qs($page, `[data-target="header"]`)), search ? ICONS.EMPTY_SEARCH : ICONS.EMPTY_FILES);
                 return rxjs.EMPTY;
             }
-            return rxjs.of({ ...rest, files });
+            return rxjs.of({ ...rest, files, search });
         }),
         rxjs.mergeMap((obj) => refreshOnResize$.pipe(rxjs.mapTo(obj))),
-        rxjs.mergeMap(({ files, view, read_only, count, permissions }) => { // STEP1: setup the list of files
+        rxjs.mergeMap(({ files, view, search, count, permissions }) => { // STEP1: setup the list of files
             $list.closest(".scroll-y").scrollTop = 0;
             let FILE_HEIGHT, COLUMN_PER_ROW;
             switch (view) {
@@ -123,7 +123,7 @@ export default async function(render) {
                     ...file,
                     ...createLink(file, currentPath()),
                     view,
-                    read_only,
+                    search,
                     n: i,
                     permissions,
                 }));
@@ -159,7 +159,7 @@ export default async function(render) {
             return rxjs.of({
                 virtual: true,
                 files,
-                read_only,
+                search,
                 path,
                 view,
                 permissions,
@@ -173,7 +173,7 @@ export default async function(render) {
             });
         }),
         rxjs.switchMap(({
-            files, path, view, read_only, permissions,
+            files, path, view, search, permissions,
             BLOCK_SIZE, COLUMN_PER_ROW, FILE_HEIGHT,
             MARGIN,
             currentState,
@@ -238,8 +238,8 @@ export default async function(render) {
                     }));
                     else $fs.appendChild(createThing({
                         ...file,
-                        read_only,
                         ...createLink(file, path),
+                        search,
                         view,
                         permissions,
                         n: i,

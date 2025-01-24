@@ -132,7 +132,7 @@ export const ls = (path) => {
 };
 
 export const search = (term) => ajax({
-    url: `api/files/search?path=${encodeURIComponent(currentPath())}&q=${encodeURIComponent(term)}`,
+    url: withURLParams(`api/files/search?path=${encodeURIComponent(currentPath())}&q=${encodeURIComponent(term)}`),
     responseType: "json"
 }).pipe(rxjs.map(({ responseJSON }) => ({
     files: responseJSON.results,
