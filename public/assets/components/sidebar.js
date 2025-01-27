@@ -12,7 +12,7 @@ import { hooks, mv as mv$ } from "../pages/filespage/model_files.js";
 import { extractPath, isDir, isNativeFileUpload } from "../pages/filespage/helper.js";
 import { mv as mvVL, withVirtualLayer } from "../pages/filespage/model_virtual_layer.js";
 
-const state = { scrollTop: 100, $cache: null };
+const state = { scrollTop: 0, $cache: null };
 const mv = (from, to) => withVirtualLayer(
     mv$(from, to),
     mvVL(from, to),
@@ -92,12 +92,12 @@ async function ctrlNavigationPane(render, { $sidebar, nRestart }) {
     });
     const chunk = new PathChunk();
     const arr = chunk.toArray();
-    const fullpath = chunk.toString();
+    const dirpath = chunk.toString();
     const $tree = document.createDocumentFragment();
     for (let i = 0; i<arr.length-1; i++) {
         const path = chunk.toString(i);
         try {
-            const $list = await _createListOfFiles(path, arr[i+1], fullpath);
+            const $list = await _createListOfFiles(path, arr[i+1], dirpath);
             const $anchor = i === 0 ? $tree : qs($tree, `[data-path="${chunk.toString(i)}"]`);
             $anchor.appendChild($list);
         } catch (err) {
@@ -134,7 +134,9 @@ async function ctrlNavigationPane(render, { $sidebar, nRestart }) {
         const $active = qs($sidebar, `[data-path="${chunk.toString()}"] a`);
         $active.classList.add("active");
         if (checkVisible($active) === false) {
-            $active.scrollIntoView({ behavior: "smooth" });
+            $active.offsetTop < window.innerHeight ?
+                $sidebar.firstChild.scrollTo({top: 0, behavior: "smooth"}) :
+                $active.scrollIntoView({ behavior: "smooth" });
         }
     } catch (err) {}
 
@@ -158,7 +160,7 @@ async function ctrlNavigationPane(render, { $sidebar, nRestart }) {
     ));
 }
 
-async function _createListOfFiles(path, currentName, fullpath) {
+async function _createListOfFiles(path, currentName, dirpath) {
     const r = await cache().get(path);
     const whats = r === null
         ? (currentName ? [currentName] : [])
@@ -179,7 +181,7 @@ async function _createListOfFiles(path, currentName, fullpath) {
         `);
         $ul.appendChild($li);
         const $link = qs($li, "a");
-        if ($li.getAttribute("data-path") === fullpath) {
+        if ($li.getAttribute("data-path") === dirpath && location.pathname.startsWith(toHref("/files/"))) {
             $link.removeAttribute("href", "");
             $link.removeAttribute("data-link");
             continue;
