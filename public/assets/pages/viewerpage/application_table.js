@@ -4,6 +4,7 @@ import { qs, qsa } from "../../lib/dom.js";
 import ajax from "../../lib/ajax.js";
 import { loadCSS } from "../../helpers/loader.js";
 import t from "../../locales/index.js";
+import { createLoader } from "../../components/loader.js";
 import { get as getPlugin } from "../../model/plugin.js";
 import ctrlError from "../ctrl_error.js";
 
@@ -39,6 +40,7 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
         thead: qs($page, ".thead"),
         tbody: qs($page, ".tbody"),
     };
+    const removeLoader = createLoader(qs($page, ".component_table_container"));
     const padding = 10;
     const STATE = {
         header: {},
@@ -57,7 +59,9 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
             STATE.header = table.getHeader();
             STATE.body = table.getBody();
             STATE.rows = STATE.body;
-
+        }),
+        removeLoader,
+        rxjs.tap(() => {
             buildHead(STATE, $dom, padding);
             buildRows(STATE.rows.slice(0, MAX_ROWS), STATE.header, $dom.tbody, padding, true, false);
         }),
