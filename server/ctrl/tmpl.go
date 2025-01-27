@@ -2,6 +2,7 @@ package ctrl
 
 import (
 	"encoding/base64"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -65,6 +66,48 @@ var tmplFuncs = template.FuncMap{
 		default:
 			return false, ErrNotImplemented
 		}
+	},
+	"filter": func(arg string, stdin string) (string, error) {
+		out := []string{}
+		r, regErr := regexp.Compile(arg)
+		if regErr != nil {
+			return "", regErr
+		}
+		for _, chunk := range strings.Split(stdin, ",") {
+			c := strings.TrimSpace(chunk)
+			if r.Match([]byte(c)) {
+				out = append(out, c)
+			}
+		}
+		return strings.Join(out, ", "), nil
+	},
+	"replace": func(arguments ...string) (string, error) {
+		var (
+			arg     string
+			stdin   string
+			replace string
+		)
+		if len(arguments) == 2 {
+			arg = arguments[0]
+			stdin = arguments[1]
+		} else if len(arguments) == 3 {
+			arg = arguments[0]
+			replace = arguments[1]
+			stdin = arguments[2]
+		} else {
+			return "", ErrNotImplemented
+		}
+
+		chunks := strings.Split(stdin, ",")
+		r, regErr := regexp.Compile(arg)
+		if regErr != nil {
+			return "", regErr
+		}
+		for i := range chunks {
+			c := strings.TrimSpace(chunks[i])
+			chunks[i] = r.ReplaceAllString(c, replace)
+		}
+		return strings.Join(chunks, ", "), nil
 	},
 	"encryptGCM": func(str string, key string) (string, error) {
 		data, err := EncryptAESGCM([]byte(key), []byte(str))
