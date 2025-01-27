@@ -3,6 +3,7 @@ package ctrl
 import (
 	"bytes"
 	"embed"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -141,64 +142,10 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
 		return
 	}
-	preloadScripts := []string{
-		"/admin/assets/boot/router_backoffice.js", "/admin/assets/boot/router_backoffice.js", "/admin/assets/boot/ctrl_boot_backoffice.js", "/admin/assets/boot/common.js",
-		"/admin/assets/pages/adminpage/decorator.js", "/admin/assets/pages/adminpage/decorator_sidemenu.js", "/admin/assets/pages/adminpage/decorator_admin_only.js",
-		"/admin/assets/components/icon.js", "/admin/assets/locales/index.js", "/admin/assets/lib/animate.js",
-		"/admin/assets/lib/skeleton/router.js", "/admin/assets/lib/skeleton/lifecycle.js",
-		"/admin/assets/lib/vendor/rxjs/rxjs-shared.min.js", "/admin/assets/lib/vendor/rxjs/rxjs-ajax.min.js", "/admin/assets/lib/ajax.js",
-		"/admin/assets/lib/rx.js", "/admin/assets/lib/vendor/rxjs/rxjs.min.js",
-	}
-	switch TrimBase(url) {
-	case "/admin/backend":
-		preloadScripts = append(
-			preloadScripts,
-			"/admin/assets/pages/adminpage/ctrl_backend.js", "/admin/assets/pages/adminpage/ctrl_backend_component_storage.js", "/admin/assets/pages/adminpage/ctrl_backend_component_authentication.js",
-			"/admin/assets/model/config.js", "/admin/assets/model/backend.js",
-			"/admin/assets/pages/adminpage/model_backend.js", "/admin/assets/pages/adminpage/model_auth_middleware.js",
-			"/admin/assets/lib/random.js", "/admin/assets/lib/form.js", "/admin/assets/components/form.js",
-			"/admin/assets/components/skeleton.js", "/admin/assets/pages/adminpage/ctrl_backend_state.js", "/admin/assets/pages/adminpage/component_box-item.js", "/admin/assets/pages/adminpage/helper_form.js",
-		)
-	case "/admin/settings":
-		preloadScripts = append(
-			preloadScripts,
-			"/admin/assets/pages/adminpage/ctrl_settings.js", "/admin/assets/model/config.js",
-			"/admin/assets/lib/random.js", "/admin/assets/lib/form.js", "/admin/assets/components/form.js",
-			"/admin/assets/components/skeleton.js", "/admin/assets/pages/adminpage/helper_form.js",
-		)
-	case "/admin/logs":
-		preloadScripts = append(
-			preloadScripts,
-			"/admin/assets/pages/adminpage/ctrl_log.js", "/admin/assets/model/config.js", "/admin/assets/lib/random.js",
-			"/admin/assets/pages/adminpage/helper_form.js", "/admin/assets/pages/adminpage/model_log.js",
-			"/admin/assets/pages/adminpage/ctrl_log_form.js", "/admin/assets/pages/adminpage/ctrl_log_viewer.js", "/admin/assets/pages/adminpage/ctrl_log_audit.js",
-			"/admin/assets/lib/form.js", "/admin/assets/components/form.js", "/admin/assets/components/skeleton.js",
-		)
-	case "/admin/about":
-		preloadScripts = append(preloadScripts, "/admin/assets/pages/adminpage/ctrl_about.js")
-	default:
-		preloadScripts = append(preloadScripts, "/admin/assets/pages/ctrl_adminpage.js")
-	}
-	preloadScripts = append(
-		preloadScripts,
-		"/admin/assets/pages/ctrl_error.js", "/admin/assets/pages/adminpage/ctrl_login.js", "/admin/assets/lib/dom.js", "/admin/assets/lib/error.js",
-		"/admin/assets/pages/adminpage/animate.js", "/admin/assets/helpers/log.js", "/admin/assets/helpers/loader.js",
-		"/admin/assets/pages/adminpage/model_config.js", "/admin/assets/pages/adminpage/model_admin_session.js", "/admin/assets/pages/adminpage/model_release.js",
-		"/admin/assets/pages/adminpage/model_audit.js",
-	)
 	head := res.Header()
 	head.Set("Cache-Control", "no-cache")
 	head.Set("Pragma", "no-cache")
 	head.Set("Expires", "0")
-	for _, href := range preloadScripts {
-		head.Add(
-			"Link",
-			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(
-				strings.Replace(href, "/assets/", "/assets/"+BUILD_REF+"/", 1),
-			)),
-		)
-	}
-	head.Add("Link", `<`+WithBase("/about")+`>; rel="preload"; as="fetch"; crossorigin="use-credentials";`)
 
 	ServeIndex("index.backoffice.html")(ctx, res, req)
 	return
@@ -232,65 +179,10 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	preloadScripts := []string{
-		"/assets/boot/router_frontoffice.js", "/assets/boot/ctrl_boot_frontoffice.js",
-
-		"/assets/lib/skeleton/index.js", "/assets/lib/skeleton/router.js", "/assets/lib/skeleton/lifecycle.js",
-		"/assets/lib/vendor/rxjs/rxjs.min.js", "/assets/lib/vendor/rxjs/rxjs-ajax.min.js", "/assets/lib/vendor/rxjs/rxjs-shared.min.js",
-		"/assets/lib/rx.js", "/assets/lib/ajax.js",
-		"/assets/lib/path.js", "/assets/lib/error.js", "/assets/lib/assert.js",
-		"/assets/lib/dom.js", "/assets/lib/animate.js",
-
-		"/assets/components/loader.js", "/assets/components/modal.js", "/assets/components/notification.js",
-		"/assets/components/icon.js",
-	}
-	turl := TrimBase(url)
-	if strings.HasPrefix(turl, "/login") {
-		preloadScripts = append(
-			preloadScripts,
-			"/assets/pages/ctrl_connectpage.js",
-			"/assets/pages/connectpage/ctrl_form.js", "/assets/pages/connectpage/ctrl_forkme.js",
-			"/assets/pages/connectpage/ctrl_poweredby.js",
-			"/assets/pages/connectpage/model_config.js", "/assets/pages/connectpage/model_backend.js", "/assets/pages/connectpage/ctrl_form_state.js",
-
-			"/assets/lib/form.js", "/assets/lib/settings.js", "/assets/lib/random.js", "/assets/helpers/log.js",
-			"/assets/model/session.js", "/assets/components/form.js",
-			"/assets/pages/ctrl_error.js",
-		)
-	} else if strings.HasPrefix(turl, "/files/") {
-		preloadScripts = append(
-			preloadScripts,
-			"/assets/pages/filespage/ctrl_filesystem.js", "/assets/pages/filespage/modal_share.js",
-			"/assets/pages/filespage/ctrl_upload.js", "/assets/components/sidebar.js", "/assets/components/breadcrumb.js",
-			"/assets/lib/form.js", "/assets/components/dropdown.js", "/assets/components/decorator_shell_filemanager.js",
-			"/assets/lib/random.js",
-
-			"/assets/pages/filespage/ctrl_submenu.js", "/assets/pages/filespage/ctrl_newitem.js",
-			"/assets/pages/filespage/cache.js", "/assets/pages/ctrl_filespage.js",
-			"/assets/pages/filespage/thing.js", "/assets/pages/ctrl_error.js", "/assets/pages/filespage/model_virtual_layer.js",
-			"/assets/pages/filespage/model_files.js", "/assets/pages/filespage/helper.js",
-			"/assets/pages/filespage/model_acl.js", "/assets/pages/filespage/state_config.js",
-			"/assets/pages/filespage/state_newthing.js", "/assets/pages/filespage/state_selection.js",
-			"/assets/pages/filespage/modal_delete.js", "/assets/pages/filespage/modal_rename.js", "/assets/pages/filespage/modal_tag.js",
-
-			"/assets/components/form.js",
-			"/assets/helpers/log.js", "/assets/lib/error.js", "/assets/model/config.js",
-			"/assets/lib/assert.js", "/assets/model/session.js", "/assets/lib/store.js",
-			"/assets/pages/filespage/state_config.js",
-		)
-	}
 	head := res.Header()
 	head.Set("Cache-Control", "no-cache")
 	head.Set("Pragma", "no-cache")
 	head.Set("Expires", "0")
-	for _, href := range preloadScripts {
-		head.Add(
-			"Link",
-			fmt.Sprintf(`<%s>; rel="preload"; as="script"; crossorigin="anonymous";`, WithBase(
-				strings.Replace(href, "/assets/", "/assets/"+BUILD_REF+"/", 1),
-			)),
-		)
-	}
 
 	ServeIndex("index.frontoffice.html")(ctx, res, req)
 }
@@ -438,6 +330,11 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 		)
 		head := res.Header()
 
+		if filePath == "/assets/bundle" {
+			ServeBundle(ctx, res, req)
+			return
+		}
+
 		// case: patch must be apply because of a "StaticPatch" plugin
 		for _, patch := range Hooks.Get.StaticPatch() {
 			patchFile, err := patch.Open(strings.TrimPrefix(filePath, "/"))
@@ -550,6 +447,32 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 			"license": LICENSE,
 		})
 	}
+}
+
+func ServeBundle(ctx *App, res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-Type", "text/event-stream")
+	res.Header().Set("Cache-Control", "no-cache")
+	res.Header().Set("Connection", "keep-alive")
+	res.WriteHeader(http.StatusOK)
+
+	urls := req.URL.Query()["url"]
+	for i := 0; i < len(urls); i++ {
+		curPath := "assets" + strings.TrimPrefix(urls[i], "/assets/"+BUILD_REF)
+		file, err := WWWPublic.Open(curPath + ".gz")
+		if err != nil {
+			Log.Warning("static::sse failed to find file %s", curPath)
+			return
+		}
+		fmt.Fprintf(res, "id: %s\n", urls[i])
+		fmt.Fprintf(res, "data: ")
+		b, _ := io.ReadAll(file)
+		res.Write([]byte(base64.StdEncoding.EncodeToString(b)))
+		fmt.Fprintf(res, "\n\n")
+		res.(http.Flusher).Flush()
+		file.Close()
+	}
+	fmt.Fprint(res, "\n")
+	res.(http.Flusher).Flush()
 }
 
 func InitPluginList(code []byte) {

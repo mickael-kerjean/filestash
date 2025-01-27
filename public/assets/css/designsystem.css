@@ -13,7 +13,7 @@
 @import url("./designsystem_alert.css");
 
 :root {
-    --bg-color: #f9f9fa; /*#fafafa;*/
+    --bg-color: #f9f9fa;
     --color: #57595A;
     --emphasis: #466372;
     --primary: #9AD1ED;

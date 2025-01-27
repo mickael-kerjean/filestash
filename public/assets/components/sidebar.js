@@ -134,9 +134,9 @@ async function ctrlNavigationPane(render, { $sidebar, nRestart }) {
         const $active = qs($sidebar, `[data-path="${chunk.toString()}"] a`);
         $active.classList.add("active");
         if (checkVisible($active) === false) {
-            $active.offsetTop < window.innerHeight ?
-                $sidebar.firstChild.scrollTo({top: 0, behavior: "smooth"}) :
-                $active.scrollIntoView({ behavior: "smooth" });
+            $active.offsetTop < window.innerHeight
+                ? $sidebar.firstChild.scrollTo({ top: 0, behavior: "smooth" })
+                : $active.scrollIntoView({ behavior: "smooth" });
         }
     } catch (err) {}
 

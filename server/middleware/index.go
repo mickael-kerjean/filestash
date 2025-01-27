@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"net/http"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func init() {
@@ -56,6 +57,10 @@ func (w *ResponseWriter) Write(b []byte) (int, error) {
 		w.status = 200
 	}
 	return w.ResponseWriter.Write(b)
+}
+
+func (w *ResponseWriter) Flush() {
+	w.ResponseWriter.(http.Flusher).Flush()
 }
 
 func PluginInjector(fn HandlerFunc) HandlerFunc {
