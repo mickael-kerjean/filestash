@@ -22,3 +22,7 @@ export function get(key) {
     if (key) return window.CONFIG[key];
     return window.CONFIG;
 }
+
+export function getVersion() {
+    return get("version");
+}

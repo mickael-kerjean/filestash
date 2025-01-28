@@ -417,7 +417,7 @@ func (this *Configuration) Export() interface{} {
 			}
 			return scheme + host
 		}(),
-		Version: BUILD_REF[:7],
+		Version: BUILD_REF,
 	}
 }
 
