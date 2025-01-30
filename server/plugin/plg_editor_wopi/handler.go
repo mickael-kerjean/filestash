@@ -87,11 +87,27 @@ func WOPIHandler_PutFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func WOPIExecute(w http.ResponseWriter, r *http.Request) func(func(*App, string, http.ResponseWriter)) {
+	return func(fn func(*App, string, http.ResponseWriter)) {
+		middleware.NewMiddlewareChain(
+			func(ctx *App, w http.ResponseWriter, r *http.Request) {
+				fullpath, err := ctrl.PathBuilder(ctx, r.URL.Query().Get("path"))
+				if err != nil {
+					SendErrorResult(w, err)
+					return
+				}
+				fn(ctx, fullpath, w)
+			},
+			[]Middleware{wopiToCommonAPI, middleware.SessionStart},
+			App{},
+		).ServeHTTP(w, r)
+	}
+}
+
+func wopiToCommonAPI(fn HandlerFunc) HandlerFunc {
 	extractInfo := func(encodedString string) (path string, shareID string) {
 		tmp := strings.Split(encodedString, "::") // eg: backendID::b64(path)::shareID
 		if len(tmp) < 2 {
-			SendErrorResult(w, ErrNotValid)
-			return
+			return "", ""
 		}
 		bpath, err := base64.StdEncoding.DecodeString(tmp[1])
 		if err != nil {
@@ -101,30 +117,22 @@ func WOPIExecute(w http.ResponseWriter, r *http.Request) func(func(*App, string,
 		}
 		return string(bpath), shareID
 	}
-	return func(fn func(*App, string, http.ResponseWriter)) {
-		path, shareID := extractInfo(mux.Vars(r)["path64"])
+
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
+		path, shareID := extractInfo(mux.Vars(req)["path64"])
 		if path == "" {
-			SendErrorResult(w, ErrNotValid)
+			SendErrorResult(res, ErrNotValid)
 			return
 		}
 		if shareID != "" {
-			urlQuery := r.URL.Query()
+			urlQuery := req.URL.Query()
 			urlQuery.Set("share", shareID)
-			r.URL.RawQuery = urlQuery.Encode()
+			urlQuery.Set("path", path)
+			urlQuery.Del("access_key")
+			req.URL.RawQuery = urlQuery.Encode()
 		}
-		middleware.NewMiddlewareChain(
-			func(ctx *App, w http.ResponseWriter, r *http.Request) {
-				fullpath, err := ctrl.PathBuilder(ctx, path)
-				if err != nil {
-					SendErrorResult(w, err)
-					return
-				}
-				fn(ctx, fullpath, w)
-			},
-			[]Middleware{middleware.SessionStart},
-			App{},
-		).ServeHTTP(w, r)
-	}
+		fn(ctx, res, req)
+	})
 }
 
 func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
