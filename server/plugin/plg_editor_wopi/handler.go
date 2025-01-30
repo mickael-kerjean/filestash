@@ -124,13 +124,16 @@ func wopiToCommonAPI(fn HandlerFunc) HandlerFunc {
 			SendErrorResult(res, ErrNotValid)
 			return
 		}
+		urlQuery := req.URL.Query()
+		urlQuery.Set("path", path)
 		if shareID != "" {
-			urlQuery := req.URL.Query()
 			urlQuery.Set("share", shareID)
-			urlQuery.Set("path", path)
 			urlQuery.Del("access_key")
-			req.URL.RawQuery = urlQuery.Encode()
+		} else {
+			urlQuery.Set("authorization", urlQuery.Get("access_token"))
+			urlQuery.Del("access_key")
 		}
+		req.URL.RawQuery = urlQuery.Encode()
 		fn(ctx, res, req)
 	})
 }

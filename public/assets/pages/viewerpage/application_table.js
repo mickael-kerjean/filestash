@@ -150,11 +150,12 @@ async function buildRows(rows, legends, $tbody, padding, isInit, withClear) {
         const obj = rows[i];
         const $tr = createElement(`<div class="tr"></div>`);
         legends.forEach(({ name, size }, i) => {
-            $tr.appendChild(createElement(`
-                <div data-column="${name}" title="${obj[name]}" class="${withCenter("td ellipsis", size, i === legends.length -1)}" style="${styleCell(size, name, padding)}">
-                    ${obj[name] || "<span class=\"empty\">-</span>"}
-                </div>
-            `));
+            const $col = createElement(`<div class="${withCenter("td ellipsis", size, i === legends.length -1)}" style="${styleCell(size, name, padding)}"></div>`);
+            $col.setAttribute("data-column", name);
+            $col.setAttribute("title", obj[name]);
+            if (obj[name]) $col.textContent = obj[name];
+            else $col.appendChild(createElement(`<span class=\"empty\">-</span>`));
+            $tr.appendChild($col);
         });
         $tbody.appendChild($tr);
     }
@@ -178,11 +179,11 @@ function buildHead(STATE, $dom, padding) {
     const $tr = createElement(`<div class="tr"></div>`);
     STATE.header.forEach(({ name, size }, i) => {
         const $th = createElement(`
-            <div title="${name}" class="${withCenter("th ellipsis", size, i === STATE.header.length - 1)}" style="${styleCell(size, name, padding)}">
-                ${name}
-                <img class="no-select" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+CiAgPHBhdGggc3R5bGU9ImZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MC41MzMzMzMyMSIgZD0ibSA3LjcwNSw4LjA0NSA0LjU5LDQuNTggNC41OSwtNC41OCAxLjQxLDEuNDEgLTYsNiAtNiwtNiB6IiAvPgogIDxwYXRoIGZpbGw9Im5vbmUiIGQ9Ik0wLS4yNWgyNHYyNEgweiIgLz4KPC9zdmc+Cg==" />
-            </div>
+            <div class="${withCenter("th ellipsis", size, i === STATE.header.length - 1)}" style="${styleCell(size, name, padding)}"></div>
         `);
+        $th.setAttribute("title", name);
+        $th.textContent = name;
+        $th.appendChild(createElement(`<img class="no-select" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+CiAgPHBhdGggc3R5bGU9ImZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MC41MzMzMzMyMSIgZD0ibSA3LjcwNSw4LjA0NSA0LjU5LDQuNTggNC41OSwtNC41OCAxLjQxLDEuNDEgLTYsNiAtNiwtNiB6IiAvPgogIDxwYXRoIGZpbGw9Im5vbmUiIGQ9Ik0wLS4yNWgyNHYyNEgweiIgLz4KPC9zdmc+Cg==" />`));
         let ascending = null;
         qs($th, "img").onclick = (e) => {
             ascending = !ascending;
