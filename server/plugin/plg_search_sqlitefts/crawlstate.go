@@ -23,9 +23,10 @@ type SearchProcess struct {
 
 func (this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
 	id := GenerateID(app.Session)
+	this.mu.Lock()
+	defer this.mu.Unlock()
 
 	// try to find the search indexer among the existing ones
-	this.mu.RLock()
 	for i := len(this.idx) - 1; i >= 0; i-- {
 		if id == this.idx[i].Id {
 			alreadyHasPath := false
@@ -44,15 +45,12 @@ func (this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
 				})
 			}
 			ret := &this.idx[i]
-			this.mu.RUnlock()
 			return ret
 		}
 	}
-	this.mu.RUnlock()
 
 	// Having all indexers running in memory could be expensive => instead we're cycling a pool
 	search_process_max := SEARCH_PROCESS_MAX()
-	this.mu.Lock()
 	lenIdx := len(this.idx)
 	if lenIdx > 0 && search_process_max > 0 && lenIdx > (search_process_max-1) {
 		toDel := this.idx[0 : lenIdx-(search_process_max-1)]
@@ -89,7 +87,6 @@ func (this *SearchProcess) HintLs(app *App, path string) *SearchIndexer {
 		Name:        filepath.Base(path),
 	})
 	this.idx = append(this.idx, s)
-	this.mu.Unlock()
 	return &s
 }
 
