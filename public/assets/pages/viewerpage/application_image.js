@@ -18,10 +18,10 @@ import componentPager, { init as initPager } from "./component_pager.js";
 
 import { renderMenubar, buttonDownload, buttonFullscreen } from "./component_menubar.js";
 
-export default function(render, { getFilename, getDownloadUrl }) {
+export default function(render, { getFilename, getDownloadUrl, hasMenubar = true }) {
     const $page = createElement(`
         <div class="component_imageviewer">
-            <component-menubar filename="${getFilename()}"></component-menubar>
+            <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="component_image_container">
                 <div class="images_wrapper">
                     <img class="photo idle hidden" src="${getDownloadUrl()}&size=${window.innerWidth}">
@@ -93,6 +93,7 @@ export default function(render, { getFilename, getDownloadUrl }) {
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_image.css"),
+        loadCSS(import.meta.url, "./component_menubar.css"),
         initPager(), initMetadata(),
     ]);
 }

@@ -8,6 +8,7 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     display: flex;
     overflow: hidden;
     width: 100%;
+    height: 100%;
     flex-direction: column;
 }
 

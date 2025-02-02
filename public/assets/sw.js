@@ -1,4 +1,3 @@
-const VERSION = "v1";
 const CACHENAME = "assets";
 
 /*

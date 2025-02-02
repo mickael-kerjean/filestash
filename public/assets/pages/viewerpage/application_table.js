@@ -141,6 +141,7 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_table.css"),
+        loadCSS(import.meta.url, "./component_menubar.css"),
     ]);
 }
 
@@ -192,7 +193,7 @@ function buildHead(STATE, $dom, padding) {
                 $img.style.transform = "rotate(0deg)";
             });
             if (ascending) e.target.style.transform = "rotate(180deg)";
-            $dom.tbody.scrollTo(0, 0);
+            $dom.tbody.scrollTo($dom.tbody.scrollLeft, 0);
             buildRows(STATE.rows.slice(0, MAX_ROWS), STATE.header, $dom.tbody, padding, false, true);
         };
         $tr.appendChild($th);

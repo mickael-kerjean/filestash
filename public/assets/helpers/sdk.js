@@ -8,6 +8,7 @@ export function isSDK() {
 
 export function urlSDK(url) {
     if (url.startsWith("blob:")) return url;
+    else if (url.startsWith("http://") || url.startsWith("https://")) return url;
 
     const importURL = new URL(import.meta.url);
     if (new RegExp("^/").test(url) === false) {

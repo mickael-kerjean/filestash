@@ -31,7 +31,7 @@ export default async function main() {
         $error(msg);
     }
 }
-main();
+await main();
 
 /// /////////////////////////////////////////
 async function setup_xdg_open() {

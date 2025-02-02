@@ -11,6 +11,7 @@ export default function(opts) {
     opts.headers["X-Requested-With"] = "XmlHttpRequest";
     if (window.BEARER_TOKEN) opts.headers["Authorization"] = `Bearer ${window.BEARER_TOKEN}`;
 
+    if (opts.url.startsWith("data:")) return rxjs.of({ response: parseDataUrl(opts.url) });
     if (isSDK()) {
         if (["/api/config"].indexOf(opts.url) === -1) opts.withCredentials = false;
         opts.url = urlSDK(opts.url);
@@ -34,6 +35,26 @@ export default function(opts) {
         }),
         rxjs.catchError((err) => rxjs.throwError(processError(err.xhr, err))),
     );
+}
+
+function parseDataUrl(url) {
+    const matches = url.match(/^data:(.*?)(;base64)?,(.*)$/);
+    if (!matches) throw new Error("Invalid Data URL");
+
+    const isBase64 = !!matches[2];
+    const data = matches[3];
+    if (isBase64) {
+        const binaryString = atob(data);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+    const decodedData = decodeURIComponent(data);
+    const encoder = new TextEncoder();
+    return encoder.encode(decodedData).buffer;
 }
 
 function processError(xhr, err) {
