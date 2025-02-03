@@ -113,7 +113,9 @@ func legacyServeFile(res http.ResponseWriter, req *http.Request, filePath string
 		}
 		if err != nil {
 			continue
-		} else if stat, err := file.Stat(); err == nil {
+		}
+		defer file.Close()
+		if stat, err := file.Stat(); err == nil {
 			etag := QuickHash(fmt.Sprintf(
 				"%s %d %d %s",
 				curPath, stat.Size(), stat.Mode(), stat.ModTime()), 10,
@@ -129,7 +131,6 @@ func legacyServeFile(res http.ResponseWriter, req *http.Request, filePath string
 		}
 		res.WriteHeader(statusCode)
 		io.Copy(res, file)
-		file.Close()
 		return
 	}
 	http.NotFound(res, req)
@@ -361,6 +362,7 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			}
 			originalBuffer, err := io.ReadAll(origFile)
 			if err != nil {
+				origFile.Close()
 				Log.Debug("ctrl::static cannot read public file - %+v", err.Error())
 				continue
 			}
@@ -401,7 +403,9 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			file, err := WWWPublic.Open(curPath)
 			if err != nil {
 				continue
-			} else if stat, err := file.Stat(); err == nil {
+			}
+			defer file.Close()
+			if stat, err := file.Stat(); err == nil {
 				etag := QuickHash(fmt.Sprintf(
 					"%s %d %d %s",
 					curPath, stat.Size(), stat.Mode(), stat.ModTime()), 10,
@@ -418,7 +422,6 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			}
 			res.WriteHeader(http.StatusOK)
 			io.Copy(res, file)
-			file.Close()
 			return
 		}
 		http.NotFound(res, req)
