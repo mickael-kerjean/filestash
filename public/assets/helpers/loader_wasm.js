@@ -1,20 +1,29 @@
 const DEBUG = false;
 const log = (msg) => DEBUG && console.log(msg);
 
+const wasmCache = new Map();
+
 export default async function(baseURL, path, opts = {}) {
     const wasi = new Wasi();
-    const wasm = await WebAssembly.instantiateStreaming(
-        fetch(new URL(path, baseURL)), {
-            wasi_snapshot_preview1: {
-                ...wasi,
+    const url = new URL(path, baseURL);
+
+    let wasm;
+    if (wasmCache.has(url.pathname)) wasm = wasmCache.get(url.pathname);
+    else {
+        wasm = await WebAssembly.instantiateStreaming(
+            fetch(url), {
+                wasi_snapshot_preview1: {
+                    ...wasi,
+                },
+                env: {
+                    ...wasi,
+                    ...syscalls,
+                    ...javascripts,
+                },
             },
-            env: {
-                ...wasi,
-                ...syscalls,
-                ...javascripts,
-            },
-        },
-    );
+        );
+        wasmCache.set(url.pathname, wasm);
+    }
     wasi.instance = wasm.instance;
     return wasm;
 }
