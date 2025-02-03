@@ -23,11 +23,15 @@ import (
 
 var (
 	WWWDir fs.FS
+
 	//go:embed static/www
 	WWWEmbed embed.FS
 
 	//go:embed static/404.html
 	HtmlPage404 []byte
+
+	//go:embed static/loader.html
+	TmplLoader []byte
 )
 
 func init() {
@@ -441,7 +445,10 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 		}
 		head.Set("Content-Type", "text/html")
 		res.WriteHeader(http.StatusOK)
-		template.Must(template.New(indexPath).Parse(string(b))).Execute(res, map[string]any{
+
+		tmpl := template.Must(template.New(indexPath).Parse(string(b)))
+		tmpl = template.Must(tmpl.Parse(string(TmplLoader)))
+		tmpl.Execute(res, map[string]any{
 			"base":    WithBase("/"),
 			"version": BUILD_REF,
 			"license": LICENSE,
