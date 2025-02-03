@@ -2,9 +2,10 @@ import { createElement, createRender, createFragment, onDestroy } from "../../li
 import rxjs, { effect, onClick, preventDefault } from "../../lib/rx.js";
 import { animate, slideXIn, slideYIn } from "../../lib/animate.js";
 import { basename, forwardURLParams } from "../../lib/path.js";
-import { loadCSS } from "../../helpers/loader.js";
 import assert from "../../lib/assert.js";
 import { qs, qsa } from "../../lib/dom.js";
+import { get as getConfig } from "../../model/config.js";
+import { loadCSS } from "../../helpers/loader.js";
 import t from "../../locales/index.js";
 
 import "../../components/dropdown.js";
@@ -112,7 +113,7 @@ function componentLeft(render, { $scroll }) {
             <button data-action="rename" title="${t("Rename")}"${toggleDependingOnPermission(currentPath(), "rename")}>
                 ${t("Rename")}
             </button>
-            <button data-action="share" title="${t("Share")}" class="${(window.CONFIG["enable_share"] && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
+            <button data-action="share" title="${t("Share")}" class="${(getConfig("enable_share") && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
                 ${t("Share")}
             </button>
             <button data-action="tag" title="${t("Tag")}" class="${new URLSearchParams(location.search).get("canary") === "true" ? "" : "hidden"}">

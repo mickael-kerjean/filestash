@@ -3,18 +3,16 @@ import { toHref } from "../lib/skeleton/router.js";
 import rxjs, { effect } from "../lib/rx.js";
 
 import { deleteSession } from "../model/session.js";
+import { init as setup_config, get as getConfig } from "../model/config.js";
 import ctrlError from "./ctrl_error.js";
 import $loader from "../components/loader.js";
-import { init as setup_config } from "../model/config.js";
 
 export default function(render) {
     render($loader);
 
     effect(deleteSession().pipe(
         rxjs.mergeMap(setup_config),
-        rxjs.tap(() => {
-            window.CONFIG["logout"] ? location.href = window.CONFIG["logout"] : navigate(toHref("/"));
-        }),
+        rxjs.tap(() => getConfig("logout") ? location.href = getConfig("logout") : navigate(toHref("/"))),
         rxjs.catchError(ctrlError(render)),
     ));
 }

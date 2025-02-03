@@ -3,6 +3,7 @@ import rxjs, { effect } from "../lib/rx.js";
 import { ApplicationError } from "../lib/error.js";
 import { basename } from "../lib/path.js";
 import assert from "../lib/assert.js";
+import { get as getConfig } from "../model/config.js";
 import { loadCSS } from "../helpers/loader.js";
 import WithShell, { init as initShell } from "../components/decorator_shell_filemanager.js";
 import { init as initMenubar } from "./viewerpage/component_menubar.js";
@@ -55,7 +56,7 @@ export default WithShell(async function(render) {
     render($page);
 
     // feature: render viewer application
-    effect(rxjs.of(window.CONFIG["mime"] || {}).pipe(
+    effect(rxjs.of(getConfig("mime", {})).pipe(
         rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
         rxjs.mergeMap(([opener, opts]) => rxjs.from(loadModule(opener)).pipe(rxjs.tap((module) => {
             module.default(createRender($page), { ...opts, acl$: options(), getFilename, getDownloadUrl });
@@ -78,7 +79,7 @@ export async function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./ctrl_viewerpage.css"),
         initShell(), initMenubar(), initCache(),
-        rxjs.of(window.CONFIG["mime"] || {}).pipe(
+        rxjs.of(getConfig("mime", {})).pipe(
             rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
             rxjs.mergeMap(([opener]) => loadModule(opener)),
             rxjs.mergeMap((module) => typeof module.init === "function"? module.init() : rxjs.EMPTY),
