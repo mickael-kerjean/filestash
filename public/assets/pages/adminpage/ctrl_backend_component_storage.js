@@ -15,6 +15,7 @@ export default async function(render) {
     const $page = createElement(`
         <div class="component_storagebackend">
             <h2>Storage Backend</h2>
+						Click on the backend option below to add a backend. Clicking on the same item more than once will add multiple instances. To remove, click the x below the grid on the backend to remove.
             <div class="box-container" data-bind="backend-available">
                 ${generateSkeleton(10)}
             </div>
