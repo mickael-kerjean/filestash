@@ -4,7 +4,7 @@ all:
 	make build_backend
 
 clean: clean_frontend
-	docker build prune -f
+	docker builder prune -f
 
 build_init:
 	go get ./...
@@ -35,7 +35,6 @@ clean_frontend:
 .PHONY: docker
 
 docker:
-	docker builder prune --filter until=10m -f
 	docker build --tag filestash:alpine --file docker/local.Dockerfile .
 
 run_docker:
@@ -44,4 +43,4 @@ run_docker:
 	touch test/hello_world
 	docker run --rm -it -v ./test:/test -p 8334:8334 filestash:alpine
 
-br_docker: docker run_docker
+test_docker: docker run_docker
