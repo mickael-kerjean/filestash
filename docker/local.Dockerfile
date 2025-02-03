@@ -40,7 +40,7 @@ RUN mkdir -p /home/filestash/dist/data/state/plugins && \
 FROM alpine
 MAINTAINER mickael@kerjean.me
 WORKDIR /app/
-RUN apk add --no-cache curl ffmpeg jpeg tiff libpng libwebp libraw libheif giflib bash poppler-utils emacs-nox git imagemagick
+RUN apk add --no-cache curl ffmpeg jpeg tiff libpng libwebp libraw libheif giflib bash poppler-utils emacs-nox git
 COPY --from=builder_final /home/filestash/dist/ /app/
 RUN addgroup filestash && \
     adduser filestash -G filestash -D && \
