@@ -1,6 +1,8 @@
+import { toHref } from "../lib/skeleton/router.js";
+
 export function report(msg, err, link, lineNo, columnNo) {
     if (window.navigator.onLine === false) return Promise.resolve();
-    let url = "./report?";
+    let url = toHref("/report?");
     url += "url=" + encodeURIComponent(location.href) + "&";
     url += "msg=" + encodeURIComponent(msg) + "&";
     url += "from=" + encodeURIComponent(link) + "&";

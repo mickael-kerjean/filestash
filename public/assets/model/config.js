@@ -12,6 +12,7 @@ const config$ = ajax({
 export async function init() {
     const config = await config$.toPromise();
     window.CONFIG = config;
+    return config;
 }
 
 export function query() {

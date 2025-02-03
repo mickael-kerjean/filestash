@@ -10,10 +10,10 @@ import { $error } from "./common.js";
 export default async function main() {
     try {
         await Promise.all([
-            setup_config().then(() => Promise.all([
-                setup_chromecast(),
-                setup_title(),
-                verify_origin(),
+            setup_config().then((config) => Promise.all([
+                setup_chromecast(config),
+                setup_title(config),
+                window.self === window.top ? verify_origin(config) : verify_iframe_origin(config),
             ])),
             setup_translation(),
             setup_xdg_open(),
@@ -69,8 +69,8 @@ async function setup_history() {
     window.history.replaceState({}, "");
 }
 
-async function setup_title() {
-    document.title = window.CONFIG["name"] || "Filestash";
+async function setup_title(config) {
+    document.title = config["name"] || "Filestash";
 }
 
 async function setup_polyfill() {
@@ -79,8 +79,8 @@ async function setup_polyfill() {
     }
 }
 
-async function verify_origin() {
-    const origin = window.CONFIG["origin"];
+async function verify_origin(config) {
+    const origin = config["origin"];
 
     // happy path
     if (!origin) return;
@@ -95,4 +95,9 @@ async function verify_origin() {
         location.href = origin + location.pathname + location.search;
     }, 1000);
     throw new Error("Redirecting to " + origin);
+}
+
+async function verify_iframe_origin(_) {
+    // TODO: const origin = document.location.ancestorOrigins[0]
+    // should we verify iframe origin client side on top of frame ancestor? Until prooven wrong, no.
 }
