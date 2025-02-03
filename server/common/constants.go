@@ -58,7 +58,7 @@ func init() {
 var (
 	BUILD_REF                         string
 	BUILD_DATE                        string
-	LICENSE                           string = "agpl"
+	LICENSE                           string = env("LICENSE", "agpl")
 	SECRET_KEY                        string
 	SECRET_KEY_DERIVATE_FOR_PROOF     string
 	SECRET_KEY_DERIVATE_FOR_ADMIN     string
@@ -94,4 +94,12 @@ func TrimBase(href string) string {
 		return href
 	}
 	return strings.TrimPrefix(href, base)
+}
+
+func env(key string, val string) string {
+	l := os.Getenv(key)
+	if l != "" {
+		return l
+	}
+	return val
 }
