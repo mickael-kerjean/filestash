@@ -2,6 +2,7 @@ import { createElement, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideXIn, opacityOut } from "../../lib/animate.js";
 import { qs } from "../../lib/dom.js";
+import { get as getConfig } from "../../model/config.js";
 import { createLoader } from "../../components/loader.js";
 import { createModal, MODAL_RIGHT_BUTTON } from "../../components/modal.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
@@ -65,7 +66,7 @@ export default async function(render, { acl$, getFilename, getDownloadUrl }) {
                 }),
             );
             return rxjs.of(content).pipe(
-                rxjs.mergeMap((content) => rxjs.of(window.CONFIG).pipe(
+                rxjs.mergeMap((content) => rxjs.of(getConfig()).pipe(
                     rxjs.mergeMap((config) => rxjs.from(loadKeybinding(config.editor)).pipe(rxjs.mapTo(config))),
                     rxjs.map((config) => [content, config]),
                     rxjs.mergeMap((arr) => rxjs.from(loadMode(extname(getFilename()))).pipe(

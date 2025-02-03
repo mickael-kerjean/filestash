@@ -1,6 +1,7 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import { animate, opacityOut, opacityIn } from "../../lib/animate.js";
 import assert from "../../lib/assert.js";
+import { get as getConfig } from "../../model/config.js";
 
 import { extractPath, isDir, isNativeFileUpload } from "./helper.js";
 import { files$ } from "./ctrl_filesystem.js";
@@ -24,11 +25,12 @@ const IMAGE = {
 let TYPES = null;
 export function init() {
     TYPES = {
-        MIME: window.CONFIG.mime,
+        MIME: getConfig("mime", {}),
         THUMBNAILER: (function() {
             const set = new Set();
-            for (let i=0; i<window.CONFIG.thumbnailer.length; i++) {
-                set.add(window.CONFIG.thumbnailer[i]);
+            const thumbnailers = getConfig("thumbnailer");
+            for (let i=0; i<thumbnailers.length; i++) {
+                set.add(thumbnailers[i]);
             }
             return set;
         })(),
