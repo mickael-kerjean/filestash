@@ -7,15 +7,20 @@
 # cd filestash/server/plugin/plg_image_light/deps/
 # ./create_libtranscode.sh
 set -e
-arch=$(dpkg --print-architecture)
-if [ $arch != "amd64" ] && [ $arch != "armhf" ]; then
+arch=$( arch )
+if [ $arch != "x86_64" ] && [ $arch != "armhf" ] && [ $arch != "armv7l" ]; then
     echo "PLATFORM NOT SUPPORTED"
     exit 1
 fi
 
 ################################################
 # Tooling
-apt install -y curl make gcc g++ xz-utils pkg-config python3-pip autoconf libtool unzip python-setuptools cmake git
+if [ -e /usr/bin/apt ]; then
+    apt install -y curl make gcc g++ xz-utils pkg-config python3-pip autoconf libtool unzip python-setuptools cmake git
+fi
+if [ -e /sbin/apk ]; then
+    apk add curl make gcc g++ xz-dev pkgconf py3-pip autoconf libtool unzip py3-setuptools cmake git
+fi
 export PATH=~/.local/bin:$PATH
 
 ################################################
