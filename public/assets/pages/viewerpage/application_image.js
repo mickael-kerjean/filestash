@@ -3,13 +3,14 @@ import { toHref } from "../../lib/skeleton/router.js";
 import rxjs, { effect, onLoad, onClick } from "../../lib/rx.js";
 import { animate } from "../../lib/animate.js";
 import { extname } from "../../lib/path.js";
-import { loadCSS } from "../../helpers/loader.js";
 import { qs } from "../../lib/dom.js";
+import { get as getConfig } from "../../model/config.js";
+import { Chromecast } from "../../model/chromecast.js";
+import { loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
 import notification from "../../components/notification.js";
 import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
-import { Chromecast } from "../../model/chromecast.js";
 
 import { transition } from "./common.js";
 
@@ -18,10 +19,10 @@ import componentPager, { init as initPager } from "./component_pager.js";
 
 import { renderMenubar, buttonDownload, buttonFullscreen } from "./component_menubar.js";
 
-export default function(render, { getFilename, getDownloadUrl }) {
+export default function(render, { getFilename, getDownloadUrl, hasMenubar = true }) {
     const $page = createElement(`
         <div class="component_imageviewer">
-            <component-menubar filename="${getFilename()}"></component-menubar>
+            <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="component_image_container">
                 <div class="images_wrapper">
                     <img class="photo idle hidden" src="${getDownloadUrl()}&size=${window.innerWidth}">
@@ -93,6 +94,7 @@ export default function(render, { getFilename, getDownloadUrl }) {
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_image.css"),
+        loadCSS(import.meta.url, "./component_menubar.css"),
         initPager(), initMetadata(),
     ]);
 }
@@ -128,7 +130,7 @@ function buttonChromecast(filename, downloadURL) {
         const link = Chromecast.createLink("/" + toHref(downloadURL));
         const media = new window.chrome.cast.media.MediaInfo(
             link,
-            window.CONFIG.mime[extname(filename)],
+            getConfig("mime", {})[extname(filename)],
         );
         media.metadata = new window.chrome.cast.media.PhotoMediaMetadata();
         media.metadata.title = filename;

@@ -10,7 +10,7 @@ import { AjaxError, ApplicationError } from "../lib/error.js";
 import "../components/icon.js";
 
 export default function(render) {
-    let hasBack = true;
+    let hasBack = window.self === window.top;
     if (!render) {
         render = createRender(document.body);
         try { render = createRender(qs(document.body, "[role=\"main\"]")); }
@@ -21,9 +21,12 @@ export default function(render) {
         const [msg, trace] = processError(err);
 
         const shouldRedirectLogin = err instanceof AjaxError && err.err().status === 401;
-        let link = forwardURLParams(calculateBacklink(fromHref(window.location.pathname)), ["share"]);
-        if (shouldRedirectLogin) {
-            link = fromHref("/login?next=" + encodeURIComponent(forwardURLParams(fromHref(window.location.pathname), ["share"])));
+        let link = "";
+        if (hasBack) {
+            link = forwardURLParams(calculateBacklink(fromHref(window.location.pathname)), ["share"]);
+            if (shouldRedirectLogin) {
+                link = fromHref("/login?next=" + encodeURIComponent(forwardURLParams(fromHref(window.location.pathname), ["share"])));
+            }
         }
         const $page = createElement(`
             <div>

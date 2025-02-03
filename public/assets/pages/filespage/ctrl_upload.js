@@ -3,10 +3,11 @@ import { toHref } from "../../lib/skeleton/router.js";
 import rxjs, { effect, onClick } from "../../lib/rx.js";
 import { forwardURLParams } from "../../lib/path.js";
 import { animate, slideYOut } from "../../lib/animate.js";
-import { loadCSS } from "../../helpers/loader.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { AjaxError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
+import { get as getConfig } from "../../model/config.js";
+import { loadCSS } from "../../helpers/loader.js";
 import { currentPath, isNativeFileUpload } from "./helper.js";
 import { getPermission, calculatePermission } from "./model_acl.js";
 import { mkdir, save } from "./model_virtual_layer.js";
@@ -358,7 +359,7 @@ function workerImplFile({ progress, speed }) {
         }
 
         async prepareJob({ file, path, virtual }) {
-            const chunkSize = (window.CONFIG["upload_chunk_size"] || 0) *1024*1024;
+            const chunkSize = getConfig("upload_chunk_size", 0) *1024*1024;
             const numberOfChunks = Math.ceil(file.size / chunkSize);
             const headersNoCache = {
                 "Cache-Control": "no-store",

@@ -3,6 +3,7 @@ import { animate, slideYOut, slideYIn, opacityOut } from "../lib/animate.js";
 import { forwardURLParams } from "../lib/path.js";
 import assert from "../lib/assert.js";
 import { settingsSave } from "../lib/store.js";
+import { get as getConfig } from "../model/config.js";
 import { loadCSS } from "../helpers/loader.js";
 
 import { extractPath, isDir, isNativeFileUpload } from "../pages/filespage/helper.js";
@@ -79,7 +80,7 @@ class ComponentBreadcrumb extends HTMLElement {
 
         // STEP2: setup the actual content
         assert.type(this.querySelector(`[data-bind="path"]`), HTMLElement).innerHTML = pathChunks.map((chunk, idx) => {
-            const label = idx === 0 ? (window.CONFIG["name"] || "Filestash") : chunk;
+            const label = idx === 0 ? getConfig("name", "Filestash") : chunk;
             const link = pathChunks.slice(0, idx + 1).join("/") + "/";
             const limitSize = (word, highlight = false) => {
                 if (highlight === true && word.length > 30) {

@@ -14,7 +14,7 @@ class IMap {
     toGeoJSON() { throw new Error("NOT_IMPLEMENTED"); }
 }
 
-export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, acl$ }) {
+export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, acl$ = rxjs.EMPTY }) {
     const $page = createElement(`
         <div class="component_map">
             <component-menubar filename="${getFilename() || ""}"></component-menubar>
@@ -33,7 +33,11 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
         rxjs.mergeMap(async({ response }) => {
             const loader = await loadPlugin(mime);
             if (!loader) {
-                componentDownloader(render, { mime, acl$, getFilename, getDownloadUrl });
+                try {
+                    loadGeoJSON(map, JSON.parse(new TextDecoder().decode(response)));
+                    window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 21 }).addTo(map);
+                }
+                catch (err) { componentDownloader(render, { mime, acl$, getFilename, getDownloadUrl }); }
                 return rxjs.EMPTY;
             }
             const mapImpl = new (await loader(IMap))(response, {

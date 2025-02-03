@@ -19,7 +19,7 @@
 //
 //
 //
-import { createRender, createElement } from "./lib/skeleton/index.js";
+import { createRender } from "./lib/skeleton/index.js";
 import { loadCSS } from "./helpers/loader.js";
 
 export function render(module, $app, opts = {}) {
@@ -41,14 +41,5 @@ function execute(module, $app, opts) {
 
     return Promise.all(priors)
         .then(async() => await module.default(createRender($app), opts))
-        .then(() => $app.appendChild(poweredBy()))
         .catch((err) => console.error(err));
-}
-
-function poweredBy($app) {
-    return createElement(`
-        <div style="position: absolute; bottom: 0; left: 0; font-size: 0.9rem; display: inline-block; z-index: 2">
-            Powered By <a href="https://www.filestash.app" style="text-decoration:underline;">Filestash</a>
-        </div>
-    `);
 }

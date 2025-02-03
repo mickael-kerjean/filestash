@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+const (
+	PHASE_EXPLORE  = "PHASE_EXPLORE"
+	PHASE_INDEXING = "PHASE_INDEXING"
+	PHASE_MAINTAIN = "PHASE_MAINTAIN"
+	PHASE_PAUSE    = "PHASE_PAUSE"
+)
+
 const MAX_HEAP_SIZE = 100000
 
 type Document struct {
