@@ -49,7 +49,7 @@ class FilestashTable extends HTMLElement {
             "feather": "application/vnd.apache.feather",
             "parquet": "application/vnd.apache.parquet",
             "dbf": "application/dbf",
-        }[name.split('.').pop().toLowerCase()];
+        }[name.split(".").pop().toLowerCase()];
 
         this.style.display = "inline-block";
         this.iframe.srcdoc = `<!DOCTYPE html>
