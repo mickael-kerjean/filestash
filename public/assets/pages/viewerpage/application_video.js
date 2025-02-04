@@ -1,4 +1,4 @@
-import { createElement } from "../../lib/skeleton/index.js";
+import { createElement, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideYIn } from "../../lib/animate.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
@@ -176,6 +176,10 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
                 hls.loadSource(sources[i].src);
             }
             hls.attachMedia($video);
+            onDestroy(() => {
+                $video.pause();
+                $video.remove();
+            });
             return sources;
         }),
         rxjs.mergeMap((sources) => rxjs.merge(

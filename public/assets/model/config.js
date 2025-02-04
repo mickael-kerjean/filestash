@@ -23,7 +23,7 @@ export function get(key, defaultValue) {
 }
 
 export function getVersion() {
-    return get("version", "");
+    return get("version", "na");
 }
 
 export function query() {
