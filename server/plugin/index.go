@@ -25,6 +25,7 @@ import (
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_sftp"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_storj"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_tmp"
+	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_url"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_backend_webdav"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_editor_wopi"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_console"

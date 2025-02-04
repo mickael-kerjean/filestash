@@ -80,9 +80,9 @@ export function buttonDownload(name, link) {
     return $el;
 }
 
-export function buttonFullscreen($screen, fullscreen = null) {
+export function buttonFullscreen($screen, fullscreen) {
     let fullscreenHandler = fullscreen;
-    if (fullscreen === null) {
+    if (!fullscreen) {
         if ("webkitRequestFullscreen" in document.body) {
             fullscreenHandler = () => $screen.webkitRequestFullscreen();
         } else if ("mozRequestFullScreen" in document.body) {
