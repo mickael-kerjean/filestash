@@ -1,9 +1,9 @@
 # STEP1: CLONE THE CODE
 FROM alpine/git AS builder_prepare
-WORKDIR /home/
+WORKDIR /home/filestash/
 ARG GIT_REPO=https://github.com/mickael-kerjean/filestash
 ARG GIT_BRANCH=master
-RUN git clone --depth 1 --single-branch --branch ${GIT_BRANCH} ${GIT_REPO}
+COPY ./ /home/filestash/
 
 # STEP2: BUILD FRONTEND
 FROM node:18-alpine AS builder_frontend
