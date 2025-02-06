@@ -46,15 +46,28 @@ export default async function(render) {
     const removeLoader = createLoader($header);
     const $listBefore = qs($page, ".ifscroll-before");
     const $listAfter = qs($page, ".ifscroll-after");
-    const refreshOnResize$ = rxjs.fromEvent(window, "resize").pipe(
-        rxjs.startWith(null),
-        rxjs.map(() => [
-            gridSize($list.clientWidth, document.body.clientWidth),
-            document.body.clientHeight,
-        ]),
-        rxjs.distinctUntilChanged((prev, curr) => {
-            return prev[0] === curr[0] && prev[1] && curr[1];
-        }),
+    const refreshScreen$ = rxjs.merge(
+        // case1: trigger the first display
+        rxjs.of(null),
+        // case2: height change => redraw screen
+        rxjs.fromEvent(window, "resize").pipe( // height change = always redraw
+            rxjs.startWith(null),
+            rxjs.map(() => document.body.clientHeight),
+            rxjs.distinctUntilChanged(),
+            rxjs.skip(1),
+        ),
+        // case3: width change => redraw if grid size change
+        rxjs.fromEvent(window, "resize").pipe(
+            rxjs.startWith(null),
+            rxjs.map(() => {
+                if ($list.getAttribute("data-type") === "grid") {
+                    return gridSize($list.clientWidth, document.body.clientWidth)
+                }
+                return -1;
+            }),
+            rxjs.distinctUntilChanged(),
+            rxjs.skip(1),
+        ),
     );
 
     let count = 0;
@@ -90,7 +103,7 @@ export default async function(render) {
             }
             return rxjs.of({ ...rest, files, search });
         }),
-        rxjs.mergeMap((obj) => refreshOnResize$.pipe(rxjs.mapTo(obj))),
+        rxjs.mergeMap((obj) => refreshScreen$.pipe(rxjs.mapTo(obj))),
         rxjs.mergeMap(({ files, view, search, count, permissions }) => { // STEP1: setup the list of files
             $list.closest(".scroll-y").scrollTop = 0;
             let FILE_HEIGHT, COLUMN_PER_ROW;
