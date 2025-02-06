@@ -39,10 +39,11 @@ export function preventDefault() {
     return rxjs.tap((e) => e.preventDefault());
 }
 
-export function onClick($node) {
+export function onClick($node, opts = { preventDefault: false }) {
     const sideE = ($node) => {
         assert.type($node, HTMLElement);
         return rxjs.fromEvent($node, "click").pipe(
+            rxjs.tap((e) => (opts.preventDefault === true) && e.preventDefault()),
             rxjs.map(() => $node)
         );
     };

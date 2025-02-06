@@ -122,9 +122,11 @@ function componentLeft(render, { $scroll }) {
         `))),
         rxjs.tap(($buttons) => animate($buttons, { time: 100, keyframes: slideYIn(5) })),
         rxjs.switchMap(($page) => rxjs.merge(
-            onClick(qs($page, `[data-action="download"]`)).pipe(
-                rxjs.mergeMap(() => rxjs.EMPTY),
-            ),
+            onClick(qs($page, `[data-action="download"]`), { preventDefault: true }).pipe(rxjs.tap(($button) => {
+                let url = $button.parentElement.getAttribute("href");
+                url += "&name=" + $button.parentElement.getAttribute("download");
+                window.open(url);
+            })),
             onClick(qs($page, `[data-action="share"]`)).pipe(rxjs.tap(() => {
                 componentShare(createModal({
                     withButtonsRight: null,
@@ -178,6 +180,9 @@ function componentLeft(render, { $scroll }) {
             </button>
         `))),
         rxjs.mergeMap(($page) => rxjs.merge(
+            onClick(qs($page, `[data-action="download"]`), { preventDefault: true }).pipe(rxjs.tap(($button) => {
+                window.open($button.parentElement.getAttribute("href"));
+            })),
             onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.mergeMap(() => {
                 const paths = expandSelection().map(({ path }) => path);
                 return rxjs.from(componentDelete(
