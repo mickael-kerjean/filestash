@@ -47,7 +47,7 @@ export default AdminHOC(async function(render) {
     const init$ = config$.pipe(
         rxjs.mergeMap((formSpec) => createForm(formSpec, tmpl)),
         rxjs.map(($form) => [$form]),
-        applyMutation(qs($container, "[data-bind=\"form\"]"), "replaceChildren"),
+        applyMutation(qs($container, `[data-bind="form"]`), "replaceChildren"),
         rxjs.share(),
     );
     effect(init$);

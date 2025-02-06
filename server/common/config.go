@@ -38,6 +38,7 @@ type FormElement struct {
 	Type        string      `json:"type"`
 	Description string      `json:"description,omitempty"`
 	Placeholder string      `json:"placeholder,omitempty"`
+	Pattern     string      `json:"pattern,omitempty"`
 	Opts        []string    `json:"options,omitempty"`
 	Target      []string    `json:"target,omitempty"`
 	ReadOnly    bool        `json:"readonly"`
@@ -67,7 +68,7 @@ func NewConfiguration() Configuration {
 					FormElement{Name: "name", Type: "text", Default: "Filestash", Description: "Name has shown in the UI", Placeholder: "Default: \"Filestash\""},
 					FormElement{Name: "port", Type: "number", Default: 8334, Description: "Port on which the application is available.", Placeholder: "Default: 8334"},
 					FormElement{Name: "host", Type: "text", Description: "The host people need to use to access this server", Placeholder: "Eg: \"demo.filestash.app\""},
-					FormElement{Name: "secret_key", Type: "password", Description: "The key that's used to encrypt and decrypt content. Update this settings will invalidate existing user sessions and shared links, use with caution!"},
+					FormElement{Name: "secret_key", Type: "password", Required: true, Pattern: "[a-zA-Z0-9]{16}", Description: "The key that's used to encrypt and decrypt content. Update this settings will invalidate existing user sessions and shared links, use with caution!"},
 					FormElement{Name: "force_ssl", Type: "boolean", Description: "Enable the web security mechanism called 'Strict Transport Security'"},
 					FormElement{Name: "editor", Type: "select", Default: "emacs", Opts: []string{"base", "emacs", "vim"}, Description: "Keybinding to be use in the editor. Default: \"emacs\""},
 					FormElement{Name: "fork_button", Type: "boolean", Default: true, Description: "Display the fork button in the login screen"},

@@ -74,6 +74,6 @@ export function stateMutation($node: HTMLElement, attr: string);
 
 export function preventDefault(): typeof tap;
 
-export function onClick($node: HTMLElement): ReturnType<typeof fromEvent>;
+export function onClick($node: HTMLElement,  opts?: { preventDefault?: boolean }): ReturnType<typeof fromEvent>;
 
 export function onLoad($node: HTMLElement): void;

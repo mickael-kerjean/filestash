@@ -61,9 +61,9 @@ export default async function(render) {
             rxjs.startWith(null),
             rxjs.map(() => {
                 if ($list.getAttribute("data-type") === "grid") {
-                    return gridSize($list.clientWidth, document.body.clientWidth)
+                    return gridSize($list.clientWidth, document.body.clientWidth);
                 }
-                return -1;
+                return 0;
             }),
             rxjs.distinctUntilChanged(),
             rxjs.skip(1),

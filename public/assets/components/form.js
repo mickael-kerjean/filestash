@@ -54,7 +54,8 @@ export function $renderInput(options = {}) {
             readonly = false,
             path = [],
             datalist = null,
-            options = null
+            options = null,
+            pattern = null,
         } = props;
 
         const attrs = [];
@@ -67,6 +68,7 @@ export function $renderInput(options = {}) {
             $node.setAttribute("autocapitalize", "off");
             $node.setAttribute("spellcheck", "off");
         });
+        if (pattern) attrs.push(($node) => $node.setAttribute("pattern", pattern));
         if (required) attrs.push(($node) => $node.setAttribute("required", ""));
         if (readonly) attrs.push(($node) => $node.setAttribute("disabled", ""));
 

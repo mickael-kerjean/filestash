@@ -33,6 +33,13 @@ export function useForm$($inputNodeList) {
     return rxjs.pipe(
         rxjs.mergeMap(() => $inputNodeList()),
         rxjs.mergeMap(($el) => rxjs.fromEvent($el, "input")),
+        rxjs.mergeMap(($el) => {
+            if ($el.target.checkValidity() === false) {
+                $el.target.reportValidity();
+                return rxjs.EMPTY;
+            }
+            return rxjs.of($el);
+        }),
         rxjs.map((e) => ({
             name: e.target.getAttribute("name"),
             value: (function() {
