@@ -52,9 +52,13 @@ export default async function(render) {
     render($page);
     onDestroy(() => clearSelection());
 
+    const getSelectionLength$ = getSelection$().pipe(
+        rxjs.map(() => lengthSelection()), // <- potentially expensive, hence the share
+        rxjs.shareReplay(),
+    );
     const $scroll = assert.type($page.closest(".scroll-y"), HTMLElement);
-    componentLeft(createRender(qs($page, ".action.left")), { $scroll });
-    componentRight(createRender(qs($page, ".action.right")));
+    componentLeft(createRender(qs($page, ".action.left")), { $scroll, getSelectionLength$ });
+    componentRight(createRender(qs($page, ".action.right")), { getSelectionLength$ });
 
     effect(rxjs.fromEvent($scroll, "scroll", { passive: true }).pipe(
         rxjs.map((e) => e.target.scrollTop > 12),
@@ -66,10 +70,9 @@ export default async function(render) {
     ));
 }
 
-function componentLeft(render, { $scroll }) {
-    effect(getSelection$().pipe(
-        rxjs.filter(() => lengthSelection() === 0),
-        rxjs.mergeMap(() => rxjs.merge(rxjs.fromEvent(window, "resize"), rxjs.of(null))),
+function componentLeft(render, { $scroll, getSelectionLength$ }) {
+    effect(getSelectionLength$.pipe(
+        rxjs.filter((l) => l === 0),
         rxjs.mergeMap(() => getPermission()),
         rxjs.map(() => render(createFragment(`
             <button data-action="new-file" title="${t("New File")}"${toggleDependingOnPermission(currentPath(), "new-file")}>
@@ -101,8 +104,8 @@ function componentLeft(render, { $scroll }) {
     ));
     onDestroy(() => setAction(null));
 
-    effect(getSelection$().pipe(
-        rxjs.filter(() => lengthSelection() === 1),
+    effect(getSelectionLength$.pipe(
+        rxjs.filter((l) => l === 1),
         rxjs.map(() => render(createFragment(`
             <a target="_blank" ${generateLinkAttributes(expandSelection())}><button data-action="download" title="${t("Download")}">
                 ${t("Download")}
@@ -169,8 +172,8 @@ function componentLeft(render, { $scroll }) {
         )),
     ));
 
-    effect(getSelection$().pipe(
-        rxjs.filter(() => lengthSelection() > 1),
+    effect(getSelectionLength$.pipe(
+        rxjs.filter((l) => l > 1),
         rxjs.map(() => render(createFragment(`
             <a target="_blank" ${generateLinkAttributes(expandSelection())}><button data-action="download">
                 ${t("Download")}
@@ -197,7 +200,7 @@ function componentLeft(render, { $scroll }) {
     ));
 }
 
-function componentRight(render) {
+function componentRight(render, { getSelectionLength$ }) {
     const ICONS = {
         LIST_VIEW: "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cGF0aCBzdHlsZT0iZmlsbDojNjI2NDY5O2ZpbGwtb3BhY2l0eToxIiBkPSJtIDEzMy4zMzMsNTYgdiA2NCBjIDAsMTMuMjU1IC0xMC43NDUsMjQgLTI0LDI0IEggMjQgQyAxMC43NDUsMTQ0IDAsMTMzLjI1NSAwLDEyMCBWIDU2IEMgMCw0Mi43NDUgMTAuNzQ1LDMyIDI0LDMyIGggODUuMzMzIGMgMTMuMjU1LDAgMjQsMTAuNzQ1IDI0LDI0IHogbSAzNzkuMzM0LDIzMiB2IC02NCBjIDAsLTEzLjI1NSAtMTAuNzQ1LC0yNCAtMjQsLTI0IEggMjEzLjMzMyBjIC0xMy4yNTUsMCAtMjQsMTAuNzQ1IC0yNCwyNCB2IDY0IGMgMCwxMy4yNTUgMTAuNzQ1LDI0IDI0LDI0IGggMjc1LjMzMyBjIDEzLjI1NiwwIDI0LjAwMSwtMTAuNzQ1IDI0LjAwMSwtMjQgeiBtIDAsLTE2OCBWIDU2IGMgMCwtMTMuMjU1IC0xMC43NDUsLTI0IC0yNCwtMjQgSCAyMTMuMzMzIGMgLTEzLjI1NSwwIC0yNCwxMC43NDUgLTI0LDI0IHYgNjQgYyAwLDEzLjI1NSAxMC43NDUsMjQgMjQsMjQgaCAyNzUuMzMzIGMgMTMuMjU2LDAgMjQuMDAxLC0xMC43NDUgMjQuMDAxLC0yNCB6IE0gMTA5LjMzMywyMDAgSCAyNCBDIDEwLjc0NSwyMDAgMCwyMTAuNzQ1IDAsMjI0IHYgNjQgYyAwLDEzLjI1NSAxMC43NDUsMjQgMjQsMjQgaCA4NS4zMzMgYyAxMy4yNTUsMCAyNCwtMTAuNzQ1IDI0LC0yNCB2IC02NCBjIDAsLTEzLjI1NSAtMTAuNzQ1LC0yNCAtMjQsLTI0IHogTSAwLDM5MiB2IDY0IGMgMCwxMy4yNTUgMTAuNzQ1LDI0IDI0LDI0IGggODUuMzMzIGMgMTMuMjU1LDAgMjQsLTEwLjc0NSAyNCwtMjQgdiAtNjQgYyAwLC0xMy4yNTUgLTEwLjc0NSwtMjQgLTI0LC0yNCBIIDI0IEMgMTAuNzQ1LDM2OCAwLDM3OC43NDUgMCwzOTIgWiBtIDE4OS4zMzMsMCB2IDY0IGMgMCwxMy4yNTUgMTAuNzQ1LDI0IDI0LDI0IGggMjc1LjMzMyBjIDEzLjI1NSwwIDI0LC0xMC43NDUgMjQsLTI0IHYgLTY0IGMgMCwtMTMuMjU1IC0xMC43NDUsLTI0IC0yNCwtMjQgSCAyMTMuMzMzIGMgLTEzLjI1NSwwIC0yNCwxMC43NDUgLTI0LDI0IHoiIC8+Cjwvc3ZnPgo=",
         GRID_VIEW: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgNDQgNDQiPgogIDxwYXRoIGZpbGw9IiM2MjY0NjkiIGQ9Ik0gMTgsNCBIIDYgQyA0LjksNCA0LDQuOSA0LDYgdiAxMiBjIDAsMS4xIDAuOSwyIDIsMiBoIDEyIGMgMS4xLDAgMiwtMC45IDIsLTIgViA2IEMgMjAsNC45IDE5LjEsNCAxOCw0IFoiIC8+CiAgPHBhdGggZmlsbD0iIzYyNjQ2OSIgZD0iTSAzOCw0IEggMjYgYyAtMS4xLDAgLTIsMC45IC0yLDIgdiAxMiBjIDAsMS4xIDAuOSwyIDIsMiBoIDEyIGMgMS4xLDAgMiwtMC45IDIsLTIgViA2IEMgNDAsNC45IDM5LjEsNCAzOCw0IFoiIC8+CiAgPHBhdGggZmlsbD0iIzYyNjQ2OSIgZD0iTSAxOCwyNCBIIDYgYyAtMS4xLDAgLTIsMC45IC0yLDIgdiAxMiBjIDAsMS4xIDAuOSwyIDIsMiBoIDEyIGMgMS4xLDAgMiwtMC45IDIsLTIgViAyNiBjIDAsLTEuMSAtMC45LC0yIC0yLC0yIHoiIC8+CiAgPHBhdGggZmlsbD0iIzYyNjQ2OSIgZD0iTSAzOCwyNCBIIDI2IGMgLTEuMSwwIC0yLDAuOSAtMiwyIHYgMTIgYyAwLDEuMSAwLjksMiAyLDIgaCAxMiBjIDEuMSwwIDIsLTAuOSAyLC0yIFYgMjYgYyAwLC0xLjEgLTAuOSwtMiAtMiwtMiB6IiAvPgo8L3N2Zz4K",
@@ -224,8 +227,8 @@ function componentRight(render) {
     const defaultSort = (sort) => { // TODO
         return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.SORT}" alt="${sort}" />`;
     };
-    effect(getSelection$().pipe(
-        rxjs.filter((selections) => selections.length === 0),
+    effect(getSelectionLength$.pipe(
+        rxjs.filter((l) => l === 0),
         rxjs.mergeMap(() => getState$().pipe(rxjs.first())),
         rxjs.map(({ view, sort }) => render(createFragment(`
             <form style="display: inline-block;" onsubmit="event.preventDefault()">
@@ -384,11 +387,11 @@ function componentRight(render) {
     ));
     onDestroy(() => setState("search", ""));
 
-    effect(getSelection$().pipe(
-        rxjs.filter((selections) => selections.length >= 1),
-        rxjs.map(() => render(createFragment(`
+    effect(getSelectionLength$.pipe(
+        rxjs.filter((l) => l >= 1),
+        rxjs.map((size) => render(createFragment(`
             <button data-bind="clear">
-                ${lengthSelection()} <component-icon name="close"></component-icon>
+                ${size} <component-icon name="close"></component-icon>
             </button>
         `))),
         rxjs.mergeMap(($page) => onClick(qs($page, `[data-bind="clear"]`)).pipe(
