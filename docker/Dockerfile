@@ -1,14 +1,14 @@
 # STEP1: CLONE THE CODE
 FROM alpine/git as builder_prepare
 WORKDIR /home/
-ARG GIT_REPO=https://github.com/mickael-kerjean/filestash
+ARG GIT_REPO=https://github.com/abeloris/filestash-onlyoffice
 ARG GIT_BRANCH=master
 RUN git clone --depth 1 --single-branch --branch ${GIT_BRANCH} ${GIT_REPO}
 
 # STEP2: BUILD FRONTEND
 FROM node:18-alpine AS builder_frontend
-WORKDIR /home/filestash/
-COPY --from=builder_prepare /home/filestash .
+WORKDIR /home/filestash-onlyoffice/
+COPY --from=builder_prepare /home/filestash-onlyoffice .
 RUN apk add make git gzip brotli && \
     npm install --legacy-peer-deps && \
     make build_frontend && \
@@ -16,8 +16,8 @@ RUN apk add make git gzip brotli && \
 
 # STEP3: BUILD BACKEND
 FROM golang:1.23-bookworm AS builder_backend
-WORKDIR /home/filestash/
-COPY --from=builder_frontend /home/filestash/ .
+WORKDIR /home/filestash-onlyoffice/
+COPY --from=builder_frontend /home/filestash-onlyoffice/ .
 RUN apt-get update > /dev/null && \
     apt-get install -y curl make > /dev/null 2>&1 && \
     apt-get install -y libjpeg-dev libtiff-dev libpng-dev libwebp-dev libraw-dev libheif-dev libgif-dev libvips-dev > /dev/null 2>&1 && \
@@ -28,18 +28,18 @@ RUN apt-get update > /dev/null && \
 
 # STEP4: BUILD PLUGINS
 FROM emscripten/emsdk AS builder_final
-WORKDIR /home/filestash/
-COPY --from=builder_backend /home/filestash/ .
-RUN mkdir -p /home/filestash/dist/data/state/plugins && \
-    cd /home/filestash/server/plugin/plg_application_dev/ && make && \
-    cd /home/filestash/server/plugin/plg_application_3d/ && make && \
-    cd /home/filestash/server/plugin/plg_application_map/ && make
+WORKDIR /home/filestash-onlyoffice/
+COPY --from=builder_backend /home/filestash-onlyoffice/ .
+RUN mkdir -p /home/filestash-onlyoffice/dist/data/state/plugins && \
+    cd /home/filestash-onlyoffice/server/plugin/plg_application_dev/ && make && \
+    cd /home/filestash-onlyoffice/server/plugin/plg_application_3d/ && make && \
+    cd /home/filestash-onlyoffice/server/plugin/plg_application_map/ && make
 
 # STEP5: BUILD PROD IMAGE
 FROM debian:stable-slim
 MAINTAINER mickael@kerjean.me
 WORKDIR /app/
-COPY --from=builder_final /home/filestash/dist/ .
+COPY --from=builder_final /home/filestash-onlyoffice/dist/ .
 RUN apt-get update > /dev/null && \
     apt-get install -y --no-install-recommends apt-utils && \
     apt-get install -y curl ffmpeg libjpeg-dev libtiff-dev libpng-dev libwebp-dev libraw-dev libheif-dev libgif-dev && \
