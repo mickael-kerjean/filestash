@@ -467,8 +467,14 @@ func ServeBundle(ctx *App, res http.ResponseWriter, req *http.Request) {
 		curPath := "assets" + strings.TrimPrefix(urls[i], "/assets/"+BUILD_REF)
 		file, err := WWWPublic.Open(curPath + ".gz")
 		if err != nil {
-			Log.Warning("static::sse failed to find file %s", curPath)
-			return
+			file, err = WWWPublic.Open(curPath)
+			if err != nil {
+				Log.Warning("static::sse failed to find file %s", curPath)
+				return
+			}
+			fmt.Fprintf(res, "event: %s\n", "static::raw")
+		} else {
+			fmt.Fprintf(res, "event: %s\n", "static::gzip")
 		}
 		fmt.Fprintf(res, "id: %s\n", urls[i])
 		fmt.Fprintf(res, "data: ")

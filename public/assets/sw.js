@@ -77,7 +77,7 @@ async function preload({ urls, cache, cleanup }) {
     cleanup.push(() => evtsrc.close());
 
     let i = 0;
-    const messageHandler = (resolve, event) => {
+    const messageHandler = (resolve, event, decoder) => {
         const url = event.lastEventId;
         let mime = "application/octet-stream";
         if (url.endsWith(".css")) mime = "text/css";
@@ -85,11 +85,9 @@ async function preload({ urls, cache, cleanup }) {
 
         i += 1;
         cache.put(
-            location.origin + event.lastEventId,
+            location.origin + url,
             new Response(
-                new Blob([Uint8Array.from(atob(event.data), (c) => c.charCodeAt(0))])
-                    .stream()
-                    .pipeThrough(new DecompressionStream("gzip")),
+                decoder(new Blob([Uint8Array.from(atob(event.data), (c) => c.charCodeAt(0))]).stream()),
                 { headers: { "Content-Type": mime } },
             ),
         );
@@ -104,7 +102,16 @@ async function preload({ urls, cache, cleanup }) {
     };
 
     await new Promise((resolve, reject) => {
-        evtsrc.onmessage = async(event) => messageHandler(resolve, event);
+        evtsrc.addEventListener("static::raw", (event) => messageHandler(
+            resolve,
+            event,
+            (stream) => stream,
+        ));
+        evtsrc.addEventListener("static::gzip", (event) => messageHandler(
+            resolve,
+            event,
+            (stream) => stream.pipeThrough(new DecompressionStream("gzip")),
+        ));
         evtsrc.onerror = (err) => errorHandler(reject, err);
     });
 }
