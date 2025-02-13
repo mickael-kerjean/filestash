@@ -1,12 +1,18 @@
 package ctrl
 
 import (
+	"crypto/rsa"
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"math/big"
 	"regexp"
 	"strings"
 	"text/template"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+
+	"github.com/golang-jwt/jwt/v4"
 )
 
 var tmplFuncs = template.FuncMap{
@@ -112,5 +118,67 @@ var tmplFuncs = template.FuncMap{
 	"encryptGCM": func(str string, key string) (string, error) {
 		data, err := EncryptAESGCM([]byte(key), []byte(str))
 		return base64.StdEncoding.EncodeToString(data), err
+	},
+	"jwt": func(args ...string) (string, error) {
+		if len(args) == 0 {
+			return "", ErrNotValid
+		}
+		var stdin = args[len(args)-1]
+		var token *jwt.Token
+		var err error
+		claims := jwt.MapClaims{}
+		if len(args) == 1 {
+			token, _, err = jwt.NewParser().ParseUnverified(stdin, claims)
+			token.Valid = true
+		} else if len(args) == 2 {
+			token, err = jwt.ParseWithClaims(stdin, claims, func(token *jwt.Token) (interface{}, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); ok {
+					return []byte(args[0]), nil
+				} else if _, ok := token.Method.(*jwt.SigningMethodRSA); ok {
+					modBytes, err := base64.RawURLEncoding.DecodeString(args[0])
+					if err != nil {
+						return "", err
+					}
+					return &rsa.PublicKey{
+						N: new(big.Int).SetBytes(modBytes),
+						E: 65537,
+					}, nil
+				}
+				Log.Debug("ctrl::tmpl invalid jwt signing method: %v", token.Header["alg"])
+				return nil, ErrNotImplemented
+			})
+		}
+		if err != nil {
+			return "", err
+		} else if !token.Valid {
+			return "", ErrNotValid
+		}
+		b, err := json.Marshal(claims)
+		return string(b), err
+	},
+	"jq": func(args ...string) (out string, err error) {
+		if len(args) == 0 || len(args) > 2 {
+			return "", ErrNotValid
+		}
+		stdin := args[len(args)-1]
+		data := map[string]any{}
+		if err = json.Unmarshal([]byte(stdin), &data); err != nil {
+			return "", err
+		}
+		if len(args) == 1 {
+			return stdin, nil
+		}
+		filters := strings.Split(args[0], ".")
+		for i := 0; i < len(filters)-1; i++ {
+			if filters[i] == "" {
+				continue
+			}
+			if obj, ok := data[filters[i]].(map[string]any); ok {
+				data = obj
+			} else {
+				return "", nil
+			}
+		}
+		return fmt.Sprintf("%v", data[filters[len(filters)-1]]), nil
 	},
 }
