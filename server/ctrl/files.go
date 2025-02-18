@@ -217,6 +217,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if p := file_cache.Get(ctx.Session); p != nil {
 			f, err := os.OpenFile(p.(string), os.O_RDONLY, os.ModePerm)
 			if err == nil {
+				defer f.Close()
 				file = f
 				if fi, err := f.Stat(); err == nil {
 					contentLength = fi.Size()
@@ -308,6 +309,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 				SendErrorResult(res, err)
 				return
 			}
+			defer f.Close()
 			if fi, err := f.Stat(); err == nil {
 				contentLength = fi.Size()
 			}
