@@ -26,6 +26,21 @@ input.component_input[disabled], textarea.component_textarea[disabled] {
     opacity: 0.8;
 }
 
+.component_input[type="file"] { border: none; margin-bottom: 0; }
+.component_input[type="file"]::file-selector-button {
+    border-radius: 3px;
+    background-color: transparent;
+    border: 2px solid var(--border);
+    display: block;
+    transition: 0.1s all;
+    color: inherit;
+    cursor: pointer;
+}
+.component_input[type="file"]::file-selector-button:hover {
+    background-color: var(--border);
+    border-color: var(--border);
+}
+
 .component_input:-webkit-autofill,
 .component_input:-webkit-autofill:focus {
     transition: background-color 600000s 0s, color 600000s 0s;
