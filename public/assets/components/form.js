@@ -1,4 +1,5 @@
 import { createElement } from "../lib/skeleton/index.js";
+import { qs } from "../lib/dom.js";
 import { gid } from "../lib/random.js";
 import { ApplicationError } from "../lib/error.js";
 
@@ -267,14 +268,35 @@ export function $renderInput(options = {}) {
             $img.setAttribute("src", value);
             return $img;
         }
-        case "file": { // TODO
-            return createElement(`
-                <input
-                    type="password"
-                    class="component_input"
-                    readonly
-                />
+        case "file": {
+            const $file = createElement(`
+                <div className="fileupload-image">
+                    <input
+                        type="file"
+                        class="component_input"
+                    />
+                    <div class="preview" style="margin-top:-15px;"></div>
+                </div>
             `);
+            const $preview = qs($file, ".preview");
+            const draw = (val) => {
+                $preview.innerHTML = "";
+                if ((val || "").substring(0, 10) === "data:image") $preview.appendChild(createElement(`
+                    <img class="full-width" src="${val}" />
+                `));
+                else if ((val || "").substring(0, 20) === "data:application/pdf") $preview.appendChild(createElement(`
+                    <object class="full-width" type="application/pdf" data="${val}" style="height:250px;" />
+                `));
+                console.log("DRAW", $preview, (val || "").substring(0, 10))
+            };
+            qs($file, "input").onchange = (e) => {
+                if (e.target.files.length === 0) return;
+                const reader = new window.FileReader();
+                reader.readAsDataURL(e.target.files[0]);
+                reader.onload = () => draw(reader.result);
+            };
+            draw(value);
+            return $file;
         }
         default: {
             const $input = createElement(`

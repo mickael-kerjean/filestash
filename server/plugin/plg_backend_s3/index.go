@@ -9,9 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/defaults"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -58,18 +57,18 @@ func (this S3Backend) Init(params map[string]string, app *App) (IBackend, error)
 		}})
 	}
 	if params["role_arn"] != "" {
-		sessOptions := session.Options{Config: aws.Config{Region: aws.String(params["region"])}}
 		creds = append(creds, &stscreds.AssumeRoleProvider{
-			Client:   sts.New(session.Must(session.NewSessionWithOptions(sessOptions))),
+			Client:   sts.New(session.Must(session.NewSessionWithOptions(session.Options{Config: aws.Config{Region: aws.String(params["region"])}}))),
 			RoleARN:  params["role_arn"],
 			Duration: stscreds.DefaultDuration,
 		})
 	}
 	creds = append(
 		creds,
-		&ec2rolecreds.EC2RoleProvider{Client: ec2metadata.New(session.Must(session.NewSession()))},
 		&credentials.EnvProvider{},
+		defaults.RemoteCredProvider(*defaults.Config(), defaults.Handlers()),
 	)
+
 	config := &aws.Config{
 		Credentials:                   credentials.NewChainCredentials(creds),
 		CredentialsChainVerboseErrors: aws.Bool(true),
