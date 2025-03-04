@@ -29,8 +29,9 @@ export async function init() {
         const idx = [
             "az", "be", "bg", "ca", "cs", "da", "de", "el", "es", "et",
             "eu", "fi", "fr", "gl", "hr", "hu", "id", "is", "it", "ja",
-            "ka", "ko", "lt", "lv", "mn", "nb", "nl", "pl", "pt", "ro",
-            "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi", "zh",
+            "ka", "ko", "lt", "lv", "mn", "nb", "nl", "no", "pl", "pt",
+            "ro", "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi",
+            "zh",
         ].indexOf(userLanguage);
         if (idx !== -1) {
             selectedLanguage = userLanguage;
