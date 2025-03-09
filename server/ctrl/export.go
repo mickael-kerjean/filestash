@@ -52,6 +52,7 @@ func FileExport(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if runtime.GOOS == "darwin" {
 			// on OSX, the default emacs isn't usable so we default to the one provided by `brew`
 			if f, err := os.OpenFile("/usr/local/Cellar/emacs/", os.O_RDONLY, os.ModePerm); err == nil {
+				defer f.Close()
 				if dirs, err := f.Readdirnames(0); err == nil {
 					if len(dirs) > 0 {
 						emacsPath = "/usr/local/Cellar/emacs/" + dirs[0] + "/bin/emacs"
@@ -62,6 +63,7 @@ func FileExport(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 		// initialise the default emacs.el
 		if f, err := os.OpenFile(GetAbsolutePath(CONFIG_PATH+"emacs.el"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.ModePerm); err == nil {
+			defer f.Close()
 			if _, err = f.Write([]byte(EmacsElConfig)); err != nil {
 				SendErrorResult(res, ErrFilesystemError)
 				return
@@ -143,6 +145,7 @@ func FileExport(ctx *App, res http.ResponseWriter, req *http.Request) {
 			SendErrorResult(res, ErrFilesystemError)
 			return
 		}
+		defer f.Close()
 		file, err := ctx.Backend.Cat(path)
 		if err != nil {
 			SendErrorResult(res, err)
