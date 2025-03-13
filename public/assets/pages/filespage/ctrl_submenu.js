@@ -373,9 +373,7 @@ function componentRight(render, { getSelectionLength$ }) {
                     return $input;
                 }),
                 rxjs.mergeMap(($input) => rxjs.merge(
-                    rxjs.fromEvent($input, "input").pipe(
-                        rxjs.debounce(() => $input.value ? rxjs.timer(500) : rxjs.of(null)),
-                    ),
+                    rxjs.fromEvent($input, "input"),
                     rxjs.fromEvent($input, "change"),
                 ).pipe(
                     rxjs.map(() => $input.value),

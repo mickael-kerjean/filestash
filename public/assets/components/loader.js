@@ -61,11 +61,12 @@ export function createLoader($parent, opts = {}) {
                 <component-icon name="loading"></component-icon>
             </div>
     `);
+    const alreadyHasLoader = () => !!$parent.querySelector(".component_loader");
     const id = setTimeout(() => {
+        if (alreadyHasLoader()) return;
         append($icon);
         animate($icon, { time: 750, keyframes: opacityIn() });
     }, wait);
-
     const cancel = () => {
         clearTimeout(id);
         $icon.remove();
