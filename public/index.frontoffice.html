@@ -161,21 +161,23 @@
          ];
 
          if ("serviceWorker" in navigator) {
-             const register = await navigator.serviceWorker.register("sw.js");
-             await new Promise((resolve) => {
-                 register.active ?
-                 resolve() :
-                 navigator.serviceWorker.addEventListener("controllerchange", () => {
-                     resolve();
+             try {
+                 const register = await navigator.serviceWorker.register("sw.js");
+                 await new Promise((resolve) => {
+                     register.active ?
+                         resolve() :
+                         navigator.serviceWorker.addEventListener("controllerchange", () => {
+                             resolve();
+                         });
                  });
-             });
-             register.active.postMessage({ "type": "preload", "payload": URLS });
-             await new Promise((resolve, reject) => navigator.serviceWorker.addEventListener("message", (event) => {
-                 if (event.data && event.data.type === "preload") {
-                     if (event.data.status !== "ok") console.log(`turboload failure data=${JSON.stringify(event.data)}`);
-                     resolve();
-                 }
-             }));
+                 register.active.postMessage({ "type": "preload", "payload": URLS });
+                 await new Promise((resolve, reject) => navigator.serviceWorker.addEventListener("message", (event) => {
+                     if (event.data && event.data.type === "preload") {
+                         if (event.data.status !== "ok") console.log(`turboload failure data=${JSON.stringify(event.data)}`);
+                         resolve();
+                     }
+                 }));
+             } catch (err) { console.error(err); }
          }
          boot();
         </script>
