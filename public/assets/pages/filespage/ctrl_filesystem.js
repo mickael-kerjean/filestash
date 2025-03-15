@@ -79,9 +79,14 @@ export default async function(render) {
                 const removeLoader = createLoader($header);
                 $listBefore.setAttribute("style", "");
                 $listAfter.setAttribute("style", "");
-                return search(state.search).pipe(rxjs.map(({ files }) => ({
-                    files, ...state, ...rest,
-                })), removeLoader);
+                return rxjs.timer(state.search ? 450 : 0).pipe(
+                    rxjs.switchMap(() => search(state.search).pipe(
+                        rxjs.map(({ files }) => ({
+                            files, ...state, ...rest,
+                        })),
+                    )),
+                    rxjs.finalize(() => effect(rxjs.of(null).pipe(removeLoader))),
+                );
             }
             return rxjs.of({ files, ...state, ...rest });
         }))),

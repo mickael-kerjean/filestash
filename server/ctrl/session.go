@@ -478,7 +478,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	if Config.Get("features.protection.iframe").String() != "" {
 		redirectURI += "#bearer=" + obfuscate
 	}
-	http.Redirect(res, req, redirectURI, http.StatusTemporaryRedirect)
+	http.Redirect(res, req, redirectURI, http.StatusSeeOther)
 }
 
 func applyCookieRules(cookie *http.Cookie, req *http.Request) *http.Cookie {

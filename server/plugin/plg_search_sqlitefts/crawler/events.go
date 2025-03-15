@@ -4,7 +4,6 @@ import (
 	"container/heap"
 	"context"
 	"path/filepath"
-	"reflect"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
@@ -115,7 +114,13 @@ func (this *daemonState) HintLs(app *App, path string) {
 		this.idx = this.idx[lenIdx-(search_process_max-1):]
 	}
 	// instantiate the new indexer
-	s, err := NewCrawler(id, app.Backend)
+	app.Context = context.Background()
+	crawlerBackend, err := app.Backend.Init(app.Session, app)
+	if err != nil {
+		Log.Warning("plg_search_sqlitefs::init message=cannot_create_crawler err=%s", err.Error())
+		return
+	}
+	s, err := NewCrawler(id, crawlerBackend)
 	if err != nil {
 		Log.Warning("plg_search_sqlitefs::init message=cannot_create_crawler err=%s", err.Error())
 		return
@@ -124,7 +129,7 @@ func (this *daemonState) HintLs(app *App, path string) {
 		// recover from panic if one occurred. Set err to nil otherwise.
 		if r := recover(); r != nil {
 			name := "na"
-			for _, el := range app.Backend.LoginForm().Elmnts {
+			for _, el := range crawlerBackend.LoginForm().Elmnts {
 				if el.Name == "type" {
 					name = el.Value.(string)
 				}
@@ -132,13 +137,6 @@ func (this *daemonState) HintLs(app *App, path string) {
 			Log.Error("plg_search_sqlitefs::panic backend=\"%s\" recover=\"%s\"", name, r)
 		}
 	}()
-	v := reflect.ValueOf(app.Backend).Elem().FieldByName("Context")
-	if v.IsValid() && v.CanSet() {
-		// prevent context expiration which is often default as r.Context()
-		// as we need to make queries outside the scope of a normal http request
-		v.Set(reflect.ValueOf(context.Background()))
-	}
-
 	heap.Push(&s.FoldersUnknown, &Document{
 		Type:        "directory",
 		Path:        path,

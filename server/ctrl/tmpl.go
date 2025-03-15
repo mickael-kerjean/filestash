@@ -12,7 +12,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var tmplFuncs = template.FuncMap{
@@ -128,10 +128,10 @@ var tmplFuncs = template.FuncMap{
 		var err error
 		claims := jwt.MapClaims{}
 		if len(args) == 1 {
-			token, _, err = jwt.NewParser().ParseUnverified(stdin, claims)
+			token, _, err = jwt.NewParser(jwt.WithPaddingAllowed()).ParseUnverified(stdin, claims)
 			token.Valid = true
 		} else if len(args) == 2 {
-			token, err = jwt.ParseWithClaims(stdin, claims, func(token *jwt.Token) (interface{}, error) {
+			token, err = jwt.NewParser(jwt.WithPaddingAllowed()).ParseWithClaims(stdin, claims, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); ok {
 					return []byte(args[0]), nil
 				} else if _, ok := token.Method.(*jwt.SigningMethodRSA); ok {

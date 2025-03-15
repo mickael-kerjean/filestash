@@ -33,8 +33,8 @@ var SEARCH_ENABLE = func() bool {
 			"cycle_time", "max_size", "indexer_ext",
 		}
 		f.Description = "Enable/Disable full text search"
-		f.Placeholder = "Default: false"
-		f.Default = false
+		f.Placeholder = "Default: true"
+		f.Default = true
 		return f
 	}).Bool()
 }
