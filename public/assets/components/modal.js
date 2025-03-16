@@ -75,7 +75,7 @@ class ModalComponent extends HTMLElement {
         // feature: closing the modal
         const $body = () => qs($modal, "div > div");
         effect(close$.pipe(
-            rxjs.mergeMap((data) => onQuit(data) || Promise.resolve()),
+            rxjs.mergeMap((data) => onQuit(data, $node) || Promise.resolve()),
             rxjs.tap(() => animate($body(), {
                 time: 200,
                 keyframes: [
