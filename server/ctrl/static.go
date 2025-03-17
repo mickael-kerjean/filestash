@@ -340,46 +340,13 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 		}
 
 		// case: patch must be apply because of a "StaticPatch" plugin
-		for _, patch := range Hooks.Get.StaticPatch() {
-			patchFile, err := patch.Open(strings.TrimPrefix(filePath, "/"))
-			if err != nil {
-				continue
-			}
-			defer patchFile.Close()
-			patchFiles, _, err := gitdiff.Parse(patchFile)
-			if err != nil {
-				Log.Debug("ctrl::static cannot parse patch file - %s", err.Error())
-				break
-			} else if len(patchFiles) != 1 {
-				Log.Debug("ctrl::static unepected patch file size - must be 1, got %d", len(patchFiles))
-				break
-			}
-			origFile, err := WWWPublic.Open(filePath)
-			if err != nil {
-				Log.Debug("ctrl::static cannot open public file - %+v", err.Error())
-				continue
-			}
-			originalBuffer, err := io.ReadAll(origFile)
-			if err != nil {
-				Log.Debug("ctrl::static cannot read public file - %+v", err.Error())
-				continue
-			}
-			var output bytes.Buffer
-			origFile.Close()
-			if err := gitdiff.Apply(
-				&output,
-				bytes.NewReader(originalBuffer),
-				patchFiles[0],
-			); err != nil {
-				Log.Debug("ctrl::static cannot apply patch - %s", err.Error())
-				break
-			}
+		if f := applyPatch(filePath); f != nil {
 			head.Set("Content-Type", GetMimeType(filepath.Ext(filePath)))
 			head.Set("Cache-Control", "no-cache")
 			head.Set("Pragma", "no-cache")
 			head.Set("Expires", "0")
 			res.WriteHeader(http.StatusOK)
-			res.Write(output.Bytes())
+			res.Write(f.Bytes())
 			return
 		}
 
@@ -465,16 +432,23 @@ func ServeBundle(ctx *App, res http.ResponseWriter, req *http.Request) {
 	urls := req.URL.Query()["url"]
 	for i := 0; i < len(urls); i++ {
 		curPath := "assets" + strings.TrimPrefix(urls[i], "/assets/"+BUILD_REF)
-		file, err := WWWPublic.Open(curPath + ".gz")
-		if err != nil {
-			file, err = WWWPublic.Open(curPath)
-			if err != nil {
-				Log.Warning("static::sse failed to find file %s", curPath)
-				return
-			}
+		var file io.ReadCloser
+		var err error
+		if f := applyPatch(curPath); f != nil {
+			file = io.NopCloser(f)
 			fmt.Fprintf(res, "event: %s\n", "static::raw")
 		} else {
-			fmt.Fprintf(res, "event: %s\n", "static::gzip")
+			file, err = WWWPublic.Open(curPath + ".gz")
+			if err != nil {
+				file, err = WWWPublic.Open(curPath)
+				if err != nil {
+					Log.Warning("static::sse failed to find file %s", curPath)
+					return
+				}
+				fmt.Fprintf(res, "event: %s\n", "static::raw")
+			} else {
+				fmt.Fprintf(res, "event: %s\n", "static::gzip")
+			}
 		}
 		fmt.Fprintf(res, "id: %s\n", urls[i])
 		fmt.Fprintf(res, "data: ")
@@ -486,6 +460,46 @@ func ServeBundle(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 	fmt.Fprint(res, "\n")
 	res.(http.Flusher).Flush()
+}
+
+func applyPatch(filePath string) (file *bytes.Buffer) {
+	for _, patch := range Hooks.Get.StaticPatch() {
+		patchFile, err := patch.Open(strings.TrimPrefix(filePath, "/"))
+		if err != nil {
+			continue
+		}
+		defer patchFile.Close()
+		patchFiles, _, err := gitdiff.Parse(patchFile)
+		if err != nil {
+			Log.Debug("ctrl::static cannot parse patch file - %s", err.Error())
+			break
+		} else if len(patchFiles) != 1 {
+			Log.Debug("ctrl::static unepected patch file size - must be 1, got %d", len(patchFiles))
+			break
+		}
+		origFile, err := WWWPublic.Open(filePath)
+		if err != nil {
+			Log.Debug("ctrl::static cannot open public file - %+v", err.Error())
+			continue
+		}
+		originalBuffer, err := io.ReadAll(origFile)
+		if err != nil {
+			Log.Debug("ctrl::static cannot read public file - %+v", err.Error())
+			continue
+		}
+		var output bytes.Buffer
+		origFile.Close()
+		if err := gitdiff.Apply(
+			&output,
+			bytes.NewReader(originalBuffer),
+			patchFiles[0],
+		); err != nil {
+			Log.Debug("ctrl::static cannot apply patch - %s", err.Error())
+			break
+		}
+		return &output
+	}
+	return nil
 }
 
 func InitPluginList(code []byte) {
