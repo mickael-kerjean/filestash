@@ -286,7 +286,7 @@ function componentRight(render, { getSelectionLength$ }) {
             // feature: sort button
             rxjs.merge(
                 onClick(qs($page, `[data-action="sort"]`)).pipe(rxjs.map(($el) => { // toggle the dropdown
-                    return !$el.nextSibling.classList.contains("active");
+                    return !$el.nextElementSibling.classList.contains("active");
                 })),
                 escape$.pipe(rxjs.mapTo(false)), // quit the dropdown on esc
                 rxjs.fromEvent(window, "click").pipe( // quit when clicking outside the dropdown
