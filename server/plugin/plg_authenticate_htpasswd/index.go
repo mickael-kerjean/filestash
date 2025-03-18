@@ -72,7 +72,7 @@ func (this Htpasswd) EntryPoint(idpParams map[string]string, req *http.Request, 
 	res.Write([]byte(Page(`
       <form action="` + WithBase("/api/session/auth/") + `" method="post" class="component_middleware">
         <label>
-          <input type="text" name="user" value="" placeholder="User" />
+          <input type="text" name="user" value="" placeholder="User" autocorrect="off" autocapitalize="off" />
         </label>
         <label>
           <input type="password" name="password" value="" placeholder="Password" />
