@@ -216,7 +216,6 @@ function componentRight(render, { getSelectionLength$ }) {
         rxjs.filter((event) => event.keyCode === 27),
         rxjs.share(),
     );
-
     const defaultLayout = (view) => {
         switch (view) {
         case "grid": return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.LIST_VIEW}" alt="grid" />`;
@@ -224,20 +223,22 @@ function componentRight(render, { getSelectionLength$ }) {
         default: throw new Error("NOT_IMPLEMENTED");
         }
     };
-    const defaultSort = (sort) => { // TODO
+    const defaultSort = (sort) => {
         return `<img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.SORT}" alt="${sort}" />`;
     };
+
     effect(getSelectionLength$.pipe(
         rxjs.filter((l) => l === 0),
         rxjs.mergeMap(() => getState$().pipe(rxjs.first())),
-        rxjs.map(({ view, sort }) => render(createFragment(`
+        rxjs.map(({ view, sort, search }) => ({ search, $page: render(createFragment(`
             <form style="display: inline-block;" onsubmit="event.preventDefault()">
                 <input class="hidden" placeholder="${t("search")}" name="q" style="
                     background: transparent;
                     border: none;
                     padding-left: 5px;
                     color: var(--color);
-                    font-size: 0.95rem;">
+                    font-size: 0.95rem;"
+                    value="${search || ""}"
             </form>
             <button data-action="search" title="${t("Search")}">
                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.MAGNIFYING_GLASS}" alt="search" />
@@ -267,8 +268,8 @@ function componentRight(render, { getSelectionLength$ }) {
                     </ul>
                 </div>
             </div>
-        `))),
-        rxjs.mergeMap(($page) => rxjs.merge(
+        `))})),
+        rxjs.mergeMap(({ $page, search }) => rxjs.merge(
             // feature: view button
             onClick(qs($page, `[data-action="view"]`)).pipe(rxjs.tap(($button) => {
                 const $img = $button.querySelector("img");
@@ -332,6 +333,7 @@ function componentRight(render, { getSelectionLength$ }) {
                     ),
                 ).pipe(rxjs.map(() => qs($page, "input").classList.contains("hidden"))),
                 escape$.pipe(rxjs.mapTo(false)),
+                search ? rxjs.of(true) : rxjs.EMPTY,
             ).pipe(
                 rxjs.takeUntil(getSelection$().pipe(rxjs.skip(1))),
                 rxjs.mergeMap(async(show) => {
@@ -339,7 +341,6 @@ function componentRight(render, { getSelectionLength$ }) {
                     const $searchImg = qs($page, "img");
                     if (show) {
                         $page.classList.add("hover");
-                        $input.value = "";
                         $input.classList.remove("hidden");
                         $searchImg.setAttribute("src", "data:image/svg+xml;base64," + ICONS.CROSS);
                         $searchImg.setAttribute("alt", "close");
@@ -353,6 +354,7 @@ function componentRight(render, { getSelectionLength$ }) {
                             keyframes: [{ width: "0px" }, { width: "180px" }],
                             time: 200,
                         });
+                        $input.select();
                         $input.focus();
                     } else {
                         $page.classList.remove("hover");
@@ -363,6 +365,7 @@ function componentRight(render, { getSelectionLength$ }) {
                             time: 100,
                         });
                         $input.classList.add("hidden");
+                        $input.value = "";
                         const $listOfButtons = $page.parentElement.firstElementChild.children;
                         for (const $item of $listOfButtons) {
                             $item.classList.remove("hidden");

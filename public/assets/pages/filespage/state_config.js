@@ -9,7 +9,7 @@ export function init() {
         show_hidden: getConfig("display_hidden", false),
         sort: getConfig("default_sort", "type"),
         order: null,
-        search: "",
+        search: new URLSearchParams(location.search).get("q"),
     }, "filespage"));
 }
 

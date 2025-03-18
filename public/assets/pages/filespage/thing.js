@@ -1,6 +1,7 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import { animate, opacityOut, opacityIn } from "../../lib/animate.js";
 import assert from "../../lib/assert.js";
+import { forwardURLParams } from "../../lib/path.js";
 import { get as getConfig } from "../../model/config.js";
 
 import { extractPath, isDir, isNativeFileUpload } from "./helper.js";
@@ -83,7 +84,8 @@ export function createThing({
     const $label = $thing.children[3].firstElementChild.firstElementChild; // = qs($thing, ".component_filename .file-details > span");
     const $time = $thing.children[4]; // = qs($thing, ".component_datetime");
 
-    $link.setAttribute("href", link + location.search);
+    $link.setAttribute("href", link);
+    if (location.search) $link.setAttribute("href", forwardURLParams(link, ["share", "canary"]));
     $thing.setAttribute("data-droptarget", type === "directory");
     $thing.setAttribute("data-n", n);
     $thing.setAttribute("data-path", path);
