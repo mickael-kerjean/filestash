@@ -222,4 +222,9 @@ export default async function(render) {
         rxjs.mergeMap(() => Promise.reject(new Error("there is nothing here"))), // TODO: check translation?
         rxjs.catchError(ctrlError()),
     ));
+
+    // feature8: bug on back navigation where loader get stuck
+    effect(rxjs.fromEvent(window, "pageshow").pipe(
+        rxjs.tap((event) => event.persisted && toggleLoader(false)),
+    ));
 }
