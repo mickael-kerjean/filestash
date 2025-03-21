@@ -230,45 +230,48 @@ function componentRight(render, { getSelectionLength$ }) {
     effect(getSelectionLength$.pipe(
         rxjs.filter((l) => l === 0),
         rxjs.mergeMap(() => getState$().pipe(rxjs.first())),
-        rxjs.map(({ view, sort, search }) => ({ search, $page: render(createFragment(`
-            <form style="display: inline-block;" onsubmit="event.preventDefault()">
-                <input class="hidden" placeholder="${t("search")}" name="q" style="
-                    background: transparent;
-                    border: none;
-                    padding-left: 5px;
-                    color: var(--color);
-                    font-size: 0.95rem;"
-                    value="${search || ""}"
-            </form>
-            <button data-action="search" title="${t("Search")}">
-                <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.MAGNIFYING_GLASS}" alt="search" />
-            </button>
-            <button data-action="view" title="${t("Layout")}">
-                ${defaultLayout(view)}
-            </button>
-            <button data-action="sort" title="${t("Sort")}">
-                ${defaultSort(sort)}
-            </button>
-            <div class="component_dropdown view sort" data-target="sort">
-                <div class="dropdown_container">
-                    <ul>
-                        <li data-target="type">
-                            ${t("Sort By Type")}
-                            <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />
-                        </li>
-                        <li data-target="date">
-                            ${t("Sort By Date")}
-                        </li>
-                        <li data-target="name">
-                            ${t("Sort By Name")}
-                        </li>
-                        <li data-target="size">
-                            ${t("Sort By Size")}
-                        </li>
-                    </ul>
+        rxjs.map(({ view, sort, search }) => ({
+            search,
+            $page: render(createFragment(`
+                <form style="display: inline-block;" onsubmit="event.preventDefault()">
+                    <input class="hidden" placeholder="${t("search")}" name="q" style="
+                        background: transparent;
+                        border: none;
+                        padding-left: 5px;
+                        color: var(--color);
+                        font-size: 0.95rem;"
+                        value="${search || ""}"
+                </form>
+                <button data-action="search" title="${t("Search")}">
+                    <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.MAGNIFYING_GLASS}" alt="search" />
+                </button>
+                <button data-action="view" title="${t("Layout")}">
+                    ${defaultLayout(view)}
+                </button>
+                <button data-action="sort" title="${t("Sort")}">
+                    ${defaultSort(sort)}
+                </button>
+                <div class="component_dropdown view sort" data-target="sort">
+                    <div class="dropdown_container">
+                        <ul>
+                            <li data-target="type">
+                                ${t("Sort By Type")}
+                                <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />
+                            </li>
+                            <li data-target="date">
+                                ${t("Sort By Date")}
+                            </li>
+                            <li data-target="name">
+                                ${t("Sort By Name")}
+                            </li>
+                            <li data-target="size">
+                                ${t("Sort By Size")}
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        `))})),
+            `))
+        })),
         rxjs.mergeMap(({ $page, search }) => rxjs.merge(
             // feature: view button
             onClick(qs($page, `[data-action="view"]`)).pipe(rxjs.tap(($button) => {

@@ -287,7 +287,6 @@ export function $renderInput(options = {}) {
                 else if ((val || "").substring(0, 20) === "data:application/pdf") $preview.appendChild(createElement(`
                     <object class="full-width" type="application/pdf" data="${val}" style="height:250px;" />
                 `));
-                console.log("DRAW", $preview, (val || "").substring(0, 10))
             };
             qs($file, "input").onchange = (e) => {
                 if (e.target.files.length === 0) return;

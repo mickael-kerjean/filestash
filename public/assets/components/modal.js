@@ -37,7 +37,7 @@ class ModalComponent extends HTMLElement {
         await loadCSS(import.meta.url, "./modal.css");
     }
 
-    trigger($node, { withButtonsLeft = null, withButtonsRight = null, targetHeight = 0, onQuit = (a) => Promise.resolve(a) }) {
+    trigger($node, { withButtonsLeft = null, withButtonsRight = null, targetHeight = 0, onQuit = (_a, _b) => Promise.resolve() }) {
         const close$ = new rxjs.Subject();
 
         // feature: build the dom
