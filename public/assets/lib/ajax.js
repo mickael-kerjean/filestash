@@ -33,9 +33,18 @@ export default function(opts) {
             }
             return res;
         }),
-        rxjs.catchError((err) => rxjs.throwError(processError(err.xhr, err))),
+        rxjs.catchError(
+            (err) => activePage
+                ? rxjs.throwError(processError(err.xhr, err))
+                : rxjs.EMPTY
+        ),
     );
 }
+
+let activePage = true;
+window.addEventListener("beforeunload", function() {
+    activePage = false;
+});
 
 function parseDataUrl(url) {
     const matches = url.match(/^data:(.*?)(;base64)?,(.*)$/);
