@@ -205,6 +205,8 @@ export default async function(render) {
                     const GET = getURLParams();
                     if (GET["next"]) redirectURL = GET["next"];
                     else if (responseJSON.result) redirectURL = toHref("/files" + responseJSON.result);
+
+                    if (redirectURL.startsWith("/api/")) return location.replace(redirectURL);
                     navigate(forwardURLParams(redirectURL, ["nav"]));
                 }),
                 rxjs.catchError((err) => {
