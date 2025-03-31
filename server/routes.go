@@ -16,11 +16,8 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/middleware"
 )
 
-func Build(a App) *mux.Router {
-	var (
-		r           *mux.Router = mux.NewRouter()
-		middlewares []Middleware
-	)
+func Build(r *mux.Router, a App) {
+	var middlewares []Middleware
 
 	// API for Session
 	session := r.PathPrefix(WithBase("/api/session")).Subrouter()
@@ -121,8 +118,10 @@ func Build(a App) *mux.Router {
 		initDebugRoutes(r)
 	}
 	initPluginsRoutes(r, &a)
+}
 
-	middlewares = []Middleware{SecureHeaders, PluginInjector}
+func CatchAll(r *mux.Router, a App) {
+	middlewares := []Middleware{SecureHeaders, PluginInjector}
 	r.PathPrefix(WithBase("/admin")).Handler(http.HandlerFunc(NewMiddlewareChain(ServeBackofficeHandler, middlewares, a))).Methods("GET")
 	middlewares = []Middleware{IndexHeaders, SecureHeaders, PluginInjector}
 	if os.Getenv("LEGACY") == "true" { // TODO: remove once migration is done
@@ -130,7 +129,6 @@ func Build(a App) *mux.Router {
 	} else {
 		r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(ServeFrontofficeHandler, middlewares, a))).Methods("GET", "POST")
 	}
-	return r
 }
 
 func initDebugRoutes(r *mux.Router) {
@@ -165,10 +163,6 @@ func initDebugRoutes(r *mux.Router) {
 }
 
 func initPluginsRoutes(r *mux.Router, a *App) {
-	// Endpoints handle by plugins
-	for _, obj := range Hooks.Get.HttpEndpoint() {
-		obj(r, a)
-	}
 	// frontoffice overrides: it is the mean by which plugin can interact with the frontoffice
 	for _, obj := range Hooks.Get.FrontendOverrides() {
 		r.HandleFunc(obj, func(res http.ResponseWriter, req *http.Request) {
