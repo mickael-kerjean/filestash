@@ -21,11 +21,11 @@ func (this Server) WellKnownInfoHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	scheme := "http"
-	if r.TLS != nil {
-		scheme = "https"
-	}
+	scheme := "https"
 	host := r.Host
+	if host == "localhost" || host == "127.0.0.1" {
+		scheme = "http"
+	}
 	baseURL := fmt.Sprintf("%s://%s", scheme, host)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
