@@ -56,9 +56,8 @@ self.addEventListener("message", (event) => {
 });
 
 const handlePreloadMessage = (() => {
-    const cleanup = [];
-    return async(chunks, resolve, reject) => {
-        cleanup.forEach((fn) => fn());
+    return async(chunks, resolve, reject, id) => {
+        const cleanup = [];
         try {
             caches.delete(CACHENAME);
             const cache = await caches.open(CACHENAME);
@@ -68,6 +67,8 @@ const handlePreloadMessage = (() => {
             resolve();
         } catch (err) {
             reject(err);
+        } finally {
+            cleanup.forEach((fn) => fn());
         }
     };
 })();
@@ -92,12 +93,10 @@ async function preload({ urls, cache, cleanup }) {
             ),
         );
         if (i === urls.length) {
-            evtsrc.close();
             resolve();
         }
     };
     const errorHandler = (reject, err) => {
-        evtsrc.close();
         reject(err);
     };
 
