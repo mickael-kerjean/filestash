@@ -175,6 +175,7 @@
 	"swf": "application/x-shockwave-flash",
 	"tar": "application/x-tar",
 	"tcl": "application/x-tcl",
+	"tgz": "application/x-gzip",
 	"tif": "image/tiff",
 	"tiff": "image/tiff",
 	"tk": "application/x-tcl",
