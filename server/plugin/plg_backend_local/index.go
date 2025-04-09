@@ -91,7 +91,7 @@ func (this Local) Mv(from, to string) error {
 }
 
 func (this Local) Save(path string, content io.Reader) error {
-	f, err := SafeOsOpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	f, err := SafeOsOpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
 	if err != nil {
 		return err
 	}
