@@ -245,7 +245,7 @@ func (this S3Backend) Cat(path string) (io.ReadCloser, error) {
 		input.SSECustomerAlgorithm = aws.String("AES256")
 		input.SSECustomerKey = aws.String(this.params["encryption_key"])
 	}
-	obj, err := client.GetObject(input)
+	obj, err := client.GetObjectWithContext(this.Context, input)
 	if err != nil {
 		awsErr, ok := err.(awserr.Error)
 		if ok == false {
