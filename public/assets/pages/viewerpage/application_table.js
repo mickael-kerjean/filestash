@@ -55,7 +55,8 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
             if (!loader) throw new TypeError(`unsupported mimetype "${mime}"`);
             const [, url] = loader;
             const module = await import(url);
-            const table = new (await module.default(ITable))(response, { $menubar });
+            let table  = new (await module.default(ITable))(response, { $menubar });
+            if (typeof table.then === "function") table = await table;
             STATE.header = table.getHeader();
             STATE.body = table.getBody();
             STATE.rows = STATE.body;
@@ -149,6 +150,7 @@ async function buildRows(rows, legends, $tbody, padding, isInit, withClear) {
     if (withClear) $tbody.innerHTML = "";
     for (let i=0; i<rows.length; i++) {
         const obj = rows[i];
+        if (!obj) break;
         const $tr = createElement(`<div class="tr"></div>`);
         legends.forEach(({ name, size }, i) => {
             const $col = createElement(`<div class="${withCenter("td ellipsis", size, i === legends.length -1)}" style="${styleCell(size, name, padding)}"></div>`);
