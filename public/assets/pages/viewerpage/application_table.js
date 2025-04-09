@@ -55,7 +55,7 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
             if (!loader) throw new TypeError(`unsupported mimetype "${mime}"`);
             const [, url] = loader;
             const module = await import(url);
-            let table  = new (await module.default(ITable))(response, { $menubar });
+            let table = new (await module.default(ITable))(response, { $menubar });
             if (typeof table.then === "function") table = await table;
             STATE.header = table.getHeader();
             STATE.body = table.getBody();

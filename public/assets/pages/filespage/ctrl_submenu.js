@@ -134,7 +134,6 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
                 componentShare(createModal({
                     withButtonsRight: null,
                     withButtonsLeft: null,
-                    targetHeight: 315,
                 }), { path: expandSelection()[0].path });
             })),
             onClick(qs($page, `[data-action="tag"]`)).pipe(rxjs.tap(() => {
