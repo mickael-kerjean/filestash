@@ -70,3 +70,10 @@
     padding-left: 7px;
     border-color: rgba(0, 0, 0, 0.02);
 }
+
+.component_formviewer fieldset {
+    margin-bottom: 10px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    color: var(--light);
+}

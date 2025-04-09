@@ -49,6 +49,7 @@ const $tmpl = createElement(`
             </span></span>
         </span>
         <span class="component_datetime"></span>
+        <div class="component_action"></div>
         <div class="selectionOverlay"></div>
     </a>
 `);
@@ -139,6 +140,7 @@ export function createThing({
 
     if (loading) {
         $img.setAttribute("src", IMAGE.LOADING);
+        $img.setAttribute("alt", "loading");
         $link.setAttribute("href", "#");
         $extension.innerHTML = "";
         return $thing;

@@ -40,7 +40,7 @@
     border-bottom: 2px solid var(--emphasis-primary);
     color: var(--color);
 }
-.component_thing .component_action {
+.component_thing.view-grid .component_action {
     float: right;
     color: #6f6f6f;
     line-height: 25px;
@@ -74,6 +74,40 @@
     padding: 2px;
     border-radius: 50px;
 }
+.component_thing .component_action{
+    display: none;
+    float: right;
+    color: #6f6f6f;
+    line-height: 25px;
+    margin: 0 -10px;
+    padding: 0 10px;
+    position: relative;
+}
+.component_thing .component_action .component_icon{
+    padding: 1px 0;
+    box-sizing: border-box;
+}
+.list > .component_thing.view-grid .component_action {
+    transform: translateX(5px);
+    transition: 0.15s ease-out all;
+    z-index: 2;
+    display: block;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    border-radius: 5px;
+    margin-right: 0px;
+    padding: 0px;
+}
+.list > .component_thing.view-grid:hover .component_action {
+    transition-delay: 0.1s;
+    transform: translateX(0);
+}
+.component_thing:hover .component_action { opacity: 1; display: block; }
+.component_thing .component_action { opacity: 0; }
+.component_thing.selected .component_action { opacity: 0; transition-delay: 0s; }
+.component_thing:has(.component_icon[alt="loading"]) .component_action { display: none; }
+
 .touch-yes .component_thing .component_checkbox {
     opacity: 1;
 }
@@ -86,6 +120,7 @@
     transition-delay: 0.1s;
     opacity: 1;
 }
+
 .component_thing .selectionOverlay {
     display: none;
     border-radius: 3px;
