@@ -172,6 +172,8 @@
 	"sr2": "image/x-sony-sr2",
 	"srw": "image/x-samsung-srw",
 	"stl": "model/stl",
+	"step": "model/step",
+	"stp": "model/step",
 	"svg": "image/svg+xml",
 	"svgz": "image/svg+xml",
 	"swf": "application/x-shockwave-flash",

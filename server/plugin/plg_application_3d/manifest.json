@@ -31,6 +31,12 @@
             "mime": "image/svg+xml",
             "entrypoint": "/index_svg.js",
             "application": "3d"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "model/step",
+            "entrypoint": "/index_step.js",
+            "application": "3d"
         }
     ]
 }

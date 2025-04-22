@@ -3,7 +3,7 @@ import * as THREE from "../../../../lib/vendor/three/three.module.js";
 
 const LIGHT_COLOR = 0xf5f5f5;
 
-export default function({ scene, box }) {
+export default function({ scene, box, camera }) {
     addLight(
         scene,
         new THREE.AmbientLight(LIGHT_COLOR),
@@ -18,8 +18,10 @@ export default function({ scene, box }) {
     l(0.35, [0, plus(box.max.y*4), 20]); // top
     l(0.35, [0, minus(box.min.y*4), -20]); // bottom
 
-    l(0.5, [0, 0, plus(7*box.max.z)]); // front
+    l(0.2, [0, 0, plus(7*box.max.z)]); // front
     l(0.2, [0, 0, minus(15*box.min.z)]); // back
+
+    l(0.4, [camera.position.x, camera.position.y, camera.position.z]); // camera
 }
 
 function addLight(scene, light, intensity, pos = []) {

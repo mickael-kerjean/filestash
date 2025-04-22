@@ -61,7 +61,8 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
         )),
         rxjs.catchError((err) => {
             let _err = err;
-            if (err.response.status === 401) {
+            console.log("ERR", err);
+            if (err.response && err.response.status === 401) {
                 _err = new Error(err.message);
                 _err.status = err.response.status;
                 _err = new AjaxError(err.message, _err, "Not Authorised");
@@ -82,7 +83,7 @@ function create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube, is2D }) {
         is2D,
     });
 
-    withLight({ scene, box });
+    withLight({ scene, box, camera });
     if (hasCube && !is2D()) withCube({ camera, renderer, refresh, controls });
     ctrlToolbar(createRender($toolbar), {
         mesh,
