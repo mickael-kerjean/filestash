@@ -6,14 +6,14 @@ import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 import { cat } from "./model_files.js";
 
-export default function(render) {
+export default function(render, { getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_urlopener" style="background: #52565911;"></div>
     `);
     render($page);
     createLoader($page);
 
-    effect(cat().pipe(
+    effect(cat(getDownloadUrl()).pipe(
         rxjs.tap((content) => {
             const url = content.replace(/[\s\S]*(https?:\/\/\S+)[\s\S]*/, "$1");
             try {

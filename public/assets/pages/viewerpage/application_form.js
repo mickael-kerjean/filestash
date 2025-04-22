@@ -16,7 +16,7 @@ import "./component_menubar.js";
 import "../../components/icon.js";
 import "../../components/fab.js";
 
-export default function(render, { acl$, getFilename }) {
+export default function(render, { acl$, getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_formviewer">
             <component-menubar filename="${getFilename()}"></component-menubar>
@@ -38,7 +38,7 @@ export default function(render, { acl$, getFilename }) {
 
     // feature1: setup the dom
     const removeLoader = createLoader($page);
-    effect(cat().pipe(
+    effect(cat(getDownloadUrl()).pipe(
         rxjs.map((content) => JSON.parse(content)),
         rxjs.mergeMap((formSpec) => acl$.pipe(rxjs.map((acl) => {
             if (acl.indexOf("POST") === -1) {

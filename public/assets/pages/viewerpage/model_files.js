@@ -19,8 +19,8 @@ export const options = () => ajax({
     rxjs.map((res) => res.responseHeaders.allow.replace(/\r/, "").split(", ")),
 );
 
-export const cat = () => ajax({
-    url: forwardURLParams("api/files/cat?path=" + encodeURIComponent(getCurrentPath()), ["share"]),
+export const cat = (url) => ajax({
+    url: forwardURLParams(url, ["share"]),
     method: "GET",
 }).pipe(
     rxjs.map(({ response }) => response),

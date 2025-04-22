@@ -48,7 +48,7 @@ export default async function(render, { acl$, getFilename, getDownloadUrl }) {
             // memory. This also account for terrible network conditions when out in
             // the bush; we abort after:
             // TIME_BEFORE_ABORT_EDIT + NETWORK LATENCY seconds
-            cat(),
+            cat(getDownloadUrl()),
             rxjs.of(null).pipe(
                 rxjs.delay(TIME_BEFORE_ABORT_EDIT),
                 rxjs.mergeMap(() => ajax("about")),
@@ -100,10 +100,8 @@ export default async function(render, { acl$, getFilename, getDownloadUrl }) {
                         const cleanup = window.CodeMirror.orgmode.init(editor);
                         onDestroy(cleanup);
                     }
-
                     onDestroy(() => editor.clearHistory());
                     $dom.menubar().classList.remove("hidden");
-                    editor.execCommand("save");
                     return editor;
                 }),
                 rxjs.tap((editor) => requestAnimationFrame(() => editor.refresh())),

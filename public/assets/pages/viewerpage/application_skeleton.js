@@ -16,7 +16,6 @@ export default function(render, { mime, getFilename, getDownloadUrl, acl$ }) {
     `);
     render($page);
     const $menubar = qs($page, "component-menubar");
-
     const $container = qs($page, ".component_skeleton_container");
     const removeLoader = createLoader($container);
     effect(rxjs.from(loadPlugin(mime)).pipe(
