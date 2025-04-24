@@ -95,10 +95,6 @@ export const syscalls = {
         console.log(`Stubbed __syscall_rmdir called with fd=${fd}`);
         return -1;
     },
-    __syscall_fstat64: (pathPtr, bufPtr) => {
-        console.log(`Stubbed __syscall_stat64 called with pathPtr=${pathPtr}, bufPtr=${bufPtr}`);
-        return 0; // Return 0 for a successful call
-    },
     __syscall_newfstatat: (pathPtr, bufPtr) => {
         console.log(`Stubbed __syscall_stat64 called with pathPtr=${pathPtr}, bufPtr=${bufPtr}`);
         return 0; // Return 0 for a successful call
@@ -145,6 +141,50 @@ const javascripts = {
         console.error("WebAssembly module called emscripten_get_now!");
         throw new Error("_localtime_js was called");
     },
+    emscripten_errn: () => {
+        console.error("WebAssembly module called emscripten_errn!");
+        throw new Error("_errn was called");
+    },
+    HaveOffsetConverter: () => {
+        console.error("WebAssembly module called HaveOffsetConverter!");
+        throw new Error("HaveOffsetConverter was called");
+    },
+    emscripten_pc_get_function: () => {
+        console.error("WebAssembly module called emscripten_pc_get_function!");
+        throw new Error("emscripten_pc_get_function was called");
+    },
+    emscripten_asm_const_int: () => {
+        console.error("WebAssembly module called emscripten_asm_const_int!");
+        throw new Error("emscripten_asm_const_int was called");
+    },
+    emscripten_stack_snapshot: () => {
+        console.error("WebAssembly module called emscripten_stack_snapshot!");
+        throw new Error("emscripten_stack_snapshot was called");
+    },
+    emscripten_stack_unwind_buffer: () => {
+        console.error("WebAssembly module called emscripten_stack_unwind_buffer!");
+        throw new Error("emscripten_stack_unwind_buffer was called");
+    },
+    emscripten_get_heap_max: () => {
+        console.error("WebAssembly module called emscripten_get_heap_max!");
+        throw new Error("emscripten_get_heap_max was called");
+    },
+    _timegm_js: () => {
+        console.error("WebAssembly module called _timegm_js!");
+        throw new Error("_timegm_js was called");
+    },
+    _gmtime_js: () => {
+        console.error("WebAssembly module called _gmtime_js!");
+        throw new Error("_gmtime_js was called");
+    },
+    _munmap_js: () => {
+        console.error("WebAssembly module called _munmap_js!");
+        throw new Error("_munmap_js was called");
+    },
+    _mmap_js: () => {
+        console.error("WebAssembly module called _mmap_js!");
+        throw new Error("_mmap_js was called");
+    }
 };
 
 export class Wasi {
@@ -165,6 +205,9 @@ export class Wasi {
         this.__syscall_stat64 = this.__syscall_stat64.bind(this);
         this.__cxa_throw = this.__cxa_throw.bind(this);
         this.random_get = this.random_get.bind(this);
+        this.proc_exit = this.proc_exit.bind(this);
+        this.fd_pread = this.fd_pread.bind(this);
+        this.__syscall_fstat64 = this.__syscall_fstat64.bind(this);
     }
 
     set instance(val) {
@@ -201,7 +244,6 @@ export class Wasi {
         if (fd === 1 || fd === 2) {
             let msg = fd === 1? "stdout: " : "stderr: ";
             msg += new TextDecoder().decode(readFS(fd));
-            console.log(msg);
             FS[fd] = {
                 buffer: new Uint8Array(0),
                 position: 0,
@@ -249,7 +291,41 @@ export class Wasi {
         return 0;
     }
 
-    fd_seek(fd, offsetBigInt, _, whence) {
+    fd_pread(fd, iovs, iovs_len, offset64, nread) {
+        const file = FS[fd];
+        if (!file) {
+            console.error(`Invalid fd: ${fd}`);
+            return -1;
+        }
+
+        const start = Number(offset64);
+        const ioVec = new Uint32Array(this.#instance.exports.memory.buffer, iovs, iovs_len * 2);
+        const mem   = new Uint8Array(this.#instance.exports.memory.buffer);
+
+        let total = 0;
+        for (let i = 0; i < iovs_len * 2; i += 2) {
+            const dst = ioVec[i];
+            const len = ioVec[i + 1] || 0;
+            const avail = Math.max(
+                0,
+                Math.min(len, file.buffer.length - (start + total)),
+            );
+            if (avail === 0) {
+                console.log(`len=[${len}] buffLength=[${file.buffer.length}] start=[${start}] total=[${total}]`)
+                break;
+            }
+            mem.set(
+                file.buffer.subarray(start + total, start + total + avail),
+                dst
+            );
+            total += avail;
+        }
+
+        new DataView(this.#instance.exports.memory.buffer).setUint32(nread, total, true);
+        return 0;
+    }
+
+    fd_seek(fd, offsetBigInt, whence) { // fd, offsetBigInt, _, whence TODO: fix bigInt issue
         log(`wasi::fd_seek fd=${fd} offset=${offsetBigInt} whence=${whence}`);
         const offset = Number(offsetBigInt);
         const file = FS[fd];
@@ -270,7 +346,7 @@ export class Wasi {
         default:
             console.log(`fd_seek called with fd=${fd}, offset=${offset}, position=${file.position} whence=${whence}`);
             const error = new Error("fd_seek trace");
-            console.log("Invalid whence", error.stack);
+            console.log("Invalid whence", whence, error.stack);
             return -1;
         }
         return 0;
@@ -290,7 +366,7 @@ export class Wasi {
         return dest;
     }
 
-    emscripten_resize_heap() {
+    emscripten_resize_heap(requested) {
         console.log("Stubbed emscripten_resize_heap called");
         throw new Error("Heap resize not supported");
     }
@@ -384,4 +460,52 @@ export class Wasi {
         console.log(`Stubbed random_get called`);
         return -1;
     }
+
+    proc_exit() {
+        console.log(`Stubbed proc_exit called`);
+        return -1;
+    }
+
+    __syscall_fstat64(fd, buf) {
+        log(`  syscall::fstat64 fd=${fd}, buf=${buf}`);
+        const file = FS[fd];
+        if (!file) return -1;                         // EBADF
+
+        const size   = file.buffer.byteLength >>> 0;  // ≤ 4 GB
+        const nowSec = (Date.now() / 1000) | 0;
+        const H32    = new Int32Array(this.#instance.exports.memory.buffer);
+
+        /* basic fields */
+        H32[ buf       >> 2] = 1;        /* st_dev   */
+        H32[(buf+4)  >> 2] = 0o100644;   /* st_mode  */
+        H32[(buf+8)  >> 2] = 1;          /* st_nlink */
+        H32[(buf+12) >> 2] = 1000;       /* st_uid   */
+        H32[(buf+16) >> 2] = 1000;       /* st_gid   */
+        H32[(buf+20) >> 2] = 0;          /* st_rdev  */
+
+        H32[((buf + 24) >> 2)] = size & 0xFFFFFFFF;
+        H32[((buf + 28) >> 2)] = Math.floor(size / 4294967296);
+
+        H32[(buf+32) >> 2] = 4096;
+        H32[(buf+36) >> 2] = (size + 511) >> 9;
+
+        /* st_size lives at byte 40 in Emscripten’s 32-bit stat64 */
+        H32[(buf+40) >> 2] = size;       /* low 32 bits (high word = 0) */
+        H32[(buf+44) >> 2] = 0;
+
+        H32[(buf+32) >> 2] = 4096;       /* st_blksize */
+        H32[(buf+36) >> 2] = (size + 511) >> 9; /* st_blocks */
+
+        /* atime / mtime / ctime: seconds, nsec = 0 */
+        for (let off of [48, 56, 64]) {
+            H32[((buf+off)   >> 2)] = nowSec;
+            H32[((buf+off+4) >> 2)] = 0;
+        }
+
+        H32[(buf+72) >> 2] = fd;         /* st_ino (low) */
+        H32[(buf+76) >> 2] = 0;          /* st_ino (high) */
+
+        return 0;
+    }
+
 }
