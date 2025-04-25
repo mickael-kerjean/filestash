@@ -291,14 +291,14 @@ export class Wasi {
         return 0;
     }
 
-    fd_pread(fd, iovs, iovs_len, offset64, nread) {
+    fd_pread(fd, iovs, iovs_len, offset_lo, offset_hi, nread) {
         const file = FS[fd];
         if (!file) {
             console.error(`Invalid fd: ${fd}`);
             return -1;
         }
 
-        const start = Number(offset64);
+        const start = (offset_hi >>> 0) * 0x100000000 + (offset_lo >>> 0);
         const ioVec = new Uint32Array(this.#instance.exports.memory.buffer, iovs, iovs_len * 2);
         const mem   = new Uint8Array(this.#instance.exports.memory.buffer);
 
