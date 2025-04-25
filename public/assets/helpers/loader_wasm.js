@@ -70,7 +70,7 @@ function getFile(path) {
             return FS[allFds[i]];
         }
     }
-    throw new Error("cannot get file");
+    throw new Error(`cannot get file "${path}"`);
 }
 
 export const syscalls = {
@@ -325,7 +325,7 @@ export class Wasi {
         return 0;
     }
 
-    fd_seek(fd, offsetBigInt, whence) { // fd, offsetBigInt, _, whence TODO: fix bigInt issue
+    fd_seek(fd, offsetBigInt, _, whence) {
         log(`wasi::fd_seek fd=${fd} offset=${offsetBigInt} whence=${whence}`);
         const offset = Number(offsetBigInt);
         const file = FS[fd];
