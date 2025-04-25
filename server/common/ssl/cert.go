@@ -5,7 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -45,7 +45,7 @@ func pullCertificateFromFS() (*x509.Certificate, []byte, error) {
 		return nil, nil, err
 	}
 	defer file.Close()
-	certPEM, err := ioutil.ReadAll(file)
+	certPEM, err := io.ReadAll(file)
 	if err != nil {
 		return nil, nil, err
 	}

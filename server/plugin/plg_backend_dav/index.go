@@ -5,7 +5,6 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -201,7 +200,7 @@ func (this Dav) Mv(from string, to string) error {
 	if err != nil {
 		return err
 	}
-	d, err := ioutil.ReadAll(reader)
+	d, err := io.ReadAll(reader)
 	if err != nil {
 		return ErrNotValid
 	}

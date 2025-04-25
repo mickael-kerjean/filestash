@@ -4,7 +4,6 @@ import (
 	"github.com/h2non/bimg"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -28,7 +27,7 @@ func (this thumbnailer) Generate(reader io.ReadCloser, ctx *App, res *http.Respo
 		return reader, nil
 	}
 
-	b, err := ioutil.ReadAll(reader)
+	b, err := io.ReadAll(reader)
 	if err != nil {
 		return reader, err
 	}

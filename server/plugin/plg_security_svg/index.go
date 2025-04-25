@@ -3,7 +3,6 @@ package plg_security_svg
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"regexp"
 )
@@ -42,7 +41,7 @@ func init() {
 			(*res).Header().Set("Content-Security-Policy", "script-src 'none'; default-src 'none'; img-src 'self'")
 			(*res).Header().Set("Content-Type", "text/plain")
 			// XML bomb
-			txt, _ := ioutil.ReadAll(reader)
+			txt, _ := io.ReadAll(reader)
 			if regexp.MustCompile("(?is)entity").Match(txt) {
 				txt = []byte("")
 			}

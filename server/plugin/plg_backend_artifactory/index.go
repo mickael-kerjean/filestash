@@ -6,7 +6,6 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -162,7 +161,7 @@ func (this ArtifactoryStorage) Ls(path string) ([]os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::ls readall data[%s] status[%d]", string(jsonStr), res.StatusCode)
@@ -190,7 +189,7 @@ func (this ArtifactoryStorage) Cat(path string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::cat readall data[%s] status[%d]", string(jsonStr), res.StatusCode)
@@ -269,7 +268,7 @@ func (this ArtifactoryStorage) Mkdir(path string) error {
 	if err != nil {
 		return err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::mkdir readall status[%d] data[%s]", res.StatusCode, string(jsonStr))
@@ -307,7 +306,7 @@ func (this ArtifactoryStorage) Rm(path string) error {
 	if err != nil {
 		return err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::rm readall status[%d] data[%s]", res.StatusCode, string(jsonStr))
@@ -336,7 +335,7 @@ func (this ArtifactoryStorage) Mv(from, to string) error {
 	if err != nil {
 		return err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::mv readall status[%d] data[%s]", res.StatusCode, string(jsonStr))
@@ -367,7 +366,7 @@ func (this ArtifactoryStorage) Save(path string, content io.Reader) error {
 	if err != nil {
 		return err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::save readall status[%d] data[%s]", res.StatusCode, string(jsonStr))
