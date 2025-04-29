@@ -100,6 +100,7 @@
 	"md": "text/markdown",
 	"mdc": "image/x-minolta-mdc",
 	"mef": "image/x-mamiya-mef",
+	"mesh": "model/mesh",
 	"mid": "audio/midi",
 	"midi": "application/x-midi",
 	"mjs": "application/javascript",
