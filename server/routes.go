@@ -103,8 +103,8 @@ func Build(r *mux.Router, a App) {
 	}
 
 	// Other endpoints
-	middlewares = []Middleware{ApiHeaders, PluginInjector}
-	r.HandleFunc(WithBase("/report"), NewMiddlewareChain(ReportHandler, middlewares, a)).Methods("POST")
+	middlewares = []Middleware{ApiHeaders, PluginInjector, PublicCORS}
+	r.HandleFunc(WithBase("/report"), NewMiddlewareChain(ReportHandler, middlewares, a)).Methods("POST", "OPTIONS")
 	middlewares = []Middleware{IndexHeaders, SecureHeaders, PluginInjector}
 	r.HandleFunc(WithBase("/about"), NewMiddlewareChain(AboutHandler, middlewares, a)).Methods("GET")
 	r.HandleFunc(WithBase("/robots.txt"), NewMiddlewareChain(RobotsHandler, []Middleware{}, a))

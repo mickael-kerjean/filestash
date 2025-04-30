@@ -19,7 +19,7 @@ class ITable {
     getBody() { throw new Error("NOT_IMPLEMENTED"); }
 }
 
-export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, hasMenubar = true, acl$ }) {
+export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, hasMenubar = true, acl$ = rxjs.EMPTY }) {
     const $page = createElement(`
         <div class="component_tableviewer">
             <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>

@@ -1,4 +1,5 @@
 import { toHref } from "../lib/skeleton/router.js";
+import ajax from "../lib/ajax.js";
 
 export function report(msg, err, link, lineNo, columnNo) {
     if (window.navigator.onLine === false) return Promise.resolve();
@@ -10,5 +11,5 @@ export function report(msg, err, link, lineNo, columnNo) {
     url += "from.columnNo=" + columnNo;
     if (err instanceof Error) url += "error=" + encodeURIComponent(err.message) + "&";
 
-    return fetch(url, { method: "post" }).catch(() => {});
+    return ajax({ url, method: "post" }).toPromise().catch(() => {});
 }

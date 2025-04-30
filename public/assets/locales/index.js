@@ -1,4 +1,5 @@
-import rxjs, { ajax } from "../lib/rx.js";
+import rxjs from "../lib/rx.js";
+import ajax from "../lib/ajax.js";
 
 let LNG = {};
 
@@ -42,11 +43,10 @@ export async function init() {
     }
     return ajax({
         url: "assets/locales/" + selectedLanguage + ".json",
-        responseType: "json",
     }).pipe(rxjs.tap(({ responseHeaders, response }) => {
         const contentType = responseHeaders["content-type"].trim();
         if (contentType === "application/json") {
-            LNG = response;
+            LNG = JSON.parse(response);
             return;
         }
         throw new Error(`wrong content type '${contentType}'`);
