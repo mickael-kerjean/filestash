@@ -6,8 +6,8 @@ import { loadCSS } from "../../helpers/loader.js";
 import t from "../../locales/index.js";
 import { createLoader } from "../../components/loader.js";
 import { get as getPlugin } from "../../model/plugin.js";
-import ctrlError from "../ctrl_error.js";
 
+import ctrlDownloader, { init as initDownloader } from "./application_downloader.js";
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
 import { transition } from "./common.js";
 
@@ -19,7 +19,7 @@ class ITable {
     getBody() { throw new Error("NOT_IMPLEMENTED"); }
 }
 
-export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, hasMenubar = true }) {
+export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, hasMenubar = true, acl$ }) {
     const $page = createElement(`
         <div class="component_tableviewer">
             <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>
@@ -66,7 +66,11 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
             buildHead(STATE, $dom, padding);
             buildRows(STATE.rows.slice(0, MAX_ROWS), STATE.header, $dom.tbody, padding, true, false);
         }),
-        rxjs.catchError(ctrlError()),
+        rxjs.catchError((err) => rxjs.from(initDownloader()).pipe(
+            rxjs.tap(() => ctrlDownloader(render, { acl$, getFilename, getDownloadUrl })),
+            rxjs.tap(() => console.log("cannot open file", err)),
+            rxjs.mergeMap(() => rxjs.EMPTY),
+        )),
         rxjs.share(),
     );
     effect(init$);
