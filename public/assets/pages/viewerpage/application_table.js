@@ -143,10 +143,15 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
     ));
 }
 
-export function init() {
+export function init($root) {
+    const priors = ($root && [
+        $root.classList.add("component_page_viewerpage"),
+        loadCSS(import.meta.url, "./component_menubar.css"),
+        loadCSS(import.meta.url, "../ctrl_viewerpage.css"),
+    ]);
     return Promise.all([
         loadCSS(import.meta.url, "./application_table.css"),
-        loadCSS(import.meta.url, "./component_menubar.css"),
+        ...priors,
     ]);
 }
 
