@@ -137,6 +137,7 @@
 	"mtl": "model/mtl",
 	"nef": "image/x-nikon-nef",
 	"nrw": "image/x-nikon-nrw",
+	"o": "application/x-object",
 	"obj": "application/object",
 	"odg": "application/vnd.oasis.opendocument.graphics",
 	"odp": "application/vnd.oasis.opendocument.presentation",
