@@ -7,10 +7,10 @@ import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 import componentDownloader, { init as initDownloader } from "./application_downloader.js";
 
-export default function(render, { mime, getFilename, getDownloadUrl, acl$ }) {
+export default function(render, { mime, getFilename, getDownloadUrl, acl$, hasMenubar = true }) {
     const $page = createElement(`
         <div class="component_skeletonviewer">
-            <component-menubar filename="${getFilename()}"></component-menubar>
+            <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="component_skeleton_container flex"></div>
         </div>
     `);

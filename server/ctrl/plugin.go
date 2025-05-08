@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -32,7 +33,7 @@ func PluginExportHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 				}
 				plgExports[module["mime"]] = []string{
 					module["application"],
-					WithBase(JoinPath("/plugin/", name+index)),
+					WithBase(JoinPath("/plugin/", filepath.Join(name, index))),
 				}
 			}
 		}

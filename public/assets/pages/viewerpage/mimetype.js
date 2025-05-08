@@ -12,10 +12,7 @@ export function opener(file = "", mimes) {
     }
 
     const p = getPlugin(mime);
-    if (p) return [
-        p[0],
-        { mime, loader: p[1] },
-    ];
+    if (p) return [p[0], { mime, ...p[1] }];
 
     if (type === "text") {
         return ["editor", { mime }];
