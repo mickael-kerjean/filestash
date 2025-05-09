@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"strconv"
+	"strings"
 )
 
 func NewBool(t bool) *bool {
@@ -62,6 +63,15 @@ func NewStringFromInterface(val interface{}) string {
 		return val.(string)
 	case float64:
 		return fmt.Sprintf("%d", int64(val.(float64)))
+	case bool:
+		return fmt.Sprintf("%t", val.(bool))
+	case []interface{}:
+		list := val.([]interface{})
+		strSlice := make([]string, len(list))
+		for i, el := range list {
+			strSlice[i] = NewStringFromInterface(el)
+		}
+		return strings.Join(strSlice, ",")
 	default:
 		return ""
 	}

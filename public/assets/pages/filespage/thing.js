@@ -93,6 +93,7 @@ export function createThing({
     $thing.classList.add("view-" + view);
     $time.textContent = formatTime(time);
     $img.setAttribute("src", (type === "file" ? IMAGE.FILE : IMAGE.FOLDER));
+    $img.setAttribute("alt", type);
     $label.textContent = name;
 
     if (type === "file") {

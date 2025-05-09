@@ -76,7 +76,6 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     z-index: 1;
     min-width: 0px;
     transition: 0.15s ease min-width;
-    border-left: 1px solid var(--border);
     background: #949290;
     color: var(--dark);
 }

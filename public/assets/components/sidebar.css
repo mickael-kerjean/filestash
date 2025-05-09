@@ -1,9 +1,10 @@
+[data-bind="sidebar"] { z-index: 1; }
 .component_filemanager_shell .component_sidebar {
     width: 250px;
     padding: 3px 7px 25px 0px;
     overflow-y: scroll;
     height: 100%;
-    direction:rtl;
+    direction: rtl;
     box-sizing: border-box;
 }
 @media screen and (min-width: 1600px) {
