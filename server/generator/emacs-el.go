@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -15,7 +15,7 @@ func main() {
 	}
 	defer f.Close()
 
-	j, err := ioutil.ReadAll(f)
+	j, err := io.ReadAll(f)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)

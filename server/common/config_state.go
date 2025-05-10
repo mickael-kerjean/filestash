@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -44,7 +44,7 @@ func LoadConfig() ([]byte, error) {
 		}
 		return nil, err
 	}
-	cFile, err := ioutil.ReadAll(file)
+	cFile, err := io.ReadAll(file)
 	file.Close()
 	if err != nil {
 		return nil, err
