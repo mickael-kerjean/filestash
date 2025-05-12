@@ -463,13 +463,23 @@ func ServeBundle(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func applyPatch(filePath string) (file *bytes.Buffer) {
+	origFile, err := WWWPublic.Open(filePath)
+	if err != nil {
+		Log.Debug("ctrl::static cannot open public file - %+v", err.Error())
+		return nil
+	}
+	var (
+		outputBuffer bytes.Buffer
+		outputInit   bool
+	)
+	defer origFile.Close()
 	for _, patch := range Hooks.Get.StaticPatch() {
 		patchFile, err := patch.Open(strings.TrimPrefix(filePath, "/"))
 		if err != nil {
 			continue
 		}
-		defer patchFile.Close()
 		patchFiles, _, err := gitdiff.Parse(patchFile)
+		patchFile.Close()
 		if err != nil {
 			Log.Debug("ctrl::static cannot parse patch file - %s", err.Error())
 			break
@@ -477,27 +487,25 @@ func applyPatch(filePath string) (file *bytes.Buffer) {
 			Log.Debug("ctrl::static unepected patch file size - must be 1, got %d", len(patchFiles))
 			break
 		}
-		origFile, err := WWWPublic.Open(filePath)
-		if err != nil {
-			Log.Debug("ctrl::static cannot open public file - %+v", err.Error())
-			continue
+		if !outputInit {
+			if _, err = outputBuffer.ReadFrom(origFile); err != nil {
+				return nil
+			}
+			outputInit = true
 		}
-		originalBuffer, err := io.ReadAll(origFile)
-		if err != nil {
-			Log.Debug("ctrl::static cannot read public file - %+v", err.Error())
-			continue
-		}
-		var output bytes.Buffer
-		origFile.Close()
+		var patched bytes.Buffer
 		if err := gitdiff.Apply(
-			&output,
-			bytes.NewReader(originalBuffer),
+			&patched,
+			bytes.NewReader(outputBuffer.Bytes()),
 			patchFiles[0],
 		); err != nil {
 			Log.Debug("ctrl::static cannot apply patch - %s", err.Error())
-			break
+			return nil
 		}
-		return &output
+		outputBuffer = patched
+	}
+	if outputInit {
+		return &outputBuffer
 	}
 	return nil
 }
