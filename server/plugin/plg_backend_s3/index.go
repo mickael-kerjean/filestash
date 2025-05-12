@@ -507,19 +507,11 @@ func (this S3Backend) createSession(bucket string) *session.Session {
 	for k, v := range this.params {
 		newParams[k] = v
 	}
-	c := S3Cache.Get(newParams)
-	if c == nil {
-		res, err := this.client.GetBucketLocation(&s3.GetBucketLocationInput{
+	if c := S3Cache.Get(newParams); c == nil {
+		if res, err := this.client.GetBucketLocation(&s3.GetBucketLocationInput{
 			Bucket: aws.String(bucket),
-		})
-		if err != nil {
-			this.config.Region = aws.String("us-east-1")
-		} else {
-			if res.LocationConstraint == nil {
-				this.config.Region = aws.String("us-east-1")
-			} else {
-				this.config.Region = res.LocationConstraint
-			}
+		}); err == nil && res.LocationConstraint != nil {
+			this.config.Region = res.LocationConstraint
 		}
 		S3Cache.Set(newParams, this.config.Region)
 	} else {
