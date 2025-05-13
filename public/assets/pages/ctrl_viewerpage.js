@@ -50,6 +50,16 @@ function loadModule(appName) {
         throw new ApplicationError("Internal Error", `Unknown opener app "${appName}" at "${getCurrentPath()}"`);
     }
 };
+const loadModuleWithMemory = (function() {
+    const memory = {};
+    return function(appName) {
+        if (memory[appName]) return Promise.resolve(memory[appName]);
+        return loadModule(appName).then((module) => {
+            memory[appName] = module;
+            return module;
+        });
+    };
+})();
 
 export default WithShell(async function(render) {
     const $page = createElement(`<div class="component_page_viewerpage"></div>`);
@@ -58,7 +68,7 @@ export default WithShell(async function(render) {
     // feature: render viewer application
     effect(rxjs.of(getConfig("mime", {})).pipe(
         rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
-        rxjs.mergeMap(([opener, opts]) => rxjs.from(loadModule(opener)).pipe(rxjs.switchMap(async(module) => {
+        rxjs.mergeMap(([opener, opts]) => rxjs.from(loadModuleWithMemory(opener)).pipe(rxjs.switchMap(async(module) => {
             module.default(createRender($page), { ...opts, acl$: options(), getFilename, getDownloadUrl });
         }))),
         rxjs.catchError(ctrlError()),

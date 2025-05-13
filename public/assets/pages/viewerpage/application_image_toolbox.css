@@ -1,0 +1,31 @@
+/* PAGINATION */
+.component_pager {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    opacity: 0.2;
+    margin: auto;
+    padding: 15px;
+    color: #f2f2f2;
+    z-index: 1;
+}
+.component_pager.left { left: 0; padding-right: 150px; }
+.component_pager.right { right: 0; padding-left: 150px; }
+.component_pager:hover {
+    opacity: 0.9;
+    transition: opacity 0.5s ease;
+}
+.component_pager a { margin: auto; }
+.component_pager a svg {
+    transition: opacity 0.2s ease;
+    width: 37px;
+    padding: 5px;
+    background: var(--dark);
+    border-radius: 50%;
+    margin: auto;
+    opacity: 0.75;
+}
+.component_pager a svg:hover {
+    opacity: 1;
+}

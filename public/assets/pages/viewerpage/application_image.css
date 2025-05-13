@@ -76,11 +76,8 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     z-index: 1;
     min-width: 0px;
     transition: 0.15s ease min-width;
-    background: #949290;
-    color: var(--dark);
-}
-.dark-mode .component_imageviewer .images_aside {
     background: #f2f2f2;
+    color: var(--dark);
 }
 .component_imageviewer .images_aside.open {
     min-width: 300px;
@@ -129,6 +126,12 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     height: 18px;
     float: right;
     cursor: pointer;
+    padding: 5px;
+    margin: -5px -5px 0 0;
+}
+.component_imageviewer .images_aside .header .component_icon:hover {
+    background: #0000000a;
+    border-radius: 50%;
 }
 .component_imageviewer .images_aside [data-bind="body"] {
     padding: 10px 20px 0px 20px;
@@ -154,7 +157,7 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     display: flex;
     justify-content: space-between;
     margin: 5px 0;
-    border-top: 1px solid #ffffff15;
+    border-top: 1px solid #0000000a;
     padding-top: 5px;
     text-align: right;
     font-size: 0.85em;
@@ -163,5 +166,5 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     margin-right: 5px;
 }
 .component_imageviewer .images_aside .meta_key .value {
-    color: var(--bg-color);
+    color: var(--light);
 }

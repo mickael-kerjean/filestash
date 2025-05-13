@@ -14,11 +14,9 @@ import notification from "../../components/notification.js";
 import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 
-import { transition } from "./common.js";
-
 import componentMetadata, { init as initMetadata } from "./application_image_metadata.js";
+import componentToolbox, { init as initToolbox } from "./application_image_toolbox.js";
 import ctrlDownloader, { init as initDownloader } from "./application_downloader.js";
-import componentPager, { init as initPager } from "./component_pager.js";
 
 import { renderMenubar, buttonDownload, buttonFullscreen } from "./component_menubar.js";
 
@@ -33,14 +31,13 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
             <div class="component_image_container">
                 <div class="images_wrapper">
                     <img class="photo idle hidden" draggable="false" />
+                    <div data-bind="component_navigation"></div>
                 </div>
                 <div class="images_aside scroll-y"></div>
-                <div class="component_pager hidden"></div>
             </div>
         </div>
     `);
     render($page);
-    transition(qs($page, ".component_image_container"));
 
     const $imgContainer = qs($page, ".images_wrapper");
     const $photo = qs($page, "img.photo");
@@ -97,14 +94,14 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
             return ctrlError()(err);
         }),
     ));
-    componentPager(createRender(qs($page, ".component_pager")));
+    componentToolbox(createRender(qs($page, "[data-bind=\"component_navigation\"]")), { $img: $photo });
 }
 
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_image.css"),
         loadCSS(import.meta.url, "./component_menubar.css"),
-        initPager(), initMetadata(),
+        initToolbox(), initMetadata(),
     ]);
 }
 

@@ -41,6 +41,6 @@ export function opener(file = "", mimes) {
     return ["editor", { mime }];
 }
 
-function getMimeType(file, mimes = {}) {
+export function getMimeType(file, mimes = {}) {
     return mimes[file.split(".").slice(-1)[0].toLowerCase()] || "text/plain";
 }
