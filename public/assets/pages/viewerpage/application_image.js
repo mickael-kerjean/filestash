@@ -14,8 +14,9 @@ import notification from "../../components/notification.js";
 import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 
-import componentMetadata, { init as initMetadata } from "./application_image_metadata.js";
-import componentToolbox, { init as initToolbox } from "./application_image_toolbox.js";
+import componentInformation, { init as initInformation } from "./application_image/information.js";
+import componentPagination, { init as initPagination } from "./application_image/pagination.js";
+import componentZoom from "./application_image/zoom.js";
 import ctrlDownloader, { init as initDownloader } from "./application_downloader.js";
 
 import { renderMenubar, buttonDownload, buttonFullscreen } from "./component_menubar.js";
@@ -29,7 +30,7 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
         <div class="component_imageviewer">
             <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="component_image_container">
-                <div class="images_wrapper">
+                <div class="images_wrapper no-select">
                     <img class="photo idle hidden" draggable="false" />
                     <div data-bind="component_navigation"></div>
                 </div>
@@ -46,7 +47,7 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
     const load$ = new rxjs.BehaviorSubject(null);
     const toggleInfo = () => {
         qs($page, ".images_aside").classList.toggle("open");
-        componentMetadata(createRender(qs($page, ".images_aside")), { toggle: toggleInfo, load$ });
+        componentInformation(createRender(qs($page, ".images_aside")), { toggle: toggleInfo, load$ });
     };
 
     renderMenubar(
@@ -70,16 +71,19 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
         }),
         rxjs.tap(() => load$.next($photo)),
         removeLoader,
-        rxjs.tap(() => animate($photo, {
-            onEnter: () => $photo.classList.remove("hidden"),
-            time: 300,
-            easing: "cubic-bezier(.51,.92,.24,1.15)",
-            keyframes: [
-                { opacity: 0, transform: "scale(.97)" },
-                { opacity: 1 },
-                { opacity: 1, transform: "scale(1)" },
-            ],
-        })),
+        rxjs.tap(() => {
+            const cancel = animate($photo, {
+                onEnter: () => $photo.classList.remove("hidden"),
+                onExit: async () => (await cancel)(),
+                time: 300,
+                easing: "cubic-bezier(.51,.92,.24,1.15)",
+                keyframes: [
+                    { opacity: 0, transform: "scale(.97)" },
+                    { opacity: 1 },
+                    { opacity: 1, transform: "scale(1)" },
+                ],
+            })
+        }),
         rxjs.catchError((err) => {
             if (err.target instanceof HTMLElement && err.type === "error") {
                 return rxjs.of(initDownloader()).pipe(
@@ -94,14 +98,21 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
             return ctrlError()(err);
         }),
     ));
-    componentToolbox(createRender(qs($page, "[data-bind=\"component_navigation\"]")), { $img: $photo });
+
+    effect(load$.pipe(
+        rxjs.first(),
+        rxjs.tap(() => {
+            componentZoom({ $img: $photo, $page, $menubar, load$ });
+            componentPagination(createRender(qs($page, "[data-bind=\"component_navigation\"]")), { $img: $photo });
+        }),
+    ));
 }
 
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_image.css"),
         loadCSS(import.meta.url, "./component_menubar.css"),
-        initToolbox(), initMetadata(),
+        initPagination(), initInformation(),
     ]);
 }
 

@@ -10,8 +10,10 @@
     color: #f2f2f2;
     z-index: 1;
 }
-.component_pager.left { left: 0; padding-right: 150px; }
-.component_pager.right { right: 0; padding-left: 150px; }
+.component_pager.left { left: 0; padding-right: 50px; }
+.component_pager.right { right: 0; padding-left: 50px; }
+.touch-yes .component_pager.left { display: none; }
+.touch-yes .component_pager.right { display: none; }
 .component_pager:hover {
     opacity: 0.9;
     transition: opacity 0.5s ease;

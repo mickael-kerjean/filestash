@@ -1,8 +1,8 @@
-import { createElement, createRender } from "../../lib/skeleton/index.js";
-import rxjs, { effect, onClick } from "../../lib/rx.js";
-import { qs } from "../../lib/dom.js";
-import t from "../../locales/index.js";
-import { loadJS, loadCSS } from "../../helpers/loader.js";
+import { createElement, createRender } from "../../../lib/skeleton/index.js";
+import rxjs, { effect, onClick } from "../../../lib/rx.js";
+import { qs } from "../../../lib/dom.js";
+import t from "../../../locales/index.js";
+import { loadJS, loadCSS } from "../../../helpers/loader.js";
 
 export default async function(render, { toggle, load$ }) {
     const $page = createElement(`
@@ -209,8 +209,8 @@ function componentMore(render, { metadata }) {
 
 export function init() {
     return Promise.all([
-        loadJS(import.meta.url, "../../lib/vendor/exif-js.js"),
-        loadCSS(import.meta.url, "./application_image_metadata.css"),
+        loadJS(import.meta.url, "../../../lib/vendor/exif-js.js"),
+        loadCSS(import.meta.url, "./information.css"),
     ]);
 }
 

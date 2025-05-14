@@ -38,6 +38,15 @@
 .component_menubar .action-item .download-button .component_icon {
     padding-right: 1px;
 }
+.component_menubar .action-item .btn {
+    background: #e2e2e2;
+    color: rgba(0,0,0,0.6);
+    padding: 0 5px;
+    border-radius: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: bold;
+}
 
 .dark-mode .component_menubar {
     background: var(--bg-color);
