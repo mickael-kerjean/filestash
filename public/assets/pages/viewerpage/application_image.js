@@ -63,7 +63,7 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
             let src = `${getDownloadUrl()}&size=${window.innerWidth}`;
             if (loader) {
                 const { response } = await ajax({ url: getDownloadUrl(), responseType: "arraybuffer" }).toPromise();
-                const img = new (await loader(IImage, { mime, $menubar, getFilename, getDownloadUrl }))();
+                const img = new (await loader(IImage, { mime, $menubar, getFilename, getDownloadUrl }))({ $photo });
                 src = await img.getSRC(response);
             }
             $photo.setAttribute("src", src);
