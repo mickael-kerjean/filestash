@@ -1,37 +1,55 @@
 .component_tag {
     font-size: 1rem;
 }
+.component_tag [data-bind="taglist"] {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin: -10px;
+    padding: 20px 10px 10px 10px;
+}
 .component_tag input {
-    font-size: 1.15rem;
+    font-size: 1rem;
     border: 2px solid var(--border);
-    border-radius: 3px;
-    padding: 2px 5px;
+    border-radius: 5px;
+    padding: 5px 10px;
     color: var(--color);
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
 }
 .component_tag input::placeholder {
     color: rgba(0,0,0,0.2);
 }
-.component_tag .box {
+.component_tag .tag {
     display: flex;
-    background: var(--bg-color);
-    transition: background 0.1s ease;
-    padding: 2px 5px 2px 8px;
-    border-radius: 3px;
+    background: #f2f2f2;
+    transition: all 0.1s ease;
+    padding: 2px 5px 2px 10px;
+    border-radius: 5px;
+    margin: 0;
     font-size: 0.95rem;
+    cursor: pointer;
 }
-.component_tag .box.active {
-    background: var(--primary);
+.component_tag .tag.active {
+    background: var(--dark);
+    color: #f2f2f2;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
-.component_tag .box > div {
-    flex-grow: 1;
-}
-.component_tag .box img {
-    width: 20px;
-    background: rgba(0, 0, 0, 0.05);
+.component_tag .tag svg {
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     margin-left: 5px;
+    padding: 4px;
 }
-.component_tag .box img[alt="close"] {
+.touch-no .component_tag .tag svg:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+.touch-no .component_tag .tag.active svg:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+.component_tag .tag img[alt="close"] {
     width: 14px;
     padding: 5px;
 }
