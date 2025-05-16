@@ -105,18 +105,16 @@ function initMobileNavigation({ $img, $navigation }) {
         dist:   null,
     };
 
-    effect(rxjs.fromEvent($img, "touchstart").pipe(rxjs.debounceTime(10), rxjs.tap((event) => {
+    effect(rxjs.fromEvent($img, "touchstart", { passive: true }).pipe(rxjs.debounceTime(10), rxjs.tap((event) => {
         if (event.touches.length !== 1) return;
-        event.preventDefault();
         $img.style.transition = "0s ease transform";
         state.active = true;
         state.originT = performance.now();
         state.originX = event.touches[0].pageX;
     })));
 
-    effect(rxjs.fromEvent($img, "touchmove").pipe(rxjs.tap((event) => {
+    effect(rxjs.fromEvent($img, "touchmove", { passive: true }).pipe(rxjs.tap((event) => {
         if (event.touches.length !== 1 || state.active === false) return;
-        event.preventDefault();
         state.dist = event.touches[0].pageX - state.originX;
         $img.style.transform = `translateX(${state.dist}px)`;
     })));

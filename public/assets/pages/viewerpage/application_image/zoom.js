@@ -62,7 +62,7 @@ function builder({ $img }) {
             }),
         ),
         // pinch zoom
-        rxjs.fromEvent($img.parentElement, "touchstart").pipe(
+        rxjs.fromEvent($img.parentElement, "touchstart", { passive: false }).pipe(
             rxjs.filter((e) => e.touches.length === 2),
             rxjs.switchMap((event) => rxjs.fromEvent($img.parentElement, "touchmove").pipe(
                 rxjs.filter((event) => event.touches.length >= 2),
