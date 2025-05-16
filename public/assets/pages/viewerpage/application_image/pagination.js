@@ -1,13 +1,14 @@
 import { createFragment } from "../../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../../lib/rx.js";
 import { qs } from "../../../lib/dom.js";
-import { join } from "../../../lib/path.js";
+import { join, forwardURLParams } from "../../../lib/path.js";
 import { animate, slideXOut } from "../../../lib/animate.js";
 import { loadCSS } from "../../../helpers/loader.js";
 import { get as getConfig } from "../../../model/config.js";
 
 import { getCurrentPath, getFilename } from "../common.js";
 import { getMimeType } from "../mimetype.js";
+import { createLink } from "../../filespage/ctrl_filesystem.js";
 import fscache from "../../filespage/cache.js";
 import { sort } from "../../filespage/helper.js";
 import { getState$ as getParams$, init as initParams } from "../../filespage/state_config.js";
@@ -93,7 +94,8 @@ function updateDOM({ $el, name, $img }) {
         $link.setAttribute("data-link", "true");
         $link.click();
     };
-    $link.setAttribute("href", "/view" + join(location, getCurrentPath() + "/../" + name)); // TODO: name with "#" issue
+    const { link } = createLink({ name }, join(location, getCurrentPath() + "/../"));
+    $link.setAttribute("href", forwardURLParams(link, ["share", "canary"]));
     $el.classList.remove("hidden");
 }
 

@@ -349,7 +349,7 @@ export function init() {
     ]);
 }
 
-function createLink(file, currentPath) {
+export function createLink(file, currentPath) {
     let path = file.path;
     if (!path) path = currentPath + file.name + (file.type === "directory" ? "/" : "");
     let link = file.type === "directory" ? "files" + path : "view" + path;
