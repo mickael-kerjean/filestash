@@ -307,6 +307,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	// - identity provider redirection uri. eg: oauth2, openid, ...
 	templateBind, err := plugin.Callback(formData, idpParams, res)
 	if err == ErrAuthenticationFailed {
+		Log.Warning("failed authentication - %s", err.Error())
 		http.Redirect(
 			res, req,
 			req.URL.Path+"?action=redirect",
