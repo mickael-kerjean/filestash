@@ -2,7 +2,7 @@ package ctrl
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -13,7 +13,7 @@ func PrivateConfigHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 }
 
 func PrivateConfigUpdateHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
-	b, _ := ioutil.ReadAll(req.Body)
+	b, _ := io.ReadAll(req.Body)
 	if err := SaveConfig(b); err != nil {
 		SendErrorResult(res, err)
 		return

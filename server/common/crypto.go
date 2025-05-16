@@ -11,7 +11,6 @@ import (
 	"encoding/hex"
 	"hash/fnv"
 	"io"
-	"io/ioutil"
 	"math/big"
 	mathrand "math/rand"
 	"os"
@@ -179,7 +178,7 @@ func decompress(something []byte) ([]byte, error) {
 		return []byte(""), nil
 	}
 	r.Close()
-	return ioutil.ReadAll(r)
+	return io.ReadAll(r)
 }
 
 func sign(something []byte) ([]byte, error) {

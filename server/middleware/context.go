@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -12,7 +12,7 @@ import (
 func BodyParser(fn HandlerFunc) HandlerFunc {
 	extractBody := func(req *http.Request) (map[string]interface{}, error) {
 		body := map[string]interface{}{}
-		byt, err := ioutil.ReadAll(req.Body)
+		byt, err := io.ReadAll(req.Body)
 		if err != nil {
 			return body, err
 		}
