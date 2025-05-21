@@ -16,8 +16,5 @@ export function safe(str) {
     const $div = document.createElement("div");
     $div.textContent = str;
     return ($div.innerHTML || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+
 }
