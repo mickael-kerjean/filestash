@@ -282,6 +282,9 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 	p := u.Query()
 	p.Set("WOPISrc", wopiSRC)
 	p.Set("access_token", ctx.Authorization)
+	if len(ctx.Languages) > 0 {
+		p.Set("lang", ctx.Languages[0])
+	}
 	u.RawQuery = p.Encode()
 	if newHost := rewrite_url(); newHost != "" {
 		if p, err := url.Parse(newHost); err == nil {
