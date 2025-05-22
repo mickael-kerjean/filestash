@@ -204,6 +204,7 @@
     text-align: center;
     min-width: 20px;
     max-width: 65px;
+    font-size: 0.95em;
 }
 .list > .component_thing .info_extension span:empty {
     display: none;
