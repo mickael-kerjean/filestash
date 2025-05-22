@@ -77,3 +77,16 @@ func PluginStaticHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	SendErrorResult(res, err)
 	return
 }
+
+func PluginDownloadHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	f, err := os.Open(JoinPath(
+		GetAbsolutePath(PLUGIN_PATH),
+		mux.Vars(req)["name"]+".zip",
+	))
+	if err != nil {
+		SendErrorResult(res, err)
+		return
+	}
+	io.Copy(res, f)
+	f.Close()
+}

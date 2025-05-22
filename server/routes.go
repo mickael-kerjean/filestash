@@ -100,6 +100,7 @@ func Build(r *mux.Router, a App) {
 		r.HandleFunc(WithBase("/sw.js"), http.HandlerFunc(NewMiddlewareChain(ServeFile("/assets/"), middlewares, a))).Methods("GET")
 		r.HandleFunc(WithBase("/favicon.ico"), NewMiddlewareChain(ServeFavicon, middlewares, a)).Methods("GET")
 		r.HandleFunc(WithBase("/plugin/{name}/{path:.+}"), NewMiddlewareChain(PluginStaticHandler, middlewares, a)).Methods("GET")
+		r.HandleFunc(WithBase("/plugin/{name}.zip"), NewMiddlewareChain(PluginDownloadHandler, middlewares, a)).Methods("GET")
 	}
 
 	// Other endpoints
