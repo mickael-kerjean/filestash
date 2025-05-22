@@ -36,6 +36,7 @@ export default async function ctrlSidebar(render, nRestart = 0) {
             <div data-bind="your-tags"></div>
         </div>
     `));
+    withResize($sidebar);
 
     // feature: visibility of the sidebar
     const forceRefresh = () => window.dispatchEvent(new Event("resize"));
@@ -77,6 +78,31 @@ export default async function ctrlSidebar(render, nRestart = 0) {
     // feature: tag viewer
     ctrlTagPane(createRender(qs($sidebar, `[data-bind="your-tags"]`)));
 }
+
+
+const withResize = (function () {
+    let memory = null;
+    return ($sidebar) => {
+        const $resize = createElement(`<div class="resizer"></div>`);
+        effect(rxjs.fromEvent($resize, "mousedown").pipe(
+            rxjs.mergeMap((e0) => rxjs.fromEvent(document, "mousemove").pipe(
+                rxjs.takeUntil(rxjs.fromEvent(document,  "mouseup")),
+                rxjs.startWith(e0),
+                rxjs.pairwise(),
+                rxjs.map(([prevX, currX]) => currX.clientX - prevX.clientX),
+                rxjs.scan((width, delta) => width + delta, $sidebar.clientWidth),
+            )),
+            rxjs.startWith(memory),
+            rxjs.filter((w) => !!w),
+            rxjs.map((w) => Math.min(Math.max(w, 250), 350)),
+            rxjs.tap((w) => {
+                $sidebar.style.minWidth = `${w}px`;
+                memory = w;
+            }),
+        ));
+        $sidebar.appendChild($resize);
+    }
+}());
 
 async function ctrlNavigationPane(render, { $sidebar, nRestart }) {
     // feature: setup the DOM

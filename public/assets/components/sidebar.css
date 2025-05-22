@@ -1,19 +1,22 @@
-[data-bind="sidebar"] { z-index: 1; }
+[data-bind="sidebar"] {
+    z-index: 1;
+    display: flex;
+    min-width: 250px;
+}
+@media screen and (min-width: 1600px) {
+    .component_filemanager_shell [data-bind="sidebar"] { min-width: 300px; }
+}
+@media screen and (min-width: 2000px) {
+    .component_filemanager_shell [data-bind="sidebar"] { min-width: 330px; }
+}
 .component_filemanager_shell .component_sidebar {
-    width: 250px;
+    flex-grow: 1;
     padding: 3px 7px 25px 0px;
     overflow-y: scroll;
     height: 100%;
     direction: rtl;
     box-sizing: border-box;
 }
-@media screen and (min-width: 1600px) {
-    .component_filemanager_shell .component_sidebar { width: 300px; }
-}
-@media screen and (min-width: 2000px) {
-    .component_filemanager_shell .component_sidebar { width: 330px; }
-}
-
 .component_filemanager_shell .component_sidebar > div { direction: ltr; }
 .component_filemanager_shell .component_sidebar h3 {
     display: flex;
@@ -92,4 +95,12 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
 .component_filemanager_shell .component_sidebar a > div {
     padding-left: 2px;
     text-transform: capitalize;
+}
+
+.component_filemanager_shell .resizer {
+    width: 10px;
+    height: 100%;
+    align-self: center;
+    margin-left: -10px;
+    cursor: ew-resize;
 }
