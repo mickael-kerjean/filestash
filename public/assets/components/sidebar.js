@@ -136,7 +136,7 @@ async function ctrlNavigationPane(render, { $sidebar, nRestart }) {
         if (checkVisible($active) === false) {
             $active.offsetTop < window.innerHeight
                 ? $sidebar.firstChild.scrollTo({ top: 0, behavior: "smooth" })
-                : $active.scrollIntoView({ behavior: "smooth" });
+                : $active.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
     } catch (err) {}
 
