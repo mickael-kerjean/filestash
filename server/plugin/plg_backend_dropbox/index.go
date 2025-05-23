@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -123,7 +122,7 @@ func (d Dropbox) Cat(path string) (io.ReadCloser, error) {
 		arg := struct {
 			Path string `json:"path"`
 		}{d.path(path)}
-		json, _ := ioutil.ReadAll(d.toReader(arg))
+		json, _ := io.ReadAll(d.toReader(arg))
 		req.Header.Set("Dropbox-API-Arg", string(json))
 	})
 	if err != nil {
@@ -184,7 +183,7 @@ func (d Dropbox) Save(path string, file io.Reader) error {
 			AutoRename bool   `json:"autorename"`
 			Mode       string `json:"mode"`
 		}{d.path(path), false, "overwrite"}
-		json, _ := ioutil.ReadAll(d.toReader(arg))
+		json, _ := io.ReadAll(d.toReader(arg))
 		req.Header.Set("Dropbox-API-Arg", string(json))
 		req.Header.Set("Content-Type", "application/octet-stream")
 	})

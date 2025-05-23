@@ -5,7 +5,6 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"golang.org/x/crypto/bcrypt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -56,7 +55,7 @@ func AdminSessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Reque
 		return
 	}
 	var params map[string]string
-	b, _ := ioutil.ReadAll(req.Body)
+	b, _ := io.ReadAll(req.Body)
 	json.Unmarshal(b, &params)
 	if err := bcrypt.CompareHashAndPassword([]byte(admin), []byte(params["password"])); err != nil {
 		SendErrorResult(res, ErrInvalidPassword)

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strconv"
 	"strings"
 )
@@ -78,11 +77,11 @@ func NewStringFromInterface(val interface{}) string {
 }
 
 func NewReadCloserFromBytes(t []byte) io.ReadCloser {
-	return ioutil.NopCloser(bytes.NewReader(t))
+	return io.NopCloser(bytes.NewReader(t))
 }
 
 func NewReadCloserFromReader(r io.Reader) io.ReadCloser {
-	return ioutil.NopCloser(r)
+	return io.NopCloser(r)
 }
 
 func PrettyPrint(json_dirty []byte) []byte {
