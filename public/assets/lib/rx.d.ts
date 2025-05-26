@@ -2,7 +2,7 @@ import type { Observer, Observable as coreObservable } from "rx-core";
 
 import {
     fromEvent, startWith, Observable,
-    catchError, tap, first, of,
+    catchError, tap, first, of, pairwise,
     map, mapTo, filter, mergeMap, EMPTY, empty,
     switchMapTo, switchMap,
     BehaviorSubject, Subject, ReplaySubject,
@@ -59,6 +59,7 @@ declare const rxjs: {
     skip: typeof skip,
     takeUntil: typeof takeUntil,
     timer: typeof timer,
+    pairwise: typeof pairwise,
 };
 
 export default rxjs;
