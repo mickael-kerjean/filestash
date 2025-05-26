@@ -111,7 +111,7 @@ export default async function(render) {
         preventDefault(),
         rxjs.mergeMap(() => {
             window.dispatchEvent(new KeyboardEvent("keydown", { keyCode: 27 })); // close
-            const type = $input.nextSibling.getAttribute("name");
+            const type = $input.nextElementSibling.getAttribute("name");
             if (type === "file") return touch(currentPath() + $input.value);
             return mkdir(currentPath() + $input.value + "/");
         }),
