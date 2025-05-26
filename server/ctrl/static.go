@@ -2,9 +2,8 @@ package ctrl
 
 import (
 	"bytes"
-	"embed"
+	_ "embed"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -24,9 +23,6 @@ import (
 var (
 	WWWDir fs.FS
 
-	//go:embed static/www
-	WWWEmbed embed.FS
-
 	//go:embed static/404.html
 	HtmlPage404 []byte
 
@@ -36,103 +32,6 @@ var (
 
 func init() {
 	WWWDir = os.DirFS(GetAbsolutePath("../"))
-}
-
-func LegacyStaticHandler(_path string) func(*App, http.ResponseWriter, *http.Request) { // TODO: migrate away
-	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		var chroot string = GetAbsolutePath(_path)
-		if srcPath := JoinPath(chroot, req.URL.Path); strings.HasPrefix(srcPath, chroot) == false {
-			http.NotFound(res, req)
-			return
-		}
-		legacyServeFile(res, req, JoinPath(_path, TrimBase(req.URL.Path)))
-	}
-}
-
-func LegacyIndexHandler(ctx *App, res http.ResponseWriter, req *http.Request) { // TODO: migrate away
-	url := TrimBase(req.URL.Path)
-	if url != URL_SETUP && Config.Get("auth.admin").String() == "" {
-		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
-		return
-	} else if url != "/" && strings.HasPrefix(url, "/s/") == false &&
-		strings.HasPrefix(url, "/view/") == false && strings.HasPrefix(url, "/files/") == false &&
-		url != "/login" && url != "/logout" && strings.HasPrefix(url, "/admin") == false && strings.HasPrefix(url, "/tags") == false {
-		NotFoundHandler(ctx, res, req)
-		return
-	}
-	ua := req.Header.Get("User-Agent")
-	if strings.Contains(ua, "MSIE ") || strings.Contains(ua, "Trident/") || strings.Contains(ua, "Edge/") {
-		// Microsoft is behaving on many occasion differently than Firefox / Chrome.
-		// I have neither the time / motivation for it to work properly
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte(Page(`
-			<h1>Internet explorer is not supported</h1>
-			<p>
-				We don't support IE / Edge at this time
-				<br>
-				Please use either Chromium, Firefox or Chrome
-			</p>
-		`)))
-		return
-	}
-	legacyServeFile(res, req, "/index.html")
-}
-
-func legacyServeFile(res http.ResponseWriter, req *http.Request, filePath string) { // TODO: migrate away
-	staticConfig := []struct {
-		ContentType string
-		FileExt     string
-	}{
-		{"br", ".br"},
-		{"gzip", ".gz"},
-		{"", ""},
-	}
-
-	statusCode := 200
-	if req.URL.Path == "/" {
-		if errName := req.URL.Query().Get("error"); errName != "" {
-			statusCode = HTTPError(errors.New(errName)).Status()
-		}
-	}
-
-	head := res.Header()
-	acceptEncoding := req.Header.Get("Accept-Encoding")
-	for _, cfg := range staticConfig {
-		if strings.Contains(acceptEncoding, cfg.ContentType) == false {
-			continue
-		}
-		curPath := filePath + cfg.FileExt
-		var (
-			file fs.File
-			err  error
-		)
-		if env := os.Getenv("DEBUG"); env == "true" {
-			file, err = WWWDir.Open("server/ctrl/static/www" + curPath)
-		} else {
-			file, err = WWWEmbed.Open("static/www" + curPath)
-		}
-		if err != nil {
-			continue
-		} else if stat, err := file.Stat(); err == nil {
-			etag := QuickHash(fmt.Sprintf(
-				"%s %d %d %s",
-				curPath, stat.Size(), stat.Mode(), stat.ModTime()), 10,
-			)
-			if etag == req.Header.Get("If-None-Match") {
-				res.WriteHeader(http.StatusNotModified)
-				return
-			}
-			head.Set("Etag", etag)
-		}
-		if cfg.ContentType != "" {
-			head.Set("Content-Encoding", cfg.ContentType)
-		}
-		res.WriteHeader(statusCode)
-		io.Copy(res, file)
-		file.Close()
-		return
-	}
-	http.NotFound(res, req)
 }
 
 func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
