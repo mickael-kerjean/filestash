@@ -7,6 +7,14 @@
 .component_newitem .component_thing .box {
     margin: 0;
 }
-.component_newitem .component_thing .component_action {
+.component_newitem .component_thing .box .file-details {
+    flex-grow: 1;
+}
+.component_newitem .component_thing .box .file-details input {
+    border-color: var(--border);
+    padding: 0;
+}
+.component_newitem .component_thing .box .component_action {
     display: block;
+    opacity: 1;
 }

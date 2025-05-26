@@ -28,10 +28,13 @@ export default async function(render) {
     const $node = createElement(`
         <div class="component_newitem container">
             <div class="component_thing">
-                <div class="mouse-is-hover highlight box">
+                <div class="mouse-is-hover highlight box flex">
                     <img class="component_icon" draggable="false" alt="directory">
                     <span class="file-details">
-                        <form><input type="text" name="name" value=""><input type="hidden" name="type" value=""></form>
+                        <form class="full-width">
+                            <input type="text" name="name" value="" class="full-width">
+                            <input type="hidden" name="type" value="">
+                        </form>
                     </span>
                     <span class="component_action">
                         <div class="action">
@@ -70,7 +73,7 @@ export default async function(render) {
             $icon.setAttribute("src", `${img}`);
             $icon.setAttribute("alt", alt);
             $input.value = "";
-            $input.nextSibling.setAttribute("name", alt);
+            $input.nextElementSibling.setAttribute("name", alt);
             let done = Promise.resolve(nop);
             if ($node.classList.contains("hidden")) done = animate($node, {
                 keyframes: [{ height: `0px` }, { height: "50px" }],
