@@ -216,6 +216,7 @@
 	"swf": "application/x-shockwave-flash",
 	"tar": "application/x-tar",
 	"tcl": "application/x-tcl",
+	"tex": "application/x-tex",
 	"tga": "image/x-tga",
 	"tgz": "application/x-gzip",
 	"tif": "image/tiff",

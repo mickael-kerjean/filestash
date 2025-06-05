@@ -54,7 +54,6 @@
     width: 14px;
     padding: 5px;
 }
-
 .component_tag .scroll-y {
     overflow-y: auto !important;
     max-height: 200px;
