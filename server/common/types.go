@@ -67,14 +67,12 @@ type AuditQueryResult struct {
 }
 
 type File struct {
-	FName     string `json:"name"`
-	FType     string `json:"type"`
-	FTime     int64  `json:"time"`
-	FSize     int64  `json:"size"`
-	FPath     string `json:"path,omitempty"`
-	CanRename *bool  `json:"can_rename,omitempty"`
-	CanMove   *bool  `json:"can_move_directory,omitempty"`
-	CanDelete *bool  `json:"can_delete,omitempty"`
+	FName   string `json:"name"`
+	FType   string `json:"type"`
+	FTime   int64  `json:"time"`
+	FSize   int64  `json:"size"`
+	FPath   string `json:"path,omitempty"`
+	Offline bool   `json:"offline,omitempty"`
 }
 
 func (f File) Name() string {
@@ -103,7 +101,7 @@ func (f File) IsDir() bool {
 	return true
 }
 func (f File) Sys() interface{} {
-	return nil
+	return f
 }
 
 func (f File) Path() string {

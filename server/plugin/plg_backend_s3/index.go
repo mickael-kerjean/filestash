@@ -189,10 +189,9 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 		}
 		for _, bucket := range b.Buckets {
 			files = append(files, &File{
-				FName:   *bucket.Name,
-				FType:   "directory",
-				FTime:   bucket.CreationDate.Unix(),
-				CanMove: NewBool(false),
+				FName: *bucket.Name,
+				FType: "directory",
+				FTime: bucket.CreationDate.Unix(),
 			})
 		}
 		return files, nil
@@ -214,11 +213,16 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 				if object.Size != nil {
 					size = *object.Size
 				}
+				isOffline := false
+				if object.StorageClass != nil && *object.StorageClass == "GLACIER" {
+					isOffline = true
+				}
 				files = append(files, &File{
-					FName: filepath.Base(*object.Key),
-					FType: "file",
-					FTime: object.LastModified.Unix(),
-					FSize: size,
+					FName:   filepath.Base(*object.Key),
+					FType:   "file",
+					FTime:   object.LastModified.Unix(),
+					FSize:   size,
+					Offline: isOffline,
 				})
 			}
 			for _, object := range objs.CommonPrefixes {

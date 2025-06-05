@@ -21,10 +21,11 @@ import (
 )
 
 type FileInfo struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-	Size int64  `json:"size"`
-	Time int64  `json:"time"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	Size    int64  `json:"size"`
+	Time    int64  `json:"time"`
+	Offline bool   `json:"offline,omitempty"`
 }
 
 var (
@@ -165,6 +166,9 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 				}
 				return "directory"
 			}(entries[i].Mode()),
+		}
+		if f, ok := entries[i].Sys().(File); ok && f.Offline == true {
+			files[i].Offline = true
 		}
 	}
 
