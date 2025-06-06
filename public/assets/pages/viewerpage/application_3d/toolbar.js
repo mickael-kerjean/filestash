@@ -1,6 +1,6 @@
 import { createElement } from "../../../lib/skeleton/index.js";
 import { qs } from "../../../lib/dom.js";
-import * as THREE from "../../../../lib/vendor/three/three.module.js";
+import * as THREE from "../../../lib/vendor/three/three.module.js";
 
 export default function(render, { camera, controls, mesh, $menubar, $toolbar, is2D }) {
     if (mesh.children.length <= 1) return;

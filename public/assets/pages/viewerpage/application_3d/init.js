@@ -1,5 +1,5 @@
 import { createElement, onDestroy } from "../../../lib/skeleton/index.js";
-import { OrbitControls } from "../../../../lib/vendor/three/OrbitControls.js";
+import { OrbitControls } from "../../../lib/vendor/three/OrbitControls.js";
 
 export default function({ THREE, $page, $menubar, mesh, refresh, is2D }) {
     // setup the dom

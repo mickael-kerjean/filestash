@@ -33,7 +33,7 @@ func PluginExportHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 				}
 				plgExports[module["mime"]] = []string{
 					module["application"],
-					WithBase(JoinPath("/plugin/", filepath.Join(name, index))),
+					WithBase(JoinPath("/assets/"+BUILD_REF+"/plugin/", filepath.Join(name+".zip", index))),
 				}
 			}
 		}

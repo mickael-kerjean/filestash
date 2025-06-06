@@ -40,8 +40,8 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
                 catch (err) { componentDownloader(render, { mime, acl$, getFilename, getDownloadUrl }); }
                 return rxjs.EMPTY;
             }
-            const mapImpl = new (await loader(IMap))(response, {
-                map, $page, $menubar, L: window.L,
+            const mapImpl = new (await loader(IMap, { mime, getDownloadUrl, getFilename, $menubar }))(response, {
+                map, $page, L: window.L,
             });
             loadGeoJSON(map, await mapImpl.toGeoJSON());
         }),

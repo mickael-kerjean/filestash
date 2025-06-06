@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
@@ -233,11 +234,6 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 		)
 		head := res.Header()
 
-		if filePath == "/assets/bundle" {
-			ServeBundle(ctx, res, req)
-			return
-		}
-
 		// case: patch must be apply because of a "StaticPatch" plugin
 		if f := applyPatch(filePath); f != nil {
 			head.Set("Content-Type", GetMimeType(filepath.Ext(filePath)))
@@ -311,13 +307,13 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 		}
 		head.Set("Content-Type", "text/html")
 		res.WriteHeader(http.StatusOK)
-
 		tmpl := template.Must(template.New(indexPath).Parse(string(b)))
 		tmpl = template.Must(tmpl.Parse(string(TmplLoader)))
 		tmpl.Execute(res, map[string]any{
 			"base":    WithBase("/"),
 			"version": BUILD_REF,
 			"license": LICENSE,
+			"preload": preload(),
 		})
 	}
 }
@@ -428,4 +424,124 @@ func InitPluginList(code []byte) {
 			listOfPlugins["custom"] = append(listOfPlugins["custom"], packageShortName)
 		}
 	}
+}
+
+func preload() string {
+	out, _ := json.Marshal([][]string{
+		{
+			"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs.min.js",
+			"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs-ajax.min.js",
+			"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs-shared.min.js",
+		},
+		{
+			"/assets/" + BUILD_REF + "/boot/ctrl_boot_frontoffice.js",
+			"/assets/" + BUILD_REF + "/locales/index.js",
+			"/assets/" + BUILD_REF + "/css/designsystem.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_input.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_textarea.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_inputgroup.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_checkbox.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_formbuilder.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_button.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_icon.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_dropdown.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_container.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_box.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_darkmode.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_skeleton.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_utils.css",
+			"/assets/" + BUILD_REF + "/css/designsystem_alert.css",
+			"/assets/" + BUILD_REF + "/components/loader.js",
+			"/assets/" + BUILD_REF + "/components/modal.js",
+			"/assets/" + BUILD_REF + "/components/modal.css",
+			"/assets/" + BUILD_REF + "/components/notification.js",
+			"/assets/" + BUILD_REF + "/components/notification.css",
+			"/assets/" + BUILD_REF + "/boot/router_frontoffice.js",
+			"/assets/" + BUILD_REF + "/helpers/loader.js",
+			"/assets/" + BUILD_REF + "/lib/skeleton/index.js",
+			"/assets/" + BUILD_REF + "/lib/rx.js",
+			"/assets/" + BUILD_REF + "/lib/ajax.js",
+			"/assets/" + BUILD_REF + "/lib/animate.js",
+			"/assets/" + BUILD_REF + "/lib/assert.js",
+			"/assets/" + BUILD_REF + "/lib/dom.js",
+			"/assets/" + BUILD_REF + "/lib/skeleton/router.js",
+			"/assets/" + BUILD_REF + "/lib/skeleton/lifecycle.js",
+			"/assets/" + BUILD_REF + "/lib/error.js",
+			"/assets/" + BUILD_REF + "/model/config.js",
+			"/assets/" + BUILD_REF + "/model/plugin.js",
+			"/assets/" + BUILD_REF + "/model/chromecast.js",
+			"/assets/" + BUILD_REF + "/model/session.js",
+			"/assets/" + BUILD_REF + "/helpers/log.js",
+			"/assets/" + BUILD_REF + "/boot/common.js",
+			"/assets/" + BUILD_REF + "/helpers/sdk.js",
+
+			"/assets/" + BUILD_REF + "/components/breadcrumb.js",
+			"/assets/" + BUILD_REF + "/components/breadcrumb.css",
+			"/assets/" + BUILD_REF + "/components/form.js",
+			"/assets/" + BUILD_REF + "/components/sidebar.js",
+			"/assets/" + BUILD_REF + "/components/sidebar.css",
+			"/assets/" + BUILD_REF + "/components/dropdown.js",
+			"/assets/" + BUILD_REF + "/components/icon.js",
+			"/assets/" + BUILD_REF + "/lib/store.js",
+			"/assets/" + BUILD_REF + "/lib/random.js",
+			"/assets/" + BUILD_REF + "/lib/form.js",
+			"/assets/" + BUILD_REF + "/lib/path.js",
+
+			"/assets/" + BUILD_REF + "/components/decorator_shell_filemanager.js",
+			"/assets/" + BUILD_REF + "/components/decorator_shell_filemanager.css",
+			"/assets/" + BUILD_REF + "/pages/ctrl_error.js",
+		},
+		{
+			"/assets/" + BUILD_REF + "/pages/ctrl_connectpage.js",
+			"/assets/" + BUILD_REF + "/pages/ctrl_connectpage.css",
+			"/assets/" + BUILD_REF + "/pages/connectpage/ctrl_form.js",
+			"/assets/" + BUILD_REF + "/pages/connectpage/ctrl_forkme.js",
+			"/assets/" + BUILD_REF + "/pages/connectpage/ctrl_poweredby.js",
+			"/assets/" + BUILD_REF + "/pages/connectpage/ctrl_form.css",
+
+			"/assets/" + BUILD_REF + "/lib/path.js",
+			"/assets/" + BUILD_REF + "/lib/form.js",
+			"/assets/" + BUILD_REF + "/lib/settings.js",
+			"/assets/" + BUILD_REF + "/components/form.js",
+			"/assets/" + BUILD_REF + "/model/session.js",
+			"/assets/" + BUILD_REF + "/pages/ctrl_error.js",
+			"/assets/" + BUILD_REF + "/pages/connectpage/model_backend.js",
+			"/assets/" + BUILD_REF + "/pages/connectpage/model_config.js",
+			"/assets/" + BUILD_REF + "/pages/connectpage/ctrl_form_state.js",
+			"/assets/" + BUILD_REF + "/lib/random.js",
+			"/assets/" + BUILD_REF + "/components/icon.js",
+
+			"/assets/" + BUILD_REF + "/pages/filespage/ctrl_filesystem.css",
+			"/assets/" + BUILD_REF + "/pages/filespage/thing.css",
+			"/assets/" + BUILD_REF + "/pages/filespage/ctrl_filesystem.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/thing.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/state_newthing.js",
+		},
+		{
+			"/assets/" + BUILD_REF + "/pages/ctrl_filespage.js",
+			"/assets/" + BUILD_REF + "/pages/ctrl_filespage.css",
+			"/assets/" + BUILD_REF + "/pages/filespage/ctrl_submenu.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/ctrl_newitem.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/ctrl_upload.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/cache.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/state_config.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/helper.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/model_files.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/model_virtual_layer.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/modal_share.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/modal_tag.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/modal_rename.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/modal_delete.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/state_selection.js",
+			"/assets/" + BUILD_REF + "/pages/filespage/model_acl.js",
+
+			"/assets/" + BUILD_REF + "/pages/filespage/modal.css",
+			"/assets/" + BUILD_REF + "/pages/filespage/ctrl_submenu.css",
+			"/assets/" + BUILD_REF + "/pages/filespage/modal_share.css",
+			"/assets/" + BUILD_REF + "/pages/filespage/modal_tag.css",
+			"/assets/" + BUILD_REF + "/pages/filespage/ctrl_newitem.css",
+			"/assets/" + BUILD_REF + "/pages/filespage/ctrl_upload.css",
+		},
+	})
+	return string(out)
 }

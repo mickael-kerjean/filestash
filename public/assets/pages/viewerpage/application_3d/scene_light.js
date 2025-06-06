@@ -1,5 +1,5 @@
 import { settings_get } from "../../../lib/settings.js";
-import * as THREE from "../../../../lib/vendor/three/three.module.js";
+import * as THREE from "../../../lib/vendor/three/three.module.js";
 
 const LIGHT_COLOR = 0xf5f5f5;
 

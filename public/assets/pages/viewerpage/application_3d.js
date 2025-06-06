@@ -10,7 +10,7 @@ import ctrlError from "../ctrl_error.js";
 import componentDownloader, { init as initDownloader } from "./application_downloader.js";
 import { renderMenubar, buttonDownload } from "./component_menubar.js";
 
-import * as THREE from "../../../lib/vendor/three/three.module.js";
+import * as THREE from "../../lib/vendor/three/three.module.js";
 import setup3D from "./application_3d/init.js";
 import withLight from "./application_3d/scene_light.js";
 import withCube from "./application_3d/scene_cube.js";

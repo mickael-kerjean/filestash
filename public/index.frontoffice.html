@@ -38,129 +38,16 @@
             <script type="module" src="./assets/{{ .version }}/components/notification.js" defer></script>
         </template>
 
+        <script id="preload" type="application/json">{{ .preload }}</script>
+
         <script type="module">
          function boot() {
              document.head.appendChild(document.querySelector("template#head").content);
              document.body.appendChild(document.querySelector("template#body").content);
          }
 
-         const URLS = [
-             [
-                 "/assets/{{ .version }}/lib/vendor/rxjs/rxjs.min.js",
-                 "/assets/{{ .version }}/lib/vendor/rxjs/rxjs-ajax.min.js",
-                 "/assets/{{ .version }}/lib/vendor/rxjs/rxjs-shared.min.js",
-             ],
-             [
-                 "/assets/{{ .version }}/boot/ctrl_boot_frontoffice.js",
-                 "/assets/{{ .version }}/locales/index.js",
-                 "/assets/{{ .version }}/css/designsystem.css",
-                 "/assets/{{ .version }}/css/designsystem_input.css",
-                 "/assets/{{ .version }}/css/designsystem_textarea.css",
-                 "/assets/{{ .version }}/css/designsystem_inputgroup.css",
-                 "/assets/{{ .version }}/css/designsystem_checkbox.css",
-                 "/assets/{{ .version }}/css/designsystem_formbuilder.css",
-                 "/assets/{{ .version }}/css/designsystem_button.css",
-                 "/assets/{{ .version }}/css/designsystem_icon.css",
-                 "/assets/{{ .version }}/css/designsystem_dropdown.css",
-                 "/assets/{{ .version }}/css/designsystem_container.css",
-                 "/assets/{{ .version }}/css/designsystem_box.css",
-                 "/assets/{{ .version }}/css/designsystem_darkmode.css",
-                 "/assets/{{ .version }}/css/designsystem_skeleton.css",
-                 "/assets/{{ .version }}/css/designsystem_utils.css",
-                 "/assets/{{ .version }}/css/designsystem_alert.css",
-                 "/assets/{{ .version }}/components/loader.js",
-                 "/assets/{{ .version }}/components/modal.js",
-                 "/assets/{{ .version }}/components/modal.css",
-                 "/assets/{{ .version }}/components/notification.js",
-                 "/assets/{{ .version }}/components/notification.css",
-                 "/assets/{{ .version }}/boot/router_frontoffice.js",
-                 "/assets/{{ .version }}/helpers/loader.js",
-                 "/assets/{{ .version }}/lib/skeleton/index.js",
-                 "/assets/{{ .version }}/lib/rx.js",
-                 "/assets/{{ .version }}/lib/ajax.js",
-                 "/assets/{{ .version }}/lib/animate.js",
-                 "/assets/{{ .version }}/lib/assert.js",
-                 "/assets/{{ .version }}/lib/dom.js",
-                 "/assets/{{ .version }}/lib/skeleton/router.js",
-                 "/assets/{{ .version }}/lib/skeleton/lifecycle.js",
-                 "/assets/{{ .version }}/lib/error.js",
-                 "/assets/{{ .version }}/model/config.js",
-                 "/assets/{{ .version }}/model/plugin.js",
-                 "/assets/{{ .version }}/model/chromecast.js",
-                 "/assets/{{ .version }}/model/session.js",
-                 "/assets/{{ .version }}/helpers/log.js",
-                 "/assets/{{ .version }}/boot/common.js",
-                 "/assets/{{ .version }}/helpers/sdk.js",
-
-                 "/assets/{{ .version }}/components/breadcrumb.js",
-                 "/assets/{{ .version }}/components/breadcrumb.css",
-                 "/assets/{{ .version }}/components/form.js",
-                 "/assets/{{ .version }}/components/sidebar.js",
-                 "/assets/{{ .version }}/components/sidebar.css",
-                 "/assets/{{ .version }}/components/dropdown.js",
-                 "/assets/{{ .version }}/components/icon.js",
-                 "/assets/{{ .version }}/lib/store.js",
-                 "/assets/{{ .version }}/lib/random.js",
-                 "/assets/{{ .version }}/lib/form.js",
-                 "/assets/{{ .version }}/lib/path.js",
-
-                 "/assets/{{ .version }}/components/decorator_shell_filemanager.js",
-                 "/assets/{{ .version }}/components/decorator_shell_filemanager.css",
-                 "/assets/{{ .version }}/pages/ctrl_error.js",
-             ],
-             [
-                 "/assets/{{ .version }}/pages/ctrl_connectpage.js",
-                 "/assets/{{ .version }}/pages/connectpage/ctrl_form.js",
-                 "/assets/{{ .version }}/pages/connectpage/ctrl_forkme.js",
-                 "/assets/{{ .version }}/pages/connectpage/ctrl_poweredby.js",
-                 "/assets/{{ .version }}/lib/path.js",
-                 "/assets/{{ .version }}/lib/form.js",
-                 "/assets/{{ .version }}/lib/settings.js",
-                 "/assets/{{ .version }}/components/form.js",
-                 "/assets/{{ .version }}/model/session.js",
-                 "/assets/{{ .version }}/pages/ctrl_error.js",
-                 "/assets/{{ .version }}/pages/connectpage/model_backend.js",
-                 "/assets/{{ .version }}/pages/connectpage/model_config.js",
-                 "/assets/{{ .version }}/pages/connectpage/ctrl_form_state.js",
-                 "/assets/{{ .version }}/lib/random.js",
-                 "/assets/{{ .version }}/components/icon.js",
-
-                 "/assets/{{ .version }}/pages/ctrl_connectpage.css",
-                 "/assets/{{ .version }}/pages/connectpage/ctrl_form.css",
-             ],
-             [
-                 "/assets/{{ .version }}/pages/ctrl_filespage.js",
-                 "/assets/{{ .version }}/pages/ctrl_filespage.css",
-                 "/assets/{{ .version }}/pages/filespage/ctrl_filesystem.js",
-                 "/assets/{{ .version }}/pages/filespage/ctrl_submenu.js",
-                 "/assets/{{ .version }}/pages/filespage/ctrl_newitem.js",
-                 "/assets/{{ .version }}/pages/filespage/ctrl_upload.js",
-                 "/assets/{{ .version }}/pages/filespage/cache.js",
-                 "/assets/{{ .version }}/pages/filespage/state_config.js",
-                 "/assets/{{ .version }}/pages/filespage/thing.js",
-                 "/assets/{{ .version }}/pages/filespage/state_newthing.js",
-                 "/assets/{{ .version }}/pages/filespage/helper.js",
-                 "/assets/{{ .version }}/pages/filespage/model_files.js",
-                 "/assets/{{ .version }}/pages/filespage/model_virtual_layer.js",
-                 "/assets/{{ .version }}/pages/filespage/modal_share.js",
-                 "/assets/{{ .version }}/pages/filespage/modal_tag.js",
-                 "/assets/{{ .version }}/pages/filespage/modal_rename.js",
-                 "/assets/{{ .version }}/pages/filespage/modal_delete.js",
-                 "/assets/{{ .version }}/pages/filespage/state_selection.js",
-                 "/assets/{{ .version }}/pages/filespage/model_acl.js",
-
-                 "/assets/{{ .version }}/pages/filespage/ctrl_filesystem.css",
-                 "/assets/{{ .version }}/pages/filespage/thing.css",
-                 "/assets/{{ .version }}/pages/filespage/modal.css",
-                 "/assets/{{ .version }}/pages/filespage/ctrl_submenu.css",
-                 "/assets/{{ .version }}/pages/filespage/modal_share.css",
-                 "/assets/{{ .version }}/pages/filespage/modal_tag.css",
-                 "/assets/{{ .version }}/pages/filespage/ctrl_newitem.css",
-                 "/assets/{{ .version }}/pages/filespage/ctrl_upload.css",
-             ],
-         ];
-
          if ("serviceWorker" in navigator) {
+             const URLS = JSON.parse(document.getElementById("preload").textContent);
              try {
                  const register = await navigator.serviceWorker.register("sw.js");
                  await new Promise((resolve) => {

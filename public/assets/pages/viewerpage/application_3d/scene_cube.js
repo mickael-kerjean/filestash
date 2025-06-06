@@ -1,5 +1,5 @@
 import { onDestroy } from "../../../lib/skeleton/index.js";
-import { ViewCubeGizmo, SimpleCameraControls, ObjectPosition } from "../../../../lib/vendor/three/viewcube.js";
+import { ViewCubeGizmo, SimpleCameraControls, ObjectPosition } from "../../../lib/vendor/three/viewcube.js";
 
 export default function({ camera, renderer, refresh, controls }) {
     const viewCubeGizmo = new ViewCubeGizmo(camera, renderer, {

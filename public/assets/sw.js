@@ -37,11 +37,12 @@ self.addEventListener("activate", (event) => {
     })());
 });
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener("fetch", async (event) => {
     if (!event.request.url.startsWith(location.origin + "/assets/")) return;
 
     event.respondWith((async() => {
-        const cachedResponse = await caches.match(event.request);
+        const cache = await caches.open(CACHENAME);
+        const cachedResponse = await cache.match(event.request);
         if (cachedResponse) return cachedResponse;
         return fetch(event.request);
     })());
@@ -55,37 +56,36 @@ self.addEventListener("message", (event) => {
     );
 });
 
-const handlePreloadMessage = (() => {
-    return async(chunks, resolve, reject, id) => {
-        const cleanup = [];
-        try {
-            caches.delete(CACHENAME);
-            const cache = await caches.open(CACHENAME);
-            await Promise.all(chunks.map((urls) => {
-                return preload({ urls, cache, cleanup });
-            }));
-            resolve();
-        } catch (err) {
-            reject(err);
-        } finally {
-            cleanup.forEach((fn) => fn());
-        }
-    };
-})();
+async function handlePreloadMessage(chunks, resolve, reject, id) {
+    const cleanup = [];
+    try {
+        await caches.delete(CACHENAME);
+        const cache = await caches.open(CACHENAME);
+        await Promise.all(chunks.map((urls) => {
+            return preload({ urls, cache, cleanup });
+        }));
+        resolve();
+    } catch (err) {
+        console.log("ERR", err);
+        reject(err);
+    } finally {
+        cleanup.forEach((fn) => fn());
+    }
+};
 
 async function preload({ urls, cache, cleanup }) {
     const evtsrc = new self.EventSource("/assets/bundle?" + urls.map((url) => `url=${url}`).join("&"));
     cleanup.push(() => evtsrc.close());
 
     let i = 0;
-    const messageHandler = (resolve, event, decoder) => {
+    const messageHandler = async (resolve, event, decoder) => {
         const url = event.lastEventId;
         let mime = "application/octet-stream";
         if (url.endsWith(".css")) mime = "text/css";
         else if (url.endsWith(".js")) mime = "application/javascript";
 
         i += 1;
-        cache.put(
+        await cache.put(
             location.origin + url,
             new Response(
                 decoder(new Blob([Uint8Array.from(atob(event.data), (c) => c.charCodeAt(0))]).stream()),
@@ -111,6 +111,9 @@ async function preload({ urls, cache, cleanup }) {
             event,
             (stream) => stream.pipeThrough(new DecompressionStream("gzip")),
         ));
-        evtsrc.onerror = (err) => errorHandler(reject, err);
+        evtsrc.onerror = (err) => {
+            if (i === urls.length) return;
+            errorHandler(reject, err);
+        };
     });
 }
