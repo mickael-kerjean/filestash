@@ -9,7 +9,7 @@ import { transition } from "./common.js";
 import { renderMenubar } from "./component_menubar.js";
 import "../../components/icon.js";
 
-export default async function(render, { acl$, $menubar, getFilename, getDownloadUrl, hasMenubar = true }) {
+export default async function(render, { acl$, getFilename, getDownloadUrl, hasMenubar = true }) {
     const $page = createElement(`
         <div class="component_filedownloader">
             <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>

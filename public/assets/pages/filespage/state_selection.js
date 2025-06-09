@@ -82,7 +82,6 @@ export function expandSelection() {
             arr[i] = { path };
             i += 1;
         }
-        // console.log(JSON.stringify(arr, null, 2));
         return arr;
     });
 }
