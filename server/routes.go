@@ -90,6 +90,7 @@ func Build(r *mux.Router, a App) {
 	r.HandleFunc(WithBase("/assets/"+BUILD_REF+"/plugin/{name}.zip/{path:.+}"), NewMiddlewareChain(PluginStaticHandler, middlewares, a)).Methods("GET", "OPTIONS")
 	r.HandleFunc(WithBase("/assets/"+BUILD_REF+"/plugin/{name}.zip"), NewMiddlewareChain(PluginDownloadHandler, middlewares, a)).Methods("GET")
 	r.PathPrefix(WithBase("/assets/"+BUILD_REF)).Handler(http.HandlerFunc(NewMiddlewareChain(ServeFile("/"), middlewares, a))).Methods("GET", "OPTIONS")
+	r.PathPrefix(WithBase("/assets/")).Handler(http.HandlerFunc(NewMiddlewareChain(ServeFile("/"), middlewares, a))).Methods("GET", "OPTIONS")
 	r.PathPrefix(WithBase("/assets/bundle")).Handler(http.HandlerFunc(NewMiddlewareChain(ServeBundle, middlewares, a))).Methods("GET", "OPTIONS")
 	r.HandleFunc(WithBase("/sw.js"), http.HandlerFunc(NewMiddlewareChain(ServeFile("/assets/"), middlewares, a))).Methods("GET")
 	r.HandleFunc(WithBase("/favicon.ico"), NewMiddlewareChain(ServeFavicon, middlewares, a)).Methods("GET")
