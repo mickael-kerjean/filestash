@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -31,6 +32,7 @@ type S3Backend struct {
 	params     map[string]string
 	Context    context.Context
 	threadSize int
+	timeout    time.Duration
 }
 
 func init() {
@@ -78,6 +80,10 @@ func (this S3Backend) Init(params map[string]string, app *App) (IBackend, error)
 	if params["endpoint"] != "" {
 		config.Endpoint = aws.String(params["endpoint"])
 	}
+	var timeout time.Duration
+	if secs, err := strconv.Atoi(params["timeout"]); err == nil {
+		timeout = time.Duration(secs) * time.Second
+	}
 	threadSize, err := strconv.Atoi(params["number_thread"])
 	if err != nil {
 		threadSize = 50
@@ -90,6 +96,7 @@ func (this S3Backend) Init(params map[string]string, app *App) (IBackend, error)
 		client:     s3.New(session.New(config)),
 		Context:    app.Context,
 		threadSize: threadSize,
+		timeout:    timeout,
 	}
 	return backend, nil
 }
@@ -118,7 +125,7 @@ func (this S3Backend) LoginForm() Form {
 				Placeholder: "Advanced",
 				Target: []string{
 					"s3_region", "s3_endpoint", "s3_role_arn", "s3_session_token",
-					"s3_path", "s3_encryption_key", "s3_number_thread",
+					"s3_path", "s3_encryption_key", "s3_number_thread", "s3_timeout",
 				},
 			},
 			FormElement{
@@ -163,6 +170,12 @@ func (this S3Backend) LoginForm() Form {
 				Type:        "text",
 				Placeholder: "Num. Thread",
 			},
+			FormElement{
+				Id:          "s3_timeout",
+				Name:        "timeout",
+				Type:        "number",
+				Placeholder: "List Object Timeout",
+			},
 		},
 	}
 }
@@ -197,6 +210,7 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 		return files, nil
 	}
 	client := s3.New(this.createSession(p.bucket))
+	start := time.Now()
 	err = client.ListObjectsV2PagesWithContext(
 		this.Context,
 		&s3.ListObjectsV2Input{
@@ -231,6 +245,9 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 					FType: "directory",
 					FTime: 0,
 				})
+			}
+			if this.timeout > 0 && time.Since(start) > this.timeout {
+				return false
 			}
 			return aws.BoolValue(objs.IsTruncated)
 		},
