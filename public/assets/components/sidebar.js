@@ -194,6 +194,10 @@ async function _createListOfFiles(path, currentName, dirpath) {
             .filter(({ type, name }) => type === "directory" && name[0] !== ".")
             .map(({ name }) => name)
             .sort();
+
+    const MAX_DISPLAY = 100;
+    const $lis = document.createDocumentFragment();
+    const $fragment = document.createDocumentFragment();
     const $ul = document.createElement("ul");
     for (let i=0; i<whats.length; i++) {
         const currpath = path + whats[i] + "/";
@@ -205,32 +209,48 @@ async function _createListOfFiles(path, currentName, dirpath) {
                 </a>
             </li>
         `);
-        $ul.appendChild($li);
+
         const $link = qs($li, "a");
         if ($li.getAttribute("data-path") === dirpath && location.pathname.startsWith(toHref("/files/"))) {
             $link.removeAttribute("href", "");
             $link.removeAttribute("data-link");
-            continue;
+        } else {
+            $link.ondrop = async(e) => {
+                $link.classList.remove("highlight");
+                const from = e.dataTransfer.getData("path");
+                let to = $link.parentElement.getAttribute("data-path");
+                const [, fromName] = extractPath(from);
+                to += fromName;
+                if (isDir(from)) to += "/";
+                if (from === to) return;
+                await mv(from, to).toPromise();
+            };
+            $link.ondragover = (e) => {
+                if (isNativeFileUpload(e)) return;
+                e.preventDefault();
+                $link.classList.add("highlight");
+            };
+            $link.ondragleave = () => {
+                $link.classList.remove("highlight");
+            };
         }
-        $link.ondrop = async(e) => {
-            $link.classList.remove("highlight");
-            const from = e.dataTransfer.getData("path");
-            let to = $link.parentElement.getAttribute("data-path");
-            const [, fromName] = extractPath(from);
-            to += fromName;
-            if (isDir(from)) to += "/";
-            if (from === to) return;
-            await mv(from, to).toPromise();
-        };
-        $link.ondragover = (e) => {
-            if (isNativeFileUpload(e)) return;
-            e.preventDefault();
-            $link.classList.add("highlight");
-        };
-        $link.ondragleave = () => {
-            $link.classList.remove("highlight");
-        };
+
+        if (i <= MAX_DISPLAY) $lis.appendChild($li);
+        else $fragment.appendChild($li);
+        if (i === MAX_DISPLAY) {
+            const $more = createElement(`
+                <li title="..." class="no-select pointer">
+                    <a><div class="ellipsis">...</div></a>
+                </li>
+            `);
+            $lis.appendChild($more);
+            $more.onclick = () => {
+                $ul.appendChild($fragment);
+                $more.remove();
+            };
+        }
     }
+    $ul.appendChild($lis);
     return $ul;
 }
 

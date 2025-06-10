@@ -96,11 +96,12 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     padding-left: 2px;
     text-transform: capitalize;
 }
-
 .component_filemanager_shell .resizer {
     width: 10px;
     height: 100%;
     align-self: center;
-    margin-left: -3px;
     cursor: ew-resize;
+}
+.component_filemanager_shell li.pointer {
+    cursor: pointer;
 }
