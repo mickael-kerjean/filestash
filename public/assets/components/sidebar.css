@@ -1,17 +1,17 @@
 [data-bind="sidebar"] {
     z-index: 1;
     display: flex;
-    min-width: 250px;
+    width: 250px;
 }
 @media screen and (min-width: 1600px) {
-    .component_filemanager_shell [data-bind="sidebar"] { min-width: 300px; }
+    .component_filemanager_shell [data-bind="sidebar"] { width: 300px; }
 }
 @media screen and (min-width: 2000px) {
-    .component_filemanager_shell [data-bind="sidebar"] { min-width: 330px; }
+    .component_filemanager_shell [data-bind="sidebar"] { width: 330px; }
 }
 .component_filemanager_shell .component_sidebar {
     flex-grow: 1;
-    padding: 3px 7px 25px 0px;
+    padding: 3px 0px 25px 0px;
     overflow-y: scroll;
     height: 100%;
     direction: rtl;
@@ -101,6 +101,6 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     width: 10px;
     height: 100%;
     align-self: center;
-    margin-left: -10px;
+    margin-left: -3px;
     cursor: ew-resize;
 }

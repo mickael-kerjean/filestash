@@ -96,7 +96,7 @@ const withResize = (function () {
             rxjs.filter((w) => !!w),
             rxjs.map((w) => Math.min(Math.max(w, 250), 350)),
             rxjs.tap((w) => {
-                $sidebar.style.minWidth = `${w}px`;
+                $sidebar.style.width = `${w}px`;
                 memory = w;
             }),
         ));
