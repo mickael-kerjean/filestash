@@ -44,10 +44,11 @@ func (this S3Backend) Init(params map[string]string, app *App) (IBackend, error)
 	if params["encryption_key"] != "" && len(params["encryption_key"]) != 32 {
 		return nil, NewError(fmt.Sprintf("Encryption key needs to be 32 characters (current: %d)", len(params["encryption_key"])), 400)
 	}
-	if params["region"] == "" {
-		params["region"] = "us-east-2"
+	region := params["region"]
+	if region == "" {
+		region = "us-east-1"
 		if strings.HasSuffix(params["endpoint"], ".cloudflarestorage.com") {
-			params["region"] = "auto"
+			region = "auto"
 		}
 	}
 	creds := []credentials.Provider{}
@@ -60,7 +61,7 @@ func (this S3Backend) Init(params map[string]string, app *App) (IBackend, error)
 	}
 	if params["role_arn"] != "" {
 		creds = append(creds, &stscreds.AssumeRoleProvider{
-			Client:   sts.New(session.Must(session.NewSessionWithOptions(session.Options{Config: aws.Config{Region: aws.String(params["region"])}}))),
+			Client:   sts.New(session.Must(session.NewSessionWithOptions(session.Options{Config: aws.Config{Region: aws.String(region)}}))),
 			RoleARN:  params["role_arn"],
 			Duration: stscreds.DefaultDuration,
 		})
@@ -75,7 +76,7 @@ func (this S3Backend) Init(params map[string]string, app *App) (IBackend, error)
 		Credentials:                   credentials.NewChainCredentials(creds),
 		CredentialsChainVerboseErrors: aws.Bool(true),
 		S3ForcePathStyle:              aws.Bool(true),
-		Region:                        aws.String(params["region"]),
+		Region:                        aws.String(region),
 	}
 	if params["endpoint"] != "" {
 		config.Endpoint = aws.String(params["endpoint"])
@@ -524,19 +525,22 @@ func (this S3Backend) Save(path string, file io.Reader) error {
 }
 
 func (this S3Backend) createSession(bucket string) *session.Session {
-	newParams := map[string]string{"bucket": bucket}
-	for k, v := range this.params {
-		newParams[k] = v
-	}
-	if c := S3Cache.Get(newParams); c == nil {
-		if res, err := this.client.GetBucketLocation(&s3.GetBucketLocationInput{
-			Bucket: aws.String(bucket),
-		}); err == nil && res.LocationConstraint != nil {
-			this.config.Region = res.LocationConstraint
+	if this.params["region"] == "" {
+		newParams := map[string]string{"bucket": bucket}
+		for k, v := range this.params {
+			newParams[k] = v
 		}
-		S3Cache.Set(newParams, this.config.Region)
-	} else {
-		this.config.Region = c.(*string)
+		if c := S3Cache.Get(newParams); c == nil {
+			res, err := this.client.GetBucketLocation(&s3.GetBucketLocationInput{
+				Bucket: aws.String(bucket),
+			})
+			if err == nil && res.LocationConstraint != nil {
+				this.config.Region = res.LocationConstraint
+			}
+			S3Cache.Set(newParams, this.config.Region)
+		} else {
+			this.config.Region = c.(*string)
+		}
 	}
 	sess := session.New(this.config)
 	return sess
