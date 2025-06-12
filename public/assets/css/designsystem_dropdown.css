@@ -8,6 +8,7 @@
     padding-top: 10px;
     margin-top: 3px;
     z-index: 3;
+    opacity: 0.97;
 }
 .component_dropdown .dropdown_container:before {
     content: ' ';

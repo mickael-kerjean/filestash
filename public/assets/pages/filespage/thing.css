@@ -133,8 +133,9 @@
     left: 0;
     right: 0;
     background: var(--primary);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
     z-index: 1;
-    opacity: 0.3;
+    opacity: 0.2;
 }
 
 /* GRID & LIST VIEW */
