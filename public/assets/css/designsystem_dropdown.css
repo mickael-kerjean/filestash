@@ -10,6 +10,9 @@
     z-index: 3;
     backdrop-filter: brightness(0.8) blur(10px);
 }
+body:not(.dark-mode) .component_dropdown .dropdown_container {
+    box-shadow: -1px -1px 5px rgba(255, 255, 255, 0.5) inset;
+}
 .component_dropdown .dropdown_container:before {
     content: ' ';
     position: absolute;

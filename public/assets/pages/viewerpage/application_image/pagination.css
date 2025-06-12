@@ -30,5 +30,5 @@
 }
 .touch-no .component_pager a svg:hover {
     opacity: 1;
-    box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.1);
+    box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.05);
 }
