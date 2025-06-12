@@ -319,7 +319,9 @@ function componentRight(render, { getSelectionLength$ }) {
                                 const $img = $li.querySelector("img");
                                 if ($img) $img.remove();
                             });
-                            $el.appendChild(createElement(`<img class="component_icon" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />`));
+                            const $img = createElement(`<img class="component_icon" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />`);
+                            if (order !== "asc") $img.classList.add("inverted");
+                            $el.appendChild($img);
                             $sort.classList.remove("active");
                         }),
                     );

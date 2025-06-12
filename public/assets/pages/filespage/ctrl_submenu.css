@@ -5,8 +5,14 @@
     top: 0;
     z-index: 3;
     padding: 4px 0;
-    backdrop-filter: blur(15px) saturate(2);
     transition: 0.2s ease box-shadow;
+}
+[is="component_submenu"]::before {
+    content: "";
+    backdrop-filter: blur(15px) saturate(2);
+    position: absolute;
+    inset: 0;
+    z-index: -1;
 }
 .scrolling [is="component_submenu"] {
     box-shadow: 0 5px 10px rgba(100,100,100,.05);
@@ -84,7 +90,7 @@
     font-weight: bold;
 }
 .dark-mode .scrolling [is="component_submenu"] {
-    background: var(--bg-color);
+    background: rgba(43, 45, 48, 0.99);
 }
 
 /* ripple effect */
