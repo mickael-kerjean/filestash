@@ -19,6 +19,7 @@ import ctrlToolbar from "./application_3d/toolbar.js";
 class I3DLoader {
     load() { throw new Error("NOT_IMPLEMENTED"); }
     transform() { throw new Error("NOT_IMPLEMENTED"); }
+    background() { return 0xf2f2f4; }
     is2D() { return false; }
 }
 
@@ -57,7 +58,16 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
             (err) => observer.error(err),
         )).pipe(
             removeLoader,
-            rxjs.mergeMap((mesh) => create3DScene({ mime, mesh, is2D: loader.is2D, $draw, $toolbar, $menubar, hasCube })),
+            rxjs.mergeMap((mesh) => create3DScene({
+                mime,
+                mesh,
+                is2D: loader.is2D,
+                background: loader.background(),
+                $draw,
+                $toolbar,
+                $menubar,
+                hasCube,
+            })),
         )),
         rxjs.catchError((err) => {
             let _err = err;
@@ -72,7 +82,7 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
     ));
 }
 
-function create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube, is2D }) {
+function create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube, is2D, background }) {
     const refresh = [];
     const { renderer, camera, scene, controls, box } = setup3D({
         THREE,
@@ -81,6 +91,7 @@ function create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube, is2D }) {
         refresh,
         $menubar,
         is2D,
+        background,
     });
 
     withLight({ scene, box, camera });
