@@ -96,12 +96,6 @@ pipeline {
                 sh "docker manifest push machines/filestash:latest"
             }
         }
-
-        stage("Deploy") {
-            steps {
-                sh "kubectl rollout restart deployment app-filestash-demo -n filestash"
-            }
-        }
     }
     post {
         always {
