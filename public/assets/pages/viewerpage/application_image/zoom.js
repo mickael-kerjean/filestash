@@ -47,7 +47,7 @@ function builder({ $img }) {
         rxjs.fromEvent($img.parentElement, "wheel").pipe(
             rxjs.tap((e) => e.preventDefault()),
             rxjs.throttleTime(100, rxjs.animateFrameScheduler),
-            rxjs.map((e) => ({ scale: Math.exp(-e.deltaY / 300), clientX: e.clientX, clientY: e.clientY })),
+            rxjs.map((e) => ({ scale: Math.min(Math.exp(-e.deltaY / 300), 2), clientX: e.clientX, clientY: e.clientY })),
         ),
         // zoom via keyboard shortcut
         rxjs.fromEvent(window, "keydown").pipe(
