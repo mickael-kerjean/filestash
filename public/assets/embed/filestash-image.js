@@ -12,6 +12,7 @@ class FilestashImage extends HTMLElement {
         this.iframe = document.createElement("iframe");
         this.iframe.setAttribute("style", "width: 100%; height: 100%; border: none; display: block;");
         this.iframe.setAttribute("sandbox", "allow-downloads allow-scripts allow-presentation allow-forms allow-same-origin");
+        this.iframe.setAttribute("referrerpolicy", "origin");
         this.shadowRoot.appendChild(this.iframe);
 
         this.debounce = null;
