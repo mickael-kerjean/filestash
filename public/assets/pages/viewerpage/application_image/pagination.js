@@ -14,6 +14,7 @@ import { sort } from "../../filespage/helper.js";
 import { getState$ as getParams$, init as initParams } from "../../filespage/state_config.js";
 
 export default async function(render, { $img }) {
+    if (window.self !== window.top) return;
     const lsCache = await fscache().get(join(location, getCurrentPath() + "/../"));
     if (!lsCache) return;
     const params = await getParams$().pipe(rxjs.first()).toPromise();
