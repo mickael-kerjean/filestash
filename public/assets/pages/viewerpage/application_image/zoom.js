@@ -45,7 +45,7 @@ function builder({ $img }) {
         ),
         // zoom via scroll wheel
         rxjs.fromEvent($img.parentElement, "wheel", { passive: true }).pipe(
-            rxjs.throttleTime(100),
+            rxjs.throttleTime(100, rxjs.animateFrameScheduler),
             rxjs.map((e) => ({ scale: Math.exp(-e.deltaY / 300), clientX: e.clientX, clientY: e.clientY })),
         ),
         // zoom via keyboard shortcut

@@ -47,6 +47,14 @@
     text-transform: uppercase;
     font-weight: bold;
 }
+.component_menubar select {
+    background: #f2f2f2;
+    color: var(--color);
+    border: 2px solid #f2f2f2;
+    border-radius: 2px;
+    padding: 0 3px 0 3px;
+    margin: 0 3px;
+}
 
 .dark-mode .component_menubar {
     background: var(--bg-color);

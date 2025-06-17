@@ -97,6 +97,7 @@
 	"hus": "image/x-hus",
 	"ico": "image/x-icon",
 	"ics": "text/calendar",
+	"ifc": "application/ifc",
 	"inf": "image/x-inf",
 	"img": "application/octet-stream",
     "ini": "text/x-ini",
