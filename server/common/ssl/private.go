@@ -5,7 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -43,7 +43,7 @@ func pullPrivateKeyFromFS() (*rsa.PrivateKey, []byte, error) {
 	}
 	defer file.Close()
 
-	keyPEM, err := ioutil.ReadAll(file)
+	keyPEM, err := io.ReadAll(file)
 	if err != nil {
 		return nil, nil, err
 	}
