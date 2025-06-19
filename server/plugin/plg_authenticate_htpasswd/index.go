@@ -122,10 +122,7 @@ func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]s
 }
 
 func verifyPassword(password string, hash string, _user string) bool {
-	if password == hash {
-		Log.Warning("plg_authenticate_htpasswd password for user '%s' isn't stored in a secure way, you should hash your password using something like 'openssl passwd -6'", _user)
-		return true
-	} else if strings.HasPrefix(hash, "{SHA}") {
+	if strings.HasPrefix(hash, "{SHA}") {
 		d := sha1.New()
 		d.Write([]byte(password))
 		return subtle.ConstantTimeCompare(
@@ -136,7 +133,12 @@ func verifyPassword(password string, hash string, _user string) bool {
 	var c crypt.Crypter
 	parts := strings.SplitN(hash, "$", 4)
 	if len(parts) != 4 {
-		return false
+		if password == hash {
+			Log.Warning("plg_authenticate_htpasswd password for user '%s' isn't stored in a secure way, you should hash your password using something like 'openssl passwd -6'", _user)
+			return true
+		} else {
+			return false
+		}
 	}
 	if strings.HasPrefix(hash, "$apr1$") {
 		c = apr1_crypt.New()
