@@ -1,8 +1,8 @@
 version: '2'
 services:
   app:
-    container_name: filestash
-    image: machines/filestash:latest
+    container_name: reviewpro-filestash
+    image: reviewpro-filestash:latest
     restart: always
     environment:
     - APPLICATION_URL=

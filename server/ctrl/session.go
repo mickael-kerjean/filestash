@@ -426,12 +426,16 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			mappingToUse[k] = out
 		}
 		mappingToUse["timestamp"] = time.Now().Format(time.RFC3339)
+<<<<<<< HEAD
 		if label != "" && Config.Get("general.extended_session").Bool() {
 			pluginCallback["label"] = label
 			if jsonStr, err := json.Marshal(pluginCallback); err == nil {
 				mappingToUse["session"] = string(jsonStr)
 			}
 		}
+=======
+		mappingToUse["public_ip"] = GetPublicIp(req)
+>>>>>>> 0e7dd1ce (Build reviewpro file-stash / add ip-whitelisting)
 		return mappingToUse, nil
 	}(templateBind)
 	if err != nil {
@@ -507,6 +511,7 @@ func applyCookieSameSiteRule(cookie *http.Cookie, sameSiteValue http.SameSite) *
 	return cookie
 }
 
+<<<<<<< HEAD
 func backendID(session map[string]string) string {
 	return Hash(GenerateID(session)+session["path"], 20)
 }
@@ -538,4 +543,12 @@ func ip(req *http.Request) string {
 
 func ferror(err error) string {
 	return strings.ReplaceAll(err.Error(), " ", "+")
+=======
+func GetPublicIp(req *http.Request) string {
+	if req.Header.Get("X-Forwarded-For") != "" {
+		return req.Header.Get("X-Forwarded-For")
+	} else {
+		return req.RemoteAddr
+	}
+>>>>>>> 0e7dd1ce (Build reviewpro file-stash / add ip-whitelisting)
 }

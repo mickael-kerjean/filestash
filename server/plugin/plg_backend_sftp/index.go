@@ -1,8 +1,10 @@
 package plg_backend_sftp
 
 import (
+	"encoding/json"
 	"io"
 	"net"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -12,6 +14,27 @@ import (
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )
+
+// User represents the response from the credentials service
+type User struct {
+	IpWhitelist string `json:"ipWhitelist"`
+}
+
+// This is a placeholder for your actual implementation
+func getUser(username string) (*User, error) {
+	url := "http://ftp-credentials/credentials/" + username
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var user User
+	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
 
 var SftpCache AppCache
 
@@ -42,6 +65,51 @@ func init() {
 }
 
 func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
+	Log.Info("plg_backend_sftp::Init")
+	Log.Info("publicIp: %s", app.Session["public_ip"])
+
+	if app.Session["public_ip"] != "" {
+		Log.Info("plg_backend_sftp::checkinIp:")
+
+		username := params["username"]
+		clientIp, _, err := net.SplitHostPort(app.Session["public_ip"])
+		if err != nil {
+			Log.Error("Failed to parse client IP:", err)
+			return nil, ErrInternal
+		}
+
+		user, err := getUser(username)
+		if err != nil {
+			Log.Error("Error getting user:", err)
+			return nil, ErrInternal
+		}
+
+		if user.IpWhitelist != "" {
+			// Split and trim the IPs
+			parts := strings.Split(user.IpWhitelist, ",")
+			var ipWhitelist []string
+			for _, ip := range parts {
+				ipWhitelist = append(ipWhitelist, strings.TrimSpace(ip))
+			}
+
+			Log.Info("IP whitelist:", ipWhitelist)
+
+			// Check if clientIp is in whitelist
+			found := false
+			for _, whitelistedIp := range ipWhitelist {
+				if whitelistedIp == clientIp {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				Log.Info("IP address is not whitelisted:", clientIp)
+				return nil, ErrNotAllowed
+			}
+		}
+	}
+
 	p := struct {
 		hostname   string
 		port       string
