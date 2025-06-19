@@ -24,7 +24,7 @@ export default async function(render) {
     }
 
     effect(getPermission().pipe(
-        rxjs.filter(() => calculatePermission(currentPath(), "new-file")),
+        rxjs.filter(() => calculatePermission(currentPath(), "upload")),
         rxjs.tap(() => {
             const $page = createFragment(`
                 <div is="component_filezone"></div>

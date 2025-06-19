@@ -18,6 +18,7 @@ export function calculatePermission(path, action) {
     case "new-folder": return toBool(perms$.value[path]["can_create_directory"]);
     case "delete": return toBool(perms$.value[path]["can_delete"]);
     case "rename": return toBool(perms$.value[path]["can_rename"]);
+    case "upload": return toBool(perms$.value[path]["can_upload"]);
     default: return false;
     }
 }
