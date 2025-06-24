@@ -238,8 +238,12 @@ function resizeLastColumnIfNeeded({ $target, $childs, padding = 0 }) {
 function sortBy(rows, ascending, key) {
     const o = ascending ? 1 : -1;
     return rows.sort((a, b) => {
-        if (a[key] === b[key]) return 0;
-        else if (a[key] < b[key]) return -o;
-        return o;
+        let diff = a[key] - b[key];
+        if (isNaN(diff)) {
+            if (a[key] === b[key]) diff = 0;
+            else if (a[key] < b[key]) diff = -1;
+            else diff = 1;
+        }
+        return o*diff;
     });
 }
