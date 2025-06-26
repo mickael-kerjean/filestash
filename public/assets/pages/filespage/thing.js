@@ -152,7 +152,6 @@ export function createThing({
     } else if (offline) {
         $link.removeAttribute("href");
         $checkbox.classList.add("hidden");
-        $thing.style.cursor = "not-allowed";
         return $thing;
     }
 

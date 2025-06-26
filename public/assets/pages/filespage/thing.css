@@ -8,6 +8,9 @@
 .component_thing:not(.loading):hover .component_datetime {
     display: none;
 }
+.component_thing:not([href]) {
+    cursor: not-allowed;
+}
 .component_thing .component_checkbox {
     display: none;
 }
