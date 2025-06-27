@@ -143,11 +143,11 @@
     inset: 0;
     border-radius: 50%;
     appearance: none;
-    margin: -2px;
     z-index: -1;
 }
 .component_mobilefileupload input[type="file"]:focus-visible {
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.8);
+    outline: 2px solid;
 }
 .component_mobilefileupload input[type="file"]::file-selector-button {
     display: none;
