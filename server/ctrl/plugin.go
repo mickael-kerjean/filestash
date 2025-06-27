@@ -13,15 +13,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func init() {
-	Hooks.Register.Onload(func() {
-		if err := model.PluginDiscovery(); err != nil {
-			Log.Error("Plugin Discovery failed. err=%s", err.Error())
-			os.Exit(1)
-		}
-	})
-}
-
 func PluginExportHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	plgExports := map[string][]string{}
 	for name, plg := range model.PLUGINS {

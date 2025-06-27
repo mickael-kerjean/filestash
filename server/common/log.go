@@ -13,14 +13,14 @@ var (
 	logfile *os.File
 )
 
-func InitLogger() {
-	var err error
-	logfile, err = os.OpenFile(GetAbsolutePath(LOG_PATH, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
+func InitLogger() error {
+	logfile, err := os.OpenFile(GetAbsolutePath(LOG_PATH, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		slog.Printf("ERROR log file: %+v", err)
-		return
+		return err
 	}
 	logfile.WriteString("")
+	return nil
 }
 
 type log struct {
