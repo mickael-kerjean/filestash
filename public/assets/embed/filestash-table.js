@@ -52,7 +52,7 @@ class FilestashTable extends HTMLElement {
                 <title></title>
             </head>
             <body>
-                <div role="main" id="app">
+                <div id="app">
                     <component-bootscreen></component-bootscreen>
                 </div>
 

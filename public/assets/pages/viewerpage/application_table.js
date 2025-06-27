@@ -1,6 +1,6 @@
 import { createElement, nop } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
-import { qs, qsa } from "../../lib/dom.js";
+import { qs, qsa, safe } from "../../lib/dom.js";
 import ajax from "../../lib/ajax.js";
 import { loadCSS } from "../../helpers/loader.js";
 import t from "../../locales/index.js";
@@ -22,7 +22,7 @@ class ITable {
 export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, hasMenubar = true, acl$ = rxjs.EMPTY }) {
     const $page = createElement(`
         <div class="component_tableviewer">
-            <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="component_table_container">
                 <table class="table">
                     <thead class="thead"></thead>

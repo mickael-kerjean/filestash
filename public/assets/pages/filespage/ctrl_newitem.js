@@ -26,10 +26,10 @@ const IMAGE = {
 
 export default async function(render) {
     const $node = createElement(`
-        <div class="component_newitem container">
+        <div class="component_newitem container" id="newthing">
             <div class="component_thing">
                 <div class="mouse-is-hover highlight box flex">
-                    <img class="component_icon" draggable="false" alt="directory">
+                    <img class="component_icon" draggable="false" alt="directory" aria-hidden="true">
                     <span class="file-details">
                         <form class="full-width">
                             <input type="text" name="name" value="" class="full-width">
@@ -38,7 +38,7 @@ export default async function(render) {
                     </span>
                     <span class="component_action">
                         <div class="action">
-                            <div>
+                            <div role="button">
                                 <img class="component_icon" draggable="false" src="${IMAGE.TRASH}" alt="trash">
                             </div>
                         </div>
@@ -109,6 +109,7 @@ export default async function(render) {
     // feature3: submit form
     effect(rxjs.fromEvent($node, "submit").pipe(
         preventDefault(),
+        rxjs.filter(() => $input.value),
         rxjs.mergeMap(() => {
             window.dispatchEvent(new KeyboardEvent("keydown", { keyCode: 27 })); // close
             const type = $input.nextElementSibling.getAttribute("name");

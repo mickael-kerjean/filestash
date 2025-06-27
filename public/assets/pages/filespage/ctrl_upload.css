@@ -139,12 +139,18 @@
     z-index: 1;
 }
 .component_mobilefileupload input[type="file"] {
-    width: 0.1px;
-    height: 0.1px;
-    opacity: 0;
-    overflow: hidden;
     position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    appearance: none;
+    margin: -2px;
     z-index: -1;
+}
+.component_mobilefileupload input[type="file"]:focus-visible {
+    background: rgba(0,0,0,0.8);
+}
+.component_mobilefileupload input[type="file"]::file-selector-button {
+    display: none;
 }
 .component_mobilefileupload input[type="file"]:focus + label, .component_mobilefileupload input[type="file"] + label:hover {
     opacity: 0.95;
@@ -186,6 +192,10 @@
     width: 24px;
     height: 24px;
     padding: 13px;
+}
+.component_mobilefileupload button {
+    padding: 0;
+    border-radius: inherit;
 }
 
 .mobilefileupload-appear {

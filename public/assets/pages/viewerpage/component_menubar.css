@@ -29,6 +29,9 @@
     display: flex;
     align-items: center;
 }
+.component_menubar .action-item button {
+    padding: 0;
+}
 .component_menubar .action-item .component_icon {
     height: 19px;
     width: 19px;

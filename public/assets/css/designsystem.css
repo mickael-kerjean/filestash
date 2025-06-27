@@ -91,7 +91,7 @@ select:-moz-focusring {
     text-shadow: 0 0 0 #000;
 }
 
-[role="main"] { height: 100%; }
+#app { height: 100%; }
 
 .connect-form input:hover,
 .connect-form textarea:hover,

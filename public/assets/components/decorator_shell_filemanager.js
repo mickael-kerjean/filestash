@@ -4,7 +4,7 @@ import rxjs, { effect } from "../lib/rx.js";
 import assert from "../lib/assert.js";
 import { onDestroy } from "../lib/skeleton/lifecycle.js";
 import { animate, slideYOut } from "../lib/animate.js";
-import { qs } from "../lib/dom.js";
+import { qs, safe } from "../lib/dom.js";
 import { loadCSS } from "../helpers/loader.js";
 import { init as initBreadcrumb } from "../components/breadcrumb.js";
 import ctrlSidebar, { init as initSidebar } from "./sidebar.js";
@@ -13,10 +13,10 @@ export default function(ctrl) {
     const urlToPath = (pathname = "") => decodeURIComponent(pathname.split("/").filter((_, i) => i !== 1).join("/"));
     const $page = createElement(`
         <div class="component_filemanager_shell" style="flex-direction:row">
-            <div data-bind="sidebar" class="hidden"></div>
-            <div style="width:100%;display: flex; flex-direction: column;">
-                <component-breadcrumb path="${urlToPath(history.state.previous)}"></component-breadcrumb>
-                <div data-bind="filemanager-children"></div>
+            <aside data-bind="sidebar" class="hidden"></aside>
+            <div style="width:100%;display:flex;flex-direction:column;">
+                <component-breadcrumb path="${safe(urlToPath(history.state.previous))}"></component-breadcrumb>
+                <main id="main" data-bind="filemanager-children"></main>
             </div>
         </div>
     `);

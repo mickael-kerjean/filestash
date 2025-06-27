@@ -1,6 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
-import { qs } from "../../lib/dom.js";
+import { qs, safe } from "../../lib/dom.js";
 import { loadCSS } from "../../helpers/loader.js";
 import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
@@ -12,9 +12,9 @@ import "../../components/icon.js";
 export default async function(render, { acl$, getFilename, getDownloadUrl, hasMenubar = true }) {
     const $page = createElement(`
         <div class="component_filedownloader">
-            <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="download_button no-select">
-                <a download="${getFilename()}" href="${getDownloadUrl()}">${t("DOWNLOAD")}</a>
+                <a download="${safe(getFilename())}" href="${safe(getDownloadUrl())}">${t("DOWNLOAD")}</a>
                 <component-icon name="loading" class="hidden"></component-icon>
             </div>
         </div>

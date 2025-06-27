@@ -74,7 +74,7 @@
     position: absolute;
     transition: 0.15s ease-out all;
     transform: translateX(0px);
-    padding: 2px;
+    padding: 2.5px;
     border-radius: 50px;
 }
 .component_thing .component_action{
@@ -106,7 +106,8 @@
     transition-delay: 0.1s;
     transform: translateX(0);
 }
-.component_thing:hover .component_action { opacity: 1; display: block; }
+.component_thing:hover .component_action,
+.component_thing:focus-within .component_action { opacity: 1; display: block; }
 .component_thing .component_action { opacity: 0; }
 .component_thing.selected .component_action { opacity: 0; transition-delay: 0s; }
 .component_thing:has(.component_icon[alt="loading"]) .component_action { display: none; }
@@ -116,9 +117,10 @@
 }
 .component_thing .component_checkbox .indicator {
     top: 7px;
-    left: 6px;
+    left: 7px;
 }
 .touch-no .component_thing:hover .component_checkbox,
+.touch-no .component_thing:focus-within .component_checkbox,
 .component_thing.selected .component_checkbox {
     transition-delay: 0.1s;
     opacity: 1;
@@ -282,6 +284,7 @@
     background-color: inherit;
 }
 .list > .component_thing.view-grid:hover .component_checkbox,
+.list > .component_thing.view-grid:focus-within .component_checkbox,
 .list > .component_thing.view-grid.selected .component_checkbox {
     transform: translateX(0px);
 }

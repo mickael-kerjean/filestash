@@ -1,6 +1,7 @@
 import { toHref } from "../lib/skeleton/router.js";
 import { animate, slideYOut, slideYIn, opacityOut } from "../lib/animate.js";
 import { forwardURLParams } from "../lib/path.js";
+import { safe } from "../../lib/dom.js";
 import assert from "../lib/assert.js";
 import { settingsSave } from "../lib/store.js";
 import { get as getConfig } from "../model/config.js";
@@ -27,15 +28,15 @@ class ComponentBreadcrumb extends HTMLElement {
 
     async __init() {
         this.innerHTML = `
-        <div class="component_breadcrumb container" role="navigation">
+        <nav class="component_breadcrumb container" aria-label="Breadcrumb">
             <div class="breadcrumb no-select">
                 <div class="ul">
                     <img alt="sidebar-open" class="hidden" src="data:image/svg+xml;base64,PHN2ZwogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHZpZXdCb3g9IjAgMCAxNiAxNiIKICAgd2lkdGg9IjE2IgogICBoZWlnaHQ9IjE2IgogICBmaWxsPSIjN2Y3ZjdmIj4KICA8cGF0aAogICAgIGQ9Im0gNi45MjY1NTM2LDguMTc3IC0yLjM5NiwyLjM5NiBhIDAuMjUsMC4yNSAwIDAgMSAtMC40MjcsLTAuMTc3IFYgNS42MDQgYSAwLjI1LDAuMjUgMCAwIDEgMC40MjcsLTAuMTc3IGwgMi4zOTYsMi4zOTYgYSAwLjI1LDAuMjUgMCAwIDEgMCwwLjM1NCB6IiAvPgogIDxwYXRoCiAgICAgZD0iTTAgMS43NUMwIC43ODQuNzg0IDAgMS43NSAwaDEyLjVDMTUuMjE2IDAgMTYgLjc4NCAxNiAxLjc1djEyLjVBMS43NSAxLjc1IDAgMCAxIDE0LjI1IDE2SDEuNzVBMS43NSAxLjc1IDAgMCAxIDAgMTQuMjVabTEuNzUtLjI1YS4yNS4yNSAwIDAgMC0uMjUuMjV2MTIuNWMwIC4xMzguMTEyLjI1LjI1LjI1SDkuNXYtMTNabTEyLjUgMTNhLjI1LjI1IDAgMCAwIC4yNS0uMjVWMS43NWEuMjUuMjUgMCAwIDAtLjI1LS4yNUgxMXYxM1oiIC8+Cjwvc3ZnPgo=">
-                    <span data-bind="path"></span>
+                    <span data-bind="path" role="status"></span>
                     <div class="li component_logout">${this.__htmlLogout()}</div>
                 </div>
             </div>
-        </div>`;
+        </nav>`;
         assert.type(this.querySelector("img[alt=\"sidebar-open\"]"), HTMLElement).onclick = () => {
             settingsSave({ visible: true }, "sidebar");
             window.dispatchEvent(new Event("resize"));
@@ -95,7 +96,7 @@ class ComponentBreadcrumb extends HTMLElement {
                 <div class="component_path-element n${idx}">
                     <div class="li component_path-element-wrapper">
                         <div class="label">
-                            <div>${limitSize(label)}</div><span></span>
+                            <div aria-current="location">${safe(limitSize(label))}</div><span></span>
                         </div>
                     </div>
                 </div>`;
@@ -111,16 +112,15 @@ class ComponentBreadcrumb extends HTMLElement {
                 if (minify) return `
                     ...
                     <span class="title">
-                        ${limitSize(label, true)}
+                        ${safe(limitSize(label, true))}
                     </span>
                 `;
-                return `<div>${limitSize(label)}</div>`;
+                return `<div>${safe(limitSize(label))}</div>`;
             })();
-
             return `
-                <div class="component_path-element n${idx}" data-path="${pathChunks.slice(0, idx+1).join("/") + "/"}">
+                <div class="component_path-element n${idx}" data-path="${safe(pathChunks.slice(0, idx+1).join("/")) + "/"}">
                     <div class="li component_path-element-wrapper">
-                        <a class="label" href="${forwardURLParams(toHref("/files" + encodeURIComponent(link).replaceAll("%2F", "/")), ["share", "canary"])}" data-link>
+                        <a class="label" aria-label="${safe(label)}" href="${forwardURLParams(toHref("/files" + encodeURIComponent(link).replaceAll("%2F", "/")), ["share", "canary"])}" data-link>
                             ${tmpl}
                         </a>
                         <div class="component_separator">

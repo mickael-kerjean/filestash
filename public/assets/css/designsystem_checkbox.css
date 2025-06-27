@@ -5,21 +5,19 @@
   width: 25px;
   vertical-align: middle;
   position: relative;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 .component_checkbox input[type="checkbox"], .component_checkbox input[type="radio"] {
     position: absolute;
-    top: 0px;
-    visibility: hidden;
+    inset: 50px;
 }
 .component_checkbox input[type="checkbox"]:focus ~ span, .component_checkbox input[type="radio"]:focus ~ span {
     border: 2px solid rgba(0, 0, 0, 0.05);
 }
 .component_checkbox input[type="checkbox"]:focus:checked ~ span, .component_checkbox input[type="radio"]:focus:checked ~ span {
     border: 2px solid rgba(0, 0, 0, 0.05);
+}
+.component_checkbox input[type="checkbox"]:focus-visible ~ span {
+    outline: 2px solid;
 }
 .component_checkbox input[type="checkbox"]:checked ~ span, .component_checkbox input[type="radio"]:checked ~ span {
     color: white;

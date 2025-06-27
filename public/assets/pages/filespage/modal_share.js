@@ -26,9 +26,9 @@ export default function(render, { path }) {
         <div class="component_share">
             <h2>${t("Create a New Link")}</h2>
             <div class="share--content link-type no-select">
-                <div data-role="viewer">${t("Viewer")}</div>
-                <div data-role="editor">${t("Editor")}</div>
-                <div data-role="uploader" class="${isDir(path) ? "" : "hidden"}">${t("Uploader")}</div>
+                <button data-role="viewer">${t("Viewer")}</button>
+                <button data-role="editor">${t("Editor")}</button>
+                <button data-role="uploader" class="${isDir(path) ? "" : "hidden"}">${t("Uploader")}</button>
             </div>
             <div data-bind="share-body"></div>
         </div>

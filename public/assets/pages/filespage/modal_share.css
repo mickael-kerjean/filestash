@@ -28,7 +28,7 @@
     display: flex;
     flex-direction: row;
 }
-.component_share .share--content.link-type > div {
+.component_share .share--content.link-type > button {
     cursor: pointer;
     text-align: center;
     margin-right: 4px;
@@ -44,18 +44,18 @@
     justify-content: center;
     display: flex;
 }
-.dark-mode .component_share .share--content.link-type > div {
+.dark-mode .component_share .share--content.link-type > button {
     background: var(--color);
     color: rgba(0,0,0,0.6);
 }
-.component_share .share--content.link-type > div.active {
+.component_share .share--content.link-type > button.active {
     background: var(--primary);
 }
-.component_share .share--content.link-type > div:hover {
+.component_share .share--content.link-type > button:hover {
     transition: background 0.4s;
     background: var(--primary) radial-gradient(circle, transparent 1%, var(--emphasis-primary) 1%) center/15000%;
 }
-.component_share .share--content.link-type > div:active {
+.component_share .share--content.link-type > button:active {
     background-color: #00000033;
     background-size: 100%;
     transition: background 0s;

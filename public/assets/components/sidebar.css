@@ -63,8 +63,9 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     .component_filemanager_shell .component_sidebar ul { margin-left: 10px; }
 }
 .component_filemanager_shell .component_sidebar ul li {
-    padding-left: 5px;
     margin-top: 0px;
+    padding-left: 5px;
+    padding-right: 2px;
 }
 .component_filemanager_shell .search .component_sidebar ul {
     margin: 0;
@@ -78,7 +79,7 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     width: 100%;
     box-sizing: border-box;
 }
-.component_filemanager_shell .component_sidebar a:hover, .component_filemanager_shell .component_sidebar a.active {
+.component_filemanager_shell .component_sidebar a:hover, .component_filemanager_shell .component_sidebar a[aria-selected="true"] {
     background: var(--border);
     border-radius: 3px;
 }

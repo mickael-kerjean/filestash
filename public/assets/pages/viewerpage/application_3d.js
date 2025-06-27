@@ -1,6 +1,6 @@
 import { createElement, createRender, nop } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
-import { qs } from "../../lib/dom.js";
+import { qs, safe } from "../../lib/dom.js";
 import { AjaxError } from "../../lib/error.js";
 import { load as loadPlugin } from "../../model/plugin.js";
 import { loadCSS } from "../../helpers/loader.js";
@@ -26,7 +26,7 @@ class I3DLoader {
 export default async function(render, { mime, acl$, getDownloadUrl = nop, getFilename = nop, hasCube = true, hasMenubar = true }) {
     const $page = createElement(`
         <div class="component_3dviewer">
-            <component-menubar filename="${getFilename() || ""}" class="${!hasMenubar && "hidden"}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="threeviewer_container">
               <div class="drawarea"></div>
               <div class="toolbar scroll-y"></div>

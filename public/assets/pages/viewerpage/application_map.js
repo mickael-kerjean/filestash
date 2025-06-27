@@ -1,6 +1,6 @@
 import { createElement, nop } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
-import { qs } from "../../lib/dom.js";
+import { qs, safe } from "../../lib/dom.js";
 import ajax from "../../lib/ajax.js";
 import { load as loadPlugin } from "../../model/plugin.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
@@ -17,7 +17,7 @@ class IMap {
 export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, acl$ = rxjs.EMPTY }) {
     const $page = createElement(`
         <div class="component_map">
-            <component-menubar filename="${getFilename() || ""}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}"></component-menubar>
             <div id="map"></div>
         </div>
     `);

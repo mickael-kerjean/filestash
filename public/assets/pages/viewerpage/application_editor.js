@@ -1,7 +1,7 @@
 import { createElement, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideXIn, opacityOut } from "../../lib/animate.js";
-import { qs } from "../../lib/dom.js";
+import { qs, safe } from "../../lib/dom.js";
 import { get as getConfig } from "../../model/config.js";
 import { load as loadPlugin } from "../../model/plugin.js";
 import { createLoader } from "../../components/loader.js";
@@ -27,7 +27,7 @@ class IEditor {}
 export default async function(render, { acl$, getFilename, getDownloadUrl, mime }) {
     const $page = createElement(`
         <div class="component_ide">
-            <component-menubar filename="${getFilename()}" class="hidden"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}" class="hidden"></component-menubar>
             <div class="component_editor hidden"></div>
             <button is="component-fab" class="hidden"></button>
         </div>

@@ -1,6 +1,7 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import { animate, opacityOut, opacityIn } from "../../lib/animate.js";
 import assert from "../../lib/assert.js";
+import { safe } from "../../lib/dom.js";
 import { forwardURLParams } from "../../lib/path.js";
 import { get as getConfig } from "../../model/config.js";
 
@@ -160,7 +161,7 @@ export function createThing({
     $thing.classList.add(checked ? "selected" : "not-selected");
     $checkbox.firstElementChild.checked = checked;
     $checkbox.onclick = (e) => {
-        e.preventDefault();
+        if (e.target.nodeName !== "INPUT") e.preventDefault(); // eg: keyboard navigation
         e.stopPropagation();
         addSelection({
             n,

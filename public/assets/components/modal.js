@@ -17,20 +17,21 @@ export const MODAL_RIGHT_BUTTON = 2;
 export const MODAL_QUIT = 0;
 
 const $modal = createElement(`
-    <div class="component_modal" id="modal-box">
+    <div class="component_modal" id="modal-box" role="dialog" aria-modal="true">
         <div>
             <div class="component_popup">
                 <div class="popup--content">
                     <div class="modal-message" data-bind="body"><!-- MODAL BODY --></div>
                 </div>
                 <div class="buttons">
-                    <button type="button"></button>
-                    <button type="submit" class="emphasis"></button>
+                    <button type="button" disabled></button>
+                    <button type="submit" class="emphasis" disabled></button>
                 </div>
             </div>
         </div>
     </div>
 `);
+const $app = qs(document.body, "#app");
 
 class ModalComponent extends HTMLElement {
     async connectedCallback() {
@@ -42,6 +43,7 @@ class ModalComponent extends HTMLElement {
 
         // feature: build the dom
         qs($modal, `[data-bind="body"]`).replaceChildren($node);
+        $app.setAttribute("inert", "true");
         this.replaceChildren($modal);
         qsa($modal, ".component_popup > div.buttons > button").forEach(($button, i) => {
             assert.truthy(i >= 0 && i <= 2);
@@ -57,10 +59,12 @@ class ModalComponent extends HTMLElement {
 
             if (currentLabel !== null) {
                 $button.classList.remove("hidden");
+                $button.removeAttribute("disabled");
                 $button.textContent = currentLabel;
                 $button.onclick = () => close$.next(buttonIndex);
             } else {
                 $button.classList.add("hidden");
+                $button.setAttribute("disabled", "true");
             }
         });
         effect(rxjs.fromEvent($modal, "click").pipe(
@@ -75,6 +79,7 @@ class ModalComponent extends HTMLElement {
         // feature: closing the modal
         const $body = () => qs($modal, "div > div");
         effect(close$.pipe(
+            rxjs.tap(() => $app.removeAttribute("inert")),
             rxjs.mergeMap((data) => onQuit(data, $node) || Promise.resolve()),
             rxjs.tap(() => animate($body(), {
                 time: 200,

@@ -1,6 +1,6 @@
 import { createElement, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
-import { qs } from "../../lib/dom.js";
+import { qs, safe } from "../../lib/dom.js";
 import assert from "../../lib/assert.js";
 import { loadJS, loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
@@ -11,7 +11,7 @@ import { renderMenubar, buttonDownload } from "./component_menubar.js";
 export default function(render, { getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_ebookviewer">
-            <component-menubar filename="${getFilename()}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}"></component-menubar>
             <div class="ebookviewer_container" data-bind="epub"></div>
         </div>
     `);

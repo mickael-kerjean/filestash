@@ -13,7 +13,7 @@ export default function(render) {
     let hasBack = window.self === window.top;
     if (!render) {
         render = createRender(document.body);
-        try { render = createRender(qs(document.body, "[role=\"main\"]")); }
+        try { render = createRender(qs(document.body, "#app")); }
         catch (err) { hasBack = false; }
     }
 

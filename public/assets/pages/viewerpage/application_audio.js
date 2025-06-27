@@ -1,6 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../../lib/rx.js";
-import { qs } from "../../lib/dom.js";
+import { qs, safe } from "../../lib/dom.js";
 import { onDestroy } from "../../lib/skeleton/lifecycle.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
@@ -21,7 +21,7 @@ const STATUS_BUFFERING = "BUFFERING";
 export default function(render, { getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_audioplayer">
-            <component-menubar filename="${getFilename()}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}"></component-menubar>
             <div class="audioplayer_container">
                 <div class="audioplayer_box">
                     <div data-bind="loader" class="hidde">

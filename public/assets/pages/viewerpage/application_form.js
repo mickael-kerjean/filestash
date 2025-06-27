@@ -1,7 +1,7 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation, onClick } from "../../lib/rx.js";
 import { animate, slideXIn, opacityOut } from "../../lib/animate.js";
-import { qs, qsa } from "../../lib/dom.js";
+import { qs, qsa, safe } from "../../lib/dom.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
@@ -19,7 +19,7 @@ import "../../components/fab.js";
 export default function(render, { acl$, getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_formviewer">
-            <component-menubar filename="${getFilename()}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}"></component-menubar>
             <div class="formviewer_container hidden">
                 <form class="sticky box"></form>
             </div>
@@ -51,14 +51,14 @@ export default function(render, { acl$, getFilename, getDownloadUrl }) {
                 <label class="no-select">
                     <div>
                         <span class="ellipsis">
-                            ${format(label)}
+                            ${safe(format(label))}
                             ` + (required === true ? `<span class="mandatory">*</span>`: "") +`
                         </span>
                         <div data-bind="children"></div>
                     </div>
                     <div>
                         <span class="nothing"></span>
-                        <div class="description">${description || ""}</div>
+                        <div class="description">${safe(description)}</div>
                     </div>
                 </label>
             `),

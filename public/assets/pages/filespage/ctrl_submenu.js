@@ -3,7 +3,7 @@ import rxjs, { effect, onClick, preventDefault } from "../../lib/rx.js";
 import { animate, slideXIn, slideYIn } from "../../lib/animate.js";
 import { basename, forwardURLParams } from "../../lib/path.js";
 import assert from "../../lib/assert.js";
-import { qs, qsa } from "../../lib/dom.js";
+import { qs, qsa, safe } from "../../lib/dom.js";
 import { get as getConfig } from "../../model/config.js";
 import { loadCSS } from "../../helpers/loader.js";
 import t from "../../locales/index.js";
@@ -44,7 +44,7 @@ const mv = (from, to) => withVirtualLayer(
 
 export default async function(render) {
     const $page = createElement(`
-        <div class="component_submenu container">
+        <div class="component_submenu container" role="toolbar">
             <div class="action left no-select"></div>
             <div class="action right no-select"></div>
         </div>
@@ -75,12 +75,12 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
         rxjs.filter((l) => l === 0),
         rxjs.mergeMap(() => getPermission()),
         rxjs.map(() => render(createFragment(`
-            <button data-action="new-file" title="${t("New File")}"${toggleDependingOnPermission(currentPath(), "new-file")}>
+            <button data-action="new-file" title="${t("New File")}"${toggleDependingOnPermission(currentPath(), "new-file")} aria-controls="newthing">
                 ${window.innerWidth < 410 && t("New File").length > 10
         ? t("New File", null, "NEW_FILE::SHORT")
         : t("New File")}
             </button>
-            <button data-action="new-folder" title="${t("New Folder")}"${toggleDependingOnPermission(currentPath(), "new-folder")}>
+            <button data-action="new-folder" title="${t("New Folder")}"${toggleDependingOnPermission(currentPath(), "new-folder")} aria-controls="newthing">
                 ${window.innerWidth < 410 && t("New Folder").length > 10
         ? t("New Folder", null, "NEW_FOLDER::SHORT")
         : t("New Folder")}
@@ -119,7 +119,7 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
             <button data-action="share" title="${t("Share")}" class="${(getConfig("enable_share") && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
                 ${t("Share")}
             </button>
-            <button data-action="tag" title="${t("Tag")}" class="${new URLSearchParams(location.search).get("canary") === "true" ? "" : "hidden"}">
+            <button data-action="tag" title="${t("Tag")}" class="${new URLSearchParams(location.search).get("canary") === "true" ? "" : "hidden"}" tabindex="-1">
                 ${t("Tag")}
             </button>
         `))),
@@ -233,37 +233,31 @@ function componentRight(render, { getSelectionLength$ }) {
             search,
             $page: render(createFragment(`
                 <form style="display: inline-block;" onsubmit="event.preventDefault()">
-                    <input class="hidden" placeholder="${t("search")}" name="q" style="
-                        background: transparent;
-                        border: none;
-                        padding-left: 5px;
-                        color: var(--color);
-                        font-size: 0.95rem;"
-                        value="${search || ""}"
+                    <input value="${safe(search)}" class="hidden" placeholder="${t("search")}" name="q" id="searchInput" aria-label="${t("search")}" tabindex="-1" />
                 </form>
-                <button data-action="search" title="${t("Search")}">
+                <button data-action="search" title="${t("Search")}" aria-controls="searchInput">
                     <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.MAGNIFYING_GLASS}" alt="search" />
                 </button>
                 <button data-action="view" title="${t("Layout")}">
                     ${defaultLayout(view)}
                 </button>
-                <button data-action="sort" title="${t("Sort")}">
+                <button data-action="sort" title="${t("Sort")}" aria-haspopup="listbox" id="sortToggle">
                     ${defaultSort(sort)}
                 </button>
-                <div class="component_dropdown view sort" data-target="sort">
+                <div class="component_dropdown view sort" data-target="sort" role="listbox" aria-labelledby="sortToggle">
                     <div class="dropdown_container">
                         <ul>
-                            <li data-target="type">
+                            <li data-target="type" role="option">
                                 ${t("Sort By Type")}
                                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.CHECK}" alt="check" />
                             </li>
-                            <li data-target="date">
+                            <li data-target="date" role="option">
                                 ${t("Sort By Date")}
                             </li>
-                            <li data-target="name">
+                            <li data-target="name" role="option">
                                 ${t("Sort By Name")}
                             </li>
-                            <li data-target="size">
+                            <li data-target="size" role="option">
                                 ${t("Sort By Size")}
                             </li>
                         </ul>
@@ -277,10 +271,12 @@ function componentRight(render, { getSelectionLength$ }) {
                 const $img = $button.querySelector("img");
                 if ($img.getAttribute("alt") === "list") {
                     setState("view", "grid");
+                    $button.setAttribute("aria-pressed", "true");
                     $img.setAttribute("alt", "grid");
                     $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.LIST_VIEW);
                 } else {
                     setState("view", "list");
+                    $button.setAttribute("aria-pressed", "false");
                     $img.setAttribute("alt", "list");
                     $img.setAttribute("src", "data:image/svg+xml;base64," + ICONS.GRID_VIEW);
                 }
@@ -303,6 +299,7 @@ function componentRight(render, { getSelectionLength$ }) {
                     targetStateIsOpen
                         ? $sort.classList.add("active")
                         : $sort.classList.remove("active");
+                    $sort.setAttribute("aria-expanded", targetStateIsOpen);
 
                     return onClick($lis).pipe(
                         rxjs.first(),
@@ -431,7 +428,7 @@ function generateLinkAttributes(selections) {
     }
     href += selections.map(({ path }) => "path=" + encodeURIComponent(path)).join("&");
     href = forwardURLParams(href, ["share"]);
-    return `href="${href}" download="${filename}"`;
+    return `href="${href}" download="${safe(filename)}"`;
 }
 
 function toggleDependingOnPermission(path, action) {

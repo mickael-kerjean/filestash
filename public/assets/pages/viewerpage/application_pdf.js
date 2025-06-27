@@ -1,6 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect, onLoad } from "../../lib/rx.js";
-import { qs } from "../../lib/dom.js";
+import { qs, safe } from "../../lib/dom.js";
 import { createLoader } from "../../components/loader.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { join } from "../../lib/path.js";
@@ -21,11 +21,11 @@ export default async function(render, opts) {
 function ctrlPDFNative(render, { getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_pdfviewer">
-            <component-menubar filename="${getFilename()}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}"></component-menubar>
             <div data-bind="pdf">
                 <embed
                     class="hidden"
-                    src="${getDownloadUrl()}#toolbar=0"
+                    src="${safe(getDownloadUrl())}#toolbar=0"
                     type="application/pdf"
                 />
             </div>
@@ -46,7 +46,7 @@ function ctrlPDFNative(render, { getFilename, getDownloadUrl }) {
 async function ctrlPDFJs(render, { getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_pdfviewer">
-            <component-menubar filename="${getFilename()}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}"></component-menubar>
             <div data-bind="pdf"></div>
         </div>
     `);
