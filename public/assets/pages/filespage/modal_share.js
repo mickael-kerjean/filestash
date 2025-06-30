@@ -4,7 +4,7 @@ import rxjs, { effect, onClick } from "../../lib/rx.js";
 import assert from "../../lib/assert.js";
 import ajax from "../../lib/ajax.js";
 import { forwardURLParams, join } from "../../lib/path.js";
-import { qs, qsa } from "../../lib/dom.js";
+import { qs, qsa, safe } from "../../lib/dom.js";
 import { randomString } from "../../lib/random.js";
 import { animate } from "../../lib/animate.js";
 import { createForm, mutateForm } from "../../lib/form.js";
@@ -155,7 +155,7 @@ async function ctrlListShares(render, { load, remove, all, formLinks }) {
             const $share = createElement(`
                 <div class="link-details no-select">
                     <div class="copy role ellipsis">${t(shareObjToRole(shareObj))}</div>
-                    <div class="copy path ellipsis" title="${shareObj.path}">${shareObj.path}</div>
+                    <div class="copy path ellipsis" title="${safe(shareObj.path)}">${safe(shareObj.path)}</div>
                     <div class="link-details--icons">
                         <img class="component_icon" draggable="false" src="${IMAGE.DELETE}" alt="delete">
                         <img class="component_icon" draggable="false" src="${IMAGE.EDIT}" alt="edit">

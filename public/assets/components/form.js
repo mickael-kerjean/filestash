@@ -68,6 +68,12 @@ export function $renderInput(options = {}) {
             $node.setAttribute("autocorrect", "off");
             $node.setAttribute("autocapitalize", "off");
             $node.setAttribute("spellcheck", "off");
+            if (type === "password") {
+                $node.setAttribute("data-lpignore", "true"); // LastPass
+                $node.setAttribute("data-1p-ignore", "true"); // 1Password
+                $node.setAttribute("data-bwignore", "true"); // Bitwarden
+                $node.setAttribute("data-protonpass-ignore", "true"); // Proton Pass
+            }
         });
         if (pattern) attrs.push(($node) => $node.setAttribute("pattern", pattern));
         if (required) attrs.push(($node) => $node.setAttribute("required", ""));

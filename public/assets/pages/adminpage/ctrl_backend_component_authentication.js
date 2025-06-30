@@ -248,7 +248,7 @@ export default async function(render) {
         rxjs.tap(($node) => {
             /** @type { Element | undefined} */
             let $relatedBackendField;
-            $page.querySelectorAll(`[data-bind="attribute-mapping"] fieldset`).forEach(($el, i) => {
+            qsa($page, `[data-bind="attribute-mapping"] fieldset`).forEach(($el, i) => {
                 if (i === 0) $relatedBackendField = $el;
                 else $el.remove();
             });
@@ -258,7 +258,10 @@ export default async function(render) {
 
     // feature: form input change handler
     effect(setupAMForm$.pipe(
-        rxjs.switchMap(() => rxjs.fromEvent($page, "input")),
+        rxjs.mapTo(new Date()),
+        rxjs.switchMap((d) => rxjs.fromEvent($page, "input").pipe(
+            rxjs.filter(() => new Date() - d > 200), // to prevent password manager from auto triggerring events ...
+        )),
         rxjs.mergeMap(() => getMiddlewareEnabled().pipe(rxjs.first())),
         saveMiddleware(),
     ));
