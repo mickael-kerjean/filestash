@@ -79,13 +79,13 @@ export default async function ctrlSidebar(render, nRestart = 0) {
     ctrlTagPane(createRender(qs($sidebar, `[data-bind="your-tags"]`)));
 }
 
-const withResize = (function () {
+const withResize = (function() {
     let memory = null;
     return ($sidebar) => {
         const $resize = createElement(`<div class="resizer"></div>`);
         effect(rxjs.fromEvent($resize, "mousedown").pipe(
             rxjs.mergeMap((e0) => rxjs.fromEvent(document, "mousemove").pipe(
-                rxjs.takeUntil(rxjs.fromEvent(document,  "mouseup")),
+                rxjs.takeUntil(rxjs.fromEvent(document, "mouseup")),
                 rxjs.startWith(e0),
                 rxjs.pairwise(),
                 rxjs.map(([prevX, currX]) => currX.clientX - prevX.clientX),
@@ -100,7 +100,7 @@ const withResize = (function () {
             }),
         ));
         $sidebar.appendChild($resize);
-    }
+    };
 }());
 
 async function ctrlNavigationPane(render, { $sidebar, nRestart }) {

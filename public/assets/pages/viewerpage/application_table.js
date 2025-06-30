@@ -1,4 +1,4 @@
-import { createElement, nop } from "../../lib/skeleton/index.js";
+import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
 import ajax from "../../lib/ajax.js";
@@ -19,7 +19,7 @@ class ITable {
     getBody() { throw new Error("NOT_IMPLEMENTED"); }
 }
 
-export default async function(render, { mime, getDownloadUrl = nop, getFilename = nop, hasMenubar = true, acl$ = rxjs.EMPTY }) {
+export default async function(render, { mime, getDownloadUrl, getFilename, hasMenubar = true, acl$ = rxjs.EMPTY }) {
     const $page = createElement(`
         <div class="component_tableviewer">
             <component-menubar filename="${safe(getFilename())}" class="${!hasMenubar && "hidden"}"></component-menubar>

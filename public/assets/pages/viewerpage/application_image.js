@@ -76,7 +76,7 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
         rxjs.tap(() => {
             const cancel = animate($photo, {
                 onEnter: () => $photo.classList.remove("hidden"),
-                onExit: async () => (await cancel)(),
+                onExit: async() => (await cancel)(),
                 time: 300,
                 easing: "cubic-bezier(.51,.92,.24,1.15)",
                 keyframes: [
@@ -84,7 +84,7 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
                     { opacity: 1 },
                     { opacity: 1, transform: "scale(1)" },
                 ],
-            })
+            });
         }),
         rxjs.catchError((err) => {
             if (err.target instanceof HTMLElement && err.type === "error") {

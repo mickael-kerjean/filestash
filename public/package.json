@@ -133,6 +133,9 @@
       ],
       "accessor-pairs": [
         "off"
+      ],
+      "no-new": [
+        "off"
       ]
     }
   },

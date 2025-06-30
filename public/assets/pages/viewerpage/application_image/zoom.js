@@ -1,7 +1,7 @@
 import rxjs, { effect } from "../../../lib/rx.js";
 import { qs } from "../../../lib/dom.js";
 
-export default function ({ $img, $page }) {
+export default function({ $img, $page }) {
     const $navigation = qs($page, `[data-bind="component_navigation"]`);
 
     effect(rxjs.merge(...builder({ $img })).pipe(
@@ -12,8 +12,8 @@ export default function ({ $img, $page }) {
             const next = Math.min(20, Math.max(1, state.scale * (scale ?? 1)));
             if (next > 1) {
                 const rect = $img.getBoundingClientRect();
-                const ox = (clientX ?? rect.left + rect.width  / 2) - rect.left;
-                const oy = (clientY ?? rect.top  + rect.height / 2) - rect.top;
+                const ox = (clientX ?? rect.left + rect.width / 2) - rect.left;
+                const oy = (clientY ?? rect.top + rect.height / 2) - rect.top;
                 const f = next / state.scale;
                 state.x += (1 - f) * ox;
                 state.y += (1 - f) * oy;
@@ -27,7 +27,7 @@ export default function ({ $img, $page }) {
         }, { scale: 1, x: 0, y: 0, duration: 0 }),
         rxjs.tap(({ scale, x, y, duration }) => {
             $img.style.transition = `transform ${duration}ms ease`;
-            $img.style.transform  = `translate(${x}px,${y}px) scale(${scale})`;
+            $img.style.transform = `translate(${x}px,${y}px) scale(${scale})`;
             if (scale === 1) $navigation.classList.remove("hidden");
         }),
     ));
@@ -47,11 +47,11 @@ function builder({ $img }) {
         rxjs.fromEvent($img.parentElement, "wheel").pipe(
             rxjs.tap((e) => e.preventDefault()),
             rxjs.bufferTime(100),
-            rxjs.filter(events => events.length > 0),
+            rxjs.filter((events) => events.length > 0),
             rxjs.map((events) => {
                 let out = null;
                 for (let i=0; i<events.length; i++) {
-                    const scale = Math.min(Math.exp(-events[i].deltaY / 300), 2)
+                    const scale = Math.min(Math.exp(-events[i].deltaY / 300), 2);
                     if (out === null) out = ({ scale, clientX: events[i].clientX, clientY: events[i].clientY });
                     else if (Math.abs(scale) > Math.abs(out.scale)) out = ({ scale, clientX: events[i].clientX, clientY: events[i].clientY });
                 }
@@ -99,12 +99,12 @@ function builder({ $img }) {
         ),
         // grab and drag
         rxjs.fromEvent($img.parentElement, "mousedown").pipe(
-            rxjs.filter(e => e.target === $img && e.button === 0),
+            rxjs.filter((e) => e.target === $img && e.button === 0),
             rxjs.switchMap((down) => {
                 let prev = { x: down.clientX, y: down.clientY, t: down.timeStamp };
                 const move$ = rxjs.fromEvent(window, "mousemove").pipe(
                     rxjs.takeUntil(rxjs.fromEvent(window, "mouseup")),
-                    rxjs.map(m => {
+                    rxjs.map((m) => {
                         const dx = m.clientX - prev.x;
                         const dy = m.clientY - prev.y;
                         const dt = m.timeStamp - prev.t || 1;
@@ -138,5 +138,5 @@ function builder({ $img }) {
                 return rxjs.merge(move$, $inertia);
             }),
         ),
-    ]
+    ];
 }

@@ -37,7 +37,7 @@ self.addEventListener("activate", (event) => {
     })());
 });
 
-self.addEventListener("fetch", async (event) => {
+self.addEventListener("fetch", async(event) => {
     if (!event.request.url.startsWith(location.origin + "/assets/")) return;
 
     event.respondWith((async() => {
@@ -78,7 +78,7 @@ async function preload({ urls, cache, cleanup }) {
     cleanup.push(() => evtsrc.close());
 
     let i = 0;
-    const messageHandler = async (resolve, event, decoder) => {
+    const messageHandler = async(resolve, event, decoder) => {
         const url = event.lastEventId;
         let mime = "application/octet-stream";
         if (url.endsWith(".css")) mime = "text/css";

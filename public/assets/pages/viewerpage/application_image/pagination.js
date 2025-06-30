@@ -105,7 +105,7 @@ function initMobileNavigation({ $img, $navigation }) {
         active: false,
         originX: null,
         originT: null,
-        dist:   null,
+        dist: null,
     };
 
     effect(rxjs.fromEvent($img, "touchstart", { passive: true }).pipe(rxjs.debounceTime(10), rxjs.tap((event) => {
@@ -122,7 +122,7 @@ function initMobileNavigation({ $img, $navigation }) {
         $img.style.transform = `translateX(${state.dist}px)`;
     })));
 
-    effect(rxjs.fromEvent($img, "touchend").pipe(rxjs.tap(async (event) => {
+    effect(rxjs.fromEvent($img, "touchend").pipe(rxjs.tap(async(event) => {
         if (state.active === false) return;
         state.active = false;
 
@@ -148,10 +148,13 @@ function initMobileNavigation({ $img, $navigation }) {
         }
 
         $navlink.click();
-        await animate($img, { time: 200, keyframes: [
-            { transform: `translateX(${state.dist}px)`, opacity: 1 },
-            { transform: `translateX(${$img.clientWidth*Math.sign(state.dist)}px)`, opacity: 0 },
-        ]});
+        await animate($img, {
+            time: 200,
+            keyframes: [
+                { transform: `translateX(${state.dist}px)`, opacity: 1 },
+                { transform: `translateX(${$img.clientWidth*Math.sign(state.dist)}px)`, opacity: 0 },
+            ]
+        });
         $img.classList.add("hidden");
     })));
 }

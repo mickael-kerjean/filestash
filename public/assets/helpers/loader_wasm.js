@@ -242,10 +242,8 @@ export class Wasi {
             true,
         );
         if (fd === 1 || fd === 2) {
-            let msg = fd === 1? "stdout: " : "stderr: ";
-            msg += new TextDecoder().decode(readFS(fd));
             FS[fd] = {
-                buffer: new Uint8Array(0),
+                buffer: new Uint8Array(readFS(fd)),
                 position: 0,
                 path: FS[fd].path || "",
             };
@@ -300,7 +298,7 @@ export class Wasi {
 
         const start = (offset_hi >>> 0) * 0x100000000 + (offset_lo >>> 0);
         const ioVec = new Uint32Array(this.#instance.exports.memory.buffer, iovs, iovs_len * 2);
-        const mem   = new Uint8Array(this.#instance.exports.memory.buffer);
+        const mem = new Uint8Array(this.#instance.exports.memory.buffer);
 
         let total = 0;
         for (let i = 0; i < iovs_len * 2; i += 2) {
@@ -311,7 +309,7 @@ export class Wasi {
                 Math.min(len, file.buffer.length - (start + total)),
             );
             if (avail === 0) {
-                console.log(`len=[${len}] buffLength=[${file.buffer.length}] start=[${start}] total=[${total}]`)
+                console.log(`len=[${len}] buffLength=[${file.buffer.length}] start=[${start}] total=[${total}]`);
                 break;
             }
             mem.set(
@@ -469,19 +467,19 @@ export class Wasi {
     __syscall_fstat64(fd, buf) {
         log(`  syscall::fstat64 fd=${fd}, buf=${buf}`);
         const file = FS[fd];
-        if (!file) return -1;                         // EBADF
+        if (!file) return -1; // EBADF
 
-        const size   = file.buffer.byteLength >>> 0;  // ≤ 4 GB
+        const size = file.buffer.byteLength >>> 0; // ≤ 4 GB
         const nowSec = (Date.now() / 1000) | 0;
-        const H32    = new Int32Array(this.#instance.exports.memory.buffer);
+        const H32 = new Int32Array(this.#instance.exports.memory.buffer);
 
         /* basic fields */
-        H32[ buf       >> 2] = 1;        /* st_dev   */
-        H32[(buf+4)  >> 2] = 0o100644;   /* st_mode  */
-        H32[(buf+8)  >> 2] = 1;          /* st_nlink */
-        H32[(buf+12) >> 2] = 1000;       /* st_uid   */
-        H32[(buf+16) >> 2] = 1000;       /* st_gid   */
-        H32[(buf+20) >> 2] = 0;          /* st_rdev  */
+        H32[buf >> 2] = 1; /* st_dev   */
+        H32[(buf+4) >> 2] = 0o100644; /* st_mode  */
+        H32[(buf+8) >> 2] = 1; /* st_nlink */
+        H32[(buf+12) >> 2] = 1000; /* st_uid   */
+        H32[(buf+16) >> 2] = 1000; /* st_gid   */
+        H32[(buf+20) >> 2] = 0; /* st_rdev  */
 
         H32[((buf + 24) >> 2)] = size & 0xFFFFFFFF;
         H32[((buf + 28) >> 2)] = Math.floor(size / 4294967296);
@@ -490,22 +488,21 @@ export class Wasi {
         H32[(buf+36) >> 2] = (size + 511) >> 9;
 
         /* st_size lives at byte 40 in Emscripten’s 32-bit stat64 */
-        H32[(buf+40) >> 2] = size;       /* low 32 bits (high word = 0) */
+        H32[(buf+40) >> 2] = size; /* low 32 bits (high word = 0) */
         H32[(buf+44) >> 2] = 0;
 
-        H32[(buf+32) >> 2] = 4096;       /* st_blksize */
+        H32[(buf+32) >> 2] = 4096; /* st_blksize */
         H32[(buf+36) >> 2] = (size + 511) >> 9; /* st_blocks */
 
         /* atime / mtime / ctime: seconds, nsec = 0 */
-        for (let off of [48, 56, 64]) {
-            H32[((buf+off)   >> 2)] = nowSec;
+        for (const off of [48, 56, 64]) {
+            H32[((buf+off) >> 2)] = nowSec;
             H32[((buf+off+4) >> 2)] = 0;
         }
 
-        H32[(buf+72) >> 2] = fd;         /* st_ino (low) */
-        H32[(buf+76) >> 2] = 0;          /* st_ino (high) */
+        H32[(buf+72) >> 2] = fd; /* st_ino (low) */
+        H32[(buf+76) >> 2] = 0; /* st_ino (high) */
 
         return 0;
     }
-
 }

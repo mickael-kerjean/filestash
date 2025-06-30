@@ -1,7 +1,7 @@
 import { toHref } from "../lib/skeleton/router.js";
 import { animate, slideYOut, slideYIn, opacityOut } from "../lib/animate.js";
 import { forwardURLParams } from "../lib/path.js";
-import { safe } from "../../lib/dom.js";
+import { safe } from "../lib/dom.js";
 import assert from "../lib/assert.js";
 import { settingsSave } from "../lib/store.js";
 import { get as getConfig } from "../model/config.js";

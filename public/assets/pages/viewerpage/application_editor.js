@@ -110,7 +110,7 @@ export default async function(render, { acl$, getFilename, getDownloadUrl, mime 
                 rxjs.tap((editor) => requestAnimationFrame(() => editor.refresh())),
             );
         }),
-        rxjs.mergeMap(async (editor) => {
+        rxjs.mergeMap(async(editor) => {
             const loader = await loadPlugin(mime);
             if (loader) new (await loader(IEditor, { mime, $menubar: $dom.menubar(), getFilename, getDownloadUrl }))(editor);
             return editor;
