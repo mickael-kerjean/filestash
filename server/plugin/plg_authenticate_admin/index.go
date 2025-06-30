@@ -2,9 +2,12 @@ package plg_authenticate_admin
 
 import (
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"golang.org/x/crypto/bcrypt"
+	"html"
 	"net/http"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func init() {
@@ -45,7 +48,7 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 			MaxAge: -1,
 			Path:   "/",
 		})
-		return fmt.Sprintf(`<p class="flash">%s</p>`, c.Value)
+		return fmt.Sprintf(`<p class="flash">%s</p>`, html.EscapeString(c.Value))
 	}
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
 	res.WriteHeader(http.StatusOK)

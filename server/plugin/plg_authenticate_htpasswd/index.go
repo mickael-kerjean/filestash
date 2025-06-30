@@ -5,15 +5,16 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
+	"html"
+	"net/http"
+	"strings"
 
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/apr1_crypt"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/md5_crypt"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/sha256_crypt"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/sha512_crypt"
-	"net/http"
-	"strings"
 )
 
 func init() {
@@ -65,7 +66,7 @@ func (this Htpasswd) EntryPoint(idpParams map[string]string, req *http.Request, 
 			MaxAge: -1,
 			Path:   "/",
 		})
-		return fmt.Sprintf(`<p class="flash">%s</p>`, c.Value)
+		return fmt.Sprintf(`<p class="flash">%s</p>`, html.EscapeString(c.Value))
 	}
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
 	res.WriteHeader(http.StatusOK)

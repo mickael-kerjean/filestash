@@ -2,9 +2,9 @@ package plg_authenticate_local
 
 import (
 	_ "embed"
+	"html/template"
 	"net/http"
 	"net/url"
-	"text/template"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
