@@ -8,7 +8,8 @@
 }
 .component_checkbox input[type="checkbox"], .component_checkbox input[type="radio"] {
     position: absolute;
-    inset: 50px;
+    inset: 0px;
+    opacity: 0;
 }
 .component_checkbox input[type="checkbox"]:focus ~ span, .component_checkbox input[type="radio"]:focus ~ span {
     border: 2px solid rgba(0, 0, 0, 0.05);
