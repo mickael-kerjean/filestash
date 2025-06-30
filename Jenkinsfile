@@ -27,7 +27,7 @@ pipeline {
                         sh "npm install"
                         sh "make build_frontend"
                     }
-                    docker.image("golang:1.23-bookworm").inside("--user=root") {
+                    docker.image("golang:1.24-bookworm").inside("--user=root") {
                         // prepare: todo - statically compile plg_image_c so we don't have to do this to pass the e2e tests
                         sh "sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go"
                         // build
@@ -42,7 +42,7 @@ pipeline {
             steps {
                 script {
                     // smoke test
-                    docker.image("golang:1.23-bookworm").inside("--user=root") {
+                    docker.image("golang:1.24-bookworm").inside("--user=root") {
                         sh 'timeout 5 ./dist/filestash > access.log || code=$?; if [ $code -ne 124 ]; then exit $code; fi'
                         sh "cat access.log"
                         sh "cat access.log | grep -q \"\\[http\\] starting\""
@@ -62,7 +62,7 @@ pipeline {
                         // sh "cd public && npm run test"
                     }
                     // test backend
-                    docker.image("golang:1.23-bookworm").inside("--user=root") {
+                    docker.image("golang:1.24-bookworm").inside("--user=root") {
                         sh "cp ./test/assets/* /tmp/"
                         sh "go generate ./test/unit_go/..."
                         sh "go get ./..."
@@ -82,18 +82,7 @@ pipeline {
 
         stage("Release") {
             steps {
-                // amd64
-                sh "docker build --no-cache -t machines/filestash:latest-amd64 ./docker/"
-                sh "docker push machines/filestash:latest-amd64"
-
-                // // arm
-                // sh "docker buildx build --platform linux/arm64 -t machines/filestash:latest-arm64 ./docker/"
-
-                // create final image
-                sh "docker manifest rm machines/filestash:latest || true"
-                // sh "docker manifest create machines/filestash:latest --amend machines/filestash:latest-amd64 --amend machines/filestash:latest-arm64v8"
-                sh "docker manifest create machines/filestash:latest --amend machines/filestash:latest-amd64"
-                sh "docker manifest push machines/filestash:latest"
+                sh "docker buildx build --platform linux/amd64,linux/arm64 -t machines/filestash:latest --push ./docker/"
             }
         }
     }
