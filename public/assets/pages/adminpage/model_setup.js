@@ -11,26 +11,19 @@ export function getDeps() {
                 name_failure: "SSL is not configured properly",
                 pass: window.location.protocol !== "http:",
                 severe: true,
-                message: "This can lead to data leaks. Please use a SSL certificate",
+                message: "You should enable SSL/TLS so every request is encrypted in transit",
             }, {
-                name_success: "Application is running as '" + constant.user.value + "'",
+                name_success: "Application is not running as root but '" + constant.user + "'",
                 name_failure: "Application is running as root",
                 pass: constant.user !== "root",
                 severe: true,
-                message: "This is dangerous, you should use another user with less privileges",
+                message: "you should use a low privilege user instead",
             }, {
-                name_success: "Emacs is installed",
-                name_failure: "Emacs is not installed",
-                pass: !!constant.emacs,
-                severe: false,
-                message: "If you want to use all the org-mode features of Filestash, you need to install emacs",
-            }, {
-                name_success: "Pdftotext is installed",
-                name_failure: "Pdftotext is not installed",
-                pass: !!constant.pdftotext,
-                severe: false,
-                message: "You won't be able to search through PDF documents without it",
-            },
+                name_success: "You are running Filestash enterprise",
+                name_failure: "AGPL Community licence detected",
+                pass: constant.license !== "agpl",
+                message: "For production usage in a commercial environment, you should upgrade to Filestash enterprise",
+            }
         ])),
     );
 }
