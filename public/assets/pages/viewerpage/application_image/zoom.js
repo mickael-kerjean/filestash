@@ -22,7 +22,7 @@ export default function ({ $img, $page }) {
                 state.y = 0;
             }
             state.scale = next;
-            state.duration = duration ?? (next === 1 ? 500 : 200);
+            state.duration = duration ?? (next === 1 ? 500 : 150);
             return state;
         }, { scale: 1, x: 0, y: 0, duration: 0 }),
         rxjs.tap(({ scale, x, y, duration }) => {
@@ -46,8 +46,17 @@ function builder({ $img }) {
         // zoom via scroll wheel
         rxjs.fromEvent($img.parentElement, "wheel").pipe(
             rxjs.tap((e) => e.preventDefault()),
-            rxjs.throttleTime(100, rxjs.animateFrameScheduler),
-            rxjs.map((e) => ({ scale: Math.min(Math.exp(-e.deltaY / 300), 2), clientX: e.clientX, clientY: e.clientY })),
+            rxjs.bufferTime(100),
+            rxjs.filter(events => events.length > 0),
+            rxjs.map((events) => {
+                let out = null;
+                for (let i=0; i<events.length; i++) {
+                    const scale = Math.min(Math.exp(-events[i].deltaY / 300), 2)
+                    if (out === null) out = ({ scale, clientX: events[i].clientX, clientY: events[i].clientY });
+                    else if (Math.abs(scale) > Math.abs(out.scale)) out = ({ scale, clientX: events[i].clientX, clientY: events[i].clientY });
+                }
+                return out;
+            }),
         ),
         // zoom via keyboard shortcut
         rxjs.fromEvent(window, "keydown").pipe(
