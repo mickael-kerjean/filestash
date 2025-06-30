@@ -74,8 +74,9 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 		username := params["username"]
 		clientIp, _, err := net.SplitHostPort(app.Session["public_ip"])
 		if err != nil {
-			Log.Error("Failed to parse client IP:", err)
-			return nil, ErrInternal
+			// If there's no port, assume it's a bare IP address and set a default port
+			clientIp = app.Session["public_ip"]
+			_ = "22"
 		}
 
 		user, err := getUser(username)
