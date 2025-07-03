@@ -56,8 +56,8 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
         $menubar,
         buttonDownload(getFilename(), getDownloadUrl()),
         buttonFullscreen(qs($page, ".component_image_container")),
-        buttonInfo({ toggle: toggleInfo }),
-        buttonChromecast(getFilename(), getDownloadUrl()),
+        mime === "image/jpeg" && buttonInfo({ toggle: toggleInfo }),
+        ["image/jpeg", "image/png"].indexOf(mime) !== -1 && buttonChromecast(getFilename(), getDownloadUrl()),
     );
 
     effect(rxjs.from(loadPlugin(mime)).pipe(
