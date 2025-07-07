@@ -275,7 +275,6 @@
 	"wmv": "video/x-ms-wmv",
 	"woff": "font/woff",
 	"woff2": "font/woff2",
-	"wbmp": "image/vnd.wap.wbmp",
 	"wrl": "x-world/x-vrml",
 	"x3d": "model/x3d+xml",
 	"x3dv": "model/x3d-vrml",
