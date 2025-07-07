@@ -118,7 +118,8 @@ export const ls = (path) => {
                 for (let i=0; i<curr.files.length; i++) {
                     if (curr.files[i].type !== prev.files[i].type ||
                         curr.files[i].size !== prev.files[i].size ||
-                        curr.files[i].name !== prev.files[i].name) {
+                        curr.files[i].name !== prev.files[i].name ||
+                        curr.files[i].offline !== prev.files[i].offline) {
                         refresh = true;
                         break;
                     }
