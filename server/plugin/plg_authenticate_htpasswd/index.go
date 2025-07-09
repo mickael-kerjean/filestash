@@ -15,6 +15,8 @@ import (
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/md5_crypt"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/sha256_crypt"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/sha512_crypt"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func init() {
@@ -153,9 +155,9 @@ func verifyPassword(password string, hash string, _user string) bool {
 	} else if strings.HasPrefix(hash, "$1$") {
 		c = md5_crypt.New()
 		parts[2] = "$1$" + parts[2]
+	} else if strings.HasPrefix(hash, "$2a$") {
+		return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil
 	} else {
-		// TODO: there are other algorithm available but that's another job
-		// for another day
 		return false
 	}
 	shadow, err := c.Generate(
