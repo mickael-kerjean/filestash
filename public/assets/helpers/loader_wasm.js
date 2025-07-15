@@ -2,9 +2,13 @@ const DEBUG = false;
 const log = (msg) => DEBUG && console.log(msg);
 
 const wasmCache = new Map();
+let wasiInstance;
+
+export function setWasiInstance(instance) {
+    wasiInstance = instance;
+}
 
 export default async function(baseURL, path, opts = {}) {
-    const wasi = new Wasi();
     const url = new URL(path, baseURL);
 
     let wasm;
@@ -24,7 +28,7 @@ export default async function(baseURL, path, opts = {}) {
         );
         wasmCache.set(url.pathname, wasm);
     }
-    wasi.instance = wasm.instance;
+    setWasiInstance(wasm.instance);
     return wasm;
 }
 
@@ -170,12 +174,10 @@ const javascripts = {
         throw new Error("emscripten_get_heap_max was called");
     },
     _timegm_js: () => {
-        console.error("WebAssembly module called _timegm_js!");
-        throw new Error("_timegm_js was called");
+        return 0;
     },
     _gmtime_js: () => {
-        console.error("WebAssembly module called _gmtime_js!");
-        throw new Error("_gmtime_js was called");
+        return null;
     },
     _munmap_js: () => {
         console.error("WebAssembly module called _munmap_js!");
@@ -187,38 +189,13 @@ const javascripts = {
     }
 };
 
-export class Wasi {
-    #instance;
-
-    constructor() {
-        this.fd_read = this.fd_read.bind(this);
-        this.fd_write = this.fd_write.bind(this);
-        this.fd_seek = this.fd_seek.bind(this);
-        this.fd_close = this.fd_close.bind(this);
-
-        this._emscripten_memcpy_js = this._emscripten_memcpy_js.bind(this);
-        this.emscripten_resize_heap = this.emscripten_resize_heap.bind(this);
-        this.environ_sizes_get = this.environ_sizes_get.bind(this);
-        this.environ_get = this.environ_get.bind(this);
-        this.clock_time_get = this.clock_time_get.bind(this);
-        this.__syscall_openat = this.__syscall_openat.bind(this);
-        this.__syscall_stat64 = this.__syscall_stat64.bind(this);
-        this.__cxa_throw = this.__cxa_throw.bind(this);
-        this.random_get = this.random_get.bind(this);
-        this.proc_exit = this.proc_exit.bind(this);
-        this.fd_pread = this.fd_pread.bind(this);
-        this.__syscall_fstat64 = this.__syscall_fstat64.bind(this);
-    }
-
-    set instance(val) {
-        this.#instance = val;
-    }
+export const wasi = {
 
     fd_write(fd, iovs, iovs_len, nwritten) {
         if (!FS[fd]) throw new Error(`File descriptor ${fd} does not exist.`);
 
-        const ioVecArray = new Uint32Array(this.#instance.exports.memory.buffer, iovs, iovs_len * 2);
-        const memory = new Uint8Array(this.#instance.exports.memory.buffer);
+        const ioVecArray = new Uint32Array(wasiInstance.exports.memory.buffer, iovs, iovs_len * 2);
+        const memory = new Uint8Array(wasiInstance.exports.memory.buffer);
         let totalBytesWritten = 0;
 
         for (let i = 0; i < iovs_len * 2; i += 2) {
@@ -236,7 +213,7 @@ export class Wasi {
             FS[fd].position += length;
             totalBytesWritten += length;
         }
-        new DataView(this.#instance.exports.memory.buffer).setUint32(
+        new DataView(wasiInstance.exports.memory.buffer).setUint32(
             nwritten,
             totalBytesWritten,
             true,
@@ -251,7 +228,7 @@ export class Wasi {
             log(`wasi::fd_write fd=${fd}`);
         }
         return 0;
-    }
+    },
 
     fd_read(fd, iovs, iovs_len, nread) {
         const file = FS[fd];
@@ -260,8 +237,8 @@ export class Wasi {
             return -1;
         }
 
-        const ioVecArray = new Uint32Array(this.#instance.exports.memory.buffer, iovs, iovs_len * 2);
-        const memory = new Uint8Array(this.#instance.exports.memory.buffer);
+        const ioVecArray = new Uint32Array(wasiInstance.exports.memory.buffer, iovs, iovs_len * 2);
+        const memory = new Uint8Array(wasiInstance.exports.memory.buffer);
         let totalBytesRead = 0;
         for (let i = 0; i < iovs_len * 2; i += 2) {
             const offset = ioVecArray[i];
@@ -281,13 +258,13 @@ export class Wasi {
             totalBytesRead += bytesToRead;
         }
         log(`wasi::fd_read fd=${fd} iovs_len=${iovs_len} totalBytesRead=${totalBytesRead}`);
-        new DataView(this.#instance.exports.memory.buffer).setUint32(
+        new DataView(wasiInstance.exports.memory.buffer).setUint32(
             nread,
             totalBytesRead,
             true,
         );
         return 0;
-    }
+    },
 
     fd_pread(fd, iovs, iovs_len, offset_lo, offset_hi, nread) {
         const file = FS[fd];
@@ -297,8 +274,8 @@ export class Wasi {
         }
 
         const start = (offset_hi >>> 0) * 0x100000000 + (offset_lo >>> 0);
-        const ioVec = new Uint32Array(this.#instance.exports.memory.buffer, iovs, iovs_len * 2);
-        const mem = new Uint8Array(this.#instance.exports.memory.buffer);
+        const ioVec = new Uint32Array(wasiInstance.exports.memory.buffer, iovs, iovs_len * 2);
+        const mem = new Uint8Array(wasiInstance.exports.memory.buffer);
 
         let total = 0;
         for (let i = 0; i < iovs_len * 2; i += 2) {
@@ -319,9 +296,9 @@ export class Wasi {
             total += avail;
         }
 
-        new DataView(this.#instance.exports.memory.buffer).setUint32(nread, total, true);
+        new DataView(wasiInstance.exports.memory.buffer).setUint32(nread, total, true);
         return 0;
-    }
+    },
 
     fd_seek(fd, offsetBigInt, _, whence) {
         log(`wasi::fd_seek fd=${fd} offset=${offsetBigInt} whence=${whence}`);
@@ -348,7 +325,7 @@ export class Wasi {
             return -1;
         }
         return 0;
-    }
+    },
 
     fd_close(fd) {
         if (!FS[fd]) {
@@ -356,36 +333,36 @@ export class Wasi {
             return -1;
         }
         return 0;
-    }
+    },
 
     _emscripten_memcpy_js(dest, src, num) {
-        const memory = new Uint8Array(this.#instance.exports.memory.buffer);
+        const memory = new Uint8Array(wasiInstance.exports.memory.buffer);
         memory.set(memory.subarray(src, src + num), dest);
         return dest;
-    }
+    },
 
     emscripten_resize_heap(requested) {
         console.log("Stubbed emscripten_resize_heap called");
         throw new Error("Heap resize not supported");
-    }
+    },
 
     environ_sizes_get() {
         console.log(`Stubbed environ_sizes_get called`);
         return 0;
-    }
+    },
 
     environ_get() {
         console.log(`Stubbed environ_get called`);
         return 0;
-    }
+    },
 
     clock_time_get() {
         console.log(`Stubbed clock_time_get called`);
         return -1;
-    }
+    },
 
     __syscall_openat(dirFd, pathPtr, flags, mode) {
-        const memory = new Uint8Array(this.#instance.exports.memory.buffer);
+        const memory = new Uint8Array(wasiInstance.exports.memory.buffer);
         let path = "";
         for (let i = pathPtr; memory[i] !== 0; i++) {
             path += String.fromCharCode(memory[i]);
@@ -398,18 +375,18 @@ export class Wasi {
             }
         }
         throw new Error("Unknown file for __syscall_openat");
-    }
+    },
 
     __syscall_stat64(pathPtr, buf) {
         log(`  syscall::stat64 pathPtr=${pathPtr}, bufPtr=${buf}`);
-        const memory = new Uint8Array(this.#instance.exports.memory.buffer);
+        const memory = new Uint8Array(wasiInstance.exports.memory.buffer);
         let path = "";
         for (let i = pathPtr; memory[i] !== 0; i++) {
             path += String.fromCharCode(memory[i]);
         }
         const file = getFile(path);
-        const HEAP32 = new Int32Array(this.#instance.exports.memory.buffer);
-        const HEAPU32 = new Uint32Array(this.#instance.exports.memory.buffer);
+        const HEAP32 = new Int32Array(wasiInstance.exports.memory.buffer);
+        const HEAPU32 = new Uint32Array(wasiInstance.exports.memory.buffer);
         const stat = {
             dev: 1,
             ino: 42,
@@ -447,22 +424,22 @@ export class Wasi {
         HEAP32[((buf + 88) >> 2)] = stat.ino & 0xFFFFFFFF;
         HEAP32[((buf + 92) >> 2)] = Math.floor(stat.ino / 4294967296);
         return 0;
-    }
+    },
 
     __cxa_throw(ptr, type, destructor) {
         console.error(`  syscall::cxa_throw ptr=${ptr}, type=${type}, destructor=${destructor}`);
         throw new Error("WebAssembly exception");
-    }
+    },
 
     random_get() {
         console.log(`Stubbed random_get called`);
         return -1;
-    }
+    },
 
     proc_exit() {
         console.log(`Stubbed proc_exit called`);
         return -1;
-    }
+    },
 
     __syscall_fstat64(fd, buf) {
         log(`  syscall::fstat64 fd=${fd}, buf=${buf}`);
@@ -471,7 +448,7 @@ export class Wasi {
 
         const size = file.buffer.byteLength >>> 0; // ≤ 4 GB
         const nowSec = (Date.now() / 1000) | 0;
-        const H32 = new Int32Array(this.#instance.exports.memory.buffer);
+        const H32 = new Int32Array(wasiInstance.exports.memory.buffer);
 
         /* basic fields */
         H32[buf >> 2] = 1; /* st_dev   */
@@ -502,7 +479,6 @@ export class Wasi {
 
         H32[(buf+72) >> 2] = fd; /* st_ino (low) */
         H32[(buf+76) >> 2] = 0; /* st_ino (high) */
-
         return 0;
     }
 }
