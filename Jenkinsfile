@@ -22,18 +22,15 @@ pipeline {
         stage("Build") {
             steps {
                 script {
-                    docker.image("node:14").inside("--user=root") {
+                    docker.image("node:20").inside("--user=root") {
                         sh "apt update -y && apt install -y brotli"
                         sh "npm install"
                         sh "make build_frontend"
                     }
                     docker.image("golang:1.24-bookworm").inside("--user=root") {
-                        // prepare: todo - statically compile plg_image_c so we don't have to do this to pass the e2e tests
                         sh "sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go"
-                        // build
-                        sh "go get ./..."
-                        sh "go generate -x ./server/..."
-                        sh "CGO_ENABLED=0 go build -o dist/filestash cmd/main.go"
+                        sh "make build_init"
+                        sh "make build_backend"
                     }
                 }
             }
