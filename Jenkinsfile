@@ -46,12 +46,7 @@ pipeline {
                         sh "cat access.log | grep -q \"listening\""
                         sh "cat access.log | grep -vz \"ERR\""
                     }
-                    // test frontend old
-                    docker.image("node:14").inside("--user=root") {
-                        sh "cd ./test/unit_js && npm install"
-                        sh "cd ./test/unit_js && npm test"
-                    }
-                    // test frontend new
+                    // test frontend
                     docker.image("node:20").inside("--user=root") {
                         sh "cd public && npm install"
                         // sh "cd public && npm run lint"

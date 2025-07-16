@@ -481,4 +481,4 @@ export const wasi = {
         H32[(buf+76) >> 2] = 0; /* st_ino (high) */
         return 0;
     }
-}
+};
