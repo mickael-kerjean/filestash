@@ -74,7 +74,7 @@ pipeline {
 
         stage("Release") {
             steps {
-                sh "docker buildx build --platform linux/amd64,linux/arm64 -t machines/filestash:latest --push ./docker/"
+                sh "docker buildx build --no-cache --platform linux/amd64,linux/arm64 -t machines/filestash:latest --push ./docker/"
             }
         }
     }
