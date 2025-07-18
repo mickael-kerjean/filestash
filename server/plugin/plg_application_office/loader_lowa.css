@@ -1,0 +1,61 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/fontawesome.min.css");
+
+.component_word {
+    display: flex;
+    flex: 1 1 auto;
+}
+.component_word canvas {
+    border: none;
+    outline: none;
+    height: 100%;
+    width: 100%;
+}
+.component_menubar .action-item .texteditor svg.component_icon {
+    width: 16px;
+    margin: 1px 0 0 2px;
+}
+.component_menubar .action-item .texteditor.active svg.component_icon {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+}
+
+.component_menubar .action-item .texteditor input[type="number"] {
+    width: 15px;
+    color: var(--color);
+    border: 2px solid #f2f2f2;
+    background: #f2f2f2;
+    border-radius: 2px;
+    padding: 0 3px 0 3px;
+    margin: 0 3px;
+    -moz-appearance: textfield;
+}
+.component_menubar .action-item .texteditor input[type="number"]::-webkit-outer-spin-button,
+.component_menubar .action-item .texteditor input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+.component_menubar .action-item .texteditor .fontawesome {
+    font-family: "FontAwesome";
+    color: var(--light);
+    background: inherit;
+    color: inherit;
+    border: none;
+}
+.component_menubar .action-item .texteditor select.fontawesome option {
+    background: var(--dark);
+}
+
+.component_menubar .action-item .texteditor.picker {
+    display: flex;
+    align-items: center;
+}
+.component_menubar .action-item .texteditor.picker input[type="color"] {
+    padding: 0;
+    width: 0;
+    border: none;
+}
+.component_word + .component_loader {
+    position: absolute;
+    inset: 0;
+    margin-top: 150px;
+}

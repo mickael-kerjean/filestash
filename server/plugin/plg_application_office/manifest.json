@@ -1,0 +1,66 @@
+{
+    "author": "Filestash Pty Ltd",
+    "version": "v0.0",
+    "modules": [
+        {
+            "type": "xdg-open",
+            "mime": "application/word",
+            "entrypoint": "loader_lowa.js",
+            "application": "skeleton"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "application/msword",
+            "entrypoint": "loader_lowa.js",
+            "application": "skeleton"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "application/rtf",
+            "entrypoint": "loader_lowa.js",
+            "application": "skeleton"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "application/vnd.oasis.opendocument.text",
+            "entrypoint": "loader_lowa.js",
+            "application": "skeleton"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "application/excel",
+            "entrypoint": "loader_lowa.js",
+            "application": "skeleton"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "application/vnd.ms-excel",
+            "entrypoint": "loader_lowa.js",
+            "application": "skeleton"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "application/vnd.oasis.opendocument.spreadsheet",
+            "entrypoint": "loader_lowa.js",
+            "application": "skeleton"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "application/powerpoint",
+            "entrypoint": "loader_lowa.js",
+            "application": "skeleton"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "application/vnd.ms-powerpoint",
+            "entrypoint": "loader_lowa.js",
+            "application": "skeleton"
+        },
+        {
+            "type": "xdg-open",
+            "mime": "application/vnd.oasis.opendocument.presentation",
+            "entrypoint": "loader_lowa.js",
+            "application": "skeleton"
+        }
+    ]
+}
