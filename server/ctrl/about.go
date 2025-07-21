@@ -21,11 +21,12 @@ var listOfPlugins = struct {
 	apps       []string
 }{}
 
-func InitPluginList(code []byte, plgs map[string]model.PluginImpl) {
+func InitPluginList(code []byte, plgs map[string]model.PluginImpl) error {
 	listOfPackages := regexp.MustCompile(`\t_?\s*\"(github.com/[^\"]+)`).FindAllStringSubmatch(string(code), -1)
 	for _, packageNameMatch := range listOfPackages {
 		if len(packageNameMatch) != 2 {
 			Log.Error("ctrl::static error=assertion_failed msg=invalid_match_size arg=%d", len(packageNameMatch))
+			return ErrNotValid
 		}
 		packageName := packageNameMatch[1]
 		packageShortName := filepath.Base(packageName)
@@ -43,6 +44,7 @@ func InitPluginList(code []byte, plgs map[string]model.PluginImpl) {
 	for name, _ := range plgs {
 		listOfPlugins.apps = append(listOfPlugins.apps, name)
 	}
+	return nil
 }
 
 func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
