@@ -75,19 +75,19 @@ There are 2 major pieces of work currently underway:
 <ol>
     <li>Making Filestash able to open virtually anything. Thanks to plugin, we're adding support for files your browser has never heard of, from astrophysics to embroidery patterns. Concretly we have added support for:
         <ul>
-            <li>photography: .heif, .nef, .raf, .tiff, .raw, .arw, .sr2, .srf, .nrw, .cr2, .crw, .x3f, .pef, .rw2, .orf, .mrw, .mdc, .mef, .mos, .dcr, .kdc, .3fr, .erf and .srw</li>
-            <li>astronomy: fits, xisf</li>
-            <li>science stuff with compilers for latex, plantuml & pandoc</li>
-            <li>music: mid, .midi, .gp4 and .gp5</li>
-            <li>GIS: .geojson, .shp, .gpx, .wms and .dbf</li>
-            <li>data engineering: .parquet, .arrow, .feather, .avro, .orc, .hdf5, .h5, .netcdf, .nc, .rds, .rda and .rdata</li>
-            <li>dev: .a, .so, .o, .dylib, .dll, .har, .cap, .pcap, .pcapng and sqlite</li>
-            <li>creative work: svg, psd, ai, sketch, cdr, woff, woff2, ttf, otf, eot, exr, tga, pgm, ppm, dds, ktx, dpx, pcx, xpm, pnm, xbm, aai, xwd, cin, pbm, pcd, sgi, wbmp and rgb</li>
-            <li>biomedical: dicom, sam, bam, cif, pdb, xyz, sdf, mol, mol2 and mmtf</li>
-            <li>autodesk: dwg and dxf</li>
-            <li>adobe: psd, ai, xd, dng, postscript, aco, ase, swf</li>
-            <li>3d: fbx, gltf, obj, stl, step, mesh, ifc, dae</li>
-            <li>embroidery: .dgt, .dst, .dsb, .dsz, .edr, .exp, .10o, .col, .hus, .inf, .jef, .ksm, .pcm, .pcs, .pes, .sew, .shv, .sst, .tap, .u01, .vip, .vp3. and .xxx</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_photography.zip">photography</a>: .heif, .nef, .raf, .tiff, .raw, .arw, .sr2, .srf, .nrw, .cr2, .crw, .x3f, .pef, .rw2, .orf, .mrw, .mdc, .mef, .mos, .dcr, .kdc, .3fr, .erf and .srw</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_photography.zip">astronomy</a>: fits, xisf</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_science.zip">science stuff</a> stuff with compilers for latex, plantuml & pandoc</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_musician.zip">music</a>: mid, .midi, .gp4 and .gp5</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_gis.zip">GIS</a>: .geojson, .shp, .gpx, .wms and .dbf</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_engineering.zip">data engineering</a>: <a href="https://www.filestash.app/tools/parquet-viewer.html">.parquet</a>, <a href="https://www.filestash.app/tools/arrow-viewer.html">.arrow</a>, <a href="https://www.filestash.app/tools/feather-viewer.html">.feather</a>, <a href="https://www.filestash.app/tools/avro-viewer.html">.avro</a>, <a href="https://www.filestash.app/tools/orc-viewer.html">.orc</a>, .hdf5, .h5, .netcdf, .nc, .rds, .rda and .rdata</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_dev.zip">dev</a>: .a, .so, .o, .dylib, .dll, .har, .cap, .pcap, .pcapng and <a href="https://www.filestash.app/tools/sqlite-viewer.html">sqlite</a></li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_creative.zip">creative work</a>: svg, psd, ai, sketch, cdr, woff, woff2, ttf, otf, eot, exr, tga, pgm, ppm, dds, ktx, dpx, pcx, xpm, pnm, xbm, aai, xwd, cin, pbm, pcd, sgi, wbmp and rgb</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_biomed.zip">biomedical</a>: dicom, sam, bam, cif, pdb, xyz, sdf, mol, mol2 and mmtf</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_autodesk.zip">autodesk</a>: <a href="https://www.filestash.app/tools/dwg-viewer.html">dwg</a> and <a href="https://www.filestash.app/tools/dxf-viewer.html">dxf</a></li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_adobe.zip">adobe</a>: psd, ai, xd, dng, <a href="https://www.filestash.app/tools/eps-viewer.html">postscript</a>, aco, ase, swf</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_3d.zip">3d</a>: fbx, gltf, obj, stl, step, mesh, ifc, dae</li>
+            <li><a href="https://demo.filestash.app/assets/plugin/application_embroidery.zip">embroidery</a>: .dgt, .dst, .dsb, .dsz, .edr, .exp, .10o, .col, .hus, .inf, .jef, .ksm, .pcm, .pcs, .pes, .sew, .shv, .sst, .tap, .u01, .vip, .vp3. and .xxx</li>
             <li>there is more to come as we stumbled upon new niches and spend time talking to real people.</li>
         </ul>
     </li>
