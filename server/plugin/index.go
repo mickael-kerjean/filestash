@@ -2,7 +2,6 @@ package plugin
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
-	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_application_office"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_ldap"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_local"
