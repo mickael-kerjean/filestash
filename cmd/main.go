@@ -24,14 +24,11 @@ func main() {
 }
 
 func Run(routes *mux.Router, app App) {
-	// Routes are served via plugins to avoid getting stuck with plain HTTP. The idea is to
-	// support many more protocols in the future: HTTPS, HTTP2, TOR or whatever that sounds
-	// fancy I don't know much when this got written: IPFS, solid, ...
 	Log.Info("Filestash %s starting", APP_VERSION)
 	check(InitLogger(), "Logger init failed. err=%s")
 	check(InitConfig(), "Config init failed. err=%s")
 	check(model.PluginDiscovery(), "Plugin Discovery failed. err=%s")
-	ctrl.InitPluginList(embed.EmbedPluginList, model.PLUGINS)
+	check(ctrl.InitPluginList(embed.EmbedPluginList, model.PLUGINS), "Plugin Initialisation failed. err=%s")
 	if len(Hooks.Get.Starter()) == 0 {
 		check(ErrNotFound, "Missing starter plugin. err=%s")
 	}
