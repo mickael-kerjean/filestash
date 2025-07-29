@@ -67,7 +67,7 @@ function builder({ $img }) {
                 let scale = 0;
                 if (["+", "ArrowUp"].indexOf(key) !== -1) scale = 3/2;
                 else if (["-", "ArrowDown"].indexOf(key) !== -1) scale = 2/3;
-                return { clientX, clientY, scale };
+                return { clientX, clientY, scale, duration: 100 };
             }),
         ),
         // pinch zoom
