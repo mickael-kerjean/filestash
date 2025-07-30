@@ -243,7 +243,7 @@ func ServeBundle(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	urls := req.URL.Query()["url"]
 	for i := 0; i < len(urls); i++ {
-		curPath := "assets" + strings.TrimPrefix(urls[i], "/assets/"+BUILD_REF)
+		curPath := "/assets/" + strings.TrimPrefix(urls[i], "/assets/"+BUILD_REF+"/")
 		var file io.ReadCloser
 		var err error
 		if f := applyPatch(curPath); f != nil {
