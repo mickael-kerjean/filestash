@@ -35,12 +35,36 @@ func PluginDiscovery() error {
 		if strings.HasSuffix(fname, ".zip") == false {
 			continue
 		}
-		name, modules, err := InitModule(entry.Name())
+		name, impl, err := InitModule(entry.Name())
 		if err != nil {
 			Log.Error("could not initialise module name=%s err=%s", entry.Name(), err.Error())
 			continue
 		}
-		PLUGINS[name] = modules
+		for i := 0; i < len(impl.Modules); i++ {
+			switch impl.Modules[i]["type"] {
+			case "css":
+				f, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
+				if err != nil {
+					return err
+				}
+				b, err := io.ReadAll(f)
+				if err != nil {
+					return err
+				}
+				Hooks.Register.CSS(string(b))
+			case "patch":
+				f, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
+				if err != nil {
+					return err
+				}
+				b, err := io.ReadAll(f)
+				if err != nil {
+					return err
+				}
+				Hooks.Register.StaticPatch(b)
+			}
+		}
+		PLUGINS[name] = impl
 	}
 	return nil
 }

@@ -275,48 +275,49 @@ func ServeBundle(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func applyPatch(filePath string) (file *bytes.Buffer) {
-	origFile, err := WWWPublic.Open(filePath)
-	if err != nil {
-		Log.Debug("ctrl::static cannot open public file - %+v", err.Error())
-		return nil
-	}
 	var (
 		outputBuffer bytes.Buffer
-		outputInit   bool
+		wasPatched   bool
 	)
-	defer origFile.Close()
-	for _, patch := range Hooks.Get.StaticPatch() {
-		patchFile, err := patch.Open(strings.TrimPrefix(filePath, "/"))
-		if err != nil {
-			continue
-		}
-		patchFiles, _, err := gitdiff.Parse(patchFile)
-		patchFile.Close()
-		if err != nil {
-			Log.Debug("ctrl::static cannot parse patch file - %s", err.Error())
-			break
-		} else if len(patchFiles) != 1 {
-			Log.Debug("ctrl::static unepected patch file size - must be 1, got %d", len(patchFiles))
-			break
-		}
-		if !outputInit {
-			if _, err = outputBuffer.ReadFrom(origFile); err != nil {
+	for i, patch := range Hooks.Get.StaticPatch() {
+		if i == 0 {
+			origFile, err := WWWPublic.Open(filePath)
+			if err != nil {
+				Log.Debug("ctrl::static cannot open public file - %+v", err.Error())
 				return nil
 			}
-			outputInit = true
+			_, err = outputBuffer.ReadFrom(origFile)
+			origFile.Close()
+			if err != nil {
+				Log.Debug("ctrl::static cannot read from origFile - %s", err.Error())
+				return nil
+			}
 		}
-		var patched bytes.Buffer
-		if err := gitdiff.Apply(
-			&patched,
-			bytes.NewReader(outputBuffer.Bytes()),
-			patchFiles[0],
-		); err != nil {
-			Log.Debug("ctrl::static cannot apply patch - %s", err.Error())
+		patchFiles, _, err := gitdiff.Parse(NewReadCloserFromBytes(patch))
+		if err != nil {
+			Log.Debug("ctrl::static cannot parse patch file - %s", err.Error())
 			return nil
 		}
-		outputBuffer = patched
+		for i := 0; i < len(patchFiles); i++ {
+			if patchFiles[i].NewName != patchFiles[i].OldName {
+				continue
+			} else if filePath != strings.TrimPrefix(patchFiles[i].NewName, "public") {
+				continue
+			}
+			var patched bytes.Buffer
+			if err := gitdiff.Apply(
+				&patched,
+				bytes.NewReader(outputBuffer.Bytes()),
+				patchFiles[i],
+			); err != nil {
+				Log.Debug("ctrl::static cannot apply patch - %s", err.Error())
+				return nil
+			}
+			outputBuffer = patched
+			wasPatched = true
+		}
 	}
-	if outputInit {
+	if wasPatched {
 		return &outputBuffer
 	}
 	return nil

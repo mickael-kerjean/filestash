@@ -244,13 +244,13 @@ func (this Get) Middleware() []func(HandlerFunc) HandlerFunc {
 	return middlewares
 }
 
-var staticOverrides []fs.FS
+var staticOverrides [][]byte
 
-func (this Register) StaticPatch(folder fs.FS) {
-	staticOverrides = append(staticOverrides, folder)
+func (this Register) StaticPatch(pathFile []byte) {
+	staticOverrides = append(staticOverrides, pathFile)
 }
 
-func (this Get) StaticPatch() []fs.FS {
+func (this Get) StaticPatch() [][]byte {
 	return staticOverrides
 }
 
