@@ -30,7 +30,7 @@ class NotificationComponent extends HTMLElement {
         if (this.buffer.length !== 1) {
             const $close = this.querySelector(".close");
             if (!($close instanceof HTMLElement) || !$close.onclick) return;
-            $close.onclick(new MouseEvent("mousedown"));
+            $close.onclick(new PointerEvent("mousedown"));
             return;
         }
         await this.run();
