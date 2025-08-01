@@ -32,7 +32,8 @@
 - Shared Links which you can mount locally as network drives
 - Builtin Music, Video, Image viewers with optional transcoding and Chromecast support
 - API and LLM integration via [MCP](https://www.filestash.app/docs/api/#mcp)
-- ... and much more
+- [Themes](https://www.filestash.app/docs/plugin/#theme) replicating the UX of [dropbox](https://www.filestash.app/img/screenshots/theme_dropbox.png), [gdrive](https://www.filestash.app/img/screenshots/theme_gdrive.png), [github](https://www.filestash.app/img/screenshots/theme_github.png), [ibm](https://www.filestash.app/img/screenshots/theme_ibm.png), [onedrive](https://www.filestash.app/img/screenshots/theme_onedrive.png), [and more](https://www.filestash.app/img/screenshots/theme_untitled.png)
+- ... and much <sub>much <sub>much</sub></sub> more
 
 
 # Documentation
