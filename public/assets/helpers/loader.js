@@ -38,7 +38,7 @@ export async function loadWorker(baseURL, path, opts = {}) {
         //        at application_table.js:58:50
         let code = await fetch(new URL(path, baseURL)).then((res) => res.text());
         const importPathRE = new RegExp("import\\s+(?:[^'\";]*?\\s+from\\s+)?[\"']([^\"']+)[\"']", "gm");
-        code = code.replaceAll("import.meta.url", `"${baseURL}"`)
+        code = code.replaceAll("import.meta.url", `"${baseURL}"`);
         code.matchAll(importPathRE).forEach(([_, path]) => {
             code = code.replaceAll(path, new URL(path, baseURL));
         });

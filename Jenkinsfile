@@ -49,7 +49,7 @@ pipeline {
                     // test frontend
                     docker.image("node:20").inside("--user=root") {
                         sh "cd public && npm install"
-                        // sh "cd public && npm run lint"
+                        sh "cd public && npm run lint"
                         sh "cd public && npm run check"
                         // sh "cd public && npm run test"
                     }
