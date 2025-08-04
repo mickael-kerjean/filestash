@@ -128,5 +128,8 @@
      document.querySelector("form").onsubmit = (e) => {
          e.target.querySelector("button").setAttribute("disabled", "true");
      };
+     // feature: request admin refresh
+     const bus = new BroadcastChannel("admin");
+     bus.postMessage("reload");
  })();
 </script>

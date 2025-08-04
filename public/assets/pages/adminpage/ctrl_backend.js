@@ -1,4 +1,5 @@
 import { createElement, createRender } from "../../lib/skeleton/index.js";
+import rxjs, { effect } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { CSS } from "../../helpers/loader.js";
 
@@ -25,4 +26,12 @@ export default AdminHOC(async function(render) {
 
     componentStorageBackend(createRender(qs($page, "[data-bind=\"backend\"]")));
     componentAuthenticationMiddleware(createRender(qs($page, "[data-bind=\"authentication_middleware\"]")));
+
+    // feature: request to reload page
+    effect(rxjs.fromEvent(new BroadcastChannel("admin"), "message").pipe(
+        rxjs.filter(({ data }) => data === "reload"),
+        rxjs.mergeMap(() => rxjs.fromEvent(document, "visibilitychange")),
+        rxjs.filter(() => document.visibilityState === "visible"),
+        rxjs.tap(() => location.reload()),
+    ));
 });
