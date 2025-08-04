@@ -60,7 +60,7 @@
     position: sticky;
     left: 0;
     right: 0;
-    background: #525659;
+    background: var(--color);
     z-index: 15;
     padding: 5px .8em;
     overflow: hidden;

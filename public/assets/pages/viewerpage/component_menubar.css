@@ -9,7 +9,6 @@
 }
 .component_menubar .container {
     padding: 0;
-    color: var(--bg-color);
     font-size: 0.9em;
 }
 .component_menubar .container.inherit-width { max-width: inherit!important; }

@@ -8,7 +8,7 @@ import { cat } from "./model_files.js";
 
 export default function(render, { getDownloadUrl }) {
     const $page = createElement(`
-        <div class="component_urlopener" style="background: #52565911;"></div>
+        <div class="component_urlopener" style="background: var(--surface);"></div>
     `);
     render($page);
     createLoader($page);

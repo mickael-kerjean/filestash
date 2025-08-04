@@ -1,6 +1,6 @@
 .component_imageviewer .component_image_container,
 body:not(.dark-mode) .component_imageviewer .component_image_container .fullscreen .component_pager .wrapper > span {
-    background: #525659;
+    background: var(--surface);
 }
 .dark-mode .component_imageviewer .component_image_container {
     background: #2d2f31;

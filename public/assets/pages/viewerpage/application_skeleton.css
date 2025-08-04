@@ -1,5 +1,5 @@
 .component_skeletonviewer {
-    background: #52565911;
+    background: var(--bg-color);
 }
 .component_skeleton_container {
     height: 100%;

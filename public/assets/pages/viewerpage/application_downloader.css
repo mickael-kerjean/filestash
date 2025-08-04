@@ -1,5 +1,5 @@
 body:not(.dark-mode) .component_filedownloader {
-    background: #525659;
+    background: var(--surface);
 }
 body.dark-mode .component_filedownloader {
     background: #232426;
