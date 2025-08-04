@@ -194,13 +194,24 @@ func (this Get) FrontendOverrides() []string {
 	return overrides
 }
 
-var xdg_open []string
+var xdg_open []func() string
 
 func (this Register) XDGOpen(jsString string) {
-	xdg_open = append(xdg_open, jsString)
+	xdg_open = append(xdg_open, func() string {
+		return jsString
+	})
 }
+
+func (this Register) XDGOpenFunc(fn func() string) {
+	xdg_open = append(xdg_open, fn)
+}
+
 func (this Get) XDGOpen() []string {
-	return xdg_open
+	var s []string
+	for i := 0; i < len(xdg_open); i++ {
+		s = append(s, xdg_open[i]())
+	}
+	return s
 }
 
 var cssOverride []func() string
