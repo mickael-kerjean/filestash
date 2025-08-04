@@ -35,16 +35,13 @@ func (this SimpleAuth) Setup() Form {
 			{
 				Name: "banner",
 				Type: "hidden",
-				Description: fmt.Sprintf(`Manage your team members and their account permissions by visiting [/admin/simple-user-management](/admin/simple-user-management).
-<pre>
+				Description: fmt.Sprintf(`<pre>MANAGEMENT GUI: <a href="/admin/simple-user-management">/admin/simple-user-management</a>
 STATS:
 ┌─────────────┐   ┌──────────────┐
 │ TOTAL USERS │   │ ACTIVE USERS │
 |    %.4d     │   |     %.4d     │
 └─────────────┘   └──────────────┘
-
-MANAGEMENT GUI: <a href="/admin/simple-user-management">/admin/simple-user-management</a>
-EMAIL SERVER  : %t
+EMAIL SERVER: %t
 </pre>`, nUsers, aUsers, isEmailSetup()),
 			},
 			{
