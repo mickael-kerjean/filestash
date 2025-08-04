@@ -282,6 +282,8 @@ func (this S3Backend) Cat(path string) (io.ReadCloser, error) {
 			return nil, NewError("This file is encrypted file, you need the correct key!", 400)
 		} else if awsErr.Code() == "AccessDenied" {
 			return nil, ErrNotAllowed
+		} else if awsErr.Code() == "InvalidObjectState" {
+			return nil, ErrNotReachable
 		}
 		return nil, err
 	}

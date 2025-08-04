@@ -783,17 +783,19 @@ func FileDownloader(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if strings.HasSuffix(backendPath, "/") == false {
 			// Process File
 			zipPath := strings.TrimPrefix(backendPath, zipRoot)
+			file, err := ctx.Backend.Cat(backendPath)
+			if err != nil {
+				*errList = append(*errList, fmt.Sprintf("downloader::cat %s %s\n", zipPath, err.Error()))
+				if err == ErrNotReachable {
+					return nil
+				}
+				Log.Debug("downloader::cat backendPath['%s'] zipPath['%s'] error['%s']", backendPath, zipPath, err.Error())
+				return err
+			}
 			zipFile, err := zw.Create(zipPath)
 			if err != nil {
 				*errList = append(*errList, fmt.Sprintf("downloader::create %s %s\n", zipPath, err.Error()))
 				Log.Debug("downloader::create backendPath['%s'] zipPath['%s'] error['%s']", backendPath, zipPath, err.Error())
-				return err
-			}
-			file, err := ctx.Backend.Cat(backendPath)
-			if err != nil {
-				*errList = append(*errList, fmt.Sprintf("downloader::cat %s %s\n", zipPath, err.Error()))
-				Log.Debug("downloader::cat backendPath['%s'] zipPath['%s'] error['%s']", backendPath, zipPath, err.Error())
-				io.Copy(zipFile, strings.NewReader(""))
 				return err
 			}
 			if _, err = io.Copy(zipFile, file); err != nil {
