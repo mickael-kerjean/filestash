@@ -15,6 +15,7 @@ import { extractPath, isDir, isNativeFileUpload } from "../pages/filespage/helpe
 import { mv as mvVL, withVirtualLayer } from "../pages/filespage/model_virtual_layer.js";
 import { getCurrentPath } from "../pages/viewerpage/common.js";
 import { generateSkeleton } from "./skeleton.js";
+import { onLogout } from "../pages/ctrl_logout.js";
 
 const state = { scrollTop: 0, $cache: null };
 const mv = (from, to) => withVirtualLayer(
@@ -257,6 +258,8 @@ async function _createListOfFiles(path, currentName, dirpath) {
     return $ul;
 }
 
+let tagcache = null;
+onLogout(() => tagcache = null);
 async function ctrlTagPane(render) {
     if (!getConfig("enable_tags", false)) return;
     render(createElement(`<div>${generateSkeleton(2)}</div>`));
@@ -272,51 +275,57 @@ async function ctrlTagPane(render) {
             </ul>
         </div>
     `);
-    const tags = await ajax({
-        url: forwardURLParams(`api/metadata/search`, ["share"]),
-        method: "POST",
-        responseType: "json",
-        body: JSON.stringify({
-            "tags": [],
-            "path": getCurrentPath("(/view/|/files/)"),
-        }),
-    }).pipe(
-        rxjs.map(({ responseJSON }) =>
-            responseJSON.results
-                .filter(({type}) => type === "folder")
-                .map(({ name }) => name)
-                .sort()
-        ),
-        rxjs.catchError(() => rxjs.of([])),
-    ).toPromise();
-    if (tags.length === 0) {
-        render(createElement("<div></div>"));
-        return;
-    }
     render($page);
 
-    const $fragment = document.createDocumentFragment();
-    tags.forEach((name) => {
-        const $tag = createElement(`
-            <a data-link draggable="false" class="no-select">
-                <div class="ellipsis">${name}</div>
-                <svg class="component_icon" draggable="false" alt="close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </a>
-        `);
-        const url = new URL(location.href);
-        if (url.searchParams.getAll("tag").indexOf(name) === -1) {
-            $tag.setAttribute("href", forwardURLParams(getCurrentPath() + "?tag=" + name, ["share", "tag"]));
-        } else {
-            url.searchParams.delete("tag", name);
-            $tag.setAttribute("href", url.toString());
-            $tag.setAttribute("aria-selected", "true");
+    effect(rxjs.merge(
+        rxjs.of(tagcache).pipe(rxjs.filter((cache) => cache)),
+        ajax({
+            url: forwardURLParams(`api/metadata/search`, ["share"]),
+            method: "POST",
+            responseType: "json",
+            body: JSON.stringify({
+                "tags": [],
+                "path": getCurrentPath("(/view/|/files/)"),
+            }),
+        }).pipe(
+            rxjs.map(({ responseJSON }) =>
+                responseJSON.results
+                    .filter(({type}) => type === "folder")
+                    .map(({ name }) => name)
+                    .sort()
+            ),
+            rxjs.tap((tags) => tagcache = tags),
+            rxjs.catchError(() => rxjs.of([])),
+        ),
+    ).pipe(rxjs.tap((tags) => {
+        if (tags.length === 0) {
+            $page.classList.add("hidden");
+            return;
         }
-        $fragment.appendChild($tag);
-    });
-    qs($page, `[data-bind="taglist"]`).appendChild($fragment);
+        $page.classList.remove("hidden");
+        const $fragment = document.createDocumentFragment();
+        tags.forEach((name) => {
+            const $tag = createElement(`
+                <a data-link draggable="false" class="no-select">
+                    <div class="ellipsis">${name}</div>
+                    <svg class="component_icon" draggable="false" alt="close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </a>
+            `);
+            const url = new URL(location.href);
+            if (url.searchParams.getAll("tag").indexOf(name) === -1) {
+                $tag.setAttribute("href", forwardURLParams(getCurrentPath() + "?tag=" + name, ["share", "tag"]));
+            } else {
+                url.searchParams.delete("tag", name);
+                $tag.setAttribute("href", url.toString());
+                $tag.setAttribute("aria-selected", "true");
+            }
+            $fragment.appendChild($tag);
+        });
+        qs($page, `[data-bind="taglist"]`).replaceChildren($fragment);
+    })));
 }
 
 export function init() {
