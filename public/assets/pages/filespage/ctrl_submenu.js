@@ -119,7 +119,7 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
             <button data-action="share" title="${t("Share")}" class="${(getConfig("enable_share") && !new URLSearchParams(location.search).has("share")) ? "" : "hidden"}">
                 ${t("Share")}
             </button>
-            <button data-action="tag" title="${t("Tag")}" class="${new URLSearchParams(location.search).get("canary") === "true" ? "" : "hidden"}" tabindex="-1">
+            <button data-action="tag" title="${t("Tag")}" class="${getConfig("enable_tags", false) ? "" : "hidden"}">
                 ${t("Tag")}
             </button>
         `))),

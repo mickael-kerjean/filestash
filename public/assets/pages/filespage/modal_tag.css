@@ -1,14 +1,10 @@
 .component_tag {
     font-size: 1rem;
 }
-.component_tag [data-bind="taglist"] {
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
-    margin: -10px;
-    padding: 20px 10px 10px 10px;
+.component_tag form {
+    margin-bottom: 15px;
 }
-.component_tag input {
+.component_tag form input {
     font-size: 1rem;
     border: 2px solid var(--border);
     border-radius: 5px;
@@ -18,8 +14,19 @@
     display: block;
     box-sizing: border-box;
 }
-.component_tag input::placeholder {
+.component_tag form input::placeholder {
     color: rgba(0,0,0,0.2);
+}
+.component_tag [data-bind="taglist"] {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin: -3px 0 0px 0px;
+    padding: 0;
+}
+.component_tag [data-bind="taglist"] .component_skeleton {
+    margin: 0;
+    height: 29px;
 }
 .component_tag .tag {
     display: flex;
@@ -31,6 +38,7 @@
     font-size: 0.95rem;
     cursor: pointer;
     letter-spacing: -0.5px;
+    text-transform: lowercase;
 }
 .component_tag .tag.active {
     background: var(--dark);

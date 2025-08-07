@@ -32,7 +32,7 @@ export default function(ctrl) {
         const $main = qs($page, `[data-bind="filemanager-children"]`);
         $main.classList.remove("hidden");
         ctrl(createRender($main));
-        ctrlSidebar(createRender(qs($page, `[data-bind="sidebar"]`)));
+        ctrlSidebar(createRender(qs($page, `[data-bind="sidebar"]`)), {});
         onDestroy(async() => {
             if ((history.state.previous || "").startsWith("/view/") && location.pathname.startsWith("/files/")) {
                 await animate($main, { time: 100, keyframes: slideYOut(20), fill: "none" });

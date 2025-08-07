@@ -12,10 +12,11 @@ export function join(baseURL, segment) {
 }
 
 export function forwardURLParams(url, allowed = []) {
-    const _url = new URL(window.location.origin + "/" + url);
+    const link = new URL(window.location.origin + "/" + url);
     for (const [key, value] of new URLSearchParams(location.search)) {
         if (allowed.indexOf(key) < 0) continue;
-        _url.searchParams.set(key, value);
+        else if (link.searchParams.getAll(key).indexOf(value) !== -1) continue;
+        link.searchParams.append(key, value);
     }
-    return _url.pathname.substring(1) + _url.search;
+    return link.pathname.substring(1) + link.search;
 }

@@ -14,7 +14,7 @@ export function getDownloadUrl() {
     return forwardURLParams("api/files/cat?path=" + encodeURIComponent(getCurrentPath()), ["share"]);
 }
 
-export function getCurrentPath() {
+export function getCurrentPath(start = "/view/") {
     const fullpath = fromHref(location.pathname + location.hash);
-    return decodeURIComponent(fullpath.replace(new RegExp("^/view"), ""));
+    return decodeURIComponent(fullpath.replace(new RegExp("^" + start), "/"));
 }

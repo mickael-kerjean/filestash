@@ -1,16 +1,20 @@
 import { createElement, createRender, onDestroy } from "../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../lib/rx.js";
+import ajax from "../lib/ajax.js";
 import assert from "../lib/assert.js";
 import { fromHref, toHref } from "../lib/skeleton/router.js";
 import { qs, qsa, safe } from "../lib/dom.js";
 import { forwardURLParams } from "../lib/path.js";
 import { settingsGet, settingsSave } from "../lib/store.js";
+import { get as getConfig } from "../model/config.js";
 import { loadCSS } from "../helpers/loader.js";
 import t from "../locales/index.js";
 import cache from "../pages/filespage/cache.js";
 import { hooks, mv as mv$ } from "../pages/filespage/model_files.js";
 import { extractPath, isDir, isNativeFileUpload } from "../pages/filespage/helper.js";
 import { mv as mvVL, withVirtualLayer } from "../pages/filespage/model_virtual_layer.js";
+import { getCurrentPath } from "../pages/viewerpage/common.js";
+import { generateSkeleton } from "./skeleton.js";
 
 const state = { scrollTop: 0, $cache: null };
 const mv = (from, to) => withVirtualLayer(
@@ -18,7 +22,7 @@ const mv = (from, to) => withVirtualLayer(
     mvVL(from, to),
 );
 
-export default async function ctrlSidebar(render, nRestart = 0) {
+export default async function ctrlSidebar(render, { nRestart = 0 }) {
     if (!shouldDisplay()) return;
 
     const $sidebar = render(createElement(`
@@ -28,11 +32,6 @@ export default async function ctrlSidebar(render, nRestart = 0) {
                 <input type="text" placeholder="${t("Your Files")}" />
             </h3>
             <div data-bind="your-files"></div>
-
-            <h3>
-                <img src="data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjE2IiB2aWV3Qm94PSIwIDAgMTYgMTYiIHZlcnNpb249IjEuMSIgd2lkdGg9IjE2IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPg0KICAgIDxwYXRoIHN0eWxlPSJmaWxsOiAjNTc1OTVhOyIgZD0iTTEgNy43NzVWMi43NUMxIDEuNzg0IDEuNzg0IDEgMi43NSAxaDUuMDI1Yy40NjQgMCAuOTEuMTg0IDEuMjM4LjUxM2w2LjI1IDYuMjVhMS43NSAxLjc1IDAgMCAxIDAgMi40NzRsLTUuMDI2IDUuMDI2YTEuNzUgMS43NSAwIDAgMS0yLjQ3NCAwbC02LjI1LTYuMjVBMS43NTIgMS43NTIgMCAwIDEgMSA3Ljc3NVptMS41IDBjMCAuMDY2LjAyNi4xMy4wNzMuMTc3bDYuMjUgNi4yNWEuMjUuMjUgMCAwIDAgLjM1NCAwbDUuMDI1LTUuMDI1YS4yNS4yNSAwIDAgMCAwLS4zNTRsLTYuMjUtNi4yNWEuMjUuMjUgMCAwIDAtLjE3Ny0uMDczSDIuNzVhLjI1LjI1IDAgMCAwLS4yNS4yNVpNNiA1YTEgMSAwIDEgMSAwIDIgMSAxIDAgMCAxIDAtMloiPjwvcGF0aD4NCjwvc3ZnPg0K" alt="tag">
-                ${t("Tags")}
-            </h3>
             <div data-bind="your-tags"></div>
         </div>
     `));
@@ -76,7 +75,12 @@ export default async function ctrlSidebar(render, nRestart = 0) {
     ctrlNavigationPane(render, { $sidebar, nRestart });
 
     // feature: tag viewer
-    ctrlTagPane(createRender(qs($sidebar, `[data-bind="your-tags"]`)));
+    effect(rxjs.merge(
+        rxjs.of(null),
+        rxjs.fromEvent(window, "filestash::tag"),
+    ).pipe(rxjs.tap(() => {
+        ctrlTagPane(createRender(qs($sidebar, `[data-bind="your-tags"]`)));
+    })));
 }
 
 const withResize = (function() {
@@ -254,37 +258,63 @@ async function _createListOfFiles(path, currentName, dirpath) {
 }
 
 async function ctrlTagPane(render) {
-    const $page = createElement(`
-        <ul>
-            <li data-bind="taglist"></li>
-        </ul>
-    `);
-    render($page);
+    if (!getConfig("enable_tags", false)) return;
+    render(createElement(`<div>${generateSkeleton(2)}</div>`));
 
-    // only enable this pane in canary mode until it's actually ready
-    if (new URLSearchParams(location.search).get("canary") !== "true") {
-        $page.classList.add("hidden");
-        const orFail = (something) => assert.type(something, HTMLElement);
-        orFail(orFail($page.parentElement).previousElementSibling).classList.add("hidden");
+    const $page = createElement(`
+        <div>
+            <h3>
+                <img src="data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjE2IiB2aWV3Qm94PSIwIDAgMTYgMTYiIHZlcnNpb249IjEuMSIgd2lkdGg9IjE2IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPg0KICAgIDxwYXRoIHN0eWxlPSJmaWxsOiAjNTc1OTVhOyIgZD0iTTEgNy43NzVWMi43NUMxIDEuNzg0IDEuNzg0IDEgMi43NSAxaDUuMDI1Yy40NjQgMCAuOTEuMTg0IDEuMjM4LjUxM2w2LjI1IDYuMjVhMS43NSAxLjc1IDAgMCAxIDAgMi40NzRsLTUuMDI2IDUuMDI2YTEuNzUgMS43NSAwIDAgMS0yLjQ3NCAwbC02LjI1LTYuMjVBMS43NTIgMS43NTIgMCAwIDEgMSA3Ljc3NVptMS41IDBjMCAuMDY2LjAyNi4xMy4wNzMuMTc3bDYuMjUgNi4yNWEuMjUuMjUgMCAwIDAgLjM1NCAwbDUuMDI1LTUuMDI1YS4yNS4yNSAwIDAgMCAwLS4zNTRsLTYuMjUtNi4yNWEuMjUuMjUgMCAwIDAtLjE3Ny0uMDczSDIuNzVhLjI1LjI1IDAgMCAwLS4yNS4yNVpNNiA1YTEgMSAwIDEgMSAwIDIgMSAxIDAgMCAxIDAtMloiPjwvcGF0aD4NCjwvc3ZnPg0K" alt="tag">
+                ${t("Tags")}
+            </h3>
+            <ul>
+                <li data-bind="taglist"></li>
+            </ul>
+        </div>
+    `);
+    const tags = await ajax({
+        url: forwardURLParams(`api/metadata/search`, ["share"]),
+        method: "POST",
+        responseType: "json",
+        body: JSON.stringify({
+            "tags": [],
+            "path": getCurrentPath("(/view/|/files/)"),
+        }),
+    }).pipe(
+        rxjs.map(({ responseJSON }) =>
+            responseJSON.results
+                .filter(({type}) => type === "folder")
+                .map(({ name }) => name)
+                .sort()
+        ),
+        rxjs.catchError(() => rxjs.of([])),
+    ).toPromise();
+    if (tags.length === 0) {
+        render(createElement("<div></div>"));
         return;
     }
+    render($page);
 
-    const tags = [
-        { name: t("Bookmark"), color: "green" },
-        { name: "important", color: "red" },
-        { name: "foobar", color: "saddlebrown" },
-    ];
-    const $tmpl = (name, color) => createElement(`
-        <a data-link href="/tags/${name}/?canary=true" draggable="false">
-                <svg class="component_icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="50" r="50" style="opacity: 0.25; fill: ${color};" />
-                </svg>
-            <div class="ellipsis">${name}</div>
-        </a>
-    `);
     const $fragment = document.createDocumentFragment();
-    tags.forEach(({ name, color }) => {
-        $fragment.appendChild($tmpl(name, color));
+    tags.forEach((name) => {
+        const $tag = createElement(`
+            <a data-link draggable="false" class="no-select">
+                <div class="ellipsis">${name}</div>
+                <svg class="component_icon" draggable="false" alt="close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </a>
+        `);
+        const url = new URL(location.href);
+        if (url.searchParams.getAll("tag").indexOf(name) === -1) {
+            $tag.setAttribute("href", forwardURLParams(getCurrentPath() + "?tag=" + name, ["share", "tag"]));
+        } else {
+            url.searchParams.delete("tag", name);
+            $tag.setAttribute("href", url.toString());
+            $tag.setAttribute("aria-selected", "true");
+        }
+        $fragment.appendChild($tag);
     });
     qs($page, `[data-bind="taglist"]`).appendChild($fragment);
 }

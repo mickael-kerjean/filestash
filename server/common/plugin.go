@@ -254,6 +254,16 @@ func (this Get) StaticPatch() [][]byte {
 	return staticOverrides
 }
 
+var meta IMetadata
+
+func (this Register) Metadata(m IMetadata) {
+	meta = m
+}
+
+func (this Get) Metadata() IMetadata {
+	return meta
+}
+
 func init() {
 	Hooks.Register.FrontendOverrides(OverrideVideoSourceMapper)
 }

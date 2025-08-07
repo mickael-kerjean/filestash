@@ -73,6 +73,12 @@ func Build(r *mux.Router, a App) {
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, BodyParser, CanManageShare, PluginInjector}
 	share.HandleFunc("/{share}", NewMiddlewareChain(ShareUpsert, middlewares, a)).Methods("POST")
 
+	meta := r.PathPrefix(WithBase("/api/metadata")).Subrouter()
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, WithPublicAPI, SessionStart, LoggedInOnly, PluginInjector}
+	meta.HandleFunc("", NewMiddlewareChain(MetaGet, middlewares, a)).Methods("GET")
+	meta.HandleFunc("", NewMiddlewareChain(MetaUpsert, middlewares, a)).Methods("POST")
+	meta.HandleFunc("/search", NewMiddlewareChain(MetaSearch, middlewares, a)).Methods("POST")
+
 	// Webdav server / Shared Link
 	middlewares = []Middleware{IndexHeaders, SecureHeaders, PluginInjector}
 	r.HandleFunc(WithBase("/s/{share}"), NewMiddlewareChain(ServeFrontofficeHandler, middlewares, a)).Methods("GET")

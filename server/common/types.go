@@ -66,6 +66,18 @@ type AuditQueryResult struct {
 	RenderHTML string `json:"render"`
 }
 
+const (
+	MetaModeTag = 1 << iota
+	MetaModeBookmark
+	MetaModeForm
+)
+
+type IMetadata interface {
+	Get(ctx *App, path string) ([]FormElement, error)
+	Set(ctx *App, path string, value []FormElement) error
+	Search(ctx *App, basePath string, facets map[string]any) ([]IFile, error)
+}
+
 type File struct {
 	FName   string `json:"name"`
 	FType   string `json:"type"`

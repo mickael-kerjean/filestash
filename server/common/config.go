@@ -358,7 +358,6 @@ func (this *Configuration) Export() interface{} {
 		Name                    string            `json:"name"`
 		UploadButton            bool              `json:"upload_button"`
 		Connections             interface{}       `json:"connections"`
-		EnableShare             bool              `json:"enable_share"`
 		SharedLinkDefaultAccess string            `json:"share_default_access"`
 		SharedLinkRedirect      string            `json:"share_redirect"`
 		Logout                  string            `json:"logout"`
@@ -370,9 +369,11 @@ func (this *Configuration) Export() interface{} {
 		FilePageDefaultView     string            `json:"default_view"`
 		AuthMiddleware          []string          `json:"auth"`
 		Thumbnailer             []string          `json:"thumbnailer"`
-		EnableChromecast        bool              `json:"enable_chromecast"`
 		Origin                  string            `json:"origin"`
 		Version                 string            `json:"version"`
+		EnableChromecast        bool              `json:"enable_chromecast"`
+		EnableShare             bool              `json:"enable_share"`
+		EnableTags              bool              `json:"enable_tags"`
 	}{
 		Editor:                  this.Get("general.editor").String(),
 		ForkButton:              this.Get("general.fork_button").Bool(),
@@ -380,7 +381,6 @@ func (this *Configuration) Export() interface{} {
 		Name:                    this.Get("general.name").String(),
 		UploadButton:            this.Get("general.upload_button").Bool(),
 		Connections:             this.Conn,
-		EnableShare:             this.Get("features.share.enable").Bool(),
 		SharedLinkDefaultAccess: this.Get("features.share.default_access").String(),
 		SharedLinkRedirect:      this.Get("features.share.redirect").String(),
 		Logout:                  this.Get("general.logout").String(),
@@ -408,7 +408,6 @@ func (this *Configuration) Export() interface{} {
 			}
 			return tArray
 		}(),
-		EnableChromecast: this.Get("features.protection.enable_chromecast").Bool(),
 		Origin: func() string {
 			host := this.Get("general.host").String()
 			if host == "" {
@@ -420,7 +419,12 @@ func (this *Configuration) Export() interface{} {
 			}
 			return scheme + host
 		}(),
-		Version: BUILD_REF,
+		Version:          BUILD_REF,
+		EnableChromecast: this.Get("features.protection.enable_chromecast").Bool(),
+		EnableShare:      this.Get("features.share.enable").Bool(),
+		EnableTags: func() bool {
+			return Hooks.Get.Metadata() != nil
+		}(),
 	}
 }
 
