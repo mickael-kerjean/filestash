@@ -134,6 +134,9 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     color: #f2f2f2;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
+.dark-mode .component_filemanager_shell .component_sidebar [data-bind="taglist"] a[aria-selected="true"] {
+    background: var(--border);
+}
 .component_filemanager_shell .component_sidebar [data-bind="taglist"] a[aria-selected="true"] svg {
     opacity: 1;
 }

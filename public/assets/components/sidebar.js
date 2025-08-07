@@ -277,6 +277,7 @@ async function ctrlTagPane(render) {
     `);
     render($page);
 
+    const path = getCurrentPath("(/view/|/files/)");
     effect(rxjs.merge(
         rxjs.of(tagcache).pipe(rxjs.filter((cache) => cache)),
         ajax({
@@ -285,7 +286,7 @@ async function ctrlTagPane(render) {
             responseType: "json",
             body: JSON.stringify({
                 "tags": [],
-                "path": getCurrentPath("(/view/|/files/)"),
+                path,
             }),
         }).pipe(
             rxjs.map(({ responseJSON }) =>
@@ -316,7 +317,7 @@ async function ctrlTagPane(render) {
             `);
             const url = new URL(location.href);
             if (url.searchParams.getAll("tag").indexOf(name) === -1) {
-                $tag.setAttribute("href", forwardURLParams(getCurrentPath() + "?tag=" + name, ["share", "tag"]));
+                $tag.setAttribute("href", forwardURLParams(toHref("/files" + path.replace(new RegExp("[^\/]+$"), "") + "?tag=" + name), ["share", "tag"]));
             } else {
                 url.searchParams.delete("tag", name);
                 $tag.setAttribute("href", url.toString());
