@@ -135,10 +135,10 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 .component_filemanager_shell .component_sidebar [data-bind="taglist"] a[aria-selected="true"] svg {
-    display: block;
+    opacity: 1;
 }
 .component_filemanager_shell .component_sidebar [data-bind="taglist"] a svg {
-    display: none;
+    opacity: 0;
     background: rgba(255, 255, 255, 0.03);
     align-self: center;
     width: 13px;
