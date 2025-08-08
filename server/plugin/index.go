@@ -32,6 +32,7 @@ import (
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_image_ascii"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_image_c"
+	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_license"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_search_stateless"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_security_scanner"
 	_ "github.com/mickael-kerjean/filestash/server/plugin/plg_security_svg"
