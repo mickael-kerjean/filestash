@@ -7,7 +7,6 @@ import assert from "../../lib/assert.js";
 import { generateSkeleton } from "../../components/skeleton.js";
 import t from "../../locales/index.js";
 
-
 const shareID = new URLSearchParams(location.search).get("share");
 
 const $tmpl = createElement(`
@@ -46,10 +45,10 @@ export default async function(render, { path }) {
                     }, [])
             ),
         ),
-        ajax({ url: forwardURLParams("api/metadata/search", ["share"]), method: "POST", responseType: "json", body: { path: "/" }}).pipe(
+        ajax({ url: forwardURLParams("api/metadata/search", ["share"]), method: "POST", responseType: "json", body: { path: "/" } }).pipe(
             rxjs.map(({ responseJSON }) =>
                 responseJSON.results
-                    .filter(({ type, name }) => type === "folder")
+                    .filter(({ type }) => type === "folder")
                     .map(({ name }) => ({ name, active: false }))
             ),
         ),
@@ -71,11 +70,9 @@ export default async function(render, { path }) {
     const save = (tags) => ajax({
         url: forwardURLParams(`api/metadata?path=${path}`, ["share"]),
         method: "POST",
-        body: tags.length === 0 ? [] : [{
-            id: "tags",
-            type: "hidden",
-            value: tags.join(", "),
-        }],
+        body: tags.length === 0
+            ? []
+            : [{ id: "tags", type: "hidden", value: tags.join(", ") }],
     }).pipe(rxjs.tap(() => window.dispatchEvent(new Event("filestash::tag"))));
 
     // feature: create DOM
@@ -94,9 +91,9 @@ export default async function(render, { path }) {
                     return tag.name !== $el.innerText.trim();
                 }));
                 save(tags$.value
-                     .filter(({ active }) => active)
-                     .map(({ name }) => name)).toPromise();
-            }
+                    .filter(({ active }) => active)
+                    .map(({ name }) => name)).toPromise();
+            };
             return $el;
         })),
         rxjs.tap(($nodes) => {
@@ -111,7 +108,7 @@ export default async function(render, { path }) {
         rxjs.filter(() => !shareID),
         rxjs.tap((e) => {
             e.preventDefault();
-            const tagname = new FormData(e.target).get("tag").toLowerCase().trim();
+            const tagname = assert.typeof(new FormData(e.target).get("tag"), "string").toLowerCase().trim();
             if (!tagname) return;
             else if (tags$.value.find(({ name }) => name === tagname)) return;
             qs($modal, `input[name="tag"]`).value = "";

@@ -1,7 +1,6 @@
 import { createElement, createRender, onDestroy } from "../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../lib/rx.js";
 import ajax from "../lib/ajax.js";
-import assert from "../lib/assert.js";
 import { fromHref, toHref } from "../lib/skeleton/router.js";
 import { qs, qsa, safe } from "../lib/dom.js";
 import { forwardURLParams } from "../lib/path.js";
@@ -291,7 +290,7 @@ async function ctrlTagPane(render) {
         }).pipe(
             rxjs.map(({ responseJSON }) =>
                 responseJSON.results
-                    .filter(({type}) => type === "folder")
+                    .filter(({ type }) => type === "folder")
                     .map(({ name }) => name)
                     .sort()
             ),
