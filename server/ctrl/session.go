@@ -314,7 +314,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			http.StatusSeeOther,
 		)
 		return
-	} else if err != nil {
+	} else if err != nil && strings.HasPrefix(res.Header().Get("Content-Type"), "text/html") == false {
 		Log.Error("session::authMiddleware 'callback error - %s'", err.Error())
 		http.Redirect(
 			res, req,
@@ -322,7 +322,10 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			http.StatusSeeOther,
 		)
 		return
+	} else if err != nil { // response handled directly within a plugin
+		return
 	}
+
 	templateBind["machine_id"] = GenerateMachineID()
 	for _, value := range os.Environ() {
 		pair := strings.SplitN(value, "=", 2)

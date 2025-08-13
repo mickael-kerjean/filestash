@@ -9,12 +9,12 @@ import (
 )
 
 func init() {
-	Hooks.Register.AuthenticationMiddleware("passthrough", Admin{})
+	Hooks.Register.AuthenticationMiddleware("passthrough", Passthrough{})
 }
 
-type Admin struct{}
+type Passthrough struct{}
 
-func (this Admin) Setup() Form {
+func (this Passthrough) Setup() Form {
 	return Form{
 		Elmnts: []FormElement{
 			{
@@ -36,7 +36,7 @@ func (this Admin) Setup() Form {
 	}
 }
 
-func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
+func (this Passthrough) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
 	getParams := "?label=" + html.EscapeString(req.URL.Query().Get("label")) + "&state=" + html.EscapeString(req.URL.Query().Get("state"))
 	switch idpParams["strategy"] {
@@ -76,7 +76,7 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 	return nil
 }
 
-func (this Admin) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
+func (this Passthrough) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
 	return map[string]string{
 		"user":     formData["user"],
 		"password": formData["password"],
