@@ -57,7 +57,12 @@
                              resolve();
                          });
                  });
-                 register.active.postMessage({ "type": "preload", "payload": URLS });
+                 register.active.postMessage({
+                     "type": "preload",
+                     "payload": URLS,
+                     "version": "{{ .version }}".substring(0, 7) + "::{{ .hash }}",
+                     "clear": {{ .clear }},
+                 });
                  await new Promise((resolve, reject) => navigator.serviceWorker.addEventListener("message", (event) => {
                      if (event.data && event.data.type === "preload") {
                          if (event.data.status !== "ok") console.log(`turboload failure data=${JSON.stringify(event.data)}`);

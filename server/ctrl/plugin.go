@@ -29,7 +29,7 @@ func PluginExportHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 			}
 		}
 	}
-	SendSuccessResult(res, plgExports)
+	SendSuccessResultWithEtagAndGzip(res, req, plgExports)
 }
 
 func PluginStaticHandler(ctx *App, res http.ResponseWriter, req *http.Request) {

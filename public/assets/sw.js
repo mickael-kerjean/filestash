@@ -1,4 +1,4 @@
-const CACHENAME = "assets";
+let VERSION = null;
 
 /*
  * This Service Worker is an optional optimisation to load the app faster.
@@ -41,7 +41,7 @@ self.addEventListener("fetch", async(event) => {
     if (!event.request.url.startsWith(location.origin + "/assets/")) return;
 
     event.respondWith((async() => {
-        const cache = await caches.open(CACHENAME);
+        const cache = await caches.open(VERSION);
         const cachedResponse = await cache.match(event.request);
         if (cachedResponse) return cachedResponse;
         return fetch(event.request);
@@ -51,19 +51,42 @@ self.addEventListener("fetch", async(event) => {
 self.addEventListener("message", (event) => {
     if (event.data.type === "preload") handlePreloadMessage(
         event.data.payload,
+        event.data.clear,
+        event.data.version,
         () => event.source.postMessage({ type: "preload", status: "ok" }),
         (err) => event.source.postMessage({ type: "preload", status: "error", msg: err.message }),
     );
 });
 
-async function handlePreloadMessage(chunks, resolve, reject, id) {
+async function handlePreloadMessage(chunks, clear, version, resolve, reject) {
+    VERSION = version;
     const cleanup = [];
     try {
-        await caches.delete(CACHENAME);
-        const cache = await caches.open(CACHENAME);
-        await Promise.all(chunks.map((urls) => {
-            return preload({ urls, cache, cleanup });
-        }));
+        let execHTTP = true;
+        await caches.keys().then(async(names) => {
+            for (let i=0; i<names.length; i++) {
+                if (names[i] === VERSION && !clear) {
+                    execHTTP = false;
+                    return;
+                }
+                await caches.delete(names[i]);
+            }
+        });
+        if (execHTTP) {
+            const cache = await caches.open(VERSION);
+            chunks = await Promise.all(chunks.map(async(urls) => {
+                const missing = [];
+                await Promise.all(urls.map(async(url) => {
+                    if (!await cache.match(location.origin + url)) missing.push(url);
+                }));
+                return missing;
+            }));
+            if (chunks.filter((urls) => urls.length > 0).length > 0) {
+                await Promise.all(chunks.map((urls) => {
+                    return preload({ urls, cache, cleanup });
+                }));
+            }
+        }
         resolve();
     } catch (err) {
         console.log("ERR", err);
@@ -88,7 +111,7 @@ async function preload({ urls, cache, cleanup }) {
         await cache.put(
             location.origin + url,
             new Response(
-                decoder(new Blob([Uint8Array.from(atob(event.data), (c) => c.charCodeAt(0))]).stream()),
+                decoder(new Blob([base128Decode(event.data)]).stream()),
                 { headers: { "Content-Type": mime } },
             ),
         );
@@ -116,4 +139,23 @@ async function preload({ urls, cache, cleanup }) {
             errorHandler(reject, err);
         };
     });
+}
+
+function base128Decode(s) { // encoder is in server/ctrl/static.go -> encodeB128
+    const out = new Uint8Array(Math.floor((s.length * 7) / 8) + 1);
+    let acc = 0;
+    let bits = 0;
+    let oi = 0;
+    for (let i = 0; i < s.length; i++) {
+        const ch = s.charCodeAt(i);
+        const digit = ch & 0x7F; // undo 0x80 masking for NUL/LF/CR
+        acc = (acc << 7) | digit;
+        bits += 7;
+        while (bits >= 8) {
+            bits -= 8;
+            out[oi++] = (acc >> bits) & 0xFF;
+            acc &= (1 << bits) - 1;
+        }
+    }
+    return out.subarray(0, oi);
 }
