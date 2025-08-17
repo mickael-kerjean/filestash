@@ -26,7 +26,6 @@ type Crawler struct {
 	Backend        IBackend
 	State          indexer.Index
 	mu             sync.Mutex
-	lastHash       string
 }
 
 func NewCrawler(id string, b IBackend) (Crawler, error) {

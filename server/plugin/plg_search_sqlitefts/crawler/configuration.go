@@ -45,7 +45,7 @@ var SEARCH_EXCLUSION = func() []string {
 		f.Id = "folder_exclusion"
 		f.Name = "folder_exclusion"
 		f.Type = "text"
-		f.Description = "Exclude folders during the exploration phase"
+		f.Description = "Exclude some specific folder from the crawl / index"
 		f.Placeholder = "Default: node_modules,bower_components,.cache,.npm,.git"
 		f.Default = "node_modules,bower_components,.cache,.npm,.git"
 		return f
@@ -138,7 +138,7 @@ var INDEXING_EXT = func() string {
 		f.Id = "indexer_ext"
 		f.Name = "indexer_ext"
 		f.Type = "text"
-		f.Description = "File extension we want to see indexed"
+		f.Description = "Extensions that will be handled by the full text search engine"
 		f.Placeholder = "Default: org,txt,docx,pdf,md,form"
 		f.Default = "org,txt,docx,pdf,md,form"
 		return f
