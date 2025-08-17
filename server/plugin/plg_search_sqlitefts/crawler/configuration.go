@@ -1,12 +1,15 @@
 package plg_search_sqlitefts
 
 import (
+	"strings"
+
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func init() {
 	Hooks.Register.Onload(func() {
 		SEARCH_ENABLE()
+		SEARCH_EXCLUSION()
 		SEARCH_PROCESS_MAX()
 		SEARCH_PROCESS_PAR()
 		SEARCH_REINDEX()
@@ -14,11 +17,6 @@ func init() {
 		MAX_INDEXING_FSIZE()
 		INDEXING_EXT()
 	})
-}
-
-var INDEXING_EXCLUSION = []string{
-	"/node_modules/", "/bower_components/",
-	"/.cache/", "/.npm/", "/.git/",
 }
 
 var SEARCH_ENABLE = func() bool {
@@ -30,13 +28,33 @@ var SEARCH_ENABLE = func() bool {
 		f.Type = "enable"
 		f.Target = []string{
 			"process_max", "process_par", "reindex_time",
-			"cycle_time", "max_size", "indexer_ext",
+			"cycle_time", "max_size", "indexer_ext", "folder_exclusion",
 		}
 		f.Description = "Enable/Disable full text search"
 		f.Placeholder = "Default: true"
 		f.Default = true
 		return f
 	}).Bool()
+}
+
+var SEARCH_EXCLUSION = func() []string {
+	listOfFolders := Config.Get("features.search.folder_exclusion").Schema(func(f *FormElement) *FormElement {
+		if f == nil {
+			f = &FormElement{}
+		}
+		f.Id = "folder_exclusion"
+		f.Name = "folder_exclusion"
+		f.Type = "text"
+		f.Description = "Exclude folders during the exploration phase"
+		f.Placeholder = "Default: node_modules,bower_components,.cache,.npm,.git"
+		f.Default = "node_modules,bower_components,.cache,.npm,.git"
+		return f
+	}).String()
+	out := []string{}
+	for _, folder := range strings.Split(listOfFolders, ",") {
+		out = append(out, strings.TrimSpace(folder))
+	}
+	return out
 }
 
 var SEARCH_PROCESS_MAX = func() int {

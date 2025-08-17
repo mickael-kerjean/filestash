@@ -6,6 +6,7 @@ import (
 	"hash/fnv"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -23,6 +24,7 @@ func (this *Crawler) Discover(tx indexer.Manager) bool {
 		this.CurrentPhase = PHASE_INDEXING
 		return false
 	}
+
 	files, err := this.Backend.Ls(doc.Path)
 	if err != nil {
 		this.CurrentPhase = ""
@@ -58,9 +60,19 @@ func (this *Crawler) Discover(tx indexer.Manager) bool {
 	}
 
 	// Insert the newly found data within our index
+	excluded := SEARCH_EXCLUSION()
 	for i := range files {
 		f := files[i]
 		name := f.Name()
+		skip := false
+		for i := 0; i < len(excluded); i++ {
+			if name == excluded[i] || strings.Contains(doc.Path, excluded[i]) {
+				skip = true
+			}
+		}
+		if skip {
+			continue
+		}
 		if f.IsDir() {
 			var performPush bool = false
 			p := filepath.Join(doc.Path, name)

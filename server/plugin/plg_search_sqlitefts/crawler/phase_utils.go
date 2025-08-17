@@ -4,7 +4,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -15,11 +14,6 @@ import (
 func updateFile(path string, backend IBackend, tx indexer.Manager) error {
 	if err := tx.IndexTimeUpdate(path, time.Now()); err != nil {
 		return err
-	}
-	for i := 0; i < len(INDEXING_EXCLUSION); i++ {
-		if strings.Contains(path, INDEXING_EXCLUSION[i]) {
-			return nil
-		}
 	}
 	reader, err := backend.Cat(path)
 	if err != nil {
@@ -42,12 +36,6 @@ func updateFile(path string, backend IBackend, tx indexer.Manager) error {
 func updateFolder(path string, backend IBackend, tx indexer.Manager) error {
 	if err := tx.IndexTimeUpdate(path, time.Now()); err != nil {
 		return err
-	}
-
-	for i := 0; i < len(INDEXING_EXCLUSION); i++ {
-		if strings.Contains(path, INDEXING_EXCLUSION[i]) {
-			return nil
-		}
 	}
 
 	// Fetch list of folders as in the remote filesystem
