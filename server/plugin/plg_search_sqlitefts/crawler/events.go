@@ -33,7 +33,10 @@ func (this FileHook) Cat(ctx *App, path string) error {
 
 func (this FileHook) Mkdir(ctx *App, path string) error {
 	if this.record(ctx) {
-		go DaemonState.HintLs(ctx, filepath.Dir(path)+"/")
+		go func() {
+			DaemonState.HintLs(ctx, filepath.Dir(path)+"/")
+			DaemonState.HintLs(ctx, path)
+		}()
 	}
 	return nil
 }
@@ -47,23 +50,31 @@ func (this FileHook) Rm(ctx *App, path string) error {
 
 func (this FileHook) Mv(ctx *App, from string, to string) error {
 	if this.record(ctx) {
-		go DaemonState.HintRm(ctx, filepath.Dir(from)+"/")
-		go DaemonState.HintLs(ctx, filepath.Dir(to)+"/")
+		go func() {
+			DaemonState.HintRm(ctx, filepath.Dir(from)+"/")
+			DaemonState.HintLs(ctx, to+"/")
+			DaemonState.HintLs(ctx, filepath.Dir(to)+"/")
+		}()
 	}
 	return nil
 }
 
 func (this FileHook) Save(ctx *App, path string) error {
 	if this.record(ctx) {
-		go DaemonState.HintLs(ctx, filepath.Dir(path)+"/")
-		go DaemonState.HintFile(ctx, path)
+		go func() {
+			DaemonState.HintLs(ctx, filepath.Dir(path)+"/")
+			DaemonState.HintFile(ctx, path)
+		}()
 	}
 	return nil
 }
 
 func (this FileHook) Touch(ctx *App, path string) error {
 	if this.record(ctx) {
-		go DaemonState.HintLs(ctx, filepath.Dir(path)+"/")
+		go func() {
+			DaemonState.HintLs(ctx, filepath.Dir(path)+"/")
+			DaemonState.HintFile(ctx, path)
+		}()
 	}
 	return nil
 }

@@ -11,7 +11,7 @@ func (this *Crawler) Consolidate(tx indexer.Manager) bool {
 	rows, err := tx.FindBefore(time.Now().Add(-time.Duration(SEARCH_REINDEX()) * time.Hour))
 	if err != nil {
 		if err == indexer.ErrNoRows {
-			this.CurrentPhase = PHASE_PAUSE
+			this.Next()
 			return false
 		}
 		this.CurrentPhase = ""
@@ -33,7 +33,7 @@ func (this *Crawler) Consolidate(tx indexer.Manager) bool {
 		}
 	}
 	if hasRows == false {
-		this.CurrentPhase = PHASE_PAUSE
+		this.Next()
 		return false
 	}
 	return true

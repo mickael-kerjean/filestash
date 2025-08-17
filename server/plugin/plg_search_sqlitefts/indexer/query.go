@@ -13,7 +13,7 @@ func (this sqliteIndex) Search(path string, q string) ([]IFile, error) {
 	rows, err := this.db.Query(
 		"SELECT type, path, size, modTime FROM file WHERE path IN ("+
 			"   SELECT path FROM file_index WHERE file_index MATCH ? AND path > ? AND path < ?"+
-			"   ORDER BY rank LIMIT 2000"+
+			"   ORDER BY rank LIMIT 50000"+
 			")",
 		regexp.MustCompile(`(\.|\-)`).ReplaceAllString(q, "\"$1\""),
 		path, path+"~",

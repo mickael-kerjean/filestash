@@ -109,7 +109,7 @@ var CYCLE_TIME = func() int {
 		f.Id = "cycle_time"
 		f.Name = "cycle_time"
 		f.Type = "number"
-		f.Description = "Time the indexer needs to spend for each cycle in seconds (discovery, indexing and maintenance)"
+		f.Description = "Time allocation for each cycle in seconds (discovery, indexing and maintenance)"
 		f.Placeholder = "Default: 10s"
 		f.Default = 10
 		return f

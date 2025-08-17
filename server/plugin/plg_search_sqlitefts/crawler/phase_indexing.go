@@ -27,9 +27,8 @@ func (this *Crawler) Indexing(tx indexer.Manager) bool {
 			return false
 		}
 	}
-
 	if hasRows == false {
-		this.CurrentPhase = PHASE_MAINTAIN
+		this.Next()
 		return false
 	}
 	return true

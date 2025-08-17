@@ -12,19 +12,19 @@ import (
 
 func (this *Crawler) Discover(tx indexer.Manager) bool {
 	if this.FoldersUnknown.Len() == 0 {
-		this.CurrentPhase = PHASE_INDEXING
+		this.Next()
 		return false
 	}
 	var doc *Document
 	doc = heap.Pop(&this.FoldersUnknown).(*Document)
 	if doc == nil {
-		this.CurrentPhase = PHASE_INDEXING
+		this.Next()
 		return false
 	}
 
 	files, err := this.Backend.Ls(doc.Path)
 	if err != nil {
-		this.CurrentPhase = ""
+		this.CurrentPhase = PHASE_PAUSE
 		return true
 	}
 

@@ -9,23 +9,23 @@ import (
 
 func (this *Crawler) Run() {
 	if this.CurrentPhase == "" {
-		time.Sleep(1 * time.Second)
 		this.CurrentPhase = PHASE_EXPLORE
 	}
 	Log.Debug("Search::indexing Execute %s", this.CurrentPhase)
 
 	cycleExecute := func(fn func(indexer.Manager) bool) {
-		stopTime := time.Now().Add(time.Duration(CYCLE_TIME()) * time.Second)
 		op, err := this.State.Change()
 		if err != nil {
 			Log.Warning("search::index cycle_begin (%+v)", err)
 			time.Sleep(5 * time.Second)
 		}
+		stopTime := time.Now().Add(time.Duration(CYCLE_TIME()) * time.Second)
 		for {
 			if fn(op) == false {
 				break
 			}
-			if stopTime.After(time.Now()) == false {
+			if time.Now().After(stopTime) {
+				this.Next()
 				break
 			}
 		}
@@ -44,11 +44,24 @@ func (this *Crawler) Run() {
 		return
 	} else if this.CurrentPhase == PHASE_PAUSE {
 		time.Sleep(5 * time.Second)
-		this.CurrentPhase = ""
+		this.Next()
 	}
 	return
 }
 
 func (this *Crawler) Close() error {
 	return this.State.Close()
+}
+
+func (this *Crawler) Next() {
+	switch this.CurrentPhase {
+	case PHASE_EXPLORE:
+		this.CurrentPhase = PHASE_INDEXING
+	case PHASE_INDEXING:
+		this.CurrentPhase = PHASE_MAINTAIN
+	case PHASE_MAINTAIN:
+		this.CurrentPhase = PHASE_PAUSE
+	case PHASE_PAUSE:
+		this.CurrentPhase = PHASE_EXPLORE
+	}
 }
