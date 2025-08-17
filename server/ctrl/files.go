@@ -484,6 +484,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 		size, err := strconv.ParseUint(req.Header.Get("Upload-Length"), 10, 0)
 		if err != nil {
+			Log.Debug("files::save::tus action=backend_save step=header_check_post err=%s", err.Error())
 			SendErrorResult(res, ErrNotValid)
 			return
 		}
@@ -497,6 +498,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if proto == "tus" && req.Method == http.MethodHead {
 		c := chunkedUploadCache.Get(cacheKey)
 		if c == nil {
+			Log.Debug("files::save::tus action=backend_save step=cache_fetch_head")
 			SendErrorResult(res, ErrNotFound)
 			return
 		}
@@ -509,11 +511,13 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if proto == "tus" && req.Method == http.MethodPatch {
 		requestOffset, err := strconv.ParseUint(req.Header.Get("Upload-Offset"), 10, 0)
 		if err != nil {
+			Log.Debug("files::save::tus action=backend_save step=header_check_patch err=%s", err.Error())
 			SendErrorResult(res, ErrNotValid)
 			return
 		}
 		c := chunkedUploadCache.Get(cacheKey)
 		if c == nil {
+			Log.Debug("files::save::tus action=backend_save step=cache_fetch_patch")
 			SendErrorResult(res, ErrNotFound)
 			return
 		}
