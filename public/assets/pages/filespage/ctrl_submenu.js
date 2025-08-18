@@ -150,10 +150,11 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
                     basename(path.replace(new RegExp("/$"), "")),
                 )).pipe(rxjs.mergeMap((val) => {
                     const [basepath] = extractPath(path);
+                    const newpath = basepath + val + (path.slice(-1) === "/" ? "/" : "");
                     clearSelection();
                     clearCache(path);
-                    clearCache(basepath + val);
-                    return mv(path, basepath + val);
+                    clearCache(newpath);
+                    return mv(path, newpath);
                 }));
             })),
             onClick(qs($page, `[data-action="delete"]`)).pipe(rxjs.mergeMap(() => {
