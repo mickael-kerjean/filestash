@@ -1,5 +1,6 @@
 import assert from "../../lib/assert.js";
 import { getSession } from "../../model/session.js";
+import { onLogout } from "../ctrl_logout.js";
 
 class ICache {
     /**
@@ -238,10 +239,10 @@ export async function init() {
             try {
                 const session = await getSession().toPromise();
                 backendID = session.backendID;
+                onLogout(() => backendID = "");
             } catch (err) {}
         }
     };
-
     return Promise.all([setup_cache(), setup_session()]);
 }
 
