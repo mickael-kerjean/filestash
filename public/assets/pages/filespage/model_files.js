@@ -27,7 +27,7 @@ import { ls as middlewareLs } from "./model_virtual_layer.js";
 
 const handleSuccess = (text) => rxjs.tap(() => notification.info(text));
 const handleError = rxjs.catchError((err) => {
-    notification.error(err);
+    notification.error(err.message);
     throw err;
 });
 const handleErrorRedirectLogin = rxjs.catchError((err) => {

@@ -6,8 +6,8 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="application-name" content="Filestash">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-        <link rel="icon" href="favicon.ico">
         <title></title>
+        <link rel="icon" href="{{ .favicon }}">
         <script>{{ if eq .license "agpl" }}{{ template "loader-cat" }}{{ else }}{{ template "loader-basic" }}{{ end }}</script>
     </head>
     <body>
@@ -60,7 +60,7 @@
                  register.active.postMessage({
                      "type": "preload",
                      "payload": URLS,
-                     "version": "{{ .version }}".substring(0, 7) + "::{{ .hash }}",
+                     "version": "{{ slice .version 0 7 }}::{{ .hash }}",
                      "clear": {{ .clear }},
                  });
                  await new Promise((resolve, reject) => navigator.serviceWorker.addEventListener("message", (event) => {

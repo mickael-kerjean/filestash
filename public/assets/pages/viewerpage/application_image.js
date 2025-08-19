@@ -114,7 +114,7 @@ export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_image.css"),
         loadCSS(import.meta.url, "./component_menubar.css"),
-        initPagination(), initInformation(),
+        initPagination(), initInformation(), Chromecast.init(),
     ]);
 }
 

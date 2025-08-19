@@ -1,19 +1,19 @@
-export function init(config) {
-    if (navigator.onLine === false) return Promise.resolve();
-    if (!config["enable_chromecast"]) {
-        return Promise.resolve();
-    } else if (!("chrome" in window)) {
-        return Promise.resolve();
-    } else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-        return Promise.resolve();
-    }
-    return Chromecast.init();
-}
+import { get as getConfig } from "./config.js";
 
 export const Chromecast = new class ChromecastManager {
     init() {
+        if (navigator.onLine === false) return Promise.resolve();
+        if (!getConfig("enable_chromecast", false)) {
+            return Promise.resolve();
+        } else if (!("chrome" in window)) {
+            return Promise.resolve();
+        } else if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+            return Promise.resolve();
+        }
         return new Promise((resolve) => {
+            if (document.head.querySelector("script#chromecast")) return resolve(null);
             const script = document.createElement("script");
+            script.id = "chromecast";
             script.src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
             script.onerror = () => resolve(null);
             window["__onGCastApiAvailable"] = function(isAvailable) {

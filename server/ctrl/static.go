@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	_ "embed"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -226,6 +227,24 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		head := res.Header()
+		sign := signature()
+		base := WithBase("/")
+		clear := req.Header.Get("Cache-Control") == "no-cache"
+		templateData := map[string]any{
+			"base":    base,
+			"version": BUILD_REF,
+			"license": LICENSE,
+			"preload": preload(),
+			"clear":   clear,
+			"hash":    sign,
+			"favicon": favicon(),
+		}
+		calculatedEtag := QuickHash(base+BUILD_REF+LICENSE+fmt.Sprintf("%t", clear)+sign, 10)
+		head.Set("ETag", calculatedEtag)
+		if etag := req.Header.Get("If-None-Match"); etag == calculatedEtag {
+			res.WriteHeader(http.StatusNotModified)
+			return
+		}
 		var out io.Writer = res
 		if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
 			head.Set("Content-Encoding", "gzip")
@@ -234,14 +253,7 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 			out = gz
 		}
 		head.Set("Content-Type", "text/html")
-		tmpl.Execute(out, map[string]any{
-			"base":    WithBase("/"),
-			"version": BUILD_REF,
-			"license": LICENSE,
-			"preload": preload(),
-			"clear":   req.Header.Get("Cache-Control") == "no-cache",
-			"hash":    signature(),
-		})
+		tmpl.Execute(out, templateData)
 	}
 }
 
@@ -495,4 +507,16 @@ func signature() string {
 		text += fmt.Sprintf("[%s][%d][%s]", stat.Name(), stat.Size(), stat.ModTime().String())
 	}
 	return strings.ToLower(QuickHash(text, 3))
+}
+
+func favicon() string {
+	file, err := WWWPublic.Open("/assets/logo/favicon.svg")
+	if err != nil {
+		return "favicon.ico"
+	}
+	f, err := io.ReadAll(file)
+	if err != nil {
+		return "favicon.ico"
+	}
+	return "data:image/svg+xml;base64," + base64.StdEncoding.EncodeToString(f)
 }

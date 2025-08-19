@@ -402,7 +402,7 @@ export function mv(fromPath, toPath) {
                             ...file,
                             loading: false,
                             last: false,
-                        }
+                        };
                         return file;
                     },
                 });
