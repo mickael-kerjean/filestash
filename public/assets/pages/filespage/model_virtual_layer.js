@@ -252,7 +252,11 @@ export function rm(...paths) {
                     name: arr[i+1],
                     fn: (file) => {
                         if (file.name === arr[i+1]) {
-                            file = { ...file, loading: false, last: false };
+                            file = {
+                                ...file,
+                                loading: false,
+                                last: false
+                            };
                         }
                         return file;
                     },
@@ -274,7 +278,7 @@ export function mv(fromPath, toPath) {
          */
         before() {
             if (fromBasepath === toBasepath) this._beforeSamePath();
-            else this._beforeSamePath();
+            else this._beforeDifferentPath();
         }
 
         _beforeSamePath() {
@@ -282,9 +286,12 @@ export function mv(fromPath, toPath) {
                 name: fromName,
                 fn: (file) => {
                     if (file.name === fromName) {
-                        file.loading = true;
-                        file.name = toName;
                         type = file.type;
+                        return {
+                            ...file,
+                            name: toName,
+                            loading: true,
+                        };
                     }
                     return file;
                 },
@@ -296,9 +303,12 @@ export function mv(fromPath, toPath) {
                 name: fromName,
                 fn: (file) => {
                     if (file.name === fromName) {
-                        file.loading = true;
-                        file.last = true;
                         type = file.type;
+                        return {
+                            ...file,
+                            loading: true,
+                            last: true,
+                        };
                     }
                     return file;
                 },
@@ -374,10 +384,31 @@ export function mv(fromPath, toPath) {
          * @override
          */
         async afterError() {
-            statePop(mutationFiles$, fromBasepath, fromName);
-            if (fromBasepath !== toBasepath) {
+            if (fromBasepath === toBasepath) stateAdd(mutationFiles$, fromBasepath, {
+                name: fromName,
+                fn: (file) => {
+                    if (file.name === toName) return {
+                        ...file,
+                        name: fromName,
+                        loading: false,
+                    };
+                    return file;
+                },
+            }); else {
+                stateAdd(mutationFiles$, fromBasepath, {
+                    name: fromName,
+                    fn: (file) => {
+                        if (file.name === fromName) return {
+                            ...file,
+                            loading: false,
+                            last: false,
+                        }
+                        return file;
+                    },
+                });
                 statePop(virtualFiles$, toBasepath, toName);
             }
+            statePop(mutationFiles$, fromBasepath, fromName);
             return rxjs.EMPTY;
         }
     }();
