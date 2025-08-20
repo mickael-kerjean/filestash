@@ -19,7 +19,6 @@
             <link rel="stylesheet" href="custom.css">
             <link rel="stylesheet" href="./assets/{{ .version }}/css/designsystem.css">
         </template>
-
         <template id="body">
             <script type="module" src="./assets/{{ .version }}/components/loader.js"></script>
             <script type="module">
@@ -30,36 +29,47 @@
                  beforeStart: import("{{ .base }}assets/{{ .version }}/boot/ctrl_boot_frontoffice.js"),
              });
             </script>
-
             <component-modal></component-modal>
             <script type="module" src="./assets/{{ .version }}/components/modal.js" defer></script>
-
             <component-notification></component-notification>
             <script type="module" src="./assets/{{ .version }}/components/notification.js" defer></script>
         </template>
 
-        <script id="preload" type="application/json">{{ .preload }}</script>
-
         <script type="module">
-         function boot() {
+         function liftoff() {
              document.head.appendChild(document.querySelector("template#head").content);
              document.body.appendChild(document.querySelector("template#body").content);
          }
-
-         if ("serviceWorker" in navigator) {
-             const URLS = JSON.parse(document.getElementById("preload").textContent);
+         async function ignitionSequence() {
+             if (!("serviceWorker" in navigator)) return
              try {
-                 const register = await navigator.serviceWorker.register("sw.js");
-                 await new Promise((resolve) => {
-                     register.active ?
-                         resolve() :
+                 window.bundler = (function () {
+                     let modules = [];
+                     return {
+                         register: (path, code) => modules[path] = code,
+                         state: () => modules,
+                     };
+                 })();
+                 const [register] = await Promise.all([
+                     navigator.serviceWorker.register("sw.js").then((register) => new Promise((resolve) => {
+                         register.active ?
+                         resolve(register) :
                          navigator.serviceWorker.addEventListener("controllerchange", () => {
-                             resolve();
+                             resolve(register);
                          });
-                 });
+                     })),
+                     new Promise((resolve, reject) => {
+                         const $script = document.createElement("script");
+                         $script.type = "module";
+                         $script.src = "./assets/bundle.js?version={{ slice .version 0 7 }}::{{ .hash }}";
+                         document.head.appendChild($script);
+                         $script.onload = resolve;
+                         $script.onerror = reject;
+                     }),
+                 ]);
                  register.active.postMessage({
                      "type": "preload",
-                     "payload": URLS,
+                     "payload": bundler.state(),
                      "version": "{{ slice .version 0 7 }}::{{ .hash }}",
                      "clear": {{ .clear }},
                  });
@@ -71,14 +81,40 @@
                  }));
              } catch (err) { console.error(err); }
          }
-         boot();
+
+         //
+         //
+         //
+         //
+         //                      /\
+         //                     /  \
+         //                ||  /    \
+         //                || /______\
+         //                |||        |
+         //               |  |        |
+         //               |  |        |
+         //               |__|________|
+         //               |___________|
+         //               |  |        |
+         //               |__|   ||   |\
+         //                |||   ||   | \
+         //               /|||   ||   |  \
+         //              /_|||...||...|___\
+         //                |||::::::::|
+         //                || \::::::/
+         //                ||  ||__||
+         //                ||    ||
+         //                ||     \\_______________
+         // _______________||______`---------------
+         // |
+         // |                                             |
+                     await ignitionSequence()          // |
+                                                       // |
+                                    liftoff()          // |
+         // |                                             |
+         // |_____________________________________________|
         </script>
 
-        <noscript>
-            <div style="text-align:center;font-family:monospace;margin-top:5%;font-size:15px;">
-                <h2>Error: Javascript is off</h2>
-                <p>You need to enable Javascript to run this application</p>
-            </div>
-        </noscript>
+        <noscript><div style="text-align:center;font-family:monospace;margin-top:5%;font-size:15px;"><h2>Error: Javascript is off</h2></div></noscript>
     </body>
 </html>
