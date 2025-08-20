@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/pprof"
-	"os"
 	"runtime"
 	"runtime/debug"
 	"strconv"
@@ -113,11 +112,6 @@ func Build(r *mux.Router, a App) {
 	r.HandleFunc(WithBase("/healthz"), NewMiddlewareChain(HealthHandler, []Middleware{}, a)).Methods("GET", "HEAD")
 	r.HandleFunc(WithBase("/custom.css"), NewMiddlewareChain(CustomCssHandler, []Middleware{}, a)).Methods("GET")
 	r.PathPrefix(WithBase("/doc")).Handler(NewMiddlewareChain(DocPage, []Middleware{}, a)).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-
-	if os.Getenv("DEBUG") == "true" {
-		initDebugRoutes(r)
-	}
-	initPluginsRoutes(r, &a)
 }
 
 func CatchAll(r *mux.Router, a App) {
@@ -127,7 +121,7 @@ func CatchAll(r *mux.Router, a App) {
 	r.PathPrefix("/").Handler(http.HandlerFunc(NewMiddlewareChain(ServeFrontofficeHandler, middlewares, a))).Methods("GET", "POST")
 }
 
-func initDebugRoutes(r *mux.Router) {
+func DebugRoutes(r *mux.Router) {
 	r.HandleFunc("/debug/pprof/", pprof.Index)
 	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	r.HandleFunc("/debug/pprof/profile", pprof.Profile)
@@ -158,7 +152,7 @@ func initDebugRoutes(r *mux.Router) {
 	})
 }
 
-func initPluginsRoutes(r *mux.Router, a *App) {
+func PluginRoutes(r *mux.Router) {
 	// frontoffice overrides: it is the mean by which plugin can interact with the frontoffice
 	for _, obj := range Hooks.Get.FrontendOverrides() {
 		r.HandleFunc(obj, func(res http.ResponseWriter, req *http.Request) {

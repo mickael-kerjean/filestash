@@ -153,7 +153,6 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			),
 		)
 		head := res.Header()
-
 		if f := applyPatch(filePath); f != nil {
 			head.Set("Content-Type", GetMimeType(filepath.Ext(filePath)))
 			head.Set("Cache-Control", "no-cache")
@@ -447,7 +446,7 @@ func applyPatch(filePath string) (file *bytes.Buffer) {
 				bytes.NewReader(outputBuffer.Bytes()),
 				patchFiles[i],
 			); err != nil {
-				Log.Debug("ctrl::static cannot apply patch - %s", err.Error())
+				Log.Debug("ctrl::static err=cannot_apply_patch path=%s err=%s", patchFiles[i].NewName, err.Error())
 				return nil
 			}
 			outputBuffer = patched

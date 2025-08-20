@@ -15,15 +15,10 @@ import (
 )
 
 func main() {
-	var (
-		router *mux.Router = mux.NewRouter()
-		app                = App{}
-	)
-	server.Build(router, app)
-	Run(router, app)
+	Run(mux.NewRouter(), App{})
 }
 
-func Run(routes *mux.Router, app App) {
+func Run(router *mux.Router, app App) {
 	Log.Info("Filestash %s starting", APP_VERSION)
 	check(InitLogger(), "Logger init failed. err=%s")
 	check(InitConfig(), "Config init failed. err=%s")
@@ -33,17 +28,22 @@ func Run(routes *mux.Router, app App) {
 		check(ErrNotFound, "Missing starter plugin. err=%s")
 	}
 	for _, obj := range Hooks.Get.HttpEndpoint() {
-		obj(routes, &app)
+		obj(router, &app)
 	}
 	for _, fn := range Hooks.Get.Onload() {
 		fn()
 	}
-	server.CatchAll(routes, app)
+	server.Build(router, app)
+	server.PluginRoutes(router)
+	server.CatchAll(router, app)
+	if os.Getenv("DEBUG") == "true" {
+		server.DebugRoutes(router)
+	}
 	var wg sync.WaitGroup
 	for _, obj := range Hooks.Get.Starter() {
 		wg.Add(1)
 		go func() {
-			obj(routes)
+			obj(router)
 			wg.Done()
 		}()
 	}
