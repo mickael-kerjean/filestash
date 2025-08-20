@@ -87,7 +87,7 @@ export function createThing({
     const $time = $thing.children[4]; // = qs($thing, ".component_datetime");
 
     $link.setAttribute("href", link);
-    if (location.search) $link.setAttribute("href", forwardURLParams(link, ["share", "canary"]));
+    if (location.search) $link.setAttribute("href", forwardURLParams(link, ["share", "canary", "tag"]));
     $thing.setAttribute("data-droptarget", type === "directory");
     $thing.setAttribute("data-n", n);
     $thing.setAttribute("data-path", path);

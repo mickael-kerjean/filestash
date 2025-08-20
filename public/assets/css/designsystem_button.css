@@ -8,6 +8,7 @@ button {
   border-radius: 3px;
   color: rgba(0,0,0,0.6);
   background: inherit;
+  line-height: 1rem;
 }
 button.primary {
     background: var(--primary);

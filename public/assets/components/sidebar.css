@@ -128,6 +128,14 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     margin-bottom: 2px;
     justify-content: space-between;
     font-size: 0.95rem;
+    padding-left: 7px;
+}
+.component_filemanager_shell .component_sidebar [data-bind="taglist"] a > div {
+    text-transform: none;
+}
+.component_filemanager_shell .component_sidebar [data-bind="taglist"] a .hash {
+    font-size: 0.9rem;
+    opacity: 0.5;
 }
 .component_filemanager_shell .component_sidebar [data-bind="taglist"] a[aria-selected="true"] {
     background: var(--light);
