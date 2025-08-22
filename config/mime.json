@@ -153,7 +153,7 @@
 	"mov": "video/quicktime",
 	"mp3": "audio/mp3",
 	"mp4": "video/mp4",
-	"mpeg": "audio/mpeg",
+	"mpeg": "video/mpeg",
 	"mpg": "video/mpeg",
 	"mrw": "image/x-minolta-mrw",
 	"msi": "application/octet-stream",
