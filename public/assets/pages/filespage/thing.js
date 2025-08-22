@@ -89,6 +89,7 @@ export function createThing({
     $link.setAttribute("href", link);
     if (location.search) $link.setAttribute("href", forwardURLParams(link, ["share", "canary", "tag"]));
     $thing.setAttribute("data-droptarget", type === "directory");
+    $thing.setAttribute("data-selectable", !offline);
     $thing.setAttribute("data-n", n);
     $thing.setAttribute("data-path", path);
     $thing.classList.add("view-" + view);
