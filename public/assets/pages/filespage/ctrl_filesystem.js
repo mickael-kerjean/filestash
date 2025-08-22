@@ -383,9 +383,7 @@ export default async function(render) {
                         obj.y + obj.h < bounds.y ||
                         obj.y > bounds.y + bounds.h
                 );
-                if (collision && !checked()) {
-                    $checkbox.click();
-                } else if (!collision && checked()) {
+                if (collision && !checked() || !collision && checked()) {
                     $checkbox.click();
                 }
             }
