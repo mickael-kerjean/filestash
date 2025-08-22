@@ -28,6 +28,7 @@ export const files$ = new rxjs.BehaviorSubject(null);
 export default async function(render) {
     const $page = createElement(`
         <div class="component_filesystem container">
+            <div data-target="dragselect" style="display:none;"></div>
             <div data-target="header" style="text-align:center;"></div>
 
             <div class="ifscroll-before"></div>
@@ -280,7 +281,7 @@ export default async function(render) {
         rxjs.catchError(ctrlError()),
     ));
 
-    // feature: selection
+    // feature: keyboard selection
     effect(rxjs.fromEvent(window, "keydown").pipe(
         rxjs.filter((e) => e.keyCode === 27),
         rxjs.tap(() => clearSelection()),
@@ -313,12 +314,83 @@ export default async function(render) {
     ));
     effect(getSelection$().pipe(rxjs.tap(() => {
         for (const $thing of $page.querySelectorAll(".component_thing")) {
-            const checked = isSelected(parseInt(assert.truthy($thing.getAttribute("data-n"))));
+            let checked = isSelected(parseInt(assert.truthy($thing.getAttribute("data-n"))));
+            if ($thing.getAttribute("data-selectable") === "false") checked = false;
             $thing.classList.add(checked ? "selected" : "not-selected");
             $thing.classList.remove(checked ? "not-selected" : "selected");
             qs(assert.type($thing, HTMLElement), `input[type="checkbox"]`).checked = checked;
         };
     })));
+
+    // feature: mouse drag selection
+    const $dragContainer = assert.type($page.closest(".component_page_filespage"), HTMLElement);
+    const $dragselect = qs($page, `[data-target="dragselect"]`);
+    const dragmove = (x, y, w, h) => {
+        $dragselect.style.left = `${x}px`;
+        $dragselect.style.top = `${y}px`;
+        $dragselect.style.width = `${w}px`;
+        $dragselect.style.height = `${h}px`;
+        if ((w+1) * (h+1) < 50) {
+            $dragselect.style.display = "none";
+            return false;
+        }
+        $dragselect.style.display = "block";
+        return true;
+    };
+    if (isMobile === false) effect(rxjs.fromEvent($dragContainer, "mousedown").pipe(
+        rxjs.filter((e) => !e.target.closest(`[draggable="true"]`)),
+        rxjs.map((e) => ({
+            start: [e.clientX, e.clientY],
+            state: [...$page.querySelectorAll(".component_thing")].map(($file) => {
+                const bounds = $file.getBoundingClientRect();
+                const $checkbox = qs(assert.type($file, HTMLElement), ".component_checkbox");
+                return {
+                    $checkbox,
+                    checked: () => $checkbox.firstElementChild.checked,
+                    bounds: {
+                        x: bounds.x,
+                        y: bounds.y,
+                        w: bounds.width,
+                        h: bounds.height,
+                    },
+                };
+            }),
+        })),
+        rxjs.mergeMap(({ start, state }) => rxjs.fromEvent(document, "mousemove").pipe(
+            rxjs.takeUntil(rxjs.merge(
+                rxjs.fromEvent(window, "mouseup"),
+                rxjs.fromEvent(window, "keydown").pipe(rxjs.filter(({ key }) => key === "Escape")),
+            )),
+            rxjs.finalize(() => dragmove(0, 0, 0, 0)),
+            rxjs.map((e) => ({ start, end: [e.clientX, e.clientY], state })),
+        )),
+        rxjs.map(({ start, end, state }) => ({
+            state,
+            obj: {
+                x: Math.min(start[0], end[0]),
+                y: Math.min(start[1], end[1]),
+                w: Math.abs(start[0] - end[0]),
+                h: Math.abs(start[1] - end[1]),
+            },
+        })),
+        rxjs.filter(({ obj }) => dragmove(obj.x, obj.y, obj.w, obj.h)),
+        rxjs.tap(({ obj, state }) => {
+            for (let i=0; i<state.length; i++) {
+                const { bounds, $checkbox, checked } = state[i];
+                const collision = !(
+                    obj.x + obj.w < bounds.x ||
+                        obj.x > bounds.x + bounds.w ||
+                        obj.y + obj.h < bounds.y ||
+                        obj.y > bounds.y + bounds.h
+                );
+                if (collision && !checked()) {
+                    $checkbox.click();
+                } else if (!collision && checked()) {
+                    $checkbox.click();
+                }
+            }
+        }),
+    ));
 
     // feature: remove long touch popup on mobile
     const disableLongTouch = (e) => {
