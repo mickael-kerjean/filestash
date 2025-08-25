@@ -339,6 +339,7 @@ export default async function(render) {
     };
     if (isMobile === false) effect(rxjs.fromEvent($dragContainer, "mousedown").pipe(
         rxjs.filter((e) => !e.target.closest(`[draggable="true"]`)),
+        rxjs.tap((e) => e.preventDefault()),
         rxjs.map((e) => ({
             start: [e.clientX, e.clientY],
             state: [...$page.querySelectorAll(".component_thing")].map(($file) => {
