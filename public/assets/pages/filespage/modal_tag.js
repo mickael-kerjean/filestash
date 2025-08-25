@@ -33,39 +33,51 @@ export default async function(render, { path }) {
     render($modal);
 
     const tags$ = new rxjs.BehaviorSubject(await rxjs.zip(
-        ajax({ url: forwardURLParams(`api/metadata?path=${path}`, ["share"]), method: "GET", responseType: "json" }).pipe(
+        ajax({
+            url: forwardURLParams(`api/metadata?path=${path}`, ["share"]),
+            method: "GET",
+            responseType: "json",
+        }).pipe(
             rxjs.map(({ responseJSON }) =>
                 responseJSON.results
                     .reduce((acc, { id, value }) => {
                         if (id !== "tags") return acc;
-                        acc = acc.concat(value.split(", ").map(
-                            (name) => ({ name, active: true })
-                        ));
+                        acc = acc.concat(value.split(", "));
                         return acc;
                     }, [])
             ),
         ),
-        ajax({ url: forwardURLParams("api/metadata/search", ["share"]), method: "POST", responseType: "json", body: { path: "/" } }).pipe(
+        shareID ? rxjs.of([]) : ajax({
+            url: forwardURLParams("api/metadata/search", ["share"]),
+            method: "POST",
+            responseType: "json",
+            body: { path: "/", tags: [] },
+        }).pipe(
             rxjs.map(({ responseJSON }) =>
-                responseJSON.results
-                    .filter(({ type }) => type === "folder")
-                    .map(({ name }) => ({ name, active: false }))
+                Object
+                    .values(responseJSON.results)
+                    .reduce((acc, forms) => forms.reduce((facc, { id, value }) => {
+                        if (id !== "tags") return facc;
+                        const vals = value.split(", ");
+                        for (let i=0; i<vals.length; i++) {
+                            if (facc.indexOf(vals[i]) !== -1) continue;
+                            facc.push(vals[i]);
+                        }
+                        return facc;
+                    }, acc), []),
             ),
         ),
     ).pipe(rxjs.map(([currentTags, allTags]) => {
+        const out = currentTags.map((name) => ({ name, active: true }));
         for (let i=0; i<allTags.length; i++) {
-            for (let j=0; j<currentTags.length; j++) {
-                if (currentTags[j].name === allTags[i].name) {
-                    allTags[i].active = true;
-                    break;
-                }
+            if (currentTags.indexOf(allTags[i]) === -1) {
+                out.push({ name: allTags[i], active: false });
             }
         }
-        if (!shareID && allTags.length === 0) {
+        if (out.length === 0 && !shareID) {
             return [{ name: t("bookmark"), active: false }];
         }
-        if (shareID) return allTags.filter(({ active }) => active);
-        return allTags;
+        return out;
     })).toPromise());
     const save = (tags) => ajax({
         url: forwardURLParams(`api/metadata?path=${path}`, ["share"]),

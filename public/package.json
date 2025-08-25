@@ -136,6 +136,12 @@
       ],
       "no-new": [
         "off"
+      ],
+      "multiline-ternary": [
+        "off"
+      ],
+      "no-empty-pattern": [
+        "off"
       ]
     }
   },

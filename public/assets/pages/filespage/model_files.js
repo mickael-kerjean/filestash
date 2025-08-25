@@ -11,6 +11,7 @@ import { currentPath } from "./helper.js";
 import { setPermissions } from "./model_acl.js";
 import fscache from "./cache.js";
 import { ls as middlewareLs } from "./model_virtual_layer.js";
+import { tagFilter } from "./model_tag.js";
 
 /*
  * The naive approach would be to make an API call and refresh the screen after an action
@@ -129,6 +130,7 @@ export const ls = (path) => {
         }),
         rxjs.tap(({ permissions }) => setPermissions(path, permissions)),
         middlewareLs(path),
+        tagFilter(path),
     );
 };
 

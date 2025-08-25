@@ -349,6 +349,7 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/pages/filespage/state_config.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/helper.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/model_files.js",
+		"/assets/" + BUILD_REF + "/pages/filespage/model_tag.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/model_virtual_layer.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/modal.css",
 		"/assets/" + BUILD_REF + "/pages/filespage/modal_tag.js",
