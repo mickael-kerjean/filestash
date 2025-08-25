@@ -207,7 +207,10 @@ async function ctrlNavigationPane(render, { $sidebar, path }) {
 }
 
 async function ctrlTagPane(render, { tags, path }) {
-    if (!getConfig("enable_tags", false)) return;
+    if (getConfig("enable_tags", false) === false) {
+        render(document.createElement("div"));
+        return;
+    }
     const $page = createElement(`
         <div>
             <h3 class="no-select">
