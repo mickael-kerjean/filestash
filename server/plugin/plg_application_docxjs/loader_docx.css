@@ -1,0 +1,16 @@
+.component_docx {
+    width: 100%;
+}
+
+.component_docx .docx-wrapper {
+    background: #f5f5f5;
+}
+.component_docx .docx-wrapper > section.docx {
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.component_filedownloader {
+    width: 100%;
+    margin: 0 auto;
+}
