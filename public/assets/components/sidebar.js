@@ -10,7 +10,7 @@ import { loadCSS } from "../helpers/loader.js";
 import t from "../locales/index.js";
 import cache from "../pages/filespage/cache.js";
 import { hooks, mv as mv$ } from "../pages/filespage/model_files.js";
-import { extractPath, isDir, isNativeFileUpload } from "../pages/filespage/helper.js";
+import { extractPath, isDir, isNativeFileUpload, isMobile } from "../pages/filespage/helper.js";
 import { mv as mvVL, withVirtualLayer } from "../pages/filespage/model_virtual_layer.js";
 import { getCurrentPath } from "../pages/viewerpage/common.js";
 import { generateSkeleton } from "./skeleton.js";
@@ -224,7 +224,7 @@ async function ctrlTagPane(render, { tags, path }) {
     `);
     const renderTaglist = createRender(qs($page, `[data-bind="taglist"]`));
     effect(rxjs.merge(
-        tags.length === 0 ? rxjs.EMPTY : rxjs.of(tags),
+        tags.length === 0 ? rxjs.EMPTY : rxjs.of({ tags }),
         ajax({
             url: forwardURLParams(`api/metadata/search`, ["share"]),
             method: "POST",
@@ -244,17 +244,16 @@ async function ctrlTagPane(render, { tags, path }) {
                         });
                     });
                 });
-                return Object.keys(tags).sort();
+                return { tags: Object.keys(tags).sort(), response: responseJSON.results };
             }),
-            rxjs.catchError(() => rxjs.of([])),
+            rxjs.catchError(() => rxjs.of({ tags: [] })),
         ),
     ).pipe(
-        rxjs.distinct((tags) => tags.join(", ")),
-        rxjs.tap((tags) => {
+        rxjs.map(({ tags, response }) => {
             render($page);
             if (tags.length === 0) {
                 $page.classList.add("hidden");
-                return;
+                return {};
             }
             $page.classList.remove("hidden");
             const $fragment = document.createDocumentFragment();
@@ -263,7 +262,7 @@ async function ctrlTagPane(render, { tags, path }) {
                     <a data-link draggable="false" class="no-select">
                         <div class="ellipsis">
                             <span class="hash"></span>
-                            ${name}
+                            ${safe(name)}
                         </div>
                         <svg class="component_icon" draggable="false" alt="close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -281,7 +280,33 @@ async function ctrlTagPane(render, { tags, path }) {
                 }
                 $fragment.appendChild($tag);
             });
-            renderTaglist($fragment);
+            return { $list: renderTaglist($fragment), response };
+        }),
+        rxjs.tap(({ $list, response }) => {
+            if (isMobile) return;
+            else if (!response) return;
+            $list.childNodes.forEach(($tag) => {
+                if ($tag.getAttribute("aria-selected") === "true") return;
+                const tagname = $tag.innerText.trim();
+                const paths = [];
+                for (const path in response) {
+                    const form = response[path].find(({ id }) => id === "tags");
+                    if (!form) continue;
+                    const tags = form.value.split(",").map((val) => val.trim());
+                    if (tags.indexOf(tagname) === -1) continue;
+                    paths.push(path);
+                }
+                $tag.onmouseenter = () => document.querySelectorAll(".component_thing").forEach(($thing) => {
+                    const thingpath = $thing.getAttribute("data-path");
+                    for (let i=0; i<paths.length; i++) {
+                        if (paths[i].indexOf(thingpath) === 0) {
+                            $thing.classList.add("hover");
+                            $tag.onmouseleave = () => $thing.classList.remove("hover");
+                            break;
+                        }
+                    }
+                });
+            });
         }),
     ));
 }

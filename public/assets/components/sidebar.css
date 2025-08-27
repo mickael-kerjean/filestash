@@ -94,7 +94,7 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     width: 100%;
     box-sizing: border-box;
 }
-.component_filemanager_shell .component_sidebar [data-bind="your-files"] a:hover,
+body.touch-no .component_filemanager_shell .component_sidebar a:not([aria-selected="true"]):hover,
 .component_filemanager_shell .component_sidebar a[aria-selected="true"] {
     background: var(--border);
     border-radius: 3px;
