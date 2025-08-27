@@ -254,7 +254,8 @@
 .list > .component_thing.view-grid img.thumbnail {
     transition: 0.2s ease-out transform;
 }
-.list > .component_thing.view-grid.not-selected:hover img.thumbnail {
+.list > .component_thing.view-grid.not-selected:hover img.thumbnail,
+.list > .component_thing.view-grid.not-selected.hover img.thumbnail {
     transform: scale(0.6);
 }
 .list > .component_thing.view-grid.not-selected:hover .image_layer {

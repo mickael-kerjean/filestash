@@ -249,11 +249,12 @@ async function ctrlTagPane(render, { tags, path }) {
             rxjs.catchError(() => rxjs.of({ tags: [] })),
         ),
     ).pipe(
-        rxjs.map(({ tags, response }) => {
+        // feature: create the DOM
+        rxjs.mergeMap(({ tags, response }) => {
             render($page);
             if (tags.length === 0) {
                 $page.classList.add("hidden");
-                return {};
+                return rxjs.EMPTY;
             }
             $page.classList.remove("hidden");
             const $fragment = document.createDocumentFragment();
@@ -280,8 +281,9 @@ async function ctrlTagPane(render, { tags, path }) {
                 }
                 $fragment.appendChild($tag);
             });
-            return { $list: renderTaglist($fragment), response };
+            return rxjs.of({ $list: renderTaglist($fragment), response });
         }),
+        // feature: tag mouse hover effect
         rxjs.tap(({ $list, response }) => {
             if (isMobile) return;
             else if (!response) return;
@@ -296,16 +298,19 @@ async function ctrlTagPane(render, { tags, path }) {
                     if (tags.indexOf(tagname) === -1) continue;
                     paths.push(path);
                 }
-                $tag.onmouseenter = () => document.querySelectorAll(".component_thing").forEach(($thing) => {
-                    const thingpath = $thing.getAttribute("data-path");
-                    for (let i=0; i<paths.length; i++) {
-                        if (paths[i].indexOf(thingpath) === 0) {
-                            $thing.classList.add("hover");
-                            $tag.onmouseleave = () => $thing.classList.remove("hover");
-                            break;
+                $tag.onmouseenter = () => {
+                    const $things = document.querySelectorAll(".component_thing");
+                    $things.forEach(($thing) => {
+                        const thingpath = $thing.getAttribute("data-path");
+                        for (let i=0; i<paths.length; i++) {
+                            if (paths[i].indexOf(thingpath) === 0) {
+                                $thing.classList.add("hover");
+                                break;
+                            }
                         }
-                    }
-                });
+                    });
+                    $tag.onmouseleave = () => $things.forEach(($thing) => $thing.classList.remove("hover"));
+                };
             });
         }),
     ));

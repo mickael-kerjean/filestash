@@ -9,7 +9,7 @@
     border: 2px solid var(--border);
     border-radius: 5px;
     padding: 5px 10px;
-    color: var(--color);
+    color: rgba(0,0,0,0.75);
     width: 100%;
     display: block;
     box-sizing: border-box;
