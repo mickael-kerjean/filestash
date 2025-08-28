@@ -11,9 +11,6 @@
 .component_thing:not([href]) {
     cursor: not-allowed;
 }
-.component_thing .component_checkbox {
-    display: none;
-}
 .component_thing .file-is-hover {
     background: var(--emphasis-primary);
 }
@@ -77,6 +74,9 @@
     padding: 2.5px;
     border-radius: 50px;
 }
+.component_thing .component_checkbox:has(input:focus-visible) {
+    opacity: 1;
+}
 .component_thing .component_action{
     display: none;
     float: right;
@@ -107,7 +107,7 @@
     transform: translateX(0);
 }
 .component_thing:hover .component_action,
-.component_thing:focus-within .component_action { opacity: 1; display: block; }
+.component_thing:focus-visible .component_action { opacity: 1; display: block; }
 .component_thing .component_action { opacity: 0; }
 .component_thing.selected .component_action { opacity: 0; transition-delay: 0s; }
 .component_thing:has(.component_icon[alt="loading"]) .component_action { display: none; }
@@ -120,7 +120,7 @@
     left: 7px;
 }
 .touch-no .component_thing:hover .component_checkbox,
-.touch-no .component_thing:focus-within .component_checkbox,
+.touch-no .component_thing:focus-visible .component_checkbox,
 .component_thing.selected .component_checkbox {
     transition-delay: 0.1s;
     opacity: 1;
