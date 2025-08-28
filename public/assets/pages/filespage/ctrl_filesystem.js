@@ -338,7 +338,7 @@ export default async function(render) {
         return true;
     };
     if (isMobile === false) effect(rxjs.fromEvent($dragContainer, "mousedown").pipe(
-        rxjs.filter((e) => !e.target.closest(`[draggable="true"]`)),
+        rxjs.filter((e) => !e.target.closest(`[draggable="true"]`) && e.buttons === 1),
         rxjs.tap((e) => e.preventDefault()),
         rxjs.map((e) => ({
             start: [e.clientX, e.clientY],
