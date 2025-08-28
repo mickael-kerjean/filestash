@@ -15,8 +15,9 @@ type license struct {
 }
 
 func init() {
+	lenv := os.Getenv("LICENSE")
 	Hooks.Register.Onload(func() {
-		if LICENSE != "agpl" {
+		if LICENSE != "agpl" && lenv == "" {
 			return
 		}
 		data, err := DecryptString(fmt.Sprintf("%-16s", "filestash"), Config.Get("general.license").Schema(func(f *FormElement) *FormElement {
@@ -27,9 +28,8 @@ func init() {
 			f.Type = "text"
 			f.Placeholder = "License Key"
 			f.Description = "Reach out to support@filestash.app to get your license"
-			lenv := os.Getenv("LICENSE")
 			if lenv != "" {
-				f.Value = os.Getenv("LICENSE")
+				f.Value = lenv
 				f.ReadOnly = true
 			}
 			return f
