@@ -47,7 +47,11 @@ func init() {
 			os.Exit(1)
 			return
 		}
-		LICENSE = lic.Name
+		suffix := LICENSE
+		if suffix == "agpl" {
+			suffix = "base"
+		}
+		LICENSE = lic.Name + "::" + suffix
 		Log.Info("You are running Filestash \"%s\"", LICENSE)
 	})
 }
