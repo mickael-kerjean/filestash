@@ -39,7 +39,7 @@ export function init() {
 }
 
 const $tmpl = createElement(`
-    <a href="__TEMPLATE__" class="component_thing no-select" draggable="false" data-link>
+    <a href="__TEMPLATE__" class="component_thing no-select" data-selectable="true" draggable="false" data-link>
         <div class="component_checkbox"><input name="select" type="checkbox"><span class="indicator"></span></div>
         <img class="component_icon" loading="lazy" draggable="false" src="__TEMPLATE__" alt="directory">
         <div class="info_extension"><span class="ellipsis"></span></div>
@@ -89,7 +89,6 @@ export function createThing({
     $link.setAttribute("href", link);
     if (location.search) $link.setAttribute("href", forwardURLParams(link, ["share", "canary"]));
     $thing.setAttribute("data-droptarget", type === "directory");
-    $thing.setAttribute("data-selectable", !offline);
     $thing.setAttribute("data-n", n);
     $thing.setAttribute("data-path", path);
     $thing.classList.add("view-" + view);
@@ -151,6 +150,7 @@ export function createThing({
         $thing.classList.add("hidden");
         return $thing;
     } else if (offline) {
+        $thing.setAttribute("data-selectable", "false");
         $link.removeAttribute("href");
         $checkbox.classList.add("hidden");
         return $thing;
