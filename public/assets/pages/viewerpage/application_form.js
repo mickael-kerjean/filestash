@@ -30,10 +30,19 @@ export default function(render, { acl$, getFilename, getDownloadUrl }) {
 
     const $container = qs($page, ".formviewer_container");
     const $fab = qs($page, `[is="component-fab"]`);
-    const formState = () => [...new FormData(qs($page, "form"))].reduce((acc, el) => {
-        acc[el[0]] = el[1];
-        return acc;
-    }, {});
+    const formState = () => {
+        const $form = qs($page, "form");
+        const fd = new FormData($form);
+        const json = [...fd].reduce((acc, el) => {
+            acc[el[0]] = el[1];
+            return acc;
+        }, {});
+        $form.querySelectorAll("input[type=\"checkbox\"][name]").forEach((cb) => {
+            if (fd.has(cb.name)) json[cb.name] = true;
+            else json[cb.name] = false;
+        });
+        return json;
+    };
     const file$ = new rxjs.ReplaySubject(1);
 
     // feature1: setup the dom
