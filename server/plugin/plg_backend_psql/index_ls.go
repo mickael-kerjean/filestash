@@ -7,14 +7,17 @@ import (
 )
 
 func (this PSQL) Ls(path string) ([]os.FileInfo, error) {
-	defer this.db.Close()
 	l, err := getPath(path)
 	if err != nil {
 		Log.Debug("pl_backend_psql::ls method=getPath err=%s", err.Error())
 		return nil, err
 	}
 	if l.table == "" {
-		rows, err := this.db.QueryContext(this.ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")
+		rows, err := this.db.QueryContext(this.ctx, `
+            SELECT table_name FROM information_schema.tables
+                WHERE table_schema = 'public'
+                AND table_type = 'BASE TABLE'
+        `)
 		if err != nil {
 			Log.Debug("plg_backend_psql::ls method=query err=%s", err.Error())
 			return nil, err
@@ -34,12 +37,12 @@ func (this PSQL) Ls(path string) ([]os.FileInfo, error) {
 		}
 		return out, nil
 	} else if l.row == "" {
-		key, err := getKey(this.ctx, this.db, l.table)
+		_, key, err := processTable(this.ctx, this.db, l.table)
 		if err != nil {
-			Log.Debug("plg_backend_psql::ls method=getKey err=%s", err.Error())
+			Log.Debug("plg_backend_psql::ls method=processTable err=%s", err.Error())
 			return nil, err
 		}
-		rows, err := this.db.QueryContext(this.ctx, "SELECT "+key+" FROM "+l.table+" LIMIT 500000")
+		rows, err := this.db.QueryContext(this.ctx, `SELECT "`+key+`" FROM "`+l.table+`" LIMIT 500000`)
 		if err != nil {
 			Log.Debug("plg_backend_psql::ls method=query err=%s", err.Error())
 			return nil, err

@@ -1,1 +1,0 @@
-package plg_metadata_sqlite
