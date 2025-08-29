@@ -57,7 +57,7 @@ export default function(render, { acl$, getFilename, getDownloadUrl }) {
         }))),
         rxjs.mergeMap((formSpec) => rxjs.from(createForm(formSpec, formTmpl({
             renderInput: (opts) => {
-                let $el = $renderInput({ autocomplete: true })(opts);
+                const $el = $renderInput({ autocomplete: true })(opts);
                 if ($el.hasAttribute("disabled")) {
                     $el.removeAttribute("disabled");
                     $el.setAttribute("readonly", "true");
