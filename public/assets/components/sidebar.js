@@ -253,10 +253,9 @@ async function ctrlTagPane(render, { tags, path }) {
         rxjs.mergeMap(({ tags, response }) => {
             render($page);
             if (tags.length === 0) {
-                $page.classList.add("hidden");
+                renderTaglist(document.createElement("div"));
                 return rxjs.EMPTY;
             }
-            $page.classList.remove("hidden");
             const $fragment = document.createDocumentFragment();
             tags.forEach((name) => {
                 const $tag = createElement(`
