@@ -63,12 +63,15 @@
 }
 
 .component_formviewer .formbuilder .component_input[disabled],
+.component_formviewer .formbuilder .component_input[readonly],
 .component_formviewer .formbuilder .component_textarea[disabled],
-.component_formviewer .formbuilder .component_select[disabled] {
+.component_formviewer .formbuilder .component_textarea[readonly],
+.component_formviewer .formbuilder .component_select[disabled],
+.component_formviewer .formbuilder .component_select[readonly] {
     background: rgba(0, 0, 0, 0.05);
     border-radius: 2px;
     padding-left: 7px;
-    border-color: rgba(0, 0, 0, 0.02);
+    border-color: transparent;
 }
 
 .component_formviewer fieldset {

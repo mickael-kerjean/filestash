@@ -31,8 +31,11 @@ func init() {
 func (this PSQL) Init(params map[string]string, app *App) (IBackend, error) {
 	if d := PGCache.Get(params); d != nil {
 		backend := d.(*PSQL)
-		backend.ctx = app.Context
-		return backend, nil
+		if backend.db.Ping() == nil {
+			backend.ctx = app.Context
+			return backend, nil
+		}
+		PGCache.Del(params)
 	}
 	host := params["host"]
 	port := withDefault(params["port"], "5432")

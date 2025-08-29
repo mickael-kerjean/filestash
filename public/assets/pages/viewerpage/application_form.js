@@ -4,7 +4,7 @@ import { animate, slideXIn, opacityOut } from "../../lib/animate.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { createForm, mutateForm } from "../../lib/form.js";
-import { formTmpl } from "../../components/form.js";
+import { formTmpl, $renderInput } from "../../components/form.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
 
@@ -56,6 +56,14 @@ export default function(render, { acl$, getFilename, getDownloadUrl }) {
             return formSpec;
         }))),
         rxjs.mergeMap((formSpec) => rxjs.from(createForm(formSpec, formTmpl({
+            renderInput: (opts) => {
+                let $el = $renderInput({ autocomplete: true })(opts);
+                if ($el.hasAttribute("disabled")) {
+                    $el.removeAttribute("disabled");
+                    $el.setAttribute("readonly", "true");
+                }
+                return $el;
+            },
             renderLeaf: ({ label, format, description, required }) => createElement(`
                 <label class="no-select">
                     <div>
