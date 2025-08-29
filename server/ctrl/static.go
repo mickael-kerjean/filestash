@@ -402,7 +402,7 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "application/javascript")
-		if strings.Contains(req.Header.Get("Accept-Encoding"), "br") {
+		if strings.Contains(req.Header.Get("Accept-Encoding"), "br") && req.Header.Get("Cache-Control") != "no-cache" {
 			res.Header().Set("Content-Encoding", "br")
 			res.Write(bundleBr)
 			return
