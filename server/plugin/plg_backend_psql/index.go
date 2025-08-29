@@ -11,8 +11,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var PGCache AppCache
-
 type PSQL struct {
 	db  *sql.DB
 	ctx context.Context
@@ -20,23 +18,9 @@ type PSQL struct {
 
 func init() {
 	Backend.Register("psql", PSQL{})
-
-	PGCache = NewAppCache(2, 1)
-	PGCache.OnEvict(func(key string, value interface{}) {
-		c := value.(*PSQL)
-		c.Close()
-	})
 }
 
 func (this PSQL) Init(params map[string]string, app *App) (IBackend, error) {
-	if d := PGCache.Get(params); d != nil {
-		backend := d.(*PSQL)
-		if backend.db.Ping() == nil {
-			backend.ctx = app.Context
-			return backend, nil
-		}
-		PGCache.Del(params)
-	}
 	host := params["host"]
 	port := withDefault(params["port"], "5432")
 	user := params["user"]
@@ -64,7 +48,6 @@ func (this PSQL) Init(params map[string]string, app *App) (IBackend, error) {
 		db:  db,
 		ctx: app.Context,
 	}
-	PGCache.Set(params, backend)
 	return backend, nil
 }
 
@@ -118,6 +101,7 @@ func (this PSQL) LoginForm() Form {
 }
 
 func (this PSQL) Touch(path string) error {
+	defer this.Close()
 	if !strings.HasSuffix(path, ".form") {
 		return ErrNotValid
 	}
@@ -125,14 +109,17 @@ func (this PSQL) Touch(path string) error {
 }
 
 func (this PSQL) Rm(path string) error {
+	defer this.Close()
 	return ErrNotAuthorized
 }
 
 func (this PSQL) Mkdir(path string) error {
+	defer this.Close()
 	return ErrNotValid
 }
 
 func (this PSQL) Mv(from string, to string) error {
+	defer this.Close()
 	return ErrNotValid
 }
 

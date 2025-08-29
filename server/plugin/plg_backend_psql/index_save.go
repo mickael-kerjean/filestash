@@ -13,6 +13,7 @@ import (
 )
 
 func (this PSQL) Save(path string, file io.Reader) error {
+	defer this.Close()
 	l, err := getPath(path)
 	if err != nil {
 		return err

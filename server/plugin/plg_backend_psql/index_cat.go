@@ -11,6 +11,7 @@ import (
 )
 
 func (this PSQL) Cat(path string) (io.ReadCloser, error) {
+	defer this.Close()
 	l, err := getPath(path)
 	if err != nil {
 		return nil, err
