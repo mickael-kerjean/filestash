@@ -108,12 +108,12 @@ export default function(render, { acl$, getFilename, getDownloadUrl }) {
             return JSON.stringify(formObjToJSON(originalState), smod) !== JSON.stringify(formState(), smod);
         }),
         rxjs.mergeMap(async(isSaveButtonVisible) => {
-            if (isSaveButtonVisible && $fab.classList.contains("hidden")) {
+            if (isSaveButtonVisible) {
+                if ($fab.classList.contains("hidden")) await animate($fab, { time: 100, keyframes: slideXIn(40) });
                 $fab.render($ICON.SAVING);
                 $fab.classList.remove("hidden");
-                await animate($fab, { time: 100, keyframes: slideXIn(40) });
-            } else if (!isSaveButtonVisible && !$fab.classList.contains("hidden")) {
-                await animate($fab, { time: 100, keyframes: opacityOut() });
+            } else if (!isSaveButtonVisible) {
+                if (!$fab.classList.contains("hidden")) await animate($fab, { time: 100, keyframes: opacityOut() });
                 $fab.classList.add("hidden");
             }
         }),
