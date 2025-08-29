@@ -53,7 +53,7 @@ func (this PSQL) Cat(path string) (io.ReadCloser, error) {
 	forms := make([]FormElement, len(c))
 	for i, _ := range columns {
 		forms[i] = createFormElement(col[i], columns[i])
-		if slices.Contains(columns[i].Constraint, "PRIMARY KEY") {
+		if slices.Contains(columns[i].Constraint, "PRIMARY KEY") && forms[i].Value != nil {
 			forms[i].ReadOnly = true
 		} else if slices.Contains(columns[i].Constraint, "FOREIGN KEY") {
 			if link, err := _findRelation(this.ctx, this.db, columns[i]); err == nil {

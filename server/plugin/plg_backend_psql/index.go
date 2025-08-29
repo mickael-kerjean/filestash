@@ -103,14 +103,9 @@ func (this PSQL) LoginForm() Form {
 func (this PSQL) Touch(path string) error {
 	defer this.Close()
 	if !strings.HasSuffix(path, ".form") {
-		return ErrNotValid
+		return NewError("Create a form file instead. eg: xxxx.form", 403)
 	}
 	return nil
-}
-
-func (this PSQL) Rm(path string) error {
-	defer this.Close()
-	return ErrNotAuthorized
 }
 
 func (this PSQL) Mkdir(path string) error {

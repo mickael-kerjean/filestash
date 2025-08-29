@@ -5,6 +5,9 @@
   z-index: 2;
   background: transparent;
 }
+.component_fab .content:empty {
+    display: none;
+}
 .component_fab .content {
     height: 25px;
     width: 25px;

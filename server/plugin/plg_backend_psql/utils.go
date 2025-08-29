@@ -115,11 +115,11 @@ func createFormElement(val any, column Column) FormElement {
 	f := FormElement{
 		Type: "text",
 	}
-	switch val.(type) {
-	case bool:
-		f.Type = "boolean"
-	case time.Time:
+	switch column.Type {
+	case "timestamptz":
 		f.Type = "datetime"
+	case "bool":
+		f.Type = "boolean"
 	}
 	f.Value = convertFromDB(val)
 

@@ -2,6 +2,7 @@ package plg_backend_psql
 
 import (
 	"os"
+	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
@@ -38,11 +39,18 @@ func (this PSQL) Ls(path string) ([]os.FileInfo, error) {
 		}
 		return out, nil
 	} else if l.row == "" {
-		_, key, err := processTable(this.ctx, this.db, l.table)
+		columns, key, err := processTable(this.ctx, this.db, l.table)
 		if err != nil {
 			return nil, err
 		}
-		rows, err := this.db.QueryContext(this.ctx, `SELECT "`+key+`" FROM "`+l.table+`" LIMIT 500000`)
+		query := `SELECT "` + key + `", NULL FROM "` + l.table + `" LIMIT 500000`
+		for _, c := range columns {
+			if c.Type == "timestamptz" {
+				query = `SELECT "` + key + `", "` + c.Name + `" FROM "` + l.table + `" LIMIT 500000`
+				break
+			}
+		}
+		rows, err := this.db.QueryContext(this.ctx, query)
 		if err != nil {
 			return nil, err
 		}
@@ -50,12 +58,20 @@ func (this PSQL) Ls(path string) ([]os.FileInfo, error) {
 		out := []os.FileInfo{}
 		for rows.Next() {
 			var name string
-			if err := rows.Scan(&name); err != nil {
+			var t *time.Time
+			if err = rows.Scan(&name, &t); err != nil {
 				return nil, err
 			}
 			out = append(out, File{
 				FName: name + ".form",
 				FType: "file",
+				FTime: func() int64 {
+					if t == nil {
+						return 0
+					}
+					return t.Unix()
+				}(),
+				FSize: -1,
 			})
 		}
 		return out, nil
