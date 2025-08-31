@@ -285,6 +285,8 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/components/notification.js",
 		"/assets/" + BUILD_REF + "/components/notification.css",
 		"/assets/" + BUILD_REF + "/components/sidebar.js",
+		"/assets/" + BUILD_REF + "/components/sidebar_files.js",
+		"/assets/" + BUILD_REF + "/components/sidebar_tags.js",
 		"/assets/" + BUILD_REF + "/components/sidebar.css",
 		"/assets/" + BUILD_REF + "/components/dropdown.js",
 		"/assets/" + BUILD_REF + "/components/decorator_shell_filemanager.js",
