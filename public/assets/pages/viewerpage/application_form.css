@@ -58,9 +58,6 @@
 .component_formviewer > .formviewer_container .box .formbuilder label.no-select > div > span span.mandatory {
     opacity: 0.6;
 }
-.component_formviewer > .formviewer_container .box .formbuilder label.no-select > div div.description a {
-    border-bottom: 1px dashed var(--color);
-}
 
 .component_formviewer .formbuilder .component_input[disabled],
 .component_formviewer .formbuilder .component_input[readonly],

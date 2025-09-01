@@ -6,6 +6,11 @@
     line-height: 1em;
     text-align: justify;
 }
+.formbuilder a {
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: rgba(0, 0, 0, 0.3);
+}
 .formbuilder input::placeholder, .formbuilder textarea::placeholder {
     opacity: 0.6;
 }
@@ -45,4 +50,12 @@
     padding: 5px 5px;
     border-bottom: 2px solid rgba(70, 99, 114, 0.1);
     transition: border-color 0.2s ease-out;
+}
+
+.formbuilder .banner {
+    background: var(--bg-color);
+    border: 2px solid rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+    margin-bottom: 20px;
+    padding: 10px;
 }

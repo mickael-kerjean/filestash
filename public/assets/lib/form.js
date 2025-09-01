@@ -49,7 +49,7 @@ async function createFormNodes(node, { renderNode, renderLeaf, renderInput, path
         else {
             const currentPath = path.concat(key);
             const $leaf = renderLeaf({
-                ...withMarkdown(node[key]),
+                ...node[key],
                 path: currentPath,
                 label: key,
             });
@@ -121,16 +121,4 @@ export async function createForm(node, opts) {
         $container.appendChild($node);
     });
     return $container;
-}
-
-function withMarkdown(obj) {
-    if (!("description" in obj)) return obj;
-    obj["description"] = toMarkdown(obj["description"]);
-    return obj;
-}
-
-function toMarkdown(str = "") {
-    str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "<a href=\"$2\">$1</a>");
-    str = str.replaceAll("\n", "<br>");
-    return str;
 }

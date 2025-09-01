@@ -64,7 +64,12 @@ export default function(render, { acl$, getFilename, getDownloadUrl }) {
                 }
                 return $el;
             },
-            renderLeaf: ({ label, format, description, required }) => createElement(`
+            renderLeaf: ({ label, format, description, required }) => label === "banner"
+                ? createElement(`
+                    <div class="banner">
+                        ${fromMarkdown(safe(description))}
+                    </div>
+                `) : createElement(`
                 <label class="no-select">
                     <div>
                         <span class="ellipsis">
@@ -75,7 +80,7 @@ export default function(render, { acl$, getFilename, getDownloadUrl }) {
                     </div>
                     <div>
                         <span class="nothing"></span>
-                        <div class="description">${safe(description)}</div>
+                        <div class="description">${fromMarkdown(safe(description))}</div>
                     </div>
                 </label>
             `),
@@ -169,4 +174,10 @@ function readOnlyForm(formSpec) {
         formSpec[key] = readOnlyForm(formSpec[key]);
     }
     return formSpec;
+}
+
+function fromMarkdown(str = "") {
+    str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "<a href=\"$2\">$1</a>");
+    str = str.replaceAll("\n", "<br>");
+    return str;
 }
