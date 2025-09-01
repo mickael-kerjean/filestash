@@ -21,9 +21,9 @@ func (this PSQL) Cat(path string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	rows, err := this.db.QueryContext(this.ctx, `
-        SELECT *
-            FROM "`+l.table+`"
-            WHERE "`+columnName+`"=$1
+		SELECT *
+			FROM "`+l.table+`"
+			WHERE "`+columnName+`"=$1
     `, l.row)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,11 @@ func (this PSQL) Cat(path string) (io.ReadCloser, error) {
 					forms[i].Opts = link.values
 				}
 			}
+		} else if values, err := _findEnumValues(this.ctx, this.db, columns[i]); err == nil && len(values) > 0 {
+			forms[i].Type = "select"
+			forms[i].Opts = values
 		}
+
 	}
 	b, err := Form{Elmnts: forms}.MarshalJSON()
 	if err != nil {
@@ -82,13 +86,13 @@ func _createDescription(el Column, link LocationColumn) string {
 func _findRelation(ctx context.Context, db *sql.DB, el Column) (LocationColumn, error) {
 	l := LocationColumn{}
 	rows, err := db.QueryContext(ctx, `
-        SELECT ccu.table_name, ccu.column_name
-            FROM information_schema.table_constraints AS tc
-            JOIN information_schema.key_column_usage AS kcu USING (constraint_name)
-            JOIN information_schema.constraint_column_usage AS ccu USING (constraint_name)
-            WHERE tc.constraint_type = 'FOREIGN KEY'
-                AND tc.table_name = $1
-                AND kcu.column_name = $2
+		SELECT ccu.table_name, ccu.column_name
+			FROM information_schema.table_constraints AS tc
+			JOIN information_schema.key_column_usage AS kcu USING (constraint_name)
+			JOIN information_schema.constraint_column_usage AS ccu USING (constraint_name)
+			WHERE tc.constraint_type = 'FOREIGN KEY'
+				AND tc.table_name = $1
+				AND kcu.column_name = $2
     `, el.Table, el.Name)
 	if err != nil {
 		return l, err
@@ -116,4 +120,29 @@ func _findRelation(ctx context.Context, db *sql.DB, el Column) (LocationColumn, 
 		l.values = append(l.values, value)
 	}
 	return l, nil
+}
+
+func _findEnumValues(ctx context.Context, db *sql.DB, el Column) ([]string, error) {
+	var count int
+	if err := db.QueryRowContext(ctx, `
+		SELECT COUNT(*)
+			FROM pg_type
+			WHERE typname = $1 AND typtype = 'e'
+	`, el.Type).Scan(&count); err != nil || count == 0 {
+		return nil, err
+	}
+	rows, err := db.QueryContext(ctx, `SELECT unnest(enum_range(NULL::`+el.Type+`))`)
+	if err != nil {
+		return nil, err
+	}
+	values := []string{}
+	for rows.Next() {
+		var value string
+		if err := rows.Scan(&value); err != nil {
+			return nil, err
+		}
+		values = append(values, value)
+	}
+	rows.Close()
+	return values, nil
 }

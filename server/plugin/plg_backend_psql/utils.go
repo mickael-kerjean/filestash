@@ -87,6 +87,9 @@ func _calculateScore(column Column) int {
 	scoreName := 1
 	if slices.Contains(column.Constraint, "PRIMARY KEY") {
 		scoreType = 3
+		if column.Type == "uuid" {
+			scoreType = 1
+		}
 	} else if slices.Contains(column.Constraint, "UNIQUE") {
 		scoreType = 2
 	}
