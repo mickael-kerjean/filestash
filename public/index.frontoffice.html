@@ -71,7 +71,6 @@
                      "type": "preload",
                      "payload": bundler.state(),
                      "version": "{{ slice .version 0 7 }}::{{ .hash }}",
-                     "clear": {{ .clear }},
                  });
                  await new Promise((resolve, reject) => navigator.serviceWorker.addEventListener("message", (event) => {
                      if (event.data && event.data.type === "preload") {

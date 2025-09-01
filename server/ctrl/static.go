@@ -47,11 +47,6 @@ func ServeBackofficeHandler(ctx *App, res http.ResponseWriter, req *http.Request
 		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
 		return
 	}
-	head := res.Header()
-	head.Set("Cache-Control", "no-cache")
-	head.Set("Pragma", "no-cache")
-	head.Set("Expires", "0")
-
 	ServeIndex("index.backoffice.html")(ctx, res, req)
 	return
 }
@@ -83,12 +78,6 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		http.Redirect(res, req, URL_SETUP, http.StatusTemporaryRedirect)
 		return
 	}
-
-	head := res.Header()
-	head.Set("Cache-Control", "no-cache")
-	head.Set("Pragma", "no-cache")
-	head.Set("Expires", "0")
-
 	ServeIndex("index.frontoffice.html")(ctx, res, req)
 }
 
@@ -153,11 +142,9 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 			),
 		)
 		head := res.Header()
+		head.Set("Cache-Control", "no-cache")
 		if f := applyPatch(filePath); f != nil {
 			head.Set("Content-Type", GetMimeType(filepath.Ext(filePath)))
-			head.Set("Cache-Control", "no-cache")
-			head.Set("Pragma", "no-cache")
-			head.Set("Expires", "0")
 			res.WriteHeader(http.StatusOK)
 			res.Write(f.Bytes())
 			return
@@ -229,16 +216,14 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 		head := res.Header()
 		sign := signature()
 		base := WithBase("/")
-		clear := req.Header.Get("Cache-Control") == "no-cache"
 		templateData := map[string]any{
 			"base":    base,
 			"version": BUILD_REF,
 			"license": LICENSE,
-			"clear":   clear,
 			"hash":    sign,
 			"favicon": favicon(),
 		}
-		calculatedEtag := QuickHash(base+BUILD_REF+LICENSE+fmt.Sprintf("%t", clear)+sign, 10)
+		calculatedEtag := QuickHash(base+BUILD_REF+LICENSE+sign, 10)
 		head.Set("ETag", calculatedEtag)
 		if etag := req.Header.Get("If-None-Match"); etag == calculatedEtag {
 			res.WriteHeader(http.StatusNotModified)
@@ -252,6 +237,7 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 			out = gz
 		}
 		head.Set("Content-Type", "text/html")
+		head.Set("Cache-Control", "no-cache")
 		tmpl.Execute(out, templateData)
 	}
 }
@@ -376,40 +362,64 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/pages/viewerpage/component_menubar.css",
 	}
 
-	var bundlePlain bytes.Buffer
-	for _, path := range paths {
-		curPath := "/assets/" + strings.TrimPrefix(path, "/assets/"+BUILD_REF+"/")
-		f := applyPatch(curPath)
-		if f == nil {
-			file, err := WWWPublic.Open(curPath)
+	var isDebug = os.Getenv("DEBUG") == "true"
+
+	build := func(quality int) (bundlePlain []byte, bundleBr []byte, etag string) {
+		var buf bytes.Buffer
+		for _, path := range paths {
+			curPath := "/assets/" + strings.TrimPrefix(path, "/assets/"+BUILD_REF+"/")
+			f := applyPatch(curPath)
+			if f == nil {
+				file, err := WWWPublic.Open(curPath)
+				if err != nil {
+					Log.Warning("static::bundler failed to find file %s", err.Error())
+					continue
+				}
+				f = new(bytes.Buffer)
+				if _, err := io.Copy(f, file); err != nil {
+					Log.Warning("static::bundler msg=copy_error err=%s", err.Error())
+					continue
+				}
+				file.Close()
+			}
+			code, err := json.Marshal(f.String())
 			if err != nil {
-				Log.Warning("static::bundler failed to find file %s", err.Error())
+				Log.Warning("static::bundle msg=marshal_failed path=%s err=%s", path, err.Error())
 				continue
 			}
-			f = new(bytes.Buffer)
-			if _, err := io.Copy(f, file); err != nil {
-				Log.Warning("static::bundler msg=copy_error err=%s", err.Error())
-				continue
-			}
-			file.Close()
+			fmt.Fprintf(&buf, "bundler.register(%q, %s);\n", path, code)
 		}
-		code, err := json.Marshal(f.String())
-		if err != nil {
-			Log.Warning("static::bundle msg=marshal_failed path=%s err=%s", path, err.Error())
-			continue
+		etag = QuickHash(string(bundlePlain), 10)
+		bundlePlain = buf.Bytes()
+		if quality > 0 {
+			bundleBr, _ = cbrotli.Encode(bundlePlain, cbrotli.WriterOptions{Quality: quality})
 		}
-		fmt.Fprintf(&bundlePlain, "bundler.register(%q, %s);\n", path, code)
+		return bundlePlain, bundleBr, etag
 	}
-	bundleBr, _ := cbrotli.Encode(bundlePlain.Bytes(), cbrotli.WriterOptions{Quality: 8})
+
+	quality := 11
+	if isDebug {
+		quality = 8
+	}
+	bundlePlain, bundleBr, etag := build(quality)
 
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		res.Header().Set("Content-Type", "application/javascript")
-		if strings.Contains(req.Header.Get("Accept-Encoding"), "br") && req.Header.Get("Cache-Control") != "no-cache" {
-			res.Header().Set("Content-Encoding", "br")
+		if isDebug {
+			bundlePlain, bundleBr, etag = build(quality)
+		}
+		head := res.Header()
+		head.Set("Content-Type", "application/javascript")
+		head.Set("Cache-Control", "no-cache")
+		head.Set("Etag", etag)
+		if req.Header.Get("If-None-Match") == etag && etag != "" {
+			res.WriteHeader(http.StatusNotModified)
+			return
+		} else if strings.Contains(req.Header.Get("Accept-Encoding"), "br") && len(bundleBr) > 0 {
+			head.Set("Content-Encoding", "br")
 			res.Write(bundleBr)
 			return
 		}
-		res.Write(bundlePlain.Bytes())
+		res.Write(bundlePlain)
 	}
 }
 

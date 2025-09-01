@@ -17,6 +17,7 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", async(event) => {
     if (!event.request.url.startsWith(location.origin + "/assets/")) return;
+    else if (event.request.url.startsWith(location.origin + "/assets/bundle.js")) return;
 
     event.respondWith((async() => {
         const cache = await caches.open(VERSION);
@@ -29,14 +30,13 @@ self.addEventListener("fetch", async(event) => {
 self.addEventListener("message", (event) => {
     if (event.data.type === "preload") handlePreloadMessage(
         event.data.payload,
-        event.data.clear,
         event.data.version,
         () => event.source.postMessage({ type: "preload", status: "ok" }),
         (err) => event.source.postMessage({ type: "preload", status: "error", msg: err.message }),
     );
 });
 
-async function handlePreloadMessage(imports, clear, version, resolve, reject) {
+async function handlePreloadMessage(imports, version, resolve, reject) {
     VERSION = version;
     try {
         await caches.keys().then(async(names) => {
