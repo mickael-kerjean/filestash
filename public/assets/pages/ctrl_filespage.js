@@ -1,8 +1,10 @@
-import { createElement, createRender } from "../lib/skeleton/index.js";
+import { createElement, createRender, onDestroy } from "../lib/skeleton/index.js";
 import { navigate } from "../lib/skeleton/router.js";
 import { qs } from "../lib/dom.js";
+import assert from "../lib/assert.js";
 import { loadCSS } from "../helpers/loader.js";
 import WithShell, { init as initShell } from "../components/decorator_shell_filemanager.js";
+import t from "../locales/index.js";
 
 import componentFilesystem, { init as initFilesystem } from "./filespage/ctrl_filesystem.js";
 import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.js";
@@ -40,6 +42,15 @@ export default WithShell(function(render) {
 
     // feature4: render the upload button
     componentUpload(createRender(qs($page, "[is=\"component_upload\"]")));
+
+    // feature5: accessibility / skip links
+    const $skip = createElement(`<a aria-role="navigation" href="#main">${t("Skip to content")}</a>`);
+    $skip.onclick = (e) => {
+        e.preventDefault();
+        assert.type(document.querySelector("main a"), window.HTMLElement).focus();
+    };
+    document.body.prepend($skip);
+    onDestroy(() => $skip.remove());
 });
 
 export function init() {

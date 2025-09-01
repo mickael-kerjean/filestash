@@ -10,41 +10,9 @@
 body:not(.dark-mode) .component_page_filespage {
     background: linear-gradient(177deg, rgba(250,250,250,0.3) 0%, var(--bg-color) 30%);
 }
-
-/* .component_page_filespage .error { */
-/*     cursor: pointer; */
-/* } */
-/* .component_page_filespage .container { */
-/*     padding: 5px 0 20px 0; */
-/*     box-sizing: border-box; */
-/* } */
-/* .component_page_filespage .page_container, .component_page_filespage .selectablegroup { */
-/*     flex: 1; */
-/*     display: flex; */
-/*     overflow: hidden; */
-/* } */
-/* .component_page_filespage .selectablegroup { */
-/*     overflow: hidden !important; */
-/* } */
-/* .component_page_filespage .selectablegroup > div[style] span { */
-/*     border: 1px dashed var(--light) !important; */
-/* } */
-/* .component_page_filespage .infinite_scroll_loading { */
-/*     text-align: center; */
-/* } */
-/* .component_page_filespage .infinite_scroll_loading .component_loader { */
-/*     margin-top: -50px; */
-/* } */
-/* .component_page_filespage .infinite_scroll_loading .component_loader svg { */
-/*     height: 40px; */
-/* } */
-
 .scroll-y {
     flex: 1;
     overflow-y: scroll !important;
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
 }
-/* .scroll-y > .container { */
-/*     height: 100%; */
-/* } */
