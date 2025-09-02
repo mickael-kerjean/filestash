@@ -20,7 +20,7 @@ export default async function ctrlNavigationPane(render, { $sidebar, path }) {
             dirname,
         });
         if (cpath === "/") $fs.appendChild($ul);
-        else qs($fs, `[data-path="${cpath}"] ul`).appendChild($ul);
+        else qs($fs, `[data-path="${CSS.escape(cpath)}"] ul`).appendChild($ul);
     }
     render($fs);
 
@@ -36,7 +36,7 @@ export default async function ctrlNavigationPane(render, { $sidebar, path }) {
         return () => cleaners.map((fn) => fn());
     }).pipe(
         rxjs.tap(async(path) => {
-            const display = path === "/" ? render : createRender(qs($sidebar, `[data-path="${path}"] ul`));
+            const display = path === "/" ? render : createRender(qs($sidebar, `[data-path="${CSS.escape(path)}"] ul`));
             display(await _createListOfFiles(path, {}));
         }),
     ));
