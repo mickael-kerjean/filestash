@@ -1,9 +1,3 @@
-import { init as initConfig, getVersion, get } from "../model/config.js";
-
-const DEBOUNCETIME = 100;
-
-await initConfig();
-
 class FilestashImage extends HTMLElement {
     constructor() {
         super();
@@ -31,7 +25,7 @@ class FilestashImage extends HTMLElement {
                     type: "refresh",
                     payload: { name: this.getAttribute("name"), src: this.getAttribute("src") },
                 }, "*");
-            }, DEBOUNCETIME);
+            }, 100);
         }
     }
 
@@ -43,7 +37,6 @@ class FilestashImage extends HTMLElement {
     connectedCallback() {
         const src = this.getAttribute("src") || "";
         const name = this.getAttribute("name") || "main.dat";
-        const mime = get("mime", {})[name.split(".").pop().toLowerCase()];
 
         this.style.display = "inline-block";
         this.iframe.srcdoc = `<!DOCTYPE html>
@@ -84,32 +77,45 @@ class FilestashImage extends HTMLElement {
                 </script>
 
                 <script type="module" defer>
-                import { render } from "${import.meta.url}/../../${getVersion()}/index.js";
-                import * as Application from "${import.meta.url}/../../${getVersion()}/pages/viewerpage/application_image.js";
-                import { init as initCache } from "${import.meta.url}/../../${getVersion()}/pages/filespage/cache.js";
+                    const [{ version, mimes }] = await Promise.all([
+                        fetch("${import.meta.url}/../../../api/config").then(async (resp) => {
+                            if (!resp.ok) return "na";
+                            const { result } = await resp.json();
+                            return { version: result.version, mimes: result.mime };
+                        }),
+                        import("${import.meta.url}/../../boot/bundler_init.js").then(async () => {
+                            await new Promise((resolve, reject) => document.head.appendChild(Object.assign(document.createElement("script"), {
+                                type: "module",
+                                src: new URL("../bundle.js", "${import.meta.url}"),
+                                onload: resolve,
+                                onerror: reject,
+                            })));
+                            await import("${import.meta.url}/../../boot/bundler_complete.js");
+                        }),
+                    ]);
 
-                await initCache();
+                    const { render } = await import("${import.meta.url}/../../"+ version +"/index.js");
+                    const Application = await import("${import.meta.url}/../../"+ version +"/pages/viewerpage/application_image.js");
 
-                const $app = document.querySelector("#app");
-                render(Application, $app, {
-                    mime: "${mime}",
-                    hasMenubar: true,
-                    getFilename: () => "${name}",
-                    getDownloadUrl: () => "${src}",
-                });
-                window.addEventListener("message", (event) => {
-                    if(event.data.type === "refresh") {
+                    const $app = document.querySelector("#app");
+                    const mime = mimes["${name}".split(".").pop().toLowerCase()];
+                    render(Application, $app, {
+                        mime: mime,
+                        hasMenubar: true,
+                        getFilename: () => "${name}",
+                        getDownloadUrl: () => "${src}",
+                    });
+                    window.addEventListener("message", (event) => {
+                        if(event.data.type !== "refresh") return;
                         render(Application, $app, {
-                            mime: "${mime}",
+                            mime: mime,
                             hasMenubar: true,
                             getFilename: () => event.data.payload.name,
                             getDownloadUrl: () => event.data.payload.src,
                         });
-                    }
-                });
+                    });
                 </script>
 
-                <script type="module" src="${import.meta.url}/../../${getVersion()}/components/modal.js"></script>
                 <component-modal></component-modal>
             </body>
         </html>`;

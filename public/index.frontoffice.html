@@ -44,7 +44,7 @@
                      src: `./assets/bundle.js?version=${window.VERSION}`,
                      onload: resolve,
                      onerror: reject,
-                 })))
+                 })));
                  {{ load_asset "assets/boot/bundler_complete.js" }}
              } catch (err) { console.error(err); }
 

@@ -75,14 +75,28 @@ class FilestashTable extends HTMLElement {
                 });
                 </script>
                 <script type="module" defer>
-                    import { init as initConfig, getVersion, get } from "${import.meta.url}/../../model/config.js";
+                    const [{ version, mimes }] = await Promise.all([
+                        fetch("${import.meta.url}/../../../api/config").then(async (resp) => {
+                            if (!resp.ok) return "na";
+                            const { result } = await resp.json();
+                            return { version: result.version, mimes: result.mime };
+                        }),
+                        import("${import.meta.url}/../../boot/bundler_init.js").then(async () => {
+                            await new Promise((resolve, reject) => document.head.appendChild(Object.assign(document.createElement("script"), {
+                                type: "module",
+                                src: new URL("../bundle.js", "${import.meta.url}"),
+                                onload: resolve,
+                                onerror: reject,
+                            })));
+                            await import("${import.meta.url}/../../boot/bundler_complete.js");
+                        }),
+                    ]);
 
-                    await initConfig();
-                    const { render } = await import("${import.meta.url}/../../"+ getVersion() +"/index.js");
-                    const Application = await import("${import.meta.url}/../../"+ getVersion() +"/pages/viewerpage/application_table.js");
+                    const { render } = await import("${import.meta.url}/../../"+ version +"/index.js");
+                    const Application = await import("${import.meta.url}/../../"+ version +"/pages/viewerpage/application_table.js");
 
                     const $app = document.querySelector("#app");
-                    const mime = get("mime", {})["${name}".split(".").pop().toLowerCase()];
+                    const mime = mimes["${name}".split(".").pop().toLowerCase()];
                     render(Application, $app, {
                         mime: mime,
                         hasMenubar: true,
@@ -90,14 +104,13 @@ class FilestashTable extends HTMLElement {
                         getDownloadUrl: () => "${src}",
                     });
                     window.addEventListener("message", (event) => {
-                        if(event.data.type === "refresh") {
-                            render(Application, $app, {
-                                mime: mime,
-                                hasMenubar: true,
-                                getFilename: () => event.data.payload.name,
-                                getDownloadUrl: () => event.data.payload.src,
-                            });
-                        }
+                        if(event.data.type !== "refresh") return;
+                        render(Application, $app, {
+                            mime: mime,
+                            hasMenubar: true,
+                            getFilename: () => event.data.payload.name,
+                            getDownloadUrl: () => event.data.payload.src,
+                        });
                     });
                 </script>
 

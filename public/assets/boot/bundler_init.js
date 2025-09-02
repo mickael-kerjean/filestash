@@ -11,7 +11,7 @@ window.bundler = (function(origin) {
                 );
                 code = code.replace(/(?<!["])\bimport\.meta\.url\b(?!["])/g, `"${origin + path}"`);
                 code += `\n//# sourceURL=${path}`;
-                esModules[path] = "data:text/javascript," + encodeURIComponent(code);
+                esModules[origin + path] = "data:text/javascript," + encodeURIComponent(code);
             } else if (path.endsWith(".css")) {
                 code = code.replace(/@import url\("([^"]+)"\);/g, (m, rel) => {
                     const $style = document.head.querySelector(`style[id="${new URL(rel, origin + path).href}"]`);

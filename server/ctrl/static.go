@@ -376,6 +376,7 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/pages/viewerpage/model_files.js",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/common.js",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/application_downloader.js",
+		"/assets/" + BUILD_REF + "/pages/viewerpage/application_downloader.css",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/component_menubar.js",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/component_menubar.css",
 	}

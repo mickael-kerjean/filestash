@@ -221,6 +221,7 @@ export async function init() {
     const setup_cache = () => {
         cache = new InMemoryCache();
         if (!("indexedDB" in window)) return;
+        else if (window.self !== window.top) return;
 
         cache = assert.truthy(new IndexDBCache());
         return cache.db.catch((err) => {
