@@ -44,7 +44,7 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 	r.IsAuth = true
 	r.Home = NewString(home)
-	r.Backend = Hash(GenerateID(ctx.Session)+ctx.Session["path"], 20)
+	r.Backend = backendID(ctx.Session)
 	if ctx.Share.Id == "" && Config.Get("features.protection.enable_chromecast").Bool() {
 		r.Authorization = ctx.Authorization
 	}
@@ -126,11 +126,12 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if Config.Get("features.protection.iframe").String() != "" {
 		res.Header().Set("bearer", obfuscate)
 	}
-	if home != "" {
-		SendSuccessResult(res, home)
-		return
-	}
-	SendSuccessResult(res, nil)
+	SendSuccessResult(res, Session{
+		IsAuth:        true,
+		Home:          NewString(home),
+		Backend:       backendID(session),
+		Authorization: obfuscate,
+	})
 }
 
 func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -503,4 +504,8 @@ func applyCookieRules(cookie *http.Cookie, req *http.Request) *http.Cookie {
 func applyCookieSameSiteRule(cookie *http.Cookie, sameSiteValue http.SameSite) *http.Cookie {
 	cookie.SameSite = sameSiteValue
 	return cookie
+}
+
+func backendID(session map[string]string) string {
+	return Hash(GenerateID(session)+session["path"], 20)
 }

@@ -255,6 +255,9 @@ let backendID = "";
 export function currentBackend() {
     return backendID;
 }
+export function updateBackend(id) {
+    backendID = id;
+}
 
 export function currentShare() {
     return new window.URL(location.href).searchParams.get("share") || "";

@@ -21,9 +21,12 @@ export function createSession(authenticationRequest) {
         url: withShare("api/session"),
         body: authenticationRequest,
         responseType: "json",
-    }).pipe(rxjs.tap(({ responseHeaders }) => {
-        if (responseHeaders.bearer) window.BEARER_TOKEN = responseHeaders.bearer; // see ctrl_boot_frontoffice.js -> setup_iframe
-    }));
+    }).pipe(
+        rxjs.tap(({ responseHeaders }) => {
+            if (responseHeaders.bearer) window.BEARER_TOKEN = responseHeaders.bearer; // see ctrl_boot_frontoffice.js -> setup_iframe
+        }),
+        rxjs.map(({ responseJSON }) => responseJSON.result),
+    );
 }
 
 export function deleteSession() {
