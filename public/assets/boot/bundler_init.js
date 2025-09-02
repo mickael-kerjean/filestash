@@ -1,4 +1,3 @@
-if (!HTMLScriptElement.supports?.("importmap")) throw new Error("fastboot is not supported on this platform");
 window.bundler = (function(origin) {
     const esModules = {};
     return {
@@ -32,17 +31,3 @@ window.bundler = (function(origin) {
         esModules,
     };
 })(new URL(import.meta.url).origin);
-await new Promise((resolve, reject) => {
-    document.head.appendChild(Object.assign(document.createElement("script"), {
-        type: "module",
-        src: `./assets/bundle.js?version=${window.VERSION}`,
-        onload: resolve,
-        onerror: reject,
-    }));
-});
-document.head.appendChild(Object.assign(document.createElement("script"), {
-    type: "importmap",
-    textContent: JSON.stringify({
-        imports: window.bundler.esModules,
-    }, null, 4),
-}));

@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -209,7 +210,22 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 			SendErrorResult(res, err)
 		}
 	}
-	tmpl := template.Must(template.New(indexPath).Parse(string(b)))
+	tmpl := template.Must(template.New(indexPath).Funcs(template.FuncMap{
+		"load_asset": func(path string) (string, error) {
+			file, err := WWWPublic.Open(path)
+			if err != nil {
+				return "", err
+			}
+			out := "/* LOAD " + path + " */ "
+			f, err := io.ReadAll(file)
+			file.Close()
+			out += regexp.MustCompile(`\s+`).ReplaceAllString(
+				strings.ReplaceAll(string(f), "\n", ""),
+				" ",
+			)
+			return out, err
+		},
+	}).Parse(string(b)))
 	tmpl = template.Must(tmpl.Parse(string(TmplLoader)))
 
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -389,7 +405,7 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 				Log.Warning("static::bundle msg=marshal_failed path=%s err=%s", path, err.Error())
 				continue
 			}
-			fmt.Fprintf(&buf, "bundler.register(%q, %s);\n", path, code)
+			fmt.Fprintf(&buf, "bundler.register(%q, %s);\n", WithBase(path), code)
 		}
 		etag = QuickHash(string(bundlePlain), 10)
 		bundlePlain = buf.Bytes()

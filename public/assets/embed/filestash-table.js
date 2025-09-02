@@ -1,9 +1,3 @@
-import { init as initConfig, getVersion, get } from "../model/config.js";
-
-const DEBOUNCETIME = 100;
-
-await initConfig();
-
 class FilestashTable extends HTMLElement {
     constructor() {
         super();
@@ -30,7 +24,7 @@ class FilestashTable extends HTMLElement {
                     type: "refresh",
                     payload: { name: this.getAttribute("name"), src: this.getAttribute("src") },
                 }, "*");
-            }, DEBOUNCETIME);
+            }, 100);
         }
     }
 
@@ -42,7 +36,6 @@ class FilestashTable extends HTMLElement {
     connectedCallback() {
         const src = this.getAttribute("src") || "";
         const name = this.getAttribute("name") || "main.dat";
-        const mime = get("mime", {})[name.split(".").pop().toLowerCase()];
 
         this.style.display = "inline-block";
         this.iframe.srcdoc = `<!DOCTYPE html>
@@ -81,31 +74,33 @@ class FilestashTable extends HTMLElement {
                     }
                 });
                 </script>
-
                 <script type="module" defer>
-                import { render } from "${import.meta.url}/../../${getVersion()}/index.js";
-                import * as Application from "${import.meta.url}/../../${getVersion()}/pages/viewerpage/application_table.js";
+                    import { init as initConfig, getVersion, get } from "${import.meta.url}/../../model/config.js";
 
-                const $app = document.querySelector("#app");
-                render(Application, $app, {
-                    mime: "${mime}",
-                    hasMenubar: true,
-                    getFilename: () => "${name}",
-                    getDownloadUrl: () => "${src}",
-                });
-                window.addEventListener("message", (event) => {
-                    if(event.data.type === "refresh") {
-                        render(Application, $app, {
-                            mime: "${mime}",
-                            hasMenubar: true,
-                            getFilename: () => event.data.payload.name,
-                            getDownloadUrl: () => event.data.payload.src,
-                        });
-                    }
-                });
+                    await initConfig();
+                    const { render } = await import("${import.meta.url}/../../"+ getVersion() +"/index.js");
+                    const Application = await import("${import.meta.url}/../../"+ getVersion() +"/pages/viewerpage/application_table.js");
+
+                    const $app = document.querySelector("#app");
+                    const mime = get("mime", {})["${name}".split(".").pop().toLowerCase()];
+                    render(Application, $app, {
+                        mime: mime,
+                        hasMenubar: true,
+                        getFilename: () => "${name}",
+                        getDownloadUrl: () => "${src}",
+                    });
+                    window.addEventListener("message", (event) => {
+                        if(event.data.type === "refresh") {
+                            render(Application, $app, {
+                                mime: mime,
+                                hasMenubar: true,
+                                getFilename: () => event.data.payload.name,
+                                getDownloadUrl: () => event.data.payload.src,
+                            });
+                        }
+                    });
                 </script>
 
-                <script type="module" src="${import.meta.url}/../../${getVersion()}/components/modal.js"></script>
                 <component-modal></component-modal>
             </body>
         </html>`;

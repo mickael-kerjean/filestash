@@ -33,15 +33,20 @@
         </template>
 
         <script type="module">
-         function liftoff() {
-             document.head.appendChild(document.querySelector("template#head").content);
-             document.body.appendChild(document.querySelector("template#body").content);
-         }
          async function ignitionSequence() {
              window.VERSION = "{{ slice .version 0 7 }}::{{ .hash }}";
 
-             try { await import("./assets/boot/warmup.js"); }
-             catch (err) { console.error(err); }
+             try {
+                 if (!HTMLScriptElement.supports?.("importmap")) throw new Error("fastboot is not supported on this platform");
+                 {{ load_asset "assets/boot/bundler_init.js" }}
+                 await new Promise((resolve, reject) => document.head.appendChild(Object.assign(document.createElement("script"), {
+                     type: "module",
+                     src: `./assets/bundle.js?version=${window.VERSION}`,
+                     onload: resolve,
+                     onerror: reject,
+                 })))
+                 {{ load_asset "assets/boot/bundler_complete.js" }}
+             } catch (err) { console.error(err); }
 
              await Promise.all([
                  import("./assets/{{ .version }}/components/loader.js"),
@@ -51,6 +56,11 @@
                      loadCSS(import.meta.url, "{{ .base }}assets/{{ .version }}/css/designsystem.css");
                  }),
              ]);
+         }
+
+         function liftoff() {
+             document.head.appendChild(document.querySelector("template#head").content);
+             document.body.appendChild(document.querySelector("template#body").content);
          }
          //
          //
