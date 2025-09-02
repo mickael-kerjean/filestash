@@ -47,7 +47,8 @@ export default WithShell(function(render) {
     const $skip = createElement(`<a aria-role="navigation" href="#main">${t("Skip to content")}</a>`);
     $skip.onclick = (e) => {
         e.preventDefault();
-        assert.type(document.querySelector("main a"), window.HTMLElement).focus();
+        const $content = document.querySelector("main a");
+        if ($content) assert.type($content, HTMLElement).focus();
     };
     document.body.prepend($skip);
     onDestroy(() => $skip.remove());
