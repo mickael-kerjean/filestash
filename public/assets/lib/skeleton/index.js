@@ -42,7 +42,7 @@ async function load(route, opts) {
         }
         const module = window.env === "test"
             ? require("../.." + route)
-            : await import("../.." + route);
+            : await import(new URL("../.." + route, import.meta.url));
 
         if (typeof module.init === "function") await module.init();
 

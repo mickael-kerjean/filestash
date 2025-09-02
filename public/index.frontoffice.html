@@ -17,22 +17,19 @@
 
         <template id="head">
             <link rel="stylesheet" href="custom.css">
-            <link rel="stylesheet" href="./assets/{{ .version }}/css/designsystem.css">
         </template>
         <template id="body">
-            <script type="module" src="./assets/{{ .version }}/components/loader.js"></script>
             <script type="module">
              import main from "./assets/{{ .version }}/lib/skeleton/index.js";
              import routes from "./assets/{{ .version }}/boot/router_frontoffice.js";
+
              main(document.getElementById("app"), routes, {
                  spinner: `<component-loader></component-loader>`,
                  beforeStart: import("{{ .base }}assets/{{ .version }}/boot/ctrl_boot_frontoffice.js"),
              });
             </script>
             <component-modal></component-modal>
-            <script type="module" src="./assets/{{ .version }}/components/modal.js" defer></script>
             <component-notification></component-notification>
-            <script type="module" src="./assets/{{ .version }}/components/notification.js" defer></script>
         </template>
 
         <script type="module">
@@ -41,46 +38,20 @@
              document.body.appendChild(document.querySelector("template#body").content);
          }
          async function ignitionSequence() {
-             if (!("serviceWorker" in navigator)) return
-             try {
-                 window.bundler = (function () {
-                     let modules = [];
-                     return {
-                         register: (path, code) => modules[path] = code,
-                         state: () => modules,
-                     };
-                 })();
-                 const [register] = await Promise.all([
-                     navigator.serviceWorker.register("sw.js").then((register) => new Promise((resolve) => {
-                         register.active ?
-                         resolve(register) :
-                         navigator.serviceWorker.addEventListener("controllerchange", () => {
-                             resolve(register);
-                         });
-                     })),
-                     new Promise((resolve, reject) => {
-                         const $script = document.createElement("script");
-                         $script.type = "module";
-                         $script.src = "./assets/bundle.js?version={{ slice .version 0 7 }}::{{ .hash }}";
-                         document.head.appendChild($script);
-                         $script.onload = resolve;
-                         $script.onerror = reject;
-                     }),
-                 ]);
-                 register.active.postMessage({
-                     "type": "preload",
-                     "payload": bundler.state(),
-                     "version": "{{ slice .version 0 7 }}::{{ .hash }}",
-                 });
-                 await new Promise((resolve, reject) => navigator.serviceWorker.addEventListener("message", (event) => {
-                     if (event.data && event.data.type === "preload") {
-                         if (event.data.status !== "ok") console.log(`turboload failure data=${JSON.stringify(event.data)}`);
-                         resolve();
-                     }
-                 }));
-             } catch (err) { console.error(err); }
-         }
+             window.VERSION = "{{ slice .version 0 7 }}::{{ .hash }}";
 
+             try { await import("./assets/boot/warmup.js"); }
+             catch (err) { console.error(err); }
+
+             await Promise.all([
+                 import("./assets/{{ .version }}/components/loader.js"),
+                 import("./assets/{{ .version }}/components/modal.js"),
+                 import("./assets/{{ .version }}/components/notification.js"),
+                 import("./assets/{{ .version }}/helpers/loader.js").then(({ loadCSS }) => {
+                     loadCSS(import.meta.url, "{{ .base }}assets/{{ .version }}/css/designsystem.css");
+                 }),
+             ]);
+         }
          //
          //
          //
@@ -108,7 +79,7 @@
          // |
          // |                                             |
                      await ignitionSequence()          // |
-                                                       // |
+         // |
                                     liftoff()          // |
          // |                                             |
          // |_____________________________________________|

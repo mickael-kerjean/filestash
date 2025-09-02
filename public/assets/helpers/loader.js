@@ -21,6 +21,7 @@ export async function loadCSS(baseURL, path) {
     $style.setAttribute("href", link.toString());
     $style.setAttribute("rel", "stylesheet");
     if (document.head.querySelector(`[href="${link.toString()}"]`)) return Promise.resolve();
+    else if (document.head.querySelector(`style[id="${link.toString()}"]`)) return Promise.resolve();
     document.head.appendChild($style);
     return new Promise((done) => {
         $style.onload = done;

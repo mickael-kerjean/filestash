@@ -248,7 +248,6 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/boot/router_frontoffice.js",
 		"/assets/" + BUILD_REF + "/boot/common.js",
 
-		"/assets/" + BUILD_REF + "/css/designsystem.css",
 		"/assets/" + BUILD_REF + "/css/designsystem_input.css",
 		"/assets/" + BUILD_REF + "/css/designsystem_textarea.css",
 		"/assets/" + BUILD_REF + "/css/designsystem_inputgroup.css",
@@ -263,6 +262,7 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/css/designsystem_skeleton.css",
 		"/assets/" + BUILD_REF + "/css/designsystem_utils.css",
 		"/assets/" + BUILD_REF + "/css/designsystem_alert.css",
+		"/assets/" + BUILD_REF + "/css/designsystem.css",
 
 		"/assets/" + BUILD_REF + "/components/decorator_shell_filemanager.css",
 		"/assets/" + BUILD_REF + "/components/loader.js",
@@ -286,6 +286,7 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/helpers/log.js",
 		"/assets/" + BUILD_REF + "/helpers/sdk.js",
 
+		"/assets/" + BUILD_REF + "/lib/rx.js",
 		"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs.min.js",
 		"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs-ajax.min.js",
 		"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs-shared.min.js",
@@ -294,12 +295,11 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/lib/path.js",
 		"/assets/" + BUILD_REF + "/lib/random.js",
 		"/assets/" + BUILD_REF + "/lib/settings.js",
-		"/assets/" + BUILD_REF + "/lib/skeleton/index.js",
-		"/assets/" + BUILD_REF + "/lib/rx.js",
 		"/assets/" + BUILD_REF + "/lib/ajax.js",
 		"/assets/" + BUILD_REF + "/lib/animate.js",
 		"/assets/" + BUILD_REF + "/lib/assert.js",
 		"/assets/" + BUILD_REF + "/lib/dom.js",
+		"/assets/" + BUILD_REF + "/lib/skeleton/index.js",
 		"/assets/" + BUILD_REF + "/lib/skeleton/router.js",
 		"/assets/" + BUILD_REF + "/lib/skeleton/lifecycle.js",
 		"/assets/" + BUILD_REF + "/lib/error.js",
@@ -311,6 +311,10 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/model/session.js",
 		"/assets/" + BUILD_REF + "/model/plugin.js",
 
+		"/assets/" + BUILD_REF + "/pages/ctrl_logout.js",
+		"/assets/" + BUILD_REF + "/pages/ctrl_error.js",
+		"/assets/" + BUILD_REF + "/pages/ctrl_homepage.js",
+
 		"/assets/" + BUILD_REF + "/pages/ctrl_connectpage.js",
 		"/assets/" + BUILD_REF + "/pages/ctrl_connectpage.css",
 		"/assets/" + BUILD_REF + "/pages/connectpage/ctrl_form.css",
@@ -320,19 +324,18 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/pages/connectpage/model_backend.js",
 		"/assets/" + BUILD_REF + "/pages/connectpage/model_config.js",
 		"/assets/" + BUILD_REF + "/pages/connectpage/ctrl_form_state.js",
-		"/assets/" + BUILD_REF + "/pages/ctrl_logout.js",
-		"/assets/" + BUILD_REF + "/pages/ctrl_error.js",
+
 		"/assets/" + BUILD_REF + "/pages/ctrl_filespage.js",
 		"/assets/" + BUILD_REF + "/pages/ctrl_filespage.css",
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_submenu.css",
-		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_filesystem.css",
-		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_upload.css",
 		"/assets/" + BUILD_REF + "/pages/filespage/model_acl.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/cache.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/thing.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/thing.css",
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_filesystem.js",
+		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_filesystem.css",
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_upload.js",
+		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_upload.css",
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_submenu.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/state_config.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/helper.js",
@@ -351,13 +354,12 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_newitem.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_newitem.css",
 
-		"/assets/" + BUILD_REF + "/pages/ctrl_viewerpage.js",
+		// "/assets/" + BUILD_REF + "/pages/ctrl_viewerpage.js", // TODO: dynamic imports
 		"/assets/" + BUILD_REF + "/pages/ctrl_viewerpage.css",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/mimetype.js",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/model_files.js",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/common.js",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/application_downloader.js",
-
 		"/assets/" + BUILD_REF + "/pages/viewerpage/component_menubar.js",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/component_menubar.css",
 	}
