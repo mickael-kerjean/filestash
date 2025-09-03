@@ -7,6 +7,7 @@ import cache from "../pages/filespage/cache.js";
 import { extractPath, isDir, isNativeFileUpload } from "../pages/filespage/helper.js";
 import { mv as mvVL, withVirtualLayer } from "../pages/filespage/model_virtual_layer.js";
 import { hooks, mv as mv$ } from "../pages/filespage/model_files.js";
+import ctrlError from "../pages/ctrl_error.js";
 
 export default async function ctrlNavigationPane(render, { $sidebar, path }) {
     // feature: init dom
@@ -20,7 +21,12 @@ export default async function ctrlNavigationPane(render, { $sidebar, path }) {
             dirname,
         });
         if (cpath === "/") $fs.appendChild($ul);
-        else qs($fs, `[data-path="${CSS.escape(cpath)}"] ul`).appendChild($ul);
+        else try {
+            qs($fs, `[data-path="${CSS.escape(cpath)}"] ul`).appendChild($ul);
+        } catch (err) {
+            console.error(chunks[i], dirname, err);
+            break;
+        }
     }
     render($fs);
 
@@ -35,9 +41,16 @@ export default async function ctrlNavigationPane(render, { $sidebar, path }) {
         ];
         return () => cleaners.map((fn) => fn());
     }).pipe(
-        rxjs.tap(async(path) => {
+        rxjs.mergeMap(async(path) => {
             const display = path === "/" ? render : createRender(qs($sidebar, `[data-path="${CSS.escape(path)}"] ul`));
             display(await _createListOfFiles(path, {}));
+        }),
+        rxjs.catchError((err) => {
+            if (err instanceof DOMException) {
+                console.error(err);
+                return rxjs.EMPTY;
+            }
+            return ctrlError()(err);
         }),
     ));
 
@@ -87,6 +100,7 @@ const mv = (from, to) => withVirtualLayer(
 );
 
 async function _createListOfFiles(path, { basename = null, dirname = null }) {
+    const MAX_DISPLAY = 100;
     const r = await cache().get(path);
     const whats = r === null
         ? (basename ? [basename] : [])
@@ -95,7 +109,6 @@ async function _createListOfFiles(path, { basename = null, dirname = null }) {
             .map(({ name }) => name)
             .sort();
 
-    const MAX_DISPLAY = 100;
     const $lis = document.createDocumentFragment();
     const $fragment = document.createDocumentFragment();
     const $ul = document.createElement("ul");
