@@ -93,6 +93,7 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     padding: 5px 5px 5px 10px;
     width: 100%;
     box-sizing: border-box;
+    letter-spacing: -0.2px;
 }
 body.touch-no .component_filemanager_shell .component_sidebar a:not([aria-selected="true"]):hover,
 .component_filemanager_shell .component_sidebar a[aria-selected="true"] {
