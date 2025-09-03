@@ -488,7 +488,14 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 			SendErrorResult(res, ErrNotValid)
 			return
 		}
-		uploader := createChunkedUploader(ctx.Backend.Save, path, size)
+		ctx.Context = context.Background()
+		b, err := ctx.Backend.Init(ctx.Session, ctx)
+		if err != nil {
+			Log.Debug("files::save::tus action=backend_save step=backend_init err=%s", err.Error())
+			SendErrorResult(res, ErrNotValid)
+			return
+		}
+		uploader := createChunkedUploader(b.Save, path, size)
 		chunkedUploadCache.Set(cacheKey, uploader)
 		h.Set("Content-Length", "0")
 		h.Set("Location", req.URL.String())
