@@ -12,8 +12,8 @@ import (
 func init() {
 	Hooks.Register.AuthenticationMiddleware("local", SimpleAuth{})
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
-		r.Handle("/admin/simple-user-management", http.RedirectHandler("/admin/api/simple-user-management", http.StatusSeeOther)).Methods("GET")
-		r.HandleFunc("/admin/api/simple-user-management", middleware.NewMiddlewareChain(
+		r.Handle(WithBase("/admin/simple-user-management"), http.RedirectHandler(WithBase("/admin/api/simple-user-management"), http.StatusSeeOther)).Methods("GET")
+		r.HandleFunc(WithBase("/admin/api/simple-user-management"), middleware.NewMiddlewareChain(
 			UserManagementHandler,
 			[]Middleware{middleware.AdminOnly},
 			*app,

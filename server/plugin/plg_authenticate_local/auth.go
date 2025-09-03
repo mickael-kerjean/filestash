@@ -35,7 +35,7 @@ func (this SimpleAuth) Setup() Form {
 			{
 				Name: "banner",
 				Type: "hidden",
-				Description: fmt.Sprintf(`<pre>MANAGEMENT GUI: <a href="/admin/simple-user-management">/admin/simple-user-management</a>
+				Description: fmt.Sprintf(`<pre>MANAGEMENT GUI: <a href="`+WithBase("/admin/simple-user-management")+`">/admin/simple-user-management</a>
 STATS:
 ┌─────────────┐   ┌──────────────┐
 │ TOTAL USERS │   │ ACTIVE USERS │
