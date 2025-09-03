@@ -297,7 +297,7 @@ async function ctrlCreateShare(render, { save, formState }) {
     };
     // sync editable custom link input with link id
     effect(rxjs.fromEvent(qs($form, `[name="url"]`), "keyup").pipe(rxjs.tap((e) => {
-        id = e.target.value.replaceAll(" ", "-").replace(new RegExp("[^A-Za-z\-]"), "");
+        id = e.target.value.replaceAll(new RegExp("[^0-9A-Za-z\-]", "g"), "");
         qs(assert.type($form.closest(".component_share"), HTMLElement), `input[name="create"]`).value = `${location.origin}${toHref("/s/" + id)}`;
     })));
 
