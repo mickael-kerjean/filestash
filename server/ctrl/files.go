@@ -247,7 +247,8 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// plugin hooks
-	if thumb := query.Get("thumbnail"); thumb == "true" {
+	thumb := query.Get("thumbnail")
+	if thumb == "true" {
 		for plgMType, plgHandler := range Hooks.Get.Thumbnailer() {
 			if plgMType != mType {
 				continue
@@ -358,19 +359,30 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 	header.Set("Accept-Ranges", "bytes")
 
-	// Send data to the client
 	if req.Method != "HEAD" {
+		size := 32
+		if thumb != "true" {
+			switch Config.Get("general.buffer_size").String() {
+			case "small":
+				size = 32
+			case "medium":
+				size = 128
+			case "large":
+				size = 2 * 1024
+			}
+		}
+		buf := make([]byte, size*1024)
 		if f, ok := file.(io.ReadSeeker); ok && len(ranges) > 0 {
 			if _, err = f.Seek(ranges[0][0], io.SeekStart); err == nil {
 				header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", ranges[0][0], ranges[0][1], contentLength))
 				header.Set("Content-Length", fmt.Sprintf("%d", ranges[0][1]-ranges[0][0]+1))
 				res.WriteHeader(http.StatusPartialContent)
-				io.CopyN(res, f, ranges[0][1]-ranges[0][0]+1)
+				io.CopyBuffer(res, io.LimitReader(f, ranges[0][1]-ranges[0][0]+1), buf)
 			} else {
 				res.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
 			}
 		} else {
-			io.Copy(res, file)
+			io.CopyBuffer(res, file, buf)
 		}
 	}
 	file.Close()

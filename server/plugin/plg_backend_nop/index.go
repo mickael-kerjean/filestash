@@ -105,7 +105,7 @@ func (this BlackHole) Mv(from, to string) error {
 }
 
 func (this BlackHole) Save(path string, content io.Reader) error {
-	b := make([]byte, 32<<20) // 32MB
+	b := make([]byte, 32*1024*1024) // 32MB
 	for {
 		_, err := content.Read(b)
 		if err == io.EOF {
