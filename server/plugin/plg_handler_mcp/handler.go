@@ -16,14 +16,13 @@ import (
 	"github.com/google/uuid"
 )
 
-func (this *Server) messageHandler(w http.ResponseWriter, r *http.Request) {
+func (this *Server) messageHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 	sessionID := r.URL.Query().Get("sessionId")
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Invalid Request"))
 		return
 	}
-
 	request := JSONRPCRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -34,7 +33,7 @@ func (this *Server) messageHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (this *Server) sseHandler(w http.ResponseWriter, r *http.Request) {
+func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusBadRequest)
 		return
