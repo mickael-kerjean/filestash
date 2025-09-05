@@ -7,9 +7,6 @@ build_init:
 	go get ./...
 	go generate -x ./server/...
 
-build_frontend:
-	cd public && make compress
-
 build_backend:
 	CGO_ENABLED=1 go build --tags "fts5" -o dist/filestash cmd/main.go
 

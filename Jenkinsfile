@@ -25,7 +25,6 @@ pipeline {
                     docker.image("node:20").inside("--user=root") {
                         sh "apt update -y && apt install -y brotli"
                         sh "npm install"
-                        sh "make build_frontend"
                     }
                     docker.image("golang:1.24-bookworm").inside("--user=root") {
                         sh "apt update -y && apt install -y libbrotli-dev brotli"
