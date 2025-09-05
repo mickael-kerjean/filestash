@@ -2,29 +2,35 @@ window.bundler = (function(origin) {
     const esModules = {};
     return {
         register: (path, code) => {
+            const fullpath = origin + path;
             if (path.endsWith(".js")) {
                 code = code.replace(/from\s?"([^"]+)"/g, (_, spec) =>
-                    `from "${new URL(spec, origin + path).href}"`,
+                    `from "${new URL(spec, fullpath).href}"`,
                 );
                 code = code.replace(/\bimport\s+"([^"]+)"/g, (_, spec) =>
-                    `import "${new URL(spec, origin + path).href}"`,
+                    `import "${new URL(spec, fullpath).href}"`,
                 );
-                code = code.replace(/(?<!["])\bimport\.meta\.url\b(?!["])/g, `"${origin + path}"`);
-                code += `\n//# sourceURL=${path}`;
-                esModules[origin + path] = "data:text/javascript," + encodeURIComponent(code);
+                code = code.replace(
+                    /(?<!["])\bimport\.meta\.url\b(?!["])/g,
+                    `"${fullpath}"`,
+                );
+                esModules[fullpath] = "data:text/javascript," + encodeURIComponent(
+                    code + `\n//# sourceURL=${path}`,
+                );
             } else if (path.endsWith(".css")) {
                 code = code.replace(/@import url\("([^"]+)"\);/g, (m, rel) => {
-                    const $style = document.head.querySelector(`style[id="${new URL(rel, origin + path).href}"]`);
+                    const $style = document.head.querySelector(
+                        `style[id="${new URL(rel, fullpath).href}"]`
+                    );
                     if (!$style) throw new DOMException(
                         `Missing CSS dependency: ${rel} (referenced from ${path})`,
                         "NotFoundError",
                     );
                     return `/* ${m} */`;
                 });
-                code += `\n/*# sourceURL=${path} */`;
                 document.head.appendChild(Object.assign(document.createElement("style"), {
-                    innerHTML: code,
-                    id: origin + path,
+                    innerHTML: code + `\n/*# sourceURL=${path} */`,
+                    id: fullpath,
                 }));
             }
         },

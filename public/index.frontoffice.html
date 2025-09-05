@@ -39,12 +39,12 @@
              try {
                  if (!HTMLScriptElement.supports?.("importmap")) throw new Error("fastboot is not supported on this platform");
                  {{ load_asset "assets/boot/bundler_init.js" }}
-                 await new Promise((resolve, reject) => document.head.appendChild(Object.assign(document.createElement("script"), {
+                 await Promise.all(Array({{ .bundle_size }}).fill().map((_, i) => new Promise((resolve, reject) => document.head.appendChild(Object.assign(document.createElement("script"), {
                      type: "module",
-                     src: `./assets/bundle.js?version=${window.VERSION}`,
+                     src: `./assets/bundle.js?version=${window.VERSION}&chunk=${i+1}`,
                      onload: resolve,
                      onerror: reject,
-                 })));
+                 })))));
                  {{ load_asset "assets/boot/bundler_complete.js" }}
              } catch (err) { console.error(err); }
 

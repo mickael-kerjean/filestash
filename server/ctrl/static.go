@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -233,11 +234,12 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 		sign := signature()
 		base := WithBase("/")
 		templateData := map[string]any{
-			"base":    base,
-			"version": BUILD_REF,
-			"license": LICENSE,
-			"hash":    sign,
-			"favicon": favicon(),
+			"base":        base,
+			"version":     BUILD_REF,
+			"license":     LICENSE,
+			"hash":        sign,
+			"favicon":     favicon(),
+			"bundle_size": len(preload),
 		}
 		calculatedEtag := QuickHash(base+BUILD_REF+LICENSE+sign, 10)
 		head.Set("ETag", calculatedEtag)
@@ -258,8 +260,8 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 	}
 }
 
-func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
-	paths := []string{
+var preload = [][]string{
+	{
 		"/assets/" + BUILD_REF + "/boot/ctrl_boot_frontoffice.js",
 		"/assets/" + BUILD_REF + "/boot/router_frontoffice.js",
 		"/assets/" + BUILD_REF + "/boot/common.js",
@@ -303,6 +305,9 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/helpers/sdk.js",
 
 		"/assets/" + BUILD_REF + "/lib/rx.js",
+		"/assets/" + BUILD_REF + "/lib/ajax.js",
+	},
+	{
 		"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs.min.js",
 		"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs-ajax.min.js",
 		"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs-shared.min.js",
@@ -311,7 +316,6 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/lib/path.js",
 		"/assets/" + BUILD_REF + "/lib/random.js",
 		"/assets/" + BUILD_REF + "/lib/settings.js",
-		"/assets/" + BUILD_REF + "/lib/ajax.js",
 		"/assets/" + BUILD_REF + "/lib/animate.js",
 		"/assets/" + BUILD_REF + "/lib/assert.js",
 		"/assets/" + BUILD_REF + "/lib/dom.js",
@@ -321,7 +325,6 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/lib/error.js",
 
 		"/assets/" + BUILD_REF + "/locales/index.js",
-
 		"/assets/" + BUILD_REF + "/model/config.js",
 		"/assets/" + BUILD_REF + "/model/chromecast.js",
 		"/assets/" + BUILD_REF + "/model/session.js",
@@ -329,8 +332,9 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 
 		"/assets/" + BUILD_REF + "/pages/ctrl_logout.js",
 		"/assets/" + BUILD_REF + "/pages/ctrl_error.js",
+	},
+	{
 		"/assets/" + BUILD_REF + "/pages/ctrl_homepage.js",
-
 		"/assets/" + BUILD_REF + "/pages/ctrl_connectpage.js",
 		"/assets/" + BUILD_REF + "/pages/ctrl_connectpage.css",
 		"/assets/" + BUILD_REF + "/pages/connectpage/ctrl_form.css",
@@ -341,18 +345,24 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/pages/connectpage/model_config.js",
 		"/assets/" + BUILD_REF + "/pages/connectpage/ctrl_form_state.js",
 
-		"/assets/" + BUILD_REF + "/pages/ctrl_filespage.js",
-		"/assets/" + BUILD_REF + "/pages/ctrl_filespage.css",
-		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_submenu.css",
-		"/assets/" + BUILD_REF + "/pages/filespage/model_acl.js",
-		"/assets/" + BUILD_REF + "/pages/filespage/cache.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/thing.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/thing.css",
+	},
+	{
+		"/assets/" + BUILD_REF + "/pages/ctrl_filespage.js",
+		"/assets/" + BUILD_REF + "/pages/ctrl_filespage.css",
+		"/assets/" + BUILD_REF + "/pages/filespage/model_acl.js",
+		"/assets/" + BUILD_REF + "/pages/filespage/cache.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_filesystem.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_filesystem.css",
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_upload.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_upload.css",
+		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_newitem.js",
+		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_newitem.css",
+	},
+	{
 		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_submenu.js",
+		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_submenu.css",
 		"/assets/" + BUILD_REF + "/pages/filespage/state_config.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/helper.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/model_files.js",
@@ -367,8 +377,6 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/pages/filespage/modal_delete.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/state_selection.js",
 		"/assets/" + BUILD_REF + "/pages/filespage/state_newthing.js",
-		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_newitem.js",
-		"/assets/" + BUILD_REF + "/pages/filespage/ctrl_newitem.css",
 
 		// "/assets/" + BUILD_REF + "/pages/ctrl_viewerpage.js", // TODO: dynamic imports
 		"/assets/" + BUILD_REF + "/pages/ctrl_viewerpage.css",
@@ -379,66 +387,85 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		"/assets/" + BUILD_REF + "/pages/viewerpage/application_downloader.css",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/component_menubar.js",
 		"/assets/" + BUILD_REF + "/pages/viewerpage/component_menubar.css",
-	}
+	},
+}
 
-	var isDebug = os.Getenv("DEBUG") == "true"
-
-	build := func(quality int) (bundlePlain []byte, bundleBr []byte, etag string) {
-		var buf bytes.Buffer
-		for _, path := range paths {
-			curPath := "/assets/" + strings.TrimPrefix(path, "/assets/"+BUILD_REF+"/")
-			f := applyPatch(curPath)
-			if f == nil {
-				file, err := WWWPublic.Open(curPath)
+func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
+	isDebug := os.Getenv("DEBUG") == "true"
+	buildChunks := func(quality int) (chunks [][]byte, chunksBr [][]byte, etags []string) {
+		numChunks := len(preload)
+		chunks = make([][]byte, numChunks+1)
+		chunksBr = make([][]byte, numChunks+1)
+		etags = make([]string, numChunks+1)
+		var fullBuf bytes.Buffer
+		for i := 0; i < numChunks; i++ {
+			var chunkBuf bytes.Buffer
+			for _, path := range preload[i] {
+				curPath := "/assets/" + strings.TrimPrefix(path, "/assets/"+BUILD_REF+"/")
+				f := applyPatch(curPath)
+				if f == nil {
+					file, err := WWWPublic.Open(curPath)
+					if err != nil {
+						Log.Warning("static::bundler failed to find file %s", err.Error())
+						continue
+					}
+					f = new(bytes.Buffer)
+					if _, err := io.Copy(f, file); err != nil {
+						Log.Warning("static::bundler msg=copy_error err=%s", err.Error())
+						continue
+					}
+					file.Close()
+				}
+				code, err := json.Marshal(f.String())
 				if err != nil {
-					Log.Warning("static::bundler failed to find file %s", err.Error())
+					Log.Warning("static::bundle msg=marshal_failed path=%s err=%s", path, err.Error())
 					continue
 				}
-				f = new(bytes.Buffer)
-				if _, err := io.Copy(f, file); err != nil {
-					Log.Warning("static::bundler msg=copy_error err=%s", err.Error())
-					continue
-				}
-				file.Close()
+				line := fmt.Sprintf("bundler.register(%q, %s);\n", WithBase(path), code)
+				chunkBuf.WriteString(line)
+				fullBuf.WriteString(line)
 			}
-			code, err := json.Marshal(f.String())
-			if err != nil {
-				Log.Warning("static::bundle msg=marshal_failed path=%s err=%s", path, err.Error())
-				continue
-			}
-			fmt.Fprintf(&buf, "bundler.register(%q, %s);\n", WithBase(path), code)
+			chunks[i+1] = chunkBuf.Bytes()
+			chunksBr[i+1], _ = cbrotli.Encode(chunks[i+1], cbrotli.WriterOptions{Quality: quality})
+			etags[i+1] = QuickHash(string(chunks[i+1]), 10)
 		}
-		etag = QuickHash(string(bundlePlain), 10)
-		bundlePlain = buf.Bytes()
-		if quality > 0 {
-			bundleBr, _ = cbrotli.Encode(bundlePlain, cbrotli.WriterOptions{Quality: quality})
-		}
-		return bundlePlain, bundleBr, etag
+		chunks[0] = fullBuf.Bytes()
+		chunksBr[0], _ = cbrotli.Encode(chunks[0], cbrotli.WriterOptions{Quality: quality})
+		etags[0] = QuickHash(string(chunks[0]), 10)
+		return chunks, chunksBr, etags
 	}
 
 	quality := 11
 	if isDebug {
 		quality = 8
 	}
-	bundlePlain, bundleBr, etag := build(quality)
+	chunks, chunksBr, etags := buildChunks(quality)
 
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if isDebug {
-			bundlePlain, bundleBr, etag = build(quality)
+			chunks, chunksBr, etags = buildChunks(quality)
+		}
+		chunkIndex := 0
+		if parsed, err := strconv.Atoi(req.URL.Query().Get("chunk")); err == nil {
+			chunkIndex = parsed
+		}
+		if chunkIndex >= len(chunks) {
+			http.NotFound(res, req)
+			return
 		}
 		head := res.Header()
 		head.Set("Content-Type", "application/javascript")
 		head.Set("Cache-Control", "no-cache")
-		head.Set("Etag", etag)
-		if req.Header.Get("If-None-Match") == etag && etag != "" {
+		head.Set("Etag", etags[chunkIndex])
+		if req.Header.Get("If-None-Match") == etags[chunkIndex] && etags[chunkIndex] != "" {
 			res.WriteHeader(http.StatusNotModified)
 			return
-		} else if strings.Contains(req.Header.Get("Accept-Encoding"), "br") && len(bundleBr) > 0 {
+		} else if strings.Contains(req.Header.Get("Accept-Encoding"), "br") && len(chunksBr[chunkIndex]) > 0 {
 			head.Set("Content-Encoding", "br")
-			res.Write(bundleBr)
+			res.Write(chunksBr[chunkIndex])
 			return
 		}
-		res.Write(bundlePlain)
+		res.Write(chunks[chunkIndex])
 	}
 }
 
