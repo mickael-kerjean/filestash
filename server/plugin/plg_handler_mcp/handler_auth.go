@@ -162,5 +162,9 @@ func (this Server) CallbackHandler(ctx *App, res http.ResponseWriter, req *http.
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
-	http.Redirect(res, req, fmt.Sprintf(uri+"?code=%s&state=%s", code, state), http.StatusSeeOther)
+	uri += "?code=" + code
+	if state != "" {
+		uri += "&state=" + state
+	}
+	http.Redirect(res, req, uri, http.StatusSeeOther)
 }
