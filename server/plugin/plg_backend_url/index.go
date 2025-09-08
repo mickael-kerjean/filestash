@@ -157,6 +157,7 @@ func (this Url) processLink(link string, n *html.Node) *File {
 		extractASPNetList,
 		extractApacheList,
 		extractApacheList2,
+		extractApacheList3,
 	} {
 		if s, t, err := extr(n); err == nil {
 			fSize = s
@@ -305,6 +306,12 @@ var extractApacheList = extract(
 var extractApacheList2 = extract(
 	regexp.MustCompile(`([0-9]{2}-[A-Z][a-z]{2}-[0-9]{4} [0-9]{2}:[0-9]{2})\s+([0-9\.\-]+\s?[kKMGT]?)`),
 	"02-Jan-2006 15:04",
+	nodeApacheExtract,
+)
+
+var extractApacheList3 = extract(
+	regexp.MustCompile(`([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2})`+`[ \xA0]+`+`([0-9]+(?:\.[0-9]+)?|-)`+`[ \xA0]*`+`[kKMGT]?`),
+	"2006-01-02 15:04",
 	nodeApacheExtract,
 )
 
