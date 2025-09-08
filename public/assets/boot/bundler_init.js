@@ -11,8 +11,12 @@ window.bundler = (function(origin) {
                     `import "${new URL(spec, fullpath).href}"`,
                 );
                 code = code.replace(
-                    /(?<!["])\bimport\.meta\.url\b(?!["])/g,
-                    `"${fullpath}"`,
+                    /\bimport\.meta\.url\b/g,
+                    (match, offset, string) => {
+                        const before = string[offset - 1];
+                        const after = string[offset + match.length];
+                        return (before === "\"" || after === "\"") ? match : `"${fullpath}"`;
+                    },
                 );
                 esModules[fullpath] = "data:text/javascript," + encodeURIComponent(
                     code + `\n//# sourceURL=${path}`,
