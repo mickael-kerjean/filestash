@@ -105,7 +105,7 @@ export function createThing({
         $label.appendChild($filesize);
     }
     if (mime && view === "grid" && TYPES.THUMBNAILER.has(mime) && offline === false) {
-        $extension.classList.add("hidden");
+        $extension.style.display = "none";
         $img.classList.add("thumbnail");
         const $placeholder = $img.cloneNode(true);
         $placeholder.classList.add("placeholder");
@@ -173,11 +173,12 @@ export function createThing({
     $thing.ondragstart = (e) => {
         clearSelection();
         $thing.classList.add("hover");
+        $checkbox.style.display = "none";
         e.dataTransfer.setData("path", path);
-        e.dataTransfer.setDragImage($thing, e.offsetX, -10);
     };
     $thing.ondrop = async(e) => {
         $thing.classList.remove("hover");
+        $checkbox.style.display = "";
         const from = e.dataTransfer.getData("path");
         let to = path;
         if ($thing.getAttribute("data-droptarget") !== "true") return;
