@@ -3,6 +3,7 @@ package plg_handler_site
 import (
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -15,17 +16,29 @@ import (
 
 func init() {
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+		if PluginEnable() == false {
+			return nil
+		}
 		r.PathPrefix("/public/{share}/").HandlerFunc(NewMiddlewareChain(
-			publicHandler,
-			[]Middleware{SessionStart, SecureHeaders},
+			SiteHandler,
+			[]Middleware{SessionStart, SecureHeaders, cors},
 			*app,
 		)).Methods("GET", "HEAD")
+
+		r.HandleFunc("/public/", NewMiddlewareChain(
+			SharesListHandler,
+			[]Middleware{SecureHeaders, basicAdmin},
+			*app,
+		)).Methods("GET")
 		return nil
 	})
 }
 
-func publicHandler(app *App, w http.ResponseWriter, r *http.Request) {
-	if app.Backend == nil {
+func SiteHandler(app *App, w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	} else if app.Backend == nil {
 		SendErrorResult(w, ErrNotFound)
 		return
 	} else if model.CanRead(app) == false {
@@ -47,12 +60,53 @@ func publicHandler(app *App, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	f, err := app.Backend.Cat(path)
+	if f, err := app.Backend.Cat(path); err == nil {
+		w.Header().Set("Content-Type", GetMimeType(path))
+		io.Copy(w, f)
+		f.Close()
+		return
+	} else if err == ErrNotFound && PluginParamAutoindex() {
+		if files, err := app.Backend.Ls(strings.TrimSuffix(path, "index.html")); err == nil {
+			if strings.HasSuffix(r.URL.Path, "/") == false {
+				http.Redirect(w, r, r.URL.Path+"/", http.StatusSeeOther)
+				return
+			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := TmplAutoindex.Execute(w, map[string]any{
+				"Base":  r.URL.Path,
+				"Files": files,
+			}); err != nil {
+				SendErrorResult(w, err)
+			}
+			return
+		}
+	}
+	SendErrorResult(w, ErrNotFound)
+}
+
+func SharesListHandler(app *App, w http.ResponseWriter, r *http.Request) {
+	shares, err := model.ShareAll()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		SendErrorResult(w, err)
 		return
 	}
-	w.Header().Set("Content-Type", GetMimeType(path))
-	io.Copy(w, f)
-	f.Close()
+	files := make([]os.FileInfo, len(shares))
+	for i, share := range shares {
+		t := int64(-1)
+		if share.Expire != nil {
+			t = *share.Expire
+		}
+		files[i] = File{
+			FName: share.Id,
+			FType: "directory",
+			FTime: t,
+		}
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := TmplAutoindex.Execute(w, map[string]any{
+		"Base":  r.URL.Path,
+		"Files": files,
+	}); err != nil {
+		SendErrorResult(w, err)
+	}
 }
