@@ -17,14 +17,10 @@ const (
 	DEFAULT_SECRET_EXPIRY = 30 * 24 * 3600
 )
 
-var (
-	KEY_FOR_CLIENT_SECRET string
-	KEY_FOR_CODE          string
-)
+var KEY_FOR_CODE string
 
 func init() {
 	Hooks.Register.Onload(func() {
-		KEY_FOR_CLIENT_SECRET = Hash("MCP_SECRET_"+SECRET_KEY, len(SECRET_KEY))
 		KEY_FOR_CODE = Hash("MCP_CODE_"+SECRET_KEY, len(SECRET_KEY))
 	})
 }
@@ -97,12 +93,7 @@ func (this Server) TokenHandler(_ *App, w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Invalid Grant Type", http.StatusBadRequest)
 		return
 	}
-	clientID := r.FormValue("client_id")
-	if r.FormValue("client_secret") != clientSecret(clientID) {
-		http.Error(w, "Invalid Client Credentials", http.StatusUnauthorized)
-		return
-	}
-	token, err := DecryptString(Hash(KEY_FOR_CODE+clientID, len(SECRET_KEY)), r.FormValue("code"))
+	token, err := DecryptString(KEY_FOR_CODE, r.FormValue("code"))
 	if err != nil {
 		http.Error(w, "Invalid authorization code", http.StatusBadRequest)
 		return
@@ -125,8 +116,8 @@ func (this Server) RegisterHandler(ctx *App, w http.ResponseWriter, r *http.Requ
 		"",
 	)
 	clientID := clientName + "." + Hash(clientName+time.Now().String(), 8)
-	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(struct {
 		ClientID                string   `json:"client_id"`
 		ClientSecret            string   `json:"client_secret"`
@@ -138,29 +129,24 @@ func (this Server) RegisterHandler(ctx *App, w http.ResponseWriter, r *http.Requ
 		TokenEndpointAuthMethod string   `json:"token_endpoint_auth_method"`
 	}{
 		ClientID:                clientID,
-		ClientSecret:            clientSecret(clientID),
+		ClientSecret:            Hash(clientID, 32), // unused. eg: chatgpt act as public client
 		ClientIDIssuedAt:        time.Now().Unix(),
 		ClientSecretExpiresAt:   time.Now().Unix() + DEFAULT_SECRET_EXPIRY,
 		ClientName:              clientName,
 		RedirectURIs:            []string{},
 		GrantTypes:              []string{"authorization_code"},
-		TokenEndpointAuthMethod: "client_secret_basic",
+		TokenEndpointAuthMethod: "none",
 	})
-}
-
-func clientSecret(clientID string) string {
-	return Hash(clientID+KEY_FOR_CLIENT_SECRET, 32)
 }
 
 func (this Server) CallbackHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	uri := req.URL.Query().Get("redirect_uri")
 	state := req.URL.Query().Get("state")
-	clientID := req.URL.Query().Get("client_id")
 	if uri == "" {
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
-	code, err := EncryptString(Hash(KEY_FOR_CODE+clientID, len(SECRET_KEY)), ctx.Authorization)
+	code, err := EncryptString(KEY_FOR_CODE, ctx.Authorization)
 	if err != nil {
 		SendErrorResult(res, ErrNotValid)
 		return
