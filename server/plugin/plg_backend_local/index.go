@@ -75,7 +75,19 @@ func (this Local) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (this Local) Cat(path string) (io.ReadCloser, error) {
-	return SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
+	f, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+	fs, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return nil, err
+	} else if fs.IsDir() {
+		f.Close()
+		return nil, ErrNotFound
+	}
+	return f, nil
 }
 
 func (this Local) Mkdir(path string) error {
