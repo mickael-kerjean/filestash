@@ -44,6 +44,23 @@ func ShareList(backend string, path string) ([]Share, error) {
 	return sharedFiles, nil
 }
 
+func ShareAll() ([]Share, error) {
+	rows, err := DB.Query("SELECT id, related_path, params FROM Share")
+	if err != nil {
+		return nil, err
+	}
+	sharedFiles := []Share{}
+	for rows.Next() {
+		var a Share
+		var params []byte
+		rows.Scan(&a.Id, &a.Path, &params)
+		json.Unmarshal(params, &a)
+		sharedFiles = append(sharedFiles, a)
+	}
+	rows.Close()
+	return sharedFiles, nil
+}
+
 func ShareGet(id string) (Share, error) {
 	var p Share
 	stmt, err := DB.Prepare("SELECT id, related_backend, related_path, auth, params FROM share WHERE id = ?")
