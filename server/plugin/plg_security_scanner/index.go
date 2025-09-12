@@ -52,7 +52,6 @@ func init() {
 		// DEFAULT
 		r.HandleFunc("/index.php", WelcomePackHandle)
 		r.PathPrefix("/html/").Handler(http.HandlerFunc(WelcomePackHandle))
-		r.PathPrefix("/public/").Handler(http.HandlerFunc(WelcomePackHandle))
 		r.PathPrefix("/webdav/").Handler(http.HandlerFunc(WelcomePackHandle))
 		r.PathPrefix("/www/").Handler(http.HandlerFunc(WelcomePackHandle))
 		r.PathPrefix("/MAMP/").Handler(http.HandlerFunc(WelcomePackHandle))
