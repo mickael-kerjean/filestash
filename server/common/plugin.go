@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bytes"
 	"io"
 	"io/fs"
 	"net/http"
@@ -221,6 +222,25 @@ func (this Get) CSS() string {
 		s += cssOverride[i]() + "\n"
 	}
 	return s
+}
+
+var favicon struct {
+	binary []byte
+	mime   string
+}
+
+func (this Register) Favicon(binary []byte) {
+	favicon.binary = binary
+	favicon.mime = "image/svg+xml"
+	if bytes.HasPrefix(binary, []byte{0x00, 0x00, 0x01, 0x00}) {
+		favicon.mime = "image/x-icon"
+	} else if bytes.HasPrefix(binary, []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}) {
+		favicon.mime = "image/png"
+	}
+}
+
+func (this Get) Favicon() ([]byte, string) {
+	return favicon.binary, favicon.mime
 }
 
 const OverrideVideoSourceMapper = "/overrides/video-transcoder.js"

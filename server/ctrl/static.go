@@ -84,6 +84,11 @@ func ServeFrontofficeHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 }
 
 func ServeFavicon(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if binary, mime := Hooks.Get.Favicon(); len(binary) > 0 {
+		res.Header().Set("Content-Type", mime)
+		res.Write(binary)
+		return
+	}
 	r, _ := http.NewRequest(http.MethodGet, "/favicon.svg", nil)
 	ServeFile("/assets/logo/")(ctx, res, r)
 }
@@ -533,13 +538,17 @@ func signature() string {
 }
 
 func favicon() string {
-	file, err := WWWPublic.Open("/assets/logo/favicon.svg")
-	if err != nil {
-		return "favicon.ico"
+	f, mime := Hooks.Get.Favicon()
+	if len(f) == 0 {
+		file, err := WWWPublic.Open("/assets/logo/favicon.svg")
+		mime = "image/svg+xml"
+		if err != nil {
+			return "favicon.ico"
+		}
+		f, err = io.ReadAll(file)
+		if err != nil {
+			return "favicon.ico"
+		}
 	}
-	f, err := io.ReadAll(file)
-	if err != nil {
-		return "favicon.ico"
-	}
-	return "data:image/svg+xml;base64," + base64.StdEncoding.EncodeToString(f)
+	return "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(f)
 }

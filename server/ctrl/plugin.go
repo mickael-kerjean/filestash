@@ -44,27 +44,27 @@ func PluginStaticHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		{"", ""},
 	}
 
-	var file io.ReadCloser
-	var err error
+	var (
+		b   []byte
+		err error
+	)
 	head := res.Header()
 	acceptEncoding := req.Header.Get("Accept-Encoding")
 	for _, cfg := range staticConfig {
 		if strings.Contains(acceptEncoding, cfg.ContentType) == false {
 			continue
 		}
-		file, err = model.GetPluginFile(mux.Vars(req)["name"], path+cfg.FileExt)
+		b, err = model.GetPluginFile(mux.Vars(req)["name"], path+cfg.FileExt)
 		if err != nil {
-			continue
+			break
 		}
 		head.Set("Content-Type", mtype)
 		if cfg.ContentType != "" {
 			head.Set("Content-Encoding", cfg.ContentType)
 		}
-		io.Copy(res, file)
-		file.Close()
+		res.Write(b)
 		return
 	}
-
 	SendErrorResult(res, err)
 	return
 }

@@ -43,25 +43,23 @@ func PluginDiscovery() error {
 		for i := 0; i < len(impl.Modules); i++ {
 			switch impl.Modules[i]["type"] {
 			case "css":
-				f, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
-				if err != nil {
-					return err
-				}
-				b, err := io.ReadAll(f)
+				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
 				if err != nil {
 					return err
 				}
 				Hooks.Register.CSS(string(b))
 			case "patch":
-				f, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
-				if err != nil {
-					return err
-				}
-				b, err := io.ReadAll(f)
+				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
 				if err != nil {
 					return err
 				}
 				Hooks.Register.StaticPatch(b)
+			case "favicon":
+				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
+				if err != nil {
+					return err
+				}
+				Hooks.Register.Favicon(b)
 			}
 		}
 		PLUGINS[name] = impl
@@ -69,22 +67,7 @@ func PluginDiscovery() error {
 	return nil
 }
 
-type zrc struct {
-	f io.ReadCloser
-	c io.Closer
-}
-
-func (this zrc) Read(p []byte) (n int, err error) {
-	return this.f.Read(p)
-}
-
-func (this zrc) Close() error {
-	this.f.Close()
-	this.c.Close()
-	return nil
-}
-
-func GetPluginFile(pluginName string, path string) (io.ReadCloser, error) {
+func GetPluginFile(pluginName string, path string) ([]byte, error) {
 	zipReader, err := zip.OpenReader(JoinPath(
 		GetAbsolutePath(PLUGIN_PATH),
 		pluginName+".zip",
@@ -101,7 +84,13 @@ func GetPluginFile(pluginName string, path string) (io.ReadCloser, error) {
 			zipReader.Close()
 			return nil, err
 		}
-		return zrc{f, zipReader}, nil
+		data, err := io.ReadAll(f)
+		f.Close()
+		zipReader.Close()
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
 	}
 	zipReader.Close()
 	return nil, ErrNotFound
