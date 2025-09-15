@@ -42,7 +42,6 @@ async function setup_xdg_open() {
 async function setup_device() {
     const className = "ontouchstart" in window ? "touch-yes" : "touch-no";
     document.body.classList.add(className);
-
     if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
         document.body.classList.add("dark-mode");
     }
@@ -81,16 +80,13 @@ async function setup_polyfill() {
 
 async function verify_origin(config) {
     const origin = config["origin"];
-
     // happy path
     if (!origin) return;
     else if (location.origin === origin) return;
-
     // non happy path
     const u = new URL(origin);
     if (u.host === location.host) return;
     else if (u.hostname === location.hostname) return;
-
     setTimeout(() => {
         location.href = origin + location.pathname + location.search;
     }, 1000);
