@@ -136,20 +136,41 @@ func (this NfsShare) Meta(path string) Metadata {
 
 	if fattr == nil { // happen at the root
 		return Metadata{}
-	} else if isIn(fattr.UID, []uint32{this.uid}) ||
-		isIn(fattr.GID, []uint32{this.gid}) ||
-		isIn(fattr.GID, this.gids) {
-		return Metadata{}
+	}
+	var (
+		r, w  bool
+		perms = fattr.Mode().Perm()
+	)
+	if perms&0002 != 0 {
+		w = true
+	}
+	if perms&0004 != 0 {
+		r = true
+	}
+	if fattr.UID == this.uid {
+		if perms&0400 != 0 {
+			r = true
+		}
+		if perms&0200 != 0 {
+			w = true
+		}
+	}
+	if (fattr.GID == this.gid) || isIn(fattr.GID, this.gids) {
+		if perms&0040 != 0 {
+			r = true
+		}
+		if perms&0020 != 0 {
+			w = true
+		}
 	}
 	return Metadata{
-		CanSee:             NewBool(false),
-		CanCreateFile:      NewBool(false),
-		CanCreateDirectory: NewBool(false),
-		CanRename:          NewBool(false),
-		CanMove:            NewBool(false),
-		CanUpload:          NewBool(false),
-		CanDelete:          NewBool(false),
-		CanShare:           NewBool(false),
+		CanSee:             NewBool(r),
+		CanCreateFile:      NewBool(w),
+		CanCreateDirectory: NewBool(w),
+		CanRename:          NewBool(w),
+		CanMove:            NewBool(w),
+		CanUpload:          NewBool(w),
+		CanDelete:          NewBool(w),
 	}
 }
 
