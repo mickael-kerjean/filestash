@@ -236,6 +236,8 @@ func (this Register) Favicon(binary []byte) {
 		favicon.mime = "image/x-icon"
 	} else if bytes.HasPrefix(binary, []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}) {
 		favicon.mime = "image/png"
+	} else if bytes.HasPrefix(binary, []byte{0x47, 0x49, 0x46, 0x38}) {
+		favicon.mime = "image/vnd.microsoft.icon"
 	}
 }
 
