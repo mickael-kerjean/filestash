@@ -56,7 +56,7 @@ func PluginStaticHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 		b, err = model.GetPluginFile(mux.Vars(req)["name"], path+cfg.FileExt)
 		if err != nil {
-			break
+			continue
 		}
 		head.Set("Content-Type", mtype)
 		if cfg.ContentType != "" {
