@@ -1,6 +1,5 @@
 all:
 	make build_init
-	make build_frontend
 	make build_backend
 
 build_init:
