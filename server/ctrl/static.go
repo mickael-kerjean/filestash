@@ -239,12 +239,19 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 		sign := signature()
 		base := WithBase("/")
 		templateData := map[string]any{
-			"base":        base,
-			"version":     BUILD_REF,
-			"license":     LICENSE,
-			"hash":        sign,
-			"favicon":     favicon(),
-			"bundle_size": len(preload),
+			"base":    base,
+			"version": BUILD_REF,
+			"license": LICENSE,
+			"hash":    sign,
+			"favicon": favicon(),
+			"bundle": func() []string {
+				b := make([]string, len(preload))
+				v := BUILD_REF[0:7] + "::" + sign
+				for i := 0; i < len(preload); i++ {
+					b[i] = fmt.Sprintf("./assets/bundle.js?version=%s&chunk=%d", v, i+1)
+				}
+				return b
+			}(),
 		}
 		calculatedEtag := QuickHash(base+BUILD_REF+LICENSE+sign, 10)
 		head.Set("ETag", calculatedEtag)

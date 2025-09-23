@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <base href="{{ .base }}">
         <meta charset="UTF-8">
+        <title></title>
+        <base href="{{ .base }}">
+        {{- range .bundle }}
+        <link rel="modulepreload" href="{{ . }}" />
+        {{- end }}
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="application-name" content="Filestash">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-        <title></title>
-        <link rel="icon" href="{{ .favicon }}">
         <script>{{ if eq .license "agpl" }}{{ template "loader-cat" }}{{ else }}{{ template "loader-basic" }}{{ end }}</script>
     </head>
     <body>
@@ -34,16 +36,15 @@
 
         <script type="module">
          async function ignitionSequence() {
-             window.VERSION = "{{ slice .version 0 7 }}::{{ .hash }}";
-
              try {
                  if (!HTMLScriptElement.supports?.("importmap")) throw new Error("fastboot is not supported on this platform");
                  {{ load_asset "assets/boot/bundler_init.js" }}
-                 await Promise.all(Array({{ .bundle_size }}).fill().map((_, i) => new Promise((resolve, reject) => document.head.appendChild(Object.assign(document.createElement("script"), {
-                     type: "module",
-                     src: `./assets/bundle.js?version=${window.VERSION}&chunk=${i+1}`,
-                     onload: resolve,
-                     onerror: reject,
+                 await Promise.all([
+                     {{- range .bundle }}
+                     "{{ . }}",
+                     {{- end }}
+                 ].map((src) => new Promise((onload, onerror) => document.head.appendChild(Object.assign(document.createElement("script"), {
+                     type: "module", src, onload, onerror,
                  })))));
                  {{ load_asset "assets/boot/bundler_complete.js" }}
              } catch (err) { console.error(err); }
