@@ -22,10 +22,6 @@ pipeline {
         stage("Build") {
             steps {
                 script {
-                    docker.image("node:20").inside("--user=root") {
-                        sh "apt update -y && apt install -y brotli"
-                        sh "npm install"
-                    }
                     docker.image("golang:1.24-bookworm").inside("--user=root") {
                         sh "apt update -y && apt install -y libbrotli-dev brotli"
                         sh "sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go"
