@@ -26,7 +26,6 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
         qs($page, "component-menubar"),
         buttonDownload(getFilename(), getDownloadUrl()),
     );
-
     const map = window.L.map("map");
     const removeLoader = createLoader(qs($page, "#map"));
     await effect(ajax({ url: getDownloadUrl(), responseType: "arraybuffer" }).pipe(
@@ -51,11 +50,11 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
 }
 
 export async function init($root) {
-    const priors = ($root && [
+    const priors = $root ? [
         $root.classList.add("component_page_viewerpage"),
         loadCSS(import.meta.url, "./component_menubar.css"),
         loadCSS(import.meta.url, "../ctrl_viewerpage.css"),
-    ]);
+    ] : [];
     await Promise.all([
         loadJS(import.meta.url, "../../lib/vendor/leaflet/leaflet.js"),
         loadCSS(import.meta.url, "../../lib/vendor/leaflet/leaflet.css"),
