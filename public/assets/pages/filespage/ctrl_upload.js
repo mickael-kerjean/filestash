@@ -614,10 +614,11 @@ async function processItems(itemList) {
             if (entry === null) continue;
             else if (entry.isFile) {
                 const entrySize = await new Promise((resolve) => {
-                    if (typeof entry.getMetadata === "function") {
-                        entry.getMetadata(({ size }) => resolve(size));
-                    }
-                    else resolve(null); // eg: firefox
+                    if (typeof entry.getMetadata !== "function") return resolve(-1); // eg: firefox
+                    entry.getMetadata(
+                        ({ size }) => resolve(size),
+                        (err) => resolve(-1),
+                    );
                 });
                 task = {
                     type: "file",
