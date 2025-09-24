@@ -143,7 +143,7 @@ export function createThing({
     if (loading) {
         $img.setAttribute("src", IMAGE.LOADING);
         $img.setAttribute("alt", "loading");
-        $link.setAttribute("href", "#");
+        $link.removeAttribute("href");
         $extension.innerHTML = "";
         return $thing;
     } else if (type === "hidden") {
