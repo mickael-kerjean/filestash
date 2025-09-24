@@ -19,8 +19,9 @@
 }
 .formbuilder fieldset legend {
     text-transform: uppercase;
-    font-weight: 200;
-    font-size: 1em;
+    color: var(--light);
+    opacity: 0.9;
+    font-size: 1.1em;
     padding: 0 15px;
 }
 .formbuilder .fileupload-image img {

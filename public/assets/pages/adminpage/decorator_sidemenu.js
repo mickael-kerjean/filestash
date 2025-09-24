@@ -27,17 +27,22 @@ export default function(ctrl) {
                     <ul>
                         <li>
                             <a href="${toHref("/admin/backend")}" data-link>
-                                Backend
+                                Storage
+                            </a>
+                        </li>
+                        <li>
+                            <a href="${toHref("/admin/logs")}" data-link>
+                                Activity
+                            </a>
+                        </li>
+                        <li class=${new URLSearchParams(location.search).has("canary") ? "" : "hidden"}>
+                            <a href="${toHref("/admin/workflow")}" data-link>
+                                Workflow
                             </a>
                         </li>
                         <li>
                             <a href="${toHref("/admin/settings")}" data-link>
                                 Settings
-                            </a>
-                        </li>
-                        <li>
-                            <a href="${toHref("/admin/logs")}" data-link>
-                                Logs
                             </a>
                         </li>
                         <li class="version">

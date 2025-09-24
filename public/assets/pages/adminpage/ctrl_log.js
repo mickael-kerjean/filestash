@@ -10,7 +10,7 @@ import AdminHOC from "./decorator.js";
 export default AdminHOC(async function(render) {
     const $page = createElement(`
         <div class="component_logpage sticky">
-            <h2>Logging</h2>
+            <h2>Events</h2>
             <div class="component_logviewer"></div>
             <div class="component_logger"></div>
 

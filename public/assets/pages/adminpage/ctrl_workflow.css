@@ -1,0 +1,65 @@
+.component_page_workflow .pull-right {
+    float: right;
+}
+.component_page_workflow .box {
+    display: block;
+    background: white;
+    border: 2px solid #ebebec;
+    border-style: solid;
+    border-radius: 5px;
+    margin: 15px 0 0 0;
+    padding: 15px;
+    overflow: visible;
+}
+.component_page_workflow .box.status-unpublished {
+    background: var(--border);
+}
+.component_page_workflow .box h3 {
+    font-weight: 600;
+    margin: 0;
+}
+.component_page_workflow .box h3 span {
+    font-weight: 300;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--light);
+}
+.component_page_workflow button {
+    font-size: 0.9rem;
+    padding: 3px 5px;
+    margin: 0 2px;
+}
+.component_page_workflow .box svg {
+    float: left;
+    width: 25px;
+    margin-right: 10px;
+    fill: var(--light);
+}
+.component_page_workflow button.box {
+    padding: 5px 10px;
+    background: var(--light);
+    color: var(--bg-color);
+}
+.component_page_workflow .box .workflow-summary button {
+    color: var(--light);
+}
+
+.component_page_workflow hr {
+    border: none;
+    height: 30px;
+    margin: 0 0 -15px 0;
+    position: relative;
+}
+.component_page_workflow hr:after {
+    content: " ";
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    border-right: 4px dashed rgba(0, 0, 0, 0.15);
+    border-right-style: dotted;
+}
+
+.component_page_admin .page_container a:hover {
+    opacity: 1;
+}

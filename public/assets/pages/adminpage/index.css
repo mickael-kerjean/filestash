@@ -121,9 +121,10 @@
 }
 .component_page_admin .page_container fieldset {
     background: white;
-    border-color: rgba(0, 0, 0, 0.05);
+    border-color: #ebebec;
     border-style: solid;
-    border-radius: 3px;
+    border-radius: 5px;
+    padding: 10px 15px;
     margin: 15px 0 0 0;
 }
 

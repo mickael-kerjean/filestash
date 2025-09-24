@@ -1,6 +1,7 @@
 const routes = {
     "/admin/backend": "/pages/adminpage/ctrl_backend.js",
     "/admin/settings": "/pages/adminpage/ctrl_settings.js",
+    "/admin/workflow.*": "/pages/adminpage/ctrl_workflow.js",
     "/admin/logs": "/pages/adminpage/ctrl_log.js",
     "/admin/about": "/pages/adminpage/ctrl_about.js",
     "/admin/setup": "/pages/adminpage/ctrl_setup.js",

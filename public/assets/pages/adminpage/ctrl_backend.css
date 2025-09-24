@@ -1,7 +1,8 @@
 .component_dashboard .box-container {
     display: flex;
     flex-wrap: wrap;
-    margin: 0px 0px 20px 0px;
+    margin-left: -3px;
+    margin-right: -3px;
 }
 .component_dashboard .box-container .box-item {
     position: relative;
@@ -29,7 +30,7 @@
     margin: 3px;
     padding: 30px 0;
     text-align: center;
-    color: rgba(0, 0, 0, 0.3);
+    color: var(--light);
     text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.5);
     font-size: 1.1em;
     text-transform: uppercase;
@@ -133,3 +134,47 @@
     position: relative;
     top: 5px;
 }
+
+.component_dashboard [data-bind="idp"] > .formbuilder > fieldset > legend {
+    display: none;
+}
+.component_dashboard [data-bind="attribute-mapping"] > .formbuilder > fieldset > legend {
+    color: var(--color);
+    font-weight: 600;
+    font-size: 1.15rem;
+    display: contents;
+    text-transform: none;
+}
+.component_dashboard [data-bind="attribute-mapping"] > .formbuilder > fieldset > legend:before {
+    content: " ";
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    background: url(data:image/svg+xml;base64,PHN2ZyBjbGFzcz0ic3ZnLWljb24iIHN0eWxlPSJmaWxsOiAjNTc1OTVBIiB2aWV3Qm94PSIwIDAgMTAyNCAxMDI0IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTc2LjgxODM0NyA5ODEuMzMzMzMzYTE4OC4zMzA2NjcgMTg4LjMzMDY2NyAwIDAgMS01Ny42LTEyLjhBNTcuMzQ0IDU3LjM0NCAwIDAgMSAwLjAxODM0NyA5MjQuMjQ1MzMzYTU0LjYxMzMzMyA1NC42MTMzMzMgMCAwIDEgMTkuMi0zOC4wNTg2NjYgOTEuNTIgOTEuNTIgMCAwIDEgMzguNC0xMi44aDMyYzE5LjIgMCAzOC40IDYuMzU3MzMzIDY0IDYuMzU3MzMzYTY5LjQxODY2NyA2OS40MTg2NjcgMCAwIDAgNTEuMi0xMi44IDI5Ny40NzIgMjk3LjQ3MiAwIDAgMCAzOC40LTk1LjE0NjY2N2w4OS42LTM2MS41MTQ2NjZIMjI0LjAxODM0N2wxOS4yLTY5Ljc2aDExNS4ydi0xMi44YTQyOC45NzA2NjcgNDI4Ljk3MDY2NyAwIDAgMSA1MS4yLTE1Mi4yMzQ2NjcgMjQzLjIgMjQzLjIgMCAwIDEgMTAyLjQtOTUuMTQ2NjY3IDM4OC42MDggMzg4LjYwOCAwIDAgMSAxMjEuNi0zOC4wNTg2NjYgMTIxLjQyOTMzMyAxMjEuNDI5MzMzIDAgMCAxIDUxLjIgMTIuOCA1Ny4zNDQgNTcuMzQ0IDAgMCAxIDE5LjIgNDQuNDE2IDg5LjYgODkuNiAwIDAgMS0xMi44IDM4LjA1ODY2NiA5MS41MiA5MS41MiAwIDAgMS0zOC40IDEyLjggMjI5LjIwNTMzMyAyMjkuMjA1MzMzIDAgMCAxLTY0LTEyLjhjLTEyLjggMC0xOS4yLTYuMzU3MzMzLTMyLTYuMzU3MzMzYTY2LjI2MTMzMyA2Ni4yNjEzMzMgMCAwIDAtNDQuOCAzMS43MDEzMzMgNTU0LjY2NjY2NyA1NTQuNjY2NjY3IDAgMCAwLTMyIDk1LjE0NjY2N2wtMjUuNiA4Mi40MzIgMjc1LjItNi4zNTczMzNoNi40YTU1LjQ2NjY2NyA1NS40NjY2NjcgMCAwIDEgMzguNCAxOS4wMjkzMzMgNDM0LjUxNzMzMyA0MzQuNTE3MzMzIDAgMCAxIDE5LjIgNTAuNzMwNjY3bDYuNCAyNS4zODY2NjYgMTkuMi0yNS4zODY2NjZhMzAyLjAzNzMzMyAzMDIuMDM3MzMzIDAgMCAxIDY0LTYzLjQwMjY2NyAxOTkuMTY4IDE5OS4xNjggMCAwIDEgODMuMi0zOC4wNTg2NjcgOTEuNTIgOTEuNTIgMCAwIDEgMzguNCAxMi44IDQyLjExMiA0Mi4xMTIgMCAwIDEgMCA2My40MDI2NjdsLTYuNCA2LjM1NzMzM2MtNi40IDYuMzU3MzMzLTE5LjIgMTIuOC01Ny42IDEyLjhhNzMuMDQ1MzMzIDczLjA0NTMzMyAwIDAgMC01MS4yIDE5LjAyOTMzNEE0MzcuNzE3MzMzIDQzNy43MTczMzMgMCAwIDAgODE5LjIxODM0NyA0OTkuMnYxMi44bDI1LjYgMTMzLjIwNTMzM2MxMi44IDUwLjczMDY2NyA0NC44IDEwMS40NjEzMzMgNjQgMTAxLjQ2MTMzNHMxOS4yLTEyLjggMjUuNi0xOS4wMjkzMzR2LTYuMzU3MzMzYTY3LjQ5ODY2NyA2Ny40OTg2NjcgMCAwIDEgNDQuOC0zOC4wNTg2NjdjMTIuOCAwIDE5LjIgNi4zNTczMzMgMzIgMTIuOGE0OC4yMTMzMzMgNDguMjEzMzMzIDAgMCAxIDEyLjggMzEuNzAxMzM0IDY2LjQ3NDY2NyA2Ni40NzQ2NjcgMCAwIDEtMzIgNTcuMDg4IDk2Ljc2OCA5Ni43NjggMCAwIDEtNzAuNCAyNS4zODY2NjYgMTU3Ljg2NjY2NyAxNTcuODY2NjY3IDAgMCAxLTEwMi40LTM4LjA1ODY2NiAzNTYuNzM2IDM1Ni43MzYgMCAwIDEtNzAuNC0xMjYuODQ4bC02LjQtMjUuMzg2NjY3LTE5LjIgMTkuMDI5MzMzQTY0MS41Nzg2NjcgNjQxLjU3ODY2NyAwIDAgMSA2NDAuMDE4MzQ3IDc0MC4zMDkzMzNhOTYuNzY4IDk2Ljc2OCAwIDAgMS03MC40IDI1LjM4NjY2NyA1OC4zNjggNTguMzY4IDAgMCAxLTQ0LjgtMTkuMDI5MzMzIDU0LjYxMzMzMyA1NC42MTMzMzMgMCAwIDEtMTkuMi0zOC4wNTg2NjcgNDYuMzM2IDQ2LjMzNiAwIDAgMSAxMi44LTM4LjA1ODY2N2M2LjQtMTIuOCAxOS4yLTEyLjggMzItMTIuOGE0NS43Mzg2NjcgNDUuNzM4NjY3IDAgMCAxIDM4LjQgMTkuMDI5MzM0bDYuNCAxMi44IDEyLjgtNi4zNTczMzQgMTkuMi0xOS4wMjkzMzNhMzE4LjU0OTMzMyAzMTguNTQ5MzMzIDAgMCAwIDQ0LjgtNTAuNzMwNjY3bDU3LjYtODIuNDMyLTI1LjYtMTIwLjQ5MDY2Ni0yNTYtNi4zNTczMzQtNzAuNCAyODUuMzk3MzM0YTUzMC41MTczMzMgNTMwLjUxNzMzMyAwIDAgMS0xMDguOCAyMTUuNjM3MzMzQTMxNy43Mzg2NjcgMzE3LjczODY2NyAwIDAgMSA3Ni44MTgzNDcgOTgxLjMzMzMzM3oiICAvPjwvc3ZnPgo=);
+    background-repeat: no-repeat;
+    margin-right: 10px;
+    position: relative;
+    top: 3px;
+}
+.component_dashboard [data-bind="attribute-mapping"] > .formbuilder > fieldset {
+    padding: 15px;
+}
+.component_dashboard [data-bind="attribute-mapping"] > .formbuilder > fieldset > legend:after {
+    content: " ";
+    display: block;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    margin: 10px 0 15px 0;
+}
+/*
+.component_dashboard [data-bind="authentication_middleware"] form fieldset legend {
+    font-weight: bold;
+}
+.component_dashboard [data-bind="authentication_middleware"] form fieldset fieldset legend {
+    background: var(--border);
+    color: var(--light);
+    font-weight: normal;
+    border-radius: 5px;
+    border: 2px solid var(--border);
+    font-size: 1.05rem;
+}
+*/
