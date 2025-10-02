@@ -6,7 +6,7 @@ import { formTmpl } from "../../components/form.js";
 import { generateSkeleton } from "../../components/skeleton.js";
 import ctrlError from "../ctrl_error.js";
 
-import { getState, getBackendAvailable, getBackendEnabled, addBackendEnabled, removeBackendEnabled } from "./ctrl_backend_state.js";
+import { getState, getBackendAvailable, getBackendEnabled, addBackendEnabled, removeBackendEnabled } from "./ctrl_storage_state.js";
 import { save as saveConfig } from "./model_config.js";
 
 import "./component_box-item.js";

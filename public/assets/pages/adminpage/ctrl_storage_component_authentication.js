@@ -11,7 +11,7 @@ import {
     getState,
     getMiddlewareAvailable, getMiddlewareEnabled, toggleMiddleware,
     getBackendAvailable, getBackendEnabled,
-} from "./ctrl_backend_state.js";
+} from "./ctrl_storage_state.js";
 import { renderLeaf } from "./helper_form.js";
 import { get as getAdminConfig, save as saveConfig } from "./model_config.js";
 

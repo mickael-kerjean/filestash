@@ -26,7 +26,7 @@ export default function(ctrl) {
                     <h2>Admin console</h2>
                     <ul>
                         <li>
-                            <a href="${toHref("/admin/backend")}" data-link>
+                            <a href="${toHref("/admin/storage")}" data-link>
                                 Storage
                             </a>
                         </li>
@@ -36,7 +36,7 @@ export default function(ctrl) {
                             </a>
                         </li>
                         <li>
-                            <a href="${toHref("/admin/logs")}" data-link>
+                            <a href="${toHref("/admin/activity")}" data-link>
                                 Activity
                             </a>
                         </li>

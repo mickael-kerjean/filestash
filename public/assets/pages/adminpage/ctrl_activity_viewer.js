@@ -8,7 +8,7 @@ import { get as getLogs, url as getLogUrl } from "./model_log.js";
 export default async function(render) {
     const $page = createElement(`
         <div>
-            <style>${await CSS(import.meta.url, "ctrl_log_viewer.css")}</style>
+            <style>${await CSS(import.meta.url, "ctrl_activity_viewer.css")}</style>
             <pre style="height:350px; max-height: 350px">…</pre>
             <a href="${getLogUrl()}" download="${logname()}">
                 <button class="component_button primary">Download</button>

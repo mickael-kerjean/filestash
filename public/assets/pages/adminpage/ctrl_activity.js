@@ -1,9 +1,9 @@
 import { createElement, createRender } from "../../lib/skeleton/index.js";
 
 import { initConfig } from "./model_config.js";
-import componentLogForm from "./ctrl_log_form.js";
-import componentLogViewer from "./ctrl_log_viewer.js";
-import componentAuditor from "./ctrl_log_audit.js";
+import componentLogForm from "./ctrl_activity_form.js";
+import componentLogViewer from "./ctrl_activity_viewer.js";
+import componentAuditor from "./ctrl_activity_audit.js";
 import transition from "./animate.js";
 import AdminHOC from "./decorator.js";
 
