@@ -1,31 +1,33 @@
-import { createElement, createFragment } from "../../lib/skeleton/index.js";
+import { createElement, createFragment, navigate } from "../../lib/skeleton/index.js";
+import rxjs, { effect, onClick } from "../../lib/rx.js";
 import { animate, slideXIn, slideXOut } from "../../lib/animate.js";
-import { qs, qsa } from "../../lib/dom.js";
+import { qs, qsa, safe } from "../../lib/dom.js";
 import { createForm, mutateForm } from "../../lib/form.js";
 import { formTmpl } from "../../components/form.js";
 
-import { renderLeaf, useForm$, formObjToJSON$ } from "./helper_form.js";
+import { workflowUpsert, workflowDelete, workflowGet } from "./model_workflow.js";
 import transition from "./animate.js";
 
-// TODO: auto id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-
 export default async function(render, { workflow, triggers, actions }) {
+    const { id } = workflow;
     const $page = createElement(`
         <div class="component_page_workflow">
-            <h2 class="ellipsis">
+            <h2 class="ellipsis flex">
                 <a href="./admin/workflow" data-link>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style="width:20px;fill:var(--color);">
                         <path d="M169.4 297.4C156.9 309.9 156.9 330.2 169.4 342.7L361.4 534.7C373.9 547.2 394.2 547.2 406.7 534.7C419.2 522.2 419.2 501.9 406.7 489.4L237.3 320L406.6 150.6C419.1 138.1 419.1 117.8 406.6 105.3C394.1 92.8 373.8 92.8 361.3 105.3L169.3 297.3z"/>
                     </svg>
                 </a>
-                ${workflow.name}
+                <form class="full-width"><input type="text" value="${safe(workflow.name)}" name="name" /></form>
             </h2>
 
             <div data-bind="trigger"></div>
             <div data-bind="actions"></div>
             <div data-bind="add"></div>
 
-            <h2 class="ellipsis hidden">History</h2>
+            <h2 class="ellipsis">Activity</h2>
+            <pre data-bind="history" class="scroll-y" style="max-height:300px">...</pre>
+
             <style>.component_page_admin .page_container h2:after { display: none; }</style>
         </div>
     `);
@@ -33,12 +35,12 @@ export default async function(render, { workflow, triggers, actions }) {
 
     // feature1: setup trigger
     const $trigger = qs($page, `[data-bind="trigger"]`);
-    $trigger.appendChild(await createTrigger({ workflow, triggers }));
+    $trigger.appendChild(await createTrigger({ trigger: workflow.trigger, triggers }));
 
     // feature2: setup actions
     const $actions = qs($page, `[data-bind="actions"]`);
-    for (let i=0; i<workflow.actions.length; i++) {
-        $actions.appendChild(await createAction({ action: workflow.actions[i], actions }))
+    for (let i=0; i<(workflow.actions || []).length; i++) {
+        $actions.appendChild(await createAction({ action: workflow.actions[i], actions }));
     }
 
     // feature3: add a step
@@ -46,7 +48,7 @@ export default async function(render, { workflow, triggers, actions }) {
     $add.appendChild(await createAdd({
         workflow,
         actions,
-        createAction: async ({ action, actions }) => {
+        createAction: async({ action, actions }) => {
             const $action = await createAction({ action, actions });
             qs($action, `button[alt="delete"]`).onclick = (e) => removeAction(e.target);
             $actions.appendChild($action);
@@ -55,7 +57,43 @@ export default async function(render, { workflow, triggers, actions }) {
     }));
 
     // feature4: save button
-    $page.parentElement.appendChild(createSave());
+    effect(rxjs.of(createSave({ withDelete: !!id })).pipe(
+        rxjs.tap(($fab) => $page.parentElement.appendChild($fab)),
+        rxjs.mergeMap(($fab) => onClick(qs($fab, "button"))),
+        rxjs.tap(($button) => {
+            $button.setAttribute("disabled", "true");
+            $button.firstElementChild.classList.add("hidden");
+            $button.firstElementChild.nextElementSibling.classList.remove("hidden");
+        }),
+        rxjs.mergeMap(($button) => {
+            let action = rxjs.of(null);
+            let redirect = !id;
+            const workflow = formData($page, { id });
+            if (workflow.published === "delete") {
+                if (window.confirm("delete this workflow?")) {
+                    action = workflowDelete(id);
+                    redirect = true;
+                }
+            } else {
+                workflow.published = workflow.published === "publish";
+                action = workflowUpsert(workflow);
+            }
+            const start = new Date();
+            return action.pipe(
+                rxjs.switchMap((result) => {
+                    const elapsed = new Date() - start;
+                    return rxjs.of(result).pipe(rxjs.delay(Math.max(0, 400 - elapsed)));
+                }),
+                rxjs.finalize(() => {
+                    $button.removeAttribute("disabled");
+                    $button.firstElementChild.classList.remove("hidden");
+                    $button.firstElementChild.nextElementSibling.classList.add("hidden");
+                    if (redirect) navigate(window.location.pathname);
+                    else history.replaceState(null, "", window.location.pathname + "?specs=" + encodeURIComponent(btoa(JSON.stringify(workflow))));
+                }),
+            );
+        }),
+    ));
 
     // feature5: toggle form visibility
     qsa($page, `[data-bind="form"]`).forEach(($form) => {
@@ -67,46 +105,92 @@ export default async function(render, { workflow, triggers, actions }) {
     qsa($page, `button[alt="delete"]`).forEach(($delete) => $delete.onclick = (e) => {
         removeAction(e.target);
     });
+
+    // feature7: history
+    const $history = qs($page, `[data-bind="history"]`);
+    if (!workflow.id) {
+        $history.previousElementSibling.remove();
+        $history.remove();
+    } else effect(rxjs.of(null).pipe(
+        rxjs.mergeMap(() => workflowGet(workflow.id)),
+        rxjs.tap(({ history }) => {
+            if (history.length === 0) $history.innerText = "Ø";
+            else $history.innerText = history.map(({ id, created_at, status, steps }) => {
+                const [date, time] = created_at.split(" ");
+                let msg = `date=${safe(date)} time=${safe(time)} id=${safe(String(id))} status=${safe(status)}`;
+                try { steps = JSON.parse(steps); }
+                catch (err) { steps = []; }
+                if (steps.length > 0) {
+                    const s = new Array(steps.length);
+                    for (let i = 0; i < steps.length; i++) {
+                        const { name, done = false } = steps[i];
+                        const out = name.split("/")[1] || "na";
+                        if (status === "FAILURE" && !done) s[i] = out + "[✗]";
+                        else if (status === "RUNNING" && !done && (steps[i-1] ? steps[i-1].done : true)) s[i] = out + "[○]";
+                        else if (["RUNNING", "PENDING"].indexOf(status) !== -1 && done) s[i] = out + "[✓]";
+                        else if (["READY", "CLAIMED"].indexOf(status) !== -1) s[i] = out + "[○]";
+                        else s[i] = out;
+                    }
+                    msg += "[" + s.join(" ➜ ") + "]";
+                }
+                return msg;
+            }).join("\n");
+        }),
+        rxjs.catchError(() => rxjs.of(null)),
+        rxjs.delay(5000),
+        rxjs.repeat(),
+    ));
 }
 
-async function createTrigger({ workflow, triggers }) {
-    const trigger = triggers.find(({ name }) => name === workflow.trigger.name);
-    if (!trigger) return createElement(`<div class="box disabled">Trigger not found "${workflow.trigger.name}"</div>`);
-    const { title, icon } = trigger;
+async function createTrigger({ trigger, triggers }) {
+    const currentTrigger = triggers.find(({ name }) => name === trigger.name);
+    if (!currentTrigger) return createElement(`<div class="box disabled">Trigger not found "${safe(trigger.name)}"</div>`);
+    const { title, icon } = currentTrigger;
     const $trigger = createFragment(`
         <div class="box disabled">
             ${icon}
             <h3 class="ellipsis no-select">
-                ${title}
+                &nbsp;${safe(title)}
                 <button alt="configure" class="pull-right"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M259.1 73.5C262.1 58.7 275.2 48 290.4 48L350.2 48C365.4 48 378.5 58.7 381.5 73.5L396 143.5C410.1 149.5 423.3 157.2 435.3 166.3L503.1 143.8C517.5 139 533.3 145 540.9 158.2L570.8 210C578.4 223.2 575.7 239.8 564.3 249.9L511 297.3C511.9 304.7 512.3 312.3 512.3 320C512.3 327.7 511.8 335.3 511 342.7L564.4 390.2C575.8 400.3 578.4 417 570.9 430.1L541 481.9C533.4 495 517.6 501.1 503.2 496.3L435.4 473.8C423.3 482.9 410.1 490.5 396.1 496.6L381.7 566.5C378.6 581.4 365.5 592 350.4 592L290.6 592C275.4 592 262.3 581.3 259.3 566.5L244.9 496.6C230.8 490.6 217.7 482.9 205.6 473.8L137.5 496.3C123.1 501.1 107.3 495.1 99.7 481.9L69.8 430.1C62.2 416.9 64.9 400.3 76.3 390.2L129.7 342.7C128.8 335.3 128.4 327.7 128.4 320C128.4 312.3 128.9 304.7 129.7 297.3L76.3 249.8C64.9 239.7 62.3 223 69.8 209.9L99.7 158.1C107.3 144.9 123.1 138.9 137.5 143.7L205.3 166.2C217.4 157.1 230.6 149.5 244.6 143.4L259.1 73.5zM320.3 400C364.5 399.8 400.2 363.9 400 319.7C399.8 275.5 363.9 239.8 319.7 240C275.5 240.2 239.8 276.1 240 320.3C240.2 364.5 276.1 400.2 320.3 400z"/></svg></button>
             </h3>
-            <div data-bind="form"></div>
+            <form data-bind="form" data-key="trigger" data-step="${safe(trigger.name)}"></form>
         </div><hr>
     `);
-    const $form = await createForm(trigger.specs, formTmpl());
+    const $form = await createForm(
+        mutateForm(currentTrigger.specs, trigger.params || {}),
+        formTmpl(),
+    );
     qs($trigger, `[data-bind="form"]`).appendChild($form);
     return $trigger;
 }
 
 async function createAction({ action, actions }) {
     const selected = actions.find((_action) => _action.name === action.name);
-    if (!selected) return createElement(`<div class="box disabled">Action not found "${action.name}"</div>`);
-    const subtitle = selected.subtitle ? `({{ ${action.subtitle} }})` : "";
+    if (!selected) return createElement(`
+        <div>
+            <div class="box disabled">Action not found "${safe(action.name)}"</div>
+            <hr>
+        </div>
+    `);
+    const subtitle = selected.subtitle && action.params && action.params[selected.subtitle] ? `(${safe(action.params[selected.subtitle])})` : "";
     const $action = createElement(`
         <div>
             <div class="box">
                 ${selected.icon}
                 <h3 class="ellipsis no-select">
-                    ${selected.title} <span>${subtitle}</span>
+                    &nbsp;${safe(selected.title)} <span>${safe(subtitle)}</span>
                     <button alt="delete" class="pull-right"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M183.1 137.4C170.6 124.9 150.3 124.9 137.8 137.4C125.3 149.9 125.3 170.2 137.8 182.7L275.2 320L137.9 457.4C125.4 469.9 125.4 490.2 137.9 502.7C150.4 515.2 170.7 515.2 183.2 502.7L320.5 365.3L457.9 502.6C470.4 515.1 490.7 515.1 503.2 502.6C515.7 490.1 515.7 469.8 503.2 457.3L365.8 320L503.1 182.6C515.6 170.1 515.6 149.8 503.1 137.3C490.6 124.8 470.3 124.8 457.8 137.3L320.5 274.7L183.1 137.4z"/></svg></button>
                     <button alt="configure" class="pull-right ${Object.keys(selected.specs).length === 0 ? "hidden": ""}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M259.1 73.5C262.1 58.7 275.2 48 290.4 48L350.2 48C365.4 48 378.5 58.7 381.5 73.5L396 143.5C410.1 149.5 423.3 157.2 435.3 166.3L503.1 143.8C517.5 139 533.3 145 540.9 158.2L570.8 210C578.4 223.2 575.7 239.8 564.3 249.9L511 297.3C511.9 304.7 512.3 312.3 512.3 320C512.3 327.7 511.8 335.3 511 342.7L564.4 390.2C575.8 400.3 578.4 417 570.9 430.1L541 481.9C533.4 495 517.6 501.1 503.2 496.3L435.4 473.8C423.3 482.9 410.1 490.5 396.1 496.6L381.7 566.5C378.6 581.4 365.5 592 350.4 592L290.6 592C275.4 592 262.3 581.3 259.3 566.5L244.9 496.6C230.8 490.6 217.7 482.9 205.6 473.8L137.5 496.3C123.1 501.1 107.3 495.1 99.7 481.9L69.8 430.1C62.2 416.9 64.9 400.3 76.3 390.2L129.7 342.7C128.8 335.3 128.4 327.7 128.4 320C128.4 312.3 128.9 304.7 129.7 297.3L76.3 249.8C64.9 239.7 62.3 223 69.8 209.9L99.7 158.1C107.3 144.9 123.1 138.9 137.5 143.7L205.3 166.2C217.4 157.1 230.6 149.5 244.6 143.4L259.1 73.5zM320.3 400C364.5 399.8 400.2 363.9 400 319.7C399.8 275.5 363.9 239.8 319.7 240C275.5 240.2 239.8 276.1 240 320.3C240.2 364.5 276.1 400.2 320.3 400z"/></svg></button>
                 </h3>
-                <div data-bind="form"></div>
+                <form data-bind="form" data-key="actions" data-step="${safe(action.name)}" data-array></form>
             </div>
             <hr>
         </div>
     `);
-    const $form = await createForm(selected.specs, formTmpl());
+    const $form = await createForm(
+        mutateForm(selected.specs, action.params || {}),
+        formTmpl(),
+    );
     qs($action, `[data-bind="form"]`).appendChild($form);
     return $action;
 }
@@ -130,27 +214,16 @@ async function createAdd({ actions, createAction }) {
             </button>
         </div>
     `);
-    const categories = actions.reduce((acc, { name }) => {
-        const s = name.split("/");
-        if (!acc[s[0]]) acc[s[0]] = [];
-        acc[s[0]].push(name);
-        return acc;
-    }, {});
     const $categories = createElement(`
-        <div class="hidden flex">
-            `+ Object.keys(categories).map((category) => `
-                 <button class="item">${category}</button>
-                 `+categories[category].map((subcategory) => `
-                     <button class="sub" style="background:var(--border)" data-name="${subcategory}">${subcategory.split("/")[1]}</button>
-                 `).join("")+`
-            `).join("")+`
+        <div class="hidden flex no-select">
+            `+actions.map(({ name }) => `<button data-name="${safe(name)}">${safe(name)}</button>`).join("")+`
         </div>
     `);
     const $item = qs($el, ".item");
     const width = 45;
     let rotate = 0;
     $el.appendChild($categories);
-    $item.onclick = async (e) => {
+    $item.onclick = async(e) => {
         rotate += 45;
         $item.firstElementChild.style.transform = `rotate(${rotate}deg)`;
         if (rotate % 90 === 0) {
@@ -175,7 +248,7 @@ async function createAdd({ actions, createAction }) {
         }
     };
 
-    qsa($el, ".sub").forEach(($action) => $action.onclick = () => {
+    qsa($el, "[data-name]").forEach(($action) => $action.onclick = () => {
         const action = actions.find(({ name }) => name === $action.getAttribute("data-name"));
         if (action) createAction({ action, actions });
         $item.onclick();
@@ -183,17 +256,21 @@ async function createAdd({ actions, createAction }) {
     return $el;
 }
 
-function createSave() {
+function createSave({ withDelete = true }) {
     const $fab = createElement(`
-        <div class="workflow-fab flex no-select">
-            <select>
+        <form class="workflow-fab flex no-select">
+            <select name="published">
                 <option>publish</option>
                 <option>unpublish</option>
+                ${withDelete ? "<option>delete</option>" : ""}
             </select>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                <path d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 237.3C544 220.3 537.3 204 525.3 192L448 114.7C436 102.7 419.7 96 402.7 96L160 96zM192 192C192 174.3 206.3 160 224 160L384 160C401.7 160 416 174.3 416 192L416 256C416 273.7 401.7 288 384 288L224 288C206.3 288 192 273.7 192 256L192 192zM320 352C355.3 352 384 380.7 384 416C384 451.3 355.3 480 320 480C284.7 480 256 451.3 256 416C256 380.7 284.7 352 320 352z"/>
-            </svg>
-        </div>
+            <button style="display:contents;" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                    <path d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 237.3C544 220.3 537.3 204 525.3 192L448 114.7C436 102.7 419.7 96 402.7 96L160 96zM192 192C192 174.3 206.3 160 224 160L384 160C401.7 160 416 174.3 416 192L416 256C416 273.7 401.7 288 384 288L224 288C206.3 288 192 273.7 192 256L192 192zM320 352C355.3 352 384 380.7 384 416C384 451.3 355.3 480 320 480C284.7 480 256 451.3 256 416C256 380.7 284.7 352 320 352z"/>
+                </svg>
+                <component-icon class="hidden" name="loading"></component-icon>
+            </button>
+        </form>
     `);
     animate($fab, { time: 100, keyframes: slideXIn(5) });
     return $fab;
@@ -206,7 +283,7 @@ function withToggle($form) {
         const shouldOpen = $form.classList.contains("hidden");
         if (shouldOpen) {
             animate($form, {
-                time: 120,
+                time: Math.max(120, height/2),
                 keyframes: [{ height: "0px" }, { height: `${height}px` }],
             });
             $form.classList.remove("hidden");
@@ -218,4 +295,35 @@ function withToggle($form) {
             });
         }
     };
+}
+
+function formData($page, { id }) {
+    const result = {
+        id: id || Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    };
+    qsa($page.parentElement, "form").forEach(($form) => {
+        const params = [...new FormData($form)].reduce((acc, [key, value]) => {
+            if (value) acc[key] = value;
+            return acc;
+        }, {});
+        const key = $form.getAttribute("data-key");
+        if (key) {
+            const name = $form.getAttribute("data-step");
+            if ($form.hasAttribute("data-array")) {
+                if (!result[key]) result[key] = [];
+                const step = { name };
+                if (Object.keys(params).length > 0) step.params = params;
+                result[key].push(step);
+            } else {
+                const step = { name };
+                if (Object.keys(params).length > 0) step.params = params;
+                result[key] = step;
+            }
+        } else {
+            Object.keys(params).forEach((key) => {
+                result[key] = params[key];
+            });
+        }
+    });
+    return result;
 }

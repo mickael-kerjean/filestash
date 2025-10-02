@@ -5,12 +5,15 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
+	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/mickael-kerjean/filestash"
 	"github.com/mickael-kerjean/filestash/server"
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/ctrl"
 	"github.com/mickael-kerjean/filestash/server/model"
+	"github.com/mickael-kerjean/filestash/server/workflow"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 	_ "github.com/mickael-kerjean/filestash/server/plugin"
 )
 
@@ -22,6 +25,7 @@ func Run(router *mux.Router, app App) {
 	Log.Info("Filestash %s starting", APP_VERSION)
 	check(InitLogger(), "Logger init failed. err=%s")
 	check(InitConfig(), "Config init failed. err=%s")
+	check(workflow.Init(), "Worklow Initialisation failure. err=%s")
 	check(model.PluginDiscovery(), "Plugin Discovery failed. err=%s")
 	check(ctrl.InitPluginList(embed.EmbedPluginList, model.PLUGINS), "Plugin Initialisation failed. err=%s")
 	if len(Hooks.Get.Starter()) == 0 {

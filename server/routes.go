@@ -13,6 +13,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/ctrl"
 	. "github.com/mickael-kerjean/filestash/server/middleware"
+	. "github.com/mickael-kerjean/filestash/server/workflow"
 )
 
 func Build(r *mux.Router, a App) {
@@ -39,6 +40,10 @@ func Build(r *mux.Router, a App) {
 	middlewares = []Middleware{ApiHeaders, AdminOnly, SecureOrigin, PluginInjector}
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigHandler, middlewares, a)).Methods("GET")
 	admin.HandleFunc("/config", NewMiddlewareChain(PrivateConfigUpdateHandler, middlewares, a)).Methods("POST")
+	admin.HandleFunc("/workflow", NewMiddlewareChain(WorkflowAll, middlewares, a)).Methods("GET")
+	admin.HandleFunc("/workflow/{workflowID}", NewMiddlewareChain(WorkflowGet, middlewares, a)).Methods("GET")
+	admin.HandleFunc("/workflow", NewMiddlewareChain(WorkflowUpsert, middlewares, a)).Methods("POST")
+	admin.HandleFunc("/workflow", NewMiddlewareChain(WorkflowDelete, middlewares, a)).Methods("DELETE")
 	admin.HandleFunc("/middlewares/authentication", NewMiddlewareChain(AdminAuthenticationMiddleware, middlewares, a)).Methods("GET")
 	admin.HandleFunc("/audit", NewMiddlewareChain(FetchAuditHandler, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{IndexHeaders, AdminOnly, PluginInjector}

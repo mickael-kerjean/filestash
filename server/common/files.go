@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/bmatcuk/doublestar/v4"
 )
 
 var MOCK_CURRENT_DIR string
@@ -104,6 +106,11 @@ func SafeOsRename(from string, to string) error {
 		return ErrFilesystemError
 	}
 	return processError(os.Rename(from, to))
+}
+
+func GlobMatch(pattern, name string) bool {
+	m, _ := doublestar.Match(pattern, name)
+	return m
 }
 
 func safePath(path string) error {

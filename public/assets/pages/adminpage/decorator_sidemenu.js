@@ -31,13 +31,13 @@ export default function(ctrl) {
                             </a>
                         </li>
                         <li>
-                            <a href="${toHref("/admin/logs")}" data-link>
-                                Activity
-                            </a>
-                        </li>
-                        <li class=${new URLSearchParams(location.search).has("canary") ? "" : "hidden"}>
                             <a href="${toHref("/admin/workflow")}" data-link>
                                 Workflow
+                            </a>
+                        </li>
+                        <li>
+                            <a href="${toHref("/admin/logs")}" data-link>
+                                Activity
                             </a>
                         </li>
                         <li>

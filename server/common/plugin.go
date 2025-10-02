@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -284,6 +285,30 @@ func (this Register) Metadata(m IMetadata) {
 
 func (this Get) Metadata() IMetadata {
 	return meta
+}
+
+var workflow_triggers []ITrigger
+
+func (this Register) WorkflowTrigger(t ITrigger) {
+	workflow_triggers = append(workflow_triggers, t)
+	sort.Slice(workflow_triggers, func(i, j int) bool {
+		return workflow_triggers[i].Manifest().Order < workflow_triggers[j].Manifest().Order
+	})
+}
+func (this Get) WorkflowTriggers() []ITrigger {
+	return workflow_triggers
+}
+
+var workflow_actions []IAction
+
+func (this Register) WorkflowAction(a IAction) {
+	workflow_actions = append(workflow_actions, a)
+	sort.Slice(workflow_actions, func(i, j int) bool {
+		return workflow_actions[i].Manifest().Order < workflow_actions[j].Manifest().Order
+	})
+}
+func (this Get) WorkflowActions() []IAction {
+	return workflow_actions
 }
 
 func init() {

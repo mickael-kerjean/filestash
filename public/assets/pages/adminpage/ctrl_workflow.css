@@ -6,6 +6,16 @@
     padding: 3px 5px;
     margin: 0 2px;
 }
+.component_page_workflow h2 input {
+    padding: 0 0 0 20px;
+    border: none;
+    font-family: inherit;
+    color: inherit;
+    font-size: inherit;
+    width: 100%;
+    position: relative;
+    bottom: 2px;
+}
 .component_page_workflow .box {
     display: block;
     background: white;
@@ -25,7 +35,7 @@
 }
 .component_page_workflow .box h3 span {
     font-weight: 300;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     font-style: italic;
     color: var(--light);
 }
@@ -33,6 +43,7 @@
     float: left;
     width: 25px;
     fill: var(--light);
+    opacity: 0.8;
 }
 .component_page_workflow .box .workflow-summary button {
     color: var(--light);
@@ -56,10 +67,10 @@
     overflow: hidden;
 }
 .component_page_workflow .box [data-bind="form"] .formbuilder {
-    padding: 10px;
+    padding: 10px 10px 0px 10px;
     border-radius: 5px;
     margin-top: 10px;
-    border: 2px solid #ebebec;
+    border-top: 2px solid #ebebec;
     background: transparent;
 }
 .component_page_workflow .box.disabled [data-bind="form"] .formbuilder {
@@ -88,6 +99,13 @@
     fill: var(--light);
     padding: 5px;
     border-radius: 15px;
+}
+
+/* list page */
+.component_page_workflow h3.empty {
+    padding: 30px;
+    border: 2px dashed var(--light);
+    color: var(--light);
 }
 
 /* Workflow creation modal */
@@ -158,10 +176,13 @@
     border-bottom-left-radius: 10px;
     font-weight: 600;
 }
-.workflow-fab svg {
+.workflow-fab button > * {
     height: 30px;
     fill: var(--bg-color);
     padding: 7px;
+}
+.workflow-fab button > component-icon img {
+    filter: brightness(0) invert(1);
 }
 
 /* ADD BUTTON */
@@ -183,8 +204,10 @@
     color: var(--bg-color);
     font-family: monospace;
     text-transform: uppercase;
-    padding-left: 0;
-    padding-right: 0;
+    background:var(--border);
+    font-size: 0.85rem;
+    letter-spacing: -0.5px;
+    margin-right: 5px;
 }
 .component_page_workflow [data-bind="add"] .box svg {
     margin-right: 0;
@@ -199,9 +222,7 @@
     backdrop-filter: blur(2px);
     padding: 3px 8px;
 }
-.component_page_workflow [data-bind="add"] .box .sub {
-    padding: 0 5px;
-}
 .component_page_workflow [data-bind="add"] .box > .flex {
     padding: 0 5px 0 0;
+    margin-left: -5px;
 }

@@ -72,6 +72,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59 // indirect
 	github.com/beevik/etree v1.4.0 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.9.1 // indirect
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
 	github.com/calebcase/tmpfile v1.0.3 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
