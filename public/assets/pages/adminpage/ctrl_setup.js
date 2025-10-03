@@ -54,9 +54,9 @@ function setupHOC(ctrlWrapped) {
 function componentStep1(render) {
     const $page = createElement(`
         <div id="step1">
-            <h4>Admin Password</h4>
+            <h4>Welcome Aboard, Captain!</h4>
             <div>
-                <p>Create your instance admin password: </p>
+                <p>First thing first, setup your password: </p>
                 <form>
                     <div class="input_group">
                         <input type="password" name="password" placeholder="Password" class="component_input" autocomplete autofocus>
@@ -114,7 +114,7 @@ function componentStep2(render) {
         <div id="step2">
             <h4>
                 <component-icon name="arrow_left" data-bind="previous"></component-icon>
-                Summary
+                You're at the Helm now
             </h4>
             <div data-bind="dependencies"></div>
             <style>${cssHideMenu}</style>

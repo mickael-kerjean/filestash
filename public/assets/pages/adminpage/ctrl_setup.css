@@ -9,7 +9,6 @@
     padding: 20px 0 0px 0;
 }
 .component_setup h4 .component_icon {
-    vertical-align: text-top;
     width: 1.3em;
     cursor: pointer;
 }
@@ -17,8 +16,8 @@
     opacity: 0;
 }
 .component_setup #step1 p {
-    font-size: 1.1em;
-    margin-bottom: 10px;
+    font-size: 1.05em;
+    margin-bottom: 5px;
 }
 .component_setup #step1 form {
     max-width: 400px;

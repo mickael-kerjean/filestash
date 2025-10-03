@@ -1,6 +1,6 @@
 .component_menu_sidebar {
     height: 100vh;
-    background: linear-gradient(#2c3032, #313538);
+    background: linear-gradient(#232628, #2c3032);
     width: 250px;
     border-right: 2px solid var(--color);
     padding: 50px 0px 0px 40px;
