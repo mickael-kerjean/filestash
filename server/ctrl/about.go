@@ -75,13 +75,13 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		<tr>
           <td> Plugins </td>
           <td>
-            STANDARD[<span class="small">{{ renderPlugin (index .Plugins 0) .CommitHash }}</span>]
+            STANDARD [<span class="small">{{ renderPlugin (index .Plugins 0) .CommitHash }}</span>]
             <br/>
-            APPS[<span class="small">{{ renderPlugin (index .Plugins 3) "" }}</span>]
+            APPS [<span class="small">{{ renderPlugin (index .Plugins 3) "" }}</span>]
             <br/>
-            ENTERPRISE[<span class="small">{{ renderPlugin (index .Plugins 1) "" }}</span>]
+            ENTERPRISE [<span class="small">{{ renderPlugin (index .Plugins 1) "" }}</span>]
             <br/>
-            CUSTOM[<span class="small">{{ renderPlugin (index .Plugins 2) "" }}</span>]
+            CUSTOM [<span class="small">{{ renderPlugin (index .Plugins 2) "" }}</span>]
           </td>
         </tr>
 	  </table>
