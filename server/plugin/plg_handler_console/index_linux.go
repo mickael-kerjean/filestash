@@ -49,19 +49,17 @@ var console_enable = func() bool {
 }
 
 func init() {
-	Hooks.Register.Onload(func() {
+	Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error {
 		if console_enable() == false {
-			return
+			return ErrNotFound
 		}
-		Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error {
-			r.PathPrefix("/admin/tty/").Handler(
-				AuthBasic(
-					func() (string, string) { return "admin", Config.Get("auth.admin").String() },
-					TTYHandler("/admin/tty/"),
-				),
-			)
-			return nil
-		})
+		r.PathPrefix("/admin/tty/").Handler(
+			AuthBasic(
+				func() (string, string) { return "admin", Config.Get("auth.admin").String() },
+				TTYHandler("/admin/tty/"),
+			),
+		)
+		return nil
 	})
 }
 
