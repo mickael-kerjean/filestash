@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	VideoCachePath = "data/cache/video-thumbnail/"
+	VideoCacheTmpPath = "video-thumbnail/"
 )
 
 var plugin_enable = func() bool {
@@ -43,7 +43,7 @@ func init() {
 		if plugin_enable() == false {
 			return
 		}
-		cachePath := GetAbsolutePath(VideoCachePath)
+		cachePath := GetAbsolutePath(TMP_PATH, VideoCacheTmpPath)
 		os.RemoveAll(cachePath)
 		os.MkdirAll(cachePath, os.ModePerm)
 
@@ -63,7 +63,7 @@ func (this *ffmpegThumbnail) Generate(reader io.ReadCloser, ctx *App, res *http.
 			"&thumbnail=true", "&origin=plg_video_thumbnail", 1,
 		)
 		cacheName = "thumb_" + GenerateID(ctx.Session) + "_" + QuickHash(req.URL.Query().Get("path"), 10) + ".jpeg"
-		cachePath = GetAbsolutePath(VideoCachePath, cacheName)
+		cachePath = GetAbsolutePath(TMP_PATH, VideoCacheTmpPath, cacheName)
 	)
 
 	reader.Close()
