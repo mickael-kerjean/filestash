@@ -1,0 +1,29 @@
+.component_stats {
+    clear: both;
+}
+.component_stats .chart {
+    display: flex;
+    align-items: flex-end;
+    height: 100px;
+}
+.component_stats .chart .bar {
+    display: flex;
+    flex: 1;
+    cursor: pointer;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom: 1px solid var(--light);
+
+    background: var(--border);
+    border: 2px solid var(--border);
+}
+.component_stats .chart .bar[title="0"], .component_stats .chart .bar[title="1"], .component_stats .chart .bar[title="2"] {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+.component_stats .legend {
+    display: flex;
+    justify-content: space-between;
+    color: var(--light);
+    font-size: 0.8rem;
+}
