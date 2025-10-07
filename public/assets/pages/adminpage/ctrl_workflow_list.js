@@ -24,7 +24,11 @@ export default async function(render, { workflows, triggers }) {
     if (workflows.length === 0) $workflows.appendChild(createEmptyWorkflow());
 
     effect(onClick(qs($page, "h2 > a")).pipe(
-        rxjs.tap((a) => ctrlModal(createModal(), { triggers })),
+        rxjs.tap(($a) => animate($a, {
+            time: 300,
+            keyframes: [{ transform: "rotate(0)" }, { transform: `rotate(90deg)` }],
+        })),
+        rxjs.tap(() => ctrlModal(createModal(), { triggers })),
     ));
 }
 
