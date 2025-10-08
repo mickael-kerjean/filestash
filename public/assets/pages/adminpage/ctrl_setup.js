@@ -54,7 +54,7 @@ function setupHOC(ctrlWrapped) {
 function componentStep1(render) {
     const $page = createElement(`
         <div id="step1">
-            <h4>Welcome Aboard, Captain!</h4>
+            <h4>Welcome Aboard!</h4>
             <div>
                 <p>First thing first, setup your password: </p>
                 <form>

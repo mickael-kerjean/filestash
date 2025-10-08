@@ -20,8 +20,8 @@ export default async function(render, { workflows, triggers }) {
     `);
     render(transition($page));
     const $workflows = qs($page, `[data-bind="workflows"]`);
-    workflows.forEach((workflow) => $workflows.appendChild(createWorkflow(workflow)));
-    if (workflows.length === 0) $workflows.appendChild(createEmptyWorkflow());
+    workflows.forEach((workflow) => $workflows.appendChild(createWorkflow({ workflow })));
+    if (workflows.length === 0) $workflows.appendChild(createEmptyWorkflow({ triggers }));
 
     effect(onClick(qs($page, "h2 > a")).pipe(
         rxjs.tap(($a) => animate($a, {
@@ -32,14 +32,14 @@ export default async function(render, { workflows, triggers }) {
     ));
 }
 
-function createWorkflow(specs) {
-    const { name, published, actions, trigger, updated_at } = specs;
+function createWorkflow({ workflow }) {
+    const { name, published, actions, trigger, updated_at } = workflow;
     const summaryHTML = {
         trigger: `<button class="light">${safe(trigger.name)}</button>`,
         actions: (actions || []).map(({ name }) => `<button class="light">${safe(name.split("/")[0])}</button>`).join(""),
     };
     const $workflow = createElement(`
-        <a href="./admin/workflow?specs=${encodeURIComponent(btoa(JSON.stringify(specs)))}" class="box ${published ? "" : "disabled"}" data-link>
+        <a href="./admin/workflow?specs=${encodeURIComponent(btoa(JSON.stringify(workflow)))}" class="box ${published ? "" : "disabled"}" data-link>
             <h3 class="ellipsis">
                 ${safe(name)}
                 <span>(${Intl.DateTimeFormat(navigator.language).format(new Date(safe(updated_at)))})</span>
@@ -52,10 +52,14 @@ function createWorkflow(specs) {
     return $workflow;
 }
 
-function createEmptyWorkflow() {
-    return createElement(`
-        <h3 class="center empty no-select">Add a new workflow to get started</h3>
+function createEmptyWorkflow({ triggers }) {
+    const $empty = createElement(`
+        <h3 class="center empty no-select">Create your first workflow</h3>
     `);
+    effect(onClick($empty).pipe(
+        rxjs.tap(() => ctrlModal(createModal(), { triggers })),
+    ));
+    return $empty;
 }
 
 function ctrlModal(render, { triggers }) {

@@ -19,13 +19,15 @@ export default async function(render) {
     const $log = qs($page, "pre");
     render($page);
 
-    effect(getLogs().pipe(
+    effect(rxjs.of(null).pipe(
+        rxjs.mergeMap(() => $log.matches(":hover") ? rxjs.EMPTY : getLogs()),
         rxjs.map((logData) => logData + "\n\n\n\n\n"),
         stateMutation($log, "textContent"),
         rxjs.tap(() => {
             if ($log?.scrollTop !== 0) return;
             $log.scrollTop = $log.scrollHeight;
         }),
+        rxjs.repeat({ delay: 2500 }),
         rxjs.catchError(() => rxjs.EMPTY),
     ));
 }

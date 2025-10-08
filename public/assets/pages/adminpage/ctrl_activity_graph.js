@@ -1,48 +1,83 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
-import { get as getLogs } from "./model_log.js";
+import { generateSkeleton } from "../../components/skeleton.js";
 import { loadCSS } from "../../helpers/loader.js";
 
+import { get as getLogs } from "./model_log.js";
+
+const NUMBER_BUCKETS = 30;
+const MIN_TIME_WIDTH = 5000;
+
 export default async function(render) {
+    render(createElement(`<div>${generateSkeleton(3)}</div>`));
     await loadCSS(import.meta.url, "./ctrl_activity_graph.css");
 
-    effect(getLogs().pipe(
-        rxjs.map((log) => {
-            const times = log.trim().split("\n").map((line) => new Date(line.substring(0, 19)).getTime());
-            const start = times[0];
-            const end = times[times.length - 1];
-
-            const size = 30
-            const bars = Array(size).fill(0);
-            const width = (end - start) / size;
-            for (const t of times) {
-                const idx = Math.min(size - 1, Math.max(0, Math.floor((t - start) / width)));
-                bars[idx] += 1;
+    effect(getLogs(300).pipe(
+        rxjs.first(),
+        rxjs.repeat({ delay: 2500 }),
+        rxjs.scan(({ start, end, width, max, init = true, buckets = Array(NUMBER_BUCKETS).fill(0) }, logfile) => {
+            const times = logfile.trim().split("\n").map((line) => new Date(line.substring(0, 19)).getTime());
+            if (init === true) {
+                start = times[0];
+                end = times[times.length - 1];
+                width = Math.max((end - start) / NUMBER_BUCKETS, MIN_TIME_WIDTH);
+                for (let i=times.length-1; i>=0; i--) {
+                    let idx = Math.floor((times[i] - start) / width);
+                    if (idx === NUMBER_BUCKETS) idx -= 1;
+                    buckets[idx] += 1;
+                }
+                for (let i=buckets.length-1; i>=0; i--) {
+                    if (buckets[i] === 0) buckets[i] = -1;
+                    else break;
+                }
+                max = Math.max(1, ...buckets);
+                init = false;
+            } else {
+                for (let i=times.length-1; i>=0; i--) {
+                    const current = times[i];
+                    // start          end       current
+                    //   |             |           |
+                    //   |=============|<--  new -->
+                    if (current <= end) {
+                        break;
+                    }
+                    const idx = Math.floor((times[i] - start) / width);
+                    if (!buckets[idx]) buckets[idx] = 0;
+                    buckets[idx] += 1;
+                }
+                const shift = buckets.length - NUMBER_BUCKETS;
+                for (let i=0; i<shift; i++) {
+                    buckets.shift();
+                    start += width;
+                }
+                end = times[times.length - 1];
             }
-            return {
-                bars,
-                start: new Date(start).toLocaleTimeString(),
-                end: new Date(end).toLocaleTimeString(),
-            };
-        }),
-        rxjs.tap(({ bars, start, end }) => {
-            const max = Math.max(1, ...bars);
+            return { start, end, width, buckets, max, init };
+        }, {}),
+        rxjs.tap(({ buckets, start, end, max }) => {
             const $root = document.createDocumentFragment();
             const $chart = createElement(`<div class="chart"></div>`);
-            for (let i = 0; i < bars.length; i++) {
-                const $bar = createElement(`<div class="bar" title="${bars[i]}"></div>`)
-                $bar.style.height = Math.sqrt(bars[i]) / Math.sqrt(max) * 100 + "%";
+            let display = true;
+            for (let i = 0; i < buckets.length; i++) {
+                if (buckets[i] < 0) {
+                    display = false;
+                    continue;
+                }
+                const $bar = createElement(`<div class="bar" title="${buckets[i]}"></div>`);
+                const height = Math.sqrt(buckets[i]) / Math.sqrt(max) * 100;
+                $bar.style.height = Math.min(height, 120) + "%";
                 $chart.appendChild($bar);
             }
             $root.appendChild($chart);
             $root.appendChild(createElement(`
                 <div class="legend">
-                    <span>${start}</span>
-                    <span>${end}</span>
+                    <span>${new Date(start).toLocaleTimeString()}</span>
+                    <span class="title">Log Events</span>
+                    <span>${new Date(end).toLocaleTimeString()}</span>
                 </div>
             `));
-            render($root);
+            if (display) render($root);
         }),
-        rxjs.catchError(() => rxjs.EMPTY),
+        rxjs.catchError((err) => rxjs.EMPTY),
     ));
 }

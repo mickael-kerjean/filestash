@@ -1,23 +1,29 @@
-.component_stats {
+.component_page_admin .component_stats {
     clear: both;
+    height: 100px;
+    z-index: 1;
+    margin-bottom: 30px;
+}
+.component_page_admin .component_logviewer {
+    z-index: 0;
 }
 .component_stats .chart {
     display: flex;
     align-items: flex-end;
-    height: 100px;
+    justify-content: end;
+    height: 100%;
 }
 .component_stats .chart .bar {
+    max-width: 45px;
+    cursor: pointer;
     display: flex;
     flex: 1;
-    cursor: pointer;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
-    border-bottom: 1px solid var(--light);
-
-    background: var(--border);
+    background: #ebebec;
     border: 2px solid var(--border);
 }
-.component_stats .chart .bar[title="0"], .component_stats .chart .bar[title="1"], .component_stats .chart .bar[title="2"] {
+.component_stats .chart .bar[title="0"], .component_stats .chart .bar[title="1"] {
     border-top-left-radius: 0px;
     border-top-right-radius: 0px;
 }
@@ -26,4 +32,13 @@
     justify-content: space-between;
     color: var(--light);
     font-size: 0.8rem;
+}
+.component_stats .legend .title {
+    font-style: italic;
+}
+.component_stats .legend.invisible {
+    opacity: 0;
+}
+.component_stats .component_skeleton {
+    margin-bottom: 5px;
 }
