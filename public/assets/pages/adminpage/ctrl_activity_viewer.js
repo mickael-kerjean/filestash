@@ -13,7 +13,7 @@ export default async function(render) {
             <a href="${getLogUrl()}" download="${logname()}">
                 <button class="component_button primary">Download</button>
             </a>
-            <br/><br/>
+            <br><br>
         </div>
     `);
     const $log = qs($page, "pre");

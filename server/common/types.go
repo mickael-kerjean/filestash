@@ -94,12 +94,12 @@ type ITriggerEvent interface {
 }
 
 type WorkflowSpecs struct {
-	Name     string                 `json:"name"`
-	Title    string                 `json:"title"`
-	Subtitle string                 `json:"subtitle"`
-	Icon     string                 `json:"icon"`
-	Specs    map[string]FormElement `json:"specs"`
-	Order    int                    `json:"-"`
+	Name     string `json:"name"`
+	Title    string `json:"title"`
+	Subtitle string `json:"subtitle"`
+	Icon     string `json:"icon"`
+	Specs    Form   `json:"specs"`
+	Order    int    `json:"-"`
 }
 
 type File struct {
