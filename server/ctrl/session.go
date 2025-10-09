@@ -59,8 +59,8 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	backend, err := model.NewBackend(ctx, session)
 	if err != nil {
-		Log.Debug("session::auth 'NewBackend' %+v", err)
-		Log.Info("[auth] status=failed user=%s backend=%s::%s ip=%s err=%s", username(session), session["type"], backendID(session), ip(req), ferror(err))
+		Log.Debug("[auth] action=authenticate::newBackend err=%s", ferror(err))
+		Log.Stdout("AUDIT action[fail] backend[%s] user[%s] target[%s]", session["type"], backendID(session), ip(req))
 		SendErrorResult(res, err)
 		return
 	}
@@ -70,15 +70,15 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}); ok {
 		err := obj.OAuthToken(&ctx.Body)
 		if err != nil {
-			Log.Debug("session::auth 'OAuthToken' %+v", err)
+			Log.Debug("[auth] action=authenticate::oauthtoken err=%s", ferror(err))
 			SendErrorResult(res, NewError("Can't authenticate (OAuth error)", 401))
 			return
 		}
 		session = model.MapStringInterfaceToMapStringString(ctx.Body)
 		backend, err = model.NewBackend(ctx, session)
 		if err != nil {
-			Log.Debug("session::auth 'OAuthToken::NewBackend' %+v", err)
-			Log.Info("[auth] status=failed user=%s backend=%s::%s ip=%s err=%s", username(session), session["type"], backendID(session), ip(req), ferror(err))
+			Log.Debug("[auth] action=authenticate::oauth::newBackend err=%s", ferror(err))
+			Log.Stdout("AUDIT action[fail] backend[%s] user[%s] target[%s]", session["type"], username(session), ip(req))
 			SendErrorResult(res, NewError("Can't authenticate", 401))
 			return
 		}
@@ -86,20 +86,20 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	home, err := model.GetHome(backend, session["path"])
 	if err != nil {
-		Log.Debug("session::auth 'GetHome' %+v", err)
+		Log.Debug("[auth] action=authenticate::getHome err=%s", ferror(err))
 		SendErrorResult(res, ErrAuthenticationFailed)
 		return
 	}
 
 	s, err := json.Marshal(session)
 	if err != nil {
-		Log.Debug("session::auth 'Marshal' %+v", err)
+		Log.Debug("[auth] action=authenticate::marshall err=%s", ferror(err))
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
 	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_USER, string(s))
 	if err != nil {
-		Log.Debug("session::auth 'Encryption' %+v", err)
+		Log.Debug("[auth] action=authenticate::encrypt err=%s", ferror(err))
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
@@ -122,14 +122,14 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if end == len(obfuscate) {
 			break
 		} else {
-			Log.Debug("session::auth obfuscate index: %d length: %d total: %d", index, len(obfuscate[index*value_limit:end]), len(obfuscate))
+			Log.Debug("[auth] action=authenticate::obfuscate index=%d length=%d total=%d", index, len(obfuscate[index*value_limit:end]), len(obfuscate))
 			index++
 		}
 	}
 	if Config.Get("features.protection.iframe").String() != "" {
 		res.Header().Set("bearer", obfuscate)
 	}
-	Log.Info("[auth] status=success user=%s backend=%s::%s ip=%s", username(session), session["type"], backendID(session), ip(req))
+	Log.Stdout("AUDIT action[login] backend[%s] user[%s] target[%s]", session["type"], username(session), ip(req))
 	SendSuccessResult(res, Session{
 		IsAuth:        true,
 		Home:          NewString(home),
@@ -180,6 +180,7 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 		MaxAge: -1,
 		Path:   COOKIE_PATH,
 	})
+	Log.Stdout("AUDIT action[logout] backend[%s] user[%s] target[%s]", ctx.Session["type"], username(ctx.Session), ip(req))
 	SendSuccessResult(res, nil)
 }
 

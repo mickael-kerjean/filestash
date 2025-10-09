@@ -121,7 +121,7 @@ func (f File) Mode() os.FileMode {
 	if f.IsDir() {
 		return os.ModeDir
 	}
-	return 0
+	return os.FileMode(0664)
 }
 func (f File) ModTime() time.Time {
 	if f.FTime == 0 {
