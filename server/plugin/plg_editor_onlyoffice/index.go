@@ -333,36 +333,38 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		username = "Anonymous"
 		userId = RandomString(10)
 	}
-	localip = func() string { // https://stackoverflow.com/questions/23558425/how-do-i-get-the-local-ip-address-in-go#23558495
-		addrs, err := net.InterfaceAddrs()
+	localip = func() string {
+		u, err := url.Parse(server_url())
 		if err != nil {
 			return ""
 		}
 
-		maybeips := []string{}
-		for _, address := range addrs {
-			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-				if ipnet.IP.To4() != nil {
-					maybeips = append(maybeips, ipnet.IP.String())
-				}
+		host := u.Hostname()
+		port := u.Port()
+		if port == "" {
+			switch u.Scheme {
+			case "http":
+				port = "80"
+			case "https":
+				port = "443"
+			default:
+				return ""
 			}
 		}
-
-		// if there is just one interface, we can just pick that one
-		if len(maybeips) == 1 {
-			return maybeips[0]
-		}
-
-		// if not, fallback to capturing our outgoing local ip
-		conn, err := net.Dial("udp", "8.8.8.8:80")
+		targetAddr := net.JoinHostPort(host, port)
+		conn, err := net.Dial("tcp", targetAddr)
 		if err != nil {
 			return ""
 		}
 		defer conn.Close()
 
 		localAddr := conn.LocalAddr().(*net.UDPAddr)
+		tcpAddr, ok := localAddr.(*net.TCPAddr)
+		if !ok {
+			return ""
+		}
 
-		return localAddr.IP.String()
+		return tcpAddr.IP.String()
 	}()
 	filestashServerLocation = fmt.Sprintf(
 		"%s://%s:%d",
