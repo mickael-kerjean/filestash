@@ -1,4 +1,5 @@
 import { createElement, createRender } from "../../lib/skeleton/index.js";
+import { toHref } from "../../lib/skeleton/router.js";
 import rxjs, { effect, applyMutation, preventDefault } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
@@ -227,7 +228,7 @@ function componentStep2(render) {
         applyMutation(qs($page, "[data-bind=\"onboarding\"]"), "appendChild"),
         rxjs.delay(500),
         rxjs.map(($origin) => {
-            const $target = document.querySelector("a[href=\"/admin/storage\"]");
+            const $target = document.querySelector(` a[href="${toHref("/admin/storage")}"]`);
             const $path = $origin.querySelector("svg path");
             const $anims = [
                 $origin.querySelector("svg animate"),
