@@ -117,6 +117,7 @@ function componentStep2(render) {
                 You're at the Helm now
             </h4>
             <div data-bind="dependencies"></div>
+            <div data-bind="onboarding"></div>
             <style>${cssHideMenu}</style>
         </div>
     `);
@@ -187,6 +188,8 @@ function componentStep2(render) {
         };
         return ret.toPromise();
     };
+
+    // feature: modal
     effect(getAdminConfig().pipe(
         reshapeConfigBeforeSave,
         rxjs.delay(300),
@@ -197,7 +200,57 @@ function componentStep2(render) {
             config["log"]["telemetry"] = enabled;
             return config;
         }),
-        rxjs.filter((config) => !!config),
-        saveConfig(),
+        rxjs.mergeMap((config) => {
+            if (config) return rxjs.of(config).pipe(saveConfig());
+            return rxjs.of(null);
+        }),
+        // feature: onboarding
+        rxjs.mapTo(createElement(`
+            <div id="onboarding">
+                <strong>Next step: Link your storage</strong>
+                <svg class="dash-border">
+                    <rect x="2" y="2" rx="16" ry="16"></rect>
+                </svg>
+                <svg>
+                    <path id="path" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1">
+                        <animate attributeName="stroke-dashoffset" begin="indefinite" dur="700ms" fill="freeze" values="1;0" calcMode="linear" />
+                    </path>
+                    <g>
+                        <polygon points="4,0 -16,-8 -16,8"></polygon>
+                        <animateMotion begin="indefinite" dur="700ms" fill="freeze" rotate="auto" calcMode="linear">
+                            <mpath href="#path"></mpath>
+                        </animateMotion>
+                    </g>
+                </svg>
+            </div>
+        `)),
+        applyMutation(qs($page, "[data-bind=\"onboarding\"]"), "appendChild"),
+        rxjs.delay(500),
+        rxjs.map(($origin) => {
+            const $target = document.querySelector("a[href=\"/admin/storage\"]");
+            const $path = $origin.querySelector("svg path");
+            const $anims = [
+                $origin.querySelector("svg animate"),
+                $origin.querySelector("svg animateMotion"),
+            ];
+
+            const arc = (start, end) => {
+                const r = Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.9;
+                return `M ${start.x},${start.y} ` +
+                    `L ${start.x},${end.y + r} ` +
+                    `Q ${start.x},${end.y} ${start.x - r},${end.y} ` +
+                    `L ${end.x+20},${end.y+2}`;
+            };
+            const o = $origin.getBoundingClientRect();
+            const t = $target.getBoundingClientRect();
+            $path.setAttribute("d", arc(
+                { x: o.left + o.width/2, y: o.top },
+                { x: t.right, y: t.top + t.height/2 }
+            ));
+            $anims.forEach(($el) => $el.beginElement());
+            $target.classList.add("pulse");
+            return $origin;
+        }),
+        rxjs.switchMap(($node) => rxjs.fromEvent(window, "resize").pipe(rxjs.tap(() => $node.remove()))),
     ));
 }

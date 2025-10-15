@@ -32,6 +32,9 @@
     bottom: 0;
     opacity: 0.25;
 }
+.component_menu_sidebar ul li a {
+    display: inline-block;
+}
 .component_menu_sidebar .header {
     display: block;
     height: 40px;
