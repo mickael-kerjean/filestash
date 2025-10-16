@@ -150,7 +150,7 @@ func (this SimpleAuth) EntryPoint(idpParams map[string]string, req *http.Request
 	res.Write([]byte(Page(`
         <form action="` + WithBase("/api/session/auth/") + `" method="post" class="component_middleware">
             <label>
-                <input type="text" name="email" value="" placeholder="Email" />
+                <input type="text" name="user" value="" placeholder="Email" />
             </label>
             <label>
                 <input type="password" name="password" value="" placeholder="Password" />
@@ -171,7 +171,7 @@ func (this SimpleAuth) Callback(formData map[string]string, idpParams map[string
 		return nil, err
 	}
 	requestedUser := withMFA(User{
-		Email:    formData["email"],
+		Email:    formData["user"],
 		Password: formData["password"],
 	}, formData["session"])
 	requestedUser.Code = formData["code"]
