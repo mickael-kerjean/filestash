@@ -101,6 +101,9 @@ func (this *AzureBlob) Ls(path string) ([]os.FileInfo, error) {
 			return files, err
 		}
 		for _, blob := range resp.ListBlobsHierarchySegmentResponse.Segment.BlobPrefixes {
+			if *blob.Name == "/" {
+				continue
+			}
 			files = append(files, File{
 				FName: filepath.Base(*blob.Name),
 				FType: "directory",
