@@ -26,10 +26,10 @@
 
 # Key Features
 
-- Manage files from your browser
 - Sleek, Speedy, Snappy, works great on Desktop and Mobile
-- Extensible / Customisable / Hackable via a rich ecosystem of plugins
+- Extensible / Customisable / Hackable via a rich ecosystem of plugins and a Workflow engine to enable automation
 - Shared Links which you can mount locally as network drives
+- Manage your files not only from your browser but also via SFTP and S3 through third party tools
 - Builtin Music, Video, Image viewers with optional transcoding and Chromecast support
 - API and LLM integration via [MCP](https://www.filestash.app/docs/api/#mcp)
 - [Themes](https://www.filestash.app/docs/plugin/#theme) replicating the UX of [dropbox](https://www.filestash.app/img/screenshots/theme_dropbox.png), [gdrive](https://www.filestash.app/img/screenshots/theme_gdrive.png), [github](https://www.filestash.app/img/screenshots/theme_github.png), [ibm](https://www.filestash.app/img/screenshots/theme_ibm.png), [onedrive](https://www.filestash.app/img/screenshots/theme_onedrive.png), [and more](https://www.filestash.app/img/screenshots/theme_untitled.png)
@@ -47,7 +47,7 @@
 
 # Vision & Philosophy
 
-Our goal is simple: **to build the best web based file manager ever made. Period.** But "best" means different things to different people, and making Filestash modular is the only sane model to accomplish that. Anything that isn't a fundamental truth of the universe and might spark a debate belongs in a plugin.
+Our goal is simple: **to build the best file management platform ever made. Period.** But "best" means different things to different people, and making Filestash modular is the only sane model to accomplish that. Anything that isn't a fundamental truth of the universe and might spark a debate belongs in a plugin.
 
 This modularity is made possible by the magic of programming interfaces. For example, if you want a [Dropbox-like frontend for FTP](https://news.ycombinator.com/item?id=9224), you will find out the [FTP plugin](https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_backend_ftp) simply implements this interface:
 ```go
