@@ -115,7 +115,19 @@ var tmplFuncs = template.FuncMap{
 		}
 		return strings.Join(chunks, ", "), nil
 	},
-	"encryptGCM": func(str string, key string) (string, error) {
+	"debug": func(data string) (string, error) {
+		Log.Debug("ctrl/tmpl data=%s", data)
+		return data, nil
+	},
+	"decryptGCM": func(key string, str string) (string, error) {
+		t, err := base64.StdEncoding.DecodeString(str)
+		if err != nil {
+			return "", err
+		}
+		d, err := DecryptAESGCM([]byte(key), t)
+		return string(d), err
+	},
+	"encryptGCM": func(key string, str string) (string, error) {
 		data, err := EncryptAESGCM([]byte(key), []byte(str))
 		return base64.StdEncoding.EncodeToString(data), err
 	},

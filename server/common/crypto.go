@@ -41,7 +41,7 @@ func DecryptString(secret string, data string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	d, err = decrypt([]byte(secret), d)
+	d, err = DecryptAESGCM([]byte(secret), d)
 	if err != nil {
 		return "", err
 	}
@@ -143,7 +143,7 @@ func EncryptAESGCM(key []byte, plaintext []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
-func decrypt(key []byte, ciphertext []byte) ([]byte, error) {
+func DecryptAESGCM(key []byte, ciphertext []byte) ([]byte, error) {
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
