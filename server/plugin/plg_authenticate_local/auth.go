@@ -113,7 +113,7 @@ func (this SimpleAuth) EntryPoint(idpParams map[string]string, req *http.Request
 			return err
 		}
 		template.Must(template.New("app").Parse(Page(`
-            <form action="`+WithBase("/api/session/auth/")+`" method="post" class="component_middleware">
+            <form method="post" class="component_middleware">
                 {{ if eq .User.MFA "" }}
                 <style>
                     #init { padding: 20px 20px 10px 20px; text-align: center; background: rgba(0,0,0,0.1); border-radius: 10px; margin-top: -10vh; margin-bottom: 20px; }
@@ -148,7 +148,7 @@ func (this SimpleAuth) EntryPoint(idpParams map[string]string, req *http.Request
 		return nil
 	}
 	res.Write([]byte(Page(`
-        <form action="` + WithBase("/api/session/auth/") + `" method="post" class="component_middleware">
+        <form method="post" class="component_middleware">
             <label>
                 <input type="text" name="user" value="" placeholder="Email" />
             </label>
