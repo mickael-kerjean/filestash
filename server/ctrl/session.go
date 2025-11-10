@@ -1,17 +1,14 @@
 package ctrl
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"slices"
 	"strings"
-	"text/template"
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -270,7 +267,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		}
 	}
 
-	idpParams := map[string]string{}
+	idpParams := TmplParams(map[string]string{})
 	if err := json.Unmarshal(
 		[]byte(Config.Get("middleware.identity_provider.params").String()),
 		&idpParams,
@@ -281,6 +278,18 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			http.StatusTemporaryRedirect,
 		)
 		return
+	}
+	for k, v := range idpParams {
+		out, err := TmplExec(NewStringFromInterface(v), idpParams)
+		if err != nil {
+			http.Redirect(
+				res, req,
+				"/?error=Not%20Valid&trace=idp - "+err.Error(),
+				http.StatusTemporaryRedirect,
+			)
+			return
+		}
+		idpParams[k] = out
 	}
 
 	// Step1: Entrypoint of the authentication process is handled by the plugin
@@ -331,14 +340,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	} else if err != nil { // response handled directly within a plugin
 		return
 	}
-
-	templateBind["machine_id"] = GenerateMachineID()
-	for _, value := range os.Environ() {
-		pair := strings.SplitN(value, "=", 2)
-		if len(pair) == 2 {
-			templateBind[fmt.Sprintf("ENV_%s", pair[0])] = pair[1]
-		}
-	}
+	templateBind = TmplParams(templateBind)
 
 	var (
 		label = ""
@@ -417,25 +419,11 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		}
 		mappingToUse := map[string]string{}
 		for k, v := range globalMapping[label] {
-			str := NewStringFromInterface(v)
-			if str == "" {
-				continue
-			}
-			tmpl, err := template.
-				New("ctrl::session::auth_middleware").
-				Funcs(tmplFuncs).
-				Parse(str)
-			mappingToUse[k] = str
+			out, err := TmplExec(NewStringFromInterface(v), tb)
 			if err != nil {
-				Log.Debug("session::authMiddleware 'template creation failed %s'", err.Error())
-				continue
+				Log.Debug("session::authMiddleware action=tmplExec err=%s", err.Error())
 			}
-			var b bytes.Buffer
-			if err = tmpl.Execute(&b, tb); err != nil {
-				Log.Debug("session::authMiddleware 'template execution failed %s'", err.Error())
-				continue
-			}
-			mappingToUse[k] = b.String()
+			mappingToUse[k] = out
 		}
 		mappingToUse["timestamp"] = time.Now().Format(time.RFC3339)
 		return mappingToUse, nil

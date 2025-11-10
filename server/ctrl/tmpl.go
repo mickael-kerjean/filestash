@@ -1,11 +1,13 @@
 package ctrl
 
 import (
+	"bytes"
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"os"
 	"regexp"
 	"strings"
 	"text/template"
@@ -14,6 +16,37 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+func TmplExec(params string, input map[string]string) (string, error) {
+	if params == "" {
+		return "", nil
+	}
+	tmpl, err := template.
+		New("ctrl::session::auth_middleware").
+		Funcs(tmplFuncs).
+		Parse(params)
+	if err != nil {
+		Log.Debug("tmpl::execute action=parse err=%s", err.Error())
+		return params, err
+	}
+	var b bytes.Buffer
+	if err = tmpl.Execute(&b, input); err != nil {
+		Log.Debug("tmpl::execute action=execute err%s", err.Error())
+		return params, err
+	}
+	return b.String(), nil
+}
+
+func TmplParams(data map[string]string) map[string]string {
+	data["machine_id"] = GenerateMachineID()
+	for _, value := range os.Environ() {
+		pair := strings.SplitN(value, "=", 2)
+		if len(pair) == 2 {
+			data[fmt.Sprintf("ENV_%s", pair[0])] = pair[1]
+		}
+	}
+	return data
+}
 
 var tmplFuncs = template.FuncMap{
 	"split": func(s, sep string) []string {
