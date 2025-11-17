@@ -75,6 +75,6 @@ func UserManagementHandler(ctx *App, res http.ResponseWriter, req *http.Request)
 		}{
 			Users:       users,
 			CurrentUser: currentUser,
-			BackURL:     WithBase("/admin/backend"),
+			BackURL:     WithBase("/admin/storage"),
 		})
 }
