@@ -27,7 +27,11 @@ func createUser(user User) error {
 	if user.Password == "" {
 		return ErrNotValid
 	}
-	p, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	pwd := user.Password
+	if len(pwd) > 72 {
+		pwd = pwd[0:72]
+	}
+	p, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
