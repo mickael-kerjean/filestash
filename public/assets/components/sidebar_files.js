@@ -21,11 +21,10 @@ export default async function ctrlNavigationPane(render, { $sidebar, path }) {
             dirname,
         });
         if (cpath === "/") $fs.appendChild($ul);
-        else try {
-            qs($fs, `[data-path="${CSS.escape(cpath)}"] ul`).appendChild($ul);
-        } catch (err) {
-            console.error(chunks[i], dirname, err);
-            break;
+        else {
+            const $menuitem = $fs.querySelector(`[data-path="${CSS.escape(cpath)}"] ul`);
+            if (!$menuitem) break;
+            $menuitem.appendChild($ul);
         }
     }
     render($fs);
@@ -46,10 +45,7 @@ export default async function ctrlNavigationPane(render, { $sidebar, path }) {
             display(await _createListOfFiles(path, {}));
         }),
         rxjs.catchError((err) => {
-            if (err instanceof DOMException) {
-                console.error(err);
-                return rxjs.EMPTY;
-            }
+            if (err instanceof DOMException) return rxjs.EMPTY;
             return ctrlError()(err);
         }),
     ));
