@@ -22,8 +22,8 @@ func main() {
 }
 
 func Run(router *mux.Router, app App) {
-	Log.Info("Filestash %s starting", APP_VERSION)
 	check(InitLogger(), "Logger init failed. err=%s")
+	Log.Info("Filestash %s starting", APP_VERSION)
 	check(InitConfig(), "Config init failed. err=%s")
 	check(workflow.Init(), "Worklow Initialisation failure. err=%s")
 	check(model.PluginDiscovery(), "Plugin Discovery failed. err=%s")
