@@ -21,7 +21,7 @@ func (this *TriggerEvent) WorkflowID() string {
 	return this.ID
 }
 
-func triggerEvents(event chan ITriggerEvent, triggerID string, callback func(params map[string]string) (map[string]string, bool)) error {
+func TriggerEvents(event chan ITriggerEvent, triggerID string, callback func(params map[string]string) (map[string]string, bool)) error {
 	workflows, err := FindWorkflows(triggerID)
 	if err != nil {
 		return err

@@ -18,7 +18,7 @@ func init() {
 	Hooks.Register.WorkflowTrigger(&WebhookTrigger{})
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
 		r.HandleFunc(WithBase("/api/workflow/webhook"), func(w http.ResponseWriter, r *http.Request) {
-			if err := triggerEvents(webhook_event, webhook_name, webhookCallback(r)); err != nil {
+			if err := TriggerEvents(webhook_event, webhook_name, webhookCallback(r)); err != nil {
 				SendErrorResult(w, err)
 				return
 			}

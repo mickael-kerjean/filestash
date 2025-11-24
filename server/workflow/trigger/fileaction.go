@@ -86,7 +86,7 @@ func processFileAction(ctx *App, params map[string]string) {
 	if ctx.Context.Value("AUDIT") == false {
 		return
 	}
-	if err := triggerEvents(fileaction_event, fileaction_name, fileactionCallback(params)); err != nil {
+	if err := TriggerEvents(fileaction_event, fileaction_name, fileactionCallback(params)); err != nil {
 		Log.Error("[workflow] trigger=event step=triggerEvents err=%s", err.Error())
 	}
 }

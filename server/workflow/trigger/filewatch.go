@@ -47,7 +47,7 @@ func (this *WatchTrigger) Manifest() WorkflowSpecs {
 func (this *WatchTrigger) Init() (chan ITriggerEvent, error) {
 	go func() {
 		for {
-			if err := triggerEvents(filewatch_event, filewatch_name, filewatchCallback); err != nil {
+			if err := TriggerEvents(filewatch_event, filewatch_name, filewatchCallback); err != nil {
 				Log.Error("[workflow] trigger=watch step=triggerEvents err=%s", err.Error())
 			}
 			time.Sleep(10 * time.Second)

@@ -40,7 +40,7 @@ func (this *ScheduleTrigger) Manifest() WorkflowSpecs {
 func (this *ScheduleTrigger) Init() (chan ITriggerEvent, error) {
 	go func() {
 		for {
-			if err := triggerEvents(cron_event, cron_name, scheduleCallback); err != nil {
+			if err := TriggerEvents(cron_event, cron_name, scheduleCallback); err != nil {
 				Log.Error("[workflow] trigger=schedule step=triggerEvents err=%s", err.Error())
 			}
 			time.Sleep(60 * time.Second)
