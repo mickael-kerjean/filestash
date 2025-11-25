@@ -2,13 +2,20 @@ package plg_authenticate_local
 
 import (
 	"encoding/json"
+	"os"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
+var force bool
+
+func init() {
+	force = os.Getenv("PLG_AUTHENTICATE_LOCAL_ENABLED") == "true"
+}
+
 func getPluginData() (pluginConfig, error) {
 	var cfg pluginConfig
-	if Config.Get("middleware.identity_provider.type").String() != "local" {
+	if !isEnabled() {
 		Log.Warning("plg_authenticate_simple::disable msg=middleware_is_not_enabled")
 		return cfg, ErrMissingDependency
 	}
@@ -30,7 +37,7 @@ func getPluginData() (pluginConfig, error) {
 }
 
 func savePluginData(cfg pluginConfig) error {
-	if Config.Get("middleware.identity_provider.type").String() != "local" {
+	if !isEnabled() {
 		Log.Warning("plg_authenticate_simple::disable msg=middleware_is_not_enabled")
 		return ErrMissingDependency
 	}
@@ -45,4 +52,14 @@ func savePluginData(cfg pluginConfig) error {
 	}
 	Config.Get("middleware.identity_provider.params").Set(string(b))
 	return nil
+}
+
+func isEnabled() bool {
+	if Config.Get("middleware.identity_provider.type").String() == "local" {
+		return true
+	} else if force {
+		return true
+	}
+	Log.Warning("plg_authenticate_simple::disable msg=middleware_is_not_enabled")
+	return false
 }
