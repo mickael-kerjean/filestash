@@ -31,11 +31,11 @@ func Run(router *mux.Router, app App) {
 	if len(Hooks.Get.Starter()) == 0 {
 		check(ErrNotFound, "Missing starter plugin. err=%s")
 	}
-	for _, obj := range Hooks.Get.HttpEndpoint() {
-		obj(router, &app)
-	}
 	for _, fn := range Hooks.Get.Onload() {
 		fn()
+	}
+	for _, obj := range Hooks.Get.HttpEndpoint() {
+		obj(router, &app)
 	}
 	server.Build(router, app)
 	server.PluginRoutes(router)
