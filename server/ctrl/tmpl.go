@@ -38,14 +38,18 @@ func TmplExec(params string, input map[string]string) (string, error) {
 }
 
 func TmplParams(data map[string]string) map[string]string {
-	data["machine_id"] = GenerateMachineID()
+	out := map[string]string{}
+	for key, value := range data {
+		out[key] = value
+	}
+	out["machine_id"] = GenerateMachineID()
 	for _, value := range os.Environ() {
 		pair := strings.SplitN(value, "=", 2)
 		if len(pair) == 2 {
-			data[fmt.Sprintf("ENV_%s", pair[0])] = pair[1]
+			out[fmt.Sprintf("ENV_%s", pair[0])] = pair[1]
 		}
 	}
-	return data
+	return out
 }
 
 var tmplFuncs = template.FuncMap{

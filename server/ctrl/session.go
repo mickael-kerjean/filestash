@@ -320,7 +320,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	// Step2: End of the authentication process. Could come from:
 	// - target of a html form. eg: ldap, mysql, ...
 	// - identity provider redirection uri. eg: oauth2, openid, ...
-	templateBind, err := plugin.Callback(formData, idpParams, res)
+	pluginCallback, err := plugin.Callback(formData, idpParams, res)
 	if err == ErrAuthenticationFailed {
 		Log.Warning("failed authentication - %s", err.Error())
 		http.Redirect(
@@ -340,7 +340,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	} else if err != nil { // response handled directly within a plugin
 		return
 	}
-	templateBind = TmplParams(templateBind)
+	templateBind := TmplParams(pluginCallback)
 
 	var (
 		label = ""
@@ -426,6 +426,12 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			mappingToUse[k] = out
 		}
 		mappingToUse["timestamp"] = time.Now().Format(time.RFC3339)
+		if label != "" && Config.Get("general.extended_session").Bool() {
+			pluginCallback["label"] = label
+			if jsonStr, err := json.Marshal(pluginCallback); err == nil {
+				mappingToUse["session"] = string(jsonStr)
+			}
+		}
 		return mappingToUse, nil
 	}(templateBind)
 	if err != nil {

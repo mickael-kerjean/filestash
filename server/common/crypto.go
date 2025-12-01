@@ -200,9 +200,10 @@ func GenerateID(params map[string]string) string {
 
 	for _, key := range orderedKeys {
 		switch key {
-		case "timestamp":
 		case "password":
 		case "path":
+		case "session":
+		case "timestamp":
 		default:
 			if val := params[key]; val != "" {
 				p += key + "=>" + params[key] + ", "
