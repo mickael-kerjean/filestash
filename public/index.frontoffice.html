@@ -1,30 +1,32 @@
+{{ if eq .license "agpl" -}}
+<!--
+    ┌──────────────────────────────────────────────────────────┐
+    │                       FILESTASH                          │
+    │            https://www.filestash.app/docs/               │
+    └──────────────────────────────────────────────────────────┘
+-->
+{{ end -}}
 <!DOCTYPE html>
-<html lang="en">
+<html>
     <head>
         <meta charset="UTF-8">
-        <title></title>
         <base href="{{ .base }}">
         {{- range .bundle }}
         <link rel="modulepreload" href="{{ . }}" />
         {{- end }}
+        <link rel="preload" as="style" href="custom.css">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="application-name" content="Filestash">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
         <script>{{ if eq .license "agpl" }}{{ template "loader-cat" }}{{ else }}{{ template "loader-basic" }}{{ end }}</script>
     </head>
     <body>
-        <div id="app">
-            <component-bootscreen></component-bootscreen>
-        </div>
+        <div id="app"><component-bootscreen></component-bootscreen></div>
 
-        <template id="head">
-            <link rel="stylesheet" href="custom.css">
-        </template>
         <template id="body">
             <script type="module">
              import main from "./assets/{{ .version }}/lib/skeleton/index.js";
              import routes from "./assets/{{ .version }}/boot/router_frontoffice.js";
-
              main(document.getElementById("app"), routes, {
                  spinner: `<component-loader></component-loader>`,
                  beforeStart: import("{{ .base }}assets/{{ .version }}/boot/ctrl_boot_frontoffice.js"),
@@ -35,35 +37,6 @@
         </template>
 
         <script type="module">
-         async function ignitionSequence() {
-             try {
-                 if (!HTMLScriptElement.supports?.("importmap")) throw new Error("fastboot is not supported on this platform");
-                 {{ load_asset "assets/boot/bundler_init.js" }}
-                 await Promise.all([
-                     {{- range .bundle }}
-                     "{{ . }}",
-                     {{- end }}
-                 ].map((src) => new Promise((onload, onerror) => document.head.appendChild(Object.assign(document.createElement("script"), {
-                     type: "module", src, onload, onerror,
-                 })))));
-                 {{ load_asset "assets/boot/bundler_complete.js" }}
-             } catch (err) { console.error(err); }
-
-             await Promise.all([
-                 import("./assets/{{ .version }}/components/loader.js"),
-                 import("./assets/{{ .version }}/components/modal.js"),
-                 import("./assets/{{ .version }}/components/notification.js"),
-                 import("./assets/{{ .version }}/helpers/loader.js").then(({ loadCSS }) => {
-                     loadCSS(import.meta.url, "{{ .base }}assets/{{ .version }}/css/designsystem.css");
-                 }),
-             ]);
-         }
-
-         function liftoff() {
-             document.head.appendChild(document.querySelector("template#head").content);
-             document.body.appendChild(document.querySelector("template#body").content);
-         }
-         //
          //
          //
          //
@@ -94,6 +67,35 @@
                                     liftoff()          // |
          // |                                             |
          // |_____________________________________________|
+         //
+         //
+         async function ignitionSequence() {
+             try {
+                 if (!HTMLScriptElement.supports?.("importmap")) throw new Error("fastboot is not supported on this platform");
+                 {{ load_asset "assets/boot/bundler_init.js" }}
+                 await Promise.all([
+                     {{- range .bundle }}
+                     "{{ . }}",
+                     {{- end }}
+                 ].map((src) => new Promise((onload, onerror) => document.head.appendChild(Object.assign(document.createElement("script"), {
+                     type: "module", src, onload, onerror,
+                 })))));
+                 {{ load_asset "assets/boot/bundler_complete.js" }}
+             } catch (err) { console.error(err); }
+
+             await Promise.all([
+                 import("./assets/{{ .version }}/components/loader.js"),
+                 import("./assets/{{ .version }}/components/modal.js"),
+                 import("./assets/{{ .version }}/components/notification.js"),
+                 import("./assets/{{ .version }}/helpers/loader.js").then(({ loadCSS }) => {
+                     loadCSS(import.meta.url, "{{ .base }}assets/{{ .version }}/css/designsystem.css");
+                 }),
+             ]);
+         }
+
+         function liftoff() {
+             document.body.appendChild(document.querySelector("template#body").content);
+         }
         </script>
 
         <noscript><div style="text-align:center;font-family:monospace;margin-top:5%;font-size:15px;"><h2>Error: Javascript is off</h2></div></noscript>
