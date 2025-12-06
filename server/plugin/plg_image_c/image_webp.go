@@ -1,7 +1,7 @@
 package plg_image_c
 
 // #include "image_webp.h"
-// #cgo LDFLAGS: -l:libwebp.a -lsharpyuv
+// #cgo LDFLAGS: -l:libwebp.a -l:libsharpyuv.a
 import "C"
 
 func webp(input uintptr, output uintptr, size int) {
