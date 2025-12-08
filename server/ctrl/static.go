@@ -21,7 +21,6 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 
 	"github.com/bluekeyes/go-gitdiff/gitdiff"
-	"github.com/google/brotli/go/cbrotli"
 )
 
 var (
@@ -404,10 +403,11 @@ var preload = [][]string{
 
 func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 	isDebug := os.Getenv("DEBUG") == "true"
-	buildChunks := func(quality int) (chunks [][]byte, chunksBr [][]byte, etags []string) {
+	buildChunks := func(quality int) (chunks [][]byte, chunksBr [][]byte, chunksGzip [][]byte, etags []string) {
 		numChunks := len(preload)
 		chunks = make([][]byte, numChunks+1)
 		chunksBr = make([][]byte, numChunks+1)
+		chunksGzip = make([][]byte, numChunks+1)
 		etags = make([]string, numChunks+1)
 		var fullBuf bytes.Buffer
 		for i := 0; i < numChunks; i++ {
@@ -438,24 +438,26 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 				fullBuf.WriteString(line)
 			}
 			chunks[i+1] = chunkBuf.Bytes()
-			chunksBr[i+1], _ = cbrotli.Encode(chunks[i+1], cbrotli.WriterOptions{Quality: quality})
+			chunksGzip[i+1] = compressGzip(chunks[i+1], quality)
+			chunksBr[i+1] = compressBr(chunks[i+1], quality)
 			etags[i+1] = QuickHash(string(chunks[i+1]), 10)
 		}
 		chunks[0] = fullBuf.Bytes()
-		chunksBr[0], _ = cbrotli.Encode(chunks[0], cbrotli.WriterOptions{Quality: quality})
+		chunksGzip[0] = compressGzip(chunks[0], quality)
+		chunksBr[0] = compressBr(chunks[0], quality)
 		etags[0] = QuickHash(string(chunks[0]), 10)
-		return chunks, chunksBr, etags
+		return chunks, chunksBr, chunksGzip, etags
 	}
 
 	quality := 11
 	if isDebug {
 		quality = 8
 	}
-	chunks, chunksBr, etags := buildChunks(quality)
+	chunks, chunksBr, chunksGzip, etags := buildChunks(quality)
 
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if isDebug {
-			chunks, chunksBr, etags = buildChunks(quality)
+			chunks, chunksBr, chunksGzip, etags = buildChunks(quality)
 		}
 		chunkIndex := 0
 		if parsed, err := strconv.Atoi(req.URL.Query().Get("chunk")); err == nil {
@@ -475,6 +477,10 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 		} else if strings.Contains(req.Header.Get("Accept-Encoding"), "br") && len(chunksBr[chunkIndex]) > 0 {
 			head.Set("Content-Encoding", "br")
 			res.Write(chunksBr[chunkIndex])
+			return
+		} else if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") && len(chunksGzip[chunkIndex]) > 0 {
+			head.Set("Content-Encoding", "gzip")
+			res.Write(chunksGzip[chunkIndex])
 			return
 		}
 		res.Write(chunks[chunkIndex])
