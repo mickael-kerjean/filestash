@@ -35,7 +35,7 @@ func PluginDiscovery() error {
 		if strings.HasSuffix(fname, ".zip") == false {
 			continue
 		}
-		name, impl, err := InitModule(entry.Name())
+		name, impl, err := InitModule(fname)
 		if err != nil {
 			Log.Error("could not initialise module name=%s err=%s", entry.Name(), err.Error())
 			continue

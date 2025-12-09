@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/model"
+
+	"github.com/gorilla/mux"
 )
 
 func LoggedInOnly(fn HandlerFunc) HandlerFunc {
@@ -84,27 +85,7 @@ func SessionTry(fn HandlerFunc) HandlerFunc {
 		ctx.Authorization = _extractAuthorization(req)
 		ctx.Session, _ = _extractSession(req, ctx)
 		ctx.Backend, _ = _extractBackend(req, ctx)
-		fn(ctx, res, req)
-	})
-}
 
-func RedirectSharedLoginIfNeeded(fn HandlerFunc) HandlerFunc {
-	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		share_id := _extractShareId(req)
-		if share_id == "" {
-			if mux.Vars(req)["share"] == "private" {
-				fn(ctx, res, req)
-				return
-			}
-			SendErrorResult(res, ErrNotValid)
-			return
-		}
-
-		share, err := _extractShare(req)
-		if err != nil || share_id != share.Id {
-			http.Redirect(res, req, fmt.Sprintf("/s/%s?next=%s", share_id, req.URL.Path), http.StatusTemporaryRedirect)
-			return
-		}
 		fn(ctx, res, req)
 	})
 }

@@ -95,7 +95,6 @@ func NewConfiguration() Configuration {
 						Title: "api",
 						Elmnts: []FormElement{
 							FormElement{Name: "enable", Type: "boolean", Default: true, Description: "Enable/Disable the API"},
-							FormElement{Name: "api_key", Type: "long_text", Description: "Format: '[mandatory:key] [optional:hostname]'. The hostname is used to enabled CORS for your application.", Placeholder: "foobar *.filestash.app"},
 						},
 					},
 					Form{

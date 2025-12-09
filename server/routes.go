@@ -51,11 +51,11 @@ func Build(r *mux.Router, a App) {
 
 	// API for File management
 	files := r.PathPrefix(WithBase("/api/files")).Subrouter()
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, WithPublicAPI, SessionStart, LoggedInOnly, PluginInjector}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly, PluginInjector}
 	files.HandleFunc("/cat", NewMiddlewareChain(FileCat, middlewares, a)).Methods("GET", "HEAD")
 	files.HandleFunc("/zip", NewMiddlewareChain(FileDownloader, middlewares, a)).Methods("GET")
 	files.HandleFunc("/unzip", NewMiddlewareChain(FileExtract, middlewares, a)).Methods("POST")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, WithPublicAPI, SessionStart, LoggedInOnly, PluginInjector}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, LoggedInOnly, PluginInjector}
 	files.HandleFunc("/cat", NewMiddlewareChain(FileAccess, middlewares, a)).Methods("OPTIONS")
 	files.HandleFunc("/cat", NewMiddlewareChain(FileSave, middlewares, a)).Methods("POST", "PATCH")
 	files.HandleFunc("/ls", NewMiddlewareChain(FileLs, middlewares, a)).Methods("GET")
@@ -63,7 +63,7 @@ func Build(r *mux.Router, a App) {
 	files.HandleFunc("/rm", NewMiddlewareChain(FileRm, middlewares, a)).Methods("POST")
 	files.HandleFunc("/mkdir", NewMiddlewareChain(FileMkdir, middlewares, a)).Methods("POST")
 	files.HandleFunc("/touch", NewMiddlewareChain(FileTouch, middlewares, a)).Methods("POST")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, WithPublicAPI, SessionStart, LoggedInOnly, PluginInjector}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, LoggedInOnly, PluginInjector}
 	files.HandleFunc("/search", NewMiddlewareChain(FileSearch, middlewares, a)).Methods("GET")
 
 	// API for Shared link
@@ -78,7 +78,7 @@ func Build(r *mux.Router, a App) {
 	share.HandleFunc("/{share}", NewMiddlewareChain(ShareUpsert, middlewares, a)).Methods("POST")
 
 	meta := r.PathPrefix(WithBase("/api/metadata")).Subrouter()
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, WithPublicAPI, SessionStart, LoggedInOnly, PluginInjector}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, LoggedInOnly, PluginInjector}
 	meta.HandleFunc("", NewMiddlewareChain(MetaGet, middlewares, a)).Methods("GET")
 	meta.HandleFunc("", NewMiddlewareChain(MetaUpsert, middlewares, a)).Methods("POST")
 	meta.HandleFunc("/search", NewMiddlewareChain(MetaSearch, middlewares, a)).Methods("POST")
@@ -88,8 +88,6 @@ func Build(r *mux.Router, a App) {
 	r.HandleFunc(WithBase("/s/{share}"), NewMiddlewareChain(ServeFrontofficeHandler, middlewares, a)).Methods("GET")
 	middlewares = []Middleware{WebdavBlacklist, SessionStart, PluginInjector}
 	r.PathPrefix(WithBase("/s/{share}")).Handler(NewMiddlewareChain(WebdavHandler, middlewares, a))
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, RedirectSharedLoginIfNeeded, SessionStart, LoggedInOnly, PluginInjector}
-	r.PathPrefix(WithBase("/api/export/{share}/{mtype0}/{mtype1}")).Handler(NewMiddlewareChain(FileExport, middlewares, a))
 
 	// Application Resources
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, PluginInjector}
@@ -116,7 +114,6 @@ func Build(r *mux.Router, a App) {
 	r.HandleFunc(WithBase("/.well-known/security.txt"), NewMiddlewareChain(WellKnownSecurityHandler, []Middleware{}, a)).Methods("GET")
 	r.HandleFunc(WithBase("/healthz"), NewMiddlewareChain(HealthHandler, []Middleware{}, a)).Methods("GET", "HEAD")
 	r.HandleFunc(WithBase("/custom.css"), NewMiddlewareChain(CustomCssHandler, []Middleware{}, a)).Methods("GET")
-	r.PathPrefix(WithBase("/doc")).Handler(NewMiddlewareChain(DocPage, []Middleware{}, a)).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 }
 
 func CatchAll(r *mux.Router, a App) {

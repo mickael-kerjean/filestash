@@ -34,25 +34,16 @@ type APIErrorMessage struct {
 func SendSuccessResult(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
-	if shouldIndentResponse(res) {
-		encoder.SetIndent("", IndentSize)
-	}
+	encoder.SetIndent("", IndentSize)
 	encoder.Encode(APISuccessResult{"ok", data})
 }
 
 func SendSuccessResultWithEtagAndGzip(res http.ResponseWriter, req *http.Request, data interface{}) {
 	var dataToSend []byte
 	var err error
-	if shouldIndentResponse(res) {
-		if dataToSend, err = json.MarshalIndent(APISuccessResult{"ok", data}, "", IndentSize); err != nil {
-			Log.Warning("common::response Marshal %s", err.Error())
-			dataToSend = []byte("{}")
-		}
-	} else {
-		if dataToSend, err = json.Marshal(APISuccessResult{"ok", data}); err != nil {
-			Log.Warning("common::response Marshal %s", err.Error())
-			dataToSend = []byte("{}")
-		}
+	if dataToSend, err = json.MarshalIndent(APISuccessResult{"ok", data}, "", IndentSize); err != nil {
+		Log.Warning("common::response Marshal %s", err.Error())
+		dataToSend = []byte("{}")
 	}
 	mode := "normal"
 	if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") == true {
@@ -80,27 +71,21 @@ func SendSuccessResultWithEtagAndGzip(res http.ResponseWriter, req *http.Request
 func SendSuccessResults(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
-	if shouldIndentResponse(res) {
-		encoder.SetIndent("", IndentSize)
-	}
+	encoder.SetIndent("", IndentSize)
 	encoder.Encode(APISuccessResults{"ok", data})
 }
 
 func SendSuccessResultsWithMetadata(res http.ResponseWriter, data interface{}, p interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
-	if shouldIndentResponse(res) {
-		encoder.SetIndent("", IndentSize)
-	}
+	encoder.SetIndent("", IndentSize)
 	encoder.Encode(APISuccessResultsWithMetadata{"ok", data, p})
 }
 
 func SendErrorResult(res http.ResponseWriter, err error) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
-	if shouldIndentResponse(res) {
-		encoder.SetIndent("", IndentSize)
-	}
+	encoder.SetIndent("", IndentSize)
 	obj, ok := err.(interface{ Status() int })
 	if ok == true {
 		res.WriteHeader(obj.Status())
@@ -119,9 +104,7 @@ func SendErrorResult(res http.ResponseWriter, err error) {
 func SendRaw(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
-	if shouldIndentResponse(res) {
-		encoder.SetIndent("", IndentSize)
-	}
+	encoder.SetIndent("", IndentSize)
 	encoder.Encode(data)
 }
 
@@ -169,14 +152,4 @@ func RedirectPage(url string) string {
 </body>
 </html>
 `
-}
-
-func shouldIndentResponse(res http.ResponseWriter) bool {
-	reqID := res.Header().Get("X-Request-Id")
-	if reqID == "" {
-		return false
-	} else if strings.HasPrefix(reqID, "API") == false {
-		return false
-	}
-	return true
 }
