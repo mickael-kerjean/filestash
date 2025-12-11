@@ -9,7 +9,6 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/utils"
 )
 
 const (
@@ -25,19 +24,8 @@ func init() {
 	})
 }
 
-func (this Server) WellKnownInfoHandler(_ *App, w http.ResponseWriter, r *http.Request) {
-	WithCors(w)
-	if r.Method != http.MethodGet && r.Method != http.MethodOptions {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	scheme := "https"
-	host := r.Host
-	if strings.HasPrefix(host, "localhost") || strings.HasPrefix(host, "127.0.0.1") {
-		scheme = "http"
-	}
-	baseURL := fmt.Sprintf("%s://%s", scheme, host)
+func (this Server) WellKnownOAuthAuthorizationServerHandler(_ *App, w http.ResponseWriter, r *http.Request) {
+	baseURL := this.baseURL(r)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"issuer":                   baseURL,
@@ -55,9 +43,27 @@ func (this Server) WellKnownInfoHandler(_ *App, w http.ResponseWriter, r *http.R
 	})
 }
 
-func (this Server) AuthorizeHandler(_ *App, w http.ResponseWriter, r *http.Request) {
-	WithCors(w)
+func (this Server) WellKnownOAuthProtectedResourceHandler(_ *App, w http.ResponseWriter, r *http.Request) {
+	baseURL := this.baseURL(r)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"resource":                 baseURL,
+		"authorization_servers":    []string{baseURL},
+		"bearer_methods_supported": []string{"header"},
+		"scopes_supported":         []string{"openid"},
+	})
+}
 
+func (this Server) baseURL(r *http.Request) string {
+	scheme := "https"
+	host := r.Host
+	if strings.HasPrefix(host, "localhost") || strings.HasPrefix(host, "127.0.0.1") {
+		scheme = "http"
+	}
+	return fmt.Sprintf("%s://%s", scheme, host)
+}
+
+func (this Server) AuthorizeHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 	responseType := r.URL.Query().Get("response_type")
 	clientID := r.URL.Query().Get("client_id")
 	redirectURI := r.URL.Query().Get("redirect_uri")
@@ -80,11 +86,6 @@ func (this Server) AuthorizeHandler(_ *App, w http.ResponseWriter, r *http.Reque
 }
 
 func (this Server) TokenHandler(_ *App, w http.ResponseWriter, r *http.Request) {
-	WithCors(w)
-	if r.Method != http.MethodPost && r.Method != http.MethodOptions {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
@@ -106,11 +107,6 @@ func (this Server) TokenHandler(_ *App, w http.ResponseWriter, r *http.Request) 
 }
 
 func (this Server) RegisterHandler(ctx *App, w http.ResponseWriter, r *http.Request) {
-	WithCors(w)
-	if r.Method != http.MethodPost && r.Method != http.MethodOptions {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	clientName := regexp.MustCompile("[^a-zA-Z0-9\\-]+").ReplaceAllString(
 		fmt.Sprintf("%s", ctx.Body["client_name"]),
 		"",

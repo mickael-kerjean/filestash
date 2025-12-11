@@ -6,6 +6,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/middleware"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/config"
+	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -25,16 +26,20 @@ func init() {
 			return nil
 		}
 		srv := Server{}
-		m := []Middleware{}
-		r.HandleFunc("/sse", NewMiddlewareChain(srv.sseHandler, m, *app))
-		r.HandleFunc("/messages", NewMiddlewareChain(srv.messageHandler, m, *app))
-		r.HandleFunc("/.well-known/oauth-authorization-server", NewMiddlewareChain(srv.WellKnownInfoHandler, m, *app))
-		r.HandleFunc("/mcp/authorize", NewMiddlewareChain(srv.AuthorizeHandler, m, *app))
-		r.HandleFunc("/mcp/token", NewMiddlewareChain(srv.TokenHandler, m, *app))
+		m := []Middleware{WithCORS}
+		r.HandleFunc("/sse", NewMiddlewareChain(srv.sseHandler, m, *app)).Methods("GET", "OPTIONS")
+		r.HandleFunc("/messages", NewMiddlewareChain(srv.messageHandler, m, *app)).Methods("POST", "OPTIONS")
+		r.HandleFunc("/.well-known/oauth-authorization-server", NewMiddlewareChain(srv.WellKnownOAuthAuthorizationServerHandler, m, *app)).Methods("GET", "OPTIONS")
+		r.HandleFunc("/.well-known/oauth-protected-resource", NewMiddlewareChain(srv.WellKnownOAuthProtectedResourceHandler, m, *app)).Methods("GET", "OPTIONS")
+		r.HandleFunc("/.well-known/oauth-protected-resource/sse", NewMiddlewareChain(srv.WellKnownOAuthProtectedResourceHandler, m, *app)).Methods("GET", "OPTIONS")
+
+		r.HandleFunc("/mcp/token", NewMiddlewareChain(srv.TokenHandler, m, *app)).Methods("POST")
+		m = []Middleware{}
+		r.HandleFunc("/mcp/authorize", NewMiddlewareChain(srv.AuthorizeHandler, m, *app)).Methods("GET")
 		m = []Middleware{BodyParser}
-		r.HandleFunc("/mcp/register", NewMiddlewareChain(srv.RegisterHandler, m, *app))
+		r.HandleFunc("/mcp/register", NewMiddlewareChain(srv.RegisterHandler, m, *app)).Methods("POST")
 		m = []Middleware{SessionStart, LoggedInOnly}
-		r.HandleFunc("/api/mcp", NewMiddlewareChain(srv.CallbackHandler, m, *app))
+		r.HandleFunc("/api/mcp", NewMiddlewareChain(srv.CallbackHandler, m, *app)).Methods("GET")
 		return nil
 	})
 }

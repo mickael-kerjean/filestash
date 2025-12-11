@@ -36,14 +36,11 @@ func (this *Server) messageHandler(_ *App, w http.ResponseWriter, r *http.Reques
 }
 
 func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 	token := ExtractToken(r)
 	if token == "" {
 		Log.Debug("plg_handler_mcp::sse msg=invalid_token")
 		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("WWW-Authenticate", "Bearer resource_metadata=\""+this.baseURL(r)+"/.well-known/oauth-protected-resource\"")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(JSONRPCResponse{
 			JSONRPC: "2.0",
