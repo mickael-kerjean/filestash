@@ -16,6 +16,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const SESSION_TIME = 60
+
 func (this *Server) messageHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 	sessionID := r.URL.Query().Get("sessionId")
 	if r.Method != http.MethodPost {
@@ -38,8 +40,9 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	token := this.ValidateToken(r.Header.Get("Authorization"))
+	token := ExtractToken(r)
 	if token == "" {
+		Log.Debug("plg_handler_mcp::sse msg=invalid_token")
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(JSONRPCResponse{
@@ -176,7 +179,7 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 			return
 		case <-time.After(15 * time.Second):
 			SendPing(w, userSession.Ping.ID)
-			if time.Since(userSession.Ping.LastResponse) > 60*time.Second {
+			if time.Since(userSession.Ping.LastResponse) > SESSION_TIME*time.Second {
 				SendMethod(w, userSession.Ping.ID+1, "notifications/cancelled", map[string]interface{}{
 					"requestId": userSession.Ping.ID,
 					"reason":    "Request timed out",

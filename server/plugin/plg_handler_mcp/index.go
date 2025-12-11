@@ -12,7 +12,6 @@ import (
 
 type Server struct {
 	sessions sync.Map
-	expired  sync.Map
 }
 
 func init() {
