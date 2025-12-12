@@ -84,7 +84,7 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 
 			switch request.Method {
 			case "initialize":
-				SendMessage(w, request.ID, InitializeResult{
+				SendMessage(w, request.ID, InitializeResponse{
 					ProtocolVersion: "2024-11-05",
 					ServerInfo: ServerInfo{
 						Name:    "Universal Storage Server",
@@ -99,26 +99,26 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 					},
 				})
 			case "resources/list":
-				SendMessage(w, request.ID, &CallResourcesList{
+				SendMessage(w, request.ID, &ResourcesListResponse{
 					Resources: AllResources(),
 				})
 			case "resources/templates/list":
-				SendMessage(w, request.ID, &CallResourceTemplatesList{
+				SendMessage(w, request.ID, &ResourceTemplatesListResponse{
 					ResourceTemplates: AllResourceTemplates(),
 				})
 			case "resources/read":
-				SendMessage(w, request.ID, &CallResourceRead{
+				SendMessage(w, request.ID, &ResourceReadResponse{
 					Contents: ExecResourceRead(request.Params),
 				})
 			case "prompts/list":
-				SendMessage(w, request.ID, &CallPromptsList{
+				SendMessage(w, request.ID, &PromptsListResponse{
 					Prompts: AllPrompts(),
 				})
 			case "prompts/get":
 				if m, ok := request.Params["name"].(string); ok {
 					res, err := ExecPromptGet(m, request.Params, &userSession)
 					if err == nil {
-						SendMessage(w, request.ID, CallPromptGet{
+						SendMessage(w, request.ID, PromptGetResponse{
 							Messages:    res,
 							Description: ExecPromptDescription(request.Params),
 						})
@@ -132,29 +132,38 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 					})
 				}
 			case "tools/list":
-				SendMessage(w, request.ID, &CallListTools{
+				SendMessage(w, request.ID, &ListToolsResponse{
 					Tools: AllTools(),
 				})
 			case "tools/call":
-				if m, ok := request.Params["name"].(string); ok {
-					res, err := ExecTool(m, request.Params, &userSession)
-					if err == nil {
-						SendMessage(w, request.ID, CallTool{
-							Content: []TextContent{*res},
+				if tname, ok := request.Params["name"].(string); ok {
+					if tool, err := FindTool(tname); err != nil {
+						SendError(w, request.ID, JSONRPCError{
+							Code:    http.StatusBadRequest,
+							Message: fmt.Sprintf("Unknown tool: %s", request.Params["name"]),
+						})
+					} else if res, err := tool.Run(request.Params, &userSession); err != nil {
+						SendMessage(w, request.ID, ToolResponse{
+							Content: []TextContent{{"text", err.Error()}},
+							IsError: true,
 						})
 					} else {
-						SendError(w, request.ID, err)
+						SendMessage(w, request.ID, ToolResponse{
+							Content: []TextContent{*res},
+							Meta:    tool.Meta,
+							IsError: false,
+						})
 					}
 				} else {
 					SendError(w, request.ID, JSONRPCError{
 						Code:    http.StatusBadRequest,
-						Message: fmt.Sprintf("Unknown tool name: %v", request.Params["name"]),
+						Message: fmt.Sprintf("Unexpected parameters: %v", request.Params),
 					})
 				}
 			case "notifications/initialized":
 				SendMessage(w, request.ID, map[string]string{})
 			case "completion/complete":
-				SendMessage(w, request.ID, CallCompletionResult{
+				SendMessage(w, request.ID, CompletionResponse{
 					Completion: ExecCompletion(request.Params, &userSession),
 				})
 			case "ping":

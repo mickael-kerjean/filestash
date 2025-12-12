@@ -1,6 +1,6 @@
 package types
 
-type InitializeResult struct {
+type InitializeResponse struct {
 	ProtocolVersion string       `json:"protocolVersion"`
 	ServerInfo      ServerInfo   `json:"serverInfo"`
 	Capabilities    Capabilities `json:"capabilities"`

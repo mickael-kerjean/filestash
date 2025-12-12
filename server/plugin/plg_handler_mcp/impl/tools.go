@@ -1,37 +1,33 @@
 package impl
 
 import (
+	"fmt"
 	"net/http"
 
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/types"
 )
 
-var listOfTools = map[string]ToolDefinition{}
+var listOfTools = map[string]Tool{}
 
-type ToolDefinition struct {
-	Tool
-	Exec func(params map[string]any, userSession *UserSession) (*TextContent, error)
-}
-
-func RegisterTool(t ToolDefinition) {
+func RegisterTool(t Tool) {
 	listOfTools[t.Name] = t
 }
 
 func AllTools() []Tool {
 	t := []Tool{}
 	for _, v := range listOfTools {
-		t = append(t, v.Tool)
+		t = append(t, v)
 	}
 	return t
 }
 
-func ExecTool(name string, params map[string]any, userSession *UserSession) (*TextContent, error) {
+func FindTool(name string) (*Tool, error) {
 	td, ok := listOfTools[name]
 	if !ok {
 		return nil, JSONRPCError{
-			Code:    http.StatusNotImplemented,
-			Message: "Not Found",
+			Code:    http.StatusNotFound,
+			Message: fmt.Sprintf("Unknown tool: %s", name),
 		}
 	}
-	return td.Exec(params, userSession)
+	return &td, nil
 }

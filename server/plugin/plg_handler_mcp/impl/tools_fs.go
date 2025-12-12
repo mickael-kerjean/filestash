@@ -15,173 +15,155 @@ import (
 
 func init() {
 	Hooks.Register.Onload(func() {
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "ls",
-				Description: "list directory contents",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
+		RegisterTool(Tool{
+			Name:        "ls",
+			Description: "list directory contents",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{},
-				}),
-			},
-			Exec: ToolFSLs,
+				},
+				"required": []string{},
+			}),
+			Run: ToolFSLs,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "cat",
-				Description: "read a file at a specified path.",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
+		RegisterTool(Tool{
+			Name:        "cat",
+			Description: "read a file at a specified path.",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{"path"},
-				}),
-			},
-			Exec: ToolFSCat,
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSCat,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "pwd",
-				Description: "print name of current/working directory",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type":       "object",
-					"properties": map[string]interface{}{},
-					"required":   []string{},
-				}),
-			},
-			Exec: ToolFSPwd,
+		RegisterTool(Tool{
+			Name:        "pwd",
+			Description: "print name of current/working directory",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type":       "object",
+				"properties": map[string]interface{}{},
+				"required":   []string{},
+			}),
+			Run: ToolFSPwd,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "cd",
-				Description: "change the working directory",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
+		RegisterTool(Tool{
+			Name:        "cd",
+			Description: "change the working directory",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{"path"},
-				}),
-			},
-			Exec: ToolFSCd,
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSCd,
 		})
 
 		if !CanEdit() {
 			return
 		}
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "mv",
-				Description: "move (rename) files",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"from": map[string]string{
-							"type":        "string",
-							"description": "origin path",
-						},
-						"to": map[string]string{
-							"type":        "string",
-							"description": "destination path",
-						},
+		RegisterTool(Tool{
+			Name:        "mv",
+			Description: "move (rename) files",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"from": map[string]string{
+						"type":        "string",
+						"description": "origin path",
 					},
-					"required": []string{"from", "to"},
-				}),
-			},
-			Exec: ToolFSMv,
+					"to": map[string]string{
+						"type":        "string",
+						"description": "destination path",
+					},
+				},
+				"required": []string{"from", "to"},
+			}),
+			Run: ToolFSMv,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "mkdir",
-				Description: "make directories",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
+		RegisterTool(Tool{
+			Name:        "mkdir",
+			Description: "make directories",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{"path"},
-				}),
-			},
-			Exec: ToolFSMkdir,
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSMkdir,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "touch",
-				Description: "create file",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
+		RegisterTool(Tool{
+			Name:        "touch",
+			Description: "create file",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{"path"},
-				}),
-			},
-			Exec: ToolFSTouch,
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSTouch,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "rm",
-				Description: "remove files or directories",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
+		RegisterTool(Tool{
+			Name:        "rm",
+			Description: "remove files or directories",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{"path"},
-				}),
-			},
-			Exec: ToolFSRm,
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSRm,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "save",
-				Description: "save a file",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
-						"content": map[string]string{
-							"type":        "string",
-							"description": "content of the file",
-						},
+		RegisterTool(Tool{
+			Name:        "save",
+			Description: "save a file",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{"path"},
-				}),
-			},
-			Exec: ToolFSSave,
+					"content": map[string]string{
+						"type":        "string",
+						"description": "content of the file",
+					},
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSSave,
 		})
 	})
 }

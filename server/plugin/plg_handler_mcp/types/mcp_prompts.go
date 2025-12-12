@@ -1,6 +1,6 @@
 package types
 
-type CallPromptsList struct {
+type PromptsListResponse struct {
 	Prompts    []Prompt `json:"prompts"`
 	NextCursor string   `json:"nextCursor",omitempty`
 }
@@ -17,7 +17,7 @@ type PromptArgument struct {
 	Required    bool   `json:"required"`
 }
 
-type CallPromptGet struct {
+type PromptGetResponse struct {
 	Description string          `json:"description"`
 	Messages    []PromptMessage `json:"messages"`
 }

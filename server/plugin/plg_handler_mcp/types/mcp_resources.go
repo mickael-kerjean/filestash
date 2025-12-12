@@ -1,14 +1,14 @@
 package types
 
-type CallResourcesList struct {
+type ResourcesListResponse struct {
 	Resources []Resource `json:"resources"`
 }
 
-type CallResourceTemplatesList struct {
+type ResourceTemplatesListResponse struct {
 	ResourceTemplates []ResourceTemplate `json:"resourceTemplates"`
 }
 
-type CallResourceRead struct {
+type ResourceReadResponse struct {
 	Contents []ResourceContent `json:"contents"`
 }
 
