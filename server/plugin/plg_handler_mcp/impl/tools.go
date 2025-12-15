@@ -22,12 +22,12 @@ func AllTools() []Tool {
 }
 
 func FindTool(name string) (*Tool, error) {
-	td, ok := listOfTools[name]
+	t, ok := listOfTools[name]
 	if !ok {
 		return nil, JSONRPCError{
 			Code:    http.StatusNotFound,
 			Message: fmt.Sprintf("Unknown tool: %s", name),
 		}
 	}
-	return &td, nil
+	return &t, nil
 }

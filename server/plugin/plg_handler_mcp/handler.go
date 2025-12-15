@@ -91,9 +91,7 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 						Version: "1.0.0",
 					},
 					Capabilities: Capabilities{
-						Tools: map[string]interface{}{
-							"listChanged": true,
-						},
+						Tools:     map[string]interface{}{},
 						Resources: map[string]interface{}{},
 						Prompts:   map[string]interface{}{},
 					},
@@ -107,6 +105,29 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 					ResourceTemplates: AllResourceTemplates(),
 				})
 			case "resources/read":
+				if uri, ok := request.Params["uri"].(string); ok {
+					if resource, err := FindResource(uri); err != nil {
+						SendError(w, request.ID, JSONRPCError{
+							Code:    http.StatusBadRequest,
+							Message: fmt.Sprintf("Unknown tool: %s", request.Params["name"]),
+						})
+					} else {
+						SendMessage(w, request.ID, &ResourceReadResponse{
+							Contents: []ResourceContent{
+								{
+									URI:      uri,
+									MimeType: resource.MimeType,
+									Text:     resource.Content,
+								},
+							},
+						})
+					}
+				} else {
+					SendError(w, request.ID, JSONRPCError{
+						Code:    http.StatusBadRequest,
+						Message: fmt.Sprintf("Unexpected parameters: %v", request.Params),
+					})
+				}
 				SendMessage(w, request.ID, &ResourceReadResponse{
 					Contents: ExecResourceRead(request.Params),
 				})
@@ -128,7 +149,7 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 				} else {
 					SendError(w, request.ID, JSONRPCError{
 						Code:    http.StatusBadRequest,
-						Message: fmt.Sprintf("Unknown prompt name: %v", request.Params["name"]),
+						Message: fmt.Sprintf("Unexpected parameters: %v", request.Params),
 					})
 				}
 			case "tools/list":
@@ -148,11 +169,7 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 							IsError: true,
 						})
 					} else {
-						SendMessage(w, request.ID, ToolResponse{
-							Content: []TextContent{*res},
-							Meta:    tool.Meta,
-							IsError: false,
-						})
+						SendMessage(w, request.ID, res)
 					}
 				} else {
 					SendError(w, request.ID, JSONRPCError{

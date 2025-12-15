@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>File List</title>
+        <style>
+         :root {
+             --color: #1d1c1c;
+             --light: #5b5d5c;
+             --border: #f1f1f1;
+         }
+         body { font-family: system-ui, sans-serif; color: var(--color); margin: 0; }
+         #app { max-width: 800px; }
+         .ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+         h1 { font-size: 1.7rem; padding: 10px 10px 5px 10px; margin: 0; }
+         .component_thing { display: flex; border-bottom: 1px solid var(--border); padding: 7px 10px; align-items: baseline; justify-content: space-between; }
+         .component_thing .component_icon { position: relative; top: 4px; width: 20px; }
+         .component_thing .component_datetime { float: right; color: var(--light); font-size: 0.9rem; }
+        </style>
+    </head>
+    <body>
+        <div id="app"></div>
+
+        <script>
+         const ICON = {
+             DIRECTORY: "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxZW0iIGhlaWdodD0iMWVtIiB2aWV3Qm94PSIwIDAgMjAgMjAiIGZpbGw9ImN1cnJlbnRDb2xvciI+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xLjY2NjY5IDVDMS42NjY2OSAzLjYxOTI5IDIuNzg1OTggMi41IDQuMTY2NjkgMi41SDcuNjQzQzguMzA2MDQgMi41IDguOTQxOTIgMi43NjMzOSA5LjQxMDc3IDMuMjMyMjNMMTAuMTAxMSAzLjkyMjU5QzEwLjI1NzQgNC4wNzg4NyAxMC40Njk0IDQuMTY2NjcgMTAuNjkwNCA0LjE2NjY3SDE1LjgzMzRDMTcuMjE0MSA0LjE2NjY3IDE4LjMzMzQgNS4yODU5NSAxOC4zMzM0IDYuNjY2NjdWMTVDMTguMzMzNCAxNi4zODA3IDE3LjIxNDEgMTcuNSAxNS44MzM0IDE3LjVINC4xNjY2OUMyLjc4NTk4IDE3LjUgMS42NjY2OSAxNi4zODA3IDEuNjY2NjkgMTVWNVpNNC4xNjY2OSA0LjE2NjY3QzMuNzA2NDUgNC4xNjY2NyAzLjMzMzM1IDQuNTM5NzYgMy4zMzMzNSA1VjguMzMzMzNIMTYuNjY2N1Y2LjY2NjY3QzE2LjY2NjcgNi4yMDY0MyAxNi4yOTM2IDUuODMzMzMgMTUuODMzNCA1LjgzMzMzSDEwLjY5MDRDMTAuMDI3MyA1LjgzMzMzIDkuMzkxNDUgNS41Njk5NCA4LjkyMjYxIDUuMTAxMUw4LjIzMjI1IDQuNDEwNzRDOC4wNzU5NyA0LjI1NDQ2IDcuODY0MDEgNC4xNjY2NyA3LjY0MyA0LjE2NjY3SDQuMTY2NjlaTTE2LjY2NjcgMTBIMy4zMzMzNVYxNUMzLjMzMzM1IDE1LjQ2MDIgMy43MDY0NSAxNS44MzMzIDQuMTY2NjkgMTUuODMzM0gxNS44MzM0QzE2LjI5MzYgMTUuODMzMyAxNi42NjY3IDE1LjQ2MDIgMTYuNjY2NyAxNVYxMFoiPjwvcGF0aD48L3N2Zz4=",
+             FILE: "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxZW0iIGhlaWdodD0iMWVtIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9ImN1cnJlbnRDb2xvciI+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNNyAyYTMgMyAwIDAgMC0zIDN2MTRhMyAzIDAgMCAwIDMgM2gxMGEzIDMgMCAwIDAgMy0zVjguODI4YTMgMyAwIDAgMC0uODc5LTIuMTJsLTMuODI4LTMuODNBMyAzIDAgMCAwIDEzLjE3MiAySDdabTUgMkg3YTEgMSAwIDAgMC0xIDF2MTRhMSAxIDAgMCAwIDEgMWgxMGExIDEgMCAwIDAgMS0xdi05aC0zYTMgMyAwIDAgMS0zLTNWNFptNS41ODYgNEgxNWExIDEgMCAwIDEtMS0xVjQuNDE0TDE3LjU4NiA4WiIgY2xpcC1ydWxlPSJldmVub2RkIj48L3BhdGg+PC9zdmc+",
+         };
+         const MAX_FILES = 10;
+         const render = ({ files = null, title = null, $app }) => {
+             $app.innerHTML = "";
+             if (Array.isArray(files)) files = files.sort((fileA, fileB) => {
+                 if (fileA.type === "directory" && fileB.type !== "directory") return -1;
+                 if (fileA.type !== "directory" && fileB.type === "directory") return 1;
+                 return fileA.name.localeCompare(fileB.name);
+             });
+             if (title) $app.appendChild(Object.assign(document.createElement("h1"), {
+                 className: "ellipsis",
+                 innerText: title,
+             }));
+             if (files === null) return $app.appendChild(Object.assign(document.createElement("div"), {
+                 style: `text-align:center;padding:20px 0;`,
+                 innerHTML: `
+                     <svg width="25" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                         <g>
+                             <circle stroke="#ececec" fill="transparent" stroke-width="2" cx="18" cy="18" r="17"></circle>
+                             <circle stroke="#212121" fill="transparent" stroke-width="2" stroke-dasharray="26.7035 80.1106" stroke-dashoffset="0" stroke-linecap="butt" cx="18" cy="18" r="17"></circle>
+                             <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
+                         </g>
+                     </svg>
+                 `,
+             }));
+
+             files.slice(0, MAX_FILES).forEach(({ type, name, time }) => {
+                 $app.appendChild(Object.assign(document.createElement("a"), {
+                     className: "component_thing",
+                     innerHTML: `
+                         <div class="ellipsis">
+                             <img class="component_icon" src="data:image/svg+xml;base64,${type === "directory" ? ICON.DIRECTORY : ICON.FILE}" alt="${type}">
+                             <span class="component_filename">${name}</span>
+                         </div>
+                         <span class="component_datetime">${new Date(time*1000).toISOString().substr(0,10).replaceAll("-", "/")}</span>
+                     `,
+                 }));
+             });
+             if (files.length > MAX_FILES) $app.appendChild(Object.assign(document.createElement("div"), {
+                 innerText: "...",
+                 className: "component_thing",
+             }));
+         };
+         const debug = (object) => document.body.appendChild(Object.assign(document.createElement("div"), {
+             innerHTML: `DEBUG: ${JSON.stringify(object) || "n/a"}`,
+             className: "ellipsis",
+             style: `display: none; background: var(--border); margin:5px; padding: 7px; font-size: 0.9rem; border: 2px dashed var(--light); border-radius: 5px; color: var(--light); `
+         }));
+
+         const $app = document.getElementById("app");
+         render({ $app });
+         window.addEventListener(
+             "openai:set_globals",
+             (event) => {
+                 const globals = event.detail?.globals;
+                 if (!globals?.toolOutput?.files) return;
+                 debug(globals);
+                 render({
+                     files: globals.toolOutput.files,
+                     title: globals.toolInput.path || "",
+                     $app,
+                 });
+             },
+             { passive: true },
+         );
+        </script>
+    </body>
+</html>

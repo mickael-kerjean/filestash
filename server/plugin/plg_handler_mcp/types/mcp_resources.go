@@ -17,6 +17,7 @@ type Resource struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	MimeType    string `json:"mimeType"`
+	Content     string `json:"-"`
 }
 
 type ResourceTemplate struct {

@@ -2,6 +2,7 @@ package impl
 
 import (
 	"bytes"
+	_ "embed"
 	"errors"
 	"io"
 	"path/filepath"
@@ -13,11 +14,14 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/utils"
 )
 
+//go:embed public/file-list.html
+var widget_ls string
+
 func init() {
 	Hooks.Register.Onload(func() {
 		RegisterTool(Tool{
 			Name:        "ls",
-			Description: "list directory contents",
+			Description: "Use this when you need to list files and subdirectories in a directory. If path is omitted, the current working directory is used (inspect with pwd, change with cd, default /). This operation is read-only.",
 			InputSchema: JsonSchema(map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
@@ -29,6 +33,32 @@ func init() {
 				"required": []string{},
 			}),
 			Run: ToolFSLs,
+			Meta: Meta{
+				"openai/outputTemplate":          "ui://widget/render-ls.html",
+				"openai/toolInvocation/invoking": "Querying…",
+				"openai/toolInvocation/invoked":  "Results ready",
+				"openai/widgetPrefersBorder":     true,
+				"openai/widgetDomain":            "https://chatgpt.com",
+				"openai/widgetCSP": map[string][]string{
+					"connect_domains":  []string{"https://chatgpt.com"},
+					"resource_domains": []string{"https://*.oaistatic.com"},
+					"frame_domains":    []string{},
+				},
+			},
+			Annotations: Meta{
+				"destructiveHint": false,
+				"idempotentHint":  false,
+				"openWorldHint":   true,
+				"readOnlyHint":    true,
+			},
+		})
+
+		RegisterResource(Resource{
+			URI:         "ui://widget/render-ls.html",
+			Name:        "render-ls.html",
+			Description: "file listing widget",
+			MimeType:    "text/html+skybridge",
+			Content:     widget_ls,
 		})
 
 		RegisterTool(Tool{
@@ -168,28 +198,47 @@ func init() {
 	})
 }
 
-func ToolFSLs(params map[string]any, userSession *UserSession) (*TextContent, error) {
-	files, err := userSession.Backend.Ls(EnforceDirectory(getPath(params, userSession, "path")))
+func ToolFSLs(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
+	path := getPath(params, userSession, "path")
+	files, err := userSession.Backend.Ls(EnforceDirectory(path))
 	if err != nil {
 		return nil, err
 	}
-	var b bytes.Buffer
-	for _, file := range files {
+	structuredContent := make([]File, len(files))
+	content := bytes.Buffer{}
+	for i, file := range files {
 		if file.IsDir() {
-			b.Write([]byte("[DIR]  "))
+			content.Write([]byte("[DIR]  "))
 		} else {
-			b.Write([]byte("[FILE] "))
+			content.Write([]byte("[FILE] "))
 		}
-		b.Write([]byte(file.Name()))
-		b.Write([]byte("\n"))
+		content.Write([]byte(file.Name()))
+		content.Write([]byte("\n"))
+		ftype := "file"
+		if file.IsDir() {
+			ftype = "directory"
+		}
+		structuredContent[i] = File{
+			FName: file.Name(),
+			FType: ftype,
+			FSize: file.Size(),
+			FTime: file.ModTime().Unix(),
+		}
 	}
-	return &TextContent{
-		Type: "text",
-		Text: b.String(),
+	return &ToolResponse{
+		StructuredContent: map[string]any{
+			"files": structuredContent,
+		},
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: content.String(),
+			},
+		},
 	}, nil
 }
 
-func ToolFSCat(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSCat(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "path") {
 		return nil, ErrNotValid
 	}
@@ -202,32 +251,44 @@ func ToolFSCat(params map[string]any, userSession *UserSession) (*TextContent, e
 	if err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: string(b),
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: string(b),
+			},
+		},
 	}, nil
 }
 
-func ToolFSPwd(params map[string]any, userSession *UserSession) (*TextContent, error) {
-	return &TextContent{
-		Type: "text",
-		Text: userSession.CurrDir,
+func ToolFSPwd(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: userSession.CurrDir,
+			},
+		},
 	}, nil
 }
 
-func ToolFSCd(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSCd(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	path := EnforceDirectory(getPath(params, userSession, "path"))
 	if _, err := userSession.Backend.Ls(path); err != nil {
 		return nil, errors.New("No such file or directory")
 	}
 	userSession.CurrDir = EnforceDirectory(path)
-	return &TextContent{
-		Type: "text",
-		Text: userSession.CurrDir,
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: userSession.CurrDir,
+			},
+		},
 	}, nil
 }
 
-func ToolFSMv(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSMv(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "from") || isArgEmpty(params, "to") {
 		return nil, ErrNotValid
 	}
@@ -237,52 +298,68 @@ func ToolFSMv(params map[string]any, userSession *UserSession) (*TextContent, er
 	); err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: "",
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: "done",
+			},
+		},
 	}, nil
 }
 
-func ToolFSMkdir(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSMkdir(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "path") {
 		return nil, ErrNotValid
 	}
 	if err := userSession.Backend.Mkdir(EnforceDirectory(getPath(params, userSession, "path"))); err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: "",
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: "done",
+			},
+		},
 	}, nil
 }
 
-func ToolFSTouch(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSTouch(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "path") {
 		return nil, ErrNotValid
 	}
 	if err := userSession.Backend.Touch(getPath(params, userSession, "path")); err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: "",
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: "done",
+			},
+		},
 	}, nil
 }
 
-func ToolFSRm(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSRm(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "path") {
 		return nil, ErrNotValid
 	}
 	if err := userSession.Backend.Rm(getPath(params, userSession, "path")); err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: "",
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: "done",
+			},
+		},
 	}, nil
 }
 
-func ToolFSSave(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSSave(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "path") {
 		return nil, ErrNotValid
 	}
@@ -292,9 +369,13 @@ func ToolFSSave(params map[string]any, userSession *UserSession) (*TextContent, 
 	); err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: "",
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: "done",
+			},
+		},
 	}, nil
 }
 
