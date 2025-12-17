@@ -13,9 +13,9 @@
 </p>
 
 <p align="center">
-    A Dropbox-like file manager that let you manage your data anywhere it is located:<br>
+    A Dropbox-like file manager that works with every storage protocol:<br>
     <a href="https://www.filestash.app/ftp-client.html">FTP</a> • <a href="https://www.filestash.app/ftp-client.html">FTPS</a> • <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a> • <a href="https://www.filestash.app/webdav-client.html">WebDAV</a> • Git • <a href="https://www.filestash.app/s3-browser.html">S3</a> • NFS • <a href="https://www.filestash.app/smb-client.html">SMB</a> • Artifactory • <a href="https://www.filestash.app/ldap-browser.html">LDAP</a> • Mysql <br>
-       Storj • CardDAV • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">Minio</a> <br>Dropbox • Google Drive
+       Sharepoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">Minio</a> • Storj <br>IPFS • Dropbox • Google Drive • ...
 </p>
 <p align="center">
     <a href="http://demo.filestash.app">
@@ -23,26 +23,32 @@
     </a>
 </p>
 
+# What / Why ?
+
+Familiar with the infamous comment from Dropbox's launch on HN? It went like this:
+
+<img src="https://raw.githubusercontent.com/mickael-kerjean/filestash_images/master/.assets/hn.png" alt="demo button" />
+
+Once we had a great user interface for FTP, we extended the idea to virtually every storage protocol and added gateways to expose Dropbox itself as an SFTP server, closing the infamous loop, while also adding all the features we always wished Dropbox had.
 
 # Key Features
 
 - Sleek, Speedy, Snappy, works great on Desktop and Mobile
 - Extensible / Customisable / Hackable via a rich ecosystem of plugins and a Workflow engine to enable automation
 - Shared Links which you can mount locally as network drives
-- Manage your files not only from your browser but also via SFTP and S3 through third party tools
 - Builtin Music, Video, Image viewers with optional transcoding and Chromecast support
-- API and LLM integration via [MCP](https://www.filestash.app/docs/api/#mcp)
+- API and LLM integration via [MCP](https://www.filestash.app/docs/api/#mcp) with support for other gateways like SFTP and S3
 - [Themes](https://www.filestash.app/docs/plugin/#theme) replicating the UX of [dropbox](https://www.filestash.app/img/screenshots/theme_dropbox.png), [gdrive](https://www.filestash.app/img/screenshots/theme_gdrive.png), [github](https://www.filestash.app/img/screenshots/theme_github.png), [ibm](https://www.filestash.app/img/screenshots/theme_ibm.png), [onedrive](https://www.filestash.app/img/screenshots/theme_onedrive.png), [and more](https://www.filestash.app/img/screenshots/theme_untitled.png)
 - ... and much <sub>much <sub>much</sub></sub> more
 
 
 # Documentation
 
-- [Getting started](https://www.filestash.app/docs/)
-- [Installation](https://www.filestash.app/docs/install-and-upgrade/)
-- [API](https://www.filestash.app/docs/api/#api) and [MCP](https://www.filestash.app/docs/api/#mcp)
-- [Plugins Inventory](https://www.filestash.app/docs/plugin/)
-- [Hardening Guide](https://downloads.filestash.app/upload/hardening-guide.pdf)
+- [Getting started](https://www.filestash.app/docs/?origin=github)
+- [Installation](https://www.filestash.app/docs/install-and-upgrade/?origin=github)
+- [API](https://www.filestash.app/docs/api/?origin=github#api) and [MCP](https://www.filestash.app/docs/api/?origin=github#mcp)
+- [Plugins Inventory](https://www.filestash.app/docs/plugin/?origin=github)
+- [Hardening Guide](https://downloads.filestash.app/upload/hardening-guide.pdf?origin=github)
 
 
 # Vision & Philosophy
