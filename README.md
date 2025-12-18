@@ -37,7 +37,7 @@ Once we had a great user interface for FTP, we extended the idea to virtually ev
 - Extensible / Customisable / Hackable via a rich ecosystem of plugins and a Workflow engine to enable automation
 - Shared Links which you can mount locally as network drives
 - Builtin Music, Video, Image viewers with optional transcoding and Chromecast support
-- API and LLM integration via [MCP](https://www.filestash.app/docs/api/#mcp) with support for other gateways like SFTP and S3
+- [API](https://www.filestash.app/docs/api/?origin=github#api) and LLM integration via [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html) with support for other S3 and [SFTP Gateways](https://www.filestash.app/docs/guide/sftp-gateway.html).
 - [Themes](https://www.filestash.app/docs/plugin/#theme) replicating the UX of [dropbox](https://www.filestash.app/img/screenshots/theme_dropbox.png), [gdrive](https://www.filestash.app/img/screenshots/theme_gdrive.png), [github](https://www.filestash.app/img/screenshots/theme_github.png), [ibm](https://www.filestash.app/img/screenshots/theme_ibm.png), [onedrive](https://www.filestash.app/img/screenshots/theme_onedrive.png), [and more](https://www.filestash.app/img/screenshots/theme_untitled.png)
 - ... and much <sub>much <sub>much</sub></sub> more
 
@@ -46,7 +46,7 @@ Once we had a great user interface for FTP, we extended the idea to virtually ev
 
 - [Getting started](https://www.filestash.app/docs/?origin=github)
 - [Installation](https://www.filestash.app/docs/install-and-upgrade/?origin=github)
-- [API](https://www.filestash.app/docs/api/?origin=github#api) and [MCP](https://www.filestash.app/docs/api/?origin=github#mcp)
+- [API](https://www.filestash.app/docs/api/?origin=github#api) and [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html)
 - [Plugins Inventory](https://www.filestash.app/docs/plugin/?origin=github)
 - [Hardening Guide](https://downloads.filestash.app/upload/hardening-guide.pdf?origin=github)
 
