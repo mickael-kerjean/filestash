@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/config"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/types"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/utils"
 )
@@ -103,10 +102,6 @@ func init() {
 			}),
 			Run: ToolFSCd,
 		})
-
-		if !CanEdit() {
-			return
-		}
 
 		RegisterTool(Tool{
 			Name:        "mv",

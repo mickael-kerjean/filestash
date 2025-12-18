@@ -18,7 +18,6 @@ type Server struct {
 func init() {
 	Hooks.Register.Onload(func() {
 		PluginEnable()
-		CanEdit()
 	})
 
 	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
