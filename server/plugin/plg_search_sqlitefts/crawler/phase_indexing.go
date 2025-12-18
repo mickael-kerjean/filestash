@@ -22,6 +22,7 @@ func (this *Crawler) Indexing(tx indexer.Manager) bool {
 			Log.Warning("search::indexing index_scan (%v)", err)
 			return false
 		}
+		Log.Debug("search::debug phase=indexing path=%s", r.Path)
 		if err = updateFile(r.Path, this.Backend, tx); err != nil {
 			Log.Warning("search::indexing index_update (%v)", err)
 			return false

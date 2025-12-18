@@ -22,6 +22,7 @@ func (this *Crawler) Discover(tx indexer.Manager) bool {
 		return false
 	}
 
+	Log.Debug("search::debug phase=discovery path=%s", doc.Path)
 	files, err := this.Backend.Ls(doc.Path)
 	if err != nil {
 		this.CurrentPhase = PHASE_PAUSE

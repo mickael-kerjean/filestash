@@ -26,6 +26,7 @@ func (this *Crawler) Consolidate(tx indexer.Manager) bool {
 			Log.Warning("search::index db_stale (%v)", err)
 			return false
 		}
+		Log.Debug("search::maintain phase=maintenance path=%s", r.Path)
 		if r.CType == "directory" {
 			updateFolder(r.Path, this.Backend, tx)
 		} else {
