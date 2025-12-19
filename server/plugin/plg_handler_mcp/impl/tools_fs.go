@@ -20,7 +20,7 @@ func init() {
 	Hooks.Register.Onload(func() {
 		RegisterTool(Tool{
 			Name:        "ls",
-			Description: "Use this when you need to list files and subdirectories in a directory. If path is omitted, the current working directory is used (inspect with pwd, change with cd, default /). This operation is read-only.",
+			Description: "Use this when you need to list files and subdirectories in a directory, based on the Unix command: ls. If path is omitted, the current working directory is used",
 			InputSchema: JsonSchema(map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
@@ -36,17 +36,9 @@ func init() {
 				"openai/outputTemplate":          "ui://widget/render-ls.html",
 				"openai/toolInvocation/invoking": "Querying…",
 				"openai/toolInvocation/invoked":  "Results ready",
-				"openai/widgetPrefersBorder":     true,
-				"openai/widgetDomain":            "https://chatgpt.com",
-				"openai/widgetCSP": map[string][]string{
-					"connect_domains":  []string{"https://chatgpt.com"},
-					"resource_domains": []string{"https://*.oaistatic.com"},
-					"frame_domains":    []string{},
-				},
 			},
 			Annotations: Meta{
 				"destructiveHint": false,
-				"idempotentHint":  false,
 				"openWorldHint":   true,
 				"readOnlyHint":    true,
 			},
@@ -58,11 +50,20 @@ func init() {
 			Description: "file listing widget",
 			MimeType:    "text/html+skybridge",
 			Content:     widget_ls,
+			Meta: Meta{
+				"openai/widgetPrefersBorder": true,
+				"openai/widgetDomain":        "https://chatgpt.com",
+				"openai/widgetCSP": map[string][]string{
+					"connect_domains":  []string{"https://chatgpt.com"},
+					"resource_domains": []string{"https://*.oaistatic.com"},
+					"frame_domains":    []string{},
+				},
+			},
 		})
 
 		RegisterTool(Tool{
 			Name:        "cat",
-			Description: "read a file at a specified path.",
+			Description: "Use this when you need to read and return the contents of a file at a specific path, based on the Unix command: `cat`.",
 			InputSchema: JsonSchema(map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
@@ -74,22 +75,32 @@ func init() {
 				"required": []string{"path"},
 			}),
 			Run: ToolFSCat,
+			Annotations: Meta{
+				"destructiveHint": false,
+				"openWorldHint":   true,
+				"readOnlyHint":    true,
+			},
 		})
 
 		RegisterTool(Tool{
 			Name:        "pwd",
-			Description: "print name of current/working directory",
+			Description: "Use this when you need to know the current working directory, based on the Unix command: `pwd`. The initial working directory is the user home directory, or `/` if none is defined.",
 			InputSchema: JsonSchema(map[string]interface{}{
 				"type":       "object",
 				"properties": map[string]interface{}{},
 				"required":   []string{},
 			}),
 			Run: ToolFSPwd,
+			Annotations: Meta{
+				"destructiveHint": false,
+				"openWorldHint":   true,
+				"readOnlyHint":    true,
+			},
 		})
 
 		RegisterTool(Tool{
 			Name:        "cd",
-			Description: "change the working directory",
+			Description: "Use this when you need to change the current working directory so that subsequent file operations run relative to a different path, based on the Unix command: `cd`.",
 			InputSchema: JsonSchema(map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
@@ -101,11 +112,16 @@ func init() {
 				"required": []string{"path"},
 			}),
 			Run: ToolFSCd,
+			Annotations: Meta{
+				"destructiveHint": false,
+				"openWorldHint":   true,
+				"readOnlyHint":    true,
+			},
 		})
 
 		RegisterTool(Tool{
 			Name:        "mv",
-			Description: "move (rename) files",
+			Description: "Use this when you need to move or rename a file or directory from one path to another, based on the Unix command: `mv`.",
 			InputSchema: JsonSchema(map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
@@ -121,11 +137,16 @@ func init() {
 				"required": []string{"from", "to"},
 			}),
 			Run: ToolFSMv,
+			Annotations: Meta{
+				"destructiveHint": true,
+				"openWorldHint":   true,
+				"readOnlyHint":    false,
+			},
 		})
 
 		RegisterTool(Tool{
 			Name:        "mkdir",
-			Description: "make directories",
+			Description: "Use this when you need to create a new directory at a specified path, based on the Unix command: `mkdir`.",
 			InputSchema: JsonSchema(map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
@@ -137,11 +158,16 @@ func init() {
 				"required": []string{"path"},
 			}),
 			Run: ToolFSMkdir,
+			Annotations: Meta{
+				"destructiveHint": true,
+				"openWorldHint":   true,
+				"readOnlyHint":    false,
+			},
 		})
 
 		RegisterTool(Tool{
 			Name:        "touch",
-			Description: "create file",
+			Description: "Use this when you need to create an empty file at a specified path, based on the Unix command: `touch`.",
 			InputSchema: JsonSchema(map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
@@ -153,11 +179,16 @@ func init() {
 				"required": []string{"path"},
 			}),
 			Run: ToolFSTouch,
+			Annotations: Meta{
+				"destructiveHint": true,
+				"openWorldHint":   true,
+				"readOnlyHint":    false,
+			},
 		})
 
 		RegisterTool(Tool{
 			Name:        "rm",
-			Description: "remove files or directories",
+			Description: "Use this when you need to remove a file or directory at a specified path, based on the Unix command: `rm`.",
 			InputSchema: JsonSchema(map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
@@ -169,11 +200,16 @@ func init() {
 				"required": []string{"path"},
 			}),
 			Run: ToolFSRm,
+			Annotations: Meta{
+				"destructiveHint": true,
+				"openWorldHint":   true,
+				"readOnlyHint":    false,
+			},
 		})
 
 		RegisterTool(Tool{
 			Name:        "save",
-			Description: "save a file",
+			Description: "Use this when you need to write or overwrite the contents of a file at a specified path.",
 			InputSchema: JsonSchema(map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
@@ -189,6 +225,11 @@ func init() {
 				"required": []string{"path"},
 			}),
 			Run: ToolFSSave,
+			Annotations: Meta{
+				"destructiveHint": true,
+				"openWorldHint":   true,
+				"readOnlyHint":    false,
+			},
 		})
 	})
 }

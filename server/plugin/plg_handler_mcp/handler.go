@@ -118,6 +118,7 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 									URI:      uri,
 									MimeType: resource.MimeType,
 									Text:     resource.Content,
+									Meta:     resource.Meta,
 								},
 							},
 						})
