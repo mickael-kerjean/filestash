@@ -14,7 +14,7 @@
         {{- range .bundle }}
         <link rel="modulepreload" href="{{ . }}" />
         {{- end }}
-        <link rel="preload" as="style" href="custom.css">
+        <link rel="preload" as="style" href="custom.css" onload="this.rel='stylesheet'">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="application-name" content="Filestash">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
