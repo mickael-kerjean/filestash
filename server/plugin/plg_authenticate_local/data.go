@@ -14,26 +14,16 @@ func init() {
 }
 
 func getPluginData() (pluginConfig, error) {
-	var cfg pluginConfig
+	cfg := make(pluginConfig)
 	if !isEnabled() {
 		Log.Warning("plg_authenticate_simple::disable msg=middleware_is_not_enabled")
 		return cfg, ErrMissingDependency
 	}
-	if err := json.Unmarshal(
+	err := json.Unmarshal(
 		[]byte(Config.Get("middleware.identity_provider.params").String()),
 		&cfg,
-	); err != nil {
-		return cfg, err
-	}
-	if cfg.DB != "" {
-		if err := json.Unmarshal(
-			[]byte(cfg.DB),
-			&cfg.Users,
-		); err != nil {
-			return cfg, err
-		}
-	}
-	return cfg, nil
+	)
+	return cfg, err
 }
 
 func savePluginData(cfg pluginConfig) error {
@@ -41,11 +31,6 @@ func savePluginData(cfg pluginConfig) error {
 		Log.Warning("plg_authenticate_simple::disable msg=middleware_is_not_enabled")
 		return ErrMissingDependency
 	}
-	a, err := json.Marshal(cfg.Users)
-	if err != nil {
-		return err
-	}
-	cfg.DB = string(a)
 	b, err := json.Marshal(cfg)
 	if err != nil {
 		return err

@@ -67,7 +67,10 @@ func updateUser(user User) error {
 
 func getUsers() ([]User, error) {
 	cfg, err := getPluginData()
-	return cfg.Users, err
+	if err != nil {
+		return nil, err
+	}
+	return cfg.GetUsers()
 }
 
 func saveUsers(users []User) error {
@@ -90,6 +93,6 @@ func saveUsers(users []User) error {
 		}
 		return false
 	})
-	cfg.Users = users
+	cfg.SetUsers(users)
 	return savePluginData(cfg)
 }

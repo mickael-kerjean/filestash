@@ -31,11 +31,3 @@ type User struct {
 	Code string `json:"-"`
 	MFA  string `json:"mfa"`
 }
-
-type pluginConfig struct {
-	DB      string `json:"db"`
-	MFA     string `json:"mfa"`
-	Users   []User `json:"-"`
-	Subject string `json:"notification_subject"`
-	Body    string `json:"notification_body"`
-}

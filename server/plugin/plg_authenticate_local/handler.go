@@ -45,10 +45,7 @@ func UserManagementHandler(ctx *App, res http.ResponseWriter, req *http.Request)
 			Email:    email,
 			Password: formatPassword(req.FormValue("password")),
 			Role:     formatRole(req.FormValue("role")),
-			Disabled: false,
-		}
-		if req.FormValue("disabled") == "on" {
-			user.Disabled = true
+			Disabled: req.FormValue("disabled") == "on",
 		}
 		redirectURI := req.URL.String()
 		fn := createUser
