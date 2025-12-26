@@ -23,7 +23,7 @@ const (
 	HLS_SEGMENT_LENGTH = 5
 	FPS                = 30
 	CLEAR_CACHE_AFTER  = 12
-	VideoCachePath     = "data/cache/video/"
+	VideoCacheTmpPath  = "video/"
 )
 
 var (
@@ -79,7 +79,7 @@ func init() {
 		blacklist_format()
 		plugin_enable()
 
-		cachePath := GetAbsolutePath(VideoCachePath)
+		cachePath := GetAbsolutePath(TMP_PATH, VideoCacheTmpPath)
 		os.RemoveAll(cachePath)
 		os.MkdirAll(cachePath, os.ModePerm)
 	})
@@ -129,7 +129,8 @@ func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter
 
 	cacheName := "vid_" + GenerateID(ctx.Session) + "_" + QuickHash(path, 10) + ".dat"
 	cachePath := GetAbsolutePath(
-		VideoCachePath,
+		TMP_PATH,
+		VideoCacheTmpPath,
 		cacheName,
 	)
 	f, err := os.OpenFile(cachePath, os.O_CREATE|os.O_RDWR, os.ModePerm)
@@ -179,7 +180,8 @@ func hlsTranscodeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 	startTime := segmentNumber * HLS_SEGMENT_LENGTH
 	cachePath := GetAbsolutePath(
-		VideoCachePath,
+		TMP_PATH,
+		VideoCacheTmpPath,
 		req.URL.Query().Get("path"),
 	)
 	if _, err := os.Stat(cachePath); os.IsNotExist(err) {
