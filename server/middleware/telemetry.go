@@ -46,7 +46,7 @@ func logger(ctx App, res http.ResponseWriter, req *http.Request) {
 			Method:     req.Method,
 			RequestURI: req.RequestURI,
 			Proto:      req.Proto,
-			Status:     obj.Status,
+			Status:     obj.status,
 			UserAgent:  req.Header.Get("User-Agent"),
 			Ip:         req.RemoteAddr,
 			Referer:    req.Referer(),

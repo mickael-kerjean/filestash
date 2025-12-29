@@ -36,7 +36,7 @@ func NewMiddlewareChain(fn HandlerFunc, m []Middleware, app App) http.HandlerFun
 
 type ResponseWriter struct {
 	http.ResponseWriter
-	Status int
+	status int
 	start  time.Time
 }
 
@@ -48,13 +48,13 @@ func NewResponseWriter(res http.ResponseWriter) ResponseWriter {
 }
 
 func (w *ResponseWriter) WriteHeader(status int) {
-	w.Status = status
+	w.status = status
 	w.ResponseWriter.WriteHeader(status)
 }
 
 func (w *ResponseWriter) Write(b []byte) (int, error) {
-	if w.Status == 0 {
-		w.Status = 200
+	if w.status == 0 {
+		w.status = 200
 	}
 	return w.ResponseWriter.Write(b)
 }
