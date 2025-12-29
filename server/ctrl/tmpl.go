@@ -228,6 +228,15 @@ var tmplFuncs = template.FuncMap{
 				return "", nil
 			}
 		}
-		return fmt.Sprintf("%v", data[filters[len(filters)-1]]), nil
+		switch val := data[filters[len(filters)-1]].(type) {
+		case []any:
+			valStr := make([]string, len(val))
+			for i := range val {
+				valStr[i] = fmt.Sprintf("%v", val[i])
+			}
+			return strings.Join(valStr, ", "), nil
+		default:
+			return fmt.Sprintf("%v", val), nil
+		}
 	},
 }
