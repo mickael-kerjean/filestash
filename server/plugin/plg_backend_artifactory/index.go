@@ -173,6 +173,10 @@ func (this ArtifactoryStorage) Ls(path string) ([]os.FileInfo, error) {
 	return parse(jsonStr)
 }
 
+func (this ArtifactoryStorage) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (this ArtifactoryStorage) Cat(path string) (io.ReadCloser, error) {
 	// https://www.jfrog.com/confluence/display/JFROG/Artifactory+REST+API#ArtifactoryRESTAPI-FileInfo
 	if p := this.artifactoryPath(path); p.path == "" {

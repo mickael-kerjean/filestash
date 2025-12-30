@@ -194,11 +194,34 @@ func (g Git) Ls(path string) ([]os.FileInfo, error) {
 	if err != nil {
 		return nil, NewError(err.Error(), 403)
 	}
-	file, err := SafeOsOpenFile(p, os.O_RDONLY, os.ModePerm)
+	f, err := SafeOsOpenFile(p, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
-	return file.Readdir(0)
+	files, err := f.Readdir(-1)
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return files, f.Close()
+}
+
+func (g Git) Stat(path string) (os.FileInfo, error) {
+	g.git.refresh()
+	p, err := g.path(path)
+	if err != nil {
+		return nil, NewError(err.Error(), 403)
+	}
+	f, err := SafeOsOpenFile(p, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+	finfo, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return finfo, f.Close()
 }
 
 func (g Git) Cat(path string) (io.ReadCloser, error) {

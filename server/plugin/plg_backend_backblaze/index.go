@@ -197,6 +197,10 @@ func (this Backblaze) Cat(path string) (io.ReadCloser, error) {
 	return res.Body, nil
 }
 
+func (this Backblaze) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (this Backblaze) Mkdir(path string) error {
 	p := this.path(path)
 
@@ -515,7 +519,6 @@ func (this Backblaze) request(method string, url string, body io.Reader, fn func
 	}
 	req.Header.Set("User-Agent", "Filestash "+APP_VERSION+"."+BUILD_DATE)
 	req.Header.Set("Accept", "application/json")
-	//req.Header.Set("X-Bz-Test-Mode", "force_cap_exceeded")
 	if fn != nil {
 		fn(req)
 	}

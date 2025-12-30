@@ -143,6 +143,10 @@ func (g GDrive) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (g GDrive) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (g GDrive) Cat(path string) (io.ReadCloser, error) {
 	file, err := g.infoPath(path)
 	if err != nil {

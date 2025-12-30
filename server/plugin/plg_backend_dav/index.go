@@ -111,6 +111,10 @@ func (this Dav) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (this Dav) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (this Dav) Cat(path string) (io.ReadCloser, error) {
 	var uri string
 	var err error

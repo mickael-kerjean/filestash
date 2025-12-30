@@ -30,11 +30,11 @@ func init() {
 		if disable_svg() == false {
 			return
 		}
-		Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+		Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, bool, error) {
 			if GetMimeType(req.URL.Query().Get("path")) != "image/svg+xml" {
-				return reader, nil
+				return reader, false, nil
 			} else if disable_svg() == false {
-				return reader, nil
+				return reader, false, nil
 			}
 
 			// XSS
@@ -45,7 +45,7 @@ func init() {
 			if regexp.MustCompile("(?is)entity").Match(txt) {
 				txt = []byte("")
 			}
-			return NewReadCloserFromBytes(txt), nil
+			return NewReadCloserFromBytes(txt), true, nil
 		})
 	})
 }

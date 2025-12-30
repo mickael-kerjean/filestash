@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"os"
 	"slices"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -87,6 +88,10 @@ func (this PSQL) Cat(path string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	return NewReadCloserFromBytes(b), nil
+}
+
+func (this PSQL) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
 }
 
 func _createDescription(el Column, link LocationColumn) string {

@@ -252,6 +252,10 @@ func (this Mysql) Ls(path string) ([]os.FileInfo, error) {
 	return nil, ErrNotValid
 }
 
+func (this Mysql) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (this Mysql) Cat(path string) (io.ReadCloser, error) {
 	defer this.db.Close()
 	location, err := NewDBLocation(path)

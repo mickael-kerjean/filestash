@@ -227,6 +227,11 @@ func (this NfsShare) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (this NfsShare) Stat(path string) (os.FileInfo, error) {
+	defer this.Close()
+	return nil, ErrNotImplemented
+}
+
 func (this NfsShare) Cat(path string) (io.ReadCloser, error) {
 	go func() {
 		<-this.ctx.Done()

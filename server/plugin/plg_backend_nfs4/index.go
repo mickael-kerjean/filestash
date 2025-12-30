@@ -129,6 +129,24 @@ func (this Nfs4Share) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (this Nfs4Share) Stat(path string) (os.FileInfo, error) {
+	finfo, err := this.client.GetFileInfo(path)
+	if err != nil {
+		return nil, err
+	}
+	return File{
+		FName: finfo.Name,
+		FType: func() string {
+			if finfo.IsDir {
+				return "directory"
+			}
+			return "file"
+		}(),
+		FSize: int64(finfo.Size),
+		FTime: int64(finfo.Mtime.Nanosecond()),
+	}, nil
+}
+
 func (this Nfs4Share) Cat(path string) (io.ReadCloser, error) {
 	_, err := this.client.GetFileInfo(path)
 	if err != nil {

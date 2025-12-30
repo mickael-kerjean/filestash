@@ -30,5 +30,4 @@ func main() {
 		fmt.Printf("MimeTypes[\"%s\"] = \"%s\"\n", key, value)
 	}
 	fmt.Printf("}\n")
-
 }

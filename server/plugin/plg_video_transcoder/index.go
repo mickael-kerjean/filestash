@@ -117,14 +117,14 @@ func init() {
 	Hooks.Register.ProcessFileContentBeforeSend(hlsPlaylistHandler)
 }
 
-func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, bool, error) {
 	query := req.URL.Query()
 	if query.Get("transcode") != "hls" {
-		return reader, nil
+		return reader, false, nil
 	}
 	path := query.Get("path")
 	if strings.HasPrefix(GetMimeType(path), "video/") == false {
-		return reader, nil
+		return reader, false, nil
 	}
 
 	cacheName := "vid_" + GenerateID(ctx.Session) + "_" + QuickHash(path, 10) + ".dat"
@@ -134,8 +134,7 @@ func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter
 	)
 	f, err := os.OpenFile(cachePath, os.O_CREATE|os.O_RDWR, os.ModePerm)
 	if err != nil {
-		Log.Stdout("ERR %+v", err)
-		return reader, err
+		return reader, false, err
 	}
 	io.Copy(f, reader)
 	reader.Close()
@@ -144,7 +143,7 @@ func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter
 
 	p, err := ffprobe(cachePath)
 	if err != nil {
-		return reader, err
+		return reader, false, err
 	}
 
 	var response string
@@ -164,7 +163,7 @@ func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter
 	}
 	response += "#EXT-X-ENDLIST\n"
 	(*res).Header().Set("Content-Type", "application/x-mpegURL")
-	return NewReadCloserFromBytes([]byte(response)), nil
+	return NewReadCloserFromBytes([]byte(response)), true, nil
 }
 
 func hlsTranscodeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {

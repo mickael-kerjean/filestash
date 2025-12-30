@@ -184,6 +184,7 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	var (
 		file              io.ReadCloser
+		fileMutation      bool        = false
 		contentLength     int64       = -1
 		needToCreateCache bool        = false
 		query             url.Values  = req.URL.Query()
@@ -265,10 +266,14 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 	for _, obj := range Hooks.Get.ProcessFileContentBeforeSend() {
-		if file, err = obj(file, ctx, &res, req); err != nil {
+		f, changed, err := obj(file, ctx, &res, req)
+		if err != nil {
 			Log.Debug("cat::hooks '%s'", err.Error())
 			SendErrorResult(res, err)
 			return
+		} else if changed {
+			file = f
+			fileMutation = true
 		}
 	}
 
@@ -340,10 +345,14 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 					end = contentLength - 1
 				}
 			}
-
 			if start != -1 && end != -1 && end-start >= 0 {
 				ranges = append(ranges, []int64{start, end})
 			}
+		}
+	} else if fileMutation == false && contentLength < 0 {
+		if finfo, err := ctx.Backend.Stat(path); err == nil {
+			contentLength = finfo.Size()
+			header.Set("Last-Modified", finfo.ModTime().Format(time.RFC1123))
 		}
 	}
 

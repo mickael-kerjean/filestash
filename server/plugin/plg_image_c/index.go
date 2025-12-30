@@ -42,25 +42,25 @@ func init() {
 		Hooks.Register.Thumbnailer(mType, &transcoder{runner(raw), "image/jpeg", -200})
 	}
 
-	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, bool, error) {
 		query := req.URL.Query()
 		mType := GetMimeType(query.Get("path"))
 		if strings.HasPrefix(mType, "image/") == false {
-			return reader, nil
+			return reader, false, nil
 		} else if query.Get("thumbnail") == "true" {
-			return reader, nil
+			return reader, false, nil
 		} else if query.Get("size") == "" {
-			return reader, nil
+			return reader, false, nil
 		}
 		sizeInt, err := strconv.Atoi(query.Get("size"))
 		if err != nil {
-			return reader, nil
+			return reader, false, nil
 		}
-		if contains(rawMimeType, mType) {
-			return transcoder{runner(raw), "image/jpeg", sizeInt}.
-				Generate(reader, ctx, res, req)
+		if !contains(rawMimeType, mType) {
+			return reader, false, nil
 		}
-		return reader, nil
+		thumb, err := transcoder{runner(raw), "image/jpeg", sizeInt}.Generate(reader, ctx, res, req)
+		return thumb, true, err
 	})
 }
 

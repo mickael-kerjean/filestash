@@ -71,7 +71,25 @@ func (this Local) Ls(path string) ([]os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return f.Readdir(-1)
+	files, err := f.Readdir(-1)
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return files, f.Close()
+}
+
+func (this Local) Stat(path string) (os.FileInfo, error) {
+	f, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+	finfo, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return finfo, f.Close()
 }
 
 func (this Local) Cat(path string) (io.ReadCloser, error) {
@@ -107,8 +125,11 @@ func (this Local) Save(path string, content io.Reader) error {
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(f, content)
-	return err
+	if _, err = io.Copy(f, content); err != nil {
+		f.Close()
+		return err
+	}
+	return f.Close()
 }
 
 func (this Local) Touch(path string) error {

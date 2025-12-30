@@ -256,6 +256,51 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 	return files, err
 }
 
+func (this S3Backend) Stat(path string) (os.FileInfo, error) {
+	p := this.path(path)
+	if p.path == "" {
+		b, err := this.client.ListBuckets(&s3.ListBucketsInput{})
+		if err != nil {
+			return nil, err
+		}
+		for _, bucket := range b.Buckets {
+			if bucket.Name != nil && *bucket.Name == p.bucket {
+				return &File{
+					FName: *bucket.Name,
+					FType: "directory",
+					FTime: bucket.CreationDate.Unix(),
+				}, nil
+			}
+		}
+		return nil, ErrNotFound
+	}
+	client := s3.New(this.createSession(p.bucket))
+	input := &s3.HeadObjectInput{
+		Bucket: aws.String(p.bucket),
+		Key:    aws.String(p.path),
+	}
+	obj, err := client.HeadObjectWithContext(this.Context, input)
+	if err != nil {
+		awsErr, ok := err.(awserr.Error)
+		if ok == false || awsErr.Code() != "NotFound" {
+			return nil, err
+		}
+		return File{
+			FName: filepath.Base(path),
+			FType: "directory",
+			FTime: -1,
+		}, nil
+	} else if obj.ContentLength == nil || obj.LastModified == nil {
+		return nil, ErrNotValid
+	}
+	return File{
+		FName: filepath.Base(path),
+		FType: "file",
+		FSize: (*obj.ContentLength),
+		FTime: (*obj.LastModified).Unix(),
+	}, err
+}
+
 func (this S3Backend) Cat(path string) (io.ReadCloser, error) {
 	p := this.path(path)
 	client := s3.New(this.createSession(p.bucket))

@@ -128,6 +128,43 @@ func (this *Url) Ls(path string) ([]os.FileInfo, error) {
 	return links, nil
 }
 
+func (this *Url) Stat(path string) (os.FileInfo, error) {
+	this.root.Path = path
+	resp, err := request(this.ctx, http.MethodHead, this.root.String(), "")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, ErrNotFound
+		} else if resp.StatusCode == http.StatusForbidden {
+			return nil, ErrNotAllowed
+		}
+		return nil, fmt.Errorf("HTTP Error %d", resp.StatusCode)
+	}
+	finfo := &File{
+		FName: filepath.Base(path),
+		FType: "file",
+		FSize: -1,
+		FTime: -1,
+	}
+	if cl := resp.Header.Get("Content-Length"); cl != "" {
+		if s, err := strconv.ParseInt(cl, 10, 64); err == nil {
+			finfo.FSize = s
+		}
+	}
+	if lm := resp.Header.Get("Last-Modified"); lm != "" {
+		if t, err := time.Parse(time.RFC1123, lm); err == nil {
+			finfo.FTime = t.Unix()
+		}
+	}
+	if strings.HasSuffix(path, "/") {
+		finfo.FType = "directory"
+	}
+	return finfo, nil
+}
+
 func (this Url) processLink(link string, n *html.Node) *File {
 	u, err := url.Parse(link)
 	if err != nil {

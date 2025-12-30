@@ -77,7 +77,29 @@ func (this TmpStorage) Ls(path string) ([]os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return f.Readdir(-1)
+	files, err := f.Readdir(-1)
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return files, f.Close()
+}
+
+func (this TmpStorage) Stat(path string) (os.FileInfo, error) {
+	path, err := this.fullpath(path)
+	if err != nil {
+		return nil, err
+	}
+	f, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+	finfo, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return finfo, f.Close()
 }
 
 func (this TmpStorage) Cat(path string) (io.ReadCloser, error) {
@@ -88,9 +110,7 @@ func (this TmpStorage) Cat(path string) (io.ReadCloser, error) {
 	reader, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err == nil {
 		return reader, nil
-	}
-
-	if os.IsExist(err) == false {
+	} else if os.IsExist(err) == false {
 		if strings.HasSuffix(path, ".doc") || strings.HasSuffix(path, ".docx") {
 			docx, err := base64.StdEncoding.DecodeString(EMPTY_DOCX)
 			if err != nil {
@@ -140,8 +160,11 @@ func (this TmpStorage) Save(path string, content io.Reader) error {
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(f, content)
-	return err
+	if _, err = io.Copy(f, content); err != nil {
+		f.Close()
+		return nil
+	}
+	return f.Close()
 }
 
 func (this TmpStorage) Touch(path string) error {

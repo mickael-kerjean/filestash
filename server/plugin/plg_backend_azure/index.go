@@ -199,6 +199,27 @@ func (this *azureFilecat) Close() error {
 	return this.reader.Close()
 }
 
+func (this AzureBlob) Stat(path string) (os.FileInfo, error) {
+	ap := this.path(path)
+	props, err := this.client.ServiceClient().NewContainerClient(ap.containerName).NewBlockBlobClient(ap.blobName).GetProperties(this.ctx, nil)
+	if err == nil {
+		if props.ContentLength == nil || props.LastModified == nil {
+			return nil, ErrNotValid
+		}
+		return File{
+			FName: filepath.Base(path),
+			FSize: *props.ContentLength,
+			FTime: (*props.LastModified).Unix(),
+		}, nil
+		return nil, err
+	}
+	return File{
+		FName: filepath.Base(path),
+		FType: "directory",
+		FTime: -1,
+	}, nil
+}
+
 func (this *AzureBlob) Mkdir(path string) error {
 	ap := this.path(path)
 	if ap.blobName == "" {

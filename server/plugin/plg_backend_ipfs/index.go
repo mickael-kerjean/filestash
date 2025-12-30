@@ -87,6 +87,23 @@ func (this Ipfs) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (this Ipfs) Stat(path string) (os.FileInfo, error) {
+	out := struct {
+		Hash           string
+		Type           string
+		Size           int64
+		CumulativeSize int
+	}{}
+	if err := this.query("/api/v0/files/stat?arg="+url.QueryEscape(path), &out); err != nil {
+		return nil, err
+	}
+	return File{
+		FName: filepath.Base(path),
+		FSize: out.Size,
+		FType: out.Type,
+	}, nil
+}
+
 func (this Ipfs) Cat(path string) (io.ReadCloser, error) {
 	req, err := http.NewRequest(http.MethodPost, this.url+"/api/v0/files/read?arg="+url.QueryEscape(path), nil)
 	if err != nil {
@@ -158,23 +175,6 @@ func (this Ipfs) Touch(path string) error {
 		return nil
 	}
 	return this.Save(path, strings.NewReader(""))
-}
-
-func (this Ipfs) Stat(path string) (os.FileInfo, error) {
-	out := struct {
-		Hash           string
-		Type           string
-		Size           int64
-		CumulativeSize int
-	}{}
-	if err := this.query("/api/v0/files/stat?arg="+url.QueryEscape(path), &out); err != nil {
-		return nil, err
-	}
-	return File{
-		FName: filepath.Base(path),
-		FSize: out.Size,
-		FType: out.Type,
-	}, nil
 }
 
 func (this Ipfs) query(cmd string, response any) error {

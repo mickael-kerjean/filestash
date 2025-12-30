@@ -30,6 +30,7 @@ type DescribeResponse struct {
 		Permanode struct {
 			Attr    map[string][]string `json:"attr"`
 			ModTime time.Time
+			Size    int64
 		} `json:"permanode"`
 		CamliType string `json:"camliType"`
 	} `json:"meta"`

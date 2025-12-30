@@ -159,6 +159,10 @@ func (this Perkeep) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (this Perkeep) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (this Perkeep) Cat(path string) (io.ReadCloser, error) {
 	ref, err := this.getRef(path)
 	if err != nil {
