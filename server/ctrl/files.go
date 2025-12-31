@@ -234,6 +234,16 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	mType := GetMimeType(query.Get("path"))
 	if file == nil {
 		if file, err = ctx.Backend.Cat(path); err != nil {
+			if req.Method == http.MethodHead {
+				if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.IsDir() {
+					if finfo.ModTime().Unix() > 0 {
+						header.Set("Last-Modified", finfo.ModTime().Format(time.RFC1123))
+					}
+					header.Set("Content-Type", "inode/directory")
+					res.WriteHeader(http.StatusNoContent)
+					return
+				}
+			}
 			Log.Debug("cat::backend '%s'", err.Error())
 			SendErrorResult(res, err)
 			return
@@ -351,8 +361,19 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 	} else if fileMutation == false && contentLength < 0 {
 		if finfo, err := ctx.Backend.Stat(path); err == nil {
+			if finfo.ModTime().Unix() > 0 {
+				header.Set("Last-Modified", finfo.ModTime().Format(time.RFC1123))
+			}
+			if finfo.IsDir() {
+				header.Set("Content-Type", "inode/directory")
+				if req.Method == http.MethodHead {
+					res.WriteHeader(http.StatusNoContent)
+					return
+				}
+				SendErrorResult(res, ErrNotFound)
+				return
+			}
 			contentLength = finfo.Size()
-			header.Set("Last-Modified", finfo.ModTime().Format(time.RFC1123))
 		}
 	}
 
