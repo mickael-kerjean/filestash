@@ -10,12 +10,12 @@ func init() {
 	Hooks.Register.ProcessFileContentBeforeSend(renderImages)
 }
 
-func renderImages(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+func renderImages(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, bool, error) {
 	query := req.URL.Query()
 	if query.Get("thumbnail") == "true" {
-		return reader, nil
+		return reader, false, nil
 	} else if query.Get("size") == "" {
-		return reader, nil
+		return reader, false, nil
 	}
 
 	var (
@@ -31,7 +31,7 @@ func renderImages(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req 
 	case "image/dicom":
 		out, mType, err = transcodeDicom(reader)
 	default:
-		return reader, nil
+		return reader, false, nil
 	}
 	reader.Close()
 	if err == nil {
@@ -39,7 +39,7 @@ func renderImages(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req 
 	}
 	if err != nil && err != ErrNotImplemented && err != ErrNotValid {
 		Log.Debug("plg_image_transcode::err %s", err.Error())
-		return nil, ErrNotValid
+		return nil, false, ErrNotValid
 	}
-	return out, err
+	return out, true, err
 }
