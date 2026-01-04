@@ -32,19 +32,6 @@ var (
 )
 
 func init() {
-	if _, err := exec.LookPath("ffmpeg"); err != nil {
-		Hooks.Register.Onload(func() {
-			Log.Warning("plg_video_thumbnail::init error=ffmpeg_not_installed")
-		})
-		return
-	}
-	if _, err := exec.LookPath("ffprobe"); err != nil {
-		Hooks.Register.Onload(func() {
-			Log.Warning("plg_video_thumbnail::init error=ffprobe_not_installed")
-		})
-		return
-	}
-
 	plugin_enable = func() bool {
 		return Config.Get("features.video.enable_transcoder").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -77,44 +64,51 @@ func init() {
 
 	Hooks.Register.Onload(func() {
 		blacklist_format()
-		plugin_enable()
+		if !plugin_enable() {
+			return
+		} else if _, err := exec.LookPath("ffmpeg"); err != nil {
+			Log.Warning("plg_video_thumbnail::init error=ffmpeg_not_installed")
+			return
+		} else if _, err := exec.LookPath("ffprobe"); err != nil {
+			Log.Warning("plg_video_thumbnail::init error=ffprobe_not_installed")
+			return
+		}
 
 		cachePath := GetAbsolutePath(VideoCachePath)
 		os.RemoveAll(cachePath)
 		os.MkdirAll(cachePath, os.ModePerm)
-	})
 
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
-		r.HandleFunc(OverrideVideoSourceMapper, func(res http.ResponseWriter, req *http.Request) {
-			res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
-			if plugin_enable() == false {
-				return
-			}
-			res.Write([]byte(`window.overrides["video-map-sources"] = function(sources){`))
-			res.Write([]byte(`    return sources.map(function(source){`))
+		Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+			r.HandleFunc(OverrideVideoSourceMapper, func(res http.ResponseWriter, req *http.Request) {
+				res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
+				if plugin_enable() == false {
+					return
+				}
+				res.Write([]byte(`window.overrides["video-map-sources"] = function(sources){`))
+				res.Write([]byte(`    return sources.map(function(source){`))
 
-			blacklists := strings.Split(blacklist_format(), ",")
-			for i := 0; i < len(blacklists); i++ {
-				blacklists[i] = strings.TrimSpace(blacklists[i])
-				res.Write([]byte(fmt.Sprintf(`if(source.type == "%s"){ return source; } `, GetMimeType("."+blacklists[i]))))
-			}
-			res.Write([]byte(`        source.src = source.src + "&transcode=hls";`))
-			res.Write([]byte(`        source.type = "application/x-mpegURL";`))
-			res.Write([]byte(`        return source;`))
-			res.Write([]byte(`    })`))
-			res.Write([]byte(`}`))
+				blacklists := strings.Split(blacklist_format(), ",")
+				for i := 0; i < len(blacklists); i++ {
+					blacklists[i] = strings.TrimSpace(blacklists[i])
+					res.Write([]byte(fmt.Sprintf(`if(source.type == "%s"){ return source; } `, GetMimeType("."+blacklists[i]))))
+				}
+				res.Write([]byte(`        source.src = source.src + "&transcode=hls";`))
+				res.Write([]byte(`        source.type = "application/x-mpegURL";`))
+				res.Write([]byte(`        return source;`))
+				res.Write([]byte(`    })`))
+				res.Write([]byte(`}`))
+			})
+
+			r.PathPrefix("/hls/hls_{segment}.ts").Handler(NewMiddlewareChain(
+				hlsTranscodeHandler,
+				[]Middleware{SecureHeaders},
+				*app,
+			)).Methods("GET")
+
+			return nil
 		})
-		return nil
+		Hooks.Register.ProcessFileContentBeforeSend(hlsPlaylistHandler)
 	})
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
-		r.PathPrefix("/hls/hls_{segment}.ts").Handler(NewMiddlewareChain(
-			hlsTranscodeHandler,
-			[]Middleware{SecureHeaders},
-			*app,
-		)).Methods("GET")
-		return nil
-	})
-	Hooks.Register.ProcessFileContentBeforeSend(hlsPlaylistHandler)
 }
 
 func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, bool, error) {

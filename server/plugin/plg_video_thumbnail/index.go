@@ -32,17 +32,14 @@ var plugin_enable = func() bool {
 }
 
 func init() {
-	if _, err := exec.LookPath("ffmpeg"); err != nil {
-		Hooks.Register.Onload(func() {
-			Log.Warning("plg_video_thumbnail::init error=ffmpeg_not_installed")
-		})
-		return
-	}
-
 	Hooks.Register.Onload(func() {
 		if plugin_enable() == false {
 			return
+		} else if _, err := exec.LookPath("ffmpeg"); err != nil {
+			Log.Warning("plg_video_thumbnail::init error=ffmpeg_not_installed")
+			return
 		}
+
 		cachePath := GetAbsolutePath(VideoCachePath)
 		os.RemoveAll(cachePath)
 		os.MkdirAll(cachePath, os.ModePerm)
