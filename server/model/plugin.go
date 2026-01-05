@@ -19,11 +19,7 @@ type PluginImpl struct {
 }
 
 func PluginDiscovery() error {
-	f, err := os.Open(GetAbsolutePath(PLUGIN_PATH))
-	if err != nil {
-		return err
-	}
-	entries, err := f.ReadDir(0)
+	entries, err := os.ReadDir(GetAbsolutePath(PLUGIN_PATH))
 	if err != nil {
 		return err
 	}
@@ -61,9 +57,16 @@ func PluginDiscovery() error {
 				}
 				Hooks.Register.Favicon(b)
 			case "middleware":
-			case "http":
-				// TODO as entrypoint come from wasm
-				// see poc https://gist.github.com/mickael-kerjean/705d891e05870768946501b60ad19b8a
+				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
+				if err != nil {
+					return err
+				}
+				m, err := WasmAdapterForMiddleware(b)
+				if err != nil {
+					return err
+				}
+				Hooks.Register.Middleware(m)
+			case "http": // TODO
 				return ErrNotImplemented
 			}
 		}

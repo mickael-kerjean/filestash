@@ -3,6 +3,10 @@
     "version": "v0.0",
     "modules": [
         {
+            "type": "middleware",
+            "entrypoint": "middleware.wasm"
+        },
+        {
             "type": "xdg-open",
             "mime": "application/word",
             "entrypoint": "loader_lowa.js",
