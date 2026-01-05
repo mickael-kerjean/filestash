@@ -60,6 +60,11 @@ func PluginDiscovery() error {
 					return err
 				}
 				Hooks.Register.Favicon(b)
+			case "middleware":
+			case "http":
+				// TODO as entrypoint come from wasm
+				// see poc https://gist.github.com/mickael-kerjean/705d891e05870768946501b60ad19b8a
+				return ErrNotImplemented
 			}
 		}
 		PLUGINS[name] = impl
