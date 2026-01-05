@@ -260,6 +260,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	// plugin hooks
 	thumb := query.Get("thumbnail")
 	if thumb == "true" {
+		fileMutation = true
 		for plgMType, plgHandler := range Hooks.Get.Thumbnailer() {
 			if plgMType != mType {
 				continue
