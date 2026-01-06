@@ -261,6 +261,14 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	thumb := query.Get("thumbnail")
 	if thumb == "true" {
 		fileMutation = true
+		if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() > 0 {
+			lm := finfo.ModTime().Format(time.RFC1123)
+			if lm == req.Header.Get("If-Modified-Since") {
+				res.WriteHeader(http.StatusNotModified)
+				return
+			}
+			header.Set("Last-Modified", lm)
+		}
 		for plgMType, plgHandler := range Hooks.Get.Thumbnailer() {
 			if plgMType != mType {
 				continue
