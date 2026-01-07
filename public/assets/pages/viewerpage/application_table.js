@@ -19,7 +19,7 @@ class ITable {
     getBody() { throw new Error("NOT_IMPLEMENTED"); }
 }
 
-export default async function(render, { mime, getDownloadUrl, getFilename, hasMenubar = true, acl$ = rxjs.EMPTY }) {
+export default async function(render, { mime, getDownloadUrl, getFilename, hasMenubar = true, acl$ = rxjs.EMPTY, module = null }) {
     const $page = createElement(`
         <div class="component_tableviewer">
             <component-menubar filename="${safe(getFilename())}" class="${!hasMenubar && "hidden"}"></component-menubar>
@@ -54,8 +54,8 @@ export default async function(render, { mime, getDownloadUrl, getFilename, hasMe
             const loader = getPlugin(mime);
             if (!loader) throw new TypeError(`unsupported mimetype "${mime}"`);
             const [, url] = loader;
-            const module = await import(url);
-            let table = new (await module.default(ITable, { $menubar }))(response);
+            const m = module || (await import(url)).default;
+            let table = new (await m(ITable, { $menubar }))(response);
             if (typeof table.then === "function") table = await table;
             STATE.header = table.getHeader();
             STATE.body = table.getBody();
