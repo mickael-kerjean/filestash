@@ -123,12 +123,14 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		perms.CanRename = NewBool(false)
 		perms.CanMove = NewBool(false)
 		perms.CanDelete = NewBool(false)
+		perms.CanUpload = NewBool(false)
 	}
 	if model.CanUpload(ctx) == false {
 		perms.CanCreateDirectory = NewBool(false)
 		perms.CanRename = NewBool(false)
 		perms.CanMove = NewBool(false)
 		perms.CanDelete = NewBool(false)
+		perms.CanUpload = NewBool(false)
 	}
 	if model.CanShare(ctx) == false {
 		perms.CanShare = NewBool(false)
