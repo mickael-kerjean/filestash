@@ -147,6 +147,7 @@ func ServeFile(chroot string) func(*App, http.ResponseWriter, *http.Request) {
 				1,
 			),
 		)
+		Log.Stdout("CTRL::SERVEFILE %s => %s | %s", filePath, chroot, req.URL.Path)
 		head := res.Header()
 		head.Set("Cache-Control", "no-cache")
 		if f := applyPatch(filePath); f != nil {

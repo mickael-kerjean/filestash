@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -44,7 +45,7 @@ func IsDirectory(path string) bool {
  * Join 2 path together, result has a file
  */
 func JoinPath(base, file string) string {
-	filePath := filepath.Join(base, file)
+	filePath := path.Join(base, file)
 	if strings.HasPrefix(filePath, base) == false {
 		return base
 	}
