@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"go/format"
 	"io"
 	"os"
 )
@@ -24,10 +26,20 @@ func main() {
 	mTypes := make(map[string]string, 0)
 	json.Unmarshal(j, &mTypes)
 
-	fmt.Printf("package common\n")
-	fmt.Printf("func init() {\n")
+	var buf bytes.Buffer
+	buf.WriteString("package common\n")
+	buf.WriteString("func init() {\n")
 	for key, value := range mTypes {
-		fmt.Printf("MimeTypes[\"%s\"] = \"%s\"\n", key, value)
+		fmt.Fprintf(&buf, "MimeTypes[\"%s\"] = \"%s\"\n", key, value)
 	}
-	fmt.Printf("}\n")
+	buf.WriteString("}\n")
+	formatted, err := format.Source(buf.Bytes())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error formatting: %v\n", err)
+		os.Exit(1)
+	}
+	if err = os.WriteFile("../common/mime_generated.go", formatted, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "error writing file: %v\n", err)
+		os.Exit(1)
+	}
 }
