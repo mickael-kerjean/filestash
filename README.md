@@ -23,14 +23,6 @@
     </a>
 </p>
 
-# What / Why ?
-
-Familiar with the infamous comment from Dropbox's launch on HN? It went like this:
-
-<img src="https://raw.githubusercontent.com/mickael-kerjean/filestash_images/master/.assets/hn.png" alt="demo button" />
-
-Once we had a great user interface for FTP, we extended the idea to virtually every storage protocol and added gateways to expose Dropbox itself as an SFTP server, closing the infamous loop, while also adding all the features we always wished Dropbox had.
-
 # Key Features
 
 - Sleek, Speedy, Snappy, works great on Desktop and Mobile
@@ -48,8 +40,9 @@ Once we had a great user interface for FTP, we extended the idea to virtually ev
 - [Installation](https://www.filestash.app/docs/install-and-upgrade/?origin=github)
 - [API](https://www.filestash.app/docs/api/?origin=github#api) and [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html)
 - [Plugins Inventory](https://www.filestash.app/docs/plugin/?origin=github)
+- [Develop your own plugins](https://www.filestash.app/docs/guide/plugin-development.html)
 - [Hardening Guide](https://downloads.filestash.app/upload/hardening-guide.pdf?origin=github)
-
+- [SFTP Gateway](https://www.filestash.app/docs/guide/sftp-gateway.html), [Virtual Filesystem](https://www.filestash.app/docs/guide/virtual-filesystem.html)
 
 # Vision & Philosophy
 
