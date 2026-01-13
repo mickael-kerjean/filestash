@@ -77,11 +77,11 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
           <td>
             STANDARD [<span class="small">{{ renderPlugin (index .Plugins 0) .CommitHash }}</span>]
             <br/>
-            APPS [<span class="small">{{ renderPlugin (index .Plugins 3) "" }}</span>]
-            <br/>
             ENTERPRISE [<span class="small">{{ renderPlugin (index .Plugins 1) "" }}</span>]
             <br/>
             CUSTOM [<span class="small">{{ renderPlugin (index .Plugins 2) "" }}</span>]
+            <br/>
+            RUNTIME [<span class="small">{{ renderPlugin (index .Plugins 3) "" }}</span>]
           </td>
         </tr>
 	  </table>
