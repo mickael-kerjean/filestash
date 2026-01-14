@@ -1,5 +1,4 @@
-import { createElement, createRender } from "../../lib/skeleton/index.js";
-import { toHref } from "../../lib/skeleton/router.js";
+import { createElement, createRender, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect, applyMutation, preventDefault } from "../../lib/rx.js";
 import { qs } from "../../lib/dom.js";
 import { ApplicationError } from "../../lib/error.js";
@@ -19,7 +18,9 @@ import { authenticate$, isAdmin$ } from "./model_admin_session.js";
 
 import "../../components/icon.js";
 
-const stepper$ = new rxjs.BehaviorSubject(1);
+const stepper$ = new rxjs.BehaviorSubject(
+    parseInt(new URLSearchParams(location.search).get("step")) || 1
+);
 
 export default setupHOC(async function(render) {
     const $page = createElement(`
@@ -30,10 +31,11 @@ export default setupHOC(async function(render) {
     `);
     render($page);
 
+    let pwd = "";
     effect(stepper$.pipe(
         rxjs.map((step) => {
-            if (step === 1) return WithShell(componentStep1);
-            else if (step === 2) return WithShell(componentStep2);
+            if (step === 1) return WithShell(componentStep1, { setPassword: (p) => pwd = p });
+            else if (step === 2) return WithShell(componentStep2, { getPassword: () => pwd });
             throw new ApplicationError("INTERNAL_ERROR", "Assumption failed");
         }),
         rxjs.tap((ctrl) => ctrl(createRender(qs($page, "[data-bind=\"multistep-form\"]")))),
@@ -52,7 +54,7 @@ function setupHOC(ctrlWrapped) {
     };
 }
 
-function componentStep1(render) {
+function componentStep1(render, { setPassword }) {
     const $page = createElement(`
         <div id="step1">
             <h4>Welcome Aboard!</h4>
@@ -92,6 +94,7 @@ function componentStep1(render) {
             reshapeConfigBeforeSave,
             saveConfig(),
             rxjs.mergeMap(() => authenticate$({ password: pwd })),
+            rxjs.tap(() => setPassword(pwd)),
         )),
         rxjs.tap(() => animate($page, { time: 200, keyframes: slideXOut(-30) })),
         rxjs.delay(200),
@@ -110,7 +113,7 @@ const reshapeConfigBeforeSave = rxjs.pipe(
     )),
 );
 
-function componentStep2(render) {
+function componentStep2(render, { getPassword }) {
     const $page = createElement(`
         <div id="step2">
             <h4>
@@ -119,25 +122,25 @@ function componentStep2(render) {
             </h4>
             <div data-bind="dependencies"></div>
             <div data-bind="onboarding"></div>
-            <style>${cssHideMenu}</style>
+            <style id="cssHideMenu">${cssHideMenu}</style>
         </div>
     `);
     render($page);
 
     // feature: show state of dependencies
-    effect(getDeps().pipe(
+    effect(getDeps({ getPassword }).pipe(
         rxjs.first(),
         rxjs.mergeMap((deps) => deps),
         rxjs.map(({ name_success, name_failure, pass, severe, message }) => ({
             className: (severe ? "severe" : "") + " " + (pass ? "yes" : "no"),
             label: pass ? name_success : name_failure,
-            extraLabel: pass ? "" : ": " + message,
+            $extraLabel: pass ? null : message,
         })),
-        rxjs.map(({ label, className, extraLabel }) => createElement(`
+        rxjs.mergeMap(({ label, className, $extraLabel }) => rxjs.of(createElement(`
             <div class="component_dependency_installed ${className}">
-                <span>${label}</span>${extraLabel}
+                <strong>${label}</strong>
             </div>
-        `)),
+        `)).pipe(rxjs.tap(($node) => $extraLabel && $node.appendChild($extraLabel)))),
         applyMutation(qs($page, "[data-bind=\"dependencies\"]"), "appendChild"),
     ));
 
@@ -150,7 +153,7 @@ function componentStep2(render) {
     effect(rxjs.of(null).pipe(
         rxjs.tap(() => animate(qs($page, "h4"), { time: 200, keyframes: slideXIn(30) })),
         rxjs.delay(200),
-        rxjs.mapTo([]), applyMutation(qs($page, "style"), "remove")
+        rxjs.mapTo([]), applyMutation(qs($page, "style#cssHideMenu"), "remove")
     ));
 
     // feature: telemetry popup
@@ -190,8 +193,8 @@ function componentStep2(render) {
         return ret.toPromise();
     };
 
-    // feature: modal
-    effect(getAdminConfig().pipe(
+    // feature: telemetry modal
+    onDestroy(() => requestAnimationFrame(() => getAdminConfig().pipe(
         reshapeConfigBeforeSave,
         rxjs.delay(300),
         rxjs.filter((config) => config["log"]["telemetry"] !== true),
@@ -205,53 +208,5 @@ function componentStep2(render) {
             if (config) return rxjs.of(config).pipe(saveConfig());
             return rxjs.of(null);
         }),
-        // feature: onboarding
-        rxjs.mapTo(createElement(`
-            <div id="onboarding">
-                <strong>Next step: Link your storage</strong>
-                <svg class="dash-border">
-                    <rect x="2" y="2" rx="16" ry="16"></rect>
-                </svg>
-                <svg>
-                    <path id="path" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1">
-                        <animate attributeName="stroke-dashoffset" begin="indefinite" dur="700ms" fill="freeze" values="1;0" calcMode="linear" />
-                    </path>
-                    <g>
-                        <polygon points="4,0 -16,-8 -16,8"></polygon>
-                        <animateMotion begin="indefinite" dur="700ms" fill="freeze" rotate="auto" calcMode="linear">
-                            <mpath href="#path"></mpath>
-                        </animateMotion>
-                    </g>
-                </svg>
-            </div>
-        `)),
-        applyMutation(qs($page, "[data-bind=\"onboarding\"]"), "appendChild"),
-        rxjs.delay(500),
-        rxjs.map(($origin) => {
-            const $target = document.querySelector(` a[href="${toHref("/admin/storage")}"]`);
-            const $path = $origin.querySelector("svg path");
-            const $anims = [
-                $origin.querySelector("svg animate"),
-                $origin.querySelector("svg animateMotion"),
-            ];
-
-            const arc = (start, end) => {
-                const r = Math.min(Math.abs(end.x - start.x), Math.abs(end.y - start.y)) * 0.9;
-                return `M ${start.x},${start.y} ` +
-                    `L ${start.x},${end.y + r} ` +
-                    `Q ${start.x},${end.y} ${start.x - r},${end.y} ` +
-                    `L ${end.x+20},${end.y+2}`;
-            };
-            const o = $origin.getBoundingClientRect();
-            const t = $target.getBoundingClientRect();
-            $path.setAttribute("d", arc(
-                { x: o.left + o.width/2, y: o.top },
-                { x: t.right, y: t.top + t.height/2 }
-            ));
-            $anims.forEach(($el) => $el.beginElement());
-            $target.classList.add("pulse");
-            return $origin;
-        }),
-        rxjs.switchMap(($node) => rxjs.fromEvent(window, "resize").pipe(rxjs.tap(() => $node.remove()))),
-    ));
+    ).toPromise()));
 }

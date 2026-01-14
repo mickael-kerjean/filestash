@@ -38,56 +38,11 @@
 .component_setup #step2 .component_dependency_installed.no.severe {
     background: var(--error);
 }
-.component_setup #step2 .component_dependency_installed.no.severe span {
+.component_setup #step2 .component_dependency_installed strong {
     font-weight: bold;
     font-style: italic;
+    display: block;
 }
-.component_setup #step2 #onboarding {
-    position: fixed;
-    right: 32px;
-    bottom: 32px;
-    border-radius: 16px;
-    padding: 12px 18px;
-    color: var(--light);
-}
-.component_setup #step2 #onboarding .dash-border {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-}
-.component_setup #step2 #onboarding .dash-border rect {
-    width: calc(100% - 4px);
-    height: calc(100% - 4px);
-    fill: none;
-    stroke: #57595A;
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 8 6;
-    animation: dash-move 1.2s linear infinite;
-}
-@keyframes dash-move {
-    to { stroke-dashoffset: -14; }
-}
-.component_setup #step2 #onboarding svg {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-}
-.component_setup #step2 #onboarding svg path {
-    stroke-width: 3;
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke: #57595A;
-}
-.component_setup #step2 #onboarding svg g {
-    fill: #57595A;
-}
-
 .component_setup .stepper-form-appear, .component_setup .stepper-form-enter {
     transition-delay: 0.3s;
     transform: scale(1.02);

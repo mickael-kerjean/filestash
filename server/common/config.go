@@ -307,24 +307,7 @@ func (this *Configuration) Initialise() {
 		this.Get("general.secret_key").Set(key)
 	}
 	if len(this.Conn) == 0 {
-		this.Conn = []map[string]interface{}{
-			map[string]interface{}{
-				"type":  "sftp",
-				"label": "SFTP",
-			},
-			map[string]interface{}{
-				"type":  "s3",
-				"label": "S3",
-			},
-			map[string]interface{}{
-				"type":  "ftp",
-				"label": "FTP",
-			},
-			map[string]interface{}{
-				"type":  "webdav",
-				"label": "WebDAV",
-			},
-		}
+		this.Conn = []map[string]interface{}{}
 		shouldSave = true
 	}
 
