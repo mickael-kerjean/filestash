@@ -2,19 +2,20 @@ package plg_backend_git
 
 import (
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"golang.org/x/crypto/ssh"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
-	sshgit "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/go-git/go-git/v6"
+	"github.com/go-git/go-git/v6/plumbing"
+	"github.com/go-git/go-git/v6/plumbing/object"
+	"github.com/go-git/go-git/v6/plumbing/transport"
+	"github.com/go-git/go-git/v6/plumbing/transport/http"
+	sshgit "github.com/go-git/go-git/v6/plumbing/transport/ssh"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"golang.org/x/crypto/ssh"
 )
 
 var git_cache AppCache
@@ -344,7 +345,7 @@ func (g *GitLib) open(params *GitParams, path string) (*git.Repository, error) {
 		if err != nil {
 			return nil, err
 		}
-		g, err := git.PlainClone(path, false, &git.CloneOptions{
+		g, err := git.PlainClone(path, &git.CloneOptions{
 			URL:           g.params.repo,
 			Depth:         1,
 			ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", g.params.branch)),
