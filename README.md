@@ -13,36 +13,43 @@
 </p>
 
 <p align="center">
-    A Dropbox-like file manager that works with every storage protocol:<br>
+    We started as a Dropbox-like file manager that works with every storage protocol:<br>
     <a href="https://www.filestash.app/ftp-client.html">FTP</a> • <a href="https://www.filestash.app/ftp-client.html">FTPS</a> • <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a> • <a href="https://www.filestash.app/webdav-client.html">WebDAV</a> • Git • <a href="https://www.filestash.app/s3-browser.html">S3</a> • NFS • <a href="https://www.filestash.app/smb-client.html">SMB</a> • Artifactory • <a href="https://www.filestash.app/ldap-browser.html">LDAP</a> • Mysql <br>
        Sharepoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">Minio</a> • Storj <br>IPFS • Dropbox • Google Drive • ...
 </p>
 <p align="center">
+    The platform is evolving has a data access platform with not only APIs, a virtual filesystem to unify all your storage onto a single coherent filesystem and Gateways to expose that same data over SFTP, MCP or S3
     <a href="http://demo.filestash.app">
-      <img src="https://raw.githubusercontent.com/mickael-kerjean/filestash_images/master/.assets/button_demo.png" alt="demo button" />
+      <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
     </a>
 </p>
 
 # Key Features
 
-- Sleek, Speedy, Snappy, works great on Desktop and Mobile
-- Extensible / Customisable / Hackable via a rich ecosystem of plugins and a Workflow engine to enable automation
+- Our Web Client is awesome, made in vanillaJS it's Sleek, Speedy, Snappy, works great on Desktop and Mobile and can load millions of files / folde without breaking a sweat
+- A plugin based architecture. While the core is extremely lean, it is Extensible / Customisable / Hackable via a rich ecosystem of plugins to add / remove features
+- A Workflow engine to enable automation and tons of integrations options
+- Integrations with almost every possible storage that exists (we aim for 100% coverage of every possible storage technology), almost every possible authentication technologies from SSO to local auth or more exotic solution like using your Wordpress site as an IDP and everything in between
+- Ton of themes like those:
+
+xxxxxxxx
+
 - Shared Links which you can mount locally as network drives
 - Builtin Music, Video, Image viewers with optional transcoding and Chromecast support
 - [API](https://www.filestash.app/docs/api/?origin=github#api) and LLM integration via [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html) with support for other S3 and [SFTP Gateways](https://www.filestash.app/docs/guide/sftp-gateway.html).
 - [Themes](https://www.filestash.app/docs/plugin/#theme) replicating the UX of [dropbox](https://www.filestash.app/img/screenshots/theme_dropbox.png), [gdrive](https://www.filestash.app/img/screenshots/theme_gdrive.png), [github](https://www.filestash.app/img/screenshots/theme_github.png), [ibm](https://www.filestash.app/img/screenshots/theme_ibm.png), [onedrive](https://www.filestash.app/img/screenshots/theme_onedrive.png), [and more](https://www.filestash.app/img/screenshots/theme_untitled.png)
-- ... and much <sub>much <sub>much</sub></sub> more
+
+- ... and much <sub>much <sub>much</sub></sub> more. As a rule of thumb, if your problem can be solve with something involving files, we most likely have a plugin for it
 
 
-# Documentation
+# Quick Links
 
-- [Getting started](https://www.filestash.app/docs/?origin=github)
-- [Installation](https://www.filestash.app/docs/install-and-upgrade/?origin=github)
-- [API](https://www.filestash.app/docs/api/?origin=github#api) and [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html)
-- [Plugins Inventory](https://www.filestash.app/docs/plugin/?origin=github)
-- [Develop your own plugins](https://www.filestash.app/docs/guide/plugin-development.html)
+- Installing Filestash: [Getting started](https://www.filestash.app/docs/?origin=github) - [Installation Instructions](https://www.filestash.app/docs/install-and-upgrade/?origin=github)
+- Plugins: [inventory](https://www.filestash.app/docs/plugin/?origin=github), guide for [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html)
+- [API](https://www.filestash.app/docs/api/?origin=github#api)
+- Gateways: [SFTP Gateway](https://www.filestash.app/docs/guide/sftp-gateway.html),
+- [Virtual Filesystem](https://www.filestash.app/docs/guide/virtual-filesystem.html), [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html)
 - [Hardening Guide](https://downloads.filestash.app/upload/hardening-guide.pdf?origin=github)
-- [SFTP Gateway](https://www.filestash.app/docs/guide/sftp-gateway.html), [Virtual Filesystem](https://www.filestash.app/docs/guide/virtual-filesystem.html)
 
 # Vision & Philosophy
 
