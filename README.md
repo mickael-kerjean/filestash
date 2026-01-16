@@ -18,7 +18,9 @@
        Sharepoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">Minio</a> • Storj <br>IPFS • Dropbox • Google Drive • ...
 </p>
 <p align="center">
-    The platform is evolving has a data access platform with not only APIs, a virtual filesystem to unify all your storage onto a single coherent filesystem and Gateways to expose that same data over SFTP, MCP or S3
+    Filestash is evolving has a data access platform with not only APIs<br>
+    but also Gateways to expose your data over SFTP, MCP or S3<br>
+    a virtual filesystem that unified all your storage into one coherent filesystem<br>
     <a href="http://demo.filestash.app">
       <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
     </a>
@@ -26,29 +28,30 @@
 
 # Key Features
 
-- Our Web Client is awesome, made in vanillaJS it's Sleek, Speedy, Snappy, works great on Desktop and Mobile and can load millions of files / folde without breaking a sweat
-- A plugin based architecture. While the core is extremely lean, it is Extensible / Customisable / Hackable via a rich ecosystem of plugins to add / remove features
+- An awesome web client to access your data, made in vanillaJS it's Sleek, Speedy, Snappy, works great on Desktop and Mobile and can load millions of files / folde without breaking a sweat
+- A plugin based architecture with a very lean core, that's is extensible / customisable via a rich ecosystem of plugins to add / remove features
 - A Workflow engine to enable automation and tons of integrations options
 - Integrations with almost every possible storage that exists (we aim for 100% coverage of every possible storage technology), almost every possible authentication technologies from SSO to local auth or more exotic solution like using your Wordpress site as an IDP and everything in between
-- Ton of themes like those:
+- The frontend can open virtually anything, there's plugins to make your browser able to load format your browser does not natively handle, from astrophysics to embroidery patterns. Concretly we have added support for: xxxx
+- Themes:
 
-xxxxxxxx
+xxxxxxx
 
 - Shared Links which you can mount locally as network drives
 - Builtin Music, Video, Image viewers with optional transcoding and Chromecast support
 - [API](https://www.filestash.app/docs/api/?origin=github#api) and LLM integration via [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html) with support for other S3 and [SFTP Gateways](https://www.filestash.app/docs/guide/sftp-gateway.html).
 - [Themes](https://www.filestash.app/docs/plugin/#theme) replicating the UX of [dropbox](https://www.filestash.app/img/screenshots/theme_dropbox.png), [gdrive](https://www.filestash.app/img/screenshots/theme_gdrive.png), [github](https://www.filestash.app/img/screenshots/theme_github.png), [ibm](https://www.filestash.app/img/screenshots/theme_ibm.png), [onedrive](https://www.filestash.app/img/screenshots/theme_onedrive.png), [and more](https://www.filestash.app/img/screenshots/theme_untitled.png)
 
-- ... and much <sub>much <sub>much</sub></sub> more. As a rule of thumb, if your problem can be solve with something involving files, we most likely have a plugin for it
+- ... and much <sub>much <sub>much</sub></sub> more. From Chromecast support, on demand video transcoding, mouting shared links locally as a network drive, public site, antivirus, quota, .... As a rule of thumb, if your problem can be solve with something involving files, we most likely have a plugin for it
 
 
 # Quick Links
 
 - Installing Filestash: [Getting started](https://www.filestash.app/docs/?origin=github) - [Installation Instructions](https://www.filestash.app/docs/install-and-upgrade/?origin=github)
-- Plugins: [inventory](https://www.filestash.app/docs/plugin/?origin=github), guide for [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html)
+- Plugins: [Inventory](https://www.filestash.app/docs/plugin/?origin=github), [Developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github)
 - [API](https://www.filestash.app/docs/api/?origin=github#api)
-- Gateways: [SFTP Gateway](https://www.filestash.app/docs/guide/sftp-gateway.html),
-- [Virtual Filesystem](https://www.filestash.app/docs/guide/virtual-filesystem.html), [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html)
+- Gateways: [SFTP Gateway](https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github), [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github)
+- [Virtual Filesystem](https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github)
 - [Hardening Guide](https://downloads.filestash.app/upload/hardening-guide.pdf?origin=github)
 
 # Vision & Philosophy
@@ -73,7 +76,7 @@ type IBackend interface {
 
 There are interfaces you can implement for every key component of Filestash: from storage, to authentication, authorisation, custom apps, search, thumbnailing, frontend patches, middleware, endpoint creation and a [few others](https://github.com/mickael-kerjean/filestash/blob/master/server/common/plugin.go).
 
-To see what's currently installed in your instance, head over to [/about](https://demo.filestash.app/about). The inventory of plugins is [documented here](https://www.filestash.app/docs/plugin/).
+To see what's currently installed in your instance, head over to [/about](https://demo.filestash.app/about). The inventory of plugins is [documented here](https://www.filestash.app/docs/plugin/) and you can learn all there is about those in the developing your own plugin guide
 
 # Roadmap
 
