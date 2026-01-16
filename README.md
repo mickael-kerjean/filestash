@@ -12,11 +12,11 @@
     </a>
 </p>
 
-<p>
-    We started as a Dropbox-like file manager that works with every storage protocol:<br>
+We started as a Dropbox-like file manager that works with every storage protocol:<br>
+<div align="center">
     <a href="https://www.filestash.app/ftp-client.html">FTP</a> • <a href="https://www.filestash.app/ftp-client.html">FTPS</a> • <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a> • <a href="https://www.filestash.app/webdav-client.html">WebDAV</a> • Git • <a href="https://www.filestash.app/s3-browser.html">S3</a> • NFS • <a href="https://www.filestash.app/smb-client.html">SMB</a> • Artifactory • <a href="https://www.filestash.app/ldap-browser.html">LDAP</a> • MySQL <br>
        SharePoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">MinIO</a> • Storj <br>IPFS • Dropbox • Google Drive • ...
-</p><br>
+</div><br>
 <p>
     The platform is evolving into a data access layer with <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem capabilities</a>, <a href="https://www.filestash.app/docs/api/?origin=github#api">API</a> and Gateways<br>
     to expose your data over <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, and even <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> to give LLM limited access to your data:<br><br>
