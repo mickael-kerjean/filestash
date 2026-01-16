@@ -18,8 +18,8 @@
        Sharepoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">Minio</a> • Storj <br>IPFS • Dropbox • Google Drive • ...
 </p>
 <p align="center">
-    The platform is evolving has a data access layer with not only APIs but also Gateways<br>
-    exposing your data over SFTP, MCP or S3 and virtual filesystem capabilities: <br>
+    The platform is evolving into a data access layer with virtual filesystem capabilities, APIs and Gateways<br>
+    exposing your data over SFTP, MCP or S3<br>
     <a href="http://demo.filestash.app">
       <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
     </a>
