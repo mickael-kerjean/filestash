@@ -13,6 +13,13 @@
     <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
 </a>
 
+# Getting Started
+
+To install Filestash, head to the [Getting started](https://www.filestash.app/docs/?origin=github) guide.
+
+If you want to leverage plugins, head over to the [inventory](https://www.filestash.app/docs/plugin/?origin=github), or learn about [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github)
+
+
 # Key Features
 
 <ul>
@@ -45,13 +52,6 @@
     </li>
     <li>... and much <sub>much <sub>more (chromecast support, on demand video transcoding, mounting shared links as network drive, public site, antivirus, versioning, audit, quota, ....)</sub></sub><br> As a rule of thumb, if your problem involves files, we either already <a href="https://www.filestash.app/docs/plugin/">have a plugin</a> for it or can make a plugin for it
 </ul>
-
-
-# Getting Started
-
-To install Filestash, head to the [Getting started](https://www.filestash.app/docs/?origin=github) guide.
-
-If you want to leverage plugins, head over to the [inventory](https://www.filestash.app/docs/plugin/?origin=github), or learn about [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github)
 
 
 # Vision & Philosophy
