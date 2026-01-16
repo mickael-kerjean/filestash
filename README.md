@@ -1,79 +1,27 @@
 ![screenshot](https://raw.githubusercontent.com/mickael-kerjean/filestash_images/master/.assets/photo.jpg)
 
-<p align="center">
-    <a href="https://github.com/mickael-kerjean/contributors" alt="Contributors">
-        <img src="https://img.shields.io/github/contributors/mickael-kerjean/filestash" style="max-width:100%;">
-    </a>
-    <a href="https://hub.docker.com/r/machines/filestash" alt="Docker Hub">
-        <img src="https://img.shields.io/docker/pulls/machines/filestash" style="max-width:100%;">
-    </a>
-    <a href="https://kiwiirc.com/nextclient/#irc://irc.libera.chat/#filestash?nick=guest??" alt="Chat on IRC">
-        <img src="https://img.shields.io/badge/IRC-%23filestash-brightgreen.svg" style="max-width:100%;">
-    </a>
+# What is this?
+
+<p>
+    We started as a Dropbox-like file manager that works with every storage protocol: <a href="https://www.filestash.app/ftp-client.html">FTP</a>, <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, and <a href="https://www.filestash.app/docs/plugin/#storage">about 20 more</a>.
+</p>
+<p>
+    It grew onto a universal data access platform with <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem capabilities</a>, <a href="https://www.filestash.app/docs/api/?origin=github#api">APIs</a>, and Gateways to expose your data over <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, and <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> to give LLMs a limited view of your data:
 </p>
 
-<p align="center">
-    A Dropbox-like file manager that works with every storage protocol:<br>
-    <a href="https://www.filestash.app/ftp-client.html">FTP</a> • <a href="https://www.filestash.app/ftp-client.html">FTPS</a> • <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a> • <a href="https://www.filestash.app/webdav-client.html">WebDAV</a> • Git • <a href="https://www.filestash.app/s3-browser.html">S3</a> • NFS • <a href="https://www.filestash.app/smb-client.html">SMB</a> • Artifactory • <a href="https://www.filestash.app/ldap-browser.html">LDAP</a> • Mysql <br>
-       Sharepoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">Minio</a> • Storj <br>IPFS • Dropbox • Google Drive • ...
-</p>
-<p align="center">
-    <a href="http://demo.filestash.app">
-      <img src="https://raw.githubusercontent.com/mickael-kerjean/filestash_images/master/.assets/button_demo.png" alt="demo button" />
-    </a>
-</p>
+<a href="http://demo.filestash.app">
+    <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
+</a>
+
 
 # Key Features
 
-- Sleek, Speedy, Snappy, works great on Desktop and Mobile
-- Extensible / Customisable / Hackable via a rich ecosystem of plugins and a Workflow engine to enable automation
-- Shared Links which you can mount locally as network drives
-- Builtin Music, Video, Image viewers with optional transcoding and Chromecast support
-- [API](https://www.filestash.app/docs/api/?origin=github#api) and LLM integration via [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html) with support for other S3 and [SFTP Gateways](https://www.filestash.app/docs/guide/sftp-gateway.html).
-- [Themes](https://www.filestash.app/docs/plugin/#theme) replicating the UX of [dropbox](https://www.filestash.app/img/screenshots/theme_dropbox.png), [gdrive](https://www.filestash.app/img/screenshots/theme_gdrive.png), [github](https://www.filestash.app/img/screenshots/theme_github.png), [ibm](https://www.filestash.app/img/screenshots/theme_ibm.png), [onedrive](https://www.filestash.app/img/screenshots/theme_onedrive.png), [and more](https://www.filestash.app/img/screenshots/theme_untitled.png)
-- ... and much <sub>much <sub>much</sub></sub> more
-
-
-# Documentation
-
-- [Getting started](https://www.filestash.app/docs/?origin=github)
-- [Installation](https://www.filestash.app/docs/install-and-upgrade/?origin=github)
-- [API](https://www.filestash.app/docs/api/?origin=github#api) and [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html)
-- [Plugins Inventory](https://www.filestash.app/docs/plugin/?origin=github)
-- [Develop your own plugins](https://www.filestash.app/docs/guide/plugin-development.html)
-- [Hardening Guide](https://downloads.filestash.app/upload/hardening-guide.pdf?origin=github)
-- [SFTP Gateway](https://www.filestash.app/docs/guide/sftp-gateway.html), [Virtual Filesystem](https://www.filestash.app/docs/guide/virtual-filesystem.html)
-
-# Vision & Philosophy
-
-Our goal is simple: **to build the best file management platform ever made. Period.** But "best" means different things to different people, and making Filestash modular is the only sane model to accomplish that. Anything that isn't a fundamental truth of the universe and might spark a debate belongs in a plugin.
-
-This modularity is made possible by the magic of programming interfaces. For example, if you want a [Dropbox-like frontend for FTP](https://news.ycombinator.com/item?id=9224), you will find out the [FTP plugin](https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_backend_ftp) simply implements this interface:
-```go
-type IBackend interface {
-	Ls(path string) ([]os.FileInfo, error)           // list files in a folder
-	Cat(path string) (io.ReadCloser, error)          // download a file
-	Mkdir(path string) error                         // create a folder
-	Rm(path string) error                            // remove something
-	Mv(from string, to string) error                 // rename something
-	Save(path string, file io.Reader) error          // save a file
-	Touch(path string) error                         // create a file
-
-	// I have omitted 2 other methods, a first one to enable connections reuse and
-	// another one to declare what should the login form be like.
-}
-```
-
-There are interfaces you can implement for every key component of Filestash: from storage, to authentication, authorisation, custom apps, search, thumbnailing, frontend patches, middleware, endpoint creation and a [few others](https://github.com/mickael-kerjean/filestash/blob/master/server/common/plugin.go).
-
-To see what's currently installed in your instance, head over to [/about](https://demo.filestash.app/about). The inventory of plugins is [documented here](https://www.filestash.app/docs/plugin/).
-
-# Roadmap
-
-There are 2 major pieces of work currently underway:
-
-<ol>
-    <li>Making Filestash able to open virtually anything. Thanks to plugin, we're adding support for files your browser has never heard of, from astrophysics to embroidery patterns. Concretly we have added support for:
+<ul>
+    <li>A plugin based architecture with a minimal core that can be extended and customized through a rich <a href="https://www.filestash.app/docs/plugin/">ecosystem of plugins</a>.</li>
+    <li>An awesome web client to access your data, built in vanilla JS, sleek, speedy, snappy, and infinitely customizable through our <a href="https://www.filestash.app/docs/guide/plugin-development.html#patch-plugins-in-depth">dynamic patch plugins</a>.</li>
+    <li>A Workflow engine to enable automation and tons of integrations capabilities</li>
+    <li>Integrations with almost every storage system and authentication provider, with the explicit goal of supporting 100% of storage and auth technologies on the market (including unconventional ones like using <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_authenticate_wordpress">WordPress as an IdP</a>).</li>
+    <li>The frontend can open virtually any file format using <a href="https://www.filestash.app/docs/guide/plugin-development.html#xdg-open-plugins-in-depth">xdg-open plugins</a> that add renderers and additional buttons for formats not natively supported by browsers, from astronomy to embroidery and everything in between like:
         <ul>
             <li><a href="https://demo.filestash.app/assets/plugin/application_photography.zip">photography</a>: heif, nef, raf, <a href="https://www.filestash.app/tools/tiff-viewer.html">tiff</a>, raw, arw, sr2, srf, nrw, cr2, crw, x3f, pef, rw2, orf, mrw, mdc, mef, mos, dcr, kdc, 3fr, erf and srw</li>
             <li><a href="https://demo.filestash.app/assets/plugin/application_photography.zip">astronomy</a>: <a href="https://www.filestash.app/tools/fits-viewer.html">fits</a>, <a href="https://www.filestash.app/tools/xisf-viewer.html">xisf</a></li>
@@ -88,11 +36,50 @@ There are 2 major pieces of work currently underway:
             <li><a href="https://demo.filestash.app/assets/plugin/application_adobe.zip">adobe</a>: <a href="https://www.filestash.app/tools/psd-viewer.html">psd</a>, ai, <a href="https://www.filestash.app/tools/xd-viewer.html">xd</a>, <a href="https://www.filestash.app/tools/dng-viewer.html">dng</a>, <a href="https://www.filestash.app/tools/eps-viewer.html">postscript</a>, aco, ase, swf</li>
             <li><a href="https://demo.filestash.app/assets/plugin/application_3d.zip">3d</a>: fbx, gltf, obj, stl, step, mesh, ifc, dae</li>
             <li><a href="https://demo.filestash.app/assets/plugin/application_embroidery.zip">embroidery</a>: dgt, dst, dsb, dsz, edr, exp, 10o, col, hus, inf, jef, ksm, pcm, pcs, pes, sew, shv, sst, tap, u01, vip, vp3 and xxx</li>
-            <li>there is more to come as we stumbled upon new niches and spend time talking to real people.</li>
         </ul>
     </li>
-    <li>Getting to v1.0. Filestash is already rock solid, it has been in active development for over 8 years. But the bar for v1.0 will be reached when Filestash is objectively better than Dropbox, Google Drive, and Box by every single measurable metric we care about. That's the mission.</li>
-</ol>
+    <li>Themes: <br>
+        <img src="https://www.filestash.app/img/screenshots/theme_github.png" height="150" />
+        <img src="https://www.filestash.app/img/screenshots/theme_apple.png" height="150" />
+        <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" height="150" />
+        <img src="https://www.filestash.app/img/screenshots/theme_ibm.png" height="150" />
+    </li>
+    <li>... and much <sub>much <sub>more (chromecast support, on demand video transcoding, mounting shared links as network drive, public site, antivirus, versioning, audit, quota, ....)</sub></sub><br> As a rule of thumb, if your problem involves files, we either already <a href="https://www.filestash.app/docs/plugin/">have a plugin</a> for it or can make a plugin for it
+</ul>
+
+
+# Getting Started
+
+To install Filestash, head to the [Getting started](https://www.filestash.app/docs/?origin=github) guide.
+
+If you want to leverage plugins, head over to the [inventory](https://www.filestash.app/docs/plugin/?origin=github), or learn about [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github)
+
+
+# Vision & Philosophy
+
+Our goal is simple: **to build the best file management platform ever made. Period.** But "best" means different things to different people, and making Filestash modular is the only sane model to accomplish that. Anything that isn't a fundamental truth of the universe and might spark a debate belongs in a plugin. Literally every piece listed in the key features is a plugin you can swap for another implementation or remove entirely.
+
+This modularity is made possible by the magic of programming interfaces. For example, if you want a [Dropbox-like frontend for FTP](https://news.ycombinator.com/item?id=9224), you will find out the [FTP plugin](https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_backend_ftp) simply implements this interface:
+```go
+type IBackend interface {
+	Ls(path string) ([]os.FileInfo, error)           // list files in a folder
+	Stat(path string) (os.FileInfo, error)           // file stat
+	Cat(path string) (io.ReadCloser, error)          // download a file
+	Mkdir(path string) error                         // create a folder
+	Rm(path string) error                            // remove something
+	Mv(from string, to string) error                 // rename something
+	Save(path string, file io.Reader) error          // save a file
+	Touch(path string) error                         // create a file
+
+	// I have omitted 2 other methods, a first one to enable connections reuse and
+	// another one to declare what should the login form be like.
+}
+```
+
+There are interfaces you can implement for every key component of Filestash: from storage, to authentication, authorisation, custom apps, search, thumbnailing, frontend patches, middleware, endpoint creation and a few others documented in the [plugin development guide](https://www.filestash.app/docs/guide/plugin-development.html).
+
+To see what's currently installed in your instance, head over to [/about](https://demo.filestash.app/about). The inventory of plugins is [documented here](https://www.filestash.app/docs/plugin/)
+
 
 # Support
 
