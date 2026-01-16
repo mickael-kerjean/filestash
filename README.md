@@ -19,7 +19,7 @@
 </p><br>
 <p align="center">
     The platform is evolving into a data access layer with <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem capabilities</a>, <a href="https://www.filestash.app/docs/api/?origin=github#api">API</a> and Gateways<br>
-    to expose your data over <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, and <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> for LLM integrations:<br><br>
+    to expose your data over <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, and even <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> to give LLM limited access to your data:<br><br>
     <a href="http://demo.filestash.app">
       <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
     </a>
