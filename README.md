@@ -37,8 +37,8 @@
             <li><a href="https://demo.filestash.app/assets/plugin/application_embroidery.zip">embroidery</a>: dgt, dst, dsb, dsz, edr, exp, 10o, col, hus, inf, jef, ksm, pcm, pcs, pes, sew, shv, sst, tap, u01, vip, vp3 and xxx</li>
         </ul>
     </li>
+    <li>... and much more. From Chromecast support, on demand video transcoding, mouting shared links locally as a network drive, public site, antivirus, versioning, audit, quota, .... As a rule of thumb, if your problem can be solve with something involving files, we most likely have a plugin for it</li>
 
-    <li>... and much <sub>much <sub>much</sub></sub> more. From Chromecast support, on demand video transcoding, mouting shared links locally as a network drive, public site, antivirus, quota, .... As a rule of thumb, if your problem can be solve with something involving files, we most likely have a plugin for it</li>
 </ul>
 
 And of course themes:
