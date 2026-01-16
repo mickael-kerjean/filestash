@@ -49,6 +49,11 @@ xxxxxxx
 
 - ... and much <sub>much <sub>much</sub></sub> more. From Chromecast support, on demand video transcoding, mouting shared links locally as a network drive, public site, antivirus, quota, .... As a rule of thumb, if your problem can be solve with something involving files, we most likely have a plugin for it
 
+<p float="left">
+  <img src="https://www.filestash.app/img/screenshots/theme_apple.png" width="100" />
+  <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" width="100" />
+  <img src="https://www.filestash.app/img/screenshots/theme_github.png" width="100" />
+</p>
 
 # Getting Started
 
