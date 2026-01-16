@@ -17,10 +17,9 @@
     <a href="https://www.filestash.app/ftp-client.html">FTP</a> • <a href="https://www.filestash.app/ftp-client.html">FTPS</a> • <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a> • <a href="https://www.filestash.app/webdav-client.html">WebDAV</a> • Git • <a href="https://www.filestash.app/s3-browser.html">S3</a> • NFS • <a href="https://www.filestash.app/smb-client.html">SMB</a> • Artifactory • <a href="https://www.filestash.app/ldap-browser.html">LDAP</a> • Mysql <br>
        Sharepoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">Minio</a> • Storj <br>IPFS • Dropbox • Google Drive • ...
 </p>
-<p align="center">
-    Filestash is evolving has a data access platform with not only APIs<br>
-    but also Gateways to expose your data over SFTP, MCP or S3<br>
-    a virtual filesystem that unified all your storage into one coherent filesystem<br>
+<p align="is">
+    The platform is evolving has a data access layer with not only APIs but Gateways exposing your data over SFTP, MCP or S3<br>
+    and a virtual filesystem to unify your storages into one coherent filesystem<br><br>
     <a href="http://demo.filestash.app">
       <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
     </a>
