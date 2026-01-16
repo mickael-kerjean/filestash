@@ -20,7 +20,7 @@
     <li>An awesome web client to access your data, built in vanilla JS, sleek, speedy, snappy, and infinitely customizable through our <a href="https://www.filestash.app/docs/guide/plugin-development.html#patch-plugins-in-depth">dynamic patch plugins</a>.</li>
     <li>A Workflow engine to enable automation and tons of integrations capabilities</li>
     <li>Integrations with almost every storage system and authentication provider, with the explicit goal of supporting 100 percent of storage and auth technologies on the market (including unconventional ones like using <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_authenticate_wordpress">WordPress as an IdP</a>).</li>
-    <li>The frontend can open virtually any file format using <a href="https://www.filestash.app/docs/guide/plugin-development.html#xdg-open-plugins-in-depth">xdg-open plugins</a> that add renderers and additional buttons for formats not natively supported by browsers, from <a href="https://demo.filestash.app/assets/plugin/application_photography.zip">astronomy</a> (<a href="https://www.filestash.app/tools/fits-viewer.html">fits</a>, <a href="https://www.filestash.app/tools/xisf-viewer.html">xisf</a>) to <a href="https://demo.filestash.app/assets/plugin/application_embroidery.zip">embroidery</a> (dgt, dst, dsb, dsz, edr, exp, 10o, col, hus, inf, jef, ksm, pcm, pcs, pes, sew, shv, sst, tap, u01, vip, vp3 and xxx) and everything in between like:
+    <li>The frontend can open virtually any file format using <a href="https://www.filestash.app/docs/guide/plugin-development.html#xdg-open-plugins-in-depth">xdg-open plugins</a> that add renderers and additional buttons for formats not natively supported by browsers, from astronomy to embroidery and everything in between like:
     <ul>
             <li><a href="https://demo.filestash.app/assets/plugin/application_photography.zip">photography</a>: heif, nef, raf, <a href="https://www.filestash.app/tools/tiff-viewer.html">tiff</a>, raw, arw, sr2, srf, nrw, cr2, crw, x3f, pef, rw2, orf, mrw, mdc, mef, mos, dcr, kdc, 3fr, erf and srw</li>
             <li><a href="https://demo.filestash.app/assets/plugin/application_photography.zip">astronomy</a>: <a href="https://www.filestash.app/tools/fits-viewer.html">fits</a>, <a href="https://www.filestash.app/tools/xisf-viewer.html">xisf</a></li>
@@ -35,7 +35,6 @@
             <li><a href="https://demo.filestash.app/assets/plugin/application_adobe.zip">adobe</a>: <a href="https://www.filestash.app/tools/psd-viewer.html">psd</a>, ai, <a href="https://www.filestash.app/tools/xd-viewer.html">xd</a>, <a href="https://www.filestash.app/tools/dng-viewer.html">dng</a>, <a href="https://www.filestash.app/tools/eps-viewer.html">postscript</a>, aco, ase, swf</li>
             <li><a href="https://demo.filestash.app/assets/plugin/application_3d.zip">3d</a>: fbx, gltf, obj, stl, step, mesh, ifc, dae</li>
             <li><a href="https://demo.filestash.app/assets/plugin/application_embroidery.zip">embroidery</a>: dgt, dst, dsb, dsz, edr, exp, 10o, col, hus, inf, jef, ksm, pcm, pcs, pes, sew, shv, sst, tap, u01, vip, vp3 and xxx</li>
-            <li>there is more to come as we stumbled upon new niches and spend time talking to real people.</li>
         </ul></li>
 </ul>
 
