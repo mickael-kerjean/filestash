@@ -13,13 +13,13 @@
 </p>
 
 <p align="center">
-    We started as a Dropbox-like file manager that works with every storage protocol:<br>
+    While we started as a Dropbox-like file manager that works with every storage protocol:<br>
     <a href="https://www.filestash.app/ftp-client.html">FTP</a> • <a href="https://www.filestash.app/ftp-client.html">FTPS</a> • <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a> • <a href="https://www.filestash.app/webdav-client.html">WebDAV</a> • Git • <a href="https://www.filestash.app/s3-browser.html">S3</a> • NFS • <a href="https://www.filestash.app/smb-client.html">SMB</a> • Artifactory • <a href="https://www.filestash.app/ldap-browser.html">LDAP</a> • Mysql <br>
        Sharepoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">Minio</a> • Storj <br>IPFS • Dropbox • Google Drive • ...
 </p>
 <p align="center">
     The platform is evolving into a data access layer with virtual filesystem capabilities, APIs and Gateways<br>
-    to expose your data over SFTP, S3, and MCP for LLM integrations<br>
+    to expose your data over SFTP, S3, and MCP for LLM integrations:<br>
     <a href="http://demo.filestash.app">
       <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
     </a>
