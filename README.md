@@ -6,7 +6,7 @@
     We started as a Dropbox-like file manager that works with every storage protocol: <a href="https://www.filestash.app/ftp-client.html">FTP</a>, <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, and <a href="https://www.filestash.app/docs/plugin/#storage">about 20 more</a>.
 </p>
 <p>
-    The platform is evolving into a data access layer with <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem capabilities</a>, <a href="https://www.filestash.app/docs/api/?origin=github#api">APIs</a>, and Gateways to expose your data over <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, and <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> to give LLMs a limited view of your data:
+    The platform is now a data access layer with <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem capabilities</a>, <a href="https://www.filestash.app/docs/api/?origin=github#api">APIs</a>, and Gateways to expose your data over <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, and <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> to give LLMs a limited view of your data:
 </p>
 
 <a href="http://demo.filestash.app">
@@ -15,8 +15,8 @@
 
 # Key Features
 
-- An awesome web client to access your data, made in vanillaJS it's Sleek, Speedy, Snappy
-- A plugin based architecture with a very lean core, that's is extensible / customisable via a rich ecosystem of plugins to add / remove the features you need.
+- A plugin based architecture with a minimal core that can be extended and customized through a rich ecosystem of plugins.
+- An awesome web client to access your data, built in vanilla JS, sleek, speedy, and snappy with infinite customization options using our <a href="https://www.filestash.app/docs/guide/plugin-development.html#patch-plugins-in-depth">dynamic patch plugins</a>.
 - A Workflow engine to enable automation and tons of integrations options
 - Integrations with almost every possible storage that exists (we aim for 100% coverage of every possible storage technology), almost every possible authentication technologies from SSO to local auth or more exotic solution like using your Wordpress site as an IDP and everything in between
 - The frontend can open virtually anything, there's plugins to make your browser able to load format your browser does not natively handle, from astrophysics to embroidery patterns. Concretly we have added support for: xxxx
