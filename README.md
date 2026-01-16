@@ -63,6 +63,7 @@ This modularity is made possible by the magic of programming interfaces. For exa
 ```go
 type IBackend interface {
 	Ls(path string) ([]os.FileInfo, error)           // list files in a folder
+	Stat(path string) (os.FileInfo, error)           // file stat
 	Cat(path string) (io.ReadCloser, error)          // download a file
 	Mkdir(path string) error                         // create a folder
 	Rm(path string) error                            // remove something
@@ -75,9 +76,9 @@ type IBackend interface {
 }
 ```
 
-There are interfaces you can implement for every key component of Filestash: from storage, to authentication, authorisation, custom apps, search, thumbnailing, frontend patches, middleware, endpoint creation and a [few others](https://github.com/mickael-kerjean/filestash/blob/master/server/common/plugin.go).
+There are interfaces you can implement for every key component of Filestash: from storage, to authentication, authorisation, custom apps, search, thumbnailing, frontend patches, middleware, endpoint creation and a few others documented in the [plugin development guide](https://www.filestash.app/docs/guide/plugin-development.html).
 
-To see what's currently installed in your instance, head over to [/about](https://demo.filestash.app/about). The inventory of plugins is [documented here](https://www.filestash.app/docs/plugin/) and you can learn all there is about those in the developing your own plugin guide
+To see what's currently installed in your instance, head over to [/about](https://demo.filestash.app/about). The inventory of plugins is [documented here](https://www.filestash.app/docs/plugin/)
 
 
 # Support
