@@ -47,9 +47,9 @@
 
 And of course themes:
 <div float="left">
-  <img src="https://www.filestash.app/img/screenshots/theme_apple.png" width="100" />
-  <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" width="100" />
-  <img src="https://www.filestash.app/img/screenshots/theme_github.png" width="100" />
+  <img src="https://www.filestash.app/img/screenshots/theme_apple.png" width="200" />
+  <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" width="200" />
+  <img src="https://www.filestash.app/img/screenshots/theme_github.png" width="200" />
 </div>
 
 xxxxxxx
