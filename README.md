@@ -18,8 +18,8 @@
        SharePoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">MinIO</a> • Storj <br>IPFS • Dropbox • Google Drive • ...
 </p><br>
 <p align="center">
-    The platform is evolving into a data access layer with [virtual filesystem capabilities](https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github), [API](https://www.filestash.app/docs/api/?origin=github#api) and Gateways<br>
-    to expose your data over [SFTP](https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github), S3, and [MCP](https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github) for LLM integrations:<br><br>
+    The platform is evolving into a data access layer with <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem capabilities</a>, <a href="https://www.filestash.app/docs/api/?origin=github#api">API</a> and Gateways<br>
+    to expose your data over <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, and <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> for LLM integrations:<br><br>
     <a href="http://demo.filestash.app">
       <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
     </a>
