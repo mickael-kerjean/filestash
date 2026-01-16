@@ -17,7 +17,7 @@
 # Key Features
 
 <ul>
-    <li>A plugin based architecture with a minimal core that can be extended and customized through a rich ecosystem of plugins.</li>
+    <li>A plugin based architecture with a minimal core that can be extended and customized through a rich <a href="https://www.filestash.app/docs/plugin/">ecosystem of plugins</a>.</li>
     <li>An awesome web client to access your data, built in vanilla JS, sleek, speedy, snappy, and infinitely customizable through our <a href="https://www.filestash.app/docs/guide/plugin-development.html#patch-plugins-in-depth">dynamic patch plugins</a>.</li>
     <li>A Workflow engine to enable automation and tons of integrations capabilities</li>
     <li>Integrations with almost every storage system and authentication provider, with the explicit goal of supporting 100 percent of storage and auth technologies on the market (including unconventional ones like using <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_authenticate_wordpress">WordPress as an IdP</a>).</li>
