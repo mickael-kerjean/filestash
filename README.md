@@ -38,9 +38,9 @@
         </ul>
     </li>
     <li>Themes: <br>
-        <img src="https://www.filestash.app/img/screenshots/theme_github.png" height="200" />
-        <img src="https://www.filestash.app/img/screenshots/theme_apple.png" height="200" />
-        <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" height="200" />
+        <img src="https://www.filestash.app/img/screenshots/theme_github.png" height="150" />
+        <img src="https://www.filestash.app/img/screenshots/theme_apple.png" height="150" />
+        <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" height="150" />
     </li>
     <li>... and much more. From Chromecast support, on demand video transcoding, mouting shared links locally as a network drive, public site, antivirus, versioning, audit, quota, .... As a rule of thumb, if your problem can be solve with something involving files, we most likely have a plugin for it</li>
 
