@@ -19,7 +19,7 @@
 </p>
 <p align="center">
     The platform is evolving into a data access layer with virtual filesystem capabilities, APIs and Gateways<br>
-    exposing your data over SFTP, MCP or S3<br>
+    to expose your data over SFTP, S3, and MCP for LLM integrations<br>
     <a href="http://demo.filestash.app">
       <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
     </a>
