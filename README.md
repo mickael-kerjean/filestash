@@ -13,7 +13,7 @@
 </p>
 
 <p>
-    We started as a Dropbox-like file manager that works with every storage protocol: <a href="https://www.filestash.app/ftp-client.html">FTP</a> • <a href="https://www.filestash.app/ftp-client.html">FTPS</a> • <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a> • <a href="https://www.filestash.app/webdav-client.html">WebDAV</a> • Git • <a href="https://www.filestash.app/s3-browser.html">S3</a> • NFS • <a href="https://www.filestash.app/smb-client.html">SMB</a> • Artifactory • <a href="https://www.filestash.app/ldap-browser.html">LDAP</a> • MySQL • SharePoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">MinIO</a> • Storj • IPFS • Dropbox • Google Drive • ...
+    We started as a Dropbox-like file manager that works with every storage protocol.<br>
 </p>
 <p>
     The platform is evolving into a data access layer with <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem capabilities</a>, <a href="https://www.filestash.app/docs/api/?origin=github#api">API</a> and Gateways<br>
@@ -21,6 +21,13 @@
     <a href="http://demo.filestash.app">
       <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
     </a>
+</p>
+
+
+    : <a href="https://www.filestash.app/ftp-client.html">FTP</a> • <a href="https://www.filestash.app/ftp-client.html">FTPS</a> • <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a> • <a href="https://www.filestash.app/webdav-client.html">WebDAV</a> • Git • <a href="https://www.filestash.app/s3-browser.html">S3</a> • NFS • <a href="https://www.filestash.app/smb-client.html">SMB</a> • Artifactory • <a href="https://www.filestash.app/ldap-browser.html">LDAP</a> • MySQL • SharePoint • Azure • CalDAV • Backblaze B2 • <a href="https://www.filestash.app/s3-browser.html">MinIO</a> • Storj • IPFS • Dropbox • Google Drive • ...
+</p>
+<p>
+
 </p>
 
 # Key Features
