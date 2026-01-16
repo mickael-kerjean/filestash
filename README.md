@@ -37,7 +37,7 @@
             <li><a href="https://demo.filestash.app/assets/plugin/application_embroidery.zip">embroidery</a>: dgt, dst, dsb, dsz, edr, exp, 10o, col, hus, inf, jef, ksm, pcm, pcs, pes, sew, shv, sst, tap, u01, vip, vp3 and xxx</li>
         </ul>
     </li>
-    <li>Themes:
+    <li>Themes: <br>
         <img src="https://www.filestash.app/img/screenshots/theme_github.png" width="200" />
         <img src="https://www.filestash.app/img/screenshots/theme_apple.png" width="200" />
         <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" width="200" />
