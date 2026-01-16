@@ -43,7 +43,7 @@
         <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" height="150" />
         <img src="https://www.filestash.app/img/screenshots/theme_ibm.png" height="150" />
     </li>
-    <li>... and much <sub>much <sub>more (chromecast support, on demand video transcoding, mounting shared links as network drive, public site, antivirus, versioning, audit, quota, ....)</sub></sub><br> As a rule of thumb, if your problem involves files, we most likely have a plugin for it.
+    <li>... and much <sub>much <sub>more (chromecast support, on demand video transcoding, mounting shared links as network drive, public site, antivirus, versioning, audit, quota, ....)</sub></sub><br> As a rule of thumb, if your problem involves files, we either already <a href="https://www.filestash.app/docs/plugin/">have a plugin</a> for it or can make a plugin for it
 </ul>
 
 
