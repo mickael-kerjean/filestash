@@ -19,8 +19,7 @@
 </p>
 <p align="center">
     The platform is evolving has a data access layer with not only APIs but also Gateways<br>
-    exposing your data over SFTP, MCP or S3<br>
-    and a virtual filesystem to unify your storages into one coherent filesystem<br><br>
+    exposing your data over SFTP, MCP or S3 and virtual filesystem capabilities <br>
     <a href="http://demo.filestash.app">
       <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
     </a>
