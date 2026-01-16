@@ -15,20 +15,18 @@ import (
 )
 
 func init() {
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+	Hooks.Register.HttpEndpoint(func(r *mux.Router) error {
 		if PluginEnable() == false {
 			return nil
 		}
 		r.PathPrefix("/public/{share}/").HandlerFunc(NewMiddlewareChain(
 			SiteHandler,
 			[]Middleware{SessionStart, SecureHeaders, cors},
-			*app,
 		)).Methods("GET", "HEAD")
 
 		r.HandleFunc("/public/", NewMiddlewareChain(
 			SharesListHandler,
 			[]Middleware{SecureHeaders, basicAdmin},
-			*app,
 		)).Methods("GET")
 		return nil
 	})

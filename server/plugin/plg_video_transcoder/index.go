@@ -78,7 +78,7 @@ func init() {
 		os.RemoveAll(cachePath)
 		os.MkdirAll(cachePath, os.ModePerm)
 
-		Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+		Hooks.Register.HttpEndpoint(func(r *mux.Router) error {
 			r.HandleFunc(OverrideVideoSourceMapper, func(res http.ResponseWriter, req *http.Request) {
 				res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
 				if plugin_enable() == false {
@@ -102,7 +102,6 @@ func init() {
 			r.PathPrefix("/hls/hls_{segment}.ts").Handler(NewMiddlewareChain(
 				hlsTranscodeHandler,
 				[]Middleware{SecureHeaders},
-				*app,
 			)).Methods("GET")
 
 			return nil

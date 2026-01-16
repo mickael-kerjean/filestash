@@ -18,10 +18,10 @@ import (
 )
 
 func main() {
-	Run(mux.NewRouter(), App{})
+	Run(mux.NewRouter())
 }
 
-func Run(router *mux.Router, app App) {
+func Run(router *mux.Router) {
 	Log.Info("Filestash %s starting", APP_VERSION)
 	check(InitLogger(), "Logger init failed. err=%s")
 	check(InitConfig(), "Config init failed. err=%s")
@@ -35,11 +35,11 @@ func Run(router *mux.Router, app App) {
 		fn()
 	}
 	for _, obj := range Hooks.Get.HttpEndpoint() {
-		obj(router, &app)
+		obj(router)
 	}
-	server.Build(router, app)
+	server.Build(router)
 	server.PluginRoutes(router)
-	server.CatchAll(router, app)
+	server.CatchAll(router)
 	if os.Getenv("DEBUG") == "true" {
 		server.DebugRoutes(router)
 	}

@@ -52,12 +52,12 @@ func (this Get) ProcessFileContentBeforeSend() []func(io.ReadCloser, *App, *http
  * 3. plg_handler_syncthing to create better integration with syncthing
  * 4. plg_handler_console to server a full blown console for debugging the application
  */
-var http_endpoint []func(*mux.Router, *App) error
+var http_endpoint []func(*mux.Router) error
 
-func (this Register) HttpEndpoint(fn func(*mux.Router, *App) error) {
+func (this Register) HttpEndpoint(fn func(*mux.Router) error) {
 	http_endpoint = append(http_endpoint, fn)
 }
-func (this Get) HttpEndpoint() []func(*mux.Router, *App) error {
+func (this Get) HttpEndpoint() []func(*mux.Router) error {
 	return http_endpoint
 }
 
@@ -72,7 +72,7 @@ func (this Register) Static(www fs.FS, chroot string) {
 		} else if d.IsDir() {
 			return nil
 		}
-		this.HttpEndpoint(func(r *mux.Router, app *App) error {
+		this.HttpEndpoint(func(r *mux.Router) error {
 			r.PathPrefix("/" + strings.TrimPrefix(path, chroot)).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				f, err := www.Open(path)
 				if err != nil {

@@ -36,7 +36,7 @@ type LogEntry struct {
 	RequestID  string  `json:"requestID"`
 }
 
-func logger(ctx App, res http.ResponseWriter, req *http.Request) {
+func logger(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if obj, ok := res.(*ResponseWriter); ok && req.RequestURI != "/about" {
 		point := LogEntry{
 			Version:    APP_VERSION + "." + BUILD_DATE,

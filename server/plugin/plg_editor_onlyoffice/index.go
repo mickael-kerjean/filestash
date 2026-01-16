@@ -187,7 +187,6 @@ func init() {
 			middleware.NewMiddlewareChain(
 				IframeContentHandler,
 				[]Middleware{middleware.SessionStart, middleware.LoggedInOnly},
-				*app,
 			),
 		).Methods("GET")
 		return nil

@@ -44,7 +44,7 @@ func init() {
 	}
 	billionsOfLol = bytes.NewBuffer(b)
 
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, _ *App) error {
+	Hooks.Register.HttpEndpoint(func(r *mux.Router) error {
 		if plugin_enable() == false {
 			return nil
 		}

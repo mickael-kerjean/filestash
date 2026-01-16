@@ -11,12 +11,11 @@ import (
 
 func init() {
 	Hooks.Register.AuthenticationMiddleware("local", SimpleAuth{})
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
+	Hooks.Register.HttpEndpoint(func(r *mux.Router) error {
 		r.Handle(WithBase("/admin/simple-user-management"), http.RedirectHandler(WithBase("/admin/api/simple-user-management"), http.StatusSeeOther)).Methods("GET")
 		r.HandleFunc(WithBase("/admin/api/simple-user-management"), middleware.NewMiddlewareChain(
 			UserManagementHandler,
 			[]Middleware{middleware.AdminOnly},
-			*app,
 		)).Methods("GET", "POST", "DELETE", "PATCH")
 		return nil
 	})

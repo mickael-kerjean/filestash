@@ -18,19 +18,21 @@ func init() {
 	})
 }
 
-func NewMiddlewareChain(fn HandlerFunc, m []Middleware, app App) http.HandlerFunc {
+func NewMiddlewareChain(fn HandlerFunc, m []Middleware) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		var resw ResponseWriter = NewResponseWriter(res)
 		var f func(*App, http.ResponseWriter, *http.Request) = fn
 		for i := len(m) - 1; i >= 0; i-- {
 			f = m[i](f)
 		}
-		app.Context = req.Context()
+		app := App{
+			Context: req.Context(),
+		}
 		f(&app, &resw, req)
 		if req.Body != nil {
 			req.Body.Close()
 		}
-		go logger(app, &resw, req)
+		go logger(&app, &resw, req)
 	}
 }
 

@@ -19,13 +19,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var WOPIRoutes = func(r *mux.Router, app *App) error {
+var WOPIRoutes = func(r *mux.Router) error {
 	r.HandleFunc(
 		"/api/wopi/iframe",
 		middleware.NewMiddlewareChain(
 			IframeContentHandler,
 			[]Middleware{middleware.SessionStart, middleware.LoggedInOnly},
-			*app,
 		),
 	).Methods("GET")
 	r.HandleFunc("/api/wopi/files/{path64}", WOPIHandler_CheckFileInfo).Methods("GET")
@@ -98,7 +97,6 @@ func WOPIExecute(w http.ResponseWriter, r *http.Request) func(func(*App, string,
 				fn(ctx, fullpath, w)
 			},
 			[]Middleware{wopiToCommonAPI, middleware.SessionStart},
-			App{},
 		).ServeHTTP(w, r)
 	}
 }
