@@ -36,11 +36,6 @@
             <li><a href="https://demo.filestash.app/assets/plugin/application_3d.zip">3d</a>: fbx, gltf, obj, stl, step, mesh, ifc, dae</li>
             <li><a href="https://demo.filestash.app/assets/plugin/application_embroidery.zip">embroidery</a>: dgt, dst, dsb, dsz, edr, exp, 10o, col, hus, inf, jef, ksm, pcm, pcs, pes, sew, shv, sst, tap, u01, vip, vp3 and xxx</li>
         </ul></li>
-    <li><a href="https://www.filestash.app/docs/plugin/#theme)">Themes</a> <div float="left">
-  <img src="https://www.filestash.app/img/screenshots/theme_apple.png" width="100" />
-  <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" width="100" />
-  <img src="https://www.filestash.app/img/screenshots/theme_github.png" width="100" />
-</div></li>
 
     <li>... and much <sub>much <sub>much</sub></sub> more. From Chromecast support, on demand video transcoding, mouting shared links locally as a network drive, public site, antivirus, quota, .... As a rule of thumb, if your problem can be solve with something involving files, we most likely have a plugin for it</li>
 </ul>
