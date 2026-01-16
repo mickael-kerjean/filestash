@@ -20,9 +20,12 @@
     <li>An awesome web client to access your data, built in vanilla JS, sleek, speedy, snappy, and infinitely customizable through our <a href="https://www.filestash.app/docs/guide/plugin-development.html#patch-plugins-in-depth">dynamic patch plugins</a>.</li>
     <li>A Workflow engine to enable automation and tons of integrations capabilities</li>
     <li>Integrations with almost every storage system and authentication provider, with the explicit goal of supporting 100 percent of storage and auth technologies on the market (including unconventional ones like using <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_authenticate_wordpress">WordPress as an IdP</a>).</li>
+    <li>The frontend can open virtually any file format using xdg-open plugins that add renderers and additional buttons for formats not natively supported by browsers, from <a href="https://demo.filestash.app/assets/plugin/application_photography.zip">astronomy</a> (<a href="https://www.filestash.app/tools/fits-viewer.html">fits</a>, <a href="https://www.filestash.app/tools/xisf-viewer.html">xisf</a>) to <a href="https://demo.filestash.app/assets/plugin/application_embroidery.zip">embroidery</a> (dgt, dst, dsb, dsz, edr, exp, 10o, col, hus, inf, jef, ksm, pcm, pcs, pes, sew, shv, sst, tap, u01, vip, vp3 and xxx) and everything in between like:
+    <ul>
+        <li><a href="https://demo.filestash.app/assets/plugin/application_science.zip">science</a> (with latex, plantuml & pandoc compilers)</li>
+        <li><a href="https://demo.filestash.app/assets/plugin/application_gis.zip">GIS</a> (<a href="https://www.filestash.app/tools/geojson-viewer.html">geojson</a>, <a href="https://www.filestash.app/tools/shp-viewer.html">shp</a>, gpx, wms and <a href="https://www.filestash.app/tools/dbf-viewer.html">dbf</a>), <a href="https://demo.filestash.app/assets/plugin/application_engineering.zip">data engineering</a> (<a href="https://www.filestash.app/tools/parquet-viewer.html">parquet</a>, <a href="https://www.filestash.app/tools/arrow-viewer.html">arrow</a>, <a href="https://www.filestash.app/tools/feather-viewer.html">feather</a>, <a href="https://www.filestash.app/tools/avro-viewer.html">avro</a>, <a href="https://www.filestash.app/tools/orc-viewer.html">orc</a>, <a href="https://www.filestash.app/tools/hdf5-viewer.html">hdf5</a>, <a href="https://www.filestash.app/tools/hdf5-viewer.html">h5</a>, <a href="https://www.filestash.app/tools/netcdf-viewer.html">netcdf</a>, <a href="https://www.filestash.app/tools/netcdf-viewer.html">nc</a>, rds, rda and rdata)</li>
+    </ul>
 </ul>
-
-- The frontend can open virtually any file format using xdg-open plugins that add renderers and additional buttons for formats not natively supported by browsers, from <a href="https://demo.filestash.app/assets/plugin/application_photography.zip">astronomy</a> (<a href="https://www.filestash.app/tools/fits-viewer.html">fits</a>, <a href="https://www.filestash.app/tools/xisf-viewer.html">xisf</a>) to <a href="https://demo.filestash.app/assets/plugin/application_embroidery.zip">embroidery</a> (dgt, dst, dsb, dsz, edr, exp, 10o, col, hus, inf, jef, ksm, pcm, pcs, pes, sew, shv, sst, tap, u01, vip, vp3 and xxx) and everything in between like <a href="https://demo.filestash.app/assets/plugin/application_science.zip">science</a> (with latex, plantuml & pandoc compilers), <a href="https://demo.filestash.app/assets/plugin/application_gis.zip">GIS</a> (<a href="https://www.filestash.app/tools/geojson-viewer.html">geojson</a>, <a href="https://www.filestash.app/tools/shp-viewer.html">shp</a>, gpx, wms and <a href="https://www.filestash.app/tools/dbf-viewer.html">dbf</a>), <a href="https://demo.filestash.app/assets/plugin/application_engineering.zip">data engineering</a> (<a href="https://www.filestash.app/tools/parquet-viewer.html">parquet</a>, <a href="https://www.filestash.app/tools/arrow-viewer.html">arrow</a>, <a href="https://www.filestash.app/tools/feather-viewer.html">feather</a>, <a href="https://www.filestash.app/tools/avro-viewer.html">avro</a>, <a href="https://www.filestash.app/tools/orc-viewer.html">orc</a>, <a href="https://www.filestash.app/tools/hdf5-viewer.html">hdf5</a>, <a href="https://www.filestash.app/tools/hdf5-viewer.html">h5</a>, <a href="https://www.filestash.app/tools/netcdf-viewer.html">netcdf</a>, <a href="https://www.filestash.app/tools/netcdf-viewer.html">nc</a>, rds, rda and rdata)
 
 
 - Themes:
@@ -35,13 +38,17 @@ xxxxxxx
 
 - ... and much <sub>much <sub>much</sub></sub> more. From Chromecast support, on demand video transcoding, mouting shared links locally as a network drive, public site, antivirus, quota, .... As a rule of thumb, if your problem can be solve with something involving files, we most likely have a plugin for it
 
+
 # Getting Started
 
-To install Filestash, head to the [Getting started](https://www.filestash.app/docs/?origin=github) guide. If you want to leverage plugins, head over to the [inventory](https://www.filestash.app/docs/plugin/?origin=github), or start [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github)
+To install Filestash, head to the [Getting started](https://www.filestash.app/docs/?origin=github) guide.
+
+If you want to leverage plugins, head over to the [inventory](https://www.filestash.app/docs/plugin/?origin=github), or learn about [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github)
+
 
 # Vision & Philosophy
 
-Our goal is simple: **to build the best file management platform ever made. Period.** But "best" means different things to different people, and making Filestash modular is the only sane model to accomplish that. Anything that isn't a fundamental truth of the universe and might spark a debate belongs in a plugin.
+Our goal is simple: **to build the best file management platform ever made. Period.** But "best" means different things to different people, and making Filestash modular is the only sane model to accomplish that. Anything that isn't a fundamental truth of the universe and might spark a debate belongs in a plugin. Literally every piece listed in the key features is a plugin you can swap for another implementation or remove entirely.
 
 This modularity is made possible by the magic of programming interfaces. For example, if you want a [Dropbox-like frontend for FTP](https://news.ycombinator.com/item?id=9224), you will find out the [FTP plugin](https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_backend_ftp) simply implements this interface:
 ```go
