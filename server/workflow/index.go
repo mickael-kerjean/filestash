@@ -7,10 +7,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/workflow/model"
 )
 
-var (
-	job_event       = make(chan interface{}, 100)
-	workflow_enable = false
-)
+var job_event = make(chan interface{}, 100)
 
 func Init() error {
 	if err := InitState(); err != nil {

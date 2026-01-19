@@ -39,10 +39,10 @@ func Run(router *mux.Router) {
 	}
 	server.Build(router)
 	server.PluginRoutes(router)
-	server.CatchAll(router)
 	if os.Getenv("DEBUG") == "true" {
 		server.DebugRoutes(router)
 	}
+	server.CatchAll(router)
 	var wg sync.WaitGroup
 	for _, obj := range Hooks.Get.Starter() {
 		wg.Add(1)

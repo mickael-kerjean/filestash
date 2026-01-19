@@ -16,16 +16,6 @@ var (
 
 func init() {
 	Hooks.Register.WorkflowTrigger(&WebhookTrigger{})
-	Hooks.Register.HttpEndpoint(func(r *mux.Router) error {
-		r.HandleFunc(WithBase("/api/workflow/webhook"), func(w http.ResponseWriter, r *http.Request) {
-			if err := TriggerEvents(webhook_event, webhook_name, webhookCallback(r)); err != nil {
-				SendErrorResult(w, err)
-				return
-			}
-			SendSuccessResult(w, nil)
-		}).Methods("GET", "POST")
-		return nil
-	})
 }
 
 func webhookCallback(r *http.Request) func(params map[string]string) (map[string]string, bool) {
@@ -68,5 +58,15 @@ func (this *WebhookTrigger) Manifest() WorkflowSpecs {
 }
 
 func (this *WebhookTrigger) Init() (chan ITriggerEvent, error) {
+	Hooks.Register.HttpEndpoint(func(r *mux.Router) error {
+		r.HandleFunc(WithBase("/api/workflow/webhook"), func(w http.ResponseWriter, r *http.Request) {
+			if err := TriggerEvents(webhook_event, webhook_name, webhookCallback(r)); err != nil {
+				SendErrorResult(w, err)
+				return
+			}
+			SendSuccessResult(w, nil)
+		}).Methods("GET", "POST")
+		return nil
+	})
 	return webhook_event, nil
 }

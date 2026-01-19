@@ -13,7 +13,6 @@ var (
 
 func init() {
 	Hooks.Register.WorkflowTrigger(&FileEventTrigger{})
-	Hooks.Register.AuthorisationMiddleware(hookAuthorisation{})
 }
 
 type hookAuthorisation struct{}
@@ -65,7 +64,7 @@ func (this *FileEventTrigger) Manifest() WorkflowSpecs {
 				{
 					Name:       "event",
 					Type:       "text",
-					Datalist:   []string{"ls", "cat", "mkdir", "mv", "rm", "touch"},
+					Datalist:   []string{"ls", "cat", "mkdir", "mv", "rm", "touch", "save"},
 					MultiValue: true,
 				},
 				{
@@ -79,6 +78,7 @@ func (this *FileEventTrigger) Manifest() WorkflowSpecs {
 }
 
 func (this *FileEventTrigger) Init() (chan ITriggerEvent, error) {
+	Hooks.Register.AuthorisationMiddleware(hookAuthorisation{})
 	return fileaction_event, nil
 }
 
