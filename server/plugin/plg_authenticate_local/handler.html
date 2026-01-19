@@ -39,7 +39,7 @@
     </h1>
     <form method="post">
         <input type="email" name="email" value="{{ .CurrentUser.Email }}" placeholder="Email" {{ if ne .CurrentUser.Email "" }}disabled{{ end }} />
-        <input type="password" name="password" value="{{ .CurrentUser.Password }}" placeholder="Password" {{ if ne .CurrentUser.Email "" }}disabled{{ end }} />
+        <input type="password" name="password" value="{{ .CurrentUser.Password }}" placeholder="Password" />
         <input type="text" name="role" value="{{ .CurrentUser.Role }}" placeholder="Role" />
         <label>
             <input type="checkbox" name="disabled" {{ if eq .CurrentUser.Disabled true }}checked{{ end }}>

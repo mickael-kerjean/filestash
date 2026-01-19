@@ -13,6 +13,10 @@ var PAGE string
 
 func UserManagementHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodDelete {
+		email := req.FormValue("email")
+		if email == "" {
+			email = req.URL.Query().Get("email")
+		}
 		if err := removeUser(req.FormValue("email")); err != nil {
 			SendErrorResult(res, err)
 			return
@@ -57,10 +61,19 @@ func UserManagementHandler(ctx *App, res http.ResponseWriter, req *http.Request)
 			SendErrorResult(res, err)
 			return
 		}
-		http.Redirect(res, req, redirectURI, http.StatusSeeOther)
 		if currentUser.Email == "" {
 			go sendInvitateMail(user)
 		}
+		if isAPI(req) {
+			SendSuccessResult(res, nil)
+			return
+		}
+		http.Redirect(res, req, redirectURI, http.StatusSeeOther)
+		return
+	}
+
+	if isAPI(req) {
+		SendSuccessResults(res, users)
 		return
 	}
 	template.
@@ -74,4 +87,8 @@ func UserManagementHandler(ctx *App, res http.ResponseWriter, req *http.Request)
 			CurrentUser: currentUser,
 			BackURL:     WithBase("/admin/storage"),
 		})
+}
+
+func isAPI(r *http.Request) bool {
+	return r.Header.Get("Accept") == "application/json"
 }

@@ -56,6 +56,7 @@ func updateUser(user User) error {
 					return err
 				}
 				user.Password = string(p)
+				users[i].Password = user.Password
 			}
 			users[i].Disabled = user.Disabled
 			users[i].Role = user.Role

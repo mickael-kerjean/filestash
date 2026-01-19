@@ -24,9 +24,9 @@ func init() {
 type User struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	Role     string `json:"role"`
-	Disabled bool   `json:"disabled"`
+	Role     string `json:"role,omitempty"`
+	Disabled bool   `json:"disabled,omitempty"`
 
 	Code string `json:"-"`
-	MFA  string `json:"mfa"`
+	MFA  string `json:"mfa,omitempty"`
 }
