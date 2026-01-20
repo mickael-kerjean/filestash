@@ -28,13 +28,16 @@ func LoggedInOnly(fn HandlerFunc) HandlerFunc {
 func AdminOnly(fn HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if admin := Config.Get("auth.admin").String(); admin != "" {
-			c, err := req.Cookie(COOKIE_NAME_ADMIN)
-			if err != nil {
-				SendErrorResult(res, ErrPermissionDenied)
-				return
+			authStr := strings.TrimPrefix(req.Header.Get("Authorization"), "Bearer ")
+			if authStr == "" {
+				c, err := req.Cookie(COOKIE_NAME_ADMIN)
+				if err != nil {
+					SendErrorResult(res, ErrPermissionDenied)
+					return
+				}
+				authStr = c.Value
 			}
-
-			str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, c.Value)
+			str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, authStr)
 			if err != nil {
 				SendErrorResult(res, ErrPermissionDenied)
 				return
