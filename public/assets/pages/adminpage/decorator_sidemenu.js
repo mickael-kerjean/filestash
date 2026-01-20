@@ -63,7 +63,8 @@ export default function(ctrl, opts = {}) {
         // feature: display the release version
         effect(getRelease().pipe(
             rxjs.map(({ version }) => version),
-            stateMutation(qs($page, "[data-bind=\"version\"]"), "textContent")
+            stateMutation(qs($page, "[data-bind=\"version\"]"), "textContent"),
+            rxjs.catchError(() => rxjs.EMPTY),
         ));
 
         // feature: logo serving as loading indicator
