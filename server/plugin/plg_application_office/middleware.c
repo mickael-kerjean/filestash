@@ -1,3 +1,4 @@
+//go:build ignore
 __attribute__((export_name("middleware")))
 const unsigned char* middleware(void) {
     return (const unsigned char*)
