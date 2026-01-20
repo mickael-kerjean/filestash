@@ -43,7 +43,7 @@ func ensureAppHasBooted(address string, message string) {
 			continue
 		}
 		res.Body.Close()
-		if res.StatusCode != http.StatusOK {
+		if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNotFound {
 			i += 1
 			continue
 		}
