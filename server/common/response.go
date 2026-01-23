@@ -109,6 +109,9 @@ func SendRaw(res http.ResponseWriter, data interface{}) {
 }
 
 func Page(stuff string) string {
+	if strings.Contains(stuff, "</form>") {
+		stuff += "<script>new URLSearchParams(location.search).forEach((value, name) => ($el = document.querySelector(`form [name=\"${name}\"]`)) && ($el.value = value))</script>"
+	}
 	return `<!DOCTYPE html>
 <html>
   <head>
