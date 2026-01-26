@@ -196,6 +196,7 @@ function componentStep2(render, { getPassword }) {
     // feature: telemetry modal
     onDestroy(() => requestAnimationFrame(() => getAdminConfig().pipe(
         reshapeConfigBeforeSave,
+        rxjs.first(),
         rxjs.delay(300),
         rxjs.filter((config) => config["log"]["telemetry"] !== true),
         rxjs.mergeMap(async(config) => {
