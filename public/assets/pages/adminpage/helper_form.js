@@ -46,12 +46,19 @@ export function useForm$($inputNodeList) {
             }
             return rxjs.of($el);
         }),
-        rxjs.map((e) => ({
+        rxjs.mergeMap(async (e) => ({
             name: e.target.getAttribute("name"),
-            value: (function() {
+            value: await (async function() {
                 switch (e.target.getAttribute("type")) {
                 case "checkbox":
                     return e.target.checked;
+                case "file":
+                    if (e.target.files.length === 0) return null;
+                    return await new Promise((done) => {
+                        const reader = new window.FileReader();
+                        reader.readAsDataURL(e.target.files[0]);
+                        reader.onload = () => done(reader.result);
+                    })
                 default:
                     return e.target.value;
                 }

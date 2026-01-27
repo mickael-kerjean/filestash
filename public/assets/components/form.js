@@ -75,7 +75,7 @@ export function $renderInput(options = {}) {
                 $node.setAttribute("data-protonpass-ignore", "true"); // Proton Pass
             }
         });
-        if (pattern) attrs.push(($node) => $node.setAttribute("pattern", pattern));
+        if (pattern) attrs.push(($node) => $node.setAttribute((type !== "file" ? "pattern" : "accept"), pattern));
         if (required) attrs.push(($node) => $node.setAttribute("required", ""));
         if (readonly) attrs.push(($node) => $node.setAttribute("disabled", ""));
 
@@ -294,12 +294,14 @@ export function $renderInput(options = {}) {
                     <object class="full-width" type="application/pdf" data="${safe(val)}" style="height:250px;" />
                 `));
             };
-            qs($file, "input").onchange = (e) => {
+            const $input = qs($file, "input");
+            $input.onchange = (e) => {
                 if (e.target.files.length === 0) return;
                 const reader = new window.FileReader();
                 reader.readAsDataURL(e.target.files[0]);
                 reader.onload = () => draw(reader.result);
             };
+            attrs.map((setAttribute) => setAttribute($input));
             draw(value);
             return $file;
         }
