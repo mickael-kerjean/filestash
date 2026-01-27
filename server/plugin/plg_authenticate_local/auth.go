@@ -64,8 +64,8 @@ EMAIL SERVER: %t
 				Type: "long_text",
 				Placeholder: `Hello,
 
-Your account to Filestash was created by an administrator. You can access
-it via http://demo.filestash.app.
+Your account was created by an administrator. You can access
+it via http://{{ .instance_url }}.
 
 Your password is: {{ .password }}
 The roles assigned to you: {{ .role }}

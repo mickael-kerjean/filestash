@@ -79,8 +79,8 @@ func SaveConfig(v []byte) error {
 	file, err := os.Create(config_path())
 	if err != nil {
 		return fmt.Errorf(
-			"Filestash needs to be able to create/edit its own configuration which it can't at the moment. "+
-				"Change the permission for filestash to create and edit `%s`",
+			APPNAME+" needs to be able to create and edit its configuration, but it currently cannot. "+
+				"Change the permissions to allow writing to `%s`",
 			config_path(),
 		)
 	}

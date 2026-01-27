@@ -56,6 +56,7 @@ func init() {
 }
 
 var (
+	APPNAME                           string = "Filestash"
 	BUILD_REF                         string
 	BUILD_DATE                        string
 	LICENSE                           string = "agpl"
@@ -102,4 +103,8 @@ func env(key string, val string) string {
 		return l
 	}
 	return val
+}
+
+func IsWhiteLabel() bool {
+	return APPNAME != "Filestash"
 }
