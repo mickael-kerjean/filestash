@@ -62,9 +62,10 @@ func withTemplate(in string, user User) string {
 		return in
 	}
 	tmpl.Execute(&b, map[string]string{
-		"user":     user.Email,
-		"password": user.Password,
-		"role":     user.Role,
+		"instance_url": Config.Get("general.host").String(),
+		"user":         user.Email,
+		"password":     user.Password,
+		"role":         user.Role,
 	})
 	return b.String()
 }

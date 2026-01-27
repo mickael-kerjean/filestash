@@ -14,6 +14,10 @@ func ReportHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func WellKnownSecurityHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if IsWhiteLabel() {
+		NotFoundHandler(ctx, res, req)
+		return
+	}
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte("# If you would like to report a security issue\n"))
 	res.Write([]byte("# you may report it to me via email\n"))

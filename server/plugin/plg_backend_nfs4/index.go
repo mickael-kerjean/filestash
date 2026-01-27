@@ -41,7 +41,7 @@ func (this Nfs4Share) Init(params map[string]string, app *App) (IBackend, error)
 		}
 	}
 	if params["machine_name"] == "" {
-		params["machine_name"] = "filestash"
+		params["machine_name"] = APPNAME
 	}
 	if strings.Contains(params["hostname"], ":") == false {
 		params["hostname"] = params["hostname"] + DEFAULT_PORT

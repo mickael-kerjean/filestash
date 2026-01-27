@@ -238,6 +238,7 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 		sign := signature()
 		base := WithBase("/")
 		templateData := map[string]any{
+			"appname": APPNAME,
 			"base":    base,
 			"version": BUILD_REF,
 			"license": LICENSE,

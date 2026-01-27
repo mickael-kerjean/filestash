@@ -4,7 +4,7 @@ import rxjs from "../../lib/rx.js";
 import config$ from "./model_config.js";
 
 export default async function(render) {
-    const hasFork = await config$.pipe(rxjs.filter(({ fork_button }) => fork_button !== false)).toPromise();
+    const hasFork = await config$.pipe(rxjs.filter(({ license }) => license === "agpl")).toPromise();
     if (!hasFork) return;
 
     render(createElement(`

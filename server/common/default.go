@@ -10,6 +10,12 @@ import (
 
 var USER_AGENT = fmt.Sprintf("Filestash/%s.%s (http://filestash.app)", APP_VERSION, BUILD_DATE)
 
+func init() {
+	if IsWhiteLabel() {
+		USER_AGENT = fmt.Sprintf(APPNAME)
+	}
+}
+
 var HTTPClient = http.Client{
 	Timeout: 5 * time.Hour,
 	Transport: NewTransformedTransport(&http.Transport{

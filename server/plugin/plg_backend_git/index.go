@@ -77,15 +77,15 @@ func (git Git) Init(params map[string]string, app *App) (IBackend, error) {
 		p.commit = "{action} ({filename}): {path}"
 	}
 	if p.authorName == "" {
-		p.authorName = "Filestash"
+		p.authorName = APPNAME
 	}
-	if p.authorEmail == "" {
+	if p.authorEmail == "" && !IsWhiteLabel() {
 		p.authorEmail = "https://filestash.app"
 	}
 	if p.committerName == "" {
-		p.committerName = "Filestash"
+		p.committerName = APPNAME
 	}
-	if p.committerEmail == "" {
+	if p.committerEmail == "" && !IsWhiteLabel() {
 		p.committerEmail = "https://filestash.app"
 	}
 

@@ -51,7 +51,9 @@ func IndexHeaders(fn HandlerFunc) HandlerFunc {
 		header.Set("Referrer-Policy", "same-origin")
 		header.Set("X-Content-Type-Options", "nosniff")
 		header.Set("X-XSS-Protection", "1; mode=block")
-		header.Set("X-Powered-By", fmt.Sprintf("Filestash/%s.%s <https://filestash.app>", APP_VERSION, BUILD_DATE))
+		if !IsWhiteLabel() {
+			header.Set("X-Powered-By", fmt.Sprintf("Filestash/%s.%s <https://filestash.app>", APP_VERSION, BUILD_DATE))
+		}
 		if ori := Config.Get("features.protection.iframe").String(); ori == "" {
 			header.Set("X-Frame-Options", "DENY")
 		}
