@@ -47,11 +47,11 @@ func (this *RunApi) Manifest() WorkflowSpecs {
 }
 
 func (this *RunApi) Execute(params map[string]string, input map[string]string) (map[string]string, error) {
-	req, err := http.NewRequest(params["method"], params["url"], bytes.NewBufferString(params["body"]))
+	req, err := http.NewRequest(params["method"], Render(params["url"], input), bytes.NewBufferString(Render(params["body"], input)))
 	if err != nil {
 		return input, err
 	} else if params["headers"] != "" {
-		for _, header := range strings.Split(params["headers"], "\n") {
+		for _, header := range strings.Split(Render(params["headers"], input), "\n") {
 			if parts := strings.SplitN(strings.TrimSpace(header), ":", 2); len(parts) == 2 {
 				req.Header.Add(
 					strings.TrimSpace(parts[0]),

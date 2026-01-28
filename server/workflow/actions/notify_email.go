@@ -52,9 +52,9 @@ func (this *ActionNotifyEmail) Execute(params map[string]string, input map[strin
 		Username: Config.Get("email.username").String(),
 		Password: Config.Get("email.password").String(),
 		From:     Config.Get("email.from").String(),
-		To:       params["email"],
-		Subject:  params["subject"],
-		Message:  params["message"],
+		To:       Render(params["email"], input),
+		Subject:  Render(params["subject"], input),
+		Message:  Render(params["message"], input),
 	}
 	m := gomail.NewMessage()
 	m.SetHeader("From", email.From)
