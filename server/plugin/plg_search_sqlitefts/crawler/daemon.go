@@ -6,10 +6,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
-var onConfigChange ChangeListener
-
 func init() {
-	onConfigChange = Config.ListenForChange()
 	Hooks.Register.Onload(func() {
 		for i := 0; i < SEARCH_PROCESS_PAR(); i++ {
 			go runner()
@@ -18,16 +15,10 @@ func init() {
 }
 
 func runner() {
-	startSearch := false
 	for {
 		if SEARCH_ENABLE() == false {
-			select {
-			case <-onConfigChange.Listener:
-				startSearch = SEARCH_ENABLE()
-			}
-			if startSearch == false {
-				continue
-			}
+			time.Sleep(60 * 5 * time.Second)
+			continue
 		}
 		crwlr := NextCrawler()
 		if crwlr == nil {
