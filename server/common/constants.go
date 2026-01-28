@@ -27,8 +27,8 @@ var (
 	TMP_PATH    = "cache/"
 )
 
-func init() {
-	// STEP1: setup app path
+func InitConstants() error {
+	// STEP1: setup app
 	rootPath := "data/"
 	if p := os.Getenv("FILESTASH_PATH"); p != "" {
 		rootPath = p
@@ -53,6 +53,7 @@ func init() {
 	os.MkdirAll(GetAbsolutePath(PLUGIN_PATH), os.ModePerm)
 	os.RemoveAll(GetAbsolutePath(TMP_PATH))
 	os.MkdirAll(GetAbsolutePath(TMP_PATH), os.ModePerm)
+	return nil
 }
 
 var (
