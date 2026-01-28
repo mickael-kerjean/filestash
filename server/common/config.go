@@ -17,7 +17,6 @@ var (
 )
 
 type Configuration struct {
-	onChange       []ChangeListener
 	mu             sync.Mutex
 	currentElement *FormElement
 	cache          KeyValueStore
@@ -60,9 +59,8 @@ func InitConfig() error {
 
 func NewConfiguration() Configuration {
 	return Configuration{
-		onChange: make([]ChangeListener, 0),
-		mu:       sync.Mutex{},
-		cache:    NewKeyValueStore(),
+		mu:    sync.Mutex{},
+		cache: NewKeyValueStore(),
 		Form: []Form{
 			Form{
 				Title: "general",
@@ -248,11 +246,9 @@ func (this *Configuration) Load() error {
 
 	Log.SetVisibility(this.Get("log.level").String())
 
-	go func() { // Trigger all the event listeners
-		for i := 0; i < len(this.onChange); i++ {
-			this.onChange[i].Listener <- nil
-		}
-	}()
+	for _, fn := range Hooks.Get.OnConfig() {
+		fn()
+	}
 	return nil
 }
 
@@ -560,37 +556,6 @@ func (this *Configuration) MarshalJSON() ([]byte, error) {
 	return Form{
 		Form: form,
 	}.MarshalJSON()
-}
-
-func (this *Configuration) ListenForChange() ChangeListener {
-	this.mu.Lock()
-	change := ChangeListener{
-		Id:       QuickString(20),
-		Listener: make(chan interface{}, 0),
-	}
-	this.onChange = append(this.onChange, change)
-	this.mu.Unlock()
-	return change
-}
-
-func (this *Configuration) UnlistenForChange(c ChangeListener) {
-	this.mu.Lock()
-	for i := 0; i < len(this.onChange); i++ {
-		if this.onChange[i].Id == c.Id {
-			if len(this.onChange)-1 >= 0 {
-				close(this.onChange[i].Listener)
-				this.onChange[i] = this.onChange[len(this.onChange)-1]
-				this.onChange = this.onChange[:len(this.onChange)-1]
-			}
-			break
-		}
-	}
-	this.mu.Unlock()
-}
-
-type ChangeListener struct {
-	Id       string
-	Listener chan interface{}
 }
 
 func defaultValue(dval string, envName string) string {

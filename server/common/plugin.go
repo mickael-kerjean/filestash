@@ -12,14 +12,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Plugin struct {
-	Type   string
-	Enable bool
-}
-
 type Register struct{}
 type Get struct{}
-type All struct{}
 
 var Hooks = struct {
 	Get      Get
@@ -27,6 +21,18 @@ var Hooks = struct {
 }{
 	Get:      Get{},
 	Register: Register{},
+}
+
+type Options struct {
+	ID string
+}
+
+type Option func(*Options)
+
+func WithID(id string) Option {
+	return func(o *Options) {
+		o.ID = id
+	}
 }
 
 /*
@@ -205,22 +211,23 @@ func (this Get) XDGOpen() []string {
 	return xdg_open
 }
 
-var cssOverride []func() string
+var cssOverride = map[string]string{}
 
-func (this Register) CSS(stylesheet string) {
-	cssOverride = append(cssOverride, func() string {
-		return stylesheet
-	})
-}
-
-func (this Register) CSSFunc(stylesheet func() string) {
-	cssOverride = append(cssOverride, stylesheet)
+func (this Register) CSS(stylesheet string, opts ...Option) { // idempotent
+	options := Options{}
+	for _, opt := range opts {
+		opt(&options)
+	}
+	if options.ID == "" {
+		options.ID = QuickHash(stylesheet, 10)
+	}
+	cssOverride[options.ID] = stylesheet
 }
 
 func (this Get) CSS() string {
 	s := ""
-	for i := 0; i < len(cssOverride); i++ {
-		s += cssOverride[i]() + "\n"
+	for _, v := range cssOverride {
+		s += v + "\n"
 	}
 	return s
 }
@@ -257,6 +264,16 @@ func (this Get) Onload() []func() {
 	return afterload
 }
 
+var configChange []func()
+
+func (this Register) OnConfig(fn func()) {
+	configChange = append(configChange, fn)
+}
+
+func (this Get) OnConfig() []func() {
+	return configChange
+}
+
 var middlewares []func(HandlerFunc) HandlerFunc
 
 func (this Register) Middleware(m func(HandlerFunc) HandlerFunc) {
@@ -267,14 +284,25 @@ func (this Get) Middleware() []func(HandlerFunc) HandlerFunc {
 	return middlewares
 }
 
-var staticOverrides [][]byte
+var staticOverrides = map[string][]byte{}
 
-func (this Register) StaticPatch(pathFile []byte) {
-	staticOverrides = append(staticOverrides, pathFile)
+func (this Register) StaticPatch(patchFile []byte, opts ...Option) { // idempotent
+	options := Options{}
+	for _, opt := range opts {
+		opt(&options)
+	}
+	if options.ID == "" {
+		options.ID = QuickHash(string(patchFile), 10)
+	}
+	staticOverrides[options.ID] = patchFile
 }
 
 func (this Get) StaticPatch() [][]byte {
-	return staticOverrides
+	s := [][]byte{}
+	for _, v := range staticOverrides {
+		s = append(s, v)
+	}
+	return s
 }
 
 var meta IMetadata
