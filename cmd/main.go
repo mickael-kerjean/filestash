@@ -22,7 +22,6 @@ func main() {
 }
 
 func Run(router *mux.Router) {
-	check(InitConstants(), "Constants init failed. err=%s")
 	check(InitLogger(), "Logger init failed. err=%s")
 	check(InitConfig(), "Config init failed. err=%s")
 	check(workflow.Init(), "Worklow Initialisation failure. err=%s")
