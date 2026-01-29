@@ -360,18 +360,20 @@ function workerImplFile({ progress, speed }) {
         async prepareJob({ file, path, virtual }) {
             const chunkSize = getConfig("upload_chunk_size", 0) *1024*1024;
             const numberOfChunks = Math.ceil(file.size / chunkSize);
-            const tusHeaders = {
-                "Tus-Resumable": "1.0.0",
+            const cacheHeaders = {
                 "Cache-Control": "no-store",
                 "Pragma": "no-cache",
             };
-
+            const tusHeaders = {
+                "Tus-Resumable": "1.0.0",
+                ...cacheHeaders,
+            };
             // Case1: basic upload
             if (chunkSize === 0 || numberOfChunks === 0 || numberOfChunks === 1) {
                 try {
                     await executeHttp.call(this, toHref(`/api/files/save?path=${encodeURIComponent(path)}`), {
                         method: "POST",
-                        headers: { ...tusHeaders },
+                        headers: { ...cacheHeaders },
                         body: file,
                         progress,
                         speed,
