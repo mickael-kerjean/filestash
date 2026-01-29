@@ -19,6 +19,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash"
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/runtime/compress"
 
 	"github.com/bluekeyes/go-gitdiff/gitdiff"
 )
@@ -439,13 +440,13 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 				fullBuf.WriteString(line)
 			}
 			chunks[i+1] = chunkBuf.Bytes()
-			chunksGzip[i+1] = compressGzip(chunks[i+1], quality)
-			chunksBr[i+1] = compressBr(chunks[i+1], quality)
+			chunksGzip[i+1] = compress.Gzip(chunks[i+1], quality)
+			chunksBr[i+1] = compress.Br(chunks[i+1], quality)
 			etags[i+1] = QuickHash(string(chunks[i+1]), 10)
 		}
 		chunks[0] = fullBuf.Bytes()
-		chunksGzip[0] = compressGzip(chunks[0], quality)
-		chunksBr[0] = compressBr(chunks[0], quality)
+		chunksGzip[0] = compress.Gzip(chunks[0], quality)
+		chunksBr[0] = compress.Br(chunks[0], quality)
 		etags[0] = QuickHash(string(chunks[0]), 10)
 		return chunks, chunksBr, chunksGzip, etags
 	}

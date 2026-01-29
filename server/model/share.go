@@ -5,14 +5,16 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"encoding/json"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/gomail.v2"
-	"html/template"
-	sqlite "modernc.org/sqlite"
 	"net/http"
 	"strings"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/runtime/sqlite"
+
+	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/gomail.v2"
+	"html/template"
 )
 
 type Proof struct {
@@ -99,8 +101,7 @@ func ShareUpsert(p *Share) error {
 	_, err = stmt.Exec(p.Backend, p.Path)
 	if err != nil {
 		throw := true
-		errConstraintPrimaryKey := 1555
-		if ferr, ok := err.(*sqlite.Error); ok == true && ferr.Code() == errConstraintPrimaryKey {
+		if sqlite.IsConstraint(err) {
 			throw = false
 		}
 		if throw == true {

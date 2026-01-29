@@ -1,17 +1,16 @@
-//go:build !static
-// +build !static
+//go:build cgo
 
-package ctrl
+package compress
 
 import (
 	"github.com/google/brotli/go/cbrotli"
 )
 
-func compressGzip(content []byte, quality int) []byte {
+func Gzip(content []byte, quality int) []byte {
 	return []byte{}
 }
 
-func compressBr(content []byte, quality int) []byte {
+func Br(content []byte, quality int) []byte {
 	out, _ := cbrotli.Encode(content, cbrotli.WriterOptions{Quality: quality})
 	return out
 }

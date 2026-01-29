@@ -139,7 +139,6 @@ function withPreset($preset, { password, hasStorage, hasAuth }) {
             const $form = createElement("<form id=\"configuration-preset-modal\"></form>");
             $form.onsubmit = (e) => e.preventDefault();
             const save = await new Promise((done) => {
-                console.log(specs);
                 const fields = (specs.input_storage || []).concat(specs.input_auth || []);
                 if (fields.length === 0) return done(true);
                 fields.forEach((fieldName) => $form.appendChild(createElement(`

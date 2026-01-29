@@ -1,14 +1,13 @@
-//go:build static
-// +build static
+//go:build !cgo
 
-package ctrl
+package compress
 
 import (
 	"bytes"
 	"compress/gzip"
 )
 
-func compressGzip(content []byte, quality int) []byte {
+func Gzip(content []byte, quality int) []byte {
 	var buf bytes.Buffer
 	gz, err := gzip.NewWriterLevel(&buf, quality)
 	if err != nil {
@@ -19,6 +18,6 @@ func compressGzip(content []byte, quality int) []byte {
 	return buf.Bytes()
 }
 
-func compressBr(content []byte, quality int) []byte {
+func Br(content []byte, quality int) []byte {
 	return []byte("")
 }

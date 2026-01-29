@@ -5,8 +5,6 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	_ "github.com/mattn/go-sqlite3"
-
 	"github.com/mickael-kerjean/filestash"
 	"github.com/mickael-kerjean/filestash/server"
 	"github.com/mickael-kerjean/filestash/server/ctrl"
@@ -15,6 +13,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	_ "github.com/mickael-kerjean/filestash/server/plugin"
+	_ "github.com/mickael-kerjean/filestash/server/runtime"
 )
 
 func main() {

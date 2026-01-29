@@ -8,12 +8,10 @@ import (
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-
-	_ "modernc.org/sqlite"
 )
 
 func init() {
-	db, err := sql.Open("sqlite", GetAbsolutePath(DB_PATH, "metadata.sql"))
+	db, err := sql.Open("sqlite3", GetAbsolutePath(DB_PATH, "metadata.sql"))
 	if err != nil {
 		Log.Error("plg_metadata_sqlite - cannot open sqlite metadata db: %s", err.Error())
 		os.Exit(1)
