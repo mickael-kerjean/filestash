@@ -46,7 +46,7 @@ export function useForm$($inputNodeList) {
             }
             return rxjs.of($el);
         }),
-        rxjs.mergeMap(async (e) => ({
+        rxjs.mergeMap(async(e) => ({
             name: e.target.getAttribute("name"),
             value: await (async function() {
                 switch (e.target.getAttribute("type")) {
@@ -58,7 +58,7 @@ export function useForm$($inputNodeList) {
                         const reader = new window.FileReader();
                         reader.readAsDataURL(e.target.files[0]);
                         reader.onload = () => done(reader.result);
-                    })
+                    });
                 default:
                     return e.target.value;
                 }

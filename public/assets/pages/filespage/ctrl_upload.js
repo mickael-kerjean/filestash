@@ -388,9 +388,9 @@ function workerImplFile({ progress, speed }) {
             }
 
             // Case2: chunked upload => TUS: https://www.ietf.org/archive/id/draft-tus-httpbis-resumable-uploads-protocol-00.html
+            const apiURL = toHref(`/api/files/save?path=${encodeURIComponent(path)}`);
             let uploadURL = "";
             let offset = 0;
-            let apiURL = toHref(`/api/files/save?path=${encodeURIComponent(path)}`)
             try { // tus: retry mechanism
                 const resp = await executeHttp.call(this, apiURL, {
                     method: "HEAD",
@@ -406,7 +406,7 @@ function workerImplFile({ progress, speed }) {
                         uploadURL = apiURL;
                     }
                 }
-            } catch(err) {}
+            } catch (err) {}
             if (offset === 0) { // tus: upload creation
                 try {
                     const resp = await executeHttp.call(this, apiURL, {
@@ -421,7 +421,7 @@ function workerImplFile({ progress, speed }) {
                     });
                     uploadURL = resp.headers.location;
                     if (!uploadURL.startsWith(toHref("/api/files/save?"))) throw new Error("Internal Error");
-                } catch(err) {
+                } catch (err) {
                     virtual.afterError();
                     if (err === ABORT_ERROR) return;
                     throw err;
