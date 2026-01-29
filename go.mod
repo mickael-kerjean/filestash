@@ -11,6 +11,7 @@ require (
 	github.com/creack/pty v1.1.24
 	github.com/cretz/bine v0.2.0
 	github.com/duosecurity/duo_universal_golang v1.1.0
+	github.com/fclairamb/ftpserverlib v0.30.0
 	github.com/go-git/go-git/v6 v6.0.0-20251231065035-29ae690a9f19
 	github.com/go-ldap/ldap/v3 v3.4.12
 	github.com/go-redis/redis/v8 v8.11.5
@@ -35,6 +36,7 @@ require (
 	github.com/pquerna/otp v1.5.0
 	github.com/prasad83/goftp v0.0.0-20210325080443-f57aaed46a32
 	github.com/qeesung/image2ascii v1.0.1
+	github.com/spf13/afero v1.15.0
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/stretchr/testify v1.11.1
@@ -54,7 +56,7 @@ require (
 	golang.org/x/time v0.14.0
 	google.golang.org/api v0.259.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
-	modernc.org/sqlite v1.44.0
+	modernc.org/sqlite v1.44.3
 	storj.io/uplink v1.13.1
 )
 
@@ -135,7 +137,6 @@ require (
 	github.com/rasky/go-xdr v0.0.0-20170124162913-1a41d1a06c93 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/russellhaering/goxmldsig v1.5.0 // indirect
-	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/spacemonkeygo/monkit/v3 v3.0.25-0.20251022131615-eb24eb109368 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.6.0 // indirect
@@ -163,7 +164,7 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/libc v1.67.4 // indirect
+	modernc.org/libc v1.67.6 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 	storj.io/common v0.0.0-20260109131222-221fe378eda1 // indirect
