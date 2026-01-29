@@ -58,6 +58,7 @@ func Build(r *mux.Router) {
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, LoggedInOnly, PluginInjector}
 	files.HandleFunc("/cat", NewMiddlewareChain(FileAccess, middlewares)).Methods("OPTIONS")
 	files.HandleFunc("/cat", NewMiddlewareChain(FileSave, middlewares)).Methods("POST", "PATCH")
+	files.HandleFunc("/save", NewMiddlewareChain(FileSave, middlewares)).Methods("POST", "PATCH", "HEAD", "OPTIONS")
 	files.HandleFunc("/ls", NewMiddlewareChain(FileLs, middlewares)).Methods("GET")
 	files.HandleFunc("/mv", NewMiddlewareChain(FileMv, middlewares)).Methods("POST")
 	files.HandleFunc("/rm", NewMiddlewareChain(FileRm, middlewares)).Methods("POST")

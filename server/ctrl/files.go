@@ -3,8 +3,12 @@ package ctrl
 import (
 	"archive/zip"
 	"context"
+	"crypto/sha1"
+	"hash/crc32"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
+	"hash"
 	"hash/fnv"
 	"io"
 	"net/http"
@@ -512,7 +516,10 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	// There is 2 ways to save something:
 	// - case1: regular upload, we just insert the file in the pipe
-	proto := req.URL.Query().Get("proto")
+	proto := ""
+	if _, ok := req.Header["Tus-Resumable"]; ok {
+		proto = "tus"
+	}
 	if proto == "" && req.Method == http.MethodPost {
 		err = ctx.Backend.Save(path, req.Body)
 		req.Body.Close()
@@ -525,11 +532,31 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// - case2: chunked upload which implements the TUS protocol:
-	//   https://www.ietf.org/archive/id/draft-tus-httpbis-resumable-uploads-protocol-00.html
+	// - case2: chunked upload using the TUS protocol: https://tus.io/protocols/resumable-upload
 	cacheKey := map[string]string{
 		"path":    path,
 		"session": GenerateID(ctx.Session),
+	}
+	if proto == "tus" && req.Method == http.MethodOptions {
+		h.Set("Tus-Resumable", "1.0.0")
+		h.Set("Tus-Version", "1.0.0")
+		h.Set("Tus-Extension", "creation,checksum")
+		h.Set("Tus-Checksum-Algorithm", "sha1,crc32")
+		return
+	}
+	if proto == "tus" && req.Method == http.MethodHead {
+		c := chunkedUploadCache.Get(cacheKey)
+		if c == nil {
+			SendErrorResult(res, ErrNotFound)
+			return
+		}
+		offset, length := c.(*chunkedUpload).Meta()
+		h.Set("Tus-Resumable", "1.0.0")
+		h.Set("Upload-Offset", fmt.Sprintf("%d", offset))
+		h.Set("Upload-Length", fmt.Sprintf("%d", length))
+		h.Set("Cache-Control", "no-store")
+		res.WriteHeader(http.StatusNoContent)
+		return
 	}
 	if proto == "tus" && req.Method == http.MethodPost {
 		if c := chunkedUploadCache.Get(cacheKey); c != nil {
@@ -550,25 +577,36 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 		uploader := createChunkedUploader(b.Save, path, size)
 		chunkedUploadCache.Set(cacheKey, uploader)
+		h.Set("Tus-Resumable", "1.0.0")
 		h.Set("Content-Length", "0")
 		h.Set("Location", req.URL.String())
 		res.WriteHeader(http.StatusCreated)
 		return
 	}
-	if proto == "tus" && req.Method == http.MethodHead {
-		c := chunkedUploadCache.Get(cacheKey)
-		if c == nil {
-			Log.Debug("files::save::tus action=backend_save step=cache_fetch_head")
-			SendErrorResult(res, ErrNotFound)
+	if proto == "tus" && req.Method == http.MethodPatch {
+		if req.Header.Get("Content-Type") != "application/offset+octet-stream" {
+			SendErrorResult(res, NewError("Unsupported Media Type", 415))
 			return
 		}
-		offset, length := c.(*chunkedUpload).Meta()
-		h.Set("Upload-Offset", fmt.Sprintf("%d", offset))
-		h.Set("Upload-Length", fmt.Sprintf("%d", length))
-		res.WriteHeader(http.StatusOK)
-		return
-	}
-	if proto == "tus" && req.Method == http.MethodPatch {
+		var (
+			hash             hash.Hash
+			expectedChecksum string
+		)
+		if checksumHeader := req.Header.Get("upload-checksum"); checksumHeader != "" {
+			parts := strings.SplitN(checksumHeader, " ", 2)
+			if len(parts) != 2 {
+				SendErrorResult(res, NewError("Bad Request", 400))
+				return
+			} else if parts[0] == "sha1" {
+				hash = sha1.New()
+			} else if parts[1] == "crc32" {
+				hash = crc32.NewIEEE()
+			} else {
+				SendErrorResult(res, NewError("Bad Request", 400))
+				return
+			}
+			expectedChecksum = parts[1]
+		}
 		requestOffset, err := strconv.ParseUint(req.Header.Get("Upload-Offset"), 10, 0)
 		if err != nil {
 			Log.Debug("files::save::tus action=backend_save step=header_check_patch err=%s", err.Error())
@@ -578,7 +616,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		c := chunkedUploadCache.Get(cacheKey)
 		if c == nil {
 			Log.Debug("files::save::tus action=backend_save step=cache_fetch_patch")
-			SendErrorResult(res, ErrNotFound)
+			SendErrorResult(res, NewError("Conflict", 409))
 			return
 		}
 		uploader := c.(*chunkedUpload)
@@ -587,9 +625,18 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 			Log.Debug("files::save::tus action=uploader.next path=%s err=offset_missmatch", path)
 			SendErrorResult(res, ErrNotValid)
 			return
-		} else if err := uploader.Next(req.Body); err != nil {
+		}
+		reader := req.Body
+		if hash != nil {
+			reader = io.NopCloser(io.TeeReader(req.Body, hash))
+		}
+		if err := uploader.Next(reader); err != nil {
 			Log.Debug("files::save::tus action=uploader.next path=%s err=%s", path, err.Error())
 			SendErrorResult(res, NewError(err.Error(), 403))
+			return
+		}
+		if hash != nil && expectedChecksum != hex.EncodeToString(hash.Sum(nil)) {
+			SendErrorResult(res, NewError("Checksum Mismatch", 460))
 			return
 		}
 		newOffset, _ := uploader.Meta()
@@ -607,6 +654,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 			}
 			chunkedUploadCache.Del(cacheKey)
 		}
+		h.Set("Tus-Resumable", "1.0.0")
 		h.Set("Upload-Offset", fmt.Sprintf("%d", newOffset))
 		res.WriteHeader(http.StatusNoContent)
 		return
