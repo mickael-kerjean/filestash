@@ -19,7 +19,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash"
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/runtime/compress"
+	"github.com/mickael-kerjean/filestash/server/pkg/compress"
 
 	"github.com/bluekeyes/go-gitdiff/gitdiff"
 )

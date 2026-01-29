@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/workflow/model"
+	. "github.com/mickael-kerjean/filestash/server/pkg/workflow/model"
 
 	"github.com/gorilla/mux"
 )

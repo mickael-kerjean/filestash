@@ -2,8 +2,8 @@ package workflow
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
-	_ "github.com/mickael-kerjean/filestash/server/workflow/actions"
-	. "github.com/mickael-kerjean/filestash/server/workflow/model"
+	_ "github.com/mickael-kerjean/filestash/server/pkg/workflow/actions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/workflow/model"
 )
 
 func ExecuteAction(action Step, input map[string]string) (map[string]string, error) {

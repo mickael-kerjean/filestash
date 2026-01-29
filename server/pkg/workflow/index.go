@@ -4,7 +4,7 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/workflow/model"
+	. "github.com/mickael-kerjean/filestash/server/pkg/workflow/model"
 )
 
 var job_event = make(chan interface{}, 100)

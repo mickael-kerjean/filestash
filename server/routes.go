@@ -13,7 +13,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/ctrl"
 	. "github.com/mickael-kerjean/filestash/server/middleware"
-	. "github.com/mickael-kerjean/filestash/server/workflow"
+	. "github.com/mickael-kerjean/filestash/server/pkg/workflow"
 )
 
 func Build(r *mux.Router) {

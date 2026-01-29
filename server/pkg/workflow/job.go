@@ -1,7 +1,7 @@
 package workflow
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/workflow/model"
+	. "github.com/mickael-kerjean/filestash/server/pkg/workflow/model"
 )
 
 func ExecuteJob(jobID string, workflow Workflow, input map[string]string) {

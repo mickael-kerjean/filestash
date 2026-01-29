@@ -9,11 +9,11 @@ import (
 	"github.com/mickael-kerjean/filestash/server"
 	"github.com/mickael-kerjean/filestash/server/ctrl"
 	"github.com/mickael-kerjean/filestash/server/model"
-	"github.com/mickael-kerjean/filestash/server/workflow"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	_ "github.com/mickael-kerjean/filestash/server/plugin"
-	_ "github.com/mickael-kerjean/filestash/server/runtime"
+	_ "github.com/mickael-kerjean/filestash/server/pkg"
+	"github.com/mickael-kerjean/filestash/server/pkg/workflow"
 )
 
 func main() {

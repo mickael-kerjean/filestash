@@ -10,7 +10,7 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/runtime/sqlite"
+	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
 
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
