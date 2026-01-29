@@ -3,6 +3,8 @@
 package sqlite
 
 import (
+	"errors"
+
 	"github.com/mattn/go-sqlite3"
 )
 
