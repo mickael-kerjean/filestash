@@ -84,10 +84,10 @@
              } catch (err) { console.error(err); }
 
              await Promise.all([
-                 import("./assets/{{ .version }}/components/loader.js"),
-                 import("./assets/{{ .version }}/components/modal.js"),
-                 import("./assets/{{ .version }}/components/notification.js"),
-                 import("./assets/{{ .version }}/helpers/loader.js").then(({ loadCSS }) => {
+                 import("{{ .base }}assets/{{ .version }}/components/loader.js"),
+                 import("{{ .base }}assets/{{ .version }}/components/modal.js"),
+                 import("{{ .base }}assets/{{ .version }}/components/notification.js"),
+                 import("{{ .base }}assets/{{ .version }}/helpers/loader.js").then(({ loadCSS }) => {
                      loadCSS(import.meta.url, "{{ .base }}assets/{{ .version }}/css/designsystem.css");
                  }),
              ]);
