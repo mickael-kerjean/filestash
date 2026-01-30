@@ -103,13 +103,26 @@ export const ls = (path) => {
             rxjs.of(null),
             rxjs.merge(rxjs.of(null), rxjs.fromEvent(window, "keydown").pipe( // "r" shorcut
                 rxjs.filter((e) => e.keyCode === 82 && assert.type(document.activeElement, HTMLElement).tagName !== "INPUT"),
-            )).pipe(rxjs.switchMap(() => lsFromHttp(path))),
+            )).pipe(
+                rxjs.switchMap(() => lsFromHttp(path)),
+                rxjs.catchError((err) => navigator.onLine ? rxjs.throwError(err) : rxjs.EMPTY),
+            ),
         ),
+        rxjs.merge(
+            rxjs.of(navigator.onLine),
+            rxjs.fromEvent(window, "online"),
+            rxjs.fromEvent(window, "offline"),
+        )
     ).pipe(
         rxjs.mergeMap(([cache, http]) => {
             if (http) return rxjs.of(http);
             if (cache) return rxjs.of(cache);
             return rxjs.EMPTY;
+        }),
+        rxjs.map(({ files, ...res }) => {
+            if (navigator.onLine) res["files"] = files;
+            else res["files"] = files.map((file) => file.type === "file" ? { ...file, offline: true } : file);
+            return res;
         }),
         rxjs.distinctUntilChanged((prev, curr) => {
             let refresh = false;
