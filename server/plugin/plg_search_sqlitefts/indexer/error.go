@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/mickael-kerjean/filestash/server/runtime/sqlite"
+	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
 )
 
 var (
