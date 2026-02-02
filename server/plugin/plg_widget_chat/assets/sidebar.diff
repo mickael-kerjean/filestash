@@ -1,0 +1,10 @@
+diff --git a/public/assets/components/sidebar.js b/public/assets/components/sidebar.js
+index 268aa4eb..e7b93142 100644
+--- a/public/assets/components/sidebar.js
++++ b/public/assets/components/sidebar.js
+@@ -52,1 +52,5 @@ export default async function ctrlSidebar(render, {}) {
+
++    qs($sidebar, ".component_sidebar > div").appendChild(createElement(`<div data-bind="chat"></div>`));
++    import(location.origin + "/plg_handler_chat/sidebar_chat.js")
++        .then((module) => module.default(createRender(qs($sidebar, `[data-bind="chat"]`)), { path }))
++        .catch((err) => console.log(err));
