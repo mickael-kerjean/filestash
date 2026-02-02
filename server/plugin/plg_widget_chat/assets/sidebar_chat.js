@@ -29,10 +29,10 @@ export default async function(render, { path }) {
             return $messages;
         }),
         applyMutation(qs($page, `[data-bind="messages"]`), "replaceChildren"),
+        rxjs.catchError(() => rxjs.EMPTY),
     );
 
-    effect(refresh$.pipe(
-    ));
+    effect(refresh$);
 
     effect(rxjs.of(createElement(`<form><input type="text" name="message" placeholder="${t("Chat")}" /></form>`)).pipe(
         applyMutation(qs($page, `[data-bind="title"]`), "replaceChildren"),
