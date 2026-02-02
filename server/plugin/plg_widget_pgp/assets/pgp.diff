@@ -1,0 +1,25 @@
+diff --git a/public/assets/pages/viewerpage/application_editor.js b/public/assets/pages/viewerpage/application_editor.js
+index f9fda1e0..c547be20 100644
+--- a/public/assets/pages/viewerpage/application_editor.js
++++ b/public/assets/pages/viewerpage/application_editor.js
+@@ -27,1 +27,2 @@ class IEditor {}
+ export default async function(render, { acl$, getFilename, getDownloadUrl, mime }) {
++    if ((await import("./pgp.js")).isPGPFile(getFilename())) acl$ = rxjs.of(["GET"]);
+@@ -54,1 +54,1 @@ export default async function(render, { acl$, getFilename, getDownloadUrl, mime
+-            cat(getDownloadUrl()),
++            cat(await import("/plg_widget_pgp/pgp.js").then((m) => m.isPGPFile(getFilename()) ? m.decode(getDownloadUrl()) : getDownloadUrl())),
+diff --git a/public/assets/pages/viewerpage/application_image.js b/public/assets/pages/viewerpage/application_image.js
+index 1227d426..b82330aa 100644
+--- a/public/assets/pages/viewerpage/application_image.js
++++ b/public/assets/pages/viewerpage/application_image.js
+@@ -65,1 +65,3 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar
+             let src = `${getDownloadUrl()}&size=${window.innerWidth}`;
++            const m = await import("/plg_widget_pgp/pgp.js");
++            if (m.isPGPFile(getFilename())) src = await m.decode(src);
+diff --git a/public/assets/pages/viewerpage/mimetype.js b/public/assets/pages/viewerpage/mimetype.js
+index 0adb0934..d002a70e 100644
+--- a/public/assets/pages/viewerpage/mimetype.js
++++ b/public/assets/pages/viewerpage/mimetype.js
+@@ -3,1 +3,2 @@ import { get as getPlugin } from "../../model/plugin.js";
+ export function opener(file = "", mimes) {
++    file = file.replace(new RegExp(".gpg$"), "");
