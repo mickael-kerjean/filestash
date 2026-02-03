@@ -1,13 +1,10 @@
-diff --git a/public/assets/pages/viewerpage/application_editor.js b/public/assets/pages/viewerpage/application_editor.js
-index f9fda1e0..c547be20 100644
---- a/public/assets/pages/viewerpage/application_editor.js
-+++ b/public/assets/pages/viewerpage/application_editor.js
-@@ -27,1 +27,2 @@ class IEditor {}
- export default async function(render, { acl$, getFilename, getDownloadUrl, mime }) {
-+    if ((await import("./pgp.js")).isPGPFile(getFilename())) acl$ = rxjs.of(["GET"]);
-@@ -54,1 +54,1 @@ export default async function(render, { acl$, getFilename, getDownloadUrl, mime
--            cat(getDownloadUrl()),
-+            cat(await import("/plg_widget_pgp/pgp.js").then((m) => m.isPGPFile(getFilename()) ? m.decode(getDownloadUrl()) : getDownloadUrl())),
+diff --git a/public/assets/pages/viewerpage/mimetype.js b/public/assets/pages/viewerpage/mimetype.js
+index 0adb0934..d002a70e 100644
+--- a/public/assets/pages/viewerpage/mimetype.js
++++ b/public/assets/pages/viewerpage/mimetype.js
+@@ -3,1 +3,2 @@ import { get as getPlugin } from "../../model/plugin.js";
+ export function opener(file = "", mimes) {
++    file = file.replace(new RegExp(".gpg$"), "");
 diff --git a/public/assets/pages/viewerpage/application_image.js b/public/assets/pages/viewerpage/application_image.js
 index 1227d426..b82330aa 100644
 --- a/public/assets/pages/viewerpage/application_image.js
@@ -16,10 +13,25 @@ index 1227d426..b82330aa 100644
              let src = `${getDownloadUrl()}&size=${window.innerWidth}`;
 +            const m = await import("/plg_widget_pgp/pgp.js");
 +            if (m.isPGPFile(getFilename())) src = await m.decode(src);
-diff --git a/public/assets/pages/viewerpage/mimetype.js b/public/assets/pages/viewerpage/mimetype.js
-index 0adb0934..d002a70e 100644
---- a/public/assets/pages/viewerpage/mimetype.js
-+++ b/public/assets/pages/viewerpage/mimetype.js
-@@ -3,1 +3,2 @@ import { get as getPlugin } from "../../model/plugin.js";
- export function opener(file = "", mimes) {
-+    file = file.replace(new RegExp(".gpg$"), "");
+diff --git a/public/assets/pages/viewerpage/model_files.js b/public/assets/pages/viewerpage/model_files.js
+index 743914ab..4f20546d 100644
+--- a/public/assets/pages/viewerpage/model_files.js
++++ b/public/assets/pages/viewerpage/model_files.js
+@@ -22,4 +22,4 @@ export const options = () => ajax({
+-export const cat = (url) => ajax({
+-    url: forwardURLParams(url, ["share"]),
+-    method: "GET",
+-}).pipe(
++const { isPGPFile, decode, encode } = await import(location.origin + "/plg_widget_pgp/pgp.js");
++export const cat = (url) => rxjs.of(forwardURLParams(url, ["share"])).pipe(
++    rxjs.mergeMap((url) => isPGPFile(getCurrentPath()) ? decode(url) : rxjs.of(url)),
++    rxjs.mergeMap((url) => ajax({ url, method: "GET" })),
+@@ -29,5 +29,3 @@ export const cat = (url) => ajax({
+-export const save = (content) => ajax({
+-    url: forwardURLParams("api/files/cat?path=" + encodeURIComponent(getCurrentPath()), ["share"]),
+-    method: "POST",
+-    body: content,
+-});
++export const save = (content) => (isPGPFile(getCurrentPath()) ? rxjs.from(encode(content)) : rxjs.of(content)).pipe(
++    rxjs.mergeMap((body) => ajax({ body, method: "POST", url: forwardURLParams("api/files/cat?path=" + encodeURIComponent(getCurrentPath()), ["share"]) })),
++);
