@@ -243,7 +243,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 			if req.Method == http.MethodHead {
 				if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.IsDir() {
 					if finfo.ModTime().Unix() > 0 {
-						header.Set("Last-Modified", finfo.ModTime().Format(time.RFC1123))
+						header.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
 					}
 					header.Set("Content-Type", "inode/directory")
 					res.WriteHeader(http.StatusNoContent)
@@ -268,7 +268,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if thumb == "true" {
 		fileMutation = true
 		if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() > 0 {
-			lm := finfo.ModTime().Format(time.RFC1123)
+			lm := finfo.ModTime().UTC().Format(http.TimeFormat)
 			if lm == req.Header.Get("If-Modified-Since") {
 				res.WriteHeader(http.StatusNotModified)
 				return
@@ -377,7 +377,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	} else if fileMutation == false && contentLength < 0 {
 		if finfo, err := ctx.Backend.Stat(path); err == nil {
 			if finfo.ModTime().Unix() > 0 {
-				header.Set("Last-Modified", finfo.ModTime().Format(time.RFC1123))
+				header.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
 			}
 			if finfo.IsDir() {
 				header.Set("Content-Type", "inode/directory")
