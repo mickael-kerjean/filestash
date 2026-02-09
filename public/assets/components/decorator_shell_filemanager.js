@@ -1,13 +1,13 @@
 import { createElement, createRender } from "../lib/skeleton/index.js";
 import { navigate, fromHref } from "../lib/skeleton/router.js";
 import rxjs, { effect } from "../lib/rx.js";
-import assert from "../lib/assert.js";
 import { onDestroy } from "../lib/skeleton/lifecycle.js";
 import { animate, slideYOut } from "../lib/animate.js";
 import { qs, safe } from "../lib/dom.js";
 import { loadCSS } from "../helpers/loader.js";
 import { init as initBreadcrumb } from "../components/breadcrumb.js";
 import ctrlSidebar, { init as initSidebar } from "./sidebar.js";
+import { isAlreadyFocused } from "../pages/filespage/helper.js";
 
 export default function(ctrl) {
     const urlToPath = (pathname = "") => decodeURIComponent(pathname.split("/").filter((_, i) => i !== 1).join("/"));
@@ -44,8 +44,7 @@ export default function(ctrl) {
         const regexStartFiles = new RegExp("^/files/.+");
         effect(rxjs.fromEvent(window, "keydown").pipe(
             rxjs.filter((e) => regexStartFiles.test(fromHref(location.pathname)) &&
-                        e.keyCode === 8 &&
-                        assert.type(document.activeElement, HTMLElement).nodeName !== "INPUT"), // backspace in filemanager
+                        e.keyCode === 8 && !isAlreadyFocused()), // backspace in file manager
             rxjs.tap(() => {
                 const p = location.pathname.replace(new RegExp("/$"), "").split("/");
                 p.pop();
