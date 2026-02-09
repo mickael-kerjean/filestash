@@ -226,7 +226,7 @@ func (this *AzureBlob) Mkdir(path string) error {
 		_, err := this.client.CreateContainer(this.ctx, ap.containerName, nil)
 		return err
 	}
-	_, err := this.client.UploadBuffer(this.ctx, ap.containerName, ap.blobName+".keep", []byte(""), nil)
+	_, err := this.client.UploadBuffer(this.ctx, ap.containerName, EnforceDirectory(ap.blobName)+".keep", []byte(""), nil)
 	return err
 }
 
@@ -236,7 +236,12 @@ func (this *AzureBlob) Rm(path string) error {
 		_, err := this.client.DeleteContainer(this.ctx, ap.containerName, nil)
 		return err
 	}
-	if strings.HasSuffix(path, "/") == false {
+	finfo, err := this.Stat(path)
+	if err != nil {
+		return err
+	}
+
+	if finfo.IsDir() == false {
 		_, err := this.client.DeleteBlob(this.ctx, ap.containerName, ap.blobName, nil)
 		return err
 	}
