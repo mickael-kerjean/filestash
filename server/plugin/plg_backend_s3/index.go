@@ -346,7 +346,7 @@ func (this S3Backend) Mkdir(path string) error {
 	}
 	_, err := client.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(p.bucket),
-		Key:    aws.String(p.path),
+		Key:    aws.String(EnforceDirectory(p.path)),
 	})
 	return err
 }
@@ -357,8 +357,13 @@ func (this S3Backend) Rm(path string) error {
 	if p.bucket == "" {
 		return ErrNotFound
 	}
+	finfo, err := this.Stat(path)
+	if err != nil {
+		return err
+	}
+
 	// CASE 1: remove a file
-	if strings.HasSuffix(path, "/") == false {
+	if finfo.IsDir() == false {
 		_, err := client.DeleteObject(&s3.DeleteObjectInput{
 			Bucket: aws.String(p.bucket),
 			Key:    aws.String(p.path),
@@ -388,7 +393,7 @@ func (this S3Backend) Rm(path string) error {
 			wg.Done()
 		}()
 	}
-	err := client.ListObjectsV2PagesWithContext(
+	err = client.ListObjectsV2PagesWithContext(
 		this.Context,
 		&s3.ListObjectsV2Input{
 			Bucket: aws.String(p.bucket),
@@ -434,8 +439,13 @@ func (this S3Backend) Mv(from string, to string) error {
 	if f.path == "" {
 		return ErrNotImplemented
 	}
+
+	finfo, err := this.Stat(from)
+	if err != nil {
+		return err
+	}
 	// CASE 2: Rename/Move a file
-	if strings.HasSuffix(from, "/") == false {
+	if finfo.IsDir() == false {
 		input := &s3.CopyObjectInput{
 			CopySource: aws.String(fmt.Sprintf("%s/%s", f.bucket, f.path)),
 			Bucket:     aws.String(t.bucket),
@@ -499,7 +509,7 @@ func (this S3Backend) Mv(from string, to string) error {
 			wg.Done()
 		}()
 	}
-	err := client.ListObjectsV2PagesWithContext(
+	err = client.ListObjectsV2PagesWithContext(
 		this.Context,
 		&s3.ListObjectsV2Input{
 			Bucket: aws.String(f.bucket),
