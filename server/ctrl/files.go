@@ -98,7 +98,7 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
 		if err = auth.Ls(ctx, path); err != nil {
 			Log.Info("ls::auth '%s'", err.Error())
-			SendErrorResult(res, ErrNotAuthorized)
+			SendErrorResult(res, err)
 			return
 		}
 		ctx.Context = context.WithValue(ctx.Context, "AUDIT", false)
