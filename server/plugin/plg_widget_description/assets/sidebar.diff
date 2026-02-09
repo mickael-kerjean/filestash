@@ -1,0 +1,10 @@
+diff --git a/public/assets/components/sidebar.js b/public/assets/components/sidebar.js
+index 268aa4eb..e7b93142 100644
+--- a/public/assets/components/sidebar.js
++++ b/public/assets/components/sidebar.js
+@@ -52,1 +52,5 @@ export default async function ctrlSidebar(render, {}) {
+
++    if (!$sidebar.querySelector(`[data-bind="description"]`)) qs($sidebar, ".component_sidebar > div").appendChild(createElement(`<div data-bind="description"></div>`));
++    import(location.origin + "/plg_widget_description/sidebar_description.js")
++        .then((module) => module.default(createRender(qs($sidebar, `[data-bind="description"]`)), { path }))
++        .catch((err) => console.log(err));
