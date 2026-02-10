@@ -95,6 +95,15 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     box-sizing: border-box;
     letter-spacing: -0.2px;
 }
+.component_filemanager_shell .component_sidebar .placeholder {
+    border: 2px dashed var(--border);
+    border-radius: 4px;
+    color: var(--light);
+    box-sizing: border-box;
+    padding: 5px;
+    font-family: inherit;
+}
+
 body.touch-no .component_filemanager_shell .component_sidebar a:not([aria-selected="true"]):hover,
 .component_filemanager_shell .component_sidebar a[aria-selected="true"] {
     background: var(--border);

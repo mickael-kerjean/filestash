@@ -12,7 +12,7 @@ export default async function(render, { path }) {
                 <span>${t("Description")}</span>
             </h3>
             <div data-bind="content">
-                <textarea name="text"></textarea>
+                <textarea class="placeholder" name="text"></textarea>
             </div>
             <style>${CSS}</style>
         </div>
@@ -52,12 +52,6 @@ const CSS = `
 [data-bind="description"] [data-bind="content"] textarea {
     max-width: 100%;
     min-width: 100%;
-    box-sizing: border-box;
-    color: var(--light);
-    border: 2px dashed var(--border);
-    padding: 5px;
-    border-radius: 4px;
-    font-family: inherit;
     font-size: 0.9rem;
 }
 `;

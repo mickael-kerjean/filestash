@@ -4,6 +4,7 @@ import rxjs, { effect, applyMutation, preventDefault } from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 import t from "../locales/index.js";
 import { createModal, MODAL_RIGHT_BUTTON } from "../components/modal.js";
+import { generateSkeleton } from "../components/skeleton.js";
 
 export default async function(render, { path }) {
     const $page = createElement(`
@@ -12,7 +13,7 @@ export default async function(render, { path }) {
                 <img style="position:relative;top:1px;" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIHN0eWxlPSJzdHJva2U6IzU3NTk1YSIgZD0iTTIxIDE1YTIgMiAwIDAgMS0yIDJIN2wtNCA0VjVhMiAyIDAgMCAxIDItMmgxNGEyIDIgMCAwIDEgMiAyeiIvPjwvc3ZnPg==" alt="chat">
                 <span data-bind="title">${t("Chat")}</span>
             </h3>
-            <ul data-bind="messages"></ul>
+            <ul data-bind="messages">${generateSkeleton(1)}</ul>
             <style>${CSS}</style>
         </div>
     `);
@@ -20,6 +21,7 @@ export default async function(render, { path }) {
 
     const refresh$ = getMessages(path).pipe(
         rxjs.map((messages) => {
+            if (messages.length === 0) return createElement(`<div class="placeholder center no-select">∅</div>`);
             const $messages = document.createDocumentFragment();
             for (const message of messages) {
                 $messages.appendChild(renderMessage(message, {
@@ -116,22 +118,19 @@ function onMessageClick({ path }) {
             });
         }),
         rxjs.first(),
+        rxjs.repeat(),
     ));
 }
 
-function getMessages(path = "/") {
-    return ajax({ url: "api/messages?path="+path, responseType: "json" }).pipe(
-        rxjs.map(({ responseJSON }) => responseJSON.results.reverse()),
-    );
-}
+const getMessages = (path = "/") => ajax({ url: "api/messages?path="+path, responseType: "json" }).pipe(
+    rxjs.map(({ responseJSON }) => responseJSON.results.reverse()),
+);
 
-function createMessage(body) {
-    return ajax({
-        url: "api/messages",
-        method: "POST",
-        body,
-    });
-}
+const createMessage = (body) => ajax({
+    url: "api/messages",
+    method: "POST",
+    body,
+});
 
 const CSS = `
 /* MESSAGES */
