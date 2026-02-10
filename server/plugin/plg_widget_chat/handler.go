@@ -40,7 +40,7 @@ func list(ctx *App, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if ctx.Session["path"] != "" {
-			m.Path = strings.TrimPrefix(m.Path, strings.TrimPrefix(ctx.Session["path"], "/"))
+			m.Path = strings.TrimPrefix(m.Path, strings.TrimSuffix(ctx.Session["path"], "/"))
 		}
 		out = append(out, m)
 	}
