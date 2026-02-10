@@ -4,32 +4,23 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	"database/sql"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/ctrl"
 )
 
 func list(ctx *App, w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimSpace(r.URL.Query().Get("path"))
-	var (
-		rows *sql.Rows
-		err error
-	)
-	if path == "" {
-		rows, err = db.QueryContext(r.Context(), `
-			SELECT id, path, author, message, creation_date
-			FROM messages
-			ORDER BY creation_date DESC
-			LIMIT 50
-		`)
-	} else {
-		rows, err = db.QueryContext(r.Context(), `
-			SELECT id, path, author, message, creation_date
+	path, err := PathBuilder(ctx, r.URL.Query().Get("path"))
+	if err != nil {
+		SendErrorResult(w, err)
+		return
+	}
+	rows, err := db.QueryContext(r.Context(), `
+		SELECT path, author, message, creation_date
 			FROM messages
 			WHERE path GLOB ?
 			ORDER BY creation_date ASC
-		`, globAll(path))
-	}
+	`, globAll(path))
 	if err != nil {
 		SendErrorResult(w, err)
 		return
@@ -40,7 +31,6 @@ func list(ctx *App, w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var m Message
 		if err := rows.Scan(
-			&m.ID,
 			&m.Path,
 			&m.Author,
 			&m.Message,
@@ -49,15 +39,18 @@ func list(ctx *App, w http.ResponseWriter, r *http.Request) {
 			SendErrorResult(w, err)
 			return
 		}
+		if ctx.Session["path"] != "" {
+			m.Path = strings.TrimPrefix(m.Path, strings.TrimPrefix(ctx.Session["path"], "/"))
+		}
 		out = append(out, m)
 	}
 	SendSuccessResults(w, out)
 }
 
 func create(ctx *App, w http.ResponseWriter, r *http.Request) {
-	path, ok := ctx.Body["path"].(string)
-	if !ok {
-		SendErrorResult(w, NewError("Invalid parameters", 400))
+	path, err := PathBuilder(ctx, r.URL.Query().Get("path"))
+	if err != nil {
+		SendErrorResult(w, err)
 		return
 	}
 	msg, ok := ctx.Body["message"].(string)
@@ -65,17 +58,10 @@ func create(ctx *App, w http.ResponseWriter, r *http.Request) {
 		SendErrorResult(w, NewError("Invalid parameters", 400))
 		return
 	}
-	m := Message{
-		ID:        newID(),
-		Path:      path,
-		Author:    getUser(ctx.Session),
-		Message:   msg,
-		CreatedAt: time.Now().Unix(),
-	}
-	_, err := db.ExecContext(ctx.Context, `
+	_, err = db.ExecContext(ctx.Context, `
 		INSERT INTO messages(id, path, author, message, creation_date)
 		VALUES(?,?,?,?,?)
-	`, m.ID, m.Path, m.Author, m.Message, m.CreatedAt)
+	`, newID(), path, getUser(ctx.Session), msg, time.Now().Unix())
 	if err != nil {
 		SendErrorResult(w, err)
 		return

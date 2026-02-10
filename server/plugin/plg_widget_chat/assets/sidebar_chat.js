@@ -2,6 +2,7 @@ import { createElement, nop } from "../lib/skeleton/index.js";
 import { qs, safe } from "../lib/dom.js";
 import rxjs, { effect, applyMutation, preventDefault } from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
+import { forwardURLParams } from "../../lib/path.js";
 import t from "../locales/index.js";
 import { createModal, MODAL_RIGHT_BUTTON } from "../components/modal.js";
 import { generateSkeleton } from "../components/skeleton.js";
@@ -122,12 +123,12 @@ function onMessageClick({ path }) {
     ));
 }
 
-const getMessages = (path = "/") => ajax({ url: "api/messages?path="+path, responseType: "json" }).pipe(
+const getMessages = (path = "/") => ajax({ url: forwardURLParams("api/messages?path="+encodeURIComponent(path), ["share"]), responseType: "json" }).pipe(
     rxjs.map(({ responseJSON }) => responseJSON.results.reverse()),
 );
 
-const createMessage = (body) => ajax({
-    url: "api/messages",
+const createMessage = ({ path, ...body }) => ajax({
+    url: forwardURLParams("api/messages?path="+encodeURIComponent(path), ["share"]),
     method: "POST",
     body,
 });

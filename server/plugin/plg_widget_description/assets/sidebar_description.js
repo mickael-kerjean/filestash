@@ -2,6 +2,7 @@ import { createElement } from "../lib/skeleton/index.js";
 import { qs } from "../lib/dom.js";
 import rxjs, { effect, applyMutation, preventDefault } from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
+import { forwardURLParams } from "../../lib/path.js";
 import t from "../locales/index.js";
 
 export default async function(render, { path }) {
@@ -32,14 +33,14 @@ export default async function(render, { path }) {
 }
 
 const getDescription = (path) => ajax({
-    url: "api/description?path=" + encodeURIComponent(path),
+    url: forwardURLParams("api/description?path=" + encodeURIComponent(path), ["share"]),
     responseType: "json"
 }).pipe(
     rxjs.map(({ responseJSON }) => responseJSON.result || { path, text: "" }),
 );
 
-const updateDescription = (body) => ajax({
-    url: "api/description",
+const updateDescription = ({ path, ...body }) => ajax({
+    url: forwardURLParams("api/description?path=" + encodeURIComponent(path), ["share"]),
     method: "PUT",
     body,
 });

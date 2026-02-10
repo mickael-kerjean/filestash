@@ -3,34 +3,25 @@ package plg_widget_description
 import (
 	"database/sql"
 	"net/http"
-	"strings"
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/ctrl"
 )
 
 func get(ctx *App, w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimSpace(r.URL.Query().Get("path"))
-	if path == "" {
-		SendErrorResult(w, NewError("Invalid parameters", 400))
+	path, err := PathBuilder(ctx, r.URL.Query().Get("path"))
+	if err != nil {
+		SendErrorResult(w, err)
 		return
 	}
 
 	var d Description
-	err := db.QueryRowContext(r.Context(), `
-		SELECT path, author, text, updated_at
+	if err = db.QueryRowContext(ctx.Context, `
+		SELECT author, text, updated_at
 		FROM descriptions
 		WHERE backend = ? AND path = ?
-	`, GenerateID(ctx.Session), path).Scan(&d.Path, &d.Author, &d.Text, &d.UpdatedAt)
-
-	if err == sql.ErrNoRows {
-		SendSuccessResult(w, Description{
-			Path: path,
-			Text: "",
-		})
-		return
-	}
-	if err != nil {
+	`, GenerateID(ctx.Session), path).Scan(&d.Author, &d.Text, &d.UpdatedAt); err != nil && err != sql.ErrNoRows {
 		SendErrorResult(w, err)
 		return
 	}
@@ -38,9 +29,9 @@ func get(ctx *App, w http.ResponseWriter, r *http.Request) {
 }
 
 func update(ctx *App, w http.ResponseWriter, r *http.Request) {
-	path, ok := ctx.Body["path"].(string)
-	if !ok {
-		SendErrorResult(w, NewError("Invalid parameters", 400))
+	path, err := PathBuilder(ctx, r.URL.Query().Get("path"))
+	if err != nil {
+		SendErrorResult(w, err)
 		return
 	}
 	text, ok := ctx.Body["text"].(string)
@@ -48,7 +39,6 @@ func update(ctx *App, w http.ResponseWriter, r *http.Request) {
 		SendErrorResult(w, NewError("Invalid parameters", 400))
 		return
 	}
-	var err error
 	if text == "" {
 		_, err = db.ExecContext(ctx.Context, `
 			DELETE FROM descriptions WHERE backend = ? AND path = ?
