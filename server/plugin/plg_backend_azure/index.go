@@ -265,7 +265,65 @@ func (this *AzureBlob) Rm(path string) error {
 }
 
 func (this *AzureBlob) Mv(from string, to string) error {
-	return ErrNotSupported
+	apFrom := this.path(from)
+	apTo := this.path(to)
+	if apFrom.containerName != apTo.containerName {
+		return ErrNotSupported
+	}
+	finfo, err := this.Stat(from)
+	if err != nil {
+		return err
+	}
+
+	// CASE 1: Move a file
+	if finfo.IsDir() == false {
+		sourceClient := this.client.ServiceClient().NewContainerClient(apFrom.containerName).NewBlockBlobClient(apFrom.blobName)
+		destClient := this.client.ServiceClient().NewContainerClient(apTo.containerName).NewBlockBlobClient(apTo.blobName)
+		if _, err := destClient.StartCopyFromURL(
+			this.ctx,
+			sourceClient.URL(),
+			nil,
+		); err != nil {
+			return err
+		}
+		_, err = this.client.DeleteBlob(this.ctx, apFrom.containerName, apFrom.blobName, nil)
+		return err
+	}
+
+	// CASE 2: Move a directory
+	pager := this.client.NewListBlobsFlatPager(apFrom.containerName, &container.ListBlobsFlatOptions{
+		Include: container.ListBlobsInclude{Snapshots: true, Versions: true},
+		Prefix: &apFrom.blobName,
+	})
+	for pager.More() {
+		resp, err := pager.NextPage(this.ctx)
+		if err != nil {
+			return err
+		}
+		for _, blob := range resp.Segment.BlobItems {
+			if err := this.ctx.Err(); err != nil {
+				return err
+			} else if blob.Name == nil {
+				return ErrNotValid
+			}
+			oldName := *blob.Name
+			newName := strings.Replace(oldName, apFrom.blobName, apTo.blobName, 1)
+			sourceClient := this.client.ServiceClient().NewContainerClient(apFrom.containerName).NewBlockBlobClient(oldName)
+			destClient := this.client.ServiceClient().NewContainerClient(apTo.containerName).NewBlockBlobClient(newName)
+			if _, err := destClient.StartCopyFromURL(
+				context.Background(),
+				sourceClient.URL(),
+				nil,
+			); err != nil {
+				return err
+			}
+			_, err = this.client.DeleteBlob(context.Background(), apFrom.containerName, oldName, nil)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (this *AzureBlob) Touch(path string) error {
@@ -290,10 +348,7 @@ func (this *AzureBlob) Meta(path string) Metadata {
 			CanUpload:     NewBool(false),
 		}
 	}
-	return Metadata{
-		CanRename: NewBool(false),
-		CanMove:   NewBool(false),
-	}
+	return Metadata{}
 }
 
 type azurePath struct {
