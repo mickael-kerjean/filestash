@@ -110,6 +110,7 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 		if err = auth.Mv(ctx, path, path); err != nil {
 			perms.CanRename = NewBool(false)
+			perms.CanMove = NewBool(false)
 		}
 		if err = auth.Save(ctx, path); err != nil {
 			perms.CanUpload = NewBool(false)
