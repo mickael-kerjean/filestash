@@ -65,7 +65,7 @@ func NewConfiguration() Configuration {
 			Form{
 				Title: "general",
 				Elmnts: []FormElement{
-					FormElement{Name: "name", Type: "text", Default: APPNAME, Description: "Name has shown in the UI", Placeholder: "Default: \"" + APPNAME + "\""},
+					FormElement{Name: "name", Type: "text", Default: APPNAME, Description: "Name as shown in the UI", Placeholder: "Default: \"" + APPNAME + "\""},
 					FormElement{Name: "port", Type: "number", Default: 8334, Description: "Port on which the application is available.", Placeholder: "Default: 8334"},
 					FormElement{Name: "host", Type: "text", Description: "The host people need to use to access this server", Placeholder: "Eg: \"demo.filestash.app\""},
 					FormElement{Name: "secret_key", Type: "password", Required: true, Pattern: "[a-zA-Z0-9]{16}", Description: "The key that's used to encrypt and decrypt content. Update this settings will invalidate existing user sessions and shared links, use with caution!"},
