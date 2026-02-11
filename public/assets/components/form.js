@@ -296,10 +296,18 @@ export function $renderInput(options = {}) {
             };
             const $input = qs($file, "input");
             $input.onchange = (e) => {
-                if (e.target.files.length === 0) return;
+                if (e.target.files.length === 0) {
+                    draw(null);
+                    return;
+                }
                 const reader = new window.FileReader();
                 reader.readAsDataURL(e.target.files[0]);
                 reader.onload = () => draw(reader.result);
+            };
+            $file.oncancel = () => {
+                if (!value) return;
+                $input.dispatchEvent(new Event("input"));
+                draw(null);
             };
             attrs.map((setAttribute) => setAttribute($input));
             draw(value);
