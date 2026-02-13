@@ -10,14 +10,25 @@ import (
 func init() {
 	Hooks.Register.Middleware(func(next HandlerFunc) HandlerFunc {
 		return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
-			if ctx.Share.Id != "" {
+			if ctx.Share.Id != "" || !PluginEnable() {
 				next(ctx, res, req)
 				return
 			}
+			ctx.Backend = NewRecentDecorator(ctx)
+			path := req.URL.Query().Get("path")
 			recentPathAdd := ""
 			recentPathRemove := ""
-			if strings.HasSuffix(req.URL.Path, "/api/files/ls") && req.Method == http.MethodGet  {
-				if path := req.URL.Query().Get("path"); path == "/Recent/" {
+			if strings.HasSuffix(req.URL.Path, "/api/files/search") && req.Method == http.MethodGet && strings.HasPrefix(path, "/"+PluginFolderName()+"/") {
+				files, err := SearchRecent(req.Context(), GenerateID(ctx.Session), getUser(ctx.Session), req.URL.Query().Get("q"))
+				if err != nil {
+					SendErrorResult(res, err)
+					return
+				}
+				SendSuccessResults(res, files)
+				return
+			}
+			if strings.HasSuffix(req.URL.Path, "/api/files/ls") && req.Method == http.MethodGet {
+				if path == "/"+PluginFolderName()+"/" {
 					files, err := GetRecent(GenerateID(ctx.Session), getUser(ctx.Session))
 					if err != nil {
 						SendErrorResult(res, err)

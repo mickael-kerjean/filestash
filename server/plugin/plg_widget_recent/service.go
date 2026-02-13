@@ -1,6 +1,7 @@
 package plg_widget_recent
 
 import (
+	"context"
 	"path/filepath"
 	"strings"
 	"time"
@@ -37,7 +38,6 @@ func GetRecent(backendID string, user string) ([]os.FileInfo, error) {
 			file.FType = "directory"
 		}
 		file.FName = filepath.Base(strings.TrimSuffix(file.FPath, "/"))
-		file.FTime *= 1000
 		files = append(files, file)
 	}
 	return files, nil
@@ -47,12 +47,47 @@ func StoreRecent(backendID string, user string, path string, size int64) error {
 	_, err := db.Exec(`
 		INSERT INTO recent(backend, user, path, last_accessed, size) VALUES(?, ?, ?, ?, ?)
 		ON CONFLICT(backend, user, path) DO UPDATE SET last_accessed = excluded.last_accessed
-	`, backendID, user, path, time.Now().Unix(), size)
+	`, backendID, user, path, time.Now().UnixMilli(), size)
 	if err != nil {
 		Log.Warning("plg_widget_recent::store path=%s err=%s", path, err.Error())
 		return err
 	}
 	return err
+}
+
+func SearchRecent(ctx context.Context, backendID string, user string, query string) ([]os.FileInfo, error) {
+	rows, err := db.Query(`
+		SELECT path, last_accessed, size
+		FROM recent
+		WHERE backend = ? AND user = ?
+		ORDER BY last_accessed DESC
+		LIMIT 500
+	`, backendID, user)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	files := make([]os.FileInfo, 0)
+	for rows.Next() {
+		file := File{
+			FType: "file",
+			FTime: -1,
+			FSize: -1,
+		}
+		if err := rows.Scan(&file.FPath, &file.FTime, &file.FSize); err != nil {
+			continue
+		}
+		if strings.HasSuffix(file.FPath, "/") {
+			file.FType = "directory"
+		}
+		file.FName = filepath.Base(strings.TrimSuffix(file.FPath, "/"))
+		files = append(files, file)
+	}
+	if len(files) == 0 || !PluginEnableAI() {
+		return files, nil
+	}
+	return aiFilterRecent(ctx, query, files)
 }
 
 func RemoveRecent(backendID string, user string, path string) error {
