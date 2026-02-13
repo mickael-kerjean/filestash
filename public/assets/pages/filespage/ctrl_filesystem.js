@@ -94,9 +94,9 @@ export default async function(render) {
         rxjs.mergeMap((obj) => getPermission(path).pipe(
             rxjs.map((permissions) => ({ ...obj, permissions })),
         )),
-        rxjs.mergeMap(({ show_hidden, files, ...rest }) => {
+        rxjs.mergeMap(({ show_hidden, files, search, ...rest }) => {
             if (show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
-            files = sort(files, rest["sort"], rest["order"]);
+            if (!search) files = sort(files, rest["sort"], rest["order"]);
             return rxjs.of({ ...rest, files });
         }),
         rxjs.map((data) => ({ ...data, count: count++ })),
