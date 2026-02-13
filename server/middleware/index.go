@@ -61,6 +61,10 @@ func (w *ResponseWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
+func (w *ResponseWriter) Status() int {
+	return w.status
+}
+
 func (w *ResponseWriter) Flush() {
 	w.ResponseWriter.(http.Flusher).Flush()
 }
