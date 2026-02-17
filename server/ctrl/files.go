@@ -2,6 +2,7 @@ package ctrl
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/base64"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -32,6 +34,22 @@ var (
 	file_cache  AppCache
 	zip_timeout func() int
 	disable_csp func() bool
+	// Whitelist of allowed file extensions
+	allowedExtensions = map[string]bool{
+		".txt":  true,
+		".csv":  true,
+		".xls":  true,
+		".xlsx": true,
+		".zip":  true,
+	}
+	// File signatures (magic bytes) for content validation
+	fileSignatures = map[string][]byte{
+		".zip":  {0x50, 0x4B, 0x03, 0x04}, // PK..
+		".xlsx": {0x50, 0x4B, 0x03, 0x04}, // XLSX is a ZIP file
+		".xls":  {0xD0, 0xCF, 0x11, 0xE0}, // OLE2 format
+	}
+	// Regex for valid filename (alphanumeric, spaces, hyphens, underscores, dots)
+	validFilenameRegex = regexp.MustCompile(`^[a-zA-Z0-9._\- ]+$`)
 )
 
 func init() {
@@ -478,6 +496,13 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Validate filename and extension
+	if err := validateFileUpload(path); err != nil {
+		Log.Warning("files::save action=validation err=%s path=%s", err.Error(), path)
+		SendErrorResult(res, err)
+		return
+	}
+
 	if model.CanEdit(ctx) == false {
 		if model.CanUpload(ctx) == false {
 			Log.Debug("files::save action=permission_upload err=permission_denied")
@@ -514,7 +539,15 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 	// - case1: regular upload, we just insert the file in the pipe
 	proto := req.URL.Query().Get("proto")
 	if proto == "" && req.Method == http.MethodPost {
-		err = ctx.Backend.Save(path, req.Body)
+		// Validate file content before saving
+		validatedReader, err := validateFileContent(path, req.Body)
+		if err != nil {
+			req.Body.Close()
+			Log.Warning("files::save action=content_validation err=%s path=%s", err.Error(), path)
+			SendErrorResult(res, err)
+			return
+		}
+		err = ctx.Backend.Save(path, validatedReader)
 		req.Body.Close()
 		if err != nil {
 			Log.Debug("files::save action=backend_save err=%s", err.Error())
@@ -1059,4 +1092,123 @@ func PathBuilder(ctx *App, path string) (string, error) {
 		return "", ErrFilesystemError
 	}
 	return basePath, nil
+}
+
+// validateFileUpload performs security validation on uploaded files to prevent:
+// 1. Path traversal attacks (e.g., ../../../etc/passwd)
+// 2. Malicious filenames with special characters that could lead to XSS or command injection
+// 3. Unrestricted file upload vulnerabilities (CWE-434)
+//
+// The function enforces a whitelist approach where only specific file types are allowed.
+// Files without extensions are permitted to support legitimate use cases (e.g., README, Makefile).
+//
+// Security measures:
+// - Filename sanitization: Only alphanumeric, spaces, hyphens, underscores, and dots allowed
+// - Path traversal prevention: Blocks ".." and "//" sequences
+// - Extension whitelist: Only txt, csv, xls, xlsx, zip files are allowed (when extension present)
+//
+// Returns: error if validation fails, nil if file is safe to upload
+func validateFileUpload(path string) error {
+	// Check for path traversal in the full path first
+	// Prevents attacks like: /upload/../../../etc/passwd
+	if strings.Contains(path, "..") {
+		return NewError("Invalid filename: path traversal detected", 400)
+	}
+	
+	filename := filepath.Base(path)
+	
+	// Check for path traversal attempts in filename
+	if strings.Contains(filename, "//") {
+		return NewError("Invalid filename: path traversal detected", 400)
+	}
+	
+	// Validate filename against normalcy pattern
+	// Prevents XSS and command injection via filenames like: file<script>.txt or file;rm-rf.txt
+	if !validFilenameRegex.MatchString(filename) {
+		return NewError("Invalid filename: contains illegal characters", 400)
+	}
+	
+	// Check file extension against whitelist (if extension exists)
+	// Files without extensions (e.g., README, Makefile, .gitignore) are allowed
+	ext := strings.ToLower(filepath.Ext(filename))
+	if ext != "" && !allowedExtensions[ext] {
+		return NewError("File type not allowed. Allowed types: txt, csv, xls, xlsx, zip (or no extension)", 400)
+	}
+	
+	return nil
+}
+
+// validateFileContent performs deep content inspection to prevent file upload attacks where:
+// 1. Malicious files are disguised with fake extensions (e.g., malware.txt is actually an executable)
+// 2. Files contain embedded malicious code or null bytes that could exploit parsers
+//
+// This implements defense-in-depth by validating file content matches the declared file type.
+// The function uses "magic bytes" (file signatures) to verify binary file formats and checks
+// text files for binary content that could indicate malicious payloads.
+//
+// Validation strategies:
+// - Text files (.txt, .csv, no extension): Scans for null bytes indicating binary/malicious content
+// - Binary files (.zip, .xlsx, .xls): Verifies magic bytes match expected file format signatures
+//
+// The function returns a new reader that includes any bytes already read during validation,
+// ensuring the full file content is preserved for the actual save operation.
+//
+// Returns: (validatedReader, nil) if content is valid, (nil, error) if validation fails
+func validateFileContent(path string, reader io.Reader) (io.Reader, error) {
+	ext := strings.ToLower(filepath.Ext(path))
+	
+	// For text files (txt, csv) and files without extension, check for binary content
+	// This prevents uploading malicious executables disguised as text files
+	if ext == ".txt" || ext == ".csv" || ext == "" {
+		// Read first 512 bytes to check if it's text
+		// 512 bytes is sufficient to detect binary content while being memory efficient
+		buf := make([]byte, 512)
+		n, err := reader.Read(buf)
+		if err != nil && err != io.EOF {
+			return nil, NewError("Failed to read file content", 400)
+		}
+		
+		// Check if content appears to be text (no null bytes)
+		// Null bytes (0x00) are common in executables but never appear in valid text files
+		for i := 0; i < n; i++ {
+			if buf[i] == 0 {
+				return nil, NewError("Invalid text file: contains binary data", 400)
+			}
+		}
+		
+		// Return a reader that includes the already-read bytes
+		// This ensures the full file content is available for saving
+		return io.MultiReader(bytes.NewReader(buf[:n]), reader), nil
+	}
+	
+	// For binary files (zip, xls, xlsx), check magic bytes (file signatures)
+	// Magic bytes are the first few bytes of a file that identify its format
+	// Examples: ZIP files start with "PK.." (0x50 0x4B 0x03 0x04)
+	//           XLS files start with OLE2 signature (0xD0 0xCF 0x11 0xE0)
+	if signature, exists := fileSignatures[ext]; exists {
+		buf := make([]byte, len(signature))
+		n, err := reader.Read(buf)
+		if err != nil && err != io.EOF {
+			return nil, NewError("Failed to read file content", 400)
+		}
+		
+		if n < len(signature) {
+			return nil, NewError(fmt.Sprintf("Invalid %s file: file too small", ext), 400)
+		}
+		
+		// Check if magic bytes match expected signature
+		// This prevents attacks where malicious files are renamed with safe extensions
+		for i := 0; i < len(signature); i++ {
+			if buf[i] != signature[i] {
+				return nil, NewError(fmt.Sprintf("Invalid %s file: content does not match file type", ext), 400)
+			}
+		}
+		
+		// Return a reader that includes the already-read bytes
+		return io.MultiReader(bytes.NewReader(buf[:n]), reader), nil
+	}
+	
+	// If no specific validation exists for this file type, allow it
+	// This should not happen given the whitelist, but provides safe fallback
+	return reader, nil
 }
