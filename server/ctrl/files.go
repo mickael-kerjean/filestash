@@ -4,11 +4,11 @@ import (
 	"archive/zip"
 	"context"
 	"crypto/sha1"
-	"hash/crc32"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"hash"
+	"hash/crc32"
 	"hash/fnv"
 	"io"
 	"net/http"
@@ -29,6 +29,7 @@ type FileInfo struct {
 	Type    string `json:"type"`
 	Size    int64  `json:"size"`
 	Time    int64  `json:"time"`
+	Mode    uint32 `json:"mode,omitempty"`
 	Offline bool   `json:"offline,omitempty"`
 }
 
@@ -173,6 +174,9 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 					return "file"
 				}
 				return "directory"
+			}(entries[i].Mode()),
+			Mode: func(mode os.FileMode) uint32 {
+				return uint32(mode)
 			}(entries[i].Mode()),
 		}
 		if f, ok := entries[i].Sys().(File); ok && f.Offline == true {
