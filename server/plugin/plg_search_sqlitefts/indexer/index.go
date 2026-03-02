@@ -167,14 +167,14 @@ func (this *RowMapper) Close() error {
 	return this.rows.Close()
 }
 
-func (this sqliteQueries) FindNew(maxSize int, toOmit []string) (RowMapper, error) {
-	for i := 0; i < len(toOmit); i++ {
-		toOmit[i] = "'" + strings.TrimSpace(toOmit[i]) + "'"
+func (this sqliteQueries) FindNew(maxSize int, filetypes []string) (RowMapper, error) {
+	for i := 0; i < len(filetypes); i++ {
+		filetypes[i] = "'" + strings.TrimSpace(filetypes[i]) + "'"
 	}
 
 	rows, err := this.tx.Query(
 		"SELECT filename, type, path, size FROM file WHERE ("+
-			"  type = 'file' AND size < ? AND filetype IN ("+strings.Join(toOmit, ",")+") AND indexTime IS NULL "+
+			"  type = 'file' AND size < ? AND filetype IN ("+strings.Join(filetypes, ",")+") AND indexTime IS NULL "+
 			") LIMIT 2",
 		maxSize,
 	)
