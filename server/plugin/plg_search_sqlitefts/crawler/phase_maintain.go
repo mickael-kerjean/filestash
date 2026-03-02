@@ -9,7 +9,7 @@ import (
 )
 
 func (this *Crawler) Consolidate(tx indexer.Manager) bool {
-	rows, err := tx.FindBefore(time.Now().Add(-time.Duration(SEARCH_REINDEX()) * time.Hour))
+	rows, err := tx.FindBefore(time.Now().Add(-time.Duration(SEARCH_REINDEX())*time.Hour - time.Duration(CYCLE_TIME()+1)*time.Second).UTC())
 	if err != nil {
 		if err == indexer.ErrNoRows {
 			this.Next()
@@ -27,7 +27,6 @@ func (this *Crawler) Consolidate(tx indexer.Manager) bool {
 			Log.Warning("search::index db_stale (%v)", err)
 			return false
 		}
-		Log.Debug("search::maintain phase=maintenance path=%s", r.Path)
 		if r.CType == "directory" {
 			updateFolder(r.Path, this.Backend, tx)
 		} else {

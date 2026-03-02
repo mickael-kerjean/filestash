@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/ctrl"
 	. "github.com/mickael-kerjean/filestash/server/model"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/config"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/crawler"
@@ -91,7 +92,12 @@ func (this StepIndexer) Execute(params map[string]string, input map[string]strin
 				inflight++
 				cond.L.Unlock()
 
-				files, err := crwlr.Backend.Ls(doc.Path)
+				path, err := ctrl.PathBuilder(app, doc.Path)
+				if err != nil {
+					Log.Warning("plg_search_sqlitefts::workflow message=path_builder path=%s err=%s", doc.Path, err.Error())
+					break
+				}
+				files, err := crwlr.Backend.Ls(path)
 				if err != nil {
 					Log.Warning("plg_search_sqlitefts::workflow message=ls_error path=%s err=%s", doc.Path, err.Error())
 				}

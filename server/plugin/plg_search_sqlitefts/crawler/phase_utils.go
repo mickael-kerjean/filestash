@@ -12,7 +12,7 @@ import (
 )
 
 func updateFile(path string, backend IBackend, tx indexer.Manager) error {
-	if err := tx.IndexTimeUpdate(path, time.Now()); err != nil {
+	if err := tx.IndexTimeUpdate(path, time.Now().UTC()); err != nil {
 		return err
 	}
 	reader, err := backend.Cat(path)
@@ -33,7 +33,7 @@ func updateFile(path string, backend IBackend, tx indexer.Manager) error {
 }
 
 func updateFolder(path string, backend IBackend, tx indexer.Manager) error {
-	if err := tx.IndexTimeUpdate(path, time.Now()); err != nil {
+	if err := tx.IndexTimeUpdate(path, time.Now().UTC()); err != nil {
 		return err
 	}
 

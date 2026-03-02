@@ -45,7 +45,7 @@ type sqliteIndex struct {
 }
 
 func (this *sqliteIndex) Init() error {
-	path := "fts_"+this.id+".sql"
+	path := "fts_" + this.id + ".sql"
 	if this.id == "" {
 		path = "fts.sql"
 	}

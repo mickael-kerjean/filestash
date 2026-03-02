@@ -12,7 +12,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/indexer"
 )
 
-func (this *Crawler) Discover(tx indexer.Manager) bool{
+func (this *Crawler) Discover(tx indexer.Manager) bool {
 	doc := this.DiscoverPop()
 	if doc == nil {
 		this.Next()
