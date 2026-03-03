@@ -130,19 +130,19 @@ async function componentMap(render, { metadata }) {
     const $tiles = createElement(`
         <div class="bigpicture">
             <div class="line">
-                <img src="${mapper.tile(TILE_SERVER, -1, -1)}" class="btl" style="height: ${TILE_SIZE}px;">
-                <img src="${mapper.tile(TILE_SERVER, 0, -1)}" style="height: ${TILE_SIZE}px;">
-                <img src="${mapper.tile(TILE_SERVER, 1, -1)}" class="btr" style="height: ${TILE_SIZE}px;">
+                <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, -1, -1)}" class="btl" style="height: ${TILE_SIZE}px;">
+                <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, 0, -1)}" style="height: ${TILE_SIZE}px;">
+                <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, 1, -1)}" class="btr" style="height: ${TILE_SIZE}px;">
             </div>
             <div class="line">
-                <img src="${mapper.tile(TILE_SERVER, -1, 0)}" style="height: ${TILE_SIZE}px;">
-                <img src="${mapper.tile(TILE_SERVER, 0, 0)}" style="height: ${TILE_SIZE}px;">
-                <img src="${mapper.tile(TILE_SERVER, 1, 0)}" style="height: ${TILE_SIZE}px;">
+                <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, -1, 0)}" style="height: ${TILE_SIZE}px;">
+                <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, 0, 0)}" style="height: ${TILE_SIZE}px;">
+                <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, 1, 0)}" style="height: ${TILE_SIZE}px;">
             </div>
             <div class="line">
-                <img src="${mapper.tile(TILE_SERVER, -1, 1)}" class="bbl" style="height: ${TILE_SIZE}px;">
-                <img src="${mapper.tile(TILE_SERVER, 0, 1)}" style="height: ${TILE_SIZE}px;">
-                <img src="${mapper.tile(TILE_SERVER, 1, 1)}" class="bbr" style="height: ${TILE_SIZE}px;">
+                <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, -1, 1)}" class="bbl" style="height: ${TILE_SIZE}px;">
+                <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, 0, 1)}" style="height: ${TILE_SIZE}px;">
+                <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, 1, 1)}" class="bbr" style="height: ${TILE_SIZE}px;">
             </div>
         </div>
     `);

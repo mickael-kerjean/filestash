@@ -36,8 +36,9 @@ func OfficeFormater(r io.ReadCloser) (io.ReadCloser, error) {
 		shouldExtract := false
 		if f.Name == "word/document.xml" {
 			shouldExtract = true
-		}
-		if strings.HasPrefix(f.Name, "ppt/slides/slide") {
+		} else if strings.HasPrefix(f.Name, "ppt/slides/slide") {
+			shouldExtract = true
+		} else if f.Name == "xl/sharedStrings.xml" {
 			shouldExtract = true
 		}
 

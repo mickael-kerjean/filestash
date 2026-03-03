@@ -55,7 +55,7 @@ export default async function ctrlTagPane(render, { tags, path }) {
         rxjs.mergeMap(({ tags, response }) => {
             render($page);
             if (tags.length === 0) {
-                renderTaglist(document.createElement("div"));
+                renderTaglist(createElement(`<div class="placeholder center no-select">∅</div>`));
                 return rxjs.EMPTY;
             }
             const $fragment = document.createDocumentFragment();

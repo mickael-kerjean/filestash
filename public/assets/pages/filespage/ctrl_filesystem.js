@@ -9,7 +9,7 @@ import { createLoader } from "../../components/loader.js";
 import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 
-import { currentPath, sort, isMobile } from "./helper.js";
+import { currentPath, sort, isMobile, isAlreadyFocused } from "./helper.js";
 import { createThing } from "./thing.js";
 import { clearSelection, addSelection, getSelection$, isSelected } from "./state_selection.js";
 import { getState$ } from "./state_config.js";
@@ -94,9 +94,9 @@ export default async function(render) {
         rxjs.mergeMap((obj) => getPermission(path).pipe(
             rxjs.map((permissions) => ({ ...obj, permissions })),
         )),
-        rxjs.mergeMap(({ show_hidden, files, ...rest }) => {
+        rxjs.mergeMap(({ show_hidden, files, search, ...rest }) => {
             if (show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
-            files = sort(files, rest["sort"], rest["order"]);
+            if (!search) files = sort(files, rest["sort"], rest["order"]);
             return rxjs.of({ ...rest, files });
         }),
         rxjs.map((data) => ({ ...data, count: count++ })),
@@ -290,7 +290,7 @@ export default async function(render) {
         rxjs.filter((e) => e.key === "a" &&
                     (e.ctrlKey || e.metaKey) &&
                     (files$.value || []).length > 0 &&
-                    assert.type(document.activeElement, HTMLElement).tagName !== "INPUT"),
+                    !isAlreadyFocused()),
         preventDefault(),
         rxjs.tap(() => {
             clearSelection();

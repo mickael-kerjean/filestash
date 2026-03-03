@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/config"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/indexer"
 )
 
@@ -28,11 +29,16 @@ type Crawler struct {
 	mu             sync.Mutex
 }
 
-func NewCrawler(id string, b IBackend) (Crawler, error) {
+func NewCrawler(app *App) (Crawler, error) {
+	id := GenerateID(app.Session)
+	idpath := id
+	if SEARCH_SHARED_INDEX() {
+		idpath = ""
+	}
 	s := Crawler{
 		Id:             id,
-		Backend:        b,
-		State:          indexer.NewIndex(id),
+		Backend:        app.Backend,
+		State:          indexer.NewIndex(idpath),
 		FoldersUnknown: make(HeapDoc, 0, 1),
 	}
 	if err := s.State.Init(); err != nil {

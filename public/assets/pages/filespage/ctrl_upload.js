@@ -77,7 +77,10 @@ function componentFilezone(render, { workers$ }) {
         workers$.next({ loading: true });
 
         if (e.dataTransfer.items instanceof window.DataTransferItemList) {
+            let i = 0;
+            const tickID = setInterval(() => workers$.next({ loading: true, size: ++i }), 1000);
             workers$.next(await processItems(e.dataTransfer.items));
+            clearInterval(tickID);
         } else if (e.dataTransfer.files instanceof window.FileList) {
             workers$.next(await processFiles(e.dataTransfer.files));
         } else {
@@ -145,10 +148,10 @@ function componentUploadQueue(render, { workers$ }) {
     })).subscribe();
 
     // feature2: setup the task queue in the dom
-    workers$.subscribe(({ tasks, loading = false, size }) => {
+    workers$.subscribe(({ tasks, loading = false, size = 0 }) => {
         if (loading) {
             $page.classList.remove("hidden");
-            updateDOMGlobalTitle($page, t("Loading")+ "...");
+            updateDOMGlobalTitle($page, t("Loading")+ ".".repeat((size+2)%3+1));
             return;
         }
         if (tasks.length === 0) return;

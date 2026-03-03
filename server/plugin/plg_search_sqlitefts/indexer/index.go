@@ -23,7 +23,7 @@ type Manager interface {
 	FindBefore(time time.Time) (RowMapper, error)
 	FindNew(maxSize int, toOmit []string) (RowMapper, error)
 
-	FileCreate(f fs.FileInfo, parent string) error
+	FileCreate(f fs.FileInfo, parent string, withUpsert bool) error
 	FileContentUpdate(path string, f io.ReadCloser) error
 	FileMetaUpdate(path string, f fs.FileInfo) error
 
@@ -45,8 +45,11 @@ type sqliteIndex struct {
 }
 
 func (this *sqliteIndex) Init() error {
-	path := GetAbsolutePath(FTS_PATH, "fts_"+this.id+".sql")
-	db, err := sql.Open("sqlite3", path+"?_journal_mode=wal")
+	path := "fts_" + this.id + ".sql"
+	if this.id == "" {
+		path = "fts.sql"
+	}
+	db, err := sql.Open("sqlite3", GetAbsolutePath(FTS_PATH, path)+"?_journal_mode=wal")
 	if err != nil {
 		Log.Warning("search::init can't open database (%v)", err)
 		return toErr(err)
@@ -164,14 +167,14 @@ func (this *RowMapper) Close() error {
 	return this.rows.Close()
 }
 
-func (this sqliteQueries) FindNew(maxSize int, toOmit []string) (RowMapper, error) {
-	for i := 0; i < len(toOmit); i++ {
-		toOmit[i] = "'" + strings.TrimSpace(toOmit[i]) + "'"
+func (this sqliteQueries) FindNew(maxSize int, filetypes []string) (RowMapper, error) {
+	for i := 0; i < len(filetypes); i++ {
+		filetypes[i] = "'" + strings.TrimSpace(filetypes[i]) + "'"
 	}
 
 	rows, err := this.tx.Query(
 		"SELECT filename, type, path, size FROM file WHERE ("+
-			"  type = 'file' AND size < ? AND filetype IN ("+strings.Join(toOmit, ",")+") AND indexTime IS NULL "+
+			"  type = 'file' AND size < ? AND filetype IN ("+strings.Join(filetypes, ",")+") AND indexTime IS NULL "+
 			") LIMIT 2",
 		maxSize,
 	)
@@ -219,34 +222,23 @@ func (this sqliteQueries) FileContentUpdate(path string, reader io.ReadCloser) e
 	return nil
 }
 
-func (this sqliteQueries) FileCreate(f fs.FileInfo, parentPath string) (err error) {
+func (this sqliteQueries) FileCreate(f fs.FileInfo, parentPath string, withUpsert bool) (err error) {
 	name := f.Name()
 	path := filepath.Join(parentPath, f.Name())
 	if f.IsDir() {
-		_, err = this.tx.Exec(
-			"INSERT INTO file(path, parent, filename, type, size, modTime, indexTime) "+
-				"VALUES(?, ?, ?, ?, ?, ?, ?)",
-			path+"/",
-			parentPath,
-			name,
-			"directory",
-			f.Size(),
-			f.ModTime(),
-			time.Now(),
-		)
+		sql := "INSERT INTO file(path, parent, filename, type, size, modTime, indexTime) VALUES(?, ?, ?, ?, ?, ?, ?)"
+		if withUpsert {
+			sql += " ON CONFLICT(path) DO UPDATE SET size=excluded.size, modTime=excluded.modTime" +
+				" WHERE excluded.modTime != file.modTime OR excluded.size != file.size"
+		}
+		_, err = this.tx.Exec(sql, path+"/", parentPath, name, "directory", f.Size(), f.ModTime(), time.Now())
 	} else {
-		_, err = this.tx.Exec(
-			"INSERT INTO file(path, parent, filename, type, size, modTime, indexTime, filetype) "+
-				"VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
-			path,
-			parentPath,
-			name,
-			"file",
-			f.Size(),
-			f.ModTime(),
-			nil,
-			strings.TrimPrefix(filepath.Ext(name), "."),
-		)
+		sql := "INSERT INTO file(path, parent, filename, type, size, modTime, indexTime, filetype) VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
+		if withUpsert {
+			sql += " ON CONFLICT(path) DO UPDATE SET size=excluded.size, modTime=excluded.modTime, indexTime=NULL" +
+				" WHERE excluded.modTime != file.modTime OR excluded.size != file.size"
+		}
+		_, err = this.tx.Exec(sql, path, parentPath, name, "file", f.Size(), f.ModTime(), nil, strings.TrimPrefix(filepath.Ext(name), "."))
 	}
 	return toErr(err)
 }

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/workflow/model"
 )
 
 var (
@@ -43,6 +44,11 @@ func (this hookAuthorisation) Mv(ctx *App, from string, to string) error {
 }
 
 func (this hookAuthorisation) Save(ctx *App, path string) error {
+	processFileAction(ctx, map[string]string{"event": "stat", "path": path})
+	return nil
+}
+
+func (this hookAuthorisation) Stat(ctx *App, path string) error {
 	processFileAction(ctx, map[string]string{"event": "save", "path": path})
 	return nil
 }
@@ -64,7 +70,7 @@ func (this *FileEventTrigger) Manifest() WorkflowSpecs {
 				{
 					Name:       "event",
 					Type:       "text",
-					Datalist:   []string{"ls", "cat", "mkdir", "mv", "rm", "touch", "save"},
+					Datalist:   []string{"ls", "cat", "mkdir", "mv", "rm", "touch", "save", "stat"},
 					MultiValue: true,
 				},
 				{
@@ -91,11 +97,11 @@ func processFileAction(ctx *App, params map[string]string) {
 	}
 }
 
-func fileactionCallback(out map[string]string) func(map[string]string) (map[string]string, bool) {
-	return func(params map[string]string) (map[string]string, bool) {
-		if !matchEvent(params["event"], out["event"]) {
+func fileactionCallback(out map[string]string) func(Workflow) (map[string]string, bool) {
+	return func(w Workflow) (map[string]string, bool) {
+		if !matchEvent(w.Trigger.Params["event"], out["event"]) {
 			return out, false
-		} else if !matchPath(params["path"], out["path"]) {
+		} else if !matchPath(w.Trigger.Params["path"], out["path"]) {
 			return out, false
 		}
 		return out, true

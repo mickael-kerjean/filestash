@@ -4,6 +4,7 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/config"
 )
 
 func init() {

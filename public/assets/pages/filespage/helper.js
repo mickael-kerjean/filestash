@@ -1,5 +1,6 @@
 import { extname } from "../../lib/path.js";
 import { fromHref } from "../../lib/skeleton/router.js";
+import assert from "../../lib/assert.js";
 
 const regexCurrentPath = new RegExp("^/files");
 export function currentPath() {
@@ -129,3 +130,8 @@ function _moveHiddenFilesDownward(fileA, fileB) {
 }
 
 export const isNativeFileUpload = (e) => JSON.stringify(e.dataTransfer.types.slice(-1)) === "[\"Files\"]";
+
+export const isAlreadyFocused = () => {
+    const tagName = assert.type(document.activeElement, HTMLElement).tagName;
+    return ["INPUT", "TEXTAREA"].indexOf(tagName) !== -1;
+};

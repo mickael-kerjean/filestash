@@ -13,12 +13,10 @@ var (
 )
 
 func toErr(err error) error {
-	if sqliteErr, ok := (err).(shasqlite3.Error); ok {
-		if err == sql.ErrNoRows {
-			return ErrNoRows
-		} else if sqlite.IsConstraint(sqliteErr) {
-			return ErrConstraint
-		}
+	if err == sql.ErrNoRows {
+		return ErrNoRows
+	} else if sqlite.IsConstraint(err) {
+		return ErrConstraint
 	}
 	return err
 }

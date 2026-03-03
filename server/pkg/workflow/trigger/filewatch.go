@@ -8,6 +8,7 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/workflow/model"
 	"github.com/mickael-kerjean/filestash/server/model"
 )
 
@@ -56,19 +57,20 @@ func (this *WatchTrigger) Init() (chan ITriggerEvent, error) {
 	return filewatch_event, nil
 }
 
-func filewatchCallback(params map[string]string) (map[string]string, bool) {
-	out := map[string]string{"path": params["path"]}
-	backend, session, err := createBackend(params["token"])
+func filewatchCallback(workflow Workflow) (map[string]string, bool) {
+	path := workflow.Trigger.Params["path"]
+	out := map[string]string{"path": path}
+	backend, session, err := createBackend(workflow.Trigger.Params["token"])
 	if err != nil {
 		Log.Error("[workflow] trigger=filewatch step=callback::init err=%s", err.Error())
 		return out, false
 	}
-	files, err := backend.Ls(params["path"])
+	files, err := backend.Ls(path)
 	if err != nil {
 		Log.Error("[workflow] trigger=filewatch step=callback::ls err=%s", err.Error())
 		return out, false
 	}
-	key := GenerateID(session) + params["path"]
+	key := GenerateID(session) + path
 	fincache, exists := filewatch_state.Load(key)
 	if !exists {
 		filewatch_state.Store(key, files)
@@ -90,7 +92,7 @@ func filewatchCallback(params map[string]string) (map[string]string, bool) {
 			hasChange = true
 		}
 		if hasChange {
-			p := JoinPath(params["path"], files[i].Name())
+			p := JoinPath(path, files[i].Name())
 			if files[i].IsDir() {
 				p = EnforceDirectory(p)
 			}

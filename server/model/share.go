@@ -633,7 +633,7 @@ func TmplEmailVerification() string {
               <table border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="content-block powered-by">
-                    Powered by <a href="http://github.com/mickael-kerjean/filestash">Filestash</a>.
+                    ` + WhiteLabelText(`Powered by <a href="https://www.filestash.app">Filestash</a>.`, APPNAME) + `
                   </td>
                 </tr>
               </table>

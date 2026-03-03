@@ -12,7 +12,7 @@ var USER_AGENT = fmt.Sprintf("Filestash/%s.%s (http://filestash.app)", APP_VERSI
 
 func init() {
 	if IsWhiteLabel() {
-		USER_AGENT = fmt.Sprintf(APPNAME)
+		USER_AGENT = APPNAME
 	}
 }
 

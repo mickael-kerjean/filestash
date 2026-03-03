@@ -10,7 +10,9 @@ import (
 var force bool
 
 func init() {
-	force = os.Getenv("PLG_AUTHENTICATE_LOCAL_ENABLED") == "true"
+	Hooks.Register.Onload(func() {
+		force = os.Getenv("PLG_AUTHENTICATE_LOCAL_ENABLED") == "true"
+	})
 }
 
 func getPluginData() (pluginConfig, error) {

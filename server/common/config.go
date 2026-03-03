@@ -1,10 +1,8 @@
 package common
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
-	"github.com/tidwall/gjson"
-	"github.com/tidwall/sjson"
 	"os"
 	"os/user"
 	"regexp"
@@ -12,16 +10,19 @@ import (
 	"sync"
 )
 
-var (
-	Config Configuration
-)
+var Config Configuration
 
 type Configuration struct {
-	mu             sync.Mutex
+	mu    sync.RWMutex
+	cache sync.Map
+
+	Form  []Form
+	Conn  []map[string]any
+}
+
+type ConfigElement struct {
 	currentElement *FormElement
-	cache          KeyValueStore
-	Form           []Form
-	Conn           []map[string]interface{}
+	cfg            *Configuration
 }
 
 type Form struct {
@@ -59,15 +60,13 @@ func InitConfig() error {
 
 func NewConfiguration() Configuration {
 	return Configuration{
-		mu:    sync.Mutex{},
-		cache: NewKeyValueStore(),
 		Form: []Form{
 			Form{
 				Title: "general",
 				Elmnts: []FormElement{
-					FormElement{Name: "name", Type: "text", Default: APPNAME, Description: "Name has shown in the UI", Placeholder: "Default: \"" + APPNAME + "\""},
+					FormElement{Name: "name", Type: "text", Default: APPNAME, Description: "Name as shown in the UI", Placeholder: "Default: \"" + APPNAME + "\""},
 					FormElement{Name: "port", Type: "number", Default: 8334, Description: "Port on which the application is available.", Placeholder: "Default: 8334"},
-					FormElement{Name: "host", Type: "text", Description: "The host people need to use to access this server", Placeholder: "Eg: \"demo.filestash.app\""},
+					FormElement{Name: "host", Type: "text", Description: "The host people need to use to access this server", Placeholder: WhiteLabelText("Eg: \"demo.filestash.app\"", "Eg: \"files.yourcompany.com\"")},
 					FormElement{Name: "secret_key", Type: "password", Required: true, Pattern: "[a-zA-Z0-9]{16}", Description: "The key that's used to encrypt and decrypt content. Update this settings will invalidate existing user sessions and shared links, use with caution!"},
 					FormElement{Name: "force_ssl", Type: "boolean", Description: "Enable the web security mechanism called 'Strict Transport Security'"},
 					FormElement{Name: "editor", Type: "select", Default: "emacs", Opts: []string{"base", "emacs", "vim"}, Description: "Keybinding to be use in the editor. Default: \"emacs\""},
@@ -82,7 +81,7 @@ func NewConfiguration() Configuration {
 					FormElement{Name: "filepage_default_sort", Type: "select", Default: "type", Opts: []string{"type", "date", "name"}, Description: "Default order for files and folder on the file page"},
 					FormElement{Name: "cookie_timeout", Type: "number", Default: 60 * 24 * 7, Description: "Authentication Cookie expiration in minutes. Default: 60 * 24 * 7 = 1 week"},
 					FormElement{Name: "extended_session", Type: "boolean", Default: false, Description: "Store extra auth data in session"},
-					FormElement{Name: "custom_css", Type: "long_text", Default: "", Description: "Set custom css code for your instance"},
+					FormElement{Name: "custom_css", Type: "long_text", Default: "", Description: "Setcustom css code for your instance"},
 				},
 			},
 			Form{
@@ -137,85 +136,49 @@ func NewConfiguration() Configuration {
 				},
 			},
 		},
-		Conn: make([]map[string]interface{}, 0),
+		Conn: []map[string]any{},
 	}
 }
 
 func (this Form) MarshalJSON() ([]byte, error) {
-	return []byte(this.ToJSON(func(el FormElement) string {
-		a, e := json.Marshal(el)
-		if e != nil {
-			return ""
-		}
-		return string(a)
-	})), nil
+	return formToJSON(this, func(el FormElement) any { return el })
 }
 
-func (this Form) ToJSON(fn func(el FormElement) string) string {
-	formatKey := func(str string) string {
-		return strings.Replace(str, " ", "_", -1)
-	}
-	ret := ""
-	if this.Title != "" {
-		ret = fmt.Sprintf("%s\"%s\":", ret, formatKey(this.Title))
-	}
-	for i := 0; i < len(this.Elmnts); i++ {
-		if i == 0 {
-			ret = fmt.Sprintf("%s{", ret)
+func formToJSON(f Form, fn func(FormElement) any) ([]byte, error) {
+	var buf bytes.Buffer
+	buf.WriteByte('{')
+	first := true
+	for _, el := range f.Elmnts {
+		v := fn(el)
+		if v == nil {
+			continue
 		}
-		ret = fmt.Sprintf("%s\"%s\":%s", ret, formatKey(this.Elmnts[i].Name), fn(this.Elmnts[i]))
-		if i == len(this.Elmnts)-1 && len(this.Form) == 0 {
-			ret = fmt.Sprintf("%s}", ret)
+		if !first {
+			buf.WriteByte(',')
 		}
-		if i != len(this.Elmnts)-1 || len(this.Form) != 0 {
-			ret = fmt.Sprintf("%s,", ret)
-		}
+		first = false
+		key, _ := json.Marshal(strings.ReplaceAll(el.Name, " ", "_"))
+		val, _ := json.Marshal(v)
+		buf.Write(key)
+		buf.WriteByte(':')
+		buf.Write(val)
 	}
-
-	for i := 0; i < len(this.Form); i++ {
-		if i == 0 && len(this.Elmnts) == 0 {
-			ret = fmt.Sprintf("%s{", ret)
+	for _, sub := range f.Form {
+		subBytes, _ := formToJSON(sub, fn)
+		if bytes.Equal(subBytes, []byte("{}")) {
+			continue
 		}
-		ret = ret + this.Form[i].ToJSON(fn)
-		if i == len(this.Form)-1 {
-			ret = fmt.Sprintf("%s}", ret)
+		if !first {
+			buf.WriteByte(',')
 		}
-		if i != len(this.Form)-1 {
-			ret = fmt.Sprintf("%s,", ret)
-		}
+		first = false
+		key, _ := json.Marshal(strings.ReplaceAll(sub.Title, " ", "_"))
+		buf.Write(key)
+		buf.WriteByte(':')
+		buf.Write(subBytes)
 	}
-
-	if len(this.Form) == 0 && len(this.Elmnts) == 0 {
-		ret = fmt.Sprintf("%s{}", ret)
-	}
-
-	return ret
-}
-
-type FormIterator struct {
-	Path string
-	*FormElement
-}
-
-func (this *Form) Iterator() []FormIterator {
-	slice := make([]FormIterator, 0)
-
-	for i, _ := range this.Elmnts {
-		slice = append(slice, FormIterator{
-			strings.ToLower(this.Title),
-			&this.Elmnts[i],
-		})
-	}
-	for _, node := range this.Form {
-		r := node.Iterator()
-		if this.Title != "" {
-			for i := range r {
-				r[i].Path = strings.ToLower(this.Title) + "." + r[i].Path
-			}
-		}
-		slice = append(r, slice...)
-	}
-	return slice
+	buf.WriteByte('}')
+	return buf.Bytes(), nil
 }
 
 func (this *Configuration) Load() error {
@@ -226,64 +189,51 @@ func (this *Configuration) Load() error {
 	}
 
 	// Extract enabled backends
-	this.Conn = func(cFile []byte) []map[string]interface{} {
-		var d struct {
-			Connections []map[string]interface{} `json:"connections"`
-		}
-		json.Unmarshal(cFile, &d)
-		return d.Connections
-	}(cFile)
+	var d struct {
+		Connections []map[string]any `json:"connections"`
+	}
+	json.Unmarshal(cFile, &d)
+	this.Conn = []map[string]any{}
+	if d.Connections != nil {
+		this.Conn = d.Connections
+	}
 
 	// Hydrate Config with data coming from the config file
-	d := JsonIterator(string(cFile))
-	for i := range d {
-		this = this.Get(d[i].Path)
-		if this.Interface() != d[i].Value {
-			this.currentElement.Value = d[i].Value
+	var raw map[string]any
+	json.Unmarshal(cFile, &raw)
+	for path, value := range flattenJSON("", raw) {
+		el := this.Get(path)
+		if el.currentElement != nil && el.currentElement.Value != value {
+			el.currentElement.Value = value
 		}
 	}
+
 	this.cache.Clear()
-
 	Log.SetVisibility(this.Get("log.level").String())
-
 	for _, fn := range Hooks.Get.OnConfig() {
 		fn()
 	}
 	return nil
 }
 
-type JSONIterator struct {
-	Path  string
-	Value interface{}
-}
-
-func JsonIterator(json string) []JSONIterator {
-	j := make([]JSONIterator, 0)
-
-	var recurJSON func(res gjson.Result, pkey string)
-	recurJSON = func(res gjson.Result, pkey string) {
-		if pkey != "" {
-			pkey = pkey + "."
+func flattenJSON(prefix string, m map[string]any) map[string]any {
+	out := map[string]any{}
+	for k, v := range m {
+		key := k
+		if prefix != "" {
+			key = prefix + "." + k
 		}
-		res.ForEach(func(key, value gjson.Result) bool {
-			k := pkey + key.String()
-			if value.IsObject() {
-				recurJSON(value, k)
-				return true
-			} else if value.IsArray() {
-				return true
+		switch val := v.(type) {
+		case map[string]any:
+			for nk, nv := range flattenJSON(key, val) {
+				out[nk] = nv
 			}
-			j = append(j, JSONIterator{k, value.Value()})
-			return true
-		})
+		case []any, nil:
+		default:
+			out[key] = val
+		}
 	}
-
-	recurJSON(gjson.Parse(json), "")
-	return j
-}
-
-func (this *Configuration) Debug() *FormElement {
-	return this.currentElement
+	return out
 }
 
 func (this *Configuration) Initialise() {
@@ -301,11 +251,6 @@ func (this *Configuration) Initialise() {
 		key := RandomString(16)
 		this.Get("general.secret_key").Set(key)
 	}
-	if len(this.Conn) == 0 {
-		this.Conn = []map[string]interface{}{}
-		shouldSave = true
-	}
-
 	if shouldSave {
 		this.Save()
 	}
@@ -313,18 +258,25 @@ func (this *Configuration) Initialise() {
 }
 
 func (this *Configuration) Save() {
-	// convert config data to an appropriate json struct
-	form := append(this.Form, Form{Title: "connections"})
-	v := Form{Form: form}.ToJSON(func(el FormElement) string {
-		a, e := json.Marshal(el.Value)
-		if e != nil {
-			return "null"
-		}
-		return string(a)
-	})
-	v, _ = sjson.Set(v, "connections", this.Conn)
-
-	if err := SaveConfig(PrettyPrint([]byte(v))); err != nil {
+	this.mu.RLock()
+	formBytes, err := formToJSON(Form{Form: this.Form}, func(el FormElement) any { return el.Value })
+	conn, _ := json.Marshal(this.Conn)
+	this.mu.RUnlock()
+	if err != nil {
+		Log.Error("config::save marshal %s", err.Error())
+		return
+	}
+	var buf bytes.Buffer
+	buf.WriteByte('{')
+	inner := formBytes[1 : len(formBytes)-1]
+	if len(inner) > 0 {
+		buf.Write(inner)
+		buf.WriteByte(',')
+	}
+	buf.WriteString(`"connections":`)
+	buf.Write(conn)
+	buf.WriteByte('}')
+	if err := SaveConfig(PrettyPrint(buf.Bytes())); err != nil {
 		Log.Error("config::save %s", err.Error())
 	}
 }
@@ -379,13 +331,11 @@ func (this *Configuration) Export() interface{} {
 		}(),
 		Thumbnailer: func() []string {
 			tMap := Hooks.Get.Thumbnailer()
-			tArray := make([]string, len(tMap))
-			i := 0
-			for key, _ := range tMap {
-				tArray[i] = key
-				i += 1
+			out := make([]string, 0, len(tMap))
+			for k := range tMap {
+				out = append(out, k)
 			}
-			return tArray
+			return out
 		}(),
 		Origin: func() string {
 			host := this.Get("general.host").String()
@@ -401,13 +351,15 @@ func (this *Configuration) Export() interface{} {
 		Version:          BUILD_REF,
 		EnableChromecast: this.Get("features.protection.enable_chromecast").Bool(),
 		EnableShare:      this.Get("features.share.enable").Bool(),
-		EnableTags: func() bool {
-			return Hooks.Get.Metadata() != nil
-		}(),
+		EnableTags: Hooks.Get.Metadata() != nil,
 	}
 }
 
-func (this *Configuration) Get(key string) *Configuration {
+func (this *Configuration) Get(key string) *ConfigElement {
+	if tmp, ok := this.cache.Load(key); ok {
+		return &ConfigElement{currentElement: tmp.(*FormElement), cfg: this}
+	}
+
 	var traverse func(forms *[]Form, path []string) *FormElement
 	traverse = func(forms *[]Form, path []string) *FormElement {
 		if len(path) == 0 {
@@ -437,125 +389,112 @@ func (this *Configuration) Get(key string) *Configuration {
 		*forms = append(*forms, Form{Title: path[0]})
 		return traverse(forms, path)
 	}
-
-	// increase speed (x4 with our bench) by using a cache
 	this.mu.Lock()
-	tmp := this.cache.Get(key)
-	if tmp == nil {
-		this.currentElement = traverse(&this.Form, strings.Split(key, "."))
-		this.cache.Set(key, this.currentElement)
-	} else {
-		this.currentElement = tmp.(*FormElement)
-	}
+	currentElement := traverse(&this.Form, strings.Split(key, "."))
+	this.cache.Store(key, currentElement)
 	this.mu.Unlock()
-	return this
+	return &ConfigElement{currentElement: currentElement, cfg: this}
 }
 
-func (this *Configuration) Schema(fn func(*FormElement) *FormElement) *Configuration {
+func (this *ConfigElement) Schema(fn func(*FormElement) *FormElement) *ConfigElement {
 	fn(this.currentElement)
-	this.cache.Clear()
+	this.cfg.cache.Clear()
 	return this
 }
 
-func (this *Configuration) Default(value interface{}) *Configuration {
+func (this *ConfigElement) Default(value interface{}) *ConfigElement {
 	if this.currentElement == nil {
 		return this
 	}
-
-	this.mu.Lock()
-	if this.currentElement.Default == nil {
+	this.cfg.mu.Lock()
+	shouldSave := this.currentElement.Default == nil
+	if shouldSave {
 		this.currentElement.Default = value
-		this.Save()
-	} else {
-		if this.currentElement.Default != value {
-			Log.Debug("Attempt to set multiple default config value => %+v", this.currentElement)
-		}
+	} else if this.currentElement.Default != value {
+		Log.Debug("Attempt to set multiple default config value => %+v", this.currentElement)
 	}
-	this.mu.Unlock()
+	this.cfg.mu.Unlock()
+	if shouldSave {
+		this.cfg.Save()
+	}
 	return this
 }
 
-func (this *Configuration) Set(value interface{}) *Configuration {
-	this.mu.Lock()
+func (this *ConfigElement) Set(value interface{}) *ConfigElement {
 	if this.currentElement == nil {
 		return this
 	}
-
-	this.cache.Clear()
-	if this.currentElement.Value != value {
+	this.cfg.mu.Lock()
+	changed := this.currentElement.Value != value
+	if changed {
 		this.currentElement.Value = value
-		this.Save()
+		this.cfg.cache.Clear()
 	}
-	this.mu.Unlock()
+	this.cfg.mu.Unlock()
+	if changed {
+		this.cfg.Save()
+	}
 	return this
 }
 
-func (this *Configuration) String() string {
-	val := this.Interface()
-	switch val.(type) {
+func (this *ConfigElement) String() string {
+	switch v := this.Interface().(type) {
 	case string:
-		return val.(string)
+		return v
 	case []byte:
-		return string(val.([]byte))
+		return string(v)
 	}
 	return ""
 }
 
-func (this *Configuration) Int() int {
-	val := this.Interface()
-	switch val.(type) {
+func (this *ConfigElement) Int() int {
+	switch v := this.Interface().(type) {
 	case float64:
-		return int(val.(float64))
+		return int(v)
 	case int64:
-		return int(val.(int64))
+		return int(v)
 	case int:
-		return val.(int)
+		return v
 	}
 	return 0
 }
 
-func (this *Configuration) Bool() bool {
-	val := this.Interface()
-	switch val.(type) {
-	case bool:
-		return val.(bool)
+func (this *ConfigElement) Bool() bool {
+	if v, ok := this.Interface().(bool); ok {
+		return v
 	}
 	return false
 }
 
-func (this *Configuration) Interface() interface{} {
+func (this *ConfigElement) Interface() interface{} {
 	if this.currentElement == nil {
 		return nil
 	}
-	val := this.currentElement.Value
-	if val == nil {
-		val = this.currentElement.Default
+	this.cfg.mu.RLock()
+	el := *this.currentElement
+	this.cfg.mu.RUnlock()
+	if el.Value == nil {
+		return el.Default
 	}
-	return val
+	return el.Value
 }
 
 func (this *Configuration) MarshalJSON() ([]byte, error) {
-	form := this.Form
-	form = append(form, Form{
+	username := "n/a"
+	if u, err := user.Current(); err == nil {
+		if u.Username != "" {
+			username = u.Username
+		} else {
+			username = u.Name
+		}
+	}
+	return Form{Form: append(this.Form, Form{
 		Title: "constant",
 		Elmnts: []FormElement{
-			FormElement{Name: "user", Type: "boolean", ReadOnly: true, Value: func() string {
-				if u, err := user.Current(); err == nil {
-					if u.Username != "" {
-						return u.Username
-					}
-					return u.Name
-				}
-				return "n/a"
-			}()},
-			FormElement{Name: "license", Type: "text", ReadOnly: true, Value: func() string {
-				return LICENSE
-			}()},
+			{Name: "user", Type: "boolean", ReadOnly: true, Value: username},
+			{Name: "license", Type: "text", ReadOnly: true, Value: LICENSE},
 		},
-	})
-	return Form{
-		Form: form,
-	}.MarshalJSON()
+	})}.MarshalJSON()
 }
 
 func defaultValue(dval string, envName string) string {

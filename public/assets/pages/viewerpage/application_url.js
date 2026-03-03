@@ -1,4 +1,5 @@
 import { createElement, navigate } from "../../lib/skeleton/index.js";
+import { toHref } from "../../lib/skeleton/router.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { ApplicationError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
@@ -17,12 +18,8 @@ export default function(render, { getDownloadUrl }) {
         rxjs.tap((content) => {
             const url = content.replace(/[\s\S]*(https?:\/\/\S+)[\s\S]*/, "$1");
             try {
-                const u = new URL(url);
-                if (u.host === location.host) {
-                    navigate(u.href.replace(u.origin, ""));
-                    return;
-                }
-                location.href = url;
+                new URL(url); // throws on invalid URL
+                location.replace(url);
             } catch (err) {
                 const message = assert.type(err, window.Error).message;
                 throw new ApplicationError("Not Valid", message);

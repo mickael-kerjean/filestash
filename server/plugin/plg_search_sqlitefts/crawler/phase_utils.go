@@ -12,7 +12,7 @@ import (
 )
 
 func updateFile(path string, backend IBackend, tx indexer.Manager) error {
-	if err := tx.IndexTimeUpdate(path, time.Now()); err != nil {
+	if err := tx.IndexTimeUpdate(path, time.Now().UTC()); err != nil {
 		return err
 	}
 	reader, err := backend.Cat(path)
@@ -26,15 +26,14 @@ func updateFile(path string, backend IBackend, tx indexer.Manager) error {
 		return nil
 	}
 	defer convertedReader.Close()
-	if err = tx.FileContentUpdate(path, reader); err != nil {
-		Log.Warning("search::index index_update (%v)", err)
+	if err = tx.FileContentUpdate(path, convertedReader); err != nil {
 		return err
 	}
 	return nil
 }
 
 func updateFolder(path string, backend IBackend, tx indexer.Manager) error {
-	if err := tx.IndexTimeUpdate(path, time.Now()); err != nil {
+	if err := tx.IndexTimeUpdate(path, time.Now().UTC()); err != nil {
 		return err
 	}
 
@@ -82,7 +81,7 @@ func updateFolder(path string, backend IBackend, tx indexer.Manager) error {
 			}
 		}
 		if currFilenameAlreadyExist == false {
-			dbInsert(path, currFiles[i], tx)
+			dbUpsert(path, currFiles[i], tx)
 		}
 	}
 	// 2. Find the content that was existing before but got removed
@@ -107,7 +106,11 @@ func updateFolder(path string, backend IBackend, tx indexer.Manager) error {
 }
 
 func dbInsert(parent string, f os.FileInfo, tx indexer.Manager) error {
-	return tx.FileCreate(f, parent)
+	return tx.FileCreate(f, parent, false)
+}
+
+func dbUpsert(parent string, f os.FileInfo, tx indexer.Manager) error {
+	return tx.FileCreate(f, parent, true)
 }
 
 func dbUpdate(parent string, f fs.FileInfo, tx indexer.Manager) error {

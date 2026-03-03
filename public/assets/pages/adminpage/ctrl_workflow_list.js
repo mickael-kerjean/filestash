@@ -20,8 +20,11 @@ export default async function(render, { workflows, triggers }) {
     `);
     render(transition($page));
     const $workflows = qs($page, `[data-bind="workflows"]`);
-    workflows.forEach((workflow) => $workflows.appendChild(createWorkflow({ workflow })));
+
     if (workflows.length === 0) $workflows.appendChild(createEmptyWorkflow({ triggers }));
+    else workflows
+        .sort((wa, wb) => wa.published === wb.published ? 0 : wa.published ? -1 : 1)
+        .forEach((workflow) => $workflows.appendChild(createWorkflow({ workflow })));
 
     effect(onClick(qs($page, "h2 > a")).pipe(
         rxjs.tap(($a) => animate($a, {

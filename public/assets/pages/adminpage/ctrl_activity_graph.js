@@ -16,7 +16,13 @@ export default async function(render) {
         rxjs.first(),
         rxjs.repeat({ delay: 2500 }),
         rxjs.scan(({ start, end, width, max, init = true, buckets = Array(NUMBER_BUCKETS).fill(0) }, logfile) => {
-            const times = logfile.trim().split("\n").map((line) => new Date(line.substring(0, 19)).getTime());
+            const times = [];
+            let i = 0; while (i < logfile.length) {
+                const t = new Date(logfile.substring(i, i + 19)).getTime();
+                if (!isNaN(t)) times.push(t);
+                const end = logfile.indexOf("\n", i);
+                i = end === -1 ? logfile.length : end + 1;
+            }
             if (init === true) {
                 start = times[0];
                 end = times[times.length - 1];

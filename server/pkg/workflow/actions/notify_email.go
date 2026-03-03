@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"strings"
+
 	. "github.com/mickael-kerjean/filestash/server/common"
 
 	"gopkg.in/gomail.v2"
@@ -60,7 +62,7 @@ func (this *ActionNotifyEmail) Execute(params map[string]string, input map[strin
 	m.SetHeader("From", email.From)
 	m.SetHeader("To", email.To)
 	m.SetHeader("Subject", email.Subject)
-	m.SetBody("text/html", email.Message)
+	m.SetBody("text/html", strings.ReplaceAll(email.Message, "\n", "<br>"))
 	mail := gomail.NewDialer(email.Hostname, email.Port, email.Username, email.Password)
 	return input, mail.DialAndSend(m)
 }

@@ -6,7 +6,7 @@
     It started as a storage agnostic Dropbox-like file manager that works with every storage protocol: <a href="https://www.filestash.app/ftp-client.html">FTP</a>, <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, and <a href="https://www.filestash.app/docs/plugin/#storage">about 20 more</a>.
 </p>
 <p>
-    It grew into a universal data access platform with <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem capabilities</a>, <a href="https://www.filestash.app/docs/api/?origin=github#api">APIs</a>, and Gateways to expose your data over <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, and <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> to give LLMs a limited view of your data:
+    It grew into a universal data access platform with <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem capabilities</a>, <a href="https://www.filestash.app/docs/api/?origin=github#api">APIs</a>, RBAC, Gateways to expose your data over <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, and <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> to give LLMs a limited view of your data:
 </p>
 
 <a href="http://demo.filestash.app">
@@ -44,6 +44,7 @@
         <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" height="150" />
         <img src="https://www.filestash.app/img/screenshots/theme_ibm.png" height="150" />
     </li>
+    <li>Splashy AI features for <a href="https://www.filestash.app/features/semantic-search.html">search</a> and <a href="https://www.filestash.app/features/smart-folder.html">smart folders</a></li>
     <li>... and much <sub>much <sub>more (chromecast support, on demand video transcoding, mounting shared links as network drive, public site, antivirus, versioning, audit, quota, ....)</sub></sub><br> As a rule of thumb, if your problem involves files, we either already <a href="https://www.filestash.app/docs/plugin/">have a plugin</a> for it or can make a plugin for it
 </ul>
 

@@ -19,6 +19,8 @@ func Convert(path string, reader io.ReadCloser) (out io.ReadCloser, err error) {
 		out, err = formater.TxtFormater(reader)
 	case "application/pdf":
 		out, err = formater.PdfFormater(reader)
+	case "application/excel":
+		out, err = formater.OfficeFormater(reader)
 	case "application/powerpoint":
 		out, err = formater.OfficeFormater(reader)
 	case "application/vnd.ms-powerpoint":

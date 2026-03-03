@@ -2,33 +2,39 @@ package plg_search_sqlitefts
 
 import (
 	"container/heap"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/config"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/indexer"
 )
 
 func (this *Crawler) Discover(tx indexer.Manager) bool {
-	if this.FoldersUnknown.Len() == 0 {
-		this.Next()
-		return false
-	}
-	var doc *Document
-	doc = heap.Pop(&this.FoldersUnknown).(*Document)
+	doc := this.DiscoverPop()
 	if doc == nil {
 		this.Next()
 		return false
 	}
-
 	Log.Debug("search::debug phase=discovery path=%s", doc.Path)
 	files, err := this.Backend.Ls(doc.Path)
 	if err != nil {
 		this.CurrentPhase = PHASE_PAUSE
 		return true
 	}
+	return this.DiscoverPush(doc, files, tx)
+}
 
+func (this *Crawler) DiscoverPop() *Document {
+	if this.FoldersUnknown.Len() == 0 {
+		return nil
+	}
+	return heap.Pop(&this.FoldersUnknown).(*Document)
+}
+
+func (this *Crawler) DiscoverPush(doc *Document, files []os.FileInfo, tx indexer.Manager) bool {
 	excluded := SEARCH_EXCLUSION()
 	for i := range files {
 		f := files[i]
@@ -44,9 +50,8 @@ func (this *Crawler) Discover(tx indexer.Manager) bool {
 		}
 		if f.IsDir() {
 			var performPush bool = false
-			p := filepath.Join(doc.Path, name)
-			p += "/"
-			if err = dbInsert(doc.Path, f, tx); err == nil {
+			p := filepath.Join(doc.Path, name) + "/"
+			if err := dbInsert(doc.Path, f, tx); err == nil {
 				performPush = true
 			} else if err == indexer.ErrConstraint {
 				performPush = func(path string) bool {
@@ -67,7 +72,7 @@ func (this *Crawler) Discover(tx indexer.Manager) bool {
 			} else {
 				Log.Error("search::indexing insert_index (%v)", err)
 			}
-			if performPush == true {
+			if performPush {
 				heap.Push(&this.FoldersUnknown, &Document{
 					Type:    "directory",
 					Name:    name,
@@ -77,11 +82,7 @@ func (this *Crawler) Discover(tx indexer.Manager) bool {
 				})
 			}
 		} else {
-			if err = dbInsert(doc.Path, f, tx); err != nil {
-				if err == indexer.ErrConstraint {
-					return false
-				}
-				Log.Warning("search::insert index_error (%v)", err)
+			if err := dbUpsert(doc.Path, f, tx); err != nil {
 				return false
 			}
 		}

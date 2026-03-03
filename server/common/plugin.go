@@ -339,6 +339,16 @@ func (this Get) WorkflowActions() []IAction {
 	return workflow_actions
 }
 
+var directory IDirectoryService
+
+func (this Register) DirectoryService(d IDirectoryService) {
+	directory = d
+}
+
+func (this Get) DirectoryService() IDirectoryService {
+	return directory
+}
+
 func init() {
 	Hooks.Register.FrontendOverrides(OverrideVideoSourceMapper)
 }

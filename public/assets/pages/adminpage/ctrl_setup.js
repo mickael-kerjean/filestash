@@ -169,7 +169,7 @@ function componentStep2(render, { getPassword }) {
                             <input type="checkbox">
                             <span class="indicator"></span>
                         </div>
-                        I accept but the data is not to be share with any third party
+                        The data is never shared with a third party.
                     </label>
                 </form>
             </div>

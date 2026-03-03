@@ -1,0 +1,27 @@
+diff --git a/public/assets/components/sidebar.js b/public/assets/components/sidebar.js
+index 268aa4eb..e7b93142 100644
+--- a/public/assets/components/sidebar.js
++++ b/public/assets/components/sidebar.js
+@@ -52,1 +52,5 @@ export default async function ctrlSidebar(render, {}) {
+
++    if (!$sidebar.querySelector(`[data-bind="favourites"]`)) qs($sidebar, `[data-bind="your-tags"]`).before(createElement(`<div data-bind="favourites"></div>`));
++    import(new URL("./sidebar_favourite.js", import.meta.url).toString())
++        .then((module) => module.default(createRender(qs($sidebar, `[data-bind="favourites"]`)), { path }))
++        .catch((err) => console.log(err));
+diff --git a/public/assets/pages/filespage/ctrl_submenu.js b/public/assets/pages/filespage/ctrl_submenu.js
+index cdc4015c..5ec564b5 100644
+--- a/public/assets/pages/filespage/ctrl_submenu.js
++++ b/public/assets/pages/filespage/ctrl_submenu.js
+@@ -125,2 +125,12 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
+         `))),
++        rxjs.map(($buttons) => {
++            $buttons.appendChild(Object.assign(createElement(`<button>Pin</button>`), {
++                onclick: async () => {
++                    const url = new URL("../../components/sidebar_favourite.js", import.meta.url).toString();
++                    const { toggleFavourite } = await import(url);
++                    toggleFavourite(expandSelection()[0].path)
++                },
++            }));
++            return $buttons;
++        }),
+         rxjs.tap(($buttons) => animate($buttons, { time: 100, keyframes: slideYIn(5) })),

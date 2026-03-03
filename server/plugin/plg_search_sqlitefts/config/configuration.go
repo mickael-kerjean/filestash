@@ -13,6 +13,7 @@ func init() {
 		SEARCH_PROCESS_MAX()
 		SEARCH_PROCESS_PAR()
 		SEARCH_REINDEX()
+		SEARCH_SHARED_INDEX()
 		CYCLE_TIME()
 		MAX_INDEXING_FSIZE()
 		INDEXING_EXT()
@@ -25,14 +26,10 @@ var SEARCH_ENABLE = func() bool {
 			f = &FormElement{}
 		}
 		f.Name = "enable"
-		f.Type = "enable"
-		f.Target = []string{
-			"process_max", "process_par", "reindex_time",
-			"cycle_time", "max_size", "indexer_ext", "folder_exclusion",
-		}
-		f.Description = "Enable/Disable full text search"
-		f.Placeholder = "Default: true"
-		f.Default = true
+		f.Type = "boolean"
+		f.Description = "Enable/Disable full text search automatic indexing"
+		f.Placeholder = "Default: false"
+		f.Default = false
 		return f
 	}).Bool()
 }
@@ -42,7 +39,6 @@ var SEARCH_EXCLUSION = func() []string {
 		if f == nil {
 			f = &FormElement{}
 		}
-		f.Id = "folder_exclusion"
 		f.Name = "folder_exclusion"
 		f.Type = "text"
 		f.Description = "Exclude some specific folder from the crawl / index"
@@ -62,7 +58,6 @@ var SEARCH_PROCESS_MAX = func() int {
 		if f == nil {
 			f = &FormElement{}
 		}
-		f.Id = "process_max"
 		f.Name = "process_max"
 		f.Type = "number"
 		f.Description = "Size of the pool containing the indexers"
@@ -77,7 +72,6 @@ var SEARCH_PROCESS_PAR = func() int {
 		if f == nil {
 			f = &FormElement{}
 		}
-		f.Id = "process_par"
 		f.Name = "process_par"
 		f.Type = "number"
 		f.Description = "How many concurrent indexers are running in the same time (requires a restart)"
@@ -92,7 +86,6 @@ var SEARCH_REINDEX = func() int {
 		if f == nil {
 			f = &FormElement{}
 		}
-		f.Id = "reindex_time"
 		f.Name = "reindex_time"
 		f.Type = "number"
 		f.Description = "Time in hours after which we consider our index to be stale and needs to be reindexed"
@@ -101,12 +94,25 @@ var SEARCH_REINDEX = func() int {
 		return f
 	}).Int()
 }
+
+var SEARCH_SHARED_INDEX = func() bool {
+	return Config.Get("features.search.shared_index").Schema(func(f *FormElement) *FormElement {
+		if f == nil {
+			f = &FormElement{}
+		}
+		f.Name = "shared_index"
+		f.Type = "boolean"
+		f.Description = "Use a single search index shared across all users"
+		f.Default = false
+		return f
+	}).Bool()
+}
+
 var CYCLE_TIME = func() int {
 	return Config.Get("features.search.cycle_time").Schema(func(f *FormElement) *FormElement {
 		if f == nil {
 			f = &FormElement{}
 		}
-		f.Id = "cycle_time"
 		f.Name = "cycle_time"
 		f.Type = "number"
 		f.Description = "Time allocation for each cycle in seconds (discovery, indexing and maintenance)"
@@ -121,7 +127,6 @@ var MAX_INDEXING_FSIZE = func() int {
 		if f == nil {
 			f = &FormElement{}
 		}
-		f.Id = "max_size"
 		f.Name = "max_size"
 		f.Type = "number"
 		f.Description = "Maximum size of files the indexer will perform full text search"
@@ -135,12 +140,11 @@ var INDEXING_EXT = func() string {
 		if f == nil {
 			f = &FormElement{}
 		}
-		f.Id = "indexer_ext"
 		f.Name = "indexer_ext"
 		f.Type = "text"
 		f.Description = "Extensions that will be handled by the full text search engine"
-		f.Placeholder = "Default: org,txt,docx,pdf,md,form"
-		f.Default = "org,txt,docx,pdf,md,form"
+		f.Placeholder = "Default: org,txt,docx,pdf,md,form,xlsx,pptx"
+		f.Default = "org,txt,docx,pdf,md,form,xlsx,pptx"
 		return f
 	}).String()
 }

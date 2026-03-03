@@ -46,12 +46,14 @@
 body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     filter: drop-shadow(0px 0px 4px #e2e2e2);
 }
-.component_filemanager_shell .component_sidebar h3 img {
-    cursor: pointer;
+.component_filemanager_shell .component_sidebar h3 img,
+.component_filemanager_shell .component_sidebar h3 svg,
+.component_filemanager_shell .component_sidebar h3 component-icon img {
     width: 16px;
     padding-right: 6px;
     margin-left: -1px;
 }
+.component_filemanager_shell .component_sidebar .component_icon
 .component_filemanager_shell .component_sidebar h3 input::placeholder {
     text-transform: capitalize;
     color: var(--light);
@@ -95,6 +97,16 @@ body.touch-no .component_filemanager_shell .component_sidebar h3 img:hover {
     box-sizing: border-box;
     letter-spacing: -0.2px;
 }
+.component_filemanager_shell .component_sidebar .placeholder {
+    border: 2px dashed var(--border);
+    background: inherit;
+    border-radius: 4px;
+    color: var(--light);
+    box-sizing: border-box;
+    padding: 5px;
+    font-family: inherit;
+}
+
 body.touch-no .component_filemanager_shell .component_sidebar a:not([aria-selected="true"]):hover,
 .component_filemanager_shell .component_sidebar a[aria-selected="true"] {
     background: var(--border);
@@ -107,7 +119,6 @@ body.touch-no .component_filemanager_shell .component_sidebar a:not([aria-select
 }
 .component_filemanager_shell .component_sidebar .component_icon {
     width: 16px;
-    height: 22px;
     padding-right: 5px;
     opacity: 0.85;
 }

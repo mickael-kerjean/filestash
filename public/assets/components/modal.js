@@ -67,7 +67,7 @@ class ModalComponent extends HTMLElement {
                 $button.setAttribute("disabled", "true");
             }
         });
-        effect(rxjs.fromEvent($modal, "click").pipe(
+        effect(rxjs.fromEvent($modal, "mousedown").pipe(
             rxjs.filter((e) => e.target.getAttribute("id") === "modal-box"),
             rxjs.tap(() => close$.next(MODAL_QUIT)),
         ));
