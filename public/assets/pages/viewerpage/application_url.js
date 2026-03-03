@@ -1,5 +1,4 @@
-import { createElement, navigate } from "../../lib/skeleton/index.js";
-import { toHref } from "../../lib/skeleton/router.js";
+import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { ApplicationError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
