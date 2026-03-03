@@ -86,7 +86,7 @@ export default async function(render) {
                             files, ...state, ...rest,
                         })),
                     )),
-                    rxjs.finalize(() => effect(rxjs.of(null).pipe(removeLoader))),
+                    removeLoader,
                 );
             }
             return rxjs.of({ files, ...state, ...rest });
@@ -101,6 +101,7 @@ export default async function(render) {
         }),
         rxjs.map((data) => ({ ...data, count: count++ })),
         removeLoader,
+        rxjs.mergeMap((obj) => refreshScreen$.pipe(rxjs.mapTo(obj))),
         rxjs.mergeMap(({ files, search, ...rest }) => {
             files$.next(files);
             if (files.length === 0) {
@@ -109,7 +110,6 @@ export default async function(render) {
             }
             return rxjs.of({ ...rest, files, search });
         }),
-        rxjs.mergeMap((obj) => refreshScreen$.pipe(rxjs.mapTo(obj))),
         rxjs.mergeMap(({ files, view, search, count, permissions }) => { // STEP1: setup the list of files
             $list.closest(".scroll-y").scrollTop = 0;
             let FILE_HEIGHT, COLUMN_PER_ROW;
