@@ -3,9 +3,9 @@ package ctrl
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"net/http"
 	"os"
+	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
@@ -124,6 +124,6 @@ func HealthHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	// SUCCESS!!
 	res.WriteHeader(http.StatusOK)
 	if req.Method != "HEAD" {
-		res.Write([]byte(`{"status": "ok"}`))
+		res.Write([]byte(`{"status": "pass"}`))
 	}
 }
