@@ -73,7 +73,7 @@ function builder({ $img }) {
         // pinch zoom
         rxjs.fromEvent($img.parentElement, "touchstart", { passive: false }).pipe(
             rxjs.filter((e) => e.touches.length === 2),
-            rxjs.switchMap((event) => rxjs.fromEvent($img.parentElement, "touchmove").pipe(
+            rxjs.switchMap((event) => rxjs.fromEvent($img.parentElement, "touchmove", { passive: false }).pipe(
                 rxjs.filter((event) => event.touches.length >= 2),
                 rxjs.tap((event) => event.preventDefault()),
                 rxjs.takeUntil(rxjs.fromEvent(window, "touchend")),
@@ -86,18 +86,18 @@ function builder({ $img }) {
                     ),
                 })),
                 rxjs.pairwise(),
-                rxjs.map(([curr, prev]) => ({
+                rxjs.map(([prev, curr]) => ({
                     clientX: curr.clientX,
                     clientY: curr.clientY,
-                    scale: Math.sign(curr.distance - prev.distance) === 1 ? 0.95 : 1.025,
-                    moveX: prev.clientX - curr.clientX,
-                    moveY: prev.clientY - curr.clientY,
+                    scale: Math.min(1.15, Math.max(0.85, curr.distance / prev.distance)),
+                    moveX: curr.clientX - prev.clientX,
+                    moveY: curr.clientY - prev.clientY,
                     duration: 0,
                 })),
             )),
         ),
         // grab and drag
-        rxjs.fromEvent($img.parentElement, "mousedown").pipe(
+        rxjs.fromEvent($img.parentElement, "mousedown", { passive: false }).pipe(
             rxjs.filter((e) => e.target === $img && e.button === 0),
             rxjs.switchMap((down) => {
                 let prev = { x: down.clientX, y: down.clientY, t: down.timeStamp };
