@@ -93,6 +93,9 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     .component_imageviewer .images_aside.open [data-bind="body"] {
         padding: 15px 15px 0px 15px;
     }
+    .component_imageviewer .images_aside [data-bind="header"] .header {
+        padding: 10px 0;
+    }
 }
 @media screen and (max-width: 650px) {
     .component_imageviewer .images_aside.open {
@@ -100,6 +103,9 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     }
 }
 @media screen and (max-width: 580px) {
+    .component_imageviewer component-menubar button .component_icon[alt="info"] {
+        display: none;
+    }
     .component_imageviewer .images_aside.open {
         width: 0px;
         min-width: 0;
@@ -119,7 +125,7 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     display: flex;
     line-height: 25px;
     white-space: nowrap;
-    padding: 20px 25px;
+    padding: 20px 0px;
     font-size: 1.25em;
 }
 .component_imageviewer .images_aside .header .component_icon {
@@ -133,6 +139,7 @@ body:not(.dark-mode) .component_imageviewer .component_image_container .fullscre
     background: #0000000a;
     border-radius: 50%;
 }
+.component_imageviewer .images_aside.open [data-bind="header"],
 .component_imageviewer .images_aside [data-bind="body"] {
     padding: 10px 20px 0px 20px;
 }
