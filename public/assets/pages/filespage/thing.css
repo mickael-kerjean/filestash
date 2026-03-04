@@ -1,4 +1,4 @@
-.component_thing:hover, .component_thing .highlight,
+.touch-no .component_thing:hover, .component_thing .highlight,
 .component_thing.hover, .component_thing .highlight {
     transition: 0.1s ease-out background;
     background: var(--border);

@@ -235,7 +235,7 @@ function componentRight(render, { getSelectionLength$ }) {
             search,
             $page: render(createFragment(`
                 <form style="display: inline-block;" onsubmit="event.preventDefault()">
-                    <input value="${safe(search)}" class="hidden" placeholder="${t("search")}" name="q" id="searchInput" aria-label="${t("search")}" tabindex="-1" />
+                    <input value="${safe(search)}" class="hidden" placeholder="${t("search")}" name="q" id="searchInput" aria-label="${t("search")}" tabindex="-1" autocapitalize="none" />
                 </form>
                 <button data-action="search" title="${t("Search")}" aria-controls="searchInput">
                     <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,${ICONS.MAGNIFYING_GLASS}" alt="search" />

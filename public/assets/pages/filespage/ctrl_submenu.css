@@ -23,6 +23,10 @@
     display: flex;
     justify-content: space-between;
     padding: 0 15px;
+    overflow-x: auto;
+}
+[is="component_submenu"] .component_submenu::-webkit-scrollbar {
+    display: none;
 }
 [is="component_submenu"] .component_submenu .action button {
     padding: 6px 10px;
