@@ -5,14 +5,14 @@
 <p>
     It started as a storage agnostic Dropbox-like file manager that works with every storage protocol: <a href="https://www.filestash.app/ftp-client.html">FTP</a>, <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, and <a href="https://www.filestash.app/docs/plugin/#storage">about 20 more</a>.
 </p>
+
 <p>
-    It grew into a universal data access platform with <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem capabilities</a>, <a href="https://www.filestash.app/docs/api/?origin=github#api">APIs</a>, RBAC, Gateways to expose your data over <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, and <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> to give LLMs a limited view of your data:
+    It grew into what we aim to make the world's best file management platform, where everything that's not a fundamental truth of the universe lives in a plugin. Where other platforms are take-it-or-leave-it, we believe the right answer is a rock solid core that covers 80% out of the box, and a plugin system that handles the rest, so you're never stuck when your requirements go deeper: federated deployments, E2E encryption, custom workflows, or anything else your organisation needs.
 </p>
 
 <a href="http://demo.filestash.app">
     <img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" />
 </a>
-
 
 # Key Features
 
