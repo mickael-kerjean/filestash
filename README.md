@@ -85,7 +85,8 @@ To see what's currently installed in your instance, head over to [/about](https:
 # Support
 
 - Commercial Users → [support contract](https://www.filestash.app/pricing/?origin=github)
-- For individuals → [#filestash](https://kiwiirc.com/nextclient/#irc://irc.libera.chat/#filestash?nick=guest??) on IRC (libera.chat)
+- For individuals:
+  - [#filestash](https://kiwiirc.com/nextclient/#irc://irc.libera.chat/#filestash?nick=guest??) on IRC (libera.chat)
   - Bitcoin: `3LX5KGmSmHDj5EuXrmUvcg77EJxCxmdsgW`
   - [Open Collective](https://opencollective.com/filestash)
 
