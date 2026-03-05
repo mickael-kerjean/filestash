@@ -17,11 +17,11 @@
 # Key Features
 
 <ul>
-    <li>A plugin based architecture with a minimal core that can be extended and customized through a rich <a href="https://www.filestash.app/docs/plugin/">ecosystem of plugins</a>.</li>
-    <li>An awesome web client to access your data, built in vanilla JS, sleek, speedy, snappy, and infinitely customizable through our <a href="https://www.filestash.app/docs/guide/plugin-development.html#patch-plugins-in-depth">dynamic patch plugins</a>.</li>
-    <li>A Workflow engine to enable automation and tons of integrations capabilities</li>
-    <li>Integrations with almost every storage system and authentication provider, with the explicit goal of supporting 100% of storage and auth technologies on the market (including unconventional ones like using <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_authenticate_wordpress">WordPress as an IdP</a>).</li>
-    <li>The frontend can open virtually any file format using <a href="https://www.filestash.app/docs/guide/plugin-development.html#xdg-open-plugins-in-depth">xdg-open plugins</a> that add renderers and additional buttons for formats not natively supported by browsers, from astronomy to embroidery and everything in between like:
+    <li><a href="#vision--philosophy">Plugin-based architecture</a>: a minimal core you can extend and customize through a rich <a href="https://www.filestash.app/docs/plugin/">ecosystem of plugins</a>.</li>
+    <li>Web client: built in vanilla JS, sleek, speedy, and infinitely customizable through our <a href="https://www.filestash.app/docs/guide/plugin-development.html#patch-plugins-in-depth">dynamic patch plugins</a>.</li>
+    <li>Workflow engine: enables automation and integrations by chaining actions in response to events.</li>
+    <li><a href="https://www.filestash.app/docs/plugin/#storage">Integrations</a>: almost every storage system and authentication provider, with the explicit goal of supporting 100% of storage and auth technologies on the market (including unconventional ones like using <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_authenticate_wordpress">WordPress as an IdP</a>).</li>
+    <li><a href="https://www.filestash.app/docs/guide/plugin-development.html#xdg-open-plugins-in-depth">File viewers</a>: open virtually any file format, from astronomy to embroidery and everything in between like:
         <ul>
             <li><a href="https://demo.filestash.app/assets/plugin/application_photography.zip">photography</a>: heif, nef, raf, <a href="https://www.filestash.app/tools/tiff-viewer.html">tiff</a>, raw, arw, sr2, srf, nrw, cr2, crw, x3f, pef, rw2, orf, mrw, mdc, mef, mos, dcr, kdc, 3fr, erf and srw</li>
             <li><a href="https://demo.filestash.app/assets/plugin/application_photography.zip">astronomy</a>: <a href="https://www.filestash.app/tools/fits-viewer.html">fits</a>, <a href="https://www.filestash.app/tools/xisf-viewer.html">xisf</a></li>
@@ -44,7 +44,7 @@
         <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" height="150" />
         <img src="https://www.filestash.app/img/screenshots/theme_ibm.png" height="150" />
     </li>
-    <li>Splashy AI features for <a href="https://www.filestash.app/features/semantic-search.html">search</a> and <a href="https://www.filestash.app/features/smart-folder.html">smart folders</a></li>
+    <li><a href="https://www.filestash.app/features/semantic-search.html">AI features</a>: <a href="https://www.filestash.app/features/semantic-search.html">semantic search</a> and <a href="https://www.filestash.app/features/smart-folder.html">smart folders</a>.</li>
     <li>... and much <sub>much <sub>more (chromecast support, on demand video transcoding, mounting shared links as network drive, public site, antivirus, versioning, audit, quota, ....)</sub></sub><br> As a rule of thumb, if your problem involves files, we either already <a href="https://www.filestash.app/docs/plugin/">have a plugin</a> for it or can make a plugin for it
 </ul>
 
