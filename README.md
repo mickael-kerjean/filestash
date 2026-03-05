@@ -55,7 +55,7 @@ To install Filestash, head to the [Getting started](https://www.filestash.app/do
 
 If you want to leverage plugins, head over to the [inventory](https://www.filestash.app/docs/plugin/?origin=github), or learn about [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github)
 
-If you'd rather go from 0 to 100% with expert help, [book a call](https://www.filestash.app/tunnel/demo/?origin=github) and let's figure out together how Filestash can solve your file management problem.
+If you want guidance and expert help on your file management problem, [book a call](https://www.filestash.app/tunnel/demo/?origin=github) and let's figure out if Filestash is the right platform for you.
 
 
 # Vision & Philosophy
