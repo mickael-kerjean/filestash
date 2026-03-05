@@ -17,7 +17,7 @@
 # Key Features
 
 <ul>
-    <li><a href="#vision--philosophy">Plugin-based architecture</a>: a minimal core you can extend and customize through a rich <a href="https://www.filestash.app/docs/plugin/">ecosystem of plugins</a>.</li>
+    <li><a href="#vision--philosophy">Plugin-based architecture</a>: a minimal core you can extend and customize through a rich <a href="https://www.filestash.app/docs/plugin/">ecosystem of plugins</a> or by <a href="https://www.filestash.app/docs/guide/plugin-development.html?origin=github">building your own</a>.</li>
     <li>Web client: built in vanilla JS, sleek, speedy, and infinitely customizable through our <a href="https://www.filestash.app/docs/guide/plugin-development.html#patch-plugins-in-depth">dynamic patch plugins</a>.</li>
     <li>Workflow engine: enables automation and integrations by chaining actions in response to events.</li>
     <li><a href="https://www.filestash.app/docs/plugin/#storage">Integrations</a>: almost every storage system and authentication provider, with the explicit goal of supporting 100% of storage and auth technologies on the market (including unconventional ones like using <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_authenticate_wordpress">WordPress as an IdP</a>).</li>
