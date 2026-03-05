@@ -267,21 +267,40 @@ func (f Ftp) Ls(path string) (files []os.FileInfo, err error) {
 }
 
 func (f Ftp) Cat(path string) (reader io.ReadCloser, err error) {
+	fileExists := false
 	f.Execute(func(client *goftp.Client) error {
-		if _, err = client.Stat(path); err != nil {
+		slashLastIndex := strings.LastIndex(path, "/")
+		parentPath := path[0:slashLastIndex]
+		filename := path[slashLastIndex+1:]
+		var fileInfos []os.FileInfo
+		fileInfos, err = client.ReadDir(parentPath)
+		if err != nil {
 			return err
-		}
-		pr, pw := io.Pipe()
-		go func() {
-			err = client.Retrieve(path, pw)
-			if err != nil {
-				pr.CloseWithError(NewError("Problem", 409))
+		} else {
+			for _, fileInfo := range fileInfos {
+				fileExists = fileExists || fileInfo.Name() == filename
 			}
-			pw.Close()
-		}()
-		reader = pr
+		}
+
+		if fileExists {
+			pr, pw := io.Pipe()
+			go func() {
+				err = client.Retrieve(path, pw)
+				if err != nil {
+					pr.CloseWithError(NewError("Problem", 409))
+				}
+				pw.Close()
+			}()
+			reader = pr
+		}
+
 		return nil
 	})
+
+	if reader == nil {
+		err = NewError(fmt.Sprintf("No file matches path %s", path), 404)
+	}
+
 	return reader, err
 }
 
