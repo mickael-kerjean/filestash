@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/user"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -181,6 +182,57 @@ func formToJSON(f Form, fn func(FormElement) any) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func marshalSortedMap(m map[string]any) ([]byte, error) {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	var buf bytes.Buffer
+	buf.WriteByte('{')
+	for i, k := range keys {
+		if i > 0 {
+			buf.WriteByte(',')
+		}
+		key, _ := json.Marshal(k)
+		buf.Write(key)
+		buf.WriteByte(':')
+		switch val := m[k].(type) {
+		case map[string]any:
+			v, err := marshalSortedMap(val)
+			if err != nil {
+				return nil, err
+			}
+			buf.Write(v)
+		default:
+			v, err := json.Marshal(val)
+			if err != nil {
+				return nil, err
+			}
+			buf.Write(v)
+		}
+	}
+	buf.WriteByte('}')
+	return buf.Bytes(), nil
+}
+
+func marshalSortedMapSlice(s []map[string]any) ([]byte, error) {
+	var buf bytes.Buffer
+	buf.WriteByte('[')
+	for i, m := range s {
+		if i > 0 {
+			buf.WriteByte(',')
+		}
+		v, err := marshalSortedMap(m)
+		if err != nil {
+			return nil, err
+		}
+		buf.Write(v)
+	}
+	buf.WriteByte(']')
+	return buf.Bytes(), nil
+}
+
 func (this *Configuration) Load() error {
 	cFile, err := LoadConfig()
 	if err != nil {
@@ -260,7 +312,7 @@ func (this *Configuration) Initialise() {
 func (this *Configuration) Save() {
 	this.mu.RLock()
 	formBytes, err := formToJSON(Form{Form: this.Form}, func(el FormElement) any { return el.Value })
-	conn, _ := json.Marshal(this.Conn)
+	conn, _ := marshalSortedMapSlice(this.Conn)
 	this.mu.RUnlock()
 	if err != nil {
 		Log.Error("config::save marshal %s", err.Error())
