@@ -45,7 +45,7 @@
         <img src="https://www.filestash.app/img/screenshots/theme_ibm.png" height="150" />
     </li>
     <li><a href="https://www.filestash.app/features/semantic-search.html">AI features</a>: <a href="https://www.filestash.app/features/semantic-search.html">semantic search</a> and <a href="https://www.filestash.app/features/smart-folder.html">smart folders</a>.</li>
-    <li>... and much <sub>much <sub>more (chromecast support, on demand video transcoding, mounting shared links as network drive, public site, antivirus, versioning, audit, quota, ....)</sub></sub><br> As a rule of thumb, if your problem involves files, we either already <a href="https://www.filestash.app/docs/plugin/">have a plugin</a> for it or can make a plugin for it
+    <li>... and much <sub>much <sub>more (versioning, audit, public site, antivirus, quota, chat, chromecast support, on demand video transcoding, mounting shared links as network drive, ....)</sub></sub><br> As a rule of thumb, if your problem involves files, we either already <a href="https://www.filestash.app/docs/plugin/">have a plugin</a> for it or can make a plugin for it
 </ul>
 
 
