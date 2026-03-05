@@ -7,7 +7,7 @@
 </p>
 
 <p>
-    It grew into what we aim to make the world's best file management platform, where everything that's not a fundamental truth of the universe lives in a plugin. Where other platforms are take-it-or-leave-it, ours gives you a rock solid core and a plugin system that handles the rest, so you're never stuck when requirements go deeper.
+    It grew into what we aim to make the world's best file management platform, where everything that's not a fundamental truth of the universe lives in a plugin. Where other platforms are take-it-or-leave-it, ours gives you a rock solid core and a plugin system that handles the rest, so however deep requirements go, the only limit won't be technical but your own creativity.
 </p>
 
 <a href="http://demo.filestash.app">
