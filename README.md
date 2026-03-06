@@ -19,8 +19,8 @@
 <ul>
     <li><a href="#vision--philosophy">Plugin Driven Architecture</a>: everything that matters is a plugin, browse the <a href="https://www.filestash.app/docs/plugin/">ecosystem</a> or <a href="https://www.filestash.app/docs/guide/plugin-development.html?origin=github">build your own</a>. With this approach, you get exactly what you need without any kind of overhead or bloat.</li>
     <li>Universal Access: a sleek web client made in vanilla JS that's infinitely customizable via <a href="https://www.filestash.app/docs/guide/plugin-development.html#patch-plugins-in-depth">dynamic patch plugins</a>, plus gateways to access your data via <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a> or S3, integrations via <a href="https://www.filestash.app/docs/api/#api">APIs</a> and via web components like this <a href="https://www.filestash.app/tools/psd-viewer.html">psd viewer</a></li>
-    <li><a href="https://www.filestash.app/docs/plugin/#storage">Integrations</a>: our explicit goal is to support 100% of storage and authentication technologies on the market. Beyond your usual options, you can go much further, like a <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem</a> delegating authentication to your <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_authenticate_wordpress">WordPress site</a> and using its roles to drive RBAC authorization.</li>
-    <li>Workflow Engine: automate anything that happens to your files by chaining actions on events, from simple notifications via Slack or email to full on MFT pipelines and everything in between.</li>
+    <li><a href="https://www.filestash.app/docs/plugin/#storage">Integrations</a>: our explicit goal is to support 100% of storage and authentication technologies on the market. Beyond your usual options, you can go much further, like a <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem</a> delegating authentication to your <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_authenticate_wordpress">WordPress site</a> and using its roles to drive <a href="https://www.filestash.app/docs/guide/authorization.html#option-2-rbac">RBAC authorization</a>.</li>
+    <li><a href="https://www.filestash.app/docs/guide/workflow-engine.html">Workflow Engine</a>: automate anything that happens to your files by chaining actions on events, from simple notifications via Slack or email to full on MFT pipelines and everything in between.</li>
     <li>File Apps: use any of the existing apps or <a href="https://www.filestash.app/docs/guide/plugin-development.html#xdg-open-plugins-in-depth">build your own</a>, from astronomy to embroidery and everything in between like:
         <ul>
             <li><a href="https://demo.filestash.app/assets/plugin/application_photography.zip">photography</a>: heif, nef, raf, <a href="https://www.filestash.app/tools/tiff-viewer.html">tiff</a>, raw, arw, sr2, srf, nrw, cr2, crw, x3f, pef, rw2, orf, mrw, mdc, mef, mos, dcr, kdc, 3fr, erf and srw</li>
@@ -45,7 +45,7 @@
         <img src="https://www.filestash.app/img/screenshots/theme_dropbox.png" height="150" />
         <img src="https://www.filestash.app/img/screenshots/theme_ibm.png" height="150" />
     </li>
-    <li><a href="https://www.filestash.app/features/semantic-search.html">AI features</a>: <a href="https://www.filestash.app/features/semantic-search.html">semantic search</a> and <a href="https://www.filestash.app/features/smart-folder.html">smart folders</a>.</li>
+    <li>AI features for <a href="https://www.filestash.app/docs/guide/search.html">search</a>, <a href="https://www.filestash.app/features/smart-folder.html">smart folders</a> and OCRs.</li>
     <li>... and much <sub>much <sub>more (versioning, audit, public site, antivirus, quota, chat, chromecast support, on demand video transcoding, mounting shared links as network drive, ....)</sub></sub><br> As a rule of thumb, if your problem involves files, we either already <a href="https://www.filestash.app/docs/plugin/">have a plugin</a> for it or can make a plugin for it
 </ul>
 
@@ -78,7 +78,7 @@ type IBackend interface {
 }
 ```
 
-There are interfaces you can implement for every key component of Filestash: from storage, to authentication, authorisation, custom apps, search, thumbnailing, frontend patches, middleware, endpoint creation and a few others documented in the [plugin development guide](https://www.filestash.app/docs/guide/plugin-development.html).
+There are interfaces you can implement for every key component of Filestash: from storage, to authentication, <a href="https://www.filestash.app/docs/guide/authorization.html">authorisation</a>, custom apps, <a href="https://www.filestash.app/docs/guide/search.html">search</a>, thumbnailing, frontend patches, middleware, endpoint creation and a few others documented in the [plugin development guide](https://www.filestash.app/docs/guide/plugin-development.html).
 
 To see what's currently installed in your instance, head over to [/about](https://demo.filestash.app/about). The inventory of plugins is [documented here](https://www.filestash.app/docs/plugin/)
 
