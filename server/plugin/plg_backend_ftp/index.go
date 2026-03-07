@@ -85,7 +85,9 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 
 	connectStrategy := []string{"ftp", "ftps::implicit", "ftps::explicit"}
-	if strings.HasPrefix(params["hostname"], "ftp://") {
+	if params["connect_strategy"] != "" {
+		connectStrategy = []string{params["connect_strategy"]}
+	} else if strings.HasPrefix(params["hostname"], "ftp://") {
 		connectStrategy = []string{"ftp"}
 		params["hostname"] = strings.TrimPrefix(params["hostname"], "ftp://")
 	} else if strings.HasPrefix(params["hostname"], "ftps://") {
@@ -212,7 +214,7 @@ func (f Ftp) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"ftp_path", "ftp_port", "ftp_conn"},
+				Target:      []string{"ftp_path", "ftp_port", "ftp_conn", "ftp_connect_strategy"},
 			},
 			{
 				Id:          "ftp_path",
@@ -231,6 +233,14 @@ func (f Ftp) LoginForm() Form {
 				Name:        "conn",
 				Type:        "number",
 				Placeholder: "Number of connections",
+			},
+			{
+				Id:          "ftp_connect_strategy",
+				Name:        "connect_strategy",
+				Type:        "select",
+				Placeholder: "Connection strategy",
+				Opts:        []string{"", "ftp", "ftps::implicit", "ftps::explicit"},
+				OptsLabel:   []string{"Auto", "FTP", "FTPS (Implicit TLS)", "FTPS (Explicit TLS)"},
 			},
 		},
 	}

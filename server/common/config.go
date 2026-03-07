@@ -39,6 +39,7 @@ type FormElement struct {
 	Placeholder string      `json:"placeholder,omitempty"`
 	Pattern     string      `json:"pattern,omitempty"`
 	Opts        []string    `json:"options,omitempty"`
+	OptsLabel   []string    `json:"options_label,omitempty"`
 	Target      []string    `json:"target,omitempty"`
 	ReadOnly    bool        `json:"readonly"`
 	Default     interface{} `json:"default"`
