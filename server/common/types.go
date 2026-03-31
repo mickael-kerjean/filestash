@@ -19,7 +19,6 @@ type IBackend interface {
 	Save(path string, file io.Reader) error
 	Touch(path string) error
 	LoginForm() Form
-	Chmod(path string, perms int) error
 }
 
 type IAuthentication interface {
