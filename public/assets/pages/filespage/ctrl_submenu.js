@@ -161,7 +161,7 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
                 return rxjs.forkJoin({
                     file: rxjs.from(fscache().get(basepath)).pipe(
                         rxjs.map((object) => {
-                            return object.files.find(f => f.name === name);
+                            return object?.files?.find((f) => f.name === name) || { name, mode: 0o644 };
                         })
                     ),
                     user_info: rxjs.from(fscache().getUser())
