@@ -1,7 +1,7 @@
 package plg_image_c
 
 // #include "image_psd.h"
-// #cgo LDFLAGS: -l:libwebp.a
+// #cgo LDFLAGS: -lwebp
 import "C"
 
 func psd(input uintptr, output uintptr, size int) {
