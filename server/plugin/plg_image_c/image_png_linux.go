@@ -1,7 +1,7 @@
 package plg_image_c
 
 // #include "image_png.h"
-// #cgo LDFLAGS: -l:libpng.a -l:libz.a -l:libwebp.a -fopenmp
+// #cgo LDFLAGS: -lpng -lz -lwebp -fopenmp
 import "C"
 
 func png(input uintptr, output uintptr, size int) {

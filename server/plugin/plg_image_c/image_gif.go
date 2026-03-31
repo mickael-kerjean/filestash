@@ -1,7 +1,7 @@
 package plg_image_c
 
 // #include "image_gif.h"
-// #cgo LDFLAGS: -l:libgif.a -l:libwebp.a
+// #cgo LDFLAGS: -lgif -lwebp
 import "C"
 
 func gif(input uintptr, output uintptr, size int) {

@@ -1,7 +1,7 @@
 package plg_image_c
 
 // #include "image_raw.h"
-// #cgo LDFLAGS: -l:libjpeg.a -l:libraw.a -fopenmp -l:libstdc++.a -llcms2 -lm
+// #cgo LDFLAGS: -ljpeg -lraw -fopenmp -lstdc++ -llcms2 -lm
 import "C"
 
 func raw(input uintptr, output uintptr, size int) {
