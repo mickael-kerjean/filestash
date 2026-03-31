@@ -19,11 +19,7 @@ type PluginImpl struct {
 }
 
 func PluginDiscovery() error {
-	f, err := os.Open(GetAbsolutePath(PLUGIN_PATH))
-	if err != nil {
-		return err
-	}
-	entries, err := f.ReadDir(0)
+	entries, err := os.ReadDir(GetAbsolutePath(PLUGIN_PATH))
 	if err != nil {
 		return err
 	}
@@ -35,32 +31,51 @@ func PluginDiscovery() error {
 		if strings.HasSuffix(fname, ".zip") == false {
 			continue
 		}
-		name, modules, err := InitModule(entry.Name())
+		name, impl, err := InitModule(fname)
 		if err != nil {
 			Log.Error("could not initialise module name=%s err=%s", entry.Name(), err.Error())
 			continue
 		}
-		PLUGINS[name] = modules
+		for i := 0; i < len(impl.Modules); i++ {
+			switch impl.Modules[i]["type"] {
+			case "css":
+				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
+				if err != nil {
+					return err
+				}
+				Hooks.Register.CSS(string(b))
+			case "patch":
+				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
+				if err != nil {
+					return err
+				}
+				Hooks.Register.StaticPatch(b)
+			case "favicon":
+				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
+				if err != nil {
+					return err
+				}
+				Hooks.Register.Favicon(b)
+			case "middleware":
+				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
+				if err != nil {
+					return err
+				}
+				m, err := WasmAdapterForMiddleware(b)
+				if err != nil {
+					return err
+				}
+				Hooks.Register.Middleware(m)
+			case "http": // TODO
+				return ErrNotImplemented
+			}
+		}
+		PLUGINS[name] = impl
 	}
 	return nil
 }
 
-type zrc struct {
-	f io.ReadCloser
-	c io.Closer
-}
-
-func (this zrc) Read(p []byte) (n int, err error) {
-	return this.f.Read(p)
-}
-
-func (this zrc) Close() error {
-	this.f.Close()
-	this.c.Close()
-	return nil
-}
-
-func GetPluginFile(pluginName string, path string) (io.ReadCloser, error) {
+func GetPluginFile(pluginName string, path string) ([]byte, error) {
 	zipReader, err := zip.OpenReader(JoinPath(
 		GetAbsolutePath(PLUGIN_PATH),
 		pluginName+".zip",
@@ -77,7 +92,13 @@ func GetPluginFile(pluginName string, path string) (io.ReadCloser, error) {
 			zipReader.Close()
 			return nil, err
 		}
-		return zrc{f, zipReader}, nil
+		data, err := io.ReadAll(f)
+		f.Close()
+		zipReader.Close()
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
 	}
 	zipReader.Close()
 	return nil, ErrNotFound

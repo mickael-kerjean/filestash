@@ -4,7 +4,7 @@ import rxjs, { effect, onClick } from "../../lib/rx.js";
 import assert from "../../lib/assert.js";
 import ajax from "../../lib/ajax.js";
 import { forwardURLParams, join } from "../../lib/path.js";
-import { qs, qsa } from "../../lib/dom.js";
+import { qs, qsa, safe } from "../../lib/dom.js";
 import { randomString } from "../../lib/random.js";
 import { animate } from "../../lib/animate.js";
 import { createForm, mutateForm } from "../../lib/form.js";
@@ -26,9 +26,9 @@ export default function(render, { path }) {
         <div class="component_share">
             <h2>${t("Create a New Link")}</h2>
             <div class="share--content link-type no-select">
-                <div data-role="viewer">${t("Viewer")}</div>
-                <div data-role="editor">${t("Editor")}</div>
-                <div data-role="uploader" class="${isDir(path) ? "" : "hidden"}">${t("Uploader")}</div>
+                <button data-role="viewer">${t("Viewer")}</button>
+                <button data-role="editor">${t("Editor")}</button>
+                <button data-role="uploader" class="${isDir(path) ? "" : "hidden"}">${t("Uploader")}</button>
             </div>
             <div data-bind="share-body"></div>
         </div>
@@ -155,7 +155,7 @@ async function ctrlListShares(render, { load, remove, all, formLinks }) {
             const $share = createElement(`
                 <div class="link-details no-select">
                     <div class="copy role ellipsis">${t(shareObjToRole(shareObj))}</div>
-                    <div class="copy path ellipsis" title="${shareObj.path}">${shareObj.path}</div>
+                    <div class="copy path ellipsis" title="${safe(shareObj.path)}">${safe(shareObj.path)}</div>
                     <div class="link-details--icons">
                         <img class="component_icon" draggable="false" src="${IMAGE.DELETE}" alt="delete">
                         <img class="component_icon" draggable="false" src="${IMAGE.EDIT}" alt="edit">
@@ -297,7 +297,7 @@ async function ctrlCreateShare(render, { save, formState }) {
     };
     // sync editable custom link input with link id
     effect(rxjs.fromEvent(qs($form, `[name="url"]`), "keyup").pipe(rxjs.tap((e) => {
-        id = e.target.value.replaceAll(" ", "-").replace(new RegExp("[^A-Za-z\-]"), "");
+        id = e.target.value.replaceAll(new RegExp("[^0-9A-Za-z\-]", "g"), "");
         qs(assert.type($form.closest(".component_share"), HTMLElement), `input[name="create"]`).value = `${location.origin}${toHref("/s/" + id)}`;
     })));
 

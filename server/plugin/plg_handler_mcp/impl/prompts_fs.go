@@ -2,7 +2,6 @@ package impl
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/config"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/types"
 )
 
@@ -114,10 +113,6 @@ func init() {
 			},
 		})
 
-		if !CanEdit() {
-			return
-		}
-
 		RegisterPrompt(PromptDefinition{
 			Prompt: Prompt{
 				Name:        "save",
@@ -150,6 +145,5 @@ func init() {
 				return "save content to a file at the desired path"
 			},
 		})
-
 	})
 }

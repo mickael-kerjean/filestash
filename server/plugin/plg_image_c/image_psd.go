@@ -1,3 +1,5 @@
+//go:generate go run image_psd_generator.go
+
 package plg_image_c
 
 // #include "image_psd.h"

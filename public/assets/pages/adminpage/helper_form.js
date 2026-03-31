@@ -4,7 +4,7 @@ import rxjs from "../../lib/rx.js";
 export function renderLeaf({ format, label, description, type }) {
     if (label === "banner") return createElement(`
         <div class="banner">
-            ${description}
+            ${fromMarkdown(description)}
         </div>
     `);
     const $el = createElement(`
@@ -29,6 +29,12 @@ export function renderLeaf({ format, label, description, type }) {
     return $el;
 }
 
+function fromMarkdown(str = "") {
+    str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "<a href=\"$2\">$1</a>");
+    str = str.replaceAll("\n", "<br>");
+    return str;
+}
+
 export function useForm$($inputNodeList) {
     return rxjs.pipe(
         rxjs.mergeMap(() => $inputNodeList()),
@@ -40,12 +46,19 @@ export function useForm$($inputNodeList) {
             }
             return rxjs.of($el);
         }),
-        rxjs.map((e) => ({
+        rxjs.mergeMap(async(e) => ({
             name: e.target.getAttribute("name"),
-            value: (function() {
+            value: await (async function() {
                 switch (e.target.getAttribute("type")) {
                 case "checkbox":
                     return e.target.checked;
+                case "file":
+                    if (e.target.files.length === 0) return null;
+                    return await new Promise((done) => {
+                        const reader = new window.FileReader();
+                        reader.readAsDataURL(e.target.files[0]);
+                        reader.onload = () => done(reader.result);
+                    });
                 default:
                     return e.target.value;
                 }

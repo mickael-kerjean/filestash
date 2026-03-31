@@ -3,7 +3,6 @@ package plg_security_svg
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"regexp"
 )
@@ -31,22 +30,22 @@ func init() {
 		if disable_svg() == false {
 			return
 		}
-		Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+		Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, bool, error) {
 			if GetMimeType(req.URL.Query().Get("path")) != "image/svg+xml" {
-				return reader, nil
+				return reader, false, nil
 			} else if disable_svg() == false {
-				return reader, nil
+				return reader, false, nil
 			}
 
 			// XSS
 			(*res).Header().Set("Content-Security-Policy", "script-src 'none'; default-src 'none'; img-src 'self'")
 			(*res).Header().Set("Content-Type", "text/plain")
 			// XML bomb
-			txt, _ := ioutil.ReadAll(reader)
+			txt, _ := io.ReadAll(reader)
 			if regexp.MustCompile("(?is)entity").Match(txt) {
 				txt = []byte("")
 			}
-			return NewReadCloserFromBytes(txt), nil
+			return NewReadCloserFromBytes(txt), true, nil
 		})
 	})
 }

@@ -1,7 +1,7 @@
 import { createElement, onDestroy } from "../../../lib/skeleton/index.js";
 import { OrbitControls } from "../../../lib/vendor/three/OrbitControls.js";
 
-export default function({ THREE, $page, $menubar, mesh, refresh, is2D }) {
+export default function({ THREE, $page, $menubar, mesh, refresh, is2D, background }) {
     // setup the dom
     const renderer = new THREE.WebGLRenderer({ antialias: true, shadowMapEnabled: true });
     renderer.shadowMap.enabled = true;
@@ -19,7 +19,7 @@ export default function({ THREE, $page, $menubar, mesh, refresh, is2D }) {
 
     // setup the scene, camera and controls
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf2f2f4);
+    scene.background = new THREE.Color(background);
     const camera = new THREE.PerspectiveCamera(
         45,
         $page.clientWidth / $page.clientHeight,

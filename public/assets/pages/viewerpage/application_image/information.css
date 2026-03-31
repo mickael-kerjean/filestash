@@ -1,3 +1,6 @@
+.component_imageviewer .images_aside button {
+    padding: 0;
+}
 .component_imageviewer .images_aside component-icon[name="loading"] {
     display: block;
     text-align: center;

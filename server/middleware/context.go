@@ -2,17 +2,16 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"io/ioutil"
+	"io"
 	"net/http"
-	"strings"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func BodyParser(fn HandlerFunc) HandlerFunc {
 	extractBody := func(req *http.Request) (map[string]interface{}, error) {
 		body := map[string]interface{}{}
-		byt, err := ioutil.ReadAll(req.Body)
+		byt, err := io.ReadAll(req.Body)
 		if err != nil {
 			return body, err
 		}
@@ -33,8 +32,4 @@ func BodyParser(fn HandlerFunc) HandlerFunc {
 		}
 		fn(ctx, res, req)
 	})
-}
-
-func GenerateRequestID(prefix string) string {
-	return fmt.Sprintf("%s::%s", prefix, strings.ToUpper(QuickString(15)))
 }

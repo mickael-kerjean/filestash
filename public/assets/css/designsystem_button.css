@@ -3,12 +3,12 @@ button {
   margin: 0;
   padding: 6px;
   display: inline-block;
-  outline: none;
   cursor: pointer;
   font-size: inherit;
   border-radius: 3px;
   color: rgba(0,0,0,0.6);
   background: inherit;
+  line-height: 1rem;
 }
 button.primary {
     background: var(--primary);

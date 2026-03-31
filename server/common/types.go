@@ -11,6 +11,7 @@ import (
 type IBackend interface {
 	Init(params map[string]string, app *App) (IBackend, error)
 	Ls(path string) ([]os.FileInfo, error)
+	Stat(path string) (os.FileInfo, error)
 	Cat(path string) (io.ReadCloser, error)
 	Mkdir(path string) error
 	Rm(path string) error
@@ -30,6 +31,7 @@ type IAuthentication interface {
 type IAuthorisation interface {
 	Ls(ctx *App, path string) error
 	Cat(ctx *App, path string) error
+	Stat(ctx *App, path string) error
 	Mkdir(ctx *App, path string) error
 	Rm(ctx *App, path string) error
 	Mv(ctx *App, from string, to string) error
@@ -67,6 +69,52 @@ type AuditQueryResult struct {
 	RenderHTML string `json:"render"`
 }
 
+const (
+	MetaModeTag = 1 << iota
+	MetaModeBookmark
+	MetaModeForm
+)
+
+type IMetadata interface {
+	Get(ctx *App, path string) ([]FormElement, error)
+	Set(ctx *App, path string, value []FormElement) error
+	Search(ctx *App, path string, facets map[string]any) (map[string][]FormElement, error)
+}
+
+type ITrigger interface {
+	Manifest() WorkflowSpecs
+	Init() (chan ITriggerEvent, error)
+}
+
+type IAction interface {
+	Manifest() WorkflowSpecs
+	Execute(params map[string]string, input map[string]string) (map[string]string, error)
+}
+
+type IDirectoryService interface {
+	Search(query string) ([]DirectoryUser, error)
+}
+
+type DirectoryUser struct {
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+type ITriggerEvent interface {
+	WorkflowID() string
+	Input() map[string]string
+}
+
+type WorkflowSpecs struct {
+	Name     string `json:"name"`
+	Title    string `json:"title"`
+	Subtitle string `json:"subtitle"`
+	Icon     string `json:"icon"`
+	Specs    Form   `json:"specs"`
+	Order    int    `json:"-"`
+}
+
 type File struct {
 	FName   string `json:"name"`
 	FType   string `json:"type"`
@@ -86,7 +134,7 @@ func (f File) Mode() os.FileMode {
 	if f.IsDir() {
 		return os.ModeDir
 	}
-	return 0
+	return os.FileMode(0664)
 }
 func (f File) ModTime() time.Time {
 	if f.FTime == 0 {

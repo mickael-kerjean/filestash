@@ -5,14 +5,16 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"encoding/json"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/gomail.v2"
-	"html/template"
-	sqlite "modernc.org/sqlite"
 	"net/http"
 	"strings"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
+
+	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/gomail.v2"
+	"html/template"
 )
 
 type Proof struct {
@@ -29,6 +31,23 @@ func ShareList(backend string, path string) ([]Share, error) {
 		return nil, err
 	}
 	rows, err := stmt.Query(backend, path)
+	if err != nil {
+		return nil, err
+	}
+	sharedFiles := []Share{}
+	for rows.Next() {
+		var a Share
+		var params []byte
+		rows.Scan(&a.Id, &a.Path, &params)
+		json.Unmarshal(params, &a)
+		sharedFiles = append(sharedFiles, a)
+	}
+	rows.Close()
+	return sharedFiles, nil
+}
+
+func ShareAll() ([]Share, error) {
+	rows, err := DB.Query("SELECT id, related_path, params FROM Share")
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +101,7 @@ func ShareUpsert(p *Share) error {
 	_, err = stmt.Exec(p.Backend, p.Path)
 	if err != nil {
 		throw := true
-		errConstraintPrimaryKey := 1555
-		if ferr, ok := err.(*sqlite.Error); ok == true && ferr.Code() == errConstraintPrimaryKey {
+		if sqlite.IsConstraint(err) {
 			throw = false
 		}
 		if throw == true {
@@ -615,7 +633,7 @@ func TmplEmailVerification() string {
               <table border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="content-block powered-by">
-                    Powered by <a href="http://github.com/mickael-kerjean/filestash">Filestash</a>.
+                    ` + WhiteLabelText(`Powered by <a href="https://www.filestash.app">Filestash</a>.`, APPNAME) + `
                   </td>
                 </tr>
               </table>

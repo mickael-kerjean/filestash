@@ -13,7 +13,7 @@ export default function(render) {
     let hasBack = window.self === window.top;
     if (!render) {
         render = createRender(document.body);
-        try { render = createRender(qs(document.body, "[role=\"main\"]")); }
+        try { render = createRender(qs(document.body, "#app")); }
         catch (err) { hasBack = false; }
     }
 
@@ -71,7 +71,7 @@ export default function(render) {
 function processError(err) {
     let msg, trace;
     if (err instanceof AjaxError) {
-        msg = t(err.code());
+        msg = t(err.message);
         trace = `
 type:    ${err.type()}
 code:    ${err.code()}

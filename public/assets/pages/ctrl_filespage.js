@@ -1,14 +1,15 @@
-import { createElement, createRender } from "../lib/skeleton/index.js";
+import { createElement, createRender, onDestroy } from "../lib/skeleton/index.js";
 import { navigate } from "../lib/skeleton/router.js";
 import { qs } from "../lib/dom.js";
+import assert from "../lib/assert.js";
 import { loadCSS } from "../helpers/loader.js";
 import WithShell, { init as initShell } from "../components/decorator_shell_filemanager.js";
+import t from "../locales/index.js";
 
 import componentFilesystem, { init as initFilesystem } from "./filespage/ctrl_filesystem.js";
 import componentSubmenu, { init as initSubmenu } from "./filespage/ctrl_submenu.js";
 import componentNewItem, { init as initNewItem } from "./filespage/ctrl_newitem.js";
 import componentUpload, { init as initUpload } from "./filespage/ctrl_upload.js";
-import { init as initCache } from "./filespage/cache.js";
 import { init as initState } from "./filespage/state_config.js";
 import { init as initThing } from "./filespage/thing.js";
 
@@ -41,12 +42,22 @@ export default WithShell(function(render) {
 
     // feature4: render the upload button
     componentUpload(createRender(qs($page, "[is=\"component_upload\"]")));
+
+    // feature5: accessibility / skip links
+    const $skip = createElement(`<a aria-role="navigation" href="#main">${t("Skip to content")}</a>`);
+    $skip.onclick = (e) => {
+        e.preventDefault();
+        const $content = document.querySelector("main a");
+        if ($content) assert.type($content, HTMLElement).focus();
+    };
+    document.body.prepend($skip);
+    onDestroy(() => $skip.remove());
 });
 
 export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "ctrl_filespage.css"),
-        initShell(), initFilesystem(), initCache(),
+        initShell(), initFilesystem(),
         initSubmenu(), initNewItem(), initUpload(),
         initState(), initThing(),
     ]);

@@ -5,9 +5,9 @@ import (
 )
 
 func formatRole(s string) string {
-	arr := strings.Split(strings.ToLower(s), ",")
+	arr := strings.Split(s, ",")
 	for i := range arr {
-		arr[i] = strings.TrimSpace(strings.ToLower(arr[i]))
+		arr[i] = strings.TrimSpace(arr[i])
 	}
 	return strings.Join(arr, ", ")
 }

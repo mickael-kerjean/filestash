@@ -6,7 +6,6 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -158,11 +157,11 @@ func (this ArtifactoryStorage) Ls(path string) ([]os.FileInfo, error) {
 		return nil, err
 	}
 	req.Header.Add("Authorization", "Bearer "+this.token)
-	res, err := HTTPClient.Do(req)
+	res, err := HTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::ls readall data[%s] status[%d]", string(jsonStr), res.StatusCode)
@@ -172,6 +171,10 @@ func (this ArtifactoryStorage) Ls(path string) ([]os.FileInfo, error) {
 		return []os.FileInfo{}, ErrNotValid
 	}
 	return parse(jsonStr)
+}
+
+func (this ArtifactoryStorage) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
 }
 
 func (this ArtifactoryStorage) Cat(path string) (io.ReadCloser, error) {
@@ -186,11 +189,11 @@ func (this ArtifactoryStorage) Cat(path string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	req.Header.Add("Authorization", "Bearer "+this.token)
-	res, err := HTTPClient.Do(req)
+	res, err := HTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::cat readall data[%s] status[%d]", string(jsonStr), res.StatusCode)
@@ -228,7 +231,7 @@ func (this ArtifactoryStorage) Cat(path string) (io.ReadCloser, error) {
 	}
 	req, err = http.NewRequest("GET", artifactoryResponse.DownloadLink, nil)
 	req.Header.Add("Authorization", "Bearer "+this.token)
-	res, err = HTTPClient.Do(req)
+	res, err = HTTPClient().Do(req)
 	return res.Body, err
 }
 
@@ -265,11 +268,11 @@ func (this ArtifactoryStorage) Mkdir(path string) error {
 	}
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", "Bearer "+this.token)
-	res, err := HTTPClient.Do(req)
+	res, err := HTTPClient().Do(req)
 	if err != nil {
 		return err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::mkdir readall status[%d] data[%s]", res.StatusCode, string(jsonStr))
@@ -303,11 +306,11 @@ func (this ArtifactoryStorage) Rm(path string) error {
 		return err
 	}
 	req.Header.Add("Authorization", "Bearer "+this.token)
-	res, err := HTTPClient.Do(req)
+	res, err := HTTPClient().Do(req)
 	if err != nil {
 		return err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::rm readall status[%d] data[%s]", res.StatusCode, string(jsonStr))
@@ -332,11 +335,11 @@ func (this ArtifactoryStorage) Mv(from, to string) error {
 		return err
 	}
 	req.Header.Add("Authorization", "Bearer "+this.token)
-	res, err := HTTPClient.Do(req)
+	res, err := HTTPClient().Do(req)
 	if err != nil {
 		return err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::mv readall status[%d] data[%s]", res.StatusCode, string(jsonStr))
@@ -363,11 +366,11 @@ func (this ArtifactoryStorage) Save(path string, content io.Reader) error {
 		return err
 	}
 	req.Header.Add("Authorization", "Bearer "+this.token)
-	res, err := HTTPClient.Do(req)
+	res, err := HTTPClient().Do(req)
 	if err != nil {
 		return err
 	}
-	jsonStr, err := ioutil.ReadAll(res.Body)
+	jsonStr, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		Log.Debug("plg_backend_artifactory::save readall status[%d] data[%s]", res.StatusCode, string(jsonStr))

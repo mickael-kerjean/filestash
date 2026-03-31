@@ -1,0 +1,237 @@
+.component_page_workflow .pull-right {
+    float: right;
+}
+.component_page_workflow button {
+    font-size: 0.9rem;
+    padding: 3px 5px;
+    margin: 0 2px;
+}
+.component_page_workflow h2 input {
+    padding: 0 0 0 20px;
+    border: none;
+    font-family: inherit;
+    color: inherit;
+    font-size: inherit;
+    width: 100%;
+    position: relative;
+    bottom: 2px;
+}
+.component_page_workflow .box {
+    display: block;
+    background: white;
+    border: 2px solid #ebebec;
+    border-style: solid;
+    border-radius: 5px;
+    margin: 15px 0 0 0;
+    padding: 15px;
+    overflow: visible;
+}
+.component_page_workflow .box.disabled {
+    background: var(--border);
+}
+.component_page_workflow .box h3 {
+    font-weight: 600;
+    margin: 0;
+}
+.component_page_workflow .box h3 span {
+    font-weight: 300;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--light);
+}
+.component_page_workflow .box svg {
+    float: left;
+    width: 25px;
+    fill: var(--light);
+    opacity: 0.8;
+}
+.component_page_workflow .box .workflow-summary button {
+    color: var(--light);
+}
+.component_page_workflow hr {
+    border: none;
+    height: 30px;
+    margin: 0 0 -15px 0;
+    position: relative;
+}
+.component_page_workflow hr:after {
+    content: " ";
+    position: absolute;
+    left: 26px;
+    top: 0;
+    bottom: 0;
+    border-right: 4px dashed rgba(0, 0, 0, 0.2);
+    border-right-style: dotted;
+}
+.component_page_workflow .box [data-bind="form"] {
+    overflow: hidden;
+}
+.component_page_workflow .box [data-bind="form"] .formbuilder {
+    padding: 10px 10px 0px 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    border-top: 2px solid #ebebec;
+    background: transparent;
+}
+.component_page_workflow .box.disabled [data-bind="form"] .formbuilder {
+    border-color: var(--border);
+}
+.component_page_workflow .box [data-bind="form"] .formbuilder:empty {
+    display: none;
+}
+
+.component_page_workflow .box h3 button.pull-right {
+    padding: 0;
+    margin: 0;
+}
+
+/* details page buttons */
+.component_page_workflow .box button[alt="delete"] {
+    position: absolute;
+    top: -13px;
+    right: -13px;
+}
+.component_page_workflow .box button[alt="delete"] svg {
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--border);
+    background: #ebebec;
+    fill: var(--light);
+    padding: 5px;
+    border-radius: 15px;
+}
+
+/* list page */
+.component_page_workflow h3.empty {
+    padding: 30px;
+    background: white;
+    border: 2px dashed var(--color);
+    text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    font-weight: 600;
+    color: var(--color);
+    text-transform: uppercase;
+    font-size: 1.05rem;
+    letter-spacing: -0.5px;
+    opacity: 0.4;
+    cursor: pointer;
+}
+
+/* Workflow creation modal */
+.component_workflow_create {
+    font-size: 1rem;
+}
+.component_workflow_create h2 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    color: var(--light);
+}
+.component_workflow_create form {
+    margin-bottom: 15px;
+}
+.component_workflow_create form input {
+    font-size: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    padding: 5px 10px;
+    color: rgba(0,0,0,0.75);
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+    margin-bottom: 5px;
+}
+.component_workflow_create form input::placeholder {
+    color: rgba(0,0,0,0.4);
+}
+.component_workflow_create [data-bind="list"] {
+    overflow: hidden;
+}
+.component_workflow_create [data-bind="list"] .item {
+    color: var(--color);
+    background: #f2f2f2;
+    transition: all 0.1s ease;
+    padding: 5px 5px 5px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    letter-spacing: -0.5px;
+    margin-top: 2px;
+    align-items: center;
+}
+.component_workflow_create [data-bind="list"] .item svg {
+    height: 20px;
+    margin-right: 5px;
+    fill: var(--light);
+}
+
+/* save button */
+.workflow-fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--emphasis);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+.workflow-fab select {
+    background: var(--emphasis);
+    color: var(--bg-color);
+    font-family: monospace;
+    border: none;
+    padding-left: 10px;
+    padding-right: 5px;
+    text-align: right;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 10px;
+    font-weight: 600;
+}
+.workflow-fab button > * {
+    height: 30px;
+    fill: var(--bg-color);
+    padding: 7px;
+}
+.workflow-fab button > component-icon img {
+    filter: brightness(0) invert(1);
+}
+
+/* ADD BUTTON */
+.component_page_workflow [data-bind="add"] {
+    display: inline-block;
+}
+.component_page_workflow [data-bind="add"] .box {
+    align-items: center;
+    background: var(--emphasis);
+    display: flex;
+    padding: 4px 0px 2px 0px;
+    position: relative;
+    left: 5px;
+    overflow-x: scroll;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    border-width: 0;
+}
+.component_page_workflow [data-bind="add"] .box button {
+    color: var(--bg-color);
+    font-family: monospace;
+    text-transform: uppercase;
+    background:var(--border);
+    font-size: 0.85rem;
+    letter-spacing: -0.5px;
+    margin-right: 5px;
+}
+.component_page_workflow [data-bind="add"] .box svg {
+    margin-right: 0;
+    fill: var(--bg-color);
+    transition: transform 0.2s ease;
+}
+.component_page_workflow [data-bind="add"] .box > .item {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: transparent;
+    backdrop-filter: blur(2px);
+    padding: 3px 8px;
+}
+.component_page_workflow [data-bind="add"] .box > .flex {
+    padding: 0 5px 0 0;
+    margin-left: -5px;
+}

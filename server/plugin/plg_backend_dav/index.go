@@ -5,7 +5,6 @@ import (
 	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -112,6 +111,10 @@ func (this Dav) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (this Dav) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (this Dav) Cat(path string) (io.ReadCloser, error) {
 	var uri string
 	var err error
@@ -201,7 +204,7 @@ func (this Dav) Mv(from string, to string) error {
 	if err != nil {
 		return err
 	}
-	d, err := ioutil.ReadAll(reader)
+	d, err := io.ReadAll(reader)
 	if err != nil {
 		return ErrNotValid
 	}
@@ -373,7 +376,7 @@ func (this Dav) request(method string, url string, body io.Reader, fn func(req *
 	if fn != nil {
 		fn(req)
 	}
-	res, err := HTTPClient.Do(req)
+	res, err := HTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	} else if res.StatusCode > 400 {

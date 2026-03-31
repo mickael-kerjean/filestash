@@ -1,6 +1,16 @@
 [is="component_filesystem"] .component_filesystem {
     padding-top: 3px;
 }
+[is="component_filesystem"] .component_filesystem [data-target="dragselect"] {
+    position: fixed;
+    border-radius: 2px;
+    z-index: 3;
+    background: var(--primary);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    opacity: 0.25;
+    width: 500px;
+    height: 100px;
+}
 [is="component_filesystem"] .component_filesystem [data-type="list"] {
     grid-gap: 2px;
 }

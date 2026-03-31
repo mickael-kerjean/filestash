@@ -11,12 +11,11 @@ import (
 
 func init() {
 	Hooks.Register.AuthenticationMiddleware("local", SimpleAuth{})
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
-		r.Handle("/admin/simple-user-management", http.RedirectHandler("/admin/api/simple-user-management", http.StatusSeeOther)).Methods("GET")
-		r.HandleFunc("/admin/api/simple-user-management", middleware.NewMiddlewareChain(
+	Hooks.Register.HttpEndpoint(func(r *mux.Router) error {
+		r.Handle(WithBase("/admin/simple-user-management"), http.RedirectHandler(WithBase("/admin/api/simple-user-management"), http.StatusSeeOther)).Methods("GET")
+		r.HandleFunc(WithBase("/admin/api/simple-user-management"), middleware.NewMiddlewareChain(
 			UserManagementHandler,
 			[]Middleware{middleware.AdminOnly},
-			*app,
 		)).Methods("GET", "POST", "DELETE", "PATCH")
 		return nil
 	})
@@ -25,17 +24,9 @@ func init() {
 type User struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	Role     string `json:"role"`
-	Disabled bool   `json:"disabled"`
+	Role     string `json:"role,omitempty"`
+	Disabled bool   `json:"disabled,omitempty"`
 
 	Code string `json:"-"`
-	MFA  string `json:"mfa"`
-}
-
-type pluginConfig struct {
-	DB      string `json:"db"`
-	MFA     string `json:"mfa"`
-	Users   []User `json:"-"`
-	Subject string `json:"notification_subject"`
-	Body    string `json:"notification_body"`
+	MFA  string `json:"mfa,omitempty"`
 }

@@ -68,6 +68,10 @@ func (this BlackHole) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (this BlackHole) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (this BlackHole) Cat(path string) (io.ReadCloser, error) {
 	path = strings.TrimPrefix(path, "/")
 	if strings.HasSuffix(path, ".bin") == false {
@@ -105,7 +109,7 @@ func (this BlackHole) Mv(from, to string) error {
 }
 
 func (this BlackHole) Save(path string, content io.Reader) error {
-	b := make([]byte, 32<<20) // 32MB
+	b := make([]byte, 32*1024*1024) // 32MB
 	for {
 		_, err := content.Read(b)
 		if err == io.EOF {

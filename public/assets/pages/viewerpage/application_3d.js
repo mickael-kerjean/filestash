@@ -1,6 +1,6 @@
 import { createElement, createRender, nop } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
-import { qs } from "../../lib/dom.js";
+import { qs, safe } from "../../lib/dom.js";
 import { AjaxError } from "../../lib/error.js";
 import { load as loadPlugin } from "../../model/plugin.js";
 import { loadCSS } from "../../helpers/loader.js";
@@ -19,13 +19,14 @@ import ctrlToolbar from "./application_3d/toolbar.js";
 class I3DLoader {
     load() { throw new Error("NOT_IMPLEMENTED"); }
     transform() { throw new Error("NOT_IMPLEMENTED"); }
+    background() { return 0xf2f2f4; }
     is2D() { return false; }
 }
 
 export default async function(render, { mime, acl$, getDownloadUrl = nop, getFilename = nop, hasCube = true, hasMenubar = true }) {
     const $page = createElement(`
         <div class="component_3dviewer">
-            <component-menubar filename="${getFilename() || ""}" class="${!hasMenubar && "hidden"}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="threeviewer_container">
               <div class="drawarea"></div>
               <div class="toolbar scroll-y"></div>
@@ -57,7 +58,16 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
             (err) => observer.error(err),
         )).pipe(
             removeLoader,
-            rxjs.mergeMap((mesh) => create3DScene({ mime, mesh, is2D: loader.is2D, $draw, $toolbar, $menubar, hasCube })),
+            rxjs.mergeMap((mesh) => create3DScene({
+                mime,
+                mesh,
+                is2D: loader.is2D,
+                background: loader.background(),
+                $draw,
+                $toolbar,
+                $menubar,
+                hasCube,
+            })),
         )),
         rxjs.catchError((err) => {
             let _err = err;
@@ -72,7 +82,7 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
     ));
 }
 
-function create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube, is2D }) {
+function create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube, is2D, background }) {
     const refresh = [];
     const { renderer, camera, scene, controls, box } = setup3D({
         THREE,
@@ -81,6 +91,7 @@ function create3DScene({ mesh, $draw, $toolbar, $menubar, hasCube, is2D }) {
         refresh,
         $menubar,
         is2D,
+        background,
     });
 
     withLight({ scene, box, camera });

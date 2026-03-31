@@ -11,7 +11,7 @@ import { isLoading } from "./model_audit.js";
 
 import "../../components/icon.js";
 
-export default function(ctrl) {
+export default function(ctrl, opts = {}) {
     return async function(render) {
         const $page = createElement(`
             <div class="component_page_admin">
@@ -26,18 +26,23 @@ export default function(ctrl) {
                     <h2>Admin console</h2>
                     <ul>
                         <li>
-                            <a href="${toHref("/admin/backend")}" data-link>
-                                Backend
+                            <a href="${toHref("/admin/storage")}" data-link>
+                                Storage
+                            </a>
+                        </li>
+                        <li>
+                            <a href="${toHref("/admin/workflow")}" data-link>
+                                Workflow
+                            </a>
+                        </li>
+                        <li>
+                            <a href="${toHref("/admin/activity")}" data-link>
+                                Activity
                             </a>
                         </li>
                         <li>
                             <a href="${toHref("/admin/settings")}" data-link>
                                 Settings
-                            </a>
-                        </li>
-                        <li>
-                            <a href="${toHref("/admin/logs")}" data-link>
-                                Logs
                             </a>
                         </li>
                         <li class="version">
@@ -53,12 +58,13 @@ export default function(ctrl) {
         render($page);
 
         // feature: setup the childrens
-        ctrl(createRender(qs($page, "[data-bind=\"admin\"]")));
+        ctrl(createRender(qs($page, "[data-bind=\"admin\"]")), opts);
 
         // feature: display the release version
         effect(getRelease().pipe(
             rxjs.map(({ version }) => version),
-            stateMutation(qs($page, "[data-bind=\"version\"]"), "textContent")
+            stateMutation(qs($page, "[data-bind=\"version\"]"), "textContent"),
+            rxjs.catchError(() => rxjs.EMPTY),
         ));
 
         // feature: logo serving as loading indicator

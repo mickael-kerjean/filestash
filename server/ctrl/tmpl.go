@@ -1,11 +1,13 @@
 package ctrl
 
 import (
+	"bytes"
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"os"
 	"regexp"
 	"strings"
 	"text/template"
@@ -14,6 +16,41 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+func TmplExec(params string, input map[string]string) (string, error) {
+	if params == "" {
+		return "", nil
+	}
+	tmpl, err := template.
+		New("ctrl::session::auth_middleware").
+		Funcs(tmplFuncs).
+		Parse(params)
+	if err != nil {
+		Log.Debug("tmpl::execute action=parse err=%s", err.Error())
+		return params, err
+	}
+	var b bytes.Buffer
+	if err = tmpl.Execute(&b, input); err != nil {
+		Log.Debug("tmpl::execute action=execute err%s", err.Error())
+		return params, err
+	}
+	return b.String(), nil
+}
+
+func TmplParams(data map[string]string) map[string]string {
+	out := map[string]string{}
+	for key, value := range data {
+		out[key] = value
+	}
+	out["machine_id"] = GenerateMachineID()
+	for _, value := range os.Environ() {
+		pair := strings.SplitN(value, "=", 2)
+		if len(pair) == 2 {
+			out[fmt.Sprintf("ENV_%s", pair[0])] = pair[1]
+		}
+	}
+	return out
+}
 
 var tmplFuncs = template.FuncMap{
 	"split": func(s, sep string) []string {
@@ -115,7 +152,19 @@ var tmplFuncs = template.FuncMap{
 		}
 		return strings.Join(chunks, ", "), nil
 	},
-	"encryptGCM": func(str string, key string) (string, error) {
+	"debug": func(data string) (string, error) {
+		Log.Debug("ctrl/tmpl data=%s", data)
+		return data, nil
+	},
+	"decryptGCM": func(key string, str string) (string, error) {
+		t, err := base64.StdEncoding.DecodeString(str)
+		if err != nil {
+			return "", err
+		}
+		d, err := DecryptAESGCM([]byte(key), t)
+		return string(d), err
+	},
+	"encryptGCM": func(key string, str string) (string, error) {
 		data, err := EncryptAESGCM([]byte(key), []byte(str))
 		return base64.StdEncoding.EncodeToString(data), err
 	},
@@ -179,6 +228,21 @@ var tmplFuncs = template.FuncMap{
 				return "", nil
 			}
 		}
-		return fmt.Sprintf("%v", data[filters[len(filters)-1]]), nil
+		switch val := data[filters[len(filters)-1]].(type) {
+		case []any:
+			valStr := make([]string, len(val))
+			for i := range val {
+				valStr[i] = fmt.Sprintf("%v", val[i])
+			}
+			return strings.Join(valStr, ", "), nil
+		default:
+			return fmt.Sprintf("%v", val), nil
+		}
+	},
+	"toLower": func(data string) (string, error) {
+		return strings.ToLower(data), nil
+	},
+	"toUpper": func(data string) (string, error) {
+		return strings.ToUpper(data), nil
 	},
 }

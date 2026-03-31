@@ -2,9 +2,9 @@ package model
 
 import (
 	"database/sql"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	_ "modernc.org/sqlite"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 var DB *sql.DB
@@ -12,7 +12,7 @@ var DB *sql.DB
 func init() {
 	Hooks.Register.Onload(func() {
 		var err error
-		if DB, err = sql.Open("sqlite", GetAbsolutePath(DB_PATH)+"/share.sql?_fk=true"); err != nil {
+		if DB, err = sql.Open("sqlite3", GetAbsolutePath(DB_PATH)+"/share.sql?_fk=true"); err != nil {
 			Log.Error("model::index sqlite open error '%s'", err.Error())
 			return
 		}

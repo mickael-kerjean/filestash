@@ -1,11 +1,11 @@
 .component_skeletonviewer {
-    background: #52565911;
+    background: var(--bg-color);
 }
 .component_skeleton_container {
     height: 100%;
     width: 100%;
+    position: relative;
 }
-
 .component_skeleton_container > .component_loader {
     width: 100%;
 }

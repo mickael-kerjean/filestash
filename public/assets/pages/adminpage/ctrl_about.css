@@ -2,32 +2,36 @@
   padding-top: 50px;
   overflow-x: auto;
 }
+.component_page_about tr {
+    display: block;
+    background: white;
+    border: 2px solid #ebebec;
+    border-style: solid;
+    border-radius: 5px;
+    margin: 15px 0 0 0;
+    padding: 10px 15px;
+    color: var(--light);
+    font-size: 0.9rem;
+}
+.component_page_about td {
+    display: block;
+    min-width: 100%;
+}
+.component_page_about td:first-of-type {
+    font-weight: 600;
+    color: var(--color);
+    text-transform: capitalize;
+    font-size: 1.05rem;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+}
 .component_page_about .small {
+    display: block;
+    margin-left: 20px;
     font-size: 0.9rem;
     padding: 0px 2px;
 }
-.component_page_about a {
-    padding: 0 2px;
-}
-.component_page_about a:hover {
-    background: rgba(0, 0, 0, 0.05);
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-}
-.component_page_about table {
-    border-spacing: 0px 20px;
-}
-.component_page_about td {
-    vertical-align: top;
-}
-.component_page_about td br {
-    content: "";
-    margin: 15px;
-    display: block;
-}
-.component_page_about td:first-of-type {
-    font-weight: bold;
-}
-.component_page_about td:first-of-type:after {
-    content: ": ";
+.component_page_admin .page_container .component_page_about a {
+    color: var(--ligh);
 }

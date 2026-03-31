@@ -33,14 +33,14 @@ func sendInvitateMail(user User) error {
 	cfg, err := getPluginData()
 	if err != nil {
 		return err
-	} else if cfg.Subject == "" || cfg.Body == "" {
+	} else if cfg.GetMailSubject() == "" || cfg.GetMailBody() == "" {
 		return nil
 	}
 	m := gomail.NewMessage()
 	m.SetHeader("From", Config.Get("email.from").String())
 	m.SetHeader("To", user.Email)
-	m.SetHeader("Subject", withTemplate(cfg.Subject, user))
-	m.SetBody("text/plain", withTemplate(cfg.Body, user))
+	m.SetHeader("Subject", withTemplate(cfg.GetMailSubject(), user))
+	m.SetBody("text/plain", withTemplate(cfg.GetMailBody(), user))
 	d := gomail.NewDialer(
 		Config.Get("email.server").String(),
 		Config.Get("email.port").Int(),
@@ -62,9 +62,10 @@ func withTemplate(in string, user User) string {
 		return in
 	}
 	tmpl.Execute(&b, map[string]string{
-		"user":     user.Email,
-		"password": user.Password,
-		"role":     user.Role,
+		"instance_url": Config.Get("general.host").String(),
+		"user":         user.Email,
+		"password":     user.Password,
+		"role":         user.Role,
 	})
 	return b.String()
 }

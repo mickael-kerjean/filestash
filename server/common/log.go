@@ -13,14 +13,14 @@ var (
 	logfile *os.File
 )
 
-func InitLogger() {
-	var err error
+func InitLogger() (err error) {
 	logfile, err = os.OpenFile(GetAbsolutePath(LOG_PATH, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		slog.Printf("ERROR log file: %+v", err)
-		return
+		return err
 	}
 	logfile.WriteString("")
+	return nil
 }
 
 type log struct {
@@ -37,7 +37,7 @@ func (l *log) Info(format string, v ...interface{}) {
 		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
-		fmt.Printf(strings.Replace(message, "%", "%%", -1))
+		fmt.Print(strings.Replace(message, "%", "%%", -1))
 	}
 }
 
@@ -47,7 +47,7 @@ func (l *log) Warning(format string, v ...interface{}) {
 		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
-		fmt.Printf(strings.Replace(message, "%", "%%", -1))
+		fmt.Print(strings.Replace(message, "%", "%%", -1))
 	}
 }
 
@@ -57,7 +57,7 @@ func (l *log) Error(format string, v ...interface{}) {
 		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
-		fmt.Printf(strings.Replace(message, "%", "%%", -1))
+		fmt.Print(strings.Replace(message, "%", "%%", -1))
 	}
 }
 
@@ -67,7 +67,7 @@ func (l *log) Debug(format string, v ...interface{}) {
 		message = fmt.Sprintf(message+format+"\n", v...)
 
 		logfile.WriteString(message)
-		fmt.Printf(strings.Replace(message, "%", "%%", -1))
+		fmt.Print(strings.Replace(message, "%", "%%", -1))
 	}
 }
 
@@ -76,7 +76,7 @@ func (l *log) Stdout(format string, v ...interface{}) {
 	message = fmt.Sprintf(message+format+"\n", v...)
 
 	logfile.WriteString(message)
-	fmt.Printf(strings.Replace(message, "%", "%%", -1))
+	fmt.Print(strings.Replace(message, "%", "%%", -1))
 }
 
 func (l *log) now() string {

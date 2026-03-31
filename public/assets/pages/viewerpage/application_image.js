@@ -4,7 +4,7 @@ import rxjs, { effect, onLoad, onClick } from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 import { animate } from "../../lib/animate.js";
 import { extname } from "../../lib/path.js";
-import { qs } from "../../lib/dom.js";
+import { qs, safe } from "../../lib/dom.js";
 import { get as getConfig } from "../../model/config.js";
 import { load as loadPlugin } from "../../model/plugin.js";
 import { Chromecast } from "../../model/chromecast.js";
@@ -28,7 +28,7 @@ class IImage {
 export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar = true, acl$ }) {
     const $page = createElement(`
         <div class="component_imageviewer">
-            <component-menubar filename="${getFilename()}" class="${!hasMenubar && "hidden"}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="component_image_container">
                 <div class="images_wrapper no-select">
                     <img class="photo idle hidden" draggable="false" />
@@ -45,8 +45,10 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
     const $menubar = qs($page, "component-menubar");
     const removeLoader = createLoader($imgContainer);
     const load$ = new rxjs.BehaviorSubject(null);
-    const toggleInfo = () => {
-        qs($page, ".images_aside").classList.toggle("open");
+    const toggleInfo = ($button) => {
+        const $aside = qs($page, ".images_aside");
+        $aside.classList.toggle("open");
+        $button.setAttribute("aria-expanded", $aside.classList.contains("open") ? "true" : "false");
         componentInformation(createRender(qs($page, ".images_aside")), { toggle: toggleInfo, load$ });
     };
 
@@ -54,8 +56,8 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
         $menubar,
         buttonDownload(getFilename(), getDownloadUrl()),
         buttonFullscreen(qs($page, ".component_image_container")),
-        buttonInfo({ toggle: toggleInfo }),
-        buttonChromecast(getFilename(), getDownloadUrl()),
+        mime === "image/jpeg" && buttonInfo({ toggle: toggleInfo }),
+        ["image/jpeg", "image/png"].indexOf(mime) !== -1 && buttonChromecast(getFilename(), getDownloadUrl()),
     );
 
     effect(rxjs.from(loadPlugin(mime)).pipe(
@@ -74,7 +76,7 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
         rxjs.tap(() => {
             const cancel = animate($photo, {
                 onEnter: () => $photo.classList.remove("hidden"),
-                onExit: async () => (await cancel)(),
+                onExit: async() => (await cancel)(),
                 time: 300,
                 easing: "cubic-bezier(.51,.92,.24,1.15)",
                 keyframes: [
@@ -82,7 +84,7 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
                     { opacity: 1 },
                     { opacity: 1, transform: "scale(1)" },
                 ],
-            })
+            });
         }),
         rxjs.catchError((err) => {
             if (err.target instanceof HTMLElement && err.type === "error") {
@@ -112,20 +114,20 @@ export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_image.css"),
         loadCSS(import.meta.url, "./component_menubar.css"),
-        initPagination(), initInformation(),
+        initPagination(), initInformation(), Chromecast.init(),
     ]);
 }
 
 function buttonInfo({ toggle }) {
     const $el = createElement(`
-        <span>
+        <button aria-controls="pane-info" aria-expanded="false">
             <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZyB0cmFuc2Zvcm09Im1hdHJpeCgwLjg4MiwwLDAsMC44ODIsNS45LDUuOSkiPgogICAgPHBhdGggc3R5bGU9ImZpbGw6I2YyZjJmMjtmaWxsLW9wYWNpdHk6MSIgZD0ibSA2Mi4xNjIsMCBjIDYuNjk2LDAgMTAuMDQzLDQuNTY3IDEwLjA0Myw5Ljc4OSAwLDYuNTIyIC01LjgxNCwxMi41NTUgLTEzLjM5MSwxMi41NTUgLTYuMzQ0LDAgLTEwLjA0NSwtMy43NTIgLTkuODY5LC05Ljk0NyBDIDQ4Ljk0NSw3LjE3NiA1My4zNSwwIDYyLjE2MiwwIFogTSA0MS41NDMsMTAwIGMgLTUuMjg3LDAgLTkuMTY0LC0zLjI2MiAtNS40NjMsLTE3LjYxNSBsIDYuMDcsLTI1LjQ1NyBjIDEuMDU3LC00LjA3NyAxLjIzLC01LjcwNyAwLC01LjcwNyAtMS41ODgsMCAtOC40NTEsMi44MTYgLTEyLjUxLDUuNTkgTCAyNyw1Mi40MDYgQyAzOS44NjMsNDEuNDggNTQuNjYyLDM1LjA3MiA2MS4wMDQsMzUuMDcyIGMgNS4yODUsMCA2LjE2OCw2LjM2MSAzLjUyNSwxNi4xNDggTCA1Ny41OCw3Ny45OCBjIC0xLjIzNCw0LjcyOSAtMC43MDMsNi4zNTkgMC41MjcsNi4zNTkgMS41ODYsMCA2Ljc4NywtMS45NjMgMTEuODk2LC02LjA0MSBMIDczLDgyLjM3NyBDIDYwLjQ4OCw5NS4xIDQ2LjgzLDEwMCA0MS41NDMsMTAwIFoiIC8+CiAgPC9nPgo8L3N2Zz4K" alt="info">
-        </span>
+        </button>
     `);
     effect(rxjs.merge(
         onClick($el),
         rxjs.fromEvent(window, "keydown").pipe(rxjs.filter((e) => e.key === "i")),
-    ).pipe(rxjs.tap(toggle)));
+    ).pipe(rxjs.mapTo($el), rxjs.tap(toggle)));
     return $el;
 }
 

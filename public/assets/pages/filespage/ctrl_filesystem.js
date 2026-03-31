@@ -9,11 +9,11 @@ import { createLoader } from "../../components/loader.js";
 import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 
-import { currentPath, sort, isMobile } from "./helper.js";
+import { currentPath, sort, isMobile, isAlreadyFocused } from "./helper.js";
 import { createThing } from "./thing.js";
 import { clearSelection, addSelection, getSelection$, isSelected } from "./state_selection.js";
 import { getState$ } from "./state_config.js";
-import { ls, search } from "./model_files.js";
+import { ls, search, searchUrlParam } from "./model_files.js";
 import { getPermission } from "./model_acl.js";
 
 const ICONS = {
@@ -28,6 +28,7 @@ export const files$ = new rxjs.BehaviorSubject(null);
 export default async function(render) {
     const $page = createElement(`
         <div class="component_filesystem container">
+            <div data-target="dragselect" style="display:none;"></div>
             <div data-target="header" style="text-align:center;"></div>
 
             <div class="ifscroll-before"></div>
@@ -85,21 +86,24 @@ export default async function(render) {
                             files, ...state, ...rest,
                         })),
                     )),
-                    rxjs.finalize(() => effect(rxjs.of(null).pipe(removeLoader))),
+                    removeLoader,
+                    rxjs.tap(() => searchUrlParam(state.search)),
                 );
             }
+            searchUrlParam(null);
             return rxjs.of({ files, ...state, ...rest });
         }))),
         rxjs.mergeMap((obj) => getPermission(path).pipe(
             rxjs.map((permissions) => ({ ...obj, permissions })),
         )),
-        rxjs.mergeMap(({ show_hidden, files, ...rest }) => {
+        rxjs.mergeMap(({ show_hidden, files, search, ...rest }) => {
             if (show_hidden === false) files = files.filter(({ name }) => name[0] !== ".");
-            files = sort(files, rest["sort"], rest["order"]);
-            return rxjs.of({ ...rest, files });
+            if (!search) files = sort(files, rest["sort"], rest["order"]);
+            return rxjs.of({ ...rest, files, search });
         }),
         rxjs.map((data) => ({ ...data, count: count++ })),
         removeLoader,
+        rxjs.switchMap((obj) => refreshScreen$.pipe(rxjs.mapTo(obj))),
         rxjs.mergeMap(({ files, search, ...rest }) => {
             files$.next(files);
             if (files.length === 0) {
@@ -108,7 +112,6 @@ export default async function(render) {
             }
             return rxjs.of({ ...rest, files, search });
         }),
-        rxjs.mergeMap((obj) => refreshScreen$.pipe(rxjs.mapTo(obj))),
         rxjs.mergeMap(({ files, view, search, count, permissions }) => { // STEP1: setup the list of files
             $list.closest(".scroll-y").scrollTop = 0;
             let FILE_HEIGHT, COLUMN_PER_ROW;
@@ -280,7 +283,7 @@ export default async function(render) {
         rxjs.catchError(ctrlError()),
     ));
 
-    // feature: selection
+    // feature: keyboard selection
     effect(rxjs.fromEvent(window, "keydown").pipe(
         rxjs.filter((e) => e.keyCode === 27),
         rxjs.tap(() => clearSelection()),
@@ -289,7 +292,7 @@ export default async function(render) {
         rxjs.filter((e) => e.key === "a" &&
                     (e.ctrlKey || e.metaKey) &&
                     (files$.value || []).length > 0 &&
-                    assert.type(document.activeElement, HTMLElement).tagName !== "INPUT"),
+                    !isAlreadyFocused()),
         preventDefault(),
         rxjs.tap(() => {
             clearSelection();
@@ -313,12 +316,87 @@ export default async function(render) {
     ));
     effect(getSelection$().pipe(rxjs.tap(() => {
         for (const $thing of $page.querySelectorAll(".component_thing")) {
-            const checked = isSelected(parseInt(assert.truthy($thing.getAttribute("data-n"))));
+            let checked = isSelected(parseInt(assert.truthy($thing.getAttribute("data-n"))));
+            if ($thing.getAttribute("data-selectable") === "false") checked = false;
             $thing.classList.add(checked ? "selected" : "not-selected");
             $thing.classList.remove(checked ? "not-selected" : "selected");
             qs(assert.type($thing, HTMLElement), `input[type="checkbox"]`).checked = checked;
         };
     })));
+
+    // feature: mouse drag selection
+    const $dragContainer = assert.type($page.closest(".component_page_filespage"), HTMLElement);
+    const $dragselect = qs($page, `[data-target="dragselect"]`);
+    const dragmove = (x, y, w, h) => {
+        $dragselect.style.left = `${x}px`;
+        $dragselect.style.top = `${y}px`;
+        $dragselect.style.width = `${w}px`;
+        $dragselect.style.height = `${h}px`;
+        if ((w+1) * (h+1) < 50) {
+            $dragselect.style.display = "none";
+            return false;
+        }
+        $dragselect.style.display = "block";
+        return true;
+    };
+    if (isMobile === false) effect(rxjs.fromEvent($dragContainer, "mousedown").pipe(
+        rxjs.filter((e) => {
+            if (e.target.nodeName === "INPUT") return false;
+            else if (e.target.closest("button")) return false;
+            else if (e.buttons !== 1) return false;
+            return !e.target.closest(`[draggable="true"]`);
+        }),
+        rxjs.tap((e) => e.preventDefault()),
+        rxjs.map((e) => ({
+            start: [e.clientX, e.clientY],
+            state: [...$page.querySelectorAll(".component_thing")].map(($file) => {
+                const bounds = $file.getBoundingClientRect();
+                const $checkbox = qs(assert.type($file, HTMLElement), ".component_checkbox");
+                return {
+                    $checkbox,
+                    checked: () => $checkbox.firstElementChild.checked,
+                    bounds: {
+                        x: bounds.x,
+                        y: bounds.y,
+                        w: bounds.width,
+                        h: bounds.height,
+                    },
+                };
+            }),
+        })),
+        rxjs.mergeMap(({ start, state }) => rxjs.fromEvent(document, "mousemove").pipe(
+            rxjs.takeUntil(rxjs.merge(
+                rxjs.fromEvent(window, "mouseup"),
+                rxjs.fromEvent(window, "keydown").pipe(rxjs.filter(({ key }) => key === "Escape")),
+            )),
+            rxjs.finalize(() => dragmove(0, 0, 0, 0)),
+            rxjs.map((e) => ({ start, end: [e.clientX, e.clientY], state })),
+        )),
+        rxjs.map(({ start, end, state }) => ({
+            state,
+            obj: {
+                x: Math.min(start[0], end[0]),
+                y: Math.min(start[1], end[1]),
+                w: Math.abs(start[0] - end[0]),
+                h: Math.abs(start[1] - end[1]),
+            },
+        })),
+        rxjs.filter(({ obj }) => dragmove(obj.x, obj.y, obj.w, obj.h)),
+        rxjs.tap(({ obj, state }) => {
+            for (let i=0; i<state.length; i++) {
+                const { bounds, $checkbox, checked } = state[i];
+                const collision = !(
+                    obj.x + obj.w < bounds.x ||
+                        obj.x > bounds.x + bounds.w ||
+                        obj.y + obj.h < bounds.y ||
+                        obj.y > bounds.y + bounds.h
+                );
+                if ((collision && !checked()) || (!collision && checked())) {
+                    $checkbox.click();
+                }
+            }
+        }),
+    ));
 
     // feature: remove long touch popup on mobile
     const disableLongTouch = (e) => {

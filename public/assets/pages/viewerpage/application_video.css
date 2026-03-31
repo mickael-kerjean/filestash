@@ -1,5 +1,5 @@
 body:not(.dark-mode) .component_videoplayer {
-    background: #525659;
+    background: var(--surface);
 }
 
 .component_videoplayer {

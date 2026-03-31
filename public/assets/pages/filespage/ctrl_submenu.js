@@ -133,7 +133,7 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
             <button data-action="change_permissions"${toggleDependingOnPermission(currentPath(), "delete")} title="${t("Change permissions")}">
                 ${t("Change permissions")}
             </button>
-            <button data-action="tag" title="${t("Tag")}" class="${new URLSearchParams(location.search).get("canary") === "true" ? "" : "hidden"}">
+            <button data-action="tag" title="${t("Tag")}" class="${getConfig("enable_tags", false) ? "" : "hidden"}">
                 ${t("Tag")}
             </button>
         `))),

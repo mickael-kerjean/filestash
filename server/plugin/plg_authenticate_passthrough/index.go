@@ -2,17 +2,19 @@ package plg_authenticate_passthrough
 
 import (
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
+	"html"
 	"net/http"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func init() {
-	Hooks.Register.AuthenticationMiddleware("passthrough", Admin{})
+	Hooks.Register.AuthenticationMiddleware("passthrough", Passthrough{})
 }
 
-type Admin struct{}
+type Passthrough struct{}
 
-func (this Admin) Setup() Form {
+func (this Passthrough) Setup() Form {
 	return Form{
 		Elmnts: []FormElement{
 			{
@@ -34,34 +36,39 @@ func (this Admin) Setup() Form {
 	}
 }
 
-func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
+func (this Passthrough) EntryPoint(idpParams map[string]string, req *http.Request, res http.ResponseWriter) error {
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
-	getParams := "?label=" + req.URL.Query().Get("label") + "&state=" + req.URL.Query().Get("state")
+	getParams := "?label=" + html.EscapeString(req.URL.Query().Get("label")) + "&state=" + html.EscapeString(req.URL.Query().Get("state"))
 	switch idpParams["strategy"] {
 	case "direct":
 		res.WriteHeader(http.StatusOK)
-		res.Write([]byte(Page(`<h2 style="display:none;">PASSTHROUGH</h2><script>location.href = "` + WithBase("/api/session/auth/") + getParams + `"</script>`)))
+		res.Write([]byte(Page(`
+            <form action="` + WithBase("/api/session/auth/"+getParams) + `" method="post"></form>
+            <script>document.querySelector("form").submit();</script>
+        `)))
 	case "password_only":
 		res.WriteHeader(http.StatusOK)
 		res.Write([]byte(Page(`
-      <form action="` + WithBase("/api/session/auth/"+getParams) + `" method="post">
-        <label>
-          <input type="password" name="password" value="" placeholder="Password" />
-        </label>
-        <button>CONNECT</button>
-      </form>`)))
+            <form action="` + WithBase("/api/session/auth/"+getParams) + `" method="post">
+                <label>
+                    <input type="password" name="password" value="" placeholder="Password" />
+                </label>
+                <button>CONNECT</button>
+            </form>
+        `)))
 	case "username_and_password":
 		res.WriteHeader(http.StatusOK)
 		res.Write([]byte(Page(`
-      <form action="` + WithBase("/api/session/auth/"+getParams) + `" method="post">
-        <label>
-          <input type="text" name="user" value="" placeholder="User" />
-        </label>
-        <label>
-          <input type="password" name="password" value="" placeholder="Password" />
-        </label>
-        <button>CONNECT</button>
-      </form>`)))
+            <form action="` + WithBase("/api/session/auth/"+getParams) + `" method="post">
+                <label>
+                    <input type="text" name="user" value="" placeholder="User" />
+                </label>
+                <label>
+                    <input type="password" name="password" value="" placeholder="Password" />
+                </label>
+                <button>CONNECT</button>
+            </form>
+        `)))
 	default:
 		res.WriteHeader(http.StatusNotFound)
 		res.Write([]byte(Page(fmt.Sprintf("Unknown strategy: '%s'", idpParams["strategy"]))))
@@ -69,7 +76,7 @@ func (this Admin) EntryPoint(idpParams map[string]string, req *http.Request, res
 	return nil
 }
 
-func (this Admin) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
+func (this Passthrough) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
 	return map[string]string{
 		"user":     formData["user"],
 		"password": formData["password"],

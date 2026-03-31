@@ -34,25 +34,16 @@ type APIErrorMessage struct {
 func SendSuccessResult(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
-	if shouldIndentResponse(res) {
-		encoder.SetIndent("", IndentSize)
-	}
+	encoder.SetIndent("", IndentSize)
 	encoder.Encode(APISuccessResult{"ok", data})
 }
 
 func SendSuccessResultWithEtagAndGzip(res http.ResponseWriter, req *http.Request, data interface{}) {
 	var dataToSend []byte
 	var err error
-	if shouldIndentResponse(res) {
-		if dataToSend, err = json.MarshalIndent(APISuccessResult{"ok", data}, "", IndentSize); err != nil {
-			Log.Warning("common::response Marshal %s", err.Error())
-			dataToSend = []byte("{}")
-		}
-	} else {
-		if dataToSend, err = json.Marshal(APISuccessResult{"ok", data}); err != nil {
-			Log.Warning("common::response Marshal %s", err.Error())
-			dataToSend = []byte("{}")
-		}
+	if dataToSend, err = json.MarshalIndent(APISuccessResult{"ok", data}, "", IndentSize); err != nil {
+		Log.Warning("common::response Marshal %s", err.Error())
+		dataToSend = []byte("{}")
 	}
 	mode := "normal"
 	if strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") == true {
@@ -80,27 +71,21 @@ func SendSuccessResultWithEtagAndGzip(res http.ResponseWriter, req *http.Request
 func SendSuccessResults(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
-	if shouldIndentResponse(res) {
-		encoder.SetIndent("", IndentSize)
-	}
+	encoder.SetIndent("", IndentSize)
 	encoder.Encode(APISuccessResults{"ok", data})
 }
 
 func SendSuccessResultsWithMetadata(res http.ResponseWriter, data interface{}, p interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
-	if shouldIndentResponse(res) {
-		encoder.SetIndent("", IndentSize)
-	}
+	encoder.SetIndent("", IndentSize)
 	encoder.Encode(APISuccessResultsWithMetadata{"ok", data, p})
 }
 
 func SendErrorResult(res http.ResponseWriter, err error) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
-	if shouldIndentResponse(res) {
-		encoder.SetIndent("", IndentSize)
-	}
+	encoder.SetIndent("", IndentSize)
 	obj, ok := err.(interface{ Status() int })
 	if ok == true {
 		res.WriteHeader(obj.Status())
@@ -119,13 +104,14 @@ func SendErrorResult(res http.ResponseWriter, err error) {
 func SendRaw(res http.ResponseWriter, data interface{}) {
 	encoder := json.NewEncoder(res)
 	encoder.SetEscapeHTML(false)
-	if shouldIndentResponse(res) {
-		encoder.SetIndent("", IndentSize)
-	}
+	encoder.SetIndent("", IndentSize)
 	encoder.Encode(data)
 }
 
 func Page(stuff string) string {
+	if strings.Contains(stuff, "</form>") {
+		stuff += "<script>new URLSearchParams(location.search).forEach((value, name) => ($el = document.querySelector(`form [name=\"${name}\"]`)) && ($el.value = value))</script>"
+	}
 	return `<!DOCTYPE html>
 <html>
   <head>
@@ -140,7 +126,7 @@ func Page(stuff string) string {
       h1 { font-weight: 200; line-height: 1em; font-size: 40px; }
       p { opacity: 0.8; font-size: 1.05em; }
       form { max-width: 450px; margin: 0 auto; padding: 0 10px; text-align: left; }
-      button { padding: 11px 0px; width: 100%; background: #466372; color: white; margin-top: 10px; cursor: pointer; font-weight: bold; border: none; border-radius: 2px; box-shadow: 2px 2px 2px rgb(0 0 0 / 5%); }
+      button,.btn { padding: 11px 0px; width: 100%; background: #466372; color: white; margin-top: 10px; cursor: pointer; font-weight: bold; border: none; border-radius: 2px; box-shadow: 2px 2px 2px rgb(0 0 0 / 5%); }
       input:not([type="checkbox"]), textarea { display: block; margin: 8px 0; border: none; outline: none; padding: 13px 15px; box-shadow: 2px 2px 2px rgb(0 0 0 / 1%); min-width: 100%; max-width: 100%; max-height: 80px; box-sizing: border-box; border-radius: 2px; }
       input, textarea, body { color: #313538; }
       input, textarea, button { font-size: inherit; }
@@ -169,14 +155,4 @@ func RedirectPage(url string) string {
 </body>
 </html>
 `
-}
-
-func shouldIndentResponse(res http.ResponseWriter) bool {
-	reqID := res.Header().Get("X-Request-Id")
-	if reqID == "" {
-		return false
-	} else if strings.HasPrefix(reqID, "API") == false {
-		return false
-	}
-	return true
 }

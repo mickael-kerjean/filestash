@@ -11,22 +11,8 @@ var PluginEnable = func() bool {
 		}
 		f.Name = "enable"
 		f.Type = "enable"
-		f.Target = []string{"mcp_can_edit"}
+		f.Target = []string{}
 		f.Description = "Enable/Disable the Model Context Protocol"
-		f.Default = false
-		return f
-	}).Bool()
-}
-
-var CanEdit = func() bool {
-	return Config.Get("features.mcp.can_edit").Schema(func(f *FormElement) *FormElement {
-		if f == nil {
-			f = &FormElement{}
-		}
-		f.Id = "mcp_can_edit"
-		f.Name = "can_edit"
-		f.Type = "boolean"
-		f.Description = "Enable/Disable editing"
 		f.Default = false
 		return f
 	}).Bool()

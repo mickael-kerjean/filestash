@@ -2,7 +2,6 @@ package plg_backend_tmp
 
 import (
 	"encoding/base64"
-	"fmt"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"os"
@@ -30,7 +29,9 @@ func init() {
 	os.RemoveAll(FILESTASH_DIRECTORY)
 }
 
-type TmpStorage struct{}
+type TmpStorage struct {
+	userID string
+}
 
 func (this TmpStorage) Init(params map[string]string, app *App) (IBackend, error) {
 	if len(params["userID"]) == 0 {
@@ -38,19 +39,16 @@ func (this TmpStorage) Init(params map[string]string, app *App) (IBackend, error
 	} else if regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(params["userID"]) == false {
 		return nil, ErrAuthenticationFailed
 	}
-	p := filepath.Join(FILESTASH_DIRECTORY, params["userID"])
-	if strings.HasSuffix(p, "/") == false {
-		p = fmt.Sprintf("%s/", p)
-	}
-	if err := this.VerifyPath(p); err != nil {
+	this.userID = params["userID"]
+	root, err := this.fullpath("/")
+	if err != nil {
 		return nil, ErrAuthenticationFailed
 	}
 	if c := ChrootCache.Get(params); c == nil {
-		ChrootCache.Set(params, p)
+		ChrootCache.Set(params, root)
 	}
-	os.MkdirAll(p, 0755)
-	params["path"] = p
-	return &TmpStorage{}, nil
+	os.MkdirAll(root, 0755)
+	return &this, nil
 }
 
 func (this TmpStorage) LoginForm() Form {
@@ -71,26 +69,48 @@ func (this TmpStorage) LoginForm() Form {
 }
 
 func (this TmpStorage) Ls(path string) ([]os.FileInfo, error) {
-	if err := this.VerifyPath(path); err != nil {
+	path, err := this.fullpath(path)
+	if err != nil {
 		return nil, err
 	}
 	f, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
-	return f.Readdir(-1)
+	files, err := f.Readdir(-1)
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return files, f.Close()
+}
+
+func (this TmpStorage) Stat(path string) (os.FileInfo, error) {
+	path, err := this.fullpath(path)
+	if err != nil {
+		return nil, err
+	}
+	f, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+	finfo, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return finfo, f.Close()
 }
 
 func (this TmpStorage) Cat(path string) (io.ReadCloser, error) {
-	if err := this.VerifyPath(path); err != nil {
+	path, err := this.fullpath(path)
+	if err != nil {
 		return nil, err
 	}
 	reader, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err == nil {
 		return reader, nil
-	}
-
-	if os.IsExist(err) == false {
+	} else if os.IsExist(err) == false {
 		if strings.HasSuffix(path, ".doc") || strings.HasSuffix(path, ".docx") {
 			docx, err := base64.StdEncoding.DecodeString(EMPTY_DOCX)
 			if err != nil {
@@ -104,42 +124,52 @@ func (this TmpStorage) Cat(path string) (io.ReadCloser, error) {
 }
 
 func (this TmpStorage) Mkdir(path string) error {
-	if err := this.VerifyPath(path); err != nil {
+	path, err := this.fullpath(path)
+	if err != nil {
 		return err
 	}
 	return SafeOsMkdir(path, 0755)
 }
 
 func (this TmpStorage) Rm(path string) error {
-	if err := this.VerifyPath(path); err != nil {
+	path, err := this.fullpath(path)
+	if err != nil {
 		return err
 	}
 	return SafeOsRemoveAll(path)
 }
 
 func (this TmpStorage) Mv(from, to string) error {
-	if err := this.VerifyPath(from); err != nil {
+	from, err := this.fullpath(from)
+	if err != nil {
 		return err
-	} else if err = this.VerifyPath(to); err != nil {
+	}
+	to, err = this.fullpath(to)
+	if err != nil {
 		return err
 	}
 	return SafeOsRename(from, to)
 }
 
 func (this TmpStorage) Save(path string, content io.Reader) error {
-	if err := this.VerifyPath(path); err != nil {
+	path, err := this.fullpath(path)
+	if err != nil {
 		return err
 	}
 	f, err := SafeOsOpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(f, content)
-	return err
+	if _, err = io.Copy(f, content); err != nil {
+		f.Close()
+		return nil
+	}
+	return f.Close()
 }
 
 func (this TmpStorage) Touch(path string) error {
-	if err := this.VerifyPath(path); err != nil {
+	path, err := this.fullpath(path)
+	if err != nil {
 		return err
 	}
 	f, err := SafeOsOpenFile(path, os.O_WRONLY|os.O_CREATE, os.ModePerm)
@@ -153,10 +183,11 @@ func (this TmpStorage) Touch(path string) error {
 	return f.Close()
 }
 
-func (this TmpStorage) VerifyPath(path string) error {
+func (this TmpStorage) fullpath(path string) (string, error) {
+	path = filepath.Join(FILESTASH_DIRECTORY, this.userID, path)
 	if strings.HasPrefix(path, FILESTASH_DIRECTORY) == false {
 		Log.Warning("plg_backend_tmp::chroot attempt to circumvent chroot via path[%s]", path)
-		return ErrPermissionDenied
+		return "", ErrPermissionDenied
 	}
-	return nil
+	return path, nil
 }

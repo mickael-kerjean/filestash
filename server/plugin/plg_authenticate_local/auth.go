@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"html"
 	"image/png"
 	"net/http"
 	"text/template"
@@ -34,16 +35,13 @@ func (this SimpleAuth) Setup() Form {
 			{
 				Name: "banner",
 				Type: "hidden",
-				Description: fmt.Sprintf(`Manage your team members and their account permissions by visiting [/admin/simple-user-management](/admin/simple-user-management).
-<pre>
+				Description: fmt.Sprintf(`<pre>MANAGEMENT GUI: <a href="`+WithBase("/admin/simple-user-management")+`">/admin/simple-user-management</a>
 STATS:
 ┌─────────────┐   ┌──────────────┐
 │ TOTAL USERS │   │ ACTIVE USERS │
 |    %.4d     │   |     %.4d     │
 └─────────────┘   └──────────────┘
-
-MANAGEMENT GUI: <a href="/admin/simple-user-management">/admin/simple-user-management</a>
-EMAIL SERVER  : %t
+EMAIL SERVER: %t
 </pre>`, nUsers, aUsers, isEmailSetup()),
 			},
 			{
@@ -66,8 +64,8 @@ EMAIL SERVER  : %t
 				Type: "long_text",
 				Placeholder: `Hello,
 
-Your account to Filestash was created by an administrator. You can access
-it via http://demo.filestash.app.
+Your account was created by an administrator. You can access
+it via http://{{ .instance_url }}.
 
 Your password is: {{ .password }}
 The roles assigned to you: {{ .role }}
@@ -93,7 +91,7 @@ func (this SimpleAuth) EntryPoint(idpParams map[string]string, req *http.Request
 			MaxAge: -1,
 			Path:   "/",
 		})
-		return fmt.Sprintf(`<p class="flash">%s</p>`, c.Value)
+		return fmt.Sprintf(`<p class="flash">%s</p>`, html.EscapeString(c.Value))
 	}
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
 	res.WriteHeader(http.StatusOK)
@@ -115,7 +113,7 @@ func (this SimpleAuth) EntryPoint(idpParams map[string]string, req *http.Request
 			return err
 		}
 		template.Must(template.New("app").Parse(Page(`
-            <form action="`+WithBase("/api/session/auth/")+`" method="post" class="component_middleware">
+            <form method="post" class="component_middleware">
                 {{ if eq .User.MFA "" }}
                 <style>
                     #init { padding: 20px 20px 10px 20px; text-align: center; background: rgba(0,0,0,0.1); border-radius: 10px; margin-top: -10vh; margin-bottom: 20px; }
@@ -150,9 +148,9 @@ func (this SimpleAuth) EntryPoint(idpParams map[string]string, req *http.Request
 		return nil
 	}
 	res.Write([]byte(Page(`
-        <form action="` + WithBase("/api/session/auth/") + `" method="post" class="component_middleware">
+        <form method="post" class="component_middleware">
             <label>
-                <input type="text" name="email" value="" placeholder="Email" />
+                <input type="text" name="user" value="" placeholder="Email" />
             </label>
             <label>
                 <input type="password" name="password" value="" placeholder="Password" />
@@ -173,7 +171,7 @@ func (this SimpleAuth) Callback(formData map[string]string, idpParams map[string
 		return nil, err
 	}
 	requestedUser := withMFA(User{
-		Email:    formData["email"],
+		Email:    formData["user"],
 		Password: formData["password"],
 	}, formData["session"])
 	requestedUser.Code = formData["code"]

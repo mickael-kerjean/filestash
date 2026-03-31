@@ -1,5 +1,5 @@
 .component_formviewer {
-    background: #525659;
+    background: var(--surface);
 }
 .dark-mode .component_formviewer {
     color: rgba(0,0,0,0.5);
@@ -15,9 +15,9 @@
 .component_formviewer > .formviewer_container .box {
     padding: 25px 20px;
     box-sizing: border-box;
-    border-radius: 2px;
+    border-radius: 5px;
     background: #fff;
-    box-shadow: rgba(0,0,0,.14) 0px 4px 5px 0px, rgba(0,0,0,.12) 0px 1px 10px 0px, rgba(0,0,0,.2) 0px 2px 4px -1px;
+    box-shadow: rgba(0,0,0,.1) 0px 4px 5px 0px;
     width: 98%;
     max-width: 800px;
     margin: 0 auto;
@@ -58,17 +58,17 @@
 .component_formviewer > .formviewer_container .box .formbuilder label.no-select > div > span span.mandatory {
     opacity: 0.6;
 }
-.component_formviewer > .formviewer_container .box .formbuilder label.no-select > div div.description a {
-    border-bottom: 1px dashed var(--color);
-}
 
 .component_formviewer .formbuilder .component_input[disabled],
+.component_formviewer .formbuilder .component_input[readonly],
 .component_formviewer .formbuilder .component_textarea[disabled],
-.component_formviewer .formbuilder .component_select[disabled] {
+.component_formviewer .formbuilder .component_textarea[readonly],
+.component_formviewer .formbuilder .component_select[disabled],
+.component_formviewer .formbuilder .component_select[readonly] {
     background: rgba(0, 0, 0, 0.05);
     border-radius: 2px;
     padding-left: 7px;
-    border-color: rgba(0, 0, 0, 0.02);
+    border-color: transparent;
 }
 
 .component_formviewer fieldset {

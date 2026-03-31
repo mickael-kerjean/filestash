@@ -7,6 +7,7 @@ package plg_starter_http2
  */
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -15,7 +16,7 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/common/ssl"
+	"github.com/mickael-kerjean/filestash/server/pkg/ssl"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/acme/autocert"
@@ -35,7 +36,7 @@ func init() {
 		os.MkdirAll(SSL_PATH, os.ModePerm)
 	})
 
-	Hooks.Register.Starter(func(r *mux.Router) {
+	Hooks.Register.Starter(func(ctx context.Context, r *mux.Router) {
 		domain := Config.Get("general.host").String()
 		Log.Info("[https] starting ...%s", domain)
 		srv := &http.Server{
@@ -68,30 +69,14 @@ func init() {
 		}
 
 		go func() {
-			srv = &http.Server{
-				Addr:         fmt.Sprintf(":http"),
-				ReadTimeout:  5 * time.Second,
-				WriteTimeout: 5 * time.Second,
-				Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-					w.Header().Set("Connection", "close")
-					http.Redirect(
-						w,
-						req,
-						"https://"+req.Host+req.URL.String(),
-						http.StatusMovedPermanently,
-					)
-				}),
-			}
-			if err := srv.ListenAndServe(); err != nil {
-				return
-			}
+			ensureAppHasBooted(
+				fmt.Sprintf("https://127.0.0.1:%d/about", config_port()),
+				fmt.Sprintf("[https] started"),
+			)
+			<-ctx.Done()
+			srv.Shutdown(context.Background())
 		}()
-
-		go ensureAppHasBooted(
-			fmt.Sprintf("https://127.0.0.1:%d/about", config_port()),
-			fmt.Sprintf("[https] started"),
-		)
-		if err := srv.ListenAndServeTLS("", ""); err != nil {
+		if err := srv.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
 			Log.Error("[https]: listen_serve %v", err)
 			return
 		}
@@ -99,21 +84,18 @@ func init() {
 }
 
 func ensureAppHasBooted(address string, message string) {
-	i := 0
-	for {
+	for i := 0; i < 10; i++ {
 		if i > 10 {
-			Log.Warning("[https] no boot")
+			Log.Warning("[https] didn't boot")
 			break
 		}
 		time.Sleep(250 * time.Millisecond)
 		res, err := HTTPClient.Get(address)
 		if err != nil {
-			i += 1
 			continue
 		}
 		res.Body.Close()
-		if res.StatusCode != http.StatusOK {
-			i += 1
+		if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNotFound {
 			continue
 		}
 		Log.Info(message)

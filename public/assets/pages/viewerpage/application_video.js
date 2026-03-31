@@ -2,7 +2,7 @@ import { createElement, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideYIn } from "../../lib/animate.js";
 import { loadCSS, loadJS } from "../../helpers/loader.js";
-import { qs, qsa } from "../../lib/dom.js";
+import { qs, qsa, safe } from "../../lib/dom.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
 import { ApplicationError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
@@ -24,7 +24,7 @@ const STATUS_BUFFERING = "BUFFERING";
 export default function(render, { mime, getFilename, getDownloadUrl }) {
     const $page = createElement(`
         <div class="component_videoplayer">
-            <component-menubar filename="${getFilename()}"></component-menubar>
+            <component-menubar filename="${safe(getFilename())}"></component-menubar>
             <div class="video_container">
                 <span>
                     <div class="video_screen video-state-pause is-casting-no">

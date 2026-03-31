@@ -41,7 +41,7 @@ func (this Nfs4Share) Init(params map[string]string, app *App) (IBackend, error)
 		}
 	}
 	if params["machine_name"] == "" {
-		params["machine_name"] = "filestash"
+		params["machine_name"] = APPNAME
 	}
 	if strings.Contains(params["hostname"], ":") == false {
 		params["hostname"] = params["hostname"] + DEFAULT_PORT
@@ -127,6 +127,24 @@ func (this Nfs4Share) Ls(path string) ([]os.FileInfo, error) {
 		})
 	}
 	return files, nil
+}
+
+func (this Nfs4Share) Stat(path string) (os.FileInfo, error) {
+	finfo, err := this.client.GetFileInfo(path)
+	if err != nil {
+		return nil, err
+	}
+	return File{
+		FName: finfo.Name,
+		FType: func() string {
+			if finfo.IsDir {
+				return "directory"
+			}
+			return "file"
+		}(),
+		FSize: int64(finfo.Size),
+		FTime: int64(finfo.Mtime.Nanosecond()),
+	}, nil
 }
 
 func (this Nfs4Share) Cat(path string) (io.ReadCloser, error) {

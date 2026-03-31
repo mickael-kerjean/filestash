@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-const THUMB_SIZE int = 150
+const THUMB_SIZE int = 400
 
 func init() {
 	Hooks.Register.Thumbnailer("image/jpeg", thumbnailer{})

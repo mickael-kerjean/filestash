@@ -2,10 +2,8 @@ package plg_backend_url
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -16,8 +14,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/charset"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
@@ -88,7 +88,11 @@ func (this *Url) Ls(path string) ([]os.FileInfo, error) {
 		}
 		return nil, fmt.Errorf("HTTP Error %d", resp.StatusCode)
 	}
-	doc, err := html.Parse(resp.Body)
+	utf8Body, err := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
+	if err != nil {
+		return nil, err
+	}
+	doc, err := html.Parse(utf8Body)
 	if err != nil {
 		return nil, err
 	}
@@ -128,6 +132,43 @@ func (this *Url) Ls(path string) ([]os.FileInfo, error) {
 	return links, nil
 }
 
+func (this *Url) Stat(path string) (os.FileInfo, error) {
+	this.root.Path = path
+	resp, err := request(this.ctx, http.MethodHead, this.root.String(), "")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, ErrNotFound
+		} else if resp.StatusCode == http.StatusForbidden {
+			return nil, ErrNotAllowed
+		}
+		return nil, fmt.Errorf("HTTP Error %d", resp.StatusCode)
+	}
+	finfo := &File{
+		FName: filepath.Base(path),
+		FType: "file",
+		FSize: -1,
+		FTime: -1,
+	}
+	if cl := resp.Header.Get("Content-Length"); cl != "" {
+		if s, err := strconv.ParseInt(cl, 10, 64); err == nil {
+			finfo.FSize = s
+		}
+	}
+	if lm := resp.Header.Get("Last-Modified"); lm != "" {
+		if t, err := time.Parse(time.RFC1123, lm); err == nil {
+			finfo.FTime = t.Unix()
+		}
+	}
+	if strings.HasSuffix(path, "/") {
+		finfo.FType = "directory"
+	}
+	return finfo, nil
+}
+
 func (this Url) processLink(link string, n *html.Node) *File {
 	u, err := url.Parse(link)
 	if err != nil {
@@ -151,12 +192,19 @@ func (this Url) processLink(link string, n *html.Node) *File {
 	}
 	if fName == "" || fName == "." || fName == "/" {
 		return nil
+	} else if !utf8.ValidString(fName) {
+		runes := make([]rune, len(fName))
+		for i, b := range []byte(fName) {
+			runes[i] = rune(b)
+		}
+		fName = string(runes)
 	}
 	for _, extr := range []func(node *html.Node) (int64, int64, error){
 		extractNginxList,
 		extractASPNetList,
 		extractApacheList,
 		extractApacheList2,
+		extractApacheList3,
 	} {
 		if s, t, err := extr(n); err == nil {
 			fSize = s
@@ -222,19 +270,7 @@ func request(ctx context.Context, method string, url string, rangeHeader string)
 	if err != nil {
 		return nil, err
 	}
-	return (&http.Client{
-		Timeout: 5 * time.Hour,
-		Transport: NewTransformedTransport(&http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			Dial: (&net.Dialer{
-				Timeout:   10 * time.Second,
-				KeepAlive: 10 * time.Second,
-			}).Dial,
-			TLSHandshakeTimeout:   5 * time.Second,
-			IdleConnTimeout:       60 * time.Second,
-			ResponseHeaderTimeout: 60 * time.Second,
-		}),
-	}).Do(r)
+	return HTTPClient(WithInsecure).Do(r)
 }
 
 var extractASPNetList = extract(
@@ -305,6 +341,12 @@ var extractApacheList = extract(
 var extractApacheList2 = extract(
 	regexp.MustCompile(`([0-9]{2}-[A-Z][a-z]{2}-[0-9]{4} [0-9]{2}:[0-9]{2})\s+([0-9\.\-]+\s?[kKMGT]?)`),
 	"02-Jan-2006 15:04",
+	nodeApacheExtract,
+)
+
+var extractApacheList3 = extract(
+	regexp.MustCompile(`([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2})`+`[ \xA0]+`+`([0-9]+(?:\.[0-9]+)?|-)`+`[ \xA0]*`+`[kKMGT]?`),
+	"2006-01-02 15:04",
 	nodeApacheExtract,
 )
 

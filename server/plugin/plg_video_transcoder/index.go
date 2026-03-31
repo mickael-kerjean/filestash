@@ -32,19 +32,6 @@ var (
 )
 
 func init() {
-	if _, err := exec.LookPath("ffmpeg"); err != nil {
-		Hooks.Register.Onload(func() {
-			Log.Warning("plg_video_thumbnail::init error=ffmpeg_not_installed")
-		})
-		return
-	}
-	if _, err := exec.LookPath("ffprobe"); err != nil {
-		Hooks.Register.Onload(func() {
-			Log.Warning("plg_video_thumbnail::init error=ffprobe_not_installed")
-		})
-		return
-	}
-
 	plugin_enable = func() bool {
 		return Config.Get("features.video.enable_transcoder").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -77,54 +64,60 @@ func init() {
 
 	Hooks.Register.Onload(func() {
 		blacklist_format()
-		plugin_enable()
+		if !plugin_enable() {
+			return
+		} else if _, err := exec.LookPath("ffmpeg"); err != nil {
+			Log.Warning("plg_video_thumbnail::init error=ffmpeg_not_installed")
+			return
+		} else if _, err := exec.LookPath("ffprobe"); err != nil {
+			Log.Warning("plg_video_thumbnail::init error=ffprobe_not_installed")
+			return
+		}
 
 		cachePath := GetAbsolutePath(VideoCachePath)
 		os.RemoveAll(cachePath)
 		os.MkdirAll(cachePath, os.ModePerm)
-	})
 
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
-		r.HandleFunc(OverrideVideoSourceMapper, func(res http.ResponseWriter, req *http.Request) {
-			res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
-			if plugin_enable() == false {
-				return
-			}
-			res.Write([]byte(`window.overrides["video-map-sources"] = function(sources){`))
-			res.Write([]byte(`    return sources.map(function(source){`))
+		Hooks.Register.HttpEndpoint(func(r *mux.Router) error {
+			r.HandleFunc(OverrideVideoSourceMapper, func(res http.ResponseWriter, req *http.Request) {
+				res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
+				if plugin_enable() == false {
+					return
+				}
+				res.Write([]byte(`window.overrides["video-map-sources"] = function(sources){`))
+				res.Write([]byte(`    return sources.map(function(source){`))
 
-			blacklists := strings.Split(blacklist_format(), ",")
-			for i := 0; i < len(blacklists); i++ {
-				blacklists[i] = strings.TrimSpace(blacklists[i])
-				res.Write([]byte(fmt.Sprintf(`if(source.type == "%s"){ return source; } `, GetMimeType("."+blacklists[i]))))
-			}
-			res.Write([]byte(`        source.src = source.src + "&transcode=hls";`))
-			res.Write([]byte(`        source.type = "application/x-mpegURL";`))
-			res.Write([]byte(`        return source;`))
-			res.Write([]byte(`    })`))
-			res.Write([]byte(`}`))
+				blacklists := strings.Split(blacklist_format(), ",")
+				for i := 0; i < len(blacklists); i++ {
+					blacklists[i] = strings.TrimSpace(blacklists[i])
+					res.Write([]byte(fmt.Sprintf(`if(source.type == "%s"){ return source; } `, GetMimeType("."+blacklists[i]))))
+				}
+				res.Write([]byte(`        source.src = source.src + "&transcode=hls";`))
+				res.Write([]byte(`        source.type = "application/x-mpegURL";`))
+				res.Write([]byte(`        return source;`))
+				res.Write([]byte(`    })`))
+				res.Write([]byte(`}`))
+			})
+
+			r.PathPrefix("/hls/hls_{segment}.ts").Handler(NewMiddlewareChain(
+				hlsTranscodeHandler,
+				[]Middleware{SecureHeaders},
+			)).Methods("GET")
+
+			return nil
 		})
-		return nil
+		Hooks.Register.ProcessFileContentBeforeSend(hlsPlaylistHandler)
 	})
-	Hooks.Register.HttpEndpoint(func(r *mux.Router, app *App) error {
-		r.PathPrefix("/hls/hls_{segment}.ts").Handler(NewMiddlewareChain(
-			hlsTranscodeHandler,
-			[]Middleware{SecureHeaders},
-			*app,
-		)).Methods("GET")
-		return nil
-	})
-	Hooks.Register.ProcessFileContentBeforeSend(hlsPlaylistHandler)
 }
 
-func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, bool, error) {
 	query := req.URL.Query()
 	if query.Get("transcode") != "hls" {
-		return reader, nil
+		return reader, false, nil
 	}
 	path := query.Get("path")
 	if strings.HasPrefix(GetMimeType(path), "video/") == false {
-		return reader, nil
+		return reader, false, nil
 	}
 
 	cacheName := "vid_" + GenerateID(ctx.Session) + "_" + QuickHash(path, 10) + ".dat"
@@ -134,8 +127,7 @@ func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter
 	)
 	f, err := os.OpenFile(cachePath, os.O_CREATE|os.O_RDWR, os.ModePerm)
 	if err != nil {
-		Log.Stdout("ERR %+v", err)
-		return reader, err
+		return reader, false, err
 	}
 	io.Copy(f, reader)
 	reader.Close()
@@ -144,7 +136,7 @@ func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter
 
 	p, err := ffprobe(cachePath)
 	if err != nil {
-		return reader, err
+		return reader, false, err
 	}
 
 	var response string
@@ -164,7 +156,7 @@ func hlsPlaylistHandler(reader io.ReadCloser, ctx *App, res *http.ResponseWriter
 	}
 	response += "#EXT-X-ENDLIST\n"
 	(*res).Header().Set("Content-Type", "application/x-mpegURL")
-	return NewReadCloserFromBytes([]byte(response)), nil
+	return NewReadCloserFromBytes([]byte(response)), true, nil
 }
 
 func hlsTranscodeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -197,7 +189,7 @@ func hlsTranscodeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		"-vcodec", "libx264",
 		"-preset", "veryfast",
 		"-acodec", "aac",
-		"-ab", "128k",
+		"-b:a", "128k",
 		"-ac", "2",
 		"-pix_fmt", "yuv420p",
 		"-x264opts", strings.Join([]string{
@@ -210,12 +202,10 @@ func hlsTranscodeHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 			"partitions=none",
 		}, ":"),
 		"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d.000)", HLS_SEGMENT_LENGTH),
-		"-f", "ssegment",
-		"-segment_time", fmt.Sprintf("%d.00", HLS_SEGMENT_LENGTH),
-		"-segment_start_number", fmt.Sprintf("%d", segmentNumber),
-		"-initial_offset", fmt.Sprintf("%d.00", startTime),
-		"-vsync", "2",
-		"pipe:out%03d.ts",
+		"-f", "mpegts",
+		"-output_ts_offset", fmt.Sprintf("%d.00", startTime),
+		"-fps_mode", "cfr",
+		"pipe:1",
 	}...)
 
 	var buffer bytes.Buffer

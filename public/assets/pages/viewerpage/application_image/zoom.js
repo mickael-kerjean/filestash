@@ -1,7 +1,7 @@
 import rxjs, { effect } from "../../../lib/rx.js";
 import { qs } from "../../../lib/dom.js";
 
-export default function ({ $img, $page }) {
+export default function({ $img, $page }) {
     const $navigation = qs($page, `[data-bind="component_navigation"]`);
 
     effect(rxjs.merge(...builder({ $img })).pipe(
@@ -12,8 +12,8 @@ export default function ({ $img, $page }) {
             const next = Math.min(20, Math.max(1, state.scale * (scale ?? 1)));
             if (next > 1) {
                 const rect = $img.getBoundingClientRect();
-                const ox = (clientX ?? rect.left + rect.width  / 2) - rect.left;
-                const oy = (clientY ?? rect.top  + rect.height / 2) - rect.top;
+                const ox = (clientX ?? rect.left + rect.width / 2) - rect.left;
+                const oy = (clientY ?? rect.top + rect.height / 2) - rect.top;
                 const f = next / state.scale;
                 state.x += (1 - f) * ox;
                 state.y += (1 - f) * oy;
@@ -22,12 +22,12 @@ export default function ({ $img, $page }) {
                 state.y = 0;
             }
             state.scale = next;
-            state.duration = duration ?? (next === 1 ? 500 : 200);
+            state.duration = duration ?? (next === 1 ? 500 : 0);
             return state;
         }, { scale: 1, x: 0, y: 0, duration: 0 }),
         rxjs.tap(({ scale, x, y, duration }) => {
             $img.style.transition = `transform ${duration}ms ease`;
-            $img.style.transform  = `translate(${x}px,${y}px) scale(${scale})`;
+            $img.style.transform = `translate(${x}px,${y}px) scale(${scale})`;
             if (scale === 1) $navigation.classList.remove("hidden");
         }),
     ));
@@ -44,9 +44,18 @@ function builder({ $img }) {
             rxjs.map((e) => ({ scale: 2, clientX: e.clientX, clientY: e.clientY })),
         ),
         // zoom via scroll wheel
-        rxjs.fromEvent($img.parentElement, "wheel", { passive: true }).pipe(
-            rxjs.throttleTime(100),
-            rxjs.map((e) => ({ scale: Math.exp(-e.deltaY / 300), clientX: e.clientX, clientY: e.clientY })),
+        rxjs.fromEvent($img.parentElement, "wheel").pipe(
+            rxjs.tap((e) => e.preventDefault()),
+            rxjs.map((event) => {
+                let scale = Math.exp(-event.deltaY / 300);
+                if (scale > 1.07) scale = 1.07;
+                else if (scale < 0.93) scale = 0.93;
+                return {
+                    scale,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                };
+            }),
         ),
         // zoom via keyboard shortcut
         rxjs.fromEvent(window, "keydown").pipe(
@@ -58,13 +67,13 @@ function builder({ $img }) {
                 let scale = 0;
                 if (["+", "ArrowUp"].indexOf(key) !== -1) scale = 3/2;
                 else if (["-", "ArrowDown"].indexOf(key) !== -1) scale = 2/3;
-                return { clientX, clientY, scale };
+                return { clientX, clientY, scale, duration: 100 };
             }),
         ),
         // pinch zoom
         rxjs.fromEvent($img.parentElement, "touchstart", { passive: false }).pipe(
             rxjs.filter((e) => e.touches.length === 2),
-            rxjs.switchMap((event) => rxjs.fromEvent($img.parentElement, "touchmove").pipe(
+            rxjs.switchMap((event) => rxjs.fromEvent($img.parentElement, "touchmove", { passive: false }).pipe(
                 rxjs.filter((event) => event.touches.length >= 2),
                 rxjs.tap((event) => event.preventDefault()),
                 rxjs.takeUntil(rxjs.fromEvent(window, "touchend")),
@@ -77,24 +86,24 @@ function builder({ $img }) {
                     ),
                 })),
                 rxjs.pairwise(),
-                rxjs.map(([curr, prev]) => ({
+                rxjs.map(([prev, curr]) => ({
                     clientX: curr.clientX,
                     clientY: curr.clientY,
-                    scale: Math.sign(curr.distance - prev.distance) === 1 ? 0.95 : 1.025,
-                    moveX: prev.clientX - curr.clientX,
-                    moveY: prev.clientY - curr.clientY,
+                    scale: Math.min(1.15, Math.max(0.85, curr.distance / prev.distance)),
+                    moveX: curr.clientX - prev.clientX,
+                    moveY: curr.clientY - prev.clientY,
                     duration: 0,
                 })),
             )),
         ),
         // grab and drag
-        rxjs.fromEvent($img.parentElement, "mousedown").pipe(
-            rxjs.filter(e => e.target === $img && e.button === 0),
+        rxjs.fromEvent($img.parentElement, "mousedown", { passive: false }).pipe(
+            rxjs.filter((e) => e.target === $img && e.button === 0),
             rxjs.switchMap((down) => {
                 let prev = { x: down.clientX, y: down.clientY, t: down.timeStamp };
                 const move$ = rxjs.fromEvent(window, "mousemove").pipe(
                     rxjs.takeUntil(rxjs.fromEvent(window, "mouseup")),
-                    rxjs.map(m => {
+                    rxjs.map((m) => {
                         const dx = m.clientX - prev.x;
                         const dy = m.clientY - prev.y;
                         const dt = m.timeStamp - prev.t || 1;
@@ -128,5 +137,5 @@ function builder({ $img }) {
                 return rxjs.merge(move$, $inertia);
             }),
         ),
-    ]
+    ];
 }

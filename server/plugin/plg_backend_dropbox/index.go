@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -118,12 +117,16 @@ func (d Dropbox) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (d Dropbox) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (d Dropbox) Cat(path string) (io.ReadCloser, error) {
 	res, err := d.request("POST", "https://content.dropboxapi.com/2/files/download", nil, func(req *http.Request) {
 		arg := struct {
 			Path string `json:"path"`
 		}{d.path(path)}
-		json, _ := ioutil.ReadAll(d.toReader(arg))
+		json, _ := io.ReadAll(d.toReader(arg))
 		req.Header.Set("Dropbox-API-Arg", string(json))
 	})
 	if err != nil {
@@ -184,7 +187,7 @@ func (d Dropbox) Save(path string, file io.Reader) error {
 			AutoRename bool   `json:"autorename"`
 			Mode       string `json:"mode"`
 		}{d.path(path), false, "overwrite"}
-		json, _ := ioutil.ReadAll(d.toReader(arg))
+		json, _ := io.ReadAll(d.toReader(arg))
 		req.Header.Set("Dropbox-API-Arg", string(json))
 		req.Header.Set("Content-Type", "application/octet-stream")
 	})
@@ -212,7 +215,7 @@ func (d Dropbox) request(method string, url string, body io.Reader, fn func(*htt
 	if req.Body != nil {
 		defer req.Body.Close()
 	}
-	return HTTPClient.Do(req)
+	return HTTPClient().Do(req)
 }
 
 func (d Dropbox) toReader(a interface{}) io.Reader {

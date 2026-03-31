@@ -2,7 +2,6 @@ package plg_backend_webdav
 
 import (
 	"encoding/xml"
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"net/http"
 	"net/url"
@@ -11,6 +10,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 type WebDav struct {
@@ -35,10 +36,10 @@ func (w WebDav) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 	backend := WebDav{
 		params: &WebDavParams{
-			strings.ReplaceAll(params["url"], "%{username}", url.PathEscape(params["username"])),
-			params["username"],
-			params["password"],
-			params["path"],
+			url:      strings.ReplaceAll(params["url"], "%{username}", url.PathEscape(params["username"])),
+			username: params["username"],
+			password: params["password"],
+			path:     params["path"],
 		},
 	}
 	return backend, nil
@@ -138,11 +139,57 @@ func (w WebDav) Ls(path string) ([]os.FileInfo, error) {
 					}
 					return t.Unix()
 				}(),
-				FSize: int64(prop.Size),
+				FSize: prop.Size,
 			})
 		}
 	}
 	return files, nil
+}
+
+func (w WebDav) Stat(path string) (os.FileInfo, error) {
+	query := `<d:propfind xmlns:d='DAV:'>
+			<d:prop>
+				<d:displayname/>
+				<d:resourcetype/>
+				<d:getlastmodified/>
+				<d:getcontentlength/>
+			</d:prop>
+		</d:propfind>`
+	res, err := w.request("PROPFIND", w.params.url+encodeURL(path), strings.NewReader(query), func(req *http.Request) {
+		req.Header.Add("Depth", "0")
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	if res.StatusCode >= 400 {
+		return nil, NewError(HTTPFriendlyStatus(res.StatusCode)+": can't get things in "+filepath.Base(path), res.StatusCode)
+	}
+	var r WebDavResp
+	if err := xml.NewDecoder(res.Body).Decode(&r); err != nil {
+		return nil, err
+	}
+	if len(r.Responses) == 0 || len(r.Responses[0].Props) == 0 {
+		return nil, ErrNotFound
+	}
+	prop := r.Responses[0].Props[0]
+	var modTime int64
+	if prop.Modified != "" {
+		if t, err := time.Parse(time.RFC1123, prop.Modified); err == nil {
+			modTime = t.Unix()
+		}
+	}
+	return File{
+		FName: filepath.Base(decodeURL(r.Responses[0].Href)),
+		FType: func() string {
+			if prop.Type.Local == "collection" {
+				return "directory"
+			}
+			return "file"
+		}(),
+		FTime: modTime,
+		FSize: prop.Size,
+	}, nil
 }
 
 func (w WebDav) Cat(path string) (io.ReadCloser, error) {
@@ -155,6 +202,7 @@ func (w WebDav) Cat(path string) (io.ReadCloser, error) {
 	}
 	return res.Body, nil
 }
+
 func (w WebDav) Mkdir(path string) error {
 	res, err := w.request("MKCOL", w.params.url+encodeURL(path), nil, func(req *http.Request) {
 		req.Header.Add("Overwrite", "F")
@@ -168,6 +216,7 @@ func (w WebDav) Mkdir(path string) error {
 	}
 	return nil
 }
+
 func (w WebDav) Rm(path string) error {
 	res, err := w.request("DELETE", w.params.url+encodeURL(path), nil, nil)
 	if err != nil {
@@ -179,6 +228,7 @@ func (w WebDav) Rm(path string) error {
 	}
 	return nil
 }
+
 func (w WebDav) Mv(from string, to string) error {
 	res, err := w.request("MOVE", w.params.url+encodeURL(from), nil, func(req *http.Request) {
 		req.Header.Add("Destination", w.params.url+encodeURL(to))
@@ -193,9 +243,11 @@ func (w WebDav) Mv(from string, to string) error {
 	}
 	return nil
 }
+
 func (w WebDav) Touch(path string) error {
 	return w.Save(path, strings.NewReader(""))
 }
+
 func (w WebDav) Save(path string, file io.Reader) error {
 	res, err := w.request("PUT", w.params.url+encodeURL(path), file, nil)
 	if err != nil {
@@ -232,7 +284,7 @@ func (w WebDav) request(method string, url string, body io.Reader, fn func(req *
 	if fn != nil {
 		fn(req)
 	}
-	return HTTPClient.Do(req)
+	return HTTPClient().Do(req)
 }
 
 type WebDavResp struct {

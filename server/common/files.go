@@ -3,8 +3,11 @@ package common
 import (
 	"errors"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/bmatcuk/doublestar/v4"
 )
 
 var MOCK_CURRENT_DIR string
@@ -42,7 +45,7 @@ func IsDirectory(path string) bool {
  * Join 2 path together, result has a file
  */
 func JoinPath(base, file string) string {
-	filePath := filepath.Join(base, file)
+	filePath := path.Join(base, file)
 	if strings.HasPrefix(filePath, base) == false {
 		return base
 	}
@@ -104,6 +107,11 @@ func SafeOsRename(from string, to string) error {
 		return ErrFilesystemError
 	}
 	return processError(os.Rename(from, to))
+}
+
+func GlobMatch(pattern, name string) bool {
+	m, _ := doublestar.Match(pattern, name)
+	return m
 }
 
 func safePath(path string) error {

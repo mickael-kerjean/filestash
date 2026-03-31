@@ -2,8 +2,6 @@ package plg_backend_storj
 
 import (
 	"context"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"golang.org/x/sync/semaphore"
 	"io"
 	"os"
 	"path/filepath"
@@ -11,6 +9,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+
+	"golang.org/x/sync/semaphore"
 )
 
 const CONCURRENCY_LEVEL = 20
@@ -113,6 +115,29 @@ func (this Storj) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (this Storj) Stat(path string) (os.FileInfo, error) {
+	defer this.Project.Close()
+	bucket, prefix := this.path(path)
+	if finfo, err := this.Project.StatObject(this.Context, bucket, prefix); err == nil {
+		return File{
+			FName: filepath.Base(path),
+			FTime: finfo.System.Created.Unix(),
+			FType: func() string {
+				if finfo.IsPrefix {
+					return "directory"
+				}
+				return "file"
+			}(),
+			FSize: finfo.System.ContentLength,
+		}, nil
+	}
+	return File{
+		FName: filepath.Base(path),
+		FType: "directory",
+		FTime: -1,
+	}, nil
+}
+
 func (this Storj) Cat(path string) (io.ReadCloser, error) {
 	defer this.Project.Close()
 	bucket, prefix := this.path(path)
@@ -125,7 +150,7 @@ func (this Storj) Mkdir(path string) error {
 		this.Project.Close()
 		return err
 	}
-	return this.Touch(path + ".file_placeholder")
+	return this.Touch(path + ".keep")
 }
 
 func (this Storj) Rm(path string) error {

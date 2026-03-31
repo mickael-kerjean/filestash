@@ -1,4 +1,4 @@
-.component_thing:hover, .component_thing .highlight,
+.touch-no .component_thing:hover, .component_thing .highlight,
 .component_thing.hover, .component_thing .highlight {
     transition: 0.1s ease-out background;
     background: var(--border);
@@ -8,8 +8,8 @@
 .component_thing:not(.loading):hover .component_datetime {
     display: none;
 }
-.component_thing .component_checkbox {
-    display: none;
+.component_thing:not([href]) {
+    cursor: not-allowed;
 }
 .component_thing .file-is-hover {
     background: var(--emphasis-primary);
@@ -71,8 +71,11 @@
     position: absolute;
     transition: 0.15s ease-out all;
     transform: translateX(0px);
-    padding: 2px;
+    padding: 2.5px;
     border-radius: 50px;
+}
+.component_thing .component_checkbox:has(input:focus-visible) {
+    opacity: 1;
 }
 .component_thing .component_action{
     display: none;
@@ -103,7 +106,8 @@
     transition-delay: 0.1s;
     transform: translateX(0);
 }
-.component_thing:hover .component_action { opacity: 1; display: block; }
+.component_thing:hover .component_action,
+.component_thing:focus-visible .component_action { opacity: 1; display: block; }
 .component_thing .component_action { opacity: 0; }
 .component_thing.selected .component_action { opacity: 0; transition-delay: 0s; }
 .component_thing:has(.component_icon[alt="loading"]) .component_action { display: none; }
@@ -113,9 +117,10 @@
 }
 .component_thing .component_checkbox .indicator {
     top: 7px;
-    left: 6px;
+    left: 7px;
 }
 .touch-no .component_thing:hover .component_checkbox,
+.touch-no .component_thing:focus-visible .component_checkbox,
 .component_thing.selected .component_checkbox {
     transition-delay: 0.1s;
     opacity: 1;
@@ -146,6 +151,7 @@
     width: 100%;
     position: relative;
     box-sizing: border-box;
+    min-width: 0;
 }
 .list > .component_thing.view-grid {
     border: 2px solid var(--border);
@@ -249,7 +255,8 @@
 .list > .component_thing.view-grid img.thumbnail {
     transition: 0.2s ease-out transform;
 }
-.list > .component_thing.view-grid.not-selected:hover img.thumbnail {
+.list > .component_thing.view-grid.not-selected:hover img.thumbnail,
+.list > .component_thing.view-grid.not-selected.hover img.thumbnail {
     transform: scale(0.6);
 }
 .list > .component_thing.view-grid.not-selected:hover .image_layer {
@@ -279,6 +286,7 @@
     background-color: inherit;
 }
 .list > .component_thing.view-grid:hover .component_checkbox,
+.list > .component_thing.view-grid:focus-within .component_checkbox,
 .list > .component_thing.view-grid.selected .component_checkbox {
     transform: translateX(0px);
 }

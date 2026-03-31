@@ -38,3 +38,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+a.wavy {
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: rgba(0, 0, 0, 0.3);
+}

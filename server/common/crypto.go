@@ -11,7 +11,6 @@ import (
 	"encoding/hex"
 	"hash/fnv"
 	"io"
-	"io/ioutil"
 	"math/big"
 	mathrand "math/rand"
 	"os"
@@ -42,7 +41,7 @@ func DecryptString(secret string, data string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	d, err = decrypt([]byte(secret), d)
+	d, err = DecryptAESGCM([]byte(secret), d)
 	if err != nil {
 		return "", err
 	}
@@ -144,7 +143,7 @@ func EncryptAESGCM(key []byte, plaintext []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
-func decrypt(key []byte, ciphertext []byte) ([]byte, error) {
+func DecryptAESGCM(key []byte, ciphertext []byte) ([]byte, error) {
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -179,7 +178,7 @@ func decompress(something []byte) ([]byte, error) {
 		return []byte(""), nil
 	}
 	r.Close()
-	return ioutil.ReadAll(r)
+	return io.ReadAll(r)
 }
 
 func sign(something []byte) ([]byte, error) {
@@ -201,9 +200,10 @@ func GenerateID(params map[string]string) string {
 
 	for _, key := range orderedKeys {
 		switch key {
-		case "timestamp":
 		case "password":
 		case "path":
+		case "session":
+		case "timestamp":
 		default:
 			if val := params[key]; val != "" {
 				p += key + "=>" + params[key] + ", "

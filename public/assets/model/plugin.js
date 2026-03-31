@@ -23,6 +23,6 @@ export async function load(mime) {
     const specs = plugins[mime];
     if (!specs) return null;
     const [, url] = specs;
-    const module = await import(url);
+    const module = await import(new URL(url, import.meta.url).href);
     return module.default;
 }

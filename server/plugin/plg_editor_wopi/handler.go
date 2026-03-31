@@ -19,13 +19,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var WOPIRoutes = func(r *mux.Router, app *App) error {
+var WOPIRoutes = func(r *mux.Router) error {
 	r.HandleFunc(
 		"/api/wopi/iframe",
 		middleware.NewMiddlewareChain(
 			IframeContentHandler,
 			[]Middleware{middleware.SessionStart, middleware.LoggedInOnly},
-			*app,
 		),
 	).Methods("GET")
 	r.HandleFunc("/api/wopi/files/{path64}", WOPIHandler_CheckFileInfo).Methods("GET")
@@ -98,7 +97,6 @@ func WOPIExecute(w http.ResponseWriter, r *http.Request) func(func(*App, string,
 				fn(ctx, fullpath, w)
 			},
 			[]Middleware{wopiToCommonAPI, middleware.SessionStart},
-			App{},
 		).ServeHTTP(w, r)
 	}
 }
@@ -282,6 +280,9 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 	p := u.Query()
 	p.Set("WOPISrc", wopiSRC)
 	p.Set("access_token", ctx.Authorization)
+	if len(ctx.Languages) > 0 {
+		p.Set("lang", ctx.Languages[0])
+	}
 	u.RawQuery = p.Encode()
 	if newHost := rewrite_url(); newHost != "" {
 		if p, err := url.Parse(newHost); err == nil {

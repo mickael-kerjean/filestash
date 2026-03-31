@@ -2,70 +2,58 @@ package plg_search_sqlitefts
 
 import (
 	"container/heap"
-	"encoding/base64"
-	"hash/fnv"
+	"os"
 	"path/filepath"
-	"strconv"
+	"strings"
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/config"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/indexer"
 )
 
 func (this *Crawler) Discover(tx indexer.Manager) bool {
-	if this.FoldersUnknown.Len() == 0 {
-		this.CurrentPhase = PHASE_INDEXING
-		return false
-	}
-	var doc *Document
-	doc = heap.Pop(&this.FoldersUnknown).(*Document)
+	doc := this.DiscoverPop()
 	if doc == nil {
-		this.CurrentPhase = PHASE_INDEXING
+		this.Next()
 		return false
 	}
+	Log.Debug("search::debug phase=discovery path=%s", doc.Path)
 	files, err := this.Backend.Ls(doc.Path)
 	if err != nil {
-		this.CurrentPhase = ""
+		this.CurrentPhase = PHASE_PAUSE
 		return true
 	}
-	if len(files) == 0 {
-		return true
-	}
+	return this.DiscoverPush(doc, files, tx)
+}
 
-	// We don't want our indexer to go wild and diverge over time. As such we need to detect those edge cases: aka
-	// recursive folder structure. Our detection is relying on a Hash of []os.FileInfo
-	hashFiles := func() string {
-		var step int = len(files) / 50
-		if step == 0 {
-			step = 1
-		}
-		hasher := fnv.New32()
-		hasher.Write([]byte(strconv.Itoa(len(files))))
-		for i := 0; i < len(files); i = i + step {
-			hasher.Write([]byte(files[i].Name()))
-		}
-		return base64.StdEncoding.EncodeToString(hasher.Sum(nil))
-	}()
-	if hashFiles == this.lastHash {
-		return true
+func (this *Crawler) DiscoverPop() *Document {
+	if this.FoldersUnknown.Len() == 0 {
+		return nil
 	}
-	this.lastHash = ""
-	for i := 0; i < this.FoldersUnknown.Len(); i++ {
-		if this.FoldersUnknown[i].Hash == hashFiles && filepath.Base(doc.Path) != filepath.Base(this.FoldersUnknown[i].Path) {
-			this.lastHash = hashFiles
-			return true
-		}
-	}
+	return heap.Pop(&this.FoldersUnknown).(*Document)
+}
 
-	// Insert the newly found data within our index
+func (this *Crawler) DiscoverPush(doc *Document, files []os.FileInfo, tx indexer.Manager) bool {
+	existing := make(map[string]bool, len(files))
+	excluded := SEARCH_EXCLUSION()
 	for i := range files {
 		f := files[i]
 		name := f.Name()
+		existing[name] = true
+		skip := false
+		for i := 0; i < len(excluded); i++ {
+			if name == excluded[i] || strings.Contains(doc.Path, excluded[i]) {
+				skip = true
+			}
+		}
+		if skip {
+			continue
+		}
 		if f.IsDir() {
 			var performPush bool = false
-			p := filepath.Join(doc.Path, name)
-			p += "/"
-			if err = dbInsert(doc.Path, f, tx); err == nil {
+			p := filepath.Join(doc.Path, name) + "/"
+			if err := dbInsert(doc.Path, f, tx); err == nil {
 				performPush = true
 			} else if err == indexer.ErrConstraint {
 				performPush = func(path string) bool {
@@ -86,25 +74,30 @@ func (this *Crawler) Discover(tx indexer.Manager) bool {
 			} else {
 				Log.Error("search::indexing insert_index (%v)", err)
 			}
-			if performPush == true {
+			if performPush {
 				heap.Push(&this.FoldersUnknown, &Document{
 					Type:    "directory",
 					Name:    name,
 					Path:    p,
 					Size:    f.Size(),
 					ModTime: f.ModTime(),
-					Hash:    hashFiles,
 				})
 			}
 		} else {
-			if err = dbInsert(doc.Path, f, tx); err != nil {
-				if err == indexer.ErrConstraint {
-					return false
-				}
-				Log.Warning("search::insert index_error (%v)", err)
+			if err := dbUpsert(doc.Path, f, tx); err != nil {
 				return false
 			}
 		}
+	}
+	if rows, err := tx.FindParent(doc.Path); err == nil {
+		for rows.Next() {
+			if r, err := rows.Value(); err == nil {
+				if !existing[r.Name] {
+					tx.RemoveAll(r.Path)
+				}
+			}
+		}
+		rows.Close()
 	}
 	return true
 }

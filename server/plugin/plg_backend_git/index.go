@@ -2,19 +2,20 @@ package plg_backend_git
 
 import (
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"golang.org/x/crypto/ssh"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
-	sshgit "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/go-git/go-git/v6"
+	"github.com/go-git/go-git/v6/plumbing"
+	"github.com/go-git/go-git/v6/plumbing/object"
+	"github.com/go-git/go-git/v6/plumbing/transport"
+	"github.com/go-git/go-git/v6/plumbing/transport/http"
+	sshgit "github.com/go-git/go-git/v6/plumbing/transport/ssh"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"golang.org/x/crypto/ssh"
 )
 
 var git_cache AppCache
@@ -76,15 +77,15 @@ func (git Git) Init(params map[string]string, app *App) (IBackend, error) {
 		p.commit = "{action} ({filename}): {path}"
 	}
 	if p.authorName == "" {
-		p.authorName = "Filestash"
+		p.authorName = APPNAME
 	}
-	if p.authorEmail == "" {
+	if p.authorEmail == "" && !IsWhiteLabel() {
 		p.authorEmail = "https://filestash.app"
 	}
 	if p.committerName == "" {
-		p.committerName = "Filestash"
+		p.committerName = APPNAME
 	}
-	if p.committerEmail == "" {
+	if p.committerEmail == "" && !IsWhiteLabel() {
 		p.committerEmail = "https://filestash.app"
 	}
 
@@ -194,11 +195,34 @@ func (g Git) Ls(path string) ([]os.FileInfo, error) {
 	if err != nil {
 		return nil, NewError(err.Error(), 403)
 	}
-	file, err := SafeOsOpenFile(p, os.O_RDONLY, os.ModePerm)
+	f, err := SafeOsOpenFile(p, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
-	return file.Readdir(0)
+	files, err := f.Readdir(-1)
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return files, f.Close()
+}
+
+func (g Git) Stat(path string) (os.FileInfo, error) {
+	g.git.refresh()
+	p, err := g.path(path)
+	if err != nil {
+		return nil, NewError(err.Error(), 403)
+	}
+	f, err := SafeOsOpenFile(p, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+	finfo, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	return finfo, f.Close()
 }
 
 func (g Git) Cat(path string) (io.ReadCloser, error) {
@@ -321,7 +345,7 @@ func (g *GitLib) open(params *GitParams, path string) (*git.Repository, error) {
 		if err != nil {
 			return nil, err
 		}
-		g, err := git.PlainClone(path, false, &git.CloneOptions{
+		g, err := git.PlainClone(path, &git.CloneOptions{
 			URL:           g.params.repo,
 			Depth:         1,
 			ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", g.params.branch)),

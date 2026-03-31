@@ -18,6 +18,7 @@ import ctrlError from "../ctrl_error.js";
 import config$ from "./model_config.js";
 import backend$ from "./model_backend.js";
 import { setCurrentBackend, getCurrentBackend, getURLParams } from "./ctrl_form_state.js";
+import { updateBackend } from "../filespage/cache.js";
 
 const connections$ = config$.pipe(
     rxjs.map(({ connections, auth }) => (connections || []).map((conn) => {
@@ -200,11 +201,12 @@ export default async function(render) {
             return rxjs.of(null).pipe(
                 rxjs.tap(() => toggleLoader(true)),
                 rxjs.mergeMap(() => createSession(formData)),
-                rxjs.tap(({ responseJSON }) => {
+                rxjs.tap(({ home, backendID }) => {
+                    updateBackend(backendID);
                     let redirectURL = toHref("/files/");
                     const GET = getURLParams();
                     if (GET["next"]) redirectURL = GET["next"];
-                    else if (responseJSON.result) redirectURL = toHref("/files" + responseJSON.result);
+                    else if (home) redirectURL = toHref("/files" + home);
 
                     if (redirectURL.startsWith("/api/")) return location.replace(redirectURL);
                     navigate(forwardURLParams(redirectURL, ["nav"]));

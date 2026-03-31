@@ -1,9 +1,3 @@
-import { init as initConfig, getVersion, get } from "../model/config.js";
-
-const DEBOUNCETIME = 100;
-
-await initConfig();
-
 class FilestashTable extends HTMLElement {
     constructor() {
         super();
@@ -11,7 +5,7 @@ class FilestashTable extends HTMLElement {
 
         this.iframe = document.createElement("iframe");
         this.iframe.setAttribute("style", "width: 100%; height: 100%; border: none; display: block;");
-        this.iframe.setAttribute("sandbox", "allow-downloads allow-scripts allow-presentation allow-forms");
+        this.iframe.setAttribute("sandbox", "allow-downloads allow-same-origin allow-scripts allow-presentation allow-forms");
         this.shadowRoot.appendChild(this.iframe);
 
         this.debounce = null;
@@ -30,7 +24,7 @@ class FilestashTable extends HTMLElement {
                     type: "refresh",
                     payload: { name: this.getAttribute("name"), src: this.getAttribute("src") },
                 }, "*");
-            }, DEBOUNCETIME);
+            }, 100);
         }
     }
 
@@ -42,7 +36,6 @@ class FilestashTable extends HTMLElement {
     connectedCallback() {
         const src = this.getAttribute("src") || "";
         const name = this.getAttribute("name") || "main.dat";
-        const mime = get("mime", {})[name.split(".").pop().toLowerCase()];
 
         this.style.display = "inline-block";
         this.iframe.srcdoc = `<!DOCTYPE html>
@@ -52,7 +45,7 @@ class FilestashTable extends HTMLElement {
                 <title></title>
             </head>
             <body>
-                <div role="main" id="app">
+                <div id="app">
                     <component-bootscreen></component-bootscreen>
                 </div>
 
@@ -81,31 +74,46 @@ class FilestashTable extends HTMLElement {
                     }
                 });
                 </script>
-
                 <script type="module" defer>
-                import { render } from "${import.meta.url}/../../${getVersion()}/index.js";
-                import * as Application from "${import.meta.url}/../../${getVersion()}/pages/viewerpage/application_table.js";
+                    const [{ version, mimes }] = await Promise.all([
+                        fetch("${import.meta.url}/../../../api/config").then(async (resp) => {
+                            if (!resp.ok) return "na";
+                            const { result } = await resp.json();
+                            return { version: result.version, mimes: result.mime };
+                        }),
+                        import("${import.meta.url}/../../boot/bundler_init.js").then(async () => {
+                            await new Promise((resolve, reject) => document.head.appendChild(Object.assign(document.createElement("script"), {
+                                type: "module",
+                                src: new URL("../bundle.js", "${import.meta.url}"),
+                                onload: resolve,
+                                onerror: reject,
+                            })));
+                            await import("${import.meta.url}/../../boot/bundler_complete.js");
+                        }),
+                    ]);
 
-                const $app = document.querySelector("#app");
-                render(Application, $app, {
-                    mime: "${mime}",
-                    hasMenubar: true,
-                    getFilename: () => "${name}",
-                    getDownloadUrl: () => "${src}",
-                });
-                window.addEventListener("message", (event) => {
-                    if(event.data.type === "refresh") {
+                    const { render } = await import("${import.meta.url}/../../"+ version +"/index.js");
+                    const Application = await import("${import.meta.url}/../../"+ version +"/pages/viewerpage/application_table.js");
+
+                    const $app = document.querySelector("#app");
+                    const mime = mimes["${name}".split(".").pop().toLowerCase()];
+                    render(Application, $app, {
+                        mime: mime,
+                        hasMenubar: true,
+                        getFilename: () => "${name}",
+                        getDownloadUrl: () => "${src}",
+                    });
+                    window.addEventListener("message", (event) => {
+                        if(event.data.type !== "refresh") return;
                         render(Application, $app, {
-                            mime: "${mime}",
+                            mime: mime,
                             hasMenubar: true,
                             getFilename: () => event.data.payload.name,
                             getDownloadUrl: () => event.data.payload.src,
                         });
-                    }
-                });
+                    });
                 </script>
 
-                <script type="module" src="${import.meta.url}/../../${getVersion()}/components/modal.js"></script>
                 <component-modal></component-modal>
             </body>
         </html>`;

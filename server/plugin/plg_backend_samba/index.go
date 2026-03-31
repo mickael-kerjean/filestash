@@ -193,6 +193,15 @@ func (smb Samba) Ls(path string) ([]os.FileInfo, error) {
 	return fs, fromSambaErr(err)
 }
 
+func (smb Samba) Stat(path string) (os.FileInfo, error) {
+	share, path, err := smb.toSambaPath(path)
+	if err != nil {
+		return nil, err
+	}
+	f, err := share.Stat(path)
+	return f, fromSambaErr(err)
+}
+
 func (smb Samba) Cat(path string) (io.ReadCloser, error) {
 	share, path, err := smb.toSambaPath(path)
 	if err != nil {

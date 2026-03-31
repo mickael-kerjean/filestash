@@ -14,6 +14,7 @@ import { sort } from "../../filespage/helper.js";
 import { getState$ as getParams$, init as initParams } from "../../filespage/state_config.js";
 
 export default async function(render, { $img }) {
+    if (window.self !== window.top) return;
     const lsCache = await fscache().get(join(location, getCurrentPath() + "/../"));
     if (!lsCache) return;
     const params = await getParams$().pipe(rxjs.first()).toPromise();
@@ -104,7 +105,7 @@ function initMobileNavigation({ $img, $navigation }) {
         active: false,
         originX: null,
         originT: null,
-        dist:   null,
+        dist: null,
     };
 
     effect(rxjs.fromEvent($img, "touchstart", { passive: true }).pipe(rxjs.debounceTime(10), rxjs.tap((event) => {
@@ -121,7 +122,7 @@ function initMobileNavigation({ $img, $navigation }) {
         $img.style.transform = `translateX(${state.dist}px)`;
     })));
 
-    effect(rxjs.fromEvent($img, "touchend").pipe(rxjs.tap(async (event) => {
+    effect(rxjs.fromEvent($img, "touchend").pipe(rxjs.tap(async(event) => {
         if (state.active === false) return;
         state.active = false;
 
@@ -147,10 +148,13 @@ function initMobileNavigation({ $img, $navigation }) {
         }
 
         $navlink.click();
-        await animate($img, { time: 200, keyframes: [
-            { transform: `translateX(${state.dist}px)`, opacity: 1 },
-            { transform: `translateX(${$img.clientWidth*Math.sign(state.dist)}px)`, opacity: 0 },
-        ]});
+        await animate($img, {
+            time: 200,
+            keyframes: [
+                { transform: `translateX(${state.dist}px)`, opacity: 1 },
+                { transform: `translateX(${$img.clientWidth*Math.sign(state.dist)}px)`, opacity: 0 },
+            ]
+        });
         $img.classList.add("hidden");
     })));
 }

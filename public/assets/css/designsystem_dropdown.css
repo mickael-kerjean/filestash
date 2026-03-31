@@ -68,6 +68,6 @@ body:not(.dark-mode) .component_dropdown .dropdown_container {
 }
 
 .component_dropdown.active .dropdown_container li:hover {
-    background: var(--border);
+    background: rgba(198,200,204,0.25);
     border-radius: 3px;
 }

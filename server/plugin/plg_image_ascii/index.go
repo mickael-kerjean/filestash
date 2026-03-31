@@ -10,24 +10,24 @@ import (
 )
 
 func init() {
-	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, error) {
+	Hooks.Register.ProcessFileContentBeforeSend(func(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, req *http.Request) (io.ReadCloser, bool, error) {
 		value, isIn := req.URL.Query()["ascii"]
 		if isIn == false {
-			return reader, nil
+			return reader, false, nil
 		} else if strings.Join(value, "") == "false" {
-			return reader, nil
+			return reader, false, nil
 		}
 
 		img, _, err := image.Decode(reader)
 		reader.Close()
 		if err != nil {
-			return NewReadCloserFromBytes([]byte("")), err
+			return NewReadCloserFromBytes([]byte("")), true, err
 		}
 		opt := convert.DefaultOptions
 		opt.FixedWidth = 80
 		opt.FixedHeight = 40
 		out := convert.NewImageConverter().Image2ASCIIString(img, &opt)
 		(*res).Header().Set("Content-Type", "application/octet-stream")
-		return NewReadCloserFromBytes([]byte(out)), nil
+		return NewReadCloserFromBytes([]byte(out)), true, nil
 	})
 }

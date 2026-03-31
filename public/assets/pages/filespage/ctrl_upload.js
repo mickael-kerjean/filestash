@@ -15,6 +15,7 @@ import t from "../../locales/index.js";
 
 const workers$ = new rxjs.BehaviorSubject({ tasks: [], size: null });
 const ABORT_ERROR = new AjaxError("aborted", null, "ABORTED");
+const TUS_CHECKSUM = false;
 
 export default async function(render) {
     if (!document.querySelector(`[is="component_upload_queue"]`)) {
@@ -24,7 +25,7 @@ export default async function(render) {
     }
 
     effect(getPermission().pipe(
-        rxjs.filter(() => calculatePermission(currentPath(), "new-file")),
+        rxjs.filter(() => calculatePermission(currentPath(), "upload")),
         rxjs.tap(() => {
             const $page = createFragment(`
                 <div is="component_filezone"></div>
@@ -45,14 +46,9 @@ function componentUploadFAB(render, { workers$ }) {
     const $page = createElement(`
         <div class="component_mobilefileupload no-select">
             <form>
-                <input type="file" name="file" id="mobilefileupload" multiple />
-                <label for="mobilefileupload" title="${t("Upload")}">
-                    <img
-                        class="component_icon"
-                        draggable="false"
-                        alt="upload"
-                        src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMzg0IDUxMiI+CiAgPHBhdGggZmlsbD0iI2YyZjJmMiIgZD0iTSAzNjAsNDYwIEggMjQgQyAxMC43LDQ2MCAwLDQ1My4zIDAsNDQwIHYgLTEyIGMgMCwtMTMuMyAxMC43LC0yMCAyNCwtMjAgaCAzMzYgYyAxMy4zLDAgMjQsNi43IDI0LDIwIHYgMTIgYyAwLDEzLjMgLTEwLjcsMjAgLTI0LDIwIHoiIC8+CiAgPHBhdGggZmlsbD0iI2YyZjJmMiIgZD0ibSAyMjYuNTUzOSwxNDkuMDAzMDMgdiAxNjEuOTQxIGMgMCw2LjYyNyAtNS4zNzMsMTIgLTEyLDEyIGggLTQ0IGMgLTYuNjI3LDAgLTEyLC01LjM3MyAtMTIsLTEyIHYgLTE2MS45NDEgaCAtNTIuMDU5IGMgLTIxLjM4MiwwIC0zMi4wOSwtMjUuODUxIC0xNi45NzEsLTQwLjk3MSBsIDg2LjA1OSwtODYuMDU4OTk3IGMgOS4zNzMsLTkuMzczIDI0LjU2OSwtOS4zNzMgMzMuOTQxLDAgbCA4Ni4wNTksODYuMDU4OTk3IGMgMTUuMTE5LDE1LjExOSA0LjQxMSw0MC45NzEgLTE2Ljk3MSw0MC45NzEgeiIgLz4KPC9zdmc+Cg=="
-                    />
+                <input type="file" name="file" id="mobilefileupload" multiple tabindex="0" />
+                <label for="mobilefileupload" title="${t("Upload")}" role="button">
+                    <img class="component_icon" draggable="false" alt="upload" aria-hidden="true" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMzg0IDUxMiI+CiAgPHBhdGggZmlsbD0iI2YyZjJmMiIgZD0iTSAzNjAsNDYwIEggMjQgQyAxMC43LDQ2MCAwLDQ1My4zIDAsNDQwIHYgLTEyIGMgMCwtMTMuMyAxMC43LC0yMCAyNCwtMjAgaCAzMzYgYyAxMy4zLDAgMjQsNi43IDI0LDIwIHYgMTIgYyAwLDEzLjMgLTEwLjcsMjAgLTI0LDIwIHoiIC8+CiAgPHBhdGggZmlsbD0iI2YyZjJmMiIgZD0ibSAyMjYuNTUzOSwxNDkuMDAzMDMgdiAxNjEuOTQxIGMgMCw2LjYyNyAtNS4zNzMsMTIgLTEyLDEyIGggLTQ0IGMgLTYuNjI3LDAgLTEyLC01LjM3MyAtMTIsLTEyIHYgLTE2MS45NDEgaCAtNTIuMDU5IGMgLTIxLjM4MiwwIC0zMi4wOSwtMjUuODUxIC0xNi45NzEsLTQwLjk3MSBsIDg2LjA1OSwtODYuMDU4OTk3IGMgOS4zNzMsLTkuMzczIDI0LjU2OSwtOS4zNzMgMzMuOTQxLDAgbCA4Ni4wNTksODYuMDU4OTk3IGMgMTUuMTE5LDE1LjExOSA0LjQxMSw0MC45NzEgLTE2Ljk3MSw0MC45NzEgeiIgLz4KPC9zdmc+Cg==" />
                 </label>
             </form>
         </div>
@@ -81,7 +77,10 @@ function componentFilezone(render, { workers$ }) {
         workers$.next({ loading: true });
 
         if (e.dataTransfer.items instanceof window.DataTransferItemList) {
+            let i = 0;
+            const tickID = setInterval(() => workers$.next({ loading: true, size: ++i }), 1000);
             workers$.next(await processItems(e.dataTransfer.items));
+            clearInterval(tickID);
         } else if (e.dataTransfer.files instanceof window.FileList) {
             workers$.next(await processFiles(e.dataTransfer.files));
         } else {
@@ -149,10 +148,10 @@ function componentUploadQueue(render, { workers$ }) {
     })).subscribe();
 
     // feature2: setup the task queue in the dom
-    workers$.subscribe(({ tasks, loading = false, size }) => {
+    workers$.subscribe(({ tasks, loading = false, size = 0 }) => {
         if (loading) {
             $page.classList.remove("hidden");
-            updateDOMGlobalTitle($page, t("Loading")+ "...");
+            updateDOMGlobalTitle($page, t("Loading")+ ".".repeat((size+2)%3+1));
             return;
         }
         if (tasks.length === 0) return;
@@ -354,24 +353,30 @@ function workerImplFile({ progress, speed }) {
         async run({ file, path, virtual }) {
             const _file = await file();
             const executeJob = () => this.prepareJob({ file: _file, path, virtual });
-            this.retry = () => executeJob();
+            this.retry = () => {
+                virtual.before();
+                return executeJob();
+            };
             return executeJob();
         }
 
         async prepareJob({ file, path, virtual }) {
             const chunkSize = getConfig("upload_chunk_size", 0) *1024*1024;
             const numberOfChunks = Math.ceil(file.size / chunkSize);
-            const headersNoCache = {
+            const cacheHeaders = {
                 "Cache-Control": "no-store",
                 "Pragma": "no-cache",
             };
-
+            const tusHeaders = {
+                "Tus-Resumable": "1.0.0",
+                ...cacheHeaders,
+            };
             // Case1: basic upload
             if (chunkSize === 0 || numberOfChunks === 0 || numberOfChunks === 1) {
                 try {
-                    await executeHttp.call(this, toHref(`/api/files/cat?path=${encodeURIComponent(path)}`), {
+                    await executeHttp.call(this, toHref(`/api/files/save?path=${encodeURIComponent(path)}`), {
                         method: "POST",
-                        headers: { ...headersNoCache },
+                        headers: { ...cacheHeaders },
                         body: file,
                         progress,
                         speed,
@@ -386,40 +391,71 @@ function workerImplFile({ progress, speed }) {
             }
 
             // Case2: chunked upload => TUS: https://www.ietf.org/archive/id/draft-tus-httpbis-resumable-uploads-protocol-00.html
-            try {
-                let resp = await executeHttp.call(this, toHref(`/api/files/cat?path=${encodeURIComponent(path)}&proto=tus`), {
-                    method: "POST",
-                    headers: {
-                        "Upload-Length": file.size,
-                        ...headersNoCache,
-                    },
+            const apiURL = toHref(`/api/files/save?path=${encodeURIComponent(path)}`);
+            let uploadURL = "";
+            let offset = 0;
+            try { // tus: retry mechanism
+                const resp = await executeHttp.call(this, apiURL, {
+                    method: "HEAD",
+                    headers: { ...tusHeaders },
                     body: null,
-                    progress: (n) => progress(0),
+                    progress: () => {},
                     speed,
                 });
-                const url = resp.headers.location;
-                if (!url.startsWith(toHref("/api/files/cat?"))) {
-                    throw new Error("Internal Error");
+                if (file.size === parseInt(resp.headers["upload-length"])) {
+                    const tmp = parseInt(resp.headers["upload-offset"]);
+                    if (tmp > 0) {
+                        offset = tmp;
+                        uploadURL = apiURL;
+                    }
                 }
-                for (let i=0; i<numberOfChunks; i++) {
-                    if (this.xhr === null) break;
-                    const offset = chunkSize * i;
-                    resp = await executeHttp.call(this, url, {
-                        method: "PATCH",
+            } catch (err) {}
+            if (offset === 0) { // tus: upload creation
+                try {
+                    const resp = await executeHttp.call(this, apiURL, {
+                        method: "POST",
                         headers: {
-                            "Upload-Offset": offset,
-                            ...headersNoCache,
+                            ...tusHeaders,
+                            "Upload-Length": file.size,
                         },
-                        body: file.slice(offset, offset + chunkSize),
+                        body: null,
+                        progress: () => {},
+                        speed,
+                    });
+                    uploadURL = resp.headers.location;
+                    if (!uploadURL.startsWith(toHref("/api/files/save?"))) throw new Error("Internal Error");
+                } catch (err) {
+                    virtual.afterError();
+                    if (err === ABORT_ERROR) return;
+                    throw err;
+                }
+            }
+            try {
+                for (let i=Math.ceil(offset/chunkSize); i<numberOfChunks; i++) {
+                    if (this.xhr === null) break;
+                    const chunk = file.slice(offset, offset + chunkSize);
+                    const headers = {
+                        ...tusHeaders,
+                        "Content-Type": "application/offset+octet-stream",
+                        "Upload-Offset": offset,
+                    };
+                    if (TUS_CHECKSUM && crypto.subtle.digest) {
+                        const hash = await crypto.subtle.digest("SHA-1", await chunk.arrayBuffer());
+                        const checksum = [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("");
+                        headers["Upload-Checksum"] = `sha1 ${checksum}`;
+                    }
+                    await executeHttp.call(this, uploadURL, {
+                        method: "PATCH",
+                        headers,
+                        body: chunk,
                         progress: (p) => {
-                            const chunksAlreadyDownloaded = i * chunkSize;
-                            const currentChunkDownloaded = p / 100 * (
-                                i !== numberOfChunks - 1 ? chunkSize : (file.size % chunkSize) || chunkSize
-                            );
-                            progress(Math.floor(100 * (chunksAlreadyDownloaded + currentChunkDownloaded) / file.size));
+                            const start = Math.ceil(100 * offset / file.size);
+                            const end = Math.ceil(100 * Math.min(file.size, offset + chunkSize) / file.size);
+                            progress(Math.floor(start + (end - start) * p / 100));
                         },
                         speed,
                     });
+                    offset += chunkSize;
                 }
                 virtual.afterSuccess();
             } catch (err) {
@@ -450,7 +486,10 @@ function workerImplDirectory({ progress }) {
          */
         async run({ virtual, path }) {
             const executeJob = () => this.prepareJob({ virtual, path });
-            this.retry = () => executeJob();
+            this.retry = () => {
+                virtual.before();
+                return executeJob();
+            };
             return executeJob();
         }
 
@@ -619,10 +658,11 @@ async function processItems(itemList) {
             if (entry === null) continue;
             else if (entry.isFile) {
                 const entrySize = await new Promise((resolve) => {
-                    if (typeof entry.getMetadata === "function") {
-                        entry.getMetadata(({ size }) => resolve(size));
-                    }
-                    else resolve(null); // eg: firefox
+                    if (typeof entry.getMetadata !== "function") return resolve(-1); // eg: firefox
+                    entry.getMetadata(
+                        ({ size }) => resolve(size),
+                        (err) => resolve(-1),
+                    );
                 });
                 task = {
                     type: "file",

@@ -12,7 +12,13 @@ export default function(render) {
 
     effect(deleteSession().pipe(
         rxjs.mergeMap(setup_config),
+        rxjs.tap(() => { while (hooks.length) hooks.pop()(); }),
         rxjs.tap(() => getConfig("logout") ? location.href = getConfig("logout") : navigate(toHref("/"))),
         rxjs.catchError(ctrlError(render)),
     ));
+}
+
+const hooks = [];
+export function onLogout(fn) {
+    hooks.push(fn);
 }

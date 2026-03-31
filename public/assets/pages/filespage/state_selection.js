@@ -101,20 +101,14 @@ function _selectionHelper(fn) {
             continue;
         }
         const [basepath] = extractPath(curr.path);
-        if (!selections[i-1]) {
-            for (let j=0; j<=selections[i].n; j++) {
-                if (isSelected(j) === false) continue;
-                const file = selections[i].files[j];
-                set.add(basepath + file.name + (file.type === "directory" ? "/" : ""));
-            }
-        } else {
-            const min = Math.min(selections[i].n, selections[i-1]?.n || 0);
-            const max = Math.max(selections[i].n, selections[i-1]?.n || 0);
-            for (let j=min; j<=max; j++) {
-                if (isSelected(j) === false) continue;
-                const file = selections[i].files[j];
-                set.add(basepath + file.name + (file.type === "directory" ? "/" : ""));
-            }
+
+        const min = i === 0 ? 0 : Math.min(selections[i].n, selections[i-1].n);
+        const max = i === 0 ? selections[i].n : Math.max(selections[i].n, selections[i-1].n);
+        for (let j=min; j<=max; j++) {
+            if (isSelected(j) === false) continue;
+            const { offline, name, type } = selections[i].files[j];
+            if (offline === true) continue;
+            set.add(basepath + name + (type === "directory" ? "/" : ""));
         }
     }
     return fn(set);

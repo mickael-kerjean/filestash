@@ -28,7 +28,7 @@ var (
 )
 
 func init() {
-	// STEP1: setup app path
+	// STEP1: setup app
 	rootPath := "data/"
 	if p := os.Getenv("FILESTASH_PATH"); p != "" {
 		rootPath = p
@@ -40,7 +40,7 @@ func init() {
 	CERT_PATH = filepath.Join(rootPath, CERT_PATH)
 	TMP_PATH = filepath.Join(rootPath, TMP_PATH)
 	PLUGIN_PATH = filepath.Join(rootPath, PLUGIN_PATH)
-	base = strings.TrimSuffix(base, "/")
+	BASE = strings.TrimSuffix(os.Getenv("FILESTASH_BASE"), "/")
 	COOKIE_PATH_ADMIN = WithBase(COOKIE_PATH_ADMIN)
 	COOKIE_PATH = WithBase(COOKIE_PATH)
 	URL_SETUP = WithBase(URL_SETUP)
@@ -56,9 +56,11 @@ func init() {
 }
 
 var (
+	APPNAME                           string = "Filestash"
+	BASE                              string
 	BUILD_REF                         string
 	BUILD_DATE                        string
-	LICENSE                           string = env("LICENSE", "agpl")
+	LICENSE                           string = "agpl"
 	SECRET_KEY                        string
 	SECRET_KEY_DERIVATE_FOR_PROOF     string
 	SECRET_KEY_DERIVATE_FOR_ADMIN     string
@@ -67,10 +69,6 @@ var (
 	SECRET_KEY_DERIVATE_FOR_SIGNATURE string
 )
 
-/*
- * Improve security by calculating derivative of the secret key to restrict the attack surface
- * in the worst case scenario with one compromise secret key
- */
 func InitSecretDerivate(secret string) {
 	SECRET_KEY = secret
 	SECRET_KEY_DERIVATE_FOR_PROOF = Hash("PROOF_"+SECRET_KEY, len(SECRET_KEY))
@@ -80,26 +78,27 @@ func InitSecretDerivate(secret string) {
 	SECRET_KEY_DERIVATE_FOR_SIGNATURE = Hash("SGN_"+SECRET_KEY, len(SECRET_KEY))
 }
 
-var base = os.Getenv("FILESTASH_BASE")
-
 func WithBase(href string) string {
-	if base == "" {
+	if BASE == "" {
 		return href
 	}
-	return base + href
+	return BASE + href
 }
 
 func TrimBase(href string) string {
-	if base == "" {
+	if BASE == "" {
 		return href
 	}
-	return strings.TrimPrefix(href, base)
+	return strings.TrimPrefix(href, BASE)
 }
 
-func env(key string, val string) string {
-	l := os.Getenv(key)
-	if l != "" {
-		return l
+func IsWhiteLabel() bool {
+	return APPNAME != "Filestash"
+}
+
+func WhiteLabelText(a, b string) string {
+	if IsWhiteLabel() {
+		return b
 	}
-	return val
+	return a
 }

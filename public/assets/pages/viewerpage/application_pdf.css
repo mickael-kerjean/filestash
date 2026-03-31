@@ -1,5 +1,5 @@
 .component_page_viewerpage .component_pdfviewer {
-    background: #525659;
+    background: var(--surface);
     text-align:center;
 }
 .component_page_viewerpage .component_pdfviewer [data-bind="pdf"] {

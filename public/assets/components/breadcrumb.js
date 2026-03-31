@@ -1,6 +1,7 @@
 import { toHref } from "../lib/skeleton/router.js";
 import { animate, slideYOut, slideYIn, opacityOut } from "../lib/animate.js";
 import { forwardURLParams } from "../lib/path.js";
+import { safe } from "../lib/dom.js";
 import assert from "../lib/assert.js";
 import { settingsSave } from "../lib/store.js";
 import { get as getConfig } from "../model/config.js";
@@ -27,15 +28,15 @@ class ComponentBreadcrumb extends HTMLElement {
 
     async __init() {
         this.innerHTML = `
-        <div class="component_breadcrumb container" role="navigation">
+        <nav class="component_breadcrumb container" aria-label="Breadcrumb">
             <div class="breadcrumb no-select">
                 <div class="ul">
                     <img alt="sidebar-open" class="hidden" src="data:image/svg+xml;base64,PHN2ZwogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHZpZXdCb3g9IjAgMCAxNiAxNiIKICAgd2lkdGg9IjE2IgogICBoZWlnaHQ9IjE2IgogICBmaWxsPSIjN2Y3ZjdmIj4KICA8cGF0aAogICAgIGQ9Im0gNi45MjY1NTM2LDguMTc3IC0yLjM5NiwyLjM5NiBhIDAuMjUsMC4yNSAwIDAgMSAtMC40MjcsLTAuMTc3IFYgNS42MDQgYSAwLjI1LDAuMjUgMCAwIDEgMC40MjcsLTAuMTc3IGwgMi4zOTYsMi4zOTYgYSAwLjI1LDAuMjUgMCAwIDEgMCwwLjM1NCB6IiAvPgogIDxwYXRoCiAgICAgZD0iTTAgMS43NUMwIC43ODQuNzg0IDAgMS43NSAwaDEyLjVDMTUuMjE2IDAgMTYgLjc4NCAxNiAxLjc1djEyLjVBMS43NSAxLjc1IDAgMCAxIDE0LjI1IDE2SDEuNzVBMS43NSAxLjc1IDAgMCAxIDAgMTQuMjVabTEuNzUtLjI1YS4yNS4yNSAwIDAgMC0uMjUuMjV2MTIuNWMwIC4xMzguMTEyLjI1LjI1LjI1SDkuNXYtMTNabTEyLjUgMTNhLjI1LjI1IDAgMCAwIC4yNS0uMjVWMS43NWEuMjUuMjUgMCAwIDAtLjI1LS4yNUgxMXYxM1oiIC8+Cjwvc3ZnPgo=">
-                    <span data-bind="path"></span>
+                    <span data-bind="path" role="status"></span>
                     <div class="li component_logout">${this.__htmlLogout()}</div>
                 </div>
             </div>
-        </div>`;
+        </nav>`;
         assert.type(this.querySelector("img[alt=\"sidebar-open\"]"), HTMLElement).onclick = () => {
             settingsSave({ visible: true }, "sidebar");
             window.dispatchEvent(new Event("resize"));
@@ -95,7 +96,7 @@ class ComponentBreadcrumb extends HTMLElement {
                 <div class="component_path-element n${idx}">
                     <div class="li component_path-element-wrapper">
                         <div class="label">
-                            <div>${limitSize(label)}</div><span></span>
+                            <div aria-current="location">${safe(limitSize(label))}</div><span></span>
                         </div>
                     </div>
                 </div>`;
@@ -111,16 +112,15 @@ class ComponentBreadcrumb extends HTMLElement {
                 if (minify) return `
                     ...
                     <span class="title">
-                        ${limitSize(label, true)}
+                        ${safe(limitSize(label, true))}
                     </span>
                 `;
-                return `<div>${limitSize(label)}</div>`;
+                return `<div>${safe(limitSize(label))}</div>`;
             })();
-
             return `
-                <div class="component_path-element n${idx}" data-path="${pathChunks.slice(0, idx+1).join("/") + "/"}">
+                <div class="component_path-element n${idx}" data-path="${safe(pathChunks.slice(0, idx+1).join("/")) + "/"}">
                     <div class="li component_path-element-wrapper">
-                        <a class="label" href="${forwardURLParams(toHref("/files" + encodeURIComponent(link).replaceAll("%2F", "/")), ["share", "canary"])}" data-link>
+                        <a class="label" aria-label="${safe(label)}" href="${forwardURLParams(toHref("/files" + encodeURIComponent(link).replaceAll("%2F", "/")), ["share", "canary"])}" data-link draggable="false">
                             ${tmpl}
                         </a>
                         <div class="component_separator">
@@ -135,11 +135,13 @@ class ComponentBreadcrumb extends HTMLElement {
         if (previous !== null && path.indexOf(previous) >= 0) {
             const previousChunks = previous.split("/");
             const nToAnimate = pathChunks.length - previousChunks.length;
+            const tasks = [];
             for (let i=0; i<nToAnimate; i++) {
                 const n = pathChunks.length - i - 1;
                 const $chunk = assert.type(this.querySelector(`.component_path-element.n${n}`), HTMLElement);
-                await animate($chunk, { time: 100, keyframes: slideYIn(-5) });
+                tasks.push(animate($chunk, { time: 100, keyframes: slideYIn(-5) }));
             }
+            await Promise.all(tasks);
         }
     }
 
@@ -196,7 +198,7 @@ class ComponentBreadcrumb extends HTMLElement {
     __htmlLogout() {
         if (window.self !== window.top) return ""; // no logout button from an iframe
         return `
-            <a href="${toHref("/logout")}" data-link>
+            <a href="${toHref("/logout")}" data-link draggable="false">
                 <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0ODkuODg4IDQ4OS44ODgiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDQ4OS44ODggNDg5Ljg4ODsiPgogIDxwYXRoIGZpbGw9IiM2ZjZmNmYiIGQ9Ik0yNS4zODMsMjkwLjVjLTcuMi03Ny41LDI1LjktMTQ3LjcsODAuOC0xOTIuM2MyMS40LTE3LjQsNTMuNC0yLjUsNTMuNCwyNWwwLDBjMCwxMC4xLTQuOCwxOS40LTEyLjYsMjUuNyAgICBjLTM4LjksMzEuNy02Mi4zLDgxLjctNTYuNiwxMzYuOWM3LjQsNzEuOSw2NSwxMzAuMSwxMzYuOCwxMzguMWM5My43LDEwLjUsMTczLjMtNjIuOSwxNzMuMy0xNTQuNWMwLTQ4LjYtMjIuNS05Mi4xLTU3LjYtMTIwLjYgICAgYy03LjgtNi4zLTEyLjUtMTUuNi0xMi41LTI1LjZsMCwwYzAtMjcuMiwzMS41LTQyLjYsNTIuNy0yNS42YzUwLjIsNDAuNSw4Mi40LDEwMi40LDgyLjQsMTcxLjhjMCwxMjYuOS0xMDcuOCwyMjkuMi0yMzYuNywyMTkuOSAgICBDMTIyLjE4Myw0ODEuOCwzNS4yODMsMzk2LjksMjUuMzgzLDI5MC41eiBNMjQ0Ljg4MywwYy0xOCwwLTMyLjUsMTQuNi0zMi41LDMyLjV2MTQ5LjdjMCwxOCwxNC42LDMyLjUsMzIuNSwzMi41ICAgIHMzMi41LTE0LjYsMzIuNS0zMi41VjMyLjVDMjc3LjM4MywxNC42LDI2Mi44ODMsMCwyNDQuODgzLDB6IiAvPgo8L3N2Zz4K" alt="power">
             </a>
         `;

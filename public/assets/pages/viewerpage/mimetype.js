@@ -23,7 +23,7 @@ export function opener(file = "", mimes) {
     } else if (["application/javascript", "application/xml", "application/json",
         "application/x-perl"].indexOf(mime) !== -1) {
         return ["editor", { mime }];
-    } else if (["audio/wave", "audio/mp3", "audio/flac", "audio/ogg"].indexOf(mime) !== -1) {
+    } else if (["audio/wave", "audio/mp3", "audio/flac", "audio/ogg", "audio/mpeg"].indexOf(mime) !== -1) {
         return ["audio", { mime }];
     } else if (mime === "application/x-form") {
         return ["form", { mime }];

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/mattn/go-sqlite3"
+	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
 )
 
 var (
@@ -13,12 +13,10 @@ var (
 )
 
 func toErr(err error) error {
-	if sqliteErr, ok := (err).(sqlite3.Error); ok {
-		if err == sql.ErrNoRows {
-			return ErrNoRows
-		} else if sqliteErr.Code == sqlite3.ErrConstraint {
-			return ErrConstraint
-		}
+	if err == sql.ErrNoRows {
+		return ErrNoRows
+	} else if sqlite.IsConstraint(err) {
+		return ErrConstraint
 	}
 	return err
 }

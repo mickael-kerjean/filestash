@@ -48,6 +48,9 @@
     color: rgba(0, 0, 0, 0.75);
     padding: 2px 5px;
 }
+.component_breadcrumb .component_path-element .label:focus-visible .title {
+    display: none;
+}
 .touch-yes .component_breadcrumb .component_path-element .label {
     padding-top: 5px;
     padding-bottom: 5px;

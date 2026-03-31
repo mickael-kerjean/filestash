@@ -1,11 +1,11 @@
 package plg_backend_nfs
 
 import (
-	"context"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 
@@ -15,11 +15,14 @@ import (
 	"github.com/vmware/go-nfs-client/nfs/xdr"
 )
 
+var NfsCache AppCache
+
 type NfsShare struct {
 	mount *nfs.Mount
 	v     *nfs.Target
 	auth  rpc.Auth
-	ctx   context.Context
+	mu    *sync.Mutex
+	wg    *sync.WaitGroup
 	uid   uint32
 	gid   uint32
 	gids  []uint32
@@ -28,6 +31,22 @@ type NfsShare struct {
 func init() {
 	Backend.Register("nfs", NfsShare{})
 	util.DefaultLogger.SetDebug(false)
+
+	NfsCache = NewAppCache(2, 1)
+	NfsCache.OnEvict(func(key string, value interface{}) {
+		c := value.(*NfsShare)
+		if c == nil {
+			Log.Warning("plg_backend_nfs::nfs is nil on close")
+			return
+		} else if c.wg == nil {
+			c.Close()
+			Log.Warning("plg_backend_nfs::wg is nil on close")
+			return
+		}
+		c.wg.Wait()
+		Log.Debug("plg_backend_nfs::vacuum")
+		c.Close()
+	})
 }
 
 func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) {
@@ -38,9 +57,26 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 		params["machine_name"] = "Filestash"
 	}
 	params["username"] = params["uid"]
-	uid, gid, gids := ExtractUserInfo(params["uid"], params["gid"], params["gids"])
-	Log.Debug("plg_backend_nfs::userInfo user=%s uid=%d gid=%d gids=%+v", params["uid"], uid, gid, gids)
 
+	if c := NfsCache.Get(params); c != nil {
+		d := c.(*NfsShare)
+		if d == nil {
+			Log.Warning("plg_backend_nfs::nfs is nil on get")
+			return nil, ErrInternal
+		} else if d.wg == nil {
+			Log.Warning("plg_backend_nfs::wg is nil on get")
+			return nil, ErrInternal
+		}
+		d.wg.Add(1)
+		go func() {
+			<-app.Context.Done()
+			d.wg.Done()
+		}()
+		return d, nil
+	}
+
+	uid, gid, gids := ExtractUserInfo(params["uid"], params["gid"], params["gids"])
+	Log.Debug("plg_backend_nfs::userInfo user=%s uid=%d gid=%d gids=%v", params["uid"], uid, gid, gids)
 	mount, err := nfs.DialMount(params["hostname"])
 	if err != nil {
 		return nil, err
@@ -53,7 +89,15 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	if err != nil {
 		return nil, err
 	}
-	return NfsShare{mount, v, auth, app.Context, uid, gid, toGids(gids)}, nil
+
+	s := &NfsShare{mount, v, auth, new(sync.Mutex), new(sync.WaitGroup), uid, gid, toGids(gids)}
+	s.wg.Add(1)
+	go func() {
+		<-app.Context.Done()
+		s.wg.Done()
+	}()
+	NfsCache.Set(params, s)
+	return s, nil
 }
 
 func toGids(gids []GroupLabel) []uint32 {
@@ -123,6 +167,8 @@ func (this NfsShare) LoginForm() Form {
 }
 
 func (this NfsShare) Meta(path string) Metadata {
+	this.mu.Lock()
+	defer this.mu.Unlock()
 	f, _, err := this.v.Lookup(strings.TrimSuffix(path, "/"))
 	if err != nil {
 		return Metadata{}
@@ -136,20 +182,41 @@ func (this NfsShare) Meta(path string) Metadata {
 
 	if fattr == nil { // happen at the root
 		return Metadata{}
-	} else if isIn(fattr.UID, []uint32{this.uid}) ||
-		isIn(fattr.GID, []uint32{this.gid}) ||
-		isIn(fattr.GID, this.gids) {
-		return Metadata{}
+	}
+	var (
+		r, w  bool
+		perms = fattr.Mode().Perm()
+	)
+	if perms&0002 != 0 {
+		w = true
+	}
+	if perms&0004 != 0 {
+		r = true
+	}
+	if fattr.UID == this.uid {
+		if perms&0400 != 0 {
+			r = true
+		}
+		if perms&0200 != 0 {
+			w = true
+		}
+	}
+	if (fattr.GID == this.gid) || isIn(fattr.GID, this.gids) {
+		if perms&0040 != 0 {
+			r = true
+		}
+		if perms&0020 != 0 {
+			w = true
+		}
 	}
 	return Metadata{
-		CanSee:             NewBool(false),
-		CanCreateFile:      NewBool(false),
-		CanCreateDirectory: NewBool(false),
-		CanRename:          NewBool(false),
-		CanMove:            NewBool(false),
-		CanUpload:          NewBool(false),
-		CanDelete:          NewBool(false),
-		CanShare:           NewBool(false),
+		CanSee:             NewBool(r),
+		CanCreateFile:      NewBool(w),
+		CanCreateDirectory: NewBool(w),
+		CanRename:          NewBool(w),
+		CanMove:            NewBool(w),
+		CanUpload:          NewBool(w),
+		CanDelete:          NewBool(w),
 	}
 }
 
@@ -163,7 +230,8 @@ func isIn(id uint32, list []uint32) bool {
 }
 
 func (this NfsShare) Ls(path string) ([]os.FileInfo, error) {
-	defer this.Close()
+	this.mu.Lock()
+	defer this.mu.Unlock()
 	files := make([]os.FileInfo, 0)
 
 	dirs, err := this.v.ReadDirPlus(path)
@@ -206,26 +274,47 @@ func (this NfsShare) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (this NfsShare) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (this NfsShare) Cat(path string) (io.ReadCloser, error) {
-	go func() {
-		<-this.ctx.Done()
-		this.Close()
-	}()
-	rc, err := this.v.OpenFile(path, 0777)
+	this.mu.Lock()
+	rc, err := this.v.Open(path)
+	this.mu.Unlock()
 	if err != nil {
 		return nil, err
 	}
-	return rc, nil
+	return &nfsReadCloser{rc, this.mu}, nil
+}
+
+type nfsReadCloser struct {
+	io.ReadCloser
+	mu *sync.Mutex
+}
+
+func (r *nfsReadCloser) Read(p []byte) (int, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.ReadCloser.Read(p)
+}
+
+func (r *nfsReadCloser) Close() error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.ReadCloser.Close()
 }
 
 func (this NfsShare) Mkdir(path string) error {
-	defer this.Close()
+	this.mu.Lock()
+	defer this.mu.Unlock()
 	_, err := this.v.Mkdir(this.nfsPath(path), 0775)
 	return err
 }
 
 func (this NfsShare) Rm(path string) error {
-	defer this.Close()
+	this.mu.Lock()
+	defer this.mu.Unlock()
 	if strings.HasSuffix(path, "/") {
 		return this.v.RemoveAll(this.nfsPath(path))
 	}
@@ -236,8 +325,8 @@ func (this NfsShare) Rm(path string) error {
 // PR aren't handled by vmware, we did come with the implementation as
 // of RFC1813 in: https://www.rfc-editor.org/rfc/rfc1813#section-3.3.14
 func (this NfsShare) Mv(from string, to string) error {
-	defer this.Close()
-
+	this.mu.Lock()
+	defer this.mu.Unlock()
 	f, fName := filepath.Split(this.nfsPath(from))
 	_, fh, err := this.v.Lookup(f)
 	if err != nil {
@@ -288,14 +377,33 @@ func (this NfsShare) Touch(path string) error {
 }
 
 func (this NfsShare) Save(path string, file io.Reader) error {
-	defer this.Close()
+	this.mu.Lock()
 	w, err := this.v.OpenFile(path, 0644)
+	this.mu.Unlock()
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(w, file)
-	w.Close()
+	nw := &nfsWriteCloser{w, this.mu}
+	_, err = io.Copy(nw, file)
+	nw.Close()
 	return err
+}
+
+type nfsWriteCloser struct {
+	io.WriteCloser
+	mu *sync.Mutex
+}
+
+func (w *nfsWriteCloser) Write(p []byte) (int, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.WriteCloser.Write(p)
+}
+
+func (w *nfsWriteCloser) Close() error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.WriteCloser.Close()
 }
 
 func (this NfsShare) Close() {

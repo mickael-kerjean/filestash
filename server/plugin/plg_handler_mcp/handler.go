@@ -16,14 +16,15 @@ import (
 	"github.com/google/uuid"
 )
 
-func (this *Server) messageHandler(w http.ResponseWriter, r *http.Request) {
+const SESSION_TIME = 60
+
+func (this *Server) messageHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 	sessionID := r.URL.Query().Get("sessionId")
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Invalid Request"))
 		return
 	}
-
 	request := JSONRPCRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -34,14 +35,12 @@ func (this *Server) messageHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (this *Server) sseHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	token := this.ValidateToken(r.Header.Get("Authorization"))
+func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
+	token := ExtractToken(r)
 	if token == "" {
+		Log.Debug("plg_handler_mcp::sse msg=invalid_token")
 		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("WWW-Authenticate", "Bearer resource_metadata=\""+this.baseURL(r)+"/.well-known/oauth-protected-resource\"")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(JSONRPCResponse{
 			JSONRPC: "2.0",
@@ -85,41 +84,63 @@ func (this *Server) sseHandler(w http.ResponseWriter, r *http.Request) {
 
 			switch request.Method {
 			case "initialize":
-				SendMessage(w, request.ID, InitializeResult{
+				SendMessage(w, request.ID, InitializeResponse{
 					ProtocolVersion: "2024-11-05",
 					ServerInfo: ServerInfo{
 						Name:    "Universal Storage Server",
 						Version: "1.0.0",
 					},
 					Capabilities: Capabilities{
-						Tools: map[string]interface{}{
-							"listChanged": true,
-						},
+						Tools:     map[string]interface{}{},
 						Resources: map[string]interface{}{},
 						Prompts:   map[string]interface{}{},
 					},
 				})
 			case "resources/list":
-				SendMessage(w, request.ID, &CallResourcesList{
+				SendMessage(w, request.ID, &ResourcesListResponse{
 					Resources: AllResources(),
 				})
 			case "resources/templates/list":
-				SendMessage(w, request.ID, &CallResourceTemplatesList{
+				SendMessage(w, request.ID, &ResourceTemplatesListResponse{
 					ResourceTemplates: AllResourceTemplates(),
 				})
 			case "resources/read":
-				SendMessage(w, request.ID, &CallResourceRead{
+				if uri, ok := request.Params["uri"].(string); ok {
+					if resource, err := FindResource(uri); err != nil {
+						SendError(w, request.ID, JSONRPCError{
+							Code:    http.StatusBadRequest,
+							Message: fmt.Sprintf("Unknown tool: %s", request.Params["name"]),
+						})
+					} else {
+						SendMessage(w, request.ID, &ResourceReadResponse{
+							Contents: []ResourceContent{
+								{
+									URI:      uri,
+									MimeType: resource.MimeType,
+									Text:     resource.Content,
+									Meta:     resource.Meta,
+								},
+							},
+						})
+					}
+				} else {
+					SendError(w, request.ID, JSONRPCError{
+						Code:    http.StatusBadRequest,
+						Message: fmt.Sprintf("Unexpected parameters: %v", request.Params),
+					})
+				}
+				SendMessage(w, request.ID, &ResourceReadResponse{
 					Contents: ExecResourceRead(request.Params),
 				})
 			case "prompts/list":
-				SendMessage(w, request.ID, &CallPromptsList{
+				SendMessage(w, request.ID, &PromptsListResponse{
 					Prompts: AllPrompts(),
 				})
 			case "prompts/get":
 				if m, ok := request.Params["name"].(string); ok {
 					res, err := ExecPromptGet(m, request.Params, &userSession)
 					if err == nil {
-						SendMessage(w, request.ID, CallPromptGet{
+						SendMessage(w, request.ID, PromptGetResponse{
 							Messages:    res,
 							Description: ExecPromptDescription(request.Params),
 						})
@@ -129,33 +150,38 @@ func (this *Server) sseHandler(w http.ResponseWriter, r *http.Request) {
 				} else {
 					SendError(w, request.ID, JSONRPCError{
 						Code:    http.StatusBadRequest,
-						Message: fmt.Sprintf("Unknown prompt name: %v", request.Params["name"]),
+						Message: fmt.Sprintf("Unexpected parameters: %v", request.Params),
 					})
 				}
 			case "tools/list":
-				SendMessage(w, request.ID, &CallListTools{
+				SendMessage(w, request.ID, &ListToolsResponse{
 					Tools: AllTools(),
 				})
 			case "tools/call":
-				if m, ok := request.Params["name"].(string); ok {
-					res, err := ExecTool(m, request.Params, &userSession)
-					if err == nil {
-						SendMessage(w, request.ID, CallTool{
-							Content: []TextContent{*res},
+				if tname, ok := request.Params["name"].(string); ok {
+					if tool, err := FindTool(tname); err != nil {
+						SendError(w, request.ID, JSONRPCError{
+							Code:    http.StatusBadRequest,
+							Message: fmt.Sprintf("Unknown tool: %s", request.Params["name"]),
+						})
+					} else if res, err := tool.Run(request.Params, &userSession); err != nil {
+						SendMessage(w, request.ID, ToolResponse{
+							Content: []TextContent{{"text", err.Error()}},
+							IsError: true,
 						})
 					} else {
-						SendError(w, request.ID, err)
+						SendMessage(w, request.ID, res)
 					}
 				} else {
 					SendError(w, request.ID, JSONRPCError{
 						Code:    http.StatusBadRequest,
-						Message: fmt.Sprintf("Unknown tool name: %v", request.Params["name"]),
+						Message: fmt.Sprintf("Unexpected parameters: %v", request.Params),
 					})
 				}
 			case "notifications/initialized":
 				SendMessage(w, request.ID, map[string]string{})
 			case "completion/complete":
-				SendMessage(w, request.ID, CallCompletionResult{
+				SendMessage(w, request.ID, CompletionResponse{
 					Completion: ExecCompletion(request.Params, &userSession),
 				})
 			case "ping":
@@ -177,7 +203,7 @@ func (this *Server) sseHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		case <-time.After(15 * time.Second):
 			SendPing(w, userSession.Ping.ID)
-			if time.Since(userSession.Ping.LastResponse) > 60*time.Second {
+			if time.Since(userSession.Ping.LastResponse) > SESSION_TIME*time.Second {
 				SendMethod(w, userSession.Ping.ID+1, "notifications/cancelled", map[string]interface{}{
 					"requestId": userSession.Ping.ID,
 					"reason":    "Request timed out",

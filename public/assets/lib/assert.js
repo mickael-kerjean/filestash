@@ -14,6 +14,18 @@ export default class assert {
 
     /**
      * @param {*} object
+     * @param {string} type
+     * @param {string} [msg]
+     * @return {*}
+     * @throws {TypeError}
+     */
+    static typeof(object, type, msg) {
+        if (typeof object !== type) throw new TypeError(msg || `assertion failed - unexpected type for ${JSON.stringify(object)}`); // eslint-disable-line valid-typeof
+        return object;
+    }
+
+    /**
+     * @param {*} object
      * @param {string} [msg]
      * @return {*}
      * @throws {TypeError}

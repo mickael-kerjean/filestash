@@ -165,6 +165,10 @@ func (this LDAP) Ls(path string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
+func (this LDAP) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (this LDAP) Cat(path string) (io.ReadCloser, error) {
 	///////////////////////////////////////////////
 	// STEP1: search for the requested entry

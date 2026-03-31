@@ -7,10 +7,11 @@ import assert from "../../lib/assert.js";
 import { AjaxError } from "../../lib/error.js";
 import t from "../../locales/index.js";
 
-import { currentPath } from "./helper.js";
+import { currentPath, isAlreadyFocused } from "./helper.js";
 import { setPermissions } from "./model_acl.js";
 import fscache from "./cache.js";
 import { ls as middlewareLs } from "./model_virtual_layer.js";
+import { tagFilter } from "./model_tag.js";
 
 /*
  * The naive approach would be to make an API call and refresh the screen after an action
@@ -27,7 +28,7 @@ import { ls as middlewareLs } from "./model_virtual_layer.js";
 
 const handleSuccess = (text) => rxjs.tap(() => notification.info(text));
 const handleError = rxjs.catchError((err) => {
-    notification.error(err);
+    notification.error(err.message);
     throw err;
 });
 const handleErrorRedirectLogin = rxjs.catchError((err) => {
@@ -110,14 +111,27 @@ export const ls = (path) => {
         rxjs.merge(
             rxjs.of(null),
             rxjs.merge(rxjs.of(null), rxjs.fromEvent(window, "keydown").pipe( // "r" shorcut
-                rxjs.filter((e) => e.keyCode === 82 && assert.type(document.activeElement, HTMLElement).tagName !== "INPUT"),
-            )).pipe(rxjs.switchMap(() => lsFromHttp(path))),
+                rxjs.filter((e) => e.keyCode === 82 && !isAlreadyFocused()),
+            )).pipe(
+                rxjs.switchMap(() => lsFromHttp(path)),
+                rxjs.catchError((err) => navigator.onLine ? rxjs.throwError(err) : rxjs.EMPTY),
+            ),
         ),
+        rxjs.merge(
+            rxjs.of(navigator.onLine),
+            rxjs.fromEvent(window, "online"),
+            rxjs.fromEvent(window, "offline"),
+        )
     ).pipe(
         rxjs.mergeMap(([cache, http]) => {
             if (http) return rxjs.of(http);
             if (cache) return rxjs.of(cache);
             return rxjs.EMPTY;
+        }),
+        rxjs.map(({ files, ...res }) => {
+            if (navigator.onLine) res["files"] = files;
+            else res["files"] = files.map((file) => file.type === "file" ? { ...file, offline: true } : file);
+            return res;
         }),
         rxjs.distinctUntilChanged((prev, curr) => {
             let refresh = false;
@@ -127,7 +141,8 @@ export const ls = (path) => {
                 for (let i=0; i<curr.files.length; i++) {
                     if (curr.files[i].type !== prev.files[i].type ||
                         curr.files[i].size !== prev.files[i].size ||
-                        curr.files[i].name !== prev.files[i].name) {
+                        curr.files[i].name !== prev.files[i].name ||
+                        curr.files[i].offline !== prev.files[i].offline) {
                         refresh = true;
                         break;
                     }
@@ -137,6 +152,7 @@ export const ls = (path) => {
         }),
         rxjs.tap(({ permissions }) => setPermissions(path, permissions)),
         middlewareLs(path),
+        tagFilter(path),
     );
 };
 
@@ -146,6 +162,13 @@ export const search = (term) => ajax({
 }).pipe(rxjs.map(({ responseJSON }) => ({
     files: responseJSON.results,
 })));
+
+export const searchUrlParam = (term = null) => {
+    const url = new URL(location.href);
+    if (term) url.searchParams.set("q", term);
+    else url.searchParams.delete("q");
+    history.replaceState(history.state, "", url.toString());
+};
 
 class Hook {
     constructor() {

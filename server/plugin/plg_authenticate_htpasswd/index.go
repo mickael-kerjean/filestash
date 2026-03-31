@@ -5,15 +5,18 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
+	"html"
+	"net/http"
+	"strings"
 
+	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/apr1_crypt"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/md5_crypt"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/sha256_crypt"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_authenticate_htpasswd/deps/crypt/sha512_crypt"
-	"net/http"
-	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func init() {
@@ -65,12 +68,12 @@ func (this Htpasswd) EntryPoint(idpParams map[string]string, req *http.Request, 
 			MaxAge: -1,
 			Path:   "/",
 		})
-		return fmt.Sprintf(`<p class="flash">%s</p>`, c.Value)
+		return fmt.Sprintf(`<p class="flash">%s</p>`, html.EscapeString(c.Value))
 	}
 	res.Header().Set("Content-Type", "text/html; charset=utf-8")
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte(Page(`
-      <form action="` + WithBase("/api/session/auth/") + `" method="post" class="component_middleware">
+      <form method="post" class="component_middleware">
         <label>
           <input type="text" name="user" value="" placeholder="User" autocorrect="off" autocapitalize="off" />
         </label>
@@ -99,10 +102,9 @@ func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]s
 			continue
 		} else if formData["user"] != pair[0] {
 			continue
-		} else if verifyPassword(
+		} else if VerifyPassword(
 			formData["password"],
 			strings.SplitN(pair[1], ":", 2)[0], // filter out unwanted fields from hash
-			formData["user"],
 		) == false {
 			continue
 		}
@@ -121,11 +123,8 @@ func (this Htpasswd) Callback(formData map[string]string, idpParams map[string]s
 	return nil, ErrAuthenticationFailed
 }
 
-func verifyPassword(password string, hash string, _user string) bool {
-	if password == hash {
-		Log.Warning("plg_authenticate_htpasswd password for user '%s' isn't stored in a secure way, you should hash your password using something like 'openssl passwd -6'", _user)
-		return true
-	} else if strings.HasPrefix(hash, "{SHA}") {
+func VerifyPassword(password string, hash string) bool {
+	if strings.HasPrefix(hash, "{SHA}") {
 		d := sha1.New()
 		d.Write([]byte(password))
 		return subtle.ConstantTimeCompare(
@@ -136,7 +135,11 @@ func verifyPassword(password string, hash string, _user string) bool {
 	var c crypt.Crypter
 	parts := strings.SplitN(hash, "$", 4)
 	if len(parts) != 4 {
-		return false
+		if password == hash {
+			return true
+		} else {
+			return false
+		}
 	}
 	if strings.HasPrefix(hash, "$apr1$") {
 		c = apr1_crypt.New()
@@ -150,9 +153,9 @@ func verifyPassword(password string, hash string, _user string) bool {
 	} else if strings.HasPrefix(hash, "$1$") {
 		c = md5_crypt.New()
 		parts[2] = "$1$" + parts[2]
+	} else if strings.HasPrefix(hash, "$2a$") {
+		return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil
 	} else {
-		// TODO: there are other algorithm available but that's another job
-		// for another day
 		return false
 	}
 	shadow, err := c.Generate(

@@ -1,6 +1,6 @@
 package types
 
-type CallCompletionResult struct {
+type CompletionResponse struct {
 	Completion Completion `json:"completion"`
 }
 

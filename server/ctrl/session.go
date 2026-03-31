@@ -1,17 +1,15 @@
 package ctrl
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
-	"text/template"
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -101,7 +99,7 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 	r.IsAuth = true
 	r.Home = NewString(home)
-	r.Backend = Hash(GenerateID(ctx.Session)+ctx.Session["path"], 20)
+	r.Backend = backendID(ctx.Session)
 	if ctx.Share.Id == "" && Config.Get("features.protection.enable_chromecast").Bool() {
 		r.Authorization = ctx.Authorization
 	}
@@ -116,7 +114,8 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	backend, err := model.NewBackend(ctx, session)
 	if err != nil {
-		Log.Debug("session::auth 'NewBackend' %+v", err)
+		Log.Debug("[auth] action=authenticate::newBackend err=%s", ferror(err))
+		Log.Stdout("AUDIT action[fail] backend[%s] user[%s] target[%s]", session["type"], backendID(session), ip(req))
 		SendErrorResult(res, err)
 		return
 	}
@@ -126,14 +125,15 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}); ok {
 		err := obj.OAuthToken(&ctx.Body)
 		if err != nil {
-			Log.Debug("session::auth 'OAuthToken' %+v", err)
+			Log.Debug("[auth] action=authenticate::oauthtoken err=%s", ferror(err))
 			SendErrorResult(res, NewError("Can't authenticate (OAuth error)", 401))
 			return
 		}
 		session = model.MapStringInterfaceToMapStringString(ctx.Body)
 		backend, err = model.NewBackend(ctx, session)
 		if err != nil {
-			Log.Debug("session::auth 'OAuthToken::NewBackend' %+v", err)
+			Log.Debug("[auth] action=authenticate::oauth::newBackend err=%s", ferror(err))
+			Log.Stdout("AUDIT action[fail] backend[%s] user[%s] target[%s]", session["type"], username(session), ip(req))
 			SendErrorResult(res, NewError("Can't authenticate", 401))
 			return
 		}
@@ -141,20 +141,20 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	home, err := model.GetHome(backend, session["path"])
 	if err != nil {
-		Log.Debug("session::auth 'GetHome' %+v", err)
+		Log.Debug("[auth] action=authenticate::getHome err=%s", ferror(err))
 		SendErrorResult(res, ErrAuthenticationFailed)
 		return
 	}
 
 	s, err := json.Marshal(session)
 	if err != nil {
-		Log.Debug("session::auth 'Marshal' %+v", err)
+		Log.Debug("[auth] action=authenticate::marshall err=%s", ferror(err))
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
 	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_USER, string(s))
 	if err != nil {
-		Log.Debug("session::auth 'Encryption' %+v", err)
+		Log.Debug("[auth] action=authenticate::encrypt err=%s", ferror(err))
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
@@ -177,18 +177,20 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if end == len(obfuscate) {
 			break
 		} else {
-			Log.Debug("session::auth obfuscate index: %d length: %d total: %d", index, len(obfuscate[index*value_limit:end]), len(obfuscate))
+			Log.Debug("[auth] action=authenticate::obfuscate index=%d length=%d total=%d", index, len(obfuscate[index*value_limit:end]), len(obfuscate))
 			index++
 		}
 	}
 	if Config.Get("features.protection.iframe").String() != "" {
 		res.Header().Set("bearer", obfuscate)
 	}
-	if home != "" {
-		SendSuccessResult(res, home)
-		return
-	}
-	SendSuccessResult(res, nil)
+	Log.Stdout("AUDIT action[login] backend[%s] user[%s] target[%s]", session["type"], username(session), ip(req))
+	SendSuccessResult(res, Session{
+		IsAuth:        true,
+		Home:          NewString(home),
+		Backend:       backendID(session),
+		Authorization: obfuscate,
+	})
 }
 
 func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -233,6 +235,7 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 		MaxAge: -1,
 		Path:   COOKIE_PATH,
 	})
+	Log.Stdout("AUDIT action[logout] backend[%s] user[%s] target[%s]", ctx.Session["type"], username(ctx.Session), ip(req))
 	SendSuccessResult(res, nil)
 }
 
@@ -322,7 +325,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		}
 	}
 
-	idpParams := map[string]string{}
+	idpParams := TmplParams(map[string]string{})
 	if err := json.Unmarshal(
 		[]byte(Config.Get("middleware.identity_provider.params").String()),
 		&idpParams,
@@ -333,6 +336,18 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			http.StatusTemporaryRedirect,
 		)
 		return
+	}
+	for k, v := range idpParams {
+		out, err := TmplExec(NewStringFromInterface(v), idpParams)
+		if err != nil {
+			http.Redirect(
+				res, req,
+				"/?error=Not%20Valid&trace=idp - "+err.Error(),
+				http.StatusTemporaryRedirect,
+			)
+			return
+		}
+		idpParams[k] = out
 	}
 
 	// Step1: Entrypoint of the authentication process is handled by the plugin
@@ -363,15 +378,16 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	// Step2: End of the authentication process. Could come from:
 	// - target of a html form. eg: ldap, mysql, ...
 	// - identity provider redirection uri. eg: oauth2, openid, ...
-	templateBind, err := plugin.Callback(formData, idpParams, res)
+	pluginCallback, err := plugin.Callback(formData, idpParams, res)
 	if err == ErrAuthenticationFailed {
+		Log.Warning("failed authentication - %s", err.Error())
 		http.Redirect(
 			res, req,
 			req.URL.Path+"?action=redirect",
 			http.StatusSeeOther,
 		)
 		return
-	} else if err != nil {
+	} else if err != nil && strings.HasPrefix(res.Header().Get("Content-Type"), "text/html") == false {
 		Log.Error("session::authMiddleware 'callback error - %s'", err.Error())
 		http.Redirect(
 			res, req,
@@ -379,14 +395,10 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			http.StatusSeeOther,
 		)
 		return
+	} else if err != nil { // response handled directly within a plugin
+		return
 	}
-	templateBind["machine_id"] = GenerateMachineID()
-	for _, value := range os.Environ() {
-		pair := strings.SplitN(value, "=", 2)
-		if len(pair) == 2 {
-			templateBind[fmt.Sprintf("ENV_%s", pair[0])] = pair[1]
-		}
-	}
+	templateBind := TmplParams(pluginCallback)
 
 	var (
 		label = ""
@@ -465,27 +477,19 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		}
 		mappingToUse := map[string]string{}
 		for k, v := range globalMapping[label] {
-			str := NewStringFromInterface(v)
-			if str == "" {
-				continue
-			}
-			tmpl, err := template.
-				New("ctrl::session::auth_middleware").
-				Funcs(tmplFuncs).
-				Parse(str)
-			mappingToUse[k] = str
+			out, err := TmplExec(NewStringFromInterface(v), tb)
 			if err != nil {
-				Log.Debug("session::authMiddleware 'template creation failed %s'", err.Error())
-				continue
+				Log.Debug("session::authMiddleware action=tmplExec err=%s", err.Error())
 			}
-			var b bytes.Buffer
-			if err = tmpl.Execute(&b, tb); err != nil {
-				Log.Debug("session::authMiddleware 'template execution failed %s'", err.Error())
-				continue
-			}
-			mappingToUse[k] = b.String()
+			mappingToUse[k] = out
 		}
 		mappingToUse["timestamp"] = time.Now().Format(time.RFC3339)
+		if label != "" && Config.Get("general.extended_session").Bool() {
+			pluginCallback["label"] = label
+			if jsonStr, err := json.Marshal(pluginCallback); err == nil {
+				mappingToUse["session"] = string(jsonStr)
+			}
+		}
 		return mappingToUse, nil
 	}(templateBind)
 	if err != nil {
@@ -499,7 +503,8 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	}
 
 	if _, err := model.NewBackend(ctx, session); err != nil {
-		Log.Debug("session::authMiddleware 'backend connection failed %+v - %s'", session, err.Error())
+		Log.Debug("session::authMiddleware 'backend connection failed %s'", err.Error())
+		Log.Info("[auth] status=failed user=%s backend=%s::%s ip=%s err=%s", username(session), session["type"], backendID(session), ip(req), ferror(err))
 		url := "/?error=" + ErrNotValid.Error() + "&trace=backend error - " + err.Error()
 		if IsATranslatedError(err) {
 			url = "/?error=" + err.Error() + "&trace=backend error - " + err.Error()
@@ -536,6 +541,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	if Config.Get("features.protection.iframe").String() != "" {
 		redirectURI += "#bearer=" + obfuscate
 	}
+	Log.Info("[auth] status=success user=%s backend=%s::%s ip=%s", username(session), session["type"], backendID(session), ip(req))
 	http.Redirect(res, req, redirectURI, http.StatusSeeOther)
 }
 
@@ -557,4 +563,37 @@ func applyCookieRules(cookie *http.Cookie, req *http.Request) *http.Cookie {
 func applyCookieSameSiteRule(cookie *http.Cookie, sameSiteValue http.SameSite) *http.Cookie {
 	cookie.SameSite = sameSiteValue
 	return cookie
+}
+
+func backendID(session map[string]string) string {
+	return Hash(GenerateID(session)+session["path"], 20)
+}
+
+func username(session map[string]string) string {
+	if session["username"] != "" {
+		return strings.ReplaceAll(session["username"], " ", "+")
+	} else if session["user"] != "" {
+		return strings.ReplaceAll(session["user"], " ", "+")
+	}
+	return GenerateID(session)
+}
+
+func ip(req *http.Request) string {
+	if xff := req.Header.Get("X-Forwarded-For"); xff != "" {
+		if parts := strings.Split(xff, ","); len(parts) > 0 {
+			return strings.TrimSpace(parts[0])
+		}
+	}
+	if xrip := req.Header.Get("X-Real-Ip"); xrip != "" {
+		return xrip
+	}
+	host, _, err := net.SplitHostPort(req.RemoteAddr)
+	if err != nil {
+		return req.RemoteAddr
+	}
+	return host
+}
+
+func ferror(err error) string {
+	return strings.ReplaceAll(err.Error(), " ", "+")
 }

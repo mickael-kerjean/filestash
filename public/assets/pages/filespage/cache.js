@@ -1,5 +1,6 @@
 import assert from "../../lib/assert.js";
 import { getSession } from "../../model/session.js";
+import { onLogout } from "../ctrl_logout.js";
 
 class ICache {
     /**
@@ -248,6 +249,7 @@ export async function init() {
     const setup_cache = () => {
         cache = new InMemoryCache();
         if (!("indexedDB" in window)) return;
+        else if (window.self !== window.top) return;
 
         cache = assert.truthy(new IndexDBCache());
         return cache.db.catch((err) => {
@@ -266,10 +268,10 @@ export async function init() {
             try {
                 const session = await getSession().toPromise();
                 backendID = session.backendID;
+                onLogout(() => backendID = "");
             } catch (err) {}
         }
     };
-
     return Promise.all([setup_cache(), setup_session()]);
 }
 
@@ -280,6 +282,9 @@ export default function() {
 let backendID = "";
 export function currentBackend() {
     return backendID;
+}
+export function updateBackend(id) {
+    backendID = id;
 }
 
 export function currentShare() {

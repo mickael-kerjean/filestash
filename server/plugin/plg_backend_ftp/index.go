@@ -285,6 +285,20 @@ func (f Ftp) Cat(path string) (reader io.ReadCloser, err error) {
 	return reader, err
 }
 
+func (f Ftp) Stat(path string) (finfo os.FileInfo, err error) {
+	f.Execute(func(client *goftp.Client) error {
+		finfo, err = client.Stat(path)
+		return err
+	})
+	if err == nil {
+		return finfo, err
+	}
+	if ftpErr, ok := err.(goftp.Error); ok && ftpErr.Code() == 550 {
+		return nil, ErrNotFound
+	}
+	return nil, ErrNotImplemented
+}
+
 func (f Ftp) Mkdir(path string) (err error) {
 	f.Execute(func(client *goftp.Client) error {
 		_, err = client.Mkdir(path)

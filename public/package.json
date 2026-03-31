@@ -45,6 +45,7 @@
     }
   },
   "eslintConfig": {
+    "root": true,
     "env": {
       "browser": true,
       "es2021": true,
@@ -132,6 +133,15 @@
         "off"
       ],
       "accessor-pairs": [
+        "off"
+      ],
+      "no-new": [
+        "off"
+      ],
+      "multiline-ternary": [
+        "off"
+      ],
+      "no-empty-pattern": [
         "off"
       ]
     }

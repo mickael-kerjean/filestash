@@ -1,17 +1,20 @@
 package plg_starter_https
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/common/ssl"
 	"net/http"
 	"time"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/ssl"
+
+	"github.com/gorilla/mux"
 )
 
 func init() {
-	Hooks.Register.Starter(func(r *mux.Router) {
+	Hooks.Register.Starter(func(ctx context.Context, r *mux.Router) {
 		domain := Config.Get("general.host").String()
 		port := Config.Get("general.port").Int()
 		Log.Info("[https] starting ...%s", domain)
@@ -35,8 +38,15 @@ func init() {
 			RootCAs: roots,
 		}
 
-		go ensureAppHasBooted(fmt.Sprintf("https://127.0.0.1:%d/about", port), fmt.Sprintf("[https] listening on :%d", port))
-		if err := srv.ListenAndServeTLS("", ""); err != nil {
+		go func() {
+			ensureAppHasBooted(
+				fmt.Sprintf("https://127.0.0.1:%d/about", port),
+				fmt.Sprintf("[https] listening on :%d", port),
+			)
+			<-ctx.Done()
+			srv.Shutdown(context.Background())
+		}()
+		if err := srv.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
 			Log.Error("[https]: listen_serve %v", err)
 			return
 		}
@@ -44,21 +54,18 @@ func init() {
 }
 
 func ensureAppHasBooted(address string, message string) {
-	i := 0
-	for {
+	for i := 0; i < 10; i++ {
 		if i > 10 {
-			Log.Warning("[http] didn't boot")
+			Log.Warning("[https] didn't boot")
 			break
 		}
 		time.Sleep(250 * time.Millisecond)
 		res, err := HTTPClient.Get(address)
 		if err != nil {
-			i += 1
 			continue
 		}
 		res.Body.Close()
-		if res.StatusCode != http.StatusOK {
-			i += 1
+		if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNotFound {
 			continue
 		}
 		Log.Info(message)

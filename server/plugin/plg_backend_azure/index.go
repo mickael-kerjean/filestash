@@ -36,9 +36,7 @@ func (this *AzureBlob) Init(params map[string]string, app *App) (IBackend, error
 		Log.Debug("plg_backend_azure::new_client_error %s", err.Error())
 		return nil, ErrAuthenticationFailed
 	}
-	this.ctx = app.Context
-	this.client = client
-	return this, nil
+	return &AzureBlob{client, app.Context}, nil
 }
 
 func (this *AzureBlob) LoginForm() Form {
@@ -101,6 +99,9 @@ func (this *AzureBlob) Ls(path string) ([]os.FileInfo, error) {
 			return files, err
 		}
 		for _, blob := range resp.ListBlobsHierarchySegmentResponse.Segment.BlobPrefixes {
+			if *blob.Name == "/" {
+				continue
+			}
 			files = append(files, File{
 				FName: filepath.Base(*blob.Name),
 				FType: "directory",
@@ -196,13 +197,34 @@ func (this *azureFilecat) Close() error {
 	return this.reader.Close()
 }
 
+func (this AzureBlob) Stat(path string) (os.FileInfo, error) {
+	ap := this.path(path)
+	props, err := this.client.ServiceClient().NewContainerClient(ap.containerName).NewBlockBlobClient(ap.blobName).GetProperties(this.ctx, nil)
+	if err == nil {
+		if props.ContentLength == nil || props.LastModified == nil {
+			return nil, ErrNotValid
+		}
+		return File{
+			FName: filepath.Base(path),
+			FSize: *props.ContentLength,
+			FTime: (*props.LastModified).Unix(),
+		}, nil
+		return nil, err
+	}
+	return File{
+		FName: filepath.Base(path),
+		FType: "directory",
+		FTime: -1,
+	}, nil
+}
+
 func (this *AzureBlob) Mkdir(path string) error {
 	ap := this.path(path)
 	if ap.blobName == "" {
 		_, err := this.client.CreateContainer(this.ctx, ap.containerName, nil)
 		return err
 	}
-	_, err := this.client.UploadBuffer(this.ctx, ap.containerName, ap.blobName+".keep", []byte(""), nil)
+	_, err := this.client.UploadBuffer(this.ctx, ap.containerName, EnforceDirectory(ap.blobName)+".keep", []byte(""), nil)
 	return err
 }
 
@@ -212,7 +234,12 @@ func (this *AzureBlob) Rm(path string) error {
 		_, err := this.client.DeleteContainer(this.ctx, ap.containerName, nil)
 		return err
 	}
-	if strings.HasSuffix(path, "/") == false {
+	finfo, err := this.Stat(path)
+	if err != nil {
+		return err
+	}
+
+	if finfo.IsDir() == false {
 		_, err := this.client.DeleteBlob(this.ctx, ap.containerName, ap.blobName, nil)
 		return err
 	}
@@ -236,7 +263,65 @@ func (this *AzureBlob) Rm(path string) error {
 }
 
 func (this *AzureBlob) Mv(from string, to string) error {
-	return ErrNotSupported
+	apFrom := this.path(from)
+	apTo := this.path(to)
+	if apFrom.containerName != apTo.containerName {
+		return ErrNotSupported
+	}
+	finfo, err := this.Stat(from)
+	if err != nil {
+		return err
+	}
+
+	// CASE 1: Move a file
+	if finfo.IsDir() == false {
+		sourceClient := this.client.ServiceClient().NewContainerClient(apFrom.containerName).NewBlockBlobClient(apFrom.blobName)
+		destClient := this.client.ServiceClient().NewContainerClient(apTo.containerName).NewBlockBlobClient(apTo.blobName)
+		if _, err := destClient.StartCopyFromURL(
+			this.ctx,
+			sourceClient.URL(),
+			nil,
+		); err != nil {
+			return err
+		}
+		_, err = this.client.DeleteBlob(this.ctx, apFrom.containerName, apFrom.blobName, nil)
+		return err
+	}
+
+	// CASE 2: Move a directory
+	pager := this.client.NewListBlobsFlatPager(apFrom.containerName, &container.ListBlobsFlatOptions{
+		Include: container.ListBlobsInclude{Snapshots: true, Versions: true},
+		Prefix:  &apFrom.blobName,
+	})
+	for pager.More() {
+		resp, err := pager.NextPage(this.ctx)
+		if err != nil {
+			return err
+		}
+		for _, blob := range resp.Segment.BlobItems {
+			if err := this.ctx.Err(); err != nil {
+				return err
+			} else if blob.Name == nil {
+				return ErrNotValid
+			}
+			oldName := *blob.Name
+			newName := strings.Replace(oldName, apFrom.blobName, apTo.blobName, 1)
+			sourceClient := this.client.ServiceClient().NewContainerClient(apFrom.containerName).NewBlockBlobClient(oldName)
+			destClient := this.client.ServiceClient().NewContainerClient(apTo.containerName).NewBlockBlobClient(newName)
+			if _, err := destClient.StartCopyFromURL(
+				context.Background(),
+				sourceClient.URL(),
+				nil,
+			); err != nil {
+				return err
+			}
+			_, err = this.client.DeleteBlob(context.Background(), apFrom.containerName, oldName, nil)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (this *AzureBlob) Touch(path string) error {
@@ -261,10 +346,7 @@ func (this *AzureBlob) Meta(path string) Metadata {
 			CanUpload:     NewBool(false),
 		}
 	}
-	return Metadata{
-		CanRename: NewBool(false),
-		CanMove:   NewBool(false),
-	}
+	return Metadata{}
 }
 
 type azurePath struct {

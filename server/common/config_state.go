@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -44,7 +44,7 @@ func LoadConfig() ([]byte, error) {
 		}
 		return nil, err
 	}
-	cFile, err := ioutil.ReadAll(file)
+	cFile, err := io.ReadAll(file)
 	file.Close()
 	if err != nil {
 		return nil, err
@@ -79,8 +79,8 @@ func SaveConfig(v []byte) error {
 	file, err := os.Create(config_path())
 	if err != nil {
 		return fmt.Errorf(
-			"Filestash needs to be able to create/edit its own configuration which it can't at the moment. "+
-				"Change the permission for filestash to create and edit `%s`",
+			APPNAME+" needs to be able to create and edit its configuration, but it currently cannot. "+
+				"Change the permissions to allow writing to `%s`",
 			config_path(),
 		)
 	}

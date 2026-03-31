@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -56,7 +55,7 @@ func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error)
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		return nil, err
@@ -79,7 +78,7 @@ func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error)
 	if err != nil {
 		return nil, err
 	}
-	body, err = ioutil.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		return nil, err
@@ -153,7 +152,7 @@ func (this Backblaze) Ls(path string) ([]os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		return nil, err
@@ -198,6 +197,10 @@ func (this Backblaze) Cat(path string) (io.ReadCloser, error) {
 	return res.Body, nil
 }
 
+func (this Backblaze) Stat(path string) (os.FileInfo, error) {
+	return nil, ErrNotImplemented
+}
+
 func (this Backblaze) Mkdir(path string) error {
 	p := this.path(path)
 
@@ -222,7 +225,7 @@ func (this Backblaze) Mkdir(path string) error {
 		if err != nil {
 			return err
 		}
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 		res.Body.Close()
 		if err != nil {
 			return err
@@ -260,7 +263,7 @@ func (this Backblaze) Rm(path string) error {
 		if err != nil {
 			return err
 		}
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 		res.Body.Close()
 		if err != nil {
 			return err
@@ -289,7 +292,7 @@ func (this Backblaze) Rm(path string) error {
 	if err != nil {
 		return err
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		return err
@@ -317,7 +320,7 @@ func (this Backblaze) Rm(path string) error {
 		if err != nil {
 			return err
 		}
-		if body, err = ioutil.ReadAll(res.Body); err != nil {
+		if body, err = io.ReadAll(res.Body); err != nil {
 			return err
 		}
 		res.Body.Close()
@@ -349,7 +352,7 @@ func (this Backblaze) Touch(path string) error {
 	if err != nil {
 		return err
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		return err
@@ -378,7 +381,7 @@ func (this Backblaze) Touch(path string) error {
 	if err != nil {
 		return err
 	}
-	body, err = ioutil.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		return err
@@ -406,7 +409,7 @@ func (this Backblaze) Save(path string, file io.Reader) error {
 	if err != nil {
 		return err
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		return err
@@ -468,7 +471,7 @@ func (this Backblaze) Save(path string, file io.Reader) error {
 	if err != nil {
 		return err
 	}
-	body, err = ioutil.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		return err
@@ -516,7 +519,6 @@ func (this Backblaze) request(method string, url string, body io.Reader, fn func
 	}
 	req.Header.Set("User-Agent", "Filestash "+APP_VERSION+"."+BUILD_DATE)
 	req.Header.Set("Accept", "application/json")
-	//req.Header.Set("X-Bz-Test-Mode", "force_cap_exceeded")
 	if fn != nil {
 		fn(req)
 	}
@@ -524,7 +526,7 @@ func (this Backblaze) request(method string, url string, body io.Reader, fn func
 		defer req.Body.Close()
 	}
 
-	res, err := HTTPClient.Do(req)
+	res, err := HTTPClient().Do(req)
 	if err != nil {
 		return res, err
 	}

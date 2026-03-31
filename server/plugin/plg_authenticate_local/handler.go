@@ -2,9 +2,8 @@ package plg_authenticate_local
 
 import (
 	_ "embed"
+	"html/template"
 	"net/http"
-	"net/url"
-	"text/template"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
@@ -14,6 +13,10 @@ var PAGE string
 
 func UserManagementHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodDelete {
+		email := req.FormValue("email")
+		if email == "" {
+			email = req.URL.Query().Get("email")
+		}
 		if err := removeUser(req.FormValue("email")); err != nil {
 			SendErrorResult(res, err)
 			return
@@ -46,10 +49,7 @@ func UserManagementHandler(ctx *App, res http.ResponseWriter, req *http.Request)
 			Email:    email,
 			Password: formatPassword(req.FormValue("password")),
 			Role:     formatRole(req.FormValue("role")),
-			Disabled: false,
-		}
-		if req.FormValue("disabled") == "on" {
-			user.Disabled = true
+			Disabled: req.FormValue("disabled") == "on",
 		}
 		redirectURI := req.URL.String()
 		fn := createUser
@@ -61,26 +61,34 @@ func UserManagementHandler(ctx *App, res http.ResponseWriter, req *http.Request)
 			SendErrorResult(res, err)
 			return
 		}
-		http.Redirect(res, req, redirectURI, http.StatusSeeOther)
 		if currentUser.Email == "" {
 			go sendInvitateMail(user)
 		}
+		if isAPI(req) {
+			SendSuccessResult(res, nil)
+			return
+		}
+		http.Redirect(res, req, redirectURI, http.StatusSeeOther)
 		return
 	}
 
-	referer := ""
-	if u, err := url.Parse(req.Header.Get("referer")); err == nil {
-		referer = u.Path
+	if isAPI(req) {
+		SendSuccessResults(res, users)
+		return
 	}
 	template.
 		Must(template.New("app").Parse(Page(PAGE))).
 		Execute(res, struct {
 			Users       []User
 			CurrentUser User
-			Referer     string
+			BackURL     string
 		}{
 			Users:       users,
 			CurrentUser: currentUser,
-			Referer:     referer,
+			BackURL:     WithBase("/admin/storage"),
 		})
+}
+
+func isAPI(r *http.Request) bool {
+	return r.Header.Get("Accept") == "application/json"
 }

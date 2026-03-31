@@ -2,212 +2,279 @@ package impl
 
 import (
 	"bytes"
+	_ "embed"
 	"errors"
 	"io"
 	"path/filepath"
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/config"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/types"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/utils"
 )
 
+//go:embed public/file-list.html
+var widget_ls string
+
 func init() {
 	Hooks.Register.Onload(func() {
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "ls",
-				Description: "list directory contents",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
+		RegisterTool(Tool{
+			Name:        "ls",
+			Description: "Use this when you need to list files and subdirectories in a directory, based on the Unix command: ls. If path is omitted, the current working directory is used",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{},
-				}),
+				},
+				"required": []string{},
+			}),
+			Run: ToolFSLs,
+			Meta: Meta{
+				"openai/outputTemplate":          "ui://widget/render-ls.html",
+				"openai/toolInvocation/invoking": "Querying…",
+				"openai/toolInvocation/invoked":  "Results ready",
 			},
-			Exec: ToolFSLs,
+			Annotations: Meta{
+				"destructiveHint": false,
+				"openWorldHint":   true,
+				"readOnlyHint":    true,
+			},
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "cat",
-				Description: "read a file at a specified path.",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
-					},
-					"required": []string{"path"},
-				}),
+		RegisterResource(Resource{
+			URI:         "ui://widget/render-ls.html",
+			Name:        "render-ls.html",
+			Description: "file listing widget",
+			MimeType:    "text/html+skybridge",
+			Content:     widget_ls,
+			Meta: Meta{
+				"openai/widgetPrefersBorder": true,
+				"openai/widgetDomain":        "https://chatgpt.com",
+				"openai/widgetCSP": map[string][]string{
+					"connect_domains":  []string{"https://chatgpt.com"},
+					"resource_domains": []string{"https://*.oaistatic.com"},
+					"frame_domains":    []string{},
+				},
 			},
-			Exec: ToolFSCat,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "pwd",
-				Description: "print name of current/working directory",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type":       "object",
-					"properties": map[string]interface{}{},
-					"required":   []string{},
-				}),
+		RegisterTool(Tool{
+			Name:        "cat",
+			Description: "Use this when you need to read and return the contents of a file at a specific path, based on the Unix command: `cat`.",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
+					},
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSCat,
+			Annotations: Meta{
+				"destructiveHint": false,
+				"openWorldHint":   true,
+				"readOnlyHint":    true,
 			},
-			Exec: ToolFSPwd,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "cd",
-				Description: "change the working directory",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
-					},
-					"required": []string{"path"},
-				}),
+		RegisterTool(Tool{
+			Name:        "pwd",
+			Description: "Use this when you need to know the current working directory, based on the Unix command: `pwd`. The initial working directory is the user home directory, or `/` if none is defined.",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type":       "object",
+				"properties": map[string]interface{}{},
+				"required":   []string{},
+			}),
+			Run: ToolFSPwd,
+			Annotations: Meta{
+				"destructiveHint": false,
+				"openWorldHint":   true,
+				"readOnlyHint":    true,
 			},
-			Exec: ToolFSCd,
 		})
 
-		if !CanEdit() {
-			return
-		}
-
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "mv",
-				Description: "move (rename) files",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"from": map[string]string{
-							"type":        "string",
-							"description": "origin path",
-						},
-						"to": map[string]string{
-							"type":        "string",
-							"description": "destination path",
-						},
+		RegisterTool(Tool{
+			Name:        "cd",
+			Description: "Use this when you need to change the current working directory so that subsequent file operations run relative to a different path, based on the Unix command: `cd`.",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{"from", "to"},
-				}),
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSCd,
+			Annotations: Meta{
+				"destructiveHint": false,
+				"openWorldHint":   true,
+				"readOnlyHint":    true,
 			},
-			Exec: ToolFSMv,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "mkdir",
-				Description: "make directories",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
+		RegisterTool(Tool{
+			Name:        "mv",
+			Description: "Use this when you need to move or rename a file or directory from one path to another, based on the Unix command: `mv`.",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"from": map[string]string{
+						"type":        "string",
+						"description": "origin path",
 					},
-					"required": []string{"path"},
-				}),
+					"to": map[string]string{
+						"type":        "string",
+						"description": "destination path",
+					},
+				},
+				"required": []string{"from", "to"},
+			}),
+			Run: ToolFSMv,
+			Annotations: Meta{
+				"destructiveHint": true,
+				"openWorldHint":   true,
+				"readOnlyHint":    false,
 			},
-			Exec: ToolFSMkdir,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "touch",
-				Description: "create file",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
+		RegisterTool(Tool{
+			Name:        "mkdir",
+			Description: "Use this when you need to create a new directory at a specified path, based on the Unix command: `mkdir`.",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{"path"},
-				}),
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSMkdir,
+			Annotations: Meta{
+				"destructiveHint": true,
+				"openWorldHint":   true,
+				"readOnlyHint":    false,
 			},
-			Exec: ToolFSTouch,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "rm",
-				Description: "remove files or directories",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
+		RegisterTool(Tool{
+			Name:        "touch",
+			Description: "Use this when you need to create an empty file at a specified path, based on the Unix command: `touch`.",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{"path"},
-				}),
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSTouch,
+			Annotations: Meta{
+				"destructiveHint": true,
+				"openWorldHint":   true,
+				"readOnlyHint":    false,
 			},
-			Exec: ToolFSRm,
 		})
 
-		RegisterTool(ToolDefinition{
-			Tool: Tool{
-				Name:        "save",
-				Description: "save a file",
-				InputSchema: JsonSchema(map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"path": map[string]string{
-							"type":        "string",
-							"description": "path where the query is made",
-						},
-						"content": map[string]string{
-							"type":        "string",
-							"description": "content of the file",
-						},
+		RegisterTool(Tool{
+			Name:        "rm",
+			Description: "Use this when you need to remove a file or directory at a specified path, based on the Unix command: `rm`.",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
 					},
-					"required": []string{"path"},
-				}),
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSRm,
+			Annotations: Meta{
+				"destructiveHint": true,
+				"openWorldHint":   true,
+				"readOnlyHint":    false,
 			},
-			Exec: ToolFSSave,
+		})
+
+		RegisterTool(Tool{
+			Name:        "save",
+			Description: "Use this when you need to write or overwrite the contents of a file at a specified path.",
+			InputSchema: JsonSchema(map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path": map[string]string{
+						"type":        "string",
+						"description": "path where the query is made",
+					},
+					"content": map[string]string{
+						"type":        "string",
+						"description": "content of the file",
+					},
+				},
+				"required": []string{"path"},
+			}),
+			Run: ToolFSSave,
+			Annotations: Meta{
+				"destructiveHint": true,
+				"openWorldHint":   true,
+				"readOnlyHint":    false,
+			},
 		})
 	})
 }
 
-func ToolFSLs(params map[string]any, userSession *UserSession) (*TextContent, error) {
-	files, err := userSession.Backend.Ls(EnforceDirectory(getPath(params, userSession, "path")))
+func ToolFSLs(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
+	path := getPath(params, userSession, "path")
+	files, err := userSession.Backend.Ls(EnforceDirectory(path))
 	if err != nil {
 		return nil, err
 	}
-	var b bytes.Buffer
-	for _, file := range files {
+	structuredContent := make([]File, len(files))
+	content := bytes.Buffer{}
+	for i, file := range files {
 		if file.IsDir() {
-			b.Write([]byte("[DIR]  "))
+			content.Write([]byte("[DIR]  "))
 		} else {
-			b.Write([]byte("[FILE] "))
+			content.Write([]byte("[FILE] "))
 		}
-		b.Write([]byte(file.Name()))
-		b.Write([]byte("\n"))
+		content.Write([]byte(file.Name()))
+		content.Write([]byte("\n"))
+		ftype := "file"
+		if file.IsDir() {
+			ftype = "directory"
+		}
+		structuredContent[i] = File{
+			FName: file.Name(),
+			FType: ftype,
+			FSize: file.Size(),
+			FTime: file.ModTime().Unix(),
+		}
 	}
-	return &TextContent{
-		Type: "text",
-		Text: b.String(),
+	return &ToolResponse{
+		StructuredContent: map[string]any{
+			"files": structuredContent,
+		},
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: content.String(),
+			},
+		},
 	}, nil
 }
 
-func ToolFSCat(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSCat(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "path") {
 		return nil, ErrNotValid
 	}
@@ -220,32 +287,44 @@ func ToolFSCat(params map[string]any, userSession *UserSession) (*TextContent, e
 	if err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: string(b),
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: string(b),
+			},
+		},
 	}, nil
 }
 
-func ToolFSPwd(params map[string]any, userSession *UserSession) (*TextContent, error) {
-	return &TextContent{
-		Type: "text",
-		Text: userSession.CurrDir,
+func ToolFSPwd(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: userSession.CurrDir,
+			},
+		},
 	}, nil
 }
 
-func ToolFSCd(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSCd(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	path := EnforceDirectory(getPath(params, userSession, "path"))
 	if _, err := userSession.Backend.Ls(path); err != nil {
 		return nil, errors.New("No such file or directory")
 	}
 	userSession.CurrDir = EnforceDirectory(path)
-	return &TextContent{
-		Type: "text",
-		Text: userSession.CurrDir,
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: userSession.CurrDir,
+			},
+		},
 	}, nil
 }
 
-func ToolFSMv(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSMv(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "from") || isArgEmpty(params, "to") {
 		return nil, ErrNotValid
 	}
@@ -255,52 +334,68 @@ func ToolFSMv(params map[string]any, userSession *UserSession) (*TextContent, er
 	); err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: "",
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: "done",
+			},
+		},
 	}, nil
 }
 
-func ToolFSMkdir(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSMkdir(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "path") {
 		return nil, ErrNotValid
 	}
 	if err := userSession.Backend.Mkdir(EnforceDirectory(getPath(params, userSession, "path"))); err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: "",
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: "done",
+			},
+		},
 	}, nil
 }
 
-func ToolFSTouch(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSTouch(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "path") {
 		return nil, ErrNotValid
 	}
 	if err := userSession.Backend.Touch(getPath(params, userSession, "path")); err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: "",
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: "done",
+			},
+		},
 	}, nil
 }
 
-func ToolFSRm(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSRm(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "path") {
 		return nil, ErrNotValid
 	}
 	if err := userSession.Backend.Rm(getPath(params, userSession, "path")); err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: "",
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: "done",
+			},
+		},
 	}, nil
 }
 
-func ToolFSSave(params map[string]any, userSession *UserSession) (*TextContent, error) {
+func ToolFSSave(params map[string]any, userSession *UserSession) (*ToolResponse, error) {
 	if isArgEmpty(params, "path") {
 		return nil, ErrNotValid
 	}
@@ -310,9 +405,13 @@ func ToolFSSave(params map[string]any, userSession *UserSession) (*TextContent, 
 	); err != nil {
 		return nil, err
 	}
-	return &TextContent{
-		Type: "text",
-		Text: "",
+	return &ToolResponse{
+		Content: []TextContent{
+			{
+				Type: "text",
+				Text: "done",
+			},
+		},
 	}, nil
 }
 

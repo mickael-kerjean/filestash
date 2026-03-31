@@ -1,4 +1,4 @@
-import { createElement, onDestroy } from "../lib/skeleton/index.js";
+import { createElement } from "../lib/skeleton/index.js";
 import rxjs from "../lib/rx.js";
 import { animate, opacityIn } from "../lib/animate.js";
 
@@ -72,8 +72,10 @@ export function createLoader($parent, opts = {}) {
         $icon.remove();
     };
 
-    onDestroy(() => cancel());
-    return rxjs.tap(() => cancel());
+    return rxjs.pipe(
+        rxjs.tap(() => cancel()),
+        rxjs.finalize(() => cancel())
+    );
 }
 
 // > after this should be deprecated

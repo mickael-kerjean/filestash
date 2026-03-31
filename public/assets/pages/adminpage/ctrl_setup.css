@@ -9,7 +9,6 @@
     padding: 20px 0 0px 0;
 }
 .component_setup h4 .component_icon {
-    vertical-align: text-top;
     width: 1.3em;
     cursor: pointer;
 }
@@ -17,8 +16,8 @@
     opacity: 0;
 }
 .component_setup #step1 p {
-    font-size: 1.1em;
-    margin-bottom: 10px;
+    font-size: 1.05em;
+    margin-bottom: 5px;
 }
 .component_setup #step1 form {
     max-width: 400px;
@@ -39,9 +38,10 @@
 .component_setup #step2 .component_dependency_installed.no.severe {
     background: var(--error);
 }
-.component_setup #step2 .component_dependency_installed.no.severe span {
+.component_setup #step2 .component_dependency_installed strong {
     font-weight: bold;
     font-style: italic;
+    display: block;
 }
 .component_setup .stepper-form-appear, .component_setup .stepper-form-enter {
     transition-delay: 0.3s;
@@ -58,4 +58,13 @@
 }
 .component_setup .component_icon {
     width: 30px;
+}
+
+.pulse {
+  animation: zoomPulse 1.2s ease-in-out infinite;
+  transform-origin: center left;
+}
+@keyframes zoomPulse {
+  0%, 100% { transform: scale(1.03); }
+  50%      { transform: scale(1.07); }
 }

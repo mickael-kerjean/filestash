@@ -1,0 +1,10 @@
+{
+    "author": "Filestash Pty Ltd",
+    "version": "v0.0",
+    "modules": [
+        {
+            "type": "patch",
+            "entrypoint": "filespage_thing.diff"
+        }
+    ]
+}

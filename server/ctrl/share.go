@@ -70,7 +70,7 @@ func ShareUpsert(ctx *App, res http.ResponseWriter, req *http.Request) {
 				leftPath = ctx.Share.Path
 			} else {
 				if ctx.Session["path"] != "" {
-					leftPath = ctx.Session["path"]
+					leftPath = EnforceDirectory(ctx.Session["path"])
 				}
 			}
 			return leftPath + rightPath

@@ -4,7 +4,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -13,13 +12,8 @@ import (
 )
 
 func updateFile(path string, backend IBackend, tx indexer.Manager) error {
-	if err := tx.IndexTimeUpdate(path, time.Now()); err != nil {
+	if err := tx.IndexTimeUpdate(path, time.Now().UTC()); err != nil {
 		return err
-	}
-	for i := 0; i < len(INDEXING_EXCLUSION); i++ {
-		if strings.Contains(path, INDEXING_EXCLUSION[i]) {
-			return nil
-		}
 	}
 	reader, err := backend.Cat(path)
 	if err != nil {
@@ -32,22 +26,15 @@ func updateFile(path string, backend IBackend, tx indexer.Manager) error {
 		return nil
 	}
 	defer convertedReader.Close()
-	if err = tx.FileContentUpdate(path, reader); err != nil {
-		Log.Warning("search::index index_update (%v)", err)
+	if err = tx.FileContentUpdate(path, convertedReader); err != nil {
 		return err
 	}
 	return nil
 }
 
 func updateFolder(path string, backend IBackend, tx indexer.Manager) error {
-	if err := tx.IndexTimeUpdate(path, time.Now()); err != nil {
+	if err := tx.IndexTimeUpdate(path, time.Now().UTC()); err != nil {
 		return err
-	}
-
-	for i := 0; i < len(INDEXING_EXCLUSION); i++ {
-		if strings.Contains(path, INDEXING_EXCLUSION[i]) {
-			return nil
-		}
 	}
 
 	// Fetch list of folders as in the remote filesystem
@@ -94,7 +81,7 @@ func updateFolder(path string, backend IBackend, tx indexer.Manager) error {
 			}
 		}
 		if currFilenameAlreadyExist == false {
-			dbInsert(path, currFiles[i], tx)
+			dbUpsert(path, currFiles[i], tx)
 		}
 	}
 	// 2. Find the content that was existing before but got removed
@@ -119,7 +106,11 @@ func updateFolder(path string, backend IBackend, tx indexer.Manager) error {
 }
 
 func dbInsert(parent string, f os.FileInfo, tx indexer.Manager) error {
-	return tx.FileCreate(f, parent)
+	return tx.FileCreate(f, parent, false)
+}
+
+func dbUpsert(parent string, f os.FileInfo, tx indexer.Manager) error {
+	return tx.FileCreate(f, parent, true)
 }
 
 func dbUpdate(parent string, f fs.FileInfo, tx indexer.Manager) error {

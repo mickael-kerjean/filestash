@@ -27,7 +27,11 @@ func createUser(user User) error {
 	if user.Password == "" {
 		return ErrNotValid
 	}
-	p, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	pwd := user.Password
+	if len(pwd) > 72 {
+		pwd = pwd[0:72]
+	}
+	p, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
@@ -52,6 +56,7 @@ func updateUser(user User) error {
 					return err
 				}
 				user.Password = string(p)
+				users[i].Password = user.Password
 			}
 			users[i].Disabled = user.Disabled
 			users[i].Role = user.Role
@@ -63,7 +68,10 @@ func updateUser(user User) error {
 
 func getUsers() ([]User, error) {
 	cfg, err := getPluginData()
-	return cfg.Users, err
+	if err != nil {
+		return nil, err
+	}
+	return cfg.GetUsers()
 }
 
 func saveUsers(users []User) error {
@@ -86,6 +94,6 @@ func saveUsers(users []User) error {
 		}
 		return false
 	})
-	cfg.Users = users
+	cfg.SetUsers(users)
 	return savePluginData(cfg)
 }

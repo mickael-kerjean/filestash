@@ -1,5 +1,5 @@
-body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
-    background: #525659;
+body:not(.dark-mode) .component_audioplayer .audioplayer_container {
+    background: var(--surface);
 }
 
 .component_audioplayer {
@@ -8,7 +8,7 @@ body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
     flex: 1;
     width: 100%;
 }
-.component_audioplayer > .audioplayer_container {
+.component_audioplayer .audioplayer_container {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -19,35 +19,41 @@ body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
     padding: 20px;
     box-sizing: border-box;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_error {
+.component_audioplayer .audioplayer_container .audioplayer_error {
     color: white;
     margin-top: 30px;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box {
-    background: #f1f1f1;
-    box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px, rgba(0, 0, 0, 0.2) 0px 2px 4px -1px;
+.component_audioplayer .audioplayer_container .audioplayer_box {
+    background: white;
+    box-shadow: rgba(0, 0, 0, 0.14) 0px 4px 5px 0px;
     position: relative;
     border-radius: 3px;
     padding: 10px 0 15px 0;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control {
     padding-top: 20px;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control img {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control.hidden {
+    position: unset !important;
+    width: inherit !important;
+    height: inherit !important;
+    opacity: 0;
+}
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control img {
     height: 25px;
     width: 25px;
     cursor: pointer;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .buttons {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .buttons {
     float: left;
     padding-left: 15px;
     margin-top: -10px;
     display: flex;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .buttons > span {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .buttons > span {
     margin-right: 10px;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"] {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"] {
     margin-left: -5px;
     width: 60px;
     cursor: pointer;
@@ -55,7 +61,7 @@ body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
     -webkit-appearance: none;
     background: transparent;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"]::-webkit-slider-thumb {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     height: 12px;
     width: 12px;
@@ -64,7 +70,7 @@ body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
     background: #6f6f6f;
     margin-top: -5px;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"]::-moz-range-thumb {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"]::-moz-range-thumb {
     -webkit-appearance: none;
     height: 12px;
     width: 12px;
@@ -73,33 +79,33 @@ body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
     background: #6f6f6f;
     margin-top: -5px;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"]::-webkit-slider-runnable-track {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"]::-webkit-slider-runnable-track {
     width: 100%;
     height: 2px;
     background-color: #6f6f6f;
     border-radius: 2px;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"]::-moz-range-track {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"]::-moz-range-track {
     width: 100%;
     height: 2px;
     background-color: #6f6f6f;
     border-radius: 2px;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .timecode {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .timecode {
     float: right;
     padding-right: 25px;
     margin-top: -5px;
     line-height: 1rem;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .timecode #separator {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .timecode #separator {
     padding: 0 5px;
 }
 @media screen and (max-width: 450px) {
-    .component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .timecode #separator, .component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .timecode #currentTime {
+    .component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .timecode #separator, .component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_control .timecode #currentTime {
         display: none;
     }
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .audioplayer_loader {
+.component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_loader {
     height: 260px;
     background: var(--color);
     position: absolute;
@@ -107,17 +113,17 @@ body:not(.dark-mode) .component_audioplayer > .audioplayer_container {
     top: 0;
     left: 0;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .component_icon[alt="loading"] {
+.component_audioplayer .audioplayer_container .audioplayer_box .component_icon[alt="loading"] {
     position: absolute;
     margin: 50px -60px;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .chromecast_loader .component_icon[alt="loading"] {
+.component_audioplayer .audioplayer_container .audioplayer_box .chromecast_loader .component_icon[alt="loading"] {
     margin: 0;
     right: 20px;
     top: 20px;
     width: 30px;
 }
-.component_audioplayer > .audioplayer_container .audioplayer_box .percent {
+.component_audioplayer .audioplayer_container .audioplayer_box .percent {
     position: absolute;
     margin: 100px -60px;
     width: 120px;

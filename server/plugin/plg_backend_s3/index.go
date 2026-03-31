@@ -256,6 +256,56 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 	return files, err
 }
 
+func (this S3Backend) Stat(path string) (os.FileInfo, error) {
+	p := this.path(path)
+	if p.bucket == "" {
+		return &File{
+			FName: ".",
+			FType: "directory",
+		}, nil
+	} else if p.path == "" {
+		b, err := this.client.ListBuckets(&s3.ListBucketsInput{})
+		if err != nil {
+			return nil, err
+		}
+		for _, bucket := range b.Buckets {
+			if bucket.Name != nil && *bucket.Name == p.bucket {
+				return &File{
+					FName: *bucket.Name,
+					FType: "directory",
+					FTime: bucket.CreationDate.Unix(),
+				}, nil
+			}
+		}
+		return nil, ErrNotFound
+	}
+	client := s3.New(this.createSession(p.bucket))
+	input := &s3.HeadObjectInput{
+		Bucket: aws.String(p.bucket),
+		Key:    aws.String(p.path),
+	}
+	obj, err := client.HeadObjectWithContext(this.Context, input)
+	if err != nil {
+		awsErr, ok := err.(awserr.Error)
+		if ok == false || awsErr.Code() != "NotFound" {
+			return nil, err
+		}
+		return File{
+			FName: filepath.Base(path),
+			FType: "directory",
+			FTime: -1,
+		}, nil
+	} else if obj.ContentLength == nil || obj.LastModified == nil {
+		return nil, ErrNotValid
+	}
+	return File{
+		FName: filepath.Base(path),
+		FType: "file",
+		FSize: (*obj.ContentLength),
+		FTime: (*obj.LastModified).Unix(),
+	}, err
+}
+
 func (this S3Backend) Cat(path string) (io.ReadCloser, error) {
 	p := this.path(path)
 	client := s3.New(this.createSession(p.bucket))
@@ -282,6 +332,8 @@ func (this S3Backend) Cat(path string) (io.ReadCloser, error) {
 			return nil, NewError("This file is encrypted file, you need the correct key!", 400)
 		} else if awsErr.Code() == "AccessDenied" {
 			return nil, ErrNotAllowed
+		} else if awsErr.Code() == "InvalidObjectState" {
+			return nil, ErrNotReachable
 		}
 		return nil, err
 	}
@@ -299,7 +351,7 @@ func (this S3Backend) Mkdir(path string) error {
 	}
 	_, err := client.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(p.bucket),
-		Key:    aws.String(p.path),
+		Key:    aws.String(EnforceDirectory(p.path)),
 	})
 	return err
 }
@@ -310,8 +362,13 @@ func (this S3Backend) Rm(path string) error {
 	if p.bucket == "" {
 		return ErrNotFound
 	}
+	finfo, err := this.Stat(path)
+	if err != nil {
+		return err
+	}
+
 	// CASE 1: remove a file
-	if strings.HasSuffix(path, "/") == false {
+	if finfo.IsDir() == false {
 		_, err := client.DeleteObject(&s3.DeleteObjectInput{
 			Bucket: aws.String(p.bucket),
 			Key:    aws.String(p.path),
@@ -341,7 +398,7 @@ func (this S3Backend) Rm(path string) error {
 			wg.Done()
 		}()
 	}
-	err := client.ListObjectsV2PagesWithContext(
+	err = client.ListObjectsV2PagesWithContext(
 		this.Context,
 		&s3.ListObjectsV2Input{
 			Bucket: aws.String(p.bucket),
@@ -387,8 +444,13 @@ func (this S3Backend) Mv(from string, to string) error {
 	if f.path == "" {
 		return ErrNotImplemented
 	}
+
+	finfo, err := this.Stat(from)
+	if err != nil {
+		return err
+	}
 	// CASE 2: Rename/Move a file
-	if strings.HasSuffix(from, "/") == false {
+	if finfo.IsDir() == false {
 		input := &s3.CopyObjectInput{
 			CopySource: aws.String(fmt.Sprintf("%s/%s", f.bucket, f.path)),
 			Bucket:     aws.String(t.bucket),
@@ -452,7 +514,7 @@ func (this S3Backend) Mv(from string, to string) error {
 			wg.Done()
 		}()
 	}
-	err := client.ListObjectsV2PagesWithContext(
+	err = client.ListObjectsV2PagesWithContext(
 		this.Context,
 		&s3.ListObjectsV2Input{
 			Bucket: aws.String(f.bucket),
