@@ -37,7 +37,7 @@
 .component_filemanager_shell [data-bind="sidebar"]:empty ~ div > [data-bind="filemanager-children"] .container {
     width: 98%;
     margin: 0 auto;
-    max-width: 815px;
+    max-width: 1200px;
 }
 
 .component_filemanager_shell [data-bind="sidebar"].hidden ~ div > [data-bind="filemanager-children"] {
