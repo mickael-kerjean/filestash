@@ -20,13 +20,9 @@ export default async function(render, { getDownloadUrl, getFilename }) {
 
     const sourceUrl = new URL(getDownloadUrl(), window.location.origin);
     sourceUrl.pathname = "/api/plg_application_volumeexplorer/cat";
-    if (window.BEARER_TOKEN) {
-        sourceUrl.searchParams.set("authorization", window.BEARER_TOKEN);
-    }
 
     const appUrl = new URL("./app/index.html", import.meta.url);
     appUrl.searchParams.set("src", sourceUrl.toString());
-    appUrl.searchParams.set("hidden", "true");
 
     const removeLoader = createLoader($page);
     const $frame = qs($page, ".component_volumeexplorer-frame");
