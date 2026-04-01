@@ -1,4 +1,4 @@
-PACKAGE_VERSION ?= 1.2.0
+PACKAGE_VERSION ?= 1.2.1
 PACKAGE_URL = https://registry.npmjs.org/@qim3d/volume-explorer/-/volume-explorer-$(PACKAGE_VERSION).tgz
 PLUGIN_NAME = application_volumeexplorer.zip
 PLUGIN_DIST = ../../../dist/data/state/plugins
