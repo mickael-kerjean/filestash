@@ -5,7 +5,12 @@ import { loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../../pages/ctrl_error.js";
 
+let cssPromise = null;
+
 export default async function(render, { getDownloadUrl, getFilename }) {
+    if (!cssPromise) cssPromise = loadCSS(import.meta.url, "./loader_tiff.css");
+    await cssPromise;
+
     const $page = createElement(`
         <div class="component_volumeexplorer">
             <iframe class="component_volumeexplorer-frame" loading="eager"></iframe>
@@ -13,8 +18,14 @@ export default async function(render, { getDownloadUrl, getFilename }) {
     `);
     render($page);
 
+    const sourceUrl = new URL(getDownloadUrl(), window.location.origin);
+    sourceUrl.pathname = "/api/plg_application_volumeexplorer/cat";
+    if (window.BEARER_TOKEN) {
+        sourceUrl.searchParams.set("authorization", window.BEARER_TOKEN);
+    }
+
     const appUrl = new URL("./app/index.html", import.meta.url);
-    appUrl.searchParams.set("src", new URL(getDownloadUrl(), window.location.origin).toString());
+    appUrl.searchParams.set("src", sourceUrl.toString());
     appUrl.searchParams.set("hidden", "true");
 
     const removeLoader = createLoader($page);
@@ -27,8 +38,4 @@ export default async function(render, { getDownloadUrl, getFilename }) {
         removeLoader,
         rxjs.catchError(ctrlError()),
     ));
-}
-
-export function init() {
-    return loadCSS(import.meta.url, "./loader_tiff.css");
 }

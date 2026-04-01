@@ -1,12 +1,17 @@
 .component_volumeexplorer {
-    height: 100%;
+    position: absolute;
+    inset: 0;
     width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
 .component_volumeexplorer-frame {
+    position: absolute;
+    inset: 0;
     border: 0;
     display: block;
-    height: 100%;
     width: 100%;
+    height: 100%;
     background: var(--bg-color);
 }
