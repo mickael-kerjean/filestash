@@ -104,9 +104,7 @@ func fileCatProxy(ctx *App, res http.ResponseWriter, req *http.Request) {
     if finfo.ModTime().Unix() > 0 {
         header.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
     }
-    if disable_csp() == false {
-        header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; font-src data:; script-src-elem 'self'")
-    }
+    header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; font-src data:; script-src-elem 'self'")
     header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, contentLength))
     header.Set("Content-Length", fmt.Sprintf("%d", end-start+1))
 
