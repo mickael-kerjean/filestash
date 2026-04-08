@@ -4,9 +4,12 @@ import (
     "fmt"
     "io"
     "net/http"
+    "net/url"
     "os"
+    pathpkg "path"
     "strconv"
     "strings"
+    "time"
 
     . "github.com/mickael-kerjean/filestash/server/common"
     ctrl "github.com/mickael-kerjean/filestash/server/ctrl"
@@ -17,6 +20,12 @@ import (
 )
 
 var volumeExplorerCache = NewAppCache(60, 10)
+var volumeExplorerLaunchCache = NewAppCache(60, 10)
+
+type launchContext struct {
+    SessionID string
+    RootPath  string
+}
 
 func init() {
     volumeExplorerCache.OnEvict(func(_ string, value interface{}) {
@@ -30,19 +39,162 @@ func init() {
             fileCatProxy,
             []Middleware{ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly},
         )).Methods("GET", "HEAD")
+        r.HandleFunc("/api/plg_application_volumeexplorer/cat/{file:.*}", NewMiddlewareChain(
+            fileCatProxy,
+            []Middleware{ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly},
+        )).Methods("GET", "HEAD")
+        r.HandleFunc("/api/plg_application_volumeexplorer/launch", NewMiddlewareChain(
+            launchSource,
+            []Middleware{ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly},
+        )).Methods("GET")
+        r.HandleFunc("/api/plg_application_volumeexplorer/tree/{token}/{file:.*}", NewMiddlewareChain(
+            treeFileProxy,
+            []Middleware{ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly},
+        )).Methods("GET", "HEAD")
         return nil
     })
 }
 
-func fileCatProxy(ctx *App, res http.ResponseWriter, req *http.Request) {
+func launchSource(ctx *App, res http.ResponseWriter, req *http.Request) {
+    if model.CanRead(ctx) == false {
+        SendErrorResult(res, ErrPermissionDenied)
+        return
+    }
+
+    requestedPath := req.URL.Query().Get("path")
+    if requestedPath == "" {
+        SendErrorResult(res, NewError("missing path parameter", 400))
+        return
+    }
+
+    path, err := ctrl.PathBuilder(ctx, requestedPath)
+    if err != nil {
+        SendErrorResult(res, err)
+        return
+    }
+    requestedIsDir := strings.HasSuffix(requestedPath, "/")
+
+    finfo, err := ctx.Backend.Stat(path)
+    if err != nil {
+        SendErrorResult(res, err)
+        return
+    }
+
+    if requestedIsDir == false && finfo.IsDir() == false {
+        if err = ensureCatAuthorised(ctx, path); err != nil {
+            SendErrorResult(res, err)
+            return
+        }
+        SendSuccessResult(res, map[string]string{
+            "src": "/api/plg_application_volumeexplorer/cat?path=" + url.QueryEscape(requestedPath),
+        })
+        return
+    }
+
+    rootPath := path
+    if strings.HasSuffix(rootPath, "/") == false {
+        rootPath += "/"
+    }
+
+    sessionID := GenerateID(ctx.Session)
+    token := QuickHash(fmt.Sprintf("%s|%s|%d", sessionID, rootPath, time.Now().UnixNano()), 32)
+    volumeExplorerLaunchCache.SetKey(token, launchContext{
+        SessionID: sessionID,
+        RootPath:  rootPath,
+    })
     Log.Info(
-        "plg_application_volumeexplorer::cat method=%s path=%s range=%q",
+        "plg_application_volumeexplorer::launch token=%s requested=%q root=%q",
+        token,
+        requestedPath,
+        rootPath,
+    )
+
+    SendSuccessResult(res, map[string]string{
+        "src": "/api/plg_application_volumeexplorer/tree/" + token + "/?source=" + url.QueryEscape(requestedPath),
+    })
+}
+
+func treeFileProxy(ctx *App, res http.ResponseWriter, req *http.Request) {
+    vars := mux.Vars(req)
+    token := vars["token"]
+    rawRelativePath := vars["file"]
+
+    cached, found := volumeExplorerLaunchCache.Cache.Get(token)
+    launch, ok := cached.(launchContext)
+    if token == "" || !found || !ok {
+        Log.Info(
+            "plg_application_volumeexplorer::tree miss token=%s found=%t ok=%t relative=%q",
+            token,
+            found,
+            ok,
+            rawRelativePath,
+        )
+        SendErrorResult(res, ErrNotFound)
+        return
+    }
+
+    if launch.SessionID != GenerateID(ctx.Session) {
+        Log.Info(
+            "plg_application_volumeexplorer::tree session_mismatch token=%s launch_session=%q request_session=%q",
+            token,
+            launch.SessionID,
+            GenerateID(ctx.Session),
+        )
+        SendErrorResult(res, ErrNotAuthorized)
+        return
+    }
+
+    relativePath, err := url.PathUnescape(rawRelativePath)
+    if err != nil {
+        SendErrorResult(res, ErrNotValid)
+        return
+    }
+
+    targetPath, err := resolveTreePath(launch.RootPath, relativePath)
+    if err != nil {
+        Log.Info(
+            "plg_application_volumeexplorer::tree invalid_path token=%s root=%q relative=%q",
+            token,
+            launch.RootPath,
+            relativePath,
+        )
+        SendErrorResult(res, ErrNotValid)
+        return
+    }
+    Log.Info(
+        "plg_application_volumeexplorer::tree token=%s source=%q relative=%q target=%q",
+        token,
+        req.URL.Query().Get("source"),
+        relativePath,
+        targetPath,
+    )
+
+    if err = ensureCatAuthorised(ctx, targetPath); err != nil {
+        Log.Info(
+            "plg_application_volumeexplorer::tree unauthorized token=%s target=%q",
+            token,
+            targetPath,
+        )
+        SendErrorResult(res, err)
+        return
+    }
+
+    serveBackendFile(ctx, res, req, targetPath, relativePath)
+}
+
+func fileCatProxy(ctx *App, res http.ResponseWriter, req *http.Request) {
+    vars := mux.Vars(req)
+    rawRelativePath := vars["file"]
+
+    Log.Info(
+        "plg_application_volumeexplorer::cat method=%s path=%s relative=%q range=%q",
         req.Method,
         req.URL.Query().Get("path"),
+        rawRelativePath,
         req.Header.Get("Range"),
     )
 
-    if req.Header.Get("Range") == "" {
+    if req.Header.Get("Range") == "" && rawRelativePath == "" {
         ctrl.FileCat(ctx, res, req)
         return
     }
@@ -59,19 +211,36 @@ func fileCatProxy(ctx *App, res http.ResponseWriter, req *http.Request) {
         return
     }
 
-    path, err := ctrl.PathBuilder(ctx, req.URL.Query().Get("path"))
+    targetPath, err := ctrl.PathBuilder(ctx, req.URL.Query().Get("path"))
     if err != nil {
         SendErrorResult(res, err)
         return
     }
 
-    for _, auth := range Hooks.Get.AuthorisationMiddleware() {
-        if err = auth.Cat(ctx, path); err != nil {
-            SendErrorResult(res, ErrNotAuthorized)
+    mimeHint := req.URL.Query().Get("path")
+    if rawRelativePath != "" {
+        relativePath, err := url.PathUnescape(rawRelativePath)
+        if err != nil {
+            SendErrorResult(res, ErrNotValid)
             return
         }
+        targetPath, err = resolveTreePath(targetPath, relativePath)
+        if err != nil {
+            SendErrorResult(res, ErrNotValid)
+            return
+        }
+        mimeHint = relativePath
     }
 
+    if err = ensureCatAuthorised(ctx, targetPath); err != nil {
+        SendErrorResult(res, err)
+        return
+    }
+
+    serveBackendFile(ctx, res, req, targetPath, mimeHint)
+}
+
+func serveBackendFile(ctx *App, res http.ResponseWriter, req *http.Request, path string, mimeHint string) {
     finfo, err := ctx.Backend.Stat(path)
     if err != nil {
         SendErrorResult(res, err)
@@ -82,6 +251,28 @@ func fileCatProxy(ctx *App, res http.ResponseWriter, req *http.Request) {
         return
     }
 
+    contentLength := finfo.Size()
+    setResponseHeaders(res, finfo, mimeHint)
+
+    if req.Header.Get("Range") == "" {
+        res.Header().Set("Content-Length", fmt.Sprintf("%d", contentLength))
+        if req.Method == http.MethodHead {
+            res.WriteHeader(http.StatusOK)
+            return
+        }
+
+        reader, err := ctx.Backend.Cat(path)
+        if err != nil {
+            SendErrorResult(res, err)
+            return
+        }
+        defer reader.Close()
+
+        res.WriteHeader(http.StatusOK)
+        _, _ = io.Copy(res, reader)
+        return
+    }
+
     file, err := openCachedFile(ctx, path)
     if err != nil {
         SendErrorResult(res, err)
@@ -89,7 +280,6 @@ func fileCatProxy(ctx *App, res http.ResponseWriter, req *http.Request) {
     }
     defer file.Close()
 
-    contentLength := finfo.Size()
     start, end, err := parseSingleRange(req.Header.Get("Range"), contentLength)
     if err != nil {
         res.Header().Set("Content-Range", fmt.Sprintf("bytes */%d", contentLength))
@@ -98,13 +288,6 @@ func fileCatProxy(ctx *App, res http.ResponseWriter, req *http.Request) {
     }
 
     header := res.Header()
-    header.Set("Accept-Ranges", "bytes")
-    header.Set("Cache-Control", "no-cache")
-    header.Set("Content-Type", GetMimeType(req.URL.Query().Get("path")))
-    if finfo.ModTime().Unix() > 0 {
-        header.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
-    }
-    header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; font-src data:; script-src-elem 'self'")
     header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, contentLength))
     header.Set("Content-Length", fmt.Sprintf("%d", end-start+1))
 
@@ -120,6 +303,61 @@ func fileCatProxy(ctx *App, res http.ResponseWriter, req *http.Request) {
 
     res.WriteHeader(http.StatusPartialContent)
     _, _ = io.CopyN(res, file, end-start+1)
+}
+
+func setResponseHeaders(res http.ResponseWriter, finfo os.FileInfo, mimeHint string) {
+    header := res.Header()
+    header.Set("Accept-Ranges", "bytes")
+    header.Set("Cache-Control", "no-cache")
+    header.Set("Content-Type", volumeExplorerMimeType(mimeHint))
+    if finfo.ModTime().Unix() > 0 {
+        header.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
+    }
+    header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; font-src data:; script-src-elem 'self'")
+}
+
+func volumeExplorerMimeType(path string) string {
+    switch pathpkg.Base(path) {
+    case ".zarray", ".zattrs", ".zgroup", ".zmetadata":
+        return "application/json"
+    default:
+        return GetMimeType(path)
+    }
+}
+
+func ensureCatAuthorised(ctx *App, path string) error {
+    for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+        if err := auth.Cat(ctx, path); err != nil {
+            return ErrNotAuthorized
+        }
+    }
+    return nil
+}
+
+func resolveTreePath(rootPath string, relativePath string) (string, error) {
+    if rootPath == "" || relativePath == "" {
+        return "", fmt.Errorf("invalid path")
+    }
+    if strings.Contains(relativePath, "\x00") {
+        return "", fmt.Errorf("invalid path")
+    }
+
+    cleaned := pathpkg.Clean("/" + relativePath)
+    cleaned = strings.TrimPrefix(cleaned, "/")
+    if cleaned == "" {
+        return "", fmt.Errorf("invalid path")
+    }
+
+    for _, part := range strings.Split(cleaned, "/") {
+        if part == ".." {
+            return "", fmt.Errorf("invalid path")
+        }
+    }
+
+    if strings.HasSuffix(rootPath, "/") == false {
+        rootPath += "/"
+    }
+    return rootPath + cleaned, nil
 }
 
 func openCachedFile(ctx *App, path string) (*os.File, error) {

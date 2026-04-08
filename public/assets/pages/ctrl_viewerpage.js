@@ -67,7 +67,7 @@ export default WithShell(async function(render) {
 
     // feature: render viewer application
     effect(rxjs.of(getConfig("mime", {})).pipe(
-        rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
+        rxjs.map((mimes) => resolveOpener(mimes)),
         rxjs.mergeMap(([opener, opts]) => rxjs.from(loadModuleWithMemory(opener)).pipe(rxjs.switchMap(async(module) => {
             module.default(createRender($page), { ...opts, acl$: options(), getFilename, getDownloadUrl });
         }))),
@@ -90,10 +90,17 @@ export async function init() {
         loadCSS(import.meta.url, "./ctrl_viewerpage.css"),
         initShell(), initMenubar(), initCache(),
         rxjs.of(getConfig("mime", {})).pipe(
-            rxjs.map((mimes) => opener(basename(getCurrentPath()), mimes)),
+            rxjs.map((mimes) => resolveOpener(mimes)),
             rxjs.mergeMap(([opener]) => loadModule(opener)),
             rxjs.mergeMap((module) => typeof module.init === "function"? module.init() : rxjs.EMPTY),
             rxjs.catchError(() => rxjs.EMPTY),
         ).toPromise(),
     ]);
+}
+
+function resolveOpener(mimes) {
+    if (new URLSearchParams(location.search).get("opener") === "volumeexplorer") {
+        return ["skeleton", { mime: "image/tiff" }];
+    }
+    return opener(basename(getCurrentPath()), mimes);
 }

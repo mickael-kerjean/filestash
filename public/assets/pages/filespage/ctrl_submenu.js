@@ -2,6 +2,7 @@ import { createElement, createRender, createFragment, onDestroy } from "../../li
 import rxjs, { effect, onClick, preventDefault } from "../../lib/rx.js";
 import { animate, slideXIn, slideYIn } from "../../lib/animate.js";
 import { basename, forwardURLParams } from "../../lib/path.js";
+import { navigate, toHref } from "../../lib/skeleton/router.js";
 import assert from "../../lib/assert.js";
 import { qs, qsa } from "../../lib/dom.js";
 import { get as getConfig } from "../../model/config.js";
@@ -130,6 +131,9 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
             <button data-action="copy_path" title="${t("Copy path")}">
                 ${t("Copy path")}
             </button>
+            <button data-action="open_volume_explorer" title="${t("Volume Explorer")}">
+                ${t("Volume Explorer")}
+            </button>
             <button data-action="change_permissions"${toggleDependingOnPermission(currentPath(), "delete")} title="${t("Change permissions")}">
                 ${t("Change permissions")}
             </button>
@@ -153,7 +157,11 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
             onClick(qs($page, `[data-action="copy_path"]`), { preventDefault: true }).pipe(rxjs.tap(() => {
                 const path = expandSelection()[0].path;
                 navigator.clipboard.writeText(path);
-                Notification.success(path + " copied to clipboard");  
+                Notification.success(path + " copied to clipboard");
+            })),
+            onClick(qs($page, `[data-action="open_volume_explorer"]`), { preventDefault: true }).pipe(rxjs.tap(() => {
+                const path = expandSelection()[0].path;
+                navigate(toHref(createVolumeExplorerLink(path)));
             })),
             onClick(qs($page, `[data-action="change_permissions"]`)).pipe(rxjs.mergeMap(() => {
                 const path = expandSelection()[0].path;
@@ -481,4 +489,11 @@ function generateLinkAttributes(selections) {
 
 function toggleDependingOnPermission(path, action) {
     return calculatePermission(path, action) === false ? ` style="display:none"` : "";
+}
+
+function createVolumeExplorerLink(path) {
+    const encoded = encodeURIComponent("view" + path).replaceAll("%2F", "/");
+    const url = new URL(window.location.origin + "/" + encoded);
+    url.searchParams.set("opener", "volumeexplorer");
+    return "/" + forwardURLParams(url.pathname.substring(1) + url.search, ["share", "canary"]);
 }
