@@ -290,34 +290,13 @@ func (b Sftp) Rm(path string) error {
 		} else {
 			return nil
 		}
+	}
 
-		list, err := b.SFTPClient.ReadDir(path)
-		if err != nil {
-			return b.err(err)
-		}
-		for _, entry := range list {
-			p := path + entry.Name()
-			if entry.IsDir() {
-				p += "/"
-				err := b.Rm(p)
-				if err != nil {
-					return b.err(err)
-				}
-			} else {
-				err := b.SFTPClient.Remove(p)
-				if err != nil {
-					return b.err(err)
-				}
-			}
-		}
-		err = b.SFTPClient.RemoveDirectory(path)
-		if err != nil {
-			return b.err(err)
-		}
-	} else {
-		err := b.SFTPClient.Remove(path)
+	err := b.SFTPClient.RemoveAll(path)
+	if err != nil {
 		return b.err(err)
 	}
+
 	return nil
 }
 
