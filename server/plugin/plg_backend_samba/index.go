@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/hirochachacha/go-smb2"
@@ -16,28 +17,104 @@ import (
 var SambaCache AppCache
 
 func init() {
-	Backend.Register("samba", Samba{})
+	Backend.Register("samba", &Samba{})
 
 	SambaCache = NewAppCache(30)
 	SambaCache.OnEvict(func(key string, value interface{}) {
 		smb := value.(*Samba)
-		for key, _ := range smb.share {
-			if err := smb.share[key].Umount(); err != nil {
-				Log.Warning("samba: error unmounting share: %v", err)
-			}
-		}
-		if err := smb.session.Logoff(); err != nil {
-			Log.Warning("samba: error logging out: %v", err)
-		}
+		smb.markEvicted()
 	})
 }
 
 type Samba struct {
 	session *smb2.Session
 	share   map[string]*smb2.Share
+	mu      sync.Mutex
+	refs    int
+	evicted bool
+	closed  bool
 }
 
-func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
+type sambaFile struct {
+	reader  io.ReadCloser
+	seeker  io.Seeker
+	once    sync.Once
+	release func()
+}
+
+func (f *sambaFile) Read(p []byte) (int, error) {
+	return f.reader.Read(p)
+}
+
+func (f *sambaFile) Seek(offset int64, whence int) (int64, error) {
+	if f.seeker == nil {
+		return 0, ErrNotImplemented
+	}
+	return f.seeker.Seek(offset, whence)
+}
+
+func (f *sambaFile) Close() error {
+	err := f.reader.Close()
+	f.once.Do(func() {
+		if f.release != nil {
+			f.release()
+		}
+	})
+	return err
+}
+
+func (smb *Samba) markEvicted() {
+	smb.mu.Lock()
+	smb.evicted = true
+	shouldClose := smb.refs == 0 && smb.closed == false
+	smb.mu.Unlock()
+	if shouldClose {
+		smb.closeSession()
+	}
+}
+
+func (smb *Samba) acquire() {
+	smb.mu.Lock()
+	smb.refs++
+	smb.mu.Unlock()
+}
+
+func (smb *Samba) release() {
+	smb.mu.Lock()
+	if smb.refs > 0 {
+		smb.refs--
+	}
+	shouldClose := smb.refs == 0 && smb.evicted && smb.closed == false
+	smb.mu.Unlock()
+	if shouldClose {
+		smb.closeSession()
+	}
+}
+
+func (smb *Samba) closeSession() {
+	smb.mu.Lock()
+	if smb.closed {
+		smb.mu.Unlock()
+		return
+	}
+	smb.closed = true
+	share := smb.share
+	session := smb.session
+	smb.mu.Unlock()
+
+	for key := range share {
+		if err := share[key].Umount(); err != nil {
+			Log.Warning("samba: error unmounting share: %v", err)
+		}
+	}
+	if session != nil {
+		if err := session.Logoff(); err != nil {
+			Log.Warning("samba: error logging out: %v", err)
+		}
+	}
+}
+
+func (smb *Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	if c := SambaCache.Get(params); c != nil {
 		return c.(*Samba), nil
 	}
@@ -70,8 +147,10 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		return nil, err
 	}
 
-	smb.share = make(map[string]*smb2.Share, 0)
-	smb.session, err = (&smb2.Dialer{
+	next := &Samba{
+		share: make(map[string]*smb2.Share, 0),
+	}
+	next.session, err = (&smb2.Dialer{
 		Initiator: &smb2.NTLMInitiator{
 			User: func() string {
 				if params["username"] == "" {
@@ -88,7 +167,7 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		return nil, err
 	}
 	if params["share"] == "" {
-		names, err := smb.session.ListSharenames()
+		names, err := next.session.ListSharenames()
 		if err != nil {
 			Log.Debug("plg_backend_samba::list host[%s] err[%s]", host, err.Error())
 			return nil, err
@@ -97,20 +176,20 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 			if strings.HasSuffix(name, "$") {
 				continue
 			}
-			if m, err := smb.session.Mount(name); err == nil {
-				smb.share[name] = m
+			if m, err := next.session.Mount(name); err == nil {
+				next.share[name] = m
 			}
 		}
 	} else {
-		if m, err := smb.session.Mount(params["share"]); err == nil {
-			smb.share[params["share"]] = m
+		if m, err := next.session.Mount(params["share"]); err == nil {
+			next.share[params["share"]] = m
 		}
 	}
-	SambaCache.Set(params, &smb)
-	return &smb, nil
+	SambaCache.Set(params, next)
+	return next, nil
 }
 
-func (smb Samba) LoginForm() Form {
+func (smb *Samba) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			{
@@ -167,7 +246,7 @@ func (smb Samba) LoginForm() Form {
 	}
 }
 
-func (smb Samba) Ls(path string) ([]os.FileInfo, error) {
+func (smb *Samba) Ls(path string) ([]os.FileInfo, error) {
 	if path == "/" {
 		f := make([]os.FileInfo, 0)
 		for key, _ := range smb.share {
@@ -193,7 +272,7 @@ func (smb Samba) Ls(path string) ([]os.FileInfo, error) {
 	return fs, fromSambaErr(err)
 }
 
-func (smb Samba) Stat(path string) (os.FileInfo, error) {
+func (smb *Samba) Stat(path string) (os.FileInfo, error) {
 	share, path, err := smb.toSambaPath(path)
 	if err != nil {
 		return nil, err
@@ -202,17 +281,30 @@ func (smb Samba) Stat(path string) (os.FileInfo, error) {
 	return f, fromSambaErr(err)
 }
 
-func (smb Samba) Cat(path string) (io.ReadCloser, error) {
+func (smb *Samba) Cat(path string) (io.ReadCloser, error) {
 	share, path, err := smb.toSambaPath(path)
 	if err != nil {
 		return nil, err
 	}
 
 	f, err := share.Open(path)
-	return f, fromSambaErr(err)
+	if err != nil {
+		return nil, fromSambaErr(err)
+	}
+
+	smb.acquire()
+	var seeker io.Seeker
+	if s, ok := interface{}(f).(io.Seeker); ok {
+		seeker = s
+	}
+	return &sambaFile{
+		reader:  f,
+		seeker:  seeker,
+		release: smb.release,
+	}, nil
 }
 
-func (smb Samba) Mkdir(path string) error {
+func (smb *Samba) Mkdir(path string) error {
 	share, path, err := smb.toSambaPath(path)
 	if err != nil {
 		return err
@@ -220,7 +312,7 @@ func (smb Samba) Mkdir(path string) error {
 	return fromSambaErr(share.Mkdir(path, os.ModeDir))
 }
 
-func (smb Samba) Rm(path string) error {
+func (smb *Samba) Rm(path string) error {
 	share, path, err := smb.toSambaPath(path)
 	if err != nil {
 		return err
@@ -228,7 +320,7 @@ func (smb Samba) Rm(path string) error {
 	return fromSambaErr(share.RemoveAll(path))
 }
 
-func (smb Samba) Mv(from, to string) error {
+func (smb *Samba) Mv(from, to string) error {
 	fromShare, fromPath, err := smb.toSambaPath(from)
 	if err != nil {
 		return err
@@ -243,7 +335,7 @@ func (smb Samba) Mv(from, to string) error {
 	return fromSambaErr(fromShare.Rename(fromPath, toPath))
 }
 
-func (smb Samba) Save(path string, content io.Reader) error {
+func (smb *Samba) Save(path string, content io.Reader) error {
 	share, path, err := smb.toSambaPath(path)
 	if err != nil {
 		return err
@@ -259,7 +351,7 @@ func (smb Samba) Save(path string, content io.Reader) error {
 	return f.Close()
 }
 
-func (smb Samba) Touch(path string) error {
+func (smb *Samba) Touch(path string) error {
 	share, path, err := smb.toSambaPath(path)
 	if err != nil {
 		return err
@@ -271,7 +363,7 @@ func (smb Samba) Touch(path string) error {
 	return fromSambaErr(f.Close())
 }
 
-func (smb Samba) toSambaPath(path string) (*smb2.Share, string, error) {
+func (smb *Samba) toSambaPath(path string) (*smb2.Share, string, error) {
 	p := strings.Split(strings.Trim(path, "/"), "/")
 	if len(p) == 0 {
 		return nil, "", ErrNotAllowed
