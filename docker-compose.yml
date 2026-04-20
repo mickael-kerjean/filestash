@@ -1,0 +1,44 @@
+# Kracking deployment for Filestash on machine-london-2.
+#
+# The public traffic to files.krack.ing is terminated by the
+# sibling filestash-bridge container — Filestash itself is
+# internal and carries no Traefik labels.  The bridge and
+# Filestash communicate over the shared `coolify` docker network
+# using the service name `filestash:8334`.
+#
+# The upstream office/WOPI viewer (Collabora) from the original
+# compose is intentionally dropped: our operators manage object
+# storage buckets, not collaborative docs, so the 1.2 GB
+# Collabora image would add deploy time and disk footprint for
+# zero benefit.  It can be re-added as a sibling service when
+# we ship that feature.
+#
+# Persistence
+# -----------
+# Filestash stores its state (secret key, session encryption key,
+# server config, plugin config) at `/app/data/state`.  We mount
+# a named volume so these persist across redeploys — blowing the
+# volume away would invalidate every active Filestash cookie and
+# force operators to re-open Manage from the Console.
+
+services:
+  filestash:
+    image: machines/filestash:latest
+    container_name: filestash
+    restart: unless-stopped
+    environment:
+      APPLICATION_URL: https://files.krack.ing
+      CANARY: "false"
+    expose:
+      - "8334"
+    volumes:
+      - filestash-state:/app/data/state/
+    networks:
+      - coolify
+
+networks:
+  coolify:
+    external: true
+
+volumes:
+  filestash-state: {}
