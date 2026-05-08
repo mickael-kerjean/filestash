@@ -38,9 +38,6 @@ type Samba struct {
 }
 
 func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
-	if c := SambaCache.Get(params); c != nil {
-		return c.(*Samba), nil
-	}
 	if strings.HasPrefix(params["host"], "smb://") == false {
 		params["host"] = "smb://" + params["host"]
 	}
@@ -61,6 +58,9 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 	if params["port"] == "" {
 		params["port"] = "445"
+	}
+	if c := SambaCache.Get(params); c != nil {
+		return c.(*Samba), nil
 	}
 
 	host := fmt.Sprintf("%s:%s", params["host"], params["port"])
