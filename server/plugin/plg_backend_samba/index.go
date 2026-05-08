@@ -194,6 +194,17 @@ func (smb Samba) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (smb Samba) Stat(path string) (os.FileInfo, error) {
+	if path == "/" {
+		for key, _ := range smb.share {
+			return File{
+				FName: key,
+				FType: "directory",
+				FTime: -1,
+				FSize: 0,
+			}, nil
+		}
+		return nil, ErrNotFound
+	}
 	share, path, err := smb.toSambaPath(path)
 	if err != nil {
 		return nil, err
