@@ -1,6 +1,5 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
-import { ApplicationError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
 import { createLoader } from "../../components/loader.js";
 import ctrlError from "../ctrl_error.js";
@@ -15,14 +14,10 @@ export default function(render, { getDownloadUrl }) {
 
     effect(cat(getDownloadUrl()).pipe(
         rxjs.tap((content) => {
-            const url = content.replace(/[\s\S]*(https?:\/\/\S+)[\s\S]*/, "$1");
-            try {
-                new URL(url); // throws on invalid URL
-                location.replace(url);
-            } catch (err) {
-                const message = assert.type(err, window.Error).message;
-                throw new ApplicationError("Not Valid", message);
-            }
+            const match = assert.truthy(content.match(new RegExp("https?://\\S+")), "No URL found");
+            const url = new URL(match[0]);
+            assert.truthy(url.protocol === "http:" || url.protocol === "https:", "Unsupported protocol");
+            location.replace(url.href);
         }),
         rxjs.catchError(ctrlError()),
     ));

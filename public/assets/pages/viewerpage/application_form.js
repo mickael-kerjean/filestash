@@ -176,8 +176,16 @@ function readOnlyForm(formSpec) {
     return formSpec;
 }
 
-function fromMarkdown(str = "") {
-    str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "<a href=\"$2\">$1</a>");
-    str = str.replaceAll("\n", "<br>");
-    return str;
+export function fromMarkdown(str = "") {
+    return str
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) => {
+            try {
+                const u = new URL(url, location.href);
+                if (u.protocol !== "http:" && u.protocol !== "https:") return text;
+                return `<a href="${u.href}">${text}</a>`;
+            } catch (err) {
+                return text;
+            }
+        })
+        .replaceAll("\n", "<br>");
 }

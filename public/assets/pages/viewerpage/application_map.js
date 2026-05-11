@@ -96,9 +96,14 @@ function loadGeoJSON(map, content) {
                     break;
                 case "html":
                     shape = shape.bindPopup((function() {
+                        const $tpl = document.createElement("template");
+                        $tpl.innerHTML = props["popup::content"];
+                        $tpl.content.querySelectorAll("*").forEach(($el) => {
+                            if (/^(SCRIPT|IFRAME|OBJECT|EMBED|STYLE|LINK|META|TEMPLATE)$/.test($el.tagName)) return $el.remove();
+                            $el.getAttributeNames().forEach((name) => $el.removeAttribute(name));
+                        });
                         const $richLabel = window.L.DomUtil.create("div", "");
-                        $richLabel.innerHTML = props["popup::content"];
-                        if ($richLabel.querySelector("script")) $richLabel.innerHTML = `__BLOCKED_CONTENT__`;
+                        $richLabel.appendChild($tpl.content);
                         return $richLabel;
                     })(), {
                         className: "leaflet-measure-resultpopup",

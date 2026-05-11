@@ -1,5 +1,6 @@
 import { createElement } from "../../lib/skeleton/index.js";
 import rxjs from "../../lib/rx.js";
+import { fromMarkdown } from "../../pages/viewerpage/application_form.js";
 
 export function renderLeaf({ format, label, description, type }) {
     if (label === "banner") return createElement(`
@@ -27,12 +28,6 @@ export function renderLeaf({ format, label, description, type }) {
         </div>
     `));
     return $el;
-}
-
-function fromMarkdown(str = "") {
-    str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "<a href=\"$2\">$1</a>");
-    str = str.replaceAll("\n", "<br>");
-    return str;
 }
 
 export function useForm$($inputNodeList) {
