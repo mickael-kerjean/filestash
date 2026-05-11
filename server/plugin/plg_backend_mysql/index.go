@@ -564,6 +564,9 @@ func (this Mysql) Save(path string, file io.Reader) error {
 	}
 	var d []SqlKeyParams = make([]SqlKeyParams, 0)
 	for key, value := range data {
+		if _, ok := sqlFields.All[key]; !ok {
+			return ErrNotValid
+		}
 		d = append(d, SqlKeyParams{key, value.Value})
 	}
 
@@ -625,7 +628,7 @@ func NewDBLocation(path string) (DBLocation, error) {
 
 	p := strings.Split(strings.Trim(path, "/"), "/")
 	isValid := func(str string) bool { // https://dev.mysql.com/doc/refman/8.0/en/identifiers.html
-		return regexp.MustCompile(`^[0-9,a-z,A-Z$_]*$`).MatchString(str)
+		return regexp.MustCompile(`^[0-9a-zA-Z$_]+$`).MatchString(str)
 	}
 
 	if lPath := len(p); lPath == 0 {

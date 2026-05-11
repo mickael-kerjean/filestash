@@ -1007,7 +1007,7 @@ func FileExtract(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	c, cancel := context.WithTimeout(ctx.Context, time.Duration(zip_timeout())*time.Second)
 	extractPath := func(base string, path string) (string, error) {
-		base = filepath.Dir(base)
+		base = EnforceDirectory(filepath.Dir(base))
 		path = filepath.Join(base, path)
 		if strings.HasPrefix(path, base) == false {
 			return "", ErrFilesystemError
