@@ -378,7 +378,7 @@ func (this Mysql) Cat(path string) (io.ReadCloser, error) {
 			case "mediumblob":
 				el.Value = fmt.Sprintf("%s", *pval)
 				el.Type = "file"
-			case "tinnyblob":
+			case "tinyblob":
 				el.Value = fmt.Sprintf("%s", *pval)
 				el.Type = "file"
 			default:
