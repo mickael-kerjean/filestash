@@ -71,7 +71,6 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
         )),
         rxjs.catchError((err) => {
             let _err = err;
-            console.log("ERR", err);
             if (err.response && err.response.status === 401) {
                 _err = new Error(err.message);
                 _err.status = err.response.status;

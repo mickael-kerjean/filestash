@@ -68,7 +68,6 @@ export default async function(render, { mime, getDownloadUrl, getFilename, hasMe
         }),
         rxjs.catchError((err) => rxjs.from(initDownloader()).pipe(
             rxjs.tap(() => ctrlDownloader(render, { acl$, getFilename, getDownloadUrl })),
-            rxjs.tap(() => console.log("cannot open file", err)),
             rxjs.mergeMap(() => rxjs.EMPTY),
         )),
         rxjs.share(),
