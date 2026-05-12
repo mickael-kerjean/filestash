@@ -8,6 +8,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/ctrl"
+	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
 func (this Filestash) request(method string, url string, body io.Reader) (io.ReadCloser, http.Header, error) {
@@ -18,9 +19,7 @@ func (this Filestash) request(method string, url string, body io.Reader) (io.Rea
 	req.Host = Config.Get("general.host").String()
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", this.Token))
 	req.Header.Set("X-Requested-With", "XmlHttpRequest")
-	if this.RequestID != "" {
-		req.Header.Set("X-Request-ID", this.RequestID)
-	}
+	tracer.Inject(this.Trace, req)
 
 	resp, err := this.Client.Do(req)
 	if err != nil {

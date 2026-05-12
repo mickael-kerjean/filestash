@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -17,7 +18,7 @@ func (this S3Backend) newSession() *session.Session {
 	sess := session.New(this.config)
 	sess.Handlers.Send.PushFrontNamed(request.NamedHandler{
 		Fn: func(r *request.Request) {
-			opts := SpanOptions{
+			opts := tracer.SpanOptions{
 				Kind:    "CLIENT",
 				Service: "S3",
 				Attributes: map[string]string{
@@ -36,7 +37,7 @@ func (this S3Backend) newSession() *session.Session {
 					delete(opts.Attributes, k)
 				}
 			}
-			span = StartSpan(r.Context(), r.Operation.Name, opts)
+			span = tracer.StartSpan(tracer.TraceFromContext(r.Context()), r.Operation.Name, opts)
 		},
 	})
 	sess.Handlers.CompleteAttempt.PushBackNamed(request.NamedHandler{

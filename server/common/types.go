@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
 type IBackend interface {
@@ -67,6 +69,9 @@ type AuditQueryResult struct {
 	Form       *Form  `json:"form"`
 	RenderHTML string `json:"render"`
 }
+
+type ITracer = tracer.ITracer
+type ISpan = tracer.ISpan
 
 const (
 	MetaModeTag = 1 << iota

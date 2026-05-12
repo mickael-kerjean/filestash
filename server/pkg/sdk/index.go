@@ -5,19 +5,20 @@ import (
 	"net/url"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
 type Filestash struct {
-	Token     string
-	URL       string
-	Insecure  bool
-	Storage   string
-	Client    *http.Client
-	RequestID string
+	Token    string
+	URL      string
+	Insecure bool
+	Storage  string
+	Client   *http.Client
+	Trace    tracer.TraceContext
 }
 
-func (this Filestash) WithRequestID(id string) Filestash {
-	this.RequestID = id
+func (this Filestash) WithTrace(tc tracer.TraceContext) Filestash {
+	this.Trace = tc
 	return this
 }
 

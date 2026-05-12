@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
 type Register struct{}
@@ -188,6 +190,13 @@ func (this Register) AuditEngine(a IAuditPlugin) {
 
 func (this Get) AuditEngine() IAuditPlugin {
 	return audit
+}
+
+/*
+ * Pluggable Trace Engine
+ */
+func (this Register) Tracer(t ITracer) {
+	tracer.Register(t)
 }
 
 /*
