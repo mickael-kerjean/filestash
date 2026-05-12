@@ -19,7 +19,7 @@ func (this S3Backend) newSession() *session.Session {
 	sess.Handlers.Send.PushFrontNamed(request.NamedHandler{
 		Fn: func(r *request.Request) {
 			opts := tracer.SpanOptions{
-				Kind:    "CLIENT",
+				Kind:    tracer.KindClient,
 				Service: "S3",
 				Attributes: map[string]string{
 					"aws.service":   r.ClientInfo.ServiceName,
