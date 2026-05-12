@@ -6,6 +6,8 @@ import (
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
 var USER_AGENT = fmt.Sprintf("Filestash/%s.%s (http://filestash.app)", APP_VERSION, BUILD_DATE)
@@ -16,32 +18,45 @@ func init() {
 	}
 }
 
-type HTTPClientOption func(*http.Transport)
-
-func WithInsecure(t *http.Transport) {
-	t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+type httpClientConfig struct {
+	transport    *http.Transport
+	traceService string
 }
 
-func WithoutTimeout(t *http.Transport) {
-	t.ResponseHeaderTimeout = 0
+type HTTPClientOption func(*httpClientConfig)
+
+func WithInsecure(c *httpClientConfig) {
+	c.transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+}
+
+func WithoutTimeout(c *httpClientConfig) {
+	c.transport.ResponseHeaderTimeout = 0
+}
+
+func WithTrace(service string) HTTPClientOption {
+	return func(c *httpClientConfig) {
+		c.traceService = service
+	}
 }
 
 func HTTPClient(opts ...HTTPClientOption) *http.Client {
-	t := &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout:   10 * time.Second,
-			KeepAlive: 10 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout:   5 * time.Second,
-		IdleConnTimeout:       60 * time.Second,
-		ResponseHeaderTimeout: 60 * time.Second,
+	cfg := &httpClientConfig{
+		transport: &http.Transport{
+			Dial: (&net.Dialer{
+				Timeout:   10 * time.Second,
+				KeepAlive: 10 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout:   5 * time.Second,
+			IdleConnTimeout:       60 * time.Second,
+			ResponseHeaderTimeout: 60 * time.Second,
+		},
 	}
 	for _, opt := range opts {
-		opt(t)
+		opt(cfg)
 	}
 	return &http.Client{
 		Timeout:   5 * time.Hour,
-		Transport: NewTransformedTransport(t),
+		Transport: tracer.NewTransport(cfg.traceService, NewTransformedTransport(cfg.transport)),
 	}
 }
 

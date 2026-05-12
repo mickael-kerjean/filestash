@@ -4,6 +4,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -69,7 +70,10 @@ func (this BlackHole) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (this BlackHole) Stat(path string) (os.FileInfo, error) {
-	return nil, ErrNotImplemented
+	if path == "/" {
+		return File{FType: "directory"}, nil
+	}
+	return File{FName: filepath.Base(path), FType: "file"}, nil
 }
 
 func (this BlackHole) Cat(path string) (io.ReadCloser, error) {

@@ -16,6 +16,8 @@ import (
 
 type WebDav struct {
 	params *WebDavParams
+	client *http.Client
+	app    *App
 }
 
 type WebDavParams struct {
@@ -41,6 +43,8 @@ func (w WebDav) Init(params map[string]string, app *App) (IBackend, error) {
 			password: params["password"],
 			path:     params["path"],
 		},
+		client: HTTPClient(WithTrace("webdav")),
+		app:    app,
 	}
 	return backend, nil
 }
@@ -265,6 +269,7 @@ func (w WebDav) request(method string, url string, body io.Reader, fn func(req *
 	if err != nil {
 		return nil, err
 	}
+	req = req.WithContext(w.app.Context)
 	if w.params.username != "" {
 		req.SetBasicAuth(w.params.username, w.params.password)
 	}
@@ -284,7 +289,7 @@ func (w WebDav) request(method string, url string, body io.Reader, fn func(req *
 	if fn != nil {
 		fn(req)
 	}
-	return HTTPClient().Do(req)
+	return w.client.Do(req)
 }
 
 type WebDavResp struct {

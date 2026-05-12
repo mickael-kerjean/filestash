@@ -18,6 +18,7 @@ func init() {
 
 type Perkeep struct {
 	serverURL string
+	client    *http.Client
 }
 
 func (this Perkeep) Init(params map[string]string, app *App) (IBackend, error) {
@@ -30,6 +31,7 @@ func (this Perkeep) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 	return &Perkeep{
 		serverURL: url,
+		client:    HTTPClient(WithTrace("perkeep")),
 	}, nil
 }
 
@@ -220,7 +222,7 @@ func (this *Perkeep) query(searchRequest any) (*SearchResponse, error) {
 	if err != nil {
 		return nil, NewError("Failed to create request: "+err.Error(), 500)
 	}
-	resp, err := HTTPClient().Do(req)
+	resp, err := this.client.Do(req)
 	if err != nil {
 		return nil, NewError("Failed to query perkeep: "+err.Error(), 500)
 	}
@@ -249,7 +251,7 @@ func (this *Perkeep) describe(blobRef string) (*DescribeResponse, error) {
 	if err != nil {
 		return nil, NewError("Failed to create request: "+err.Error(), 500)
 	}
-	resp, err := HTTPClient().Do(req)
+	resp, err := this.client.Do(req)
 	if err != nil {
 		return nil, NewError("Failed to describe perkeep: "+err.Error(), 500)
 	}

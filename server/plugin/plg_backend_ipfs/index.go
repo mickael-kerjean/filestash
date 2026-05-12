@@ -31,7 +31,7 @@ func (this Ipfs) Init(params map[string]string, app *App) (IBackend, error) {
 	if _, err := this.Stat("/"); err != nil {
 		return nil, err
 	}
-	this.client = HTTPClient()
+	this.client = HTTPClient(WithTrace("ipfs"))
 	return &this, nil
 }
 

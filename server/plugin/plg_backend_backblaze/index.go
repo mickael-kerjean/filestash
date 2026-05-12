@@ -28,6 +28,7 @@ type Backblaze struct {
 	AccountId   string `json:"accountId"`
 	Token       string `json:"authorizationToken"`
 	Status      int    `json:"status"`
+	client      *http.Client
 }
 
 type BackblazeError struct {
@@ -43,6 +44,7 @@ func init() {
 
 func (this Backblaze) Init(params map[string]string, app *App) (IBackend, error) {
 	this.params = params
+	this.client = HTTPClient(WithTrace("backblaze"))
 
 	// By default backblaze required quite a few API calls to just find the data that's under a given bucket
 	// This would result in a slow application hence we are caching everyting that's in the hot path
@@ -526,7 +528,7 @@ func (this Backblaze) request(method string, url string, body io.Reader, fn func
 		defer req.Body.Close()
 	}
 
-	res, err := HTTPClient().Do(req)
+	res, err := this.client.Do(req)
 	if err != nil {
 		return res, err
 	}

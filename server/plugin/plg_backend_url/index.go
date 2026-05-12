@@ -51,7 +51,7 @@ func (this Url) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 	home := u.Path
 	u.Path = "/"
-	opts := []HTTPClientOption{}
+	opts := []HTTPClientOption{WithTrace("url")}
 	if params["insecure"] == "on" {
 		opts = append(opts, WithInsecure)
 	}
