@@ -19,7 +19,6 @@ package-lock.json
 *_test.go
 cover.*
 www
-.gitignore
 
 
 # frontend
