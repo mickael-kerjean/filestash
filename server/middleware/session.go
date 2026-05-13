@@ -168,20 +168,23 @@ func _extractAuthorization(req *http.Request) (token string) {
 		index++
 		token += cookie.Value
 	}
+	if token != "" {
+		return token
+	}
 	// strategy 2: Authorization header
-	if token == "" {
-		authHeader := req.Header.Get("Authorization")
-		if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
-			token = strings.TrimPrefix(req.Header.Get("Authorization"), "Bearer ")
-		}
+	authHeader := req.Header.Get("Authorization")
+	if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+		return strings.TrimPrefix(req.Header.Get("Authorization"), "Bearer ")
 	}
 	// strategy 3: Authorization query param
-	if token == "" {
-		if auth := req.URL.Query().Get("authorization"); auth != "" {
-			token = auth
-		}
+	if auth := req.URL.Query().Get("authorization"); auth != "" {
+		return auth
 	}
-	return token
+	// strategy 4: Authorization from basic auth/
+	if u, p, ok := req.BasicAuth(); ok && u == "authorization" {
+		return p
+	}
+	return ""
 }
 
 func _extractShareId(req *http.Request) string {
