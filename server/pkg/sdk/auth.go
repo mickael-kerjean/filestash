@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
 func (this *Filestash) Authenticate(user, password string, storage string) error {
@@ -17,6 +18,7 @@ func (this *Filestash) Authenticate(user, password string, storage string) error
 		return err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	tracer.Inject(this.Trace, req)
 	opts := []HTTPClientOption{}
 	if this.Insecure {
 		opts = append(opts, WithInsecure)
