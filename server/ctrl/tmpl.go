@@ -85,6 +85,8 @@ var tmplFuncs = template.FuncMap{
 			input = opts[1]
 		}
 		switch in := input.(type) {
+		case nil:
+			return false, nil
 		case string:
 			splits := strings.Split(in, ",")
 			for _, split := range splits {
