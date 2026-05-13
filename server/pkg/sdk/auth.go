@@ -18,6 +18,7 @@ func (this *Filestash) Authenticate(user, password string, storage string) error
 		return err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("X-Requested-With", "SDKHttpRequest")
 	tracer.Inject(this.Trace, req)
 	opts := []HTTPClientOption{}
 	if this.Insecure {

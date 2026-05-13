@@ -15,11 +15,7 @@ type Filestash struct {
 	Storage  string
 	Client   *http.Client
 	Trace    tracer.TraceContext
-}
-
-func (this Filestash) WithTrace(tc tracer.TraceContext) Filestash {
-	this.Trace = tc
-	return this
+	onDone   func(error) error
 }
 
 func NewClient() Filestash {
@@ -34,4 +30,14 @@ func NewClient() Filestash {
 		Insecure: insecure,
 		Client:   HTTPClient(opts...),
 	}
+}
+
+func (this Filestash) WithTrace(tc tracer.TraceContext) Filestash {
+	this.Trace = tc
+	return this
+}
+
+func (this Filestash) OnDone(fn func(error) error) Filestash {
+	this.onDone = fn
+	return this
 }

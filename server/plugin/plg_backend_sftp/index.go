@@ -185,7 +185,7 @@ func (s Sftp) Init(params map[string]string, app *App) (IBackend, error) {
 	if err != nil {
 		return &s, err
 	}
-	s.SFTPClient = &tracedClient{Client: session, app: app}
+	s.SFTPClient = &tracedClient{Client: session, app: app, hostname: addr, username: p.username}
 	s.wg = new(sync.WaitGroup)
 	s.wg.Add(1)
 	go func() {
