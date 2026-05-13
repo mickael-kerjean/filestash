@@ -21,15 +21,15 @@ import (
 
 var WOPIRoutes = func(r *mux.Router) error {
 	r.HandleFunc(
-		"/api/wopi/iframe",
+		WithBase("/api/wopi/iframe"),
 		middleware.NewMiddlewareChain(
 			IframeContentHandler,
 			[]Middleware{middleware.SessionStart, middleware.LoggedInOnly},
 		),
 	).Methods("GET")
-	r.HandleFunc("/api/wopi/files/{path64}", WOPIHandler_CheckFileInfo).Methods("GET")
-	r.HandleFunc("/api/wopi/files/{path64}/contents", WOPIHandler_GetFile).Methods("GET")
-	r.HandleFunc("/api/wopi/files/{path64}/contents", WOPIHandler_PutFile).Methods("POST")
+	r.HandleFunc(WithBase("/api/wopi/files/{path64}"), WOPIHandler_CheckFileInfo).Methods("GET")
+	r.HandleFunc(WithBase("/api/wopi/files/{path64}/contents"), WOPIHandler_GetFile).Methods("GET")
+	r.HandleFunc(WithBase("/api/wopi/files/{path64}/contents"), WOPIHandler_PutFile).Methods("POST")
 	return nil
 }
 
@@ -268,7 +268,7 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 		}
 		wopiSRC += Config.Get("general.host").String()
 	}
-	wopiSRC += "/api/wopi/files/"
+	wopiSRC += WithBase("/api/wopi/files/")
 	wopiSRC += GenerateID(map[string]string{
 		"id":   GenerateID(ctx.Session),
 		"path": fullpath,
