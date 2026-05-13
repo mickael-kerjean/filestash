@@ -66,7 +66,7 @@ export default async function(render, { mime, getDownloadUrl, getFilename, hasMe
             buildHead(STATE, $dom, padding);
             buildRows(STATE.rows.slice(0, MAX_ROWS), STATE.header, $dom.tbody, padding, true, false);
         }),
-        rxjs.catchError((err) => rxjs.from(initDownloader()).pipe(
+        rxjs.catchError(() => rxjs.from(initDownloader()).pipe(
             rxjs.tap(() => ctrlDownloader(render, { acl$, getFilename, getDownloadUrl })),
             rxjs.mergeMap(() => rxjs.EMPTY),
         )),

@@ -9,6 +9,7 @@ export default function(opts) {
     if (!opts.headers) opts.headers = {};
     if (!opts.responseType) opts.responseType = "text";
     opts.headers["X-Requested-With"] = "XmlHttpRequest";
+    opts.headers["X-Request-ID"] = traceID();
     if (window.BEARER_TOKEN) opts.headers["Authorization"] = `Bearer ${window.BEARER_TOKEN}`;
 
     if (opts.url.startsWith("data:")) return rxjs.of({ response: parseDataUrl(opts.url) });
@@ -45,6 +46,12 @@ let activePage = true;
 window.addEventListener("beforeunload", function() {
     activePage = false;
 });
+
+function traceID() {
+    const b = new Uint8Array(16);
+    crypto.getRandomValues(b);
+    return Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+}
 
 function parseDataUrl(url) {
     const matches = url.match(/^data:(.*?)(;base64)?,(.*)$/);
