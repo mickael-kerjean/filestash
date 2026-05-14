@@ -1,4 +1,4 @@
-package model
+package extension
 
 import (
 	"bufio"
@@ -13,7 +13,7 @@ import (
 	"github.com/tetratelabs/wazero/api"
 )
 
-func WasmAdapterForMiddleware(wasmBytes []byte) (Middleware, error) {
+func AdapterMiddleware(wasmBytes []byte) (Middleware, error) {
 	return func(next HandlerFunc) HandlerFunc {
 		return func(app *App, w http.ResponseWriter, r *http.Request) {
 			module, err := wasmPrepare(wasmBytes)

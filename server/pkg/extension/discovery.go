@@ -1,4 +1,4 @@
-package model
+package extension
 
 import (
 	"archive/zip"
@@ -10,15 +10,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
-var PLUGINS = map[string]PluginImpl{}
-
-type PluginImpl struct {
-	Author  string              `json:"author"`
-	Version string              `json:"version"`
-	Modules []map[string]string `json:"modules"`
-}
-
-func PluginDiscovery() error {
+func Discovery() error {
 	entries, err := os.ReadDir(GetAbsolutePath(PLUGIN_PATH))
 	if err != nil {
 		return err
@@ -61,16 +53,16 @@ func PluginDiscovery() error {
 				if err != nil {
 					return err
 				}
-				m, err := WasmAdapterForMiddleware(b)
+				m, err := AdapterMiddleware(b)
 				if err != nil {
 					return err
 				}
 				Hooks.Register.Middleware(m)
-			case "http": // TODO
+			default:
 				return ErrNotImplemented
 			}
 		}
-		PLUGINS[name] = impl
+		plugins[name] = impl
 	}
 	return nil
 }

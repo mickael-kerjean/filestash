@@ -8,14 +8,14 @@ import (
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
+	"github.com/mickael-kerjean/filestash/server/pkg/extension"
 
 	"github.com/gorilla/mux"
 )
 
 func PluginExportHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	plgExports := map[string][]string{}
-	for name, plg := range model.PLUGINS {
+	for name, plg := range extension.All() {
 		for _, module := range plg.Modules {
 			if module["type"] == "xdg-open" {
 				index := module["entrypoint"]
@@ -54,7 +54,7 @@ func PluginStaticHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if strings.Contains(acceptEncoding, cfg.ContentType) == false {
 			continue
 		}
-		b, err = model.GetPluginFile(mux.Vars(req)["name"], path+cfg.FileExt)
+		b, err = extension.GetPluginFile(mux.Vars(req)["name"], path+cfg.FileExt)
 		if err != nil {
 			continue
 		}

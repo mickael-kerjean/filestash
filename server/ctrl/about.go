@@ -11,7 +11,7 @@ import (
 	"text/template"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
+	"github.com/mickael-kerjean/filestash/server/pkg/extension"
 )
 
 var listOfPlugins = struct {
@@ -21,7 +21,7 @@ var listOfPlugins = struct {
 	Apps       []string
 }{}
 
-func InitPluginList(code []byte, plgs map[string]model.PluginImpl) error {
+func InitPluginList(code []byte, plgs map[string]extension.PluginImpl) error {
 	listOfPackages := regexp.MustCompile(`\t_?\s*\"(github.com/[^\"]+)`).FindAllStringSubmatch(string(code), -1)
 	for _, packageNameMatch := range listOfPackages {
 		if len(packageNameMatch) != 2 {
