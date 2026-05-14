@@ -8,7 +8,7 @@ export function init() {
         view: getConfig("default_view", "grid"),
         show_hidden: getConfig("display_hidden", false),
         sort: getConfig("default_sort", "type"),
-        order: null,
+        order: undefined,
         search: new URLSearchParams(location.search).get("q"),
     }, "filespage"));
 }

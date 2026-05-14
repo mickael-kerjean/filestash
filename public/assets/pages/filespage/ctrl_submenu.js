@@ -309,7 +309,7 @@ function componentRight(render, { getSelectionLength$ }) {
                             order: state.order,
                             $el,
                         })))),
-                        rxjs.tap(({ $el, order }) => {
+                        rxjs.tap(({ $el, order = "asc" }) => {
                             setState(
                                 "sort", $el.getAttribute("data-target"),
                                 "order", order === "asc" ? "des" : "asc",

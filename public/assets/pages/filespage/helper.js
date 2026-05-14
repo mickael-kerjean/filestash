@@ -92,7 +92,7 @@ function sortBySize(files, order) {
     });
 }
 
-function sortString(a, b, order) {
+function sortString(a, b, order = "asc") {
     if (order === "asc") return a > b ? +1 : -1;
     return a < b ? +1 : -1;
 }
