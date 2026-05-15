@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/extension/adapter"
 )
 
 func Discovery() error {
@@ -23,7 +24,7 @@ func Discovery() error {
 		if strings.HasSuffix(fname, ".zip") == false {
 			continue
 		}
-		name, impl, err := InitModule(fname)
+		name, impl, err := initModule(fname)
 		if err != nil {
 			Log.Error("could not initialise module name=%s err=%s", entry.Name(), err.Error())
 			continue
@@ -53,7 +54,7 @@ func Discovery() error {
 				if err != nil {
 					return err
 				}
-				m, err := AdapterMiddleware(b)
+				m, err := adapter.MiddlewareExtension(b)
 				if err != nil {
 					return err
 				}
@@ -96,7 +97,7 @@ func GetPluginFile(pluginName string, path string) ([]byte, error) {
 	return nil, ErrNotFound
 }
 
-func InitModule(plgName string) (string, PluginImpl, error) {
+func initModule(plgName string) (string, PluginImpl, error) {
 	var plgImpl = PluginImpl{}
 	r, err := zip.OpenReader(JoinPath(GetAbsolutePath(PLUGIN_PATH), plgName))
 	plgName = strings.TrimSuffix(plgName, ".zip")
