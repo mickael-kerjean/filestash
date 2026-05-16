@@ -3,6 +3,7 @@ package extension
 import (
 	"archive/zip"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -59,8 +60,10 @@ func Discovery() error {
 					return err
 				}
 				Hooks.Register.Middleware(m)
+			case "xdg-open":
+				// noop
 			default:
-				return ErrNotImplemented
+				return fmt.Errorf("%w: %s", ErrNotImplemented, impl.Modules[i]["type"])
 			}
 		}
 		plugins[name] = impl

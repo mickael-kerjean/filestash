@@ -2,44 +2,72 @@ package adapter
 
 import (
 	"context"
-	"net/http"
+	"errors"
+	"fmt"
+	"sync"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/extension/adapter/abi"
 
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
+	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 )
 
-func wasmPrepare(wasmBytes []byte) (api.Module, error) {
-	ctx := context.Background()
-	runtime := wazero.NewRuntime(ctx)
-	compiledModule, err := runtime.CompileModule(ctx, wasmBytes)
-	if err != nil {
-		return nil, err
-	}
-	return runtime.InstantiateModule(ctx, compiledModule, wazero.NewModuleConfig())
+var ErrNoExport = errors.New("plugin: export not found")
+
+type Runtime struct {
+	wrt wazero.Runtime
+	ctx context.Context
+
+	mu  sync.Mutex
+	mod api.Module
 }
 
-func wasmOutput(memory api.Memory, response []uint64) ([]byte, error) {
-	if len(response) != 1 {
-		return nil, NewError("Invalid WASM response", http.StatusInternalServerError)
+type Option func(wazero.Runtime) error
+
+func WithExports(build func(*abi.HostModuleBuilder)) Option {
+	return func(wrt wazero.Runtime) error {
+		b := abi.NewHostModuleBuilder(wrt, "env")
+		build(b)
+		return b.Instantiate(context.Background())
 	}
-	ptr := uint32(response[0])
-	var responseLength uint32
-	for offset := uint32(0); ; offset += 8192 {
-		chunk, ok := memory.Read(ptr+offset, 8192)
-		if !ok {
-			responseLength = offset
-			break
-		}
-		for i, b := range chunk {
-			if b == 0 {
-				responseLength = offset + uint32(i)
-				goto found
-			}
+}
+
+func NewRuntime(wasm []byte, opts ...Option) (*Runtime, error) {
+	ctx := context.Background()
+	wrt := wazero.NewRuntime(ctx)
+	wasi_snapshot_preview1.MustInstantiate(ctx, wrt)
+
+	for _, opt := range opts {
+		if err := opt(wrt); err != nil {
+			wrt.Close(ctx)
+			return nil, err
 		}
 	}
-found:
-	responseBytes, _ := memory.Read(ptr, responseLength)
-	return responseBytes, nil
+
+	compiled, err := wrt.CompileModule(ctx, wasm)
+	if err != nil {
+		wrt.Close(ctx)
+		return nil, err
+	}
+	mod, err := wrt.InstantiateModule(ctx, compiled, wazero.NewModuleConfig())
+	if err != nil {
+		wrt.Close(ctx)
+		return nil, err
+	}
+	return &Runtime{wrt: wrt, ctx: ctx, mod: mod}, nil
+}
+
+func (r *Runtime) Close() { r.wrt.Close(r.ctx) }
+
+func (r *Runtime) Call(ctx context.Context, fnName string, key, val any) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	fn := r.mod.ExportedFunction(fnName)
+	if fn == nil {
+		return fmt.Errorf("%w: %s", ErrNoExport, fnName)
+	}
+	_, err := fn.Call(context.WithValue(ctx, key, val))
+	return err
 }
