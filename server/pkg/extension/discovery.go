@@ -60,6 +60,16 @@ func Discovery() error {
 					return err
 				}
 				Hooks.Register.Middleware(m)
+			case "workflow::action":
+				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
+				if err != nil {
+					return err
+				}
+				a, err := adapter.WorkflowActionExtension(b)
+				if err != nil {
+					return err
+				}
+				Hooks.Register.WorkflowAction(a)
 			case "xdg-open": // noop
 			default:
 				return fmt.Errorf("%w: %s", ErrNotImplemented, impl.Modules[i]["type"])
