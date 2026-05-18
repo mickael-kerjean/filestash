@@ -25,9 +25,9 @@ func main() {
 func Run(router *mux.Router) {
 	check(InitLogger(), "Logger init failed. err=%s")
 	check(InitConfig(), "Config init failed. err=%s")
-	check(workflow.Init(), "Worklow Initialisation failure. err=%s")
 	check(extension.Discovery(), "Plugin Discovery failed. err=%s")
 	check(ctrl.InitPluginList(embed.EmbedPluginList, extension.All()), "Plugin Initialisation failed. err=%s")
+	check(workflow.Init(), "Worklow Initialisation failure. err=%s")
 	if Hooks.Get.Starter() == nil {
 		check(ErrNotFound, "Missing starter plugin. err=%s")
 	}
