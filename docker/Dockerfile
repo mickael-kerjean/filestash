@@ -24,7 +24,7 @@ WORKDIR /app/
 COPY --from=builder_backend /home/filestash/dist/ .
 RUN apt-get update > /dev/null && \
     apt-get install -y --no-install-recommends apt-utils && \
-    apt-get install -y curl ffmpeg libjpeg-dev libtiff-dev libpng-dev libwebp-dev libraw-dev libheif-dev libgif-dev && \
+    apt-get install -y curl ffmpeg libbrotli1 && \
     useradd filestash && \
     chown -R filestash:filestash /app/ && \
     find /app/data/ -type d -exec chmod 770 {} \; && \
