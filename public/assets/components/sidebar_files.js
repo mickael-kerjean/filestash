@@ -24,7 +24,7 @@ export default async function ctrlNavigationPane(render, { $sidebar, path }) {
         else {
             const $menuitem = $fs.querySelector(`[data-path="${CSS.escape(cpath)}"] ul`);
             if (!$menuitem) break;
-            $menuitem.appendChild($ul);
+            $menuitem.replaceWith($ul);
         }
     }
     render($fs);
@@ -119,6 +119,14 @@ async function _createListOfFiles(path, { basename = null, dirname = null }) {
                 <ul></ul>
             </li>
         `);
+        qs($li, "img").onclick = (e) => {
+            const $ul = qs($li, "ul");
+            $ul.classList.toggle("hidden");
+            if ($ul.hasChildNodes()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        };
         const $link = qs($li, "a");
         if ($link.getAttribute("href") === "/files" + dirname) {
             $link.removeAttribute("href", "");
