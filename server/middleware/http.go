@@ -36,7 +36,7 @@ func PublicCORS(fn HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Set("Access-Control-Allow-Origin", "*")
-		header.Set("Access-Control-Allow-Headers", "x-requested-with")
+		header.Set("Access-Control-Allow-Headers", "x-requested-with, x-request-id")
 		if req.Method == http.MethodOptions {
 			header.Set("Access-Control-Allow-Methods", "GET, OPTIONS")
 			res.WriteHeader(http.StatusNoContent)
