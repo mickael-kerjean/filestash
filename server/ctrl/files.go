@@ -6,10 +6,10 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"hash"
 	"hash/crc32"
-	"hash/fnv"
 	"io"
 	"net/http"
 	"net/url"
@@ -92,7 +92,7 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
-	var perms Metadata = Metadata{}
+	perms := Metadata{}
 	if obj, ok := ctx.Backend.(interface{ Meta(path string) Metadata }); ok {
 		perms = obj.Meta(path)
 	}
@@ -151,7 +151,8 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	files := make([]FileInfo, len(entries))
-	etagger := fnv.New32()
+	etagger := crc32.NewIEEE()
+	json.NewEncoder(etagger).Encode(perms)
 	etagger.Write([]byte(path + strconv.Itoa(len(entries))))
 	for i := 0; i < len(entries); i++ {
 		name := entries[i].Name()
@@ -161,12 +162,8 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 			Time: func(mt time.Time) (modTime int64) {
 				if mt.IsZero() == false {
 					modTime = mt.UnixNano() / int64(time.Millisecond)
-
 				}
-				if i < 200 { // etag is generated from a few values to avoid large memory usage
-					etagger.Write([]byte(name + strconv.Itoa(int(modTime))))
-				}
-
+				etagger.Write([]byte(name + strconv.Itoa(int(modTime))))
 				return modTime
 			}(entries[i].ModTime()),
 			Type: func(mode os.FileMode) string {
