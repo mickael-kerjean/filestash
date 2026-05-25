@@ -2,8 +2,13 @@
     width: 100%;
 }
 
+.component_docx .docx {
+    --docx-majorHAnsi-font: Aptos, Arial, Helvetica, sans-serif;
+    --docx-minorHAnsi-font: Aptos, Arial, Helvetica, sans-serif;
+}
+
 .component_docx .docx-wrapper {
-    background: var(--surface);
+    background: var(--super-light);
 }
 .component_docx .docx-wrapper > section.docx {
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
