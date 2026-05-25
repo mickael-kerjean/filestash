@@ -5,6 +5,7 @@ import { loadJS, loadCSS } from "../../helpers/loader.js";
 import ctrlError from "../../pages/ctrl_error.js";
 import { transition } from "../../pages/viewerpage/common.js";
 import ctrlDownloader, { init as initDownloader } from "../../pages/viewerpage/application_downloader.js";
+import { buttonDownload } from "../../pages/viewerpage/component_menubar.js";
 import { createLoader } from "../../components/loader.js";
 
 export default async function(render, { getDownloadUrl, getFilename, $menubar, acl$ }) {
@@ -12,6 +13,7 @@ export default async function(render, { getDownloadUrl, getFilename, $menubar, a
         <div class="component_docx"></div>
     `);
     render($page);
+    $menubar.add(buttonDownload(getFilename(), getDownloadUrl()));
 
     const removeLoader = createLoader($page);
     effect(ajax({ url: getDownloadUrl(), responseType: "arraybuffer" }).pipe(
