@@ -153,7 +153,11 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
   </head>
   <body>
     <style> body { margin: 0; } body, html{ height: 100%; } iframe { width: 100%; height: 100%; background: white; } </style>
-    <iframe frameborder="0" src="{{ .server }}" class="hidden"></iframe>
+    <iframe name="wopi_frame" frameborder="0" class="hidden"></iframe>
+    <form id="wopi_form" method="POST" target="wopi_frame" action="{{ .server }}">
+        <input type="hidden" name="access_token" value="{{ .token }}" />
+    </form>
+    <script>document.getElementById("wopi_form").submit();</script>
 
     <script type="module" src="/assets/components/loader.js"></script>
     <component-loader />
@@ -168,7 +172,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
             let msg = JSON.parse(event.data);
             if (!msg) return;
             switch(msg.MessageId) {
-                case "App_LoadingStatus": if (msg.Values.Status === "Initialized") {
+                case "App_LoadingStatus": if (["Initialized", "Document_Loaded"].indexOf(msg.Values.Status) !== -1) {
                         postChild({ MessageId: "Host_PostmessageReady" });
                         requestAnimationFrame(() => $iframe.classList.remove("hidden"));
                         document.querySelector("component-loader").remove();
@@ -193,6 +197,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 	}
 	if err := tmpl.Execute(res, map[string]interface{}{
 		"server": u,
+		"token":  ctx.Authorization,
 	}); err != nil {
 		res.Write([]byte(err.Error()))
 		return
@@ -279,7 +284,6 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 	}
 	p := u.Query()
 	p.Set("WOPISrc", wopiSRC)
-	p.Set("access_token", ctx.Authorization)
 	if len(ctx.Languages) > 0 {
 		p.Set("lang", ctx.Languages[0])
 	}
