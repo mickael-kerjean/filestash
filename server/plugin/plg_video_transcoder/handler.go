@@ -2,7 +2,6 @@ package plg_video_transcoder
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -87,30 +86,14 @@ func hlsAudioHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	startTime := segmentNumber * HLS_AUDIO_SEGMENT_LENGTH
 	cachePath := GetAbsolutePath(VIDEO_CACHE_PATH, req.URL.Query().Get("path"))
 	if _, err := os.Stat(cachePath); os.IsNotExist(err) {
 		res.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
 	res.Header().Set("Content-Type", "video/mp2t")
-	cmd := exec.CommandContext(req.Context(), "ffmpeg",
-		"-ss", fmt.Sprintf("%d.00", startTime),
-		"-i", cachePath,
-		"-t", fmt.Sprintf("%d.00", HLS_AUDIO_SEGMENT_LENGTH),
-		"-vn",
-		"-c:a", "aac",
-		"-b:a", "128k",
-		"-ac", "2",
-		"-f", "mpegts",
-		"-output_ts_offset", fmt.Sprintf("%d.00", startTime),
-		"pipe:1",
-	)
-	var buffer bytes.Buffer
-	cmd.Stdout = res
-	cmd.Stderr = &buffer
-	if err := cmd.Run(); err != nil {
-		Log.Error("plg_video_transcoder::audio::ffmpeg '%s' - %s", err.Error(), base64.StdEncoding.EncodeToString(buffer.Bytes()))
+	if err := transcodeAudioSegment(cachePath, segmentNumber, res); err != nil {
+		Log.Error("plg_video_transcoder::audio::run %s", err.Error())
 	}
 }
 
@@ -121,7 +104,6 @@ func hlsVideoHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	startTime := segmentNumber * HLS_VIDEO_SEGMENT_LENGTH
 	cachePath := GetAbsolutePath(
 		VIDEO_CACHE_PATH,
 		req.URL.Query().Get("path"),
@@ -131,38 +113,9 @@ func hlsVideoHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
-	cmd := exec.CommandContext(req.Context(), "ffmpeg", []string{
-		"-timelimit", "30",
-		"-ss", fmt.Sprintf("%d.00", startTime),
-		"-i", cachePath,
-		"-t", fmt.Sprintf("%d.00", HLS_VIDEO_SEGMENT_LENGTH),
-		"-an",
-		"-vf", fmt.Sprintf("scale=-2:%d", 720),
-		"-vcodec", "libx264",
-		"-preset", "veryfast",
-		"-pix_fmt", "yuv420p",
-		"-x264opts", strings.Join([]string{
-			"subme=0",
-			"me_range=4",
-			"rc_lookahead=10",
-			"me=dia",
-			"no_chroma_me",
-			"8x8dct=0",
-			"partitions=none",
-		}, ":"),
-		"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d.000)", HLS_VIDEO_SEGMENT_LENGTH),
-		"-f", "mpegts",
-		"-output_ts_offset", fmt.Sprintf("%d.00", startTime),
-		"-fps_mode", "cfr",
-		"pipe:1",
-	}...)
-
-	var buffer bytes.Buffer
-	cmd.Stdout = res
-	cmd.Stderr = &buffer
-	err = cmd.Run()
-	if err != nil {
-		Log.Error("plg_video_transcoder::ffmpeg::run '%s' - %s", err.Error(), base64.StdEncoding.EncodeToString(buffer.Bytes()))
+	res.Header().Set("Content-Type", "video/mp2t")
+	if err := transcodeVideoSegment(cachePath, segmentNumber, res); err != nil {
+		Log.Error("plg_video_transcoder::video::run %s", err.Error())
 	}
 }
 

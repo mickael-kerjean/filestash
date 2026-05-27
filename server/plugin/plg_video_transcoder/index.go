@@ -9,13 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/mux"
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/middleware"
+
+	"github.com/gorilla/mux"
 )
 
 const (
-	HLS_VIDEO_SEGMENT_LENGTH = 5
+	HLS_VIDEO_SEGMENT_LENGTH = 8
 	HLS_AUDIO_SEGMENT_LENGTH = 60
 
 	CLEAR_CACHE_AFTER = 12
