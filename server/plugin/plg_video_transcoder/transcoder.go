@@ -22,7 +22,7 @@ func transcodeVideoSegment(cachePath string, segmentNumber int, w io.Writer) err
 	}
 	defer p.Close()
 
-	outH := min(720, p.decCtx.Height())
+	outH := min(720, p.decCtx.Height()) &^ 1
 	outW := (p.decCtx.Width()*outH/p.decCtx.Height() + 1) &^ 1
 
 	p.encCtx.SetWidth(outW)
