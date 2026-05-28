@@ -6,8 +6,8 @@ import (
 	"io"
 	"math"
 
-	"github.com/asticode/go-astiav"
 	"github.com/asticode/go-astikit"
+	"github.com/mickael-kerjean/go-astiav"
 )
 
 type pipeline struct {
@@ -132,7 +132,7 @@ type FilterGraphSpec struct {
 	srcFilter, sinkFilter string
 	applyParams           func(*astiav.BuffersrcFilterContextParameters)
 	graphSpec             string
-	hwDevice *astiav.HardwareDeviceContext
+	hwDevice              *astiav.HardwareDeviceContext
 }
 
 func (p *pipeline) Build(s FilterGraphSpec) error {

@@ -7,7 +7,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 
-	"github.com/asticode/go-astiav"
+	"github.com/mickael-kerjean/go-astiav"
 )
 
 func init() {
@@ -105,11 +105,11 @@ func transcodeAudioSegment(cachePath string, segmentNumber int, w io.Writer) err
 	defer p.Close()
 
 	encChannelLayout := p.decCtx.ChannelLayout()
-	if v := p.encCodec.SupportedChannelLayouts(); len(v) > 0 {
+	if v := p.encCodec.ChannelLayouts(); len(v) > 0 {
 		encChannelLayout = v[0]
 	}
 	encSampleFmt := p.decCtx.SampleFormat()
-	if v := p.encCodec.SupportedSampleFormats(); len(v) > 0 {
+	if v := p.encCodec.SampleFormats(); len(v) > 0 {
 		encSampleFmt = v[0]
 	}
 	p.encCtx.SetChannelLayout(encChannelLayout)
