@@ -253,6 +253,7 @@ func (p *pipeline) Run(startSec, endSec int) error {
 		return errors.Is(err, astiav.ErrEagain) || errors.Is(err, astiav.ErrEof)
 	}
 
+	lastDts := int64(math.MinInt64)
 	drainEncoder := func() error {
 		for {
 			if err := p.encCtx.ReceivePacket(encPkt); err != nil {
@@ -263,6 +264,11 @@ func (p *pipeline) Run(startSec, endSec int) error {
 			}
 			encPkt.SetStreamIndex(p.outStream.Index())
 			encPkt.RescaleTs(p.encCtx.TimeBase(), p.outStream.TimeBase())
+			if encPkt.Dts() <= lastDts {
+				encPkt.Unref()
+				continue
+			}
+			lastDts = encPkt.Dts()
 			err := p.outFmt.WriteInterleavedFrame(encPkt)
 			encPkt.Unref()
 			if err != nil {
