@@ -132,6 +132,7 @@ type FilterGraphSpec struct {
 	srcFilter, sinkFilter string
 	applyParams           func(*astiav.BuffersrcFilterContextParameters)
 	graphSpec             string
+	hwDevice *astiav.HardwareDeviceContext
 }
 
 func (p *pipeline) Build(s FilterGraphSpec) error {
@@ -166,20 +167,59 @@ func (p *pipeline) Build(s FilterGraphSpec) error {
 		return fmt.Errorf("buffersrc init: %w", err)
 	}
 
-	outputs := astiav.AllocFilterInOut()
-	p.closer.Add(outputs.Free)
-	outputs.SetName("in")
-	outputs.SetFilterContext(srcCtx.FilterContext())
-	outputs.SetPadIdx(0)
-
-	inputs := astiav.AllocFilterInOut()
-	p.closer.Add(inputs.Free)
-	inputs.SetName("out")
-	inputs.SetFilterContext(sinkCtx.FilterContext())
-	inputs.SetPadIdx(0)
-
-	if err := fg.Parse(s.graphSpec, inputs, outputs); err != nil {
-		return fmt.Errorf("filter parse: %w", err)
+	if s.hwDevice == nil {
+		inputs := astiav.AllocFilterInOut()
+		defer inputs.Free()
+		inputs.SetName("out")
+		inputs.SetFilterContext(sinkCtx.FilterContext())
+		outputs := astiav.AllocFilterInOut()
+		defer outputs.Free()
+		outputs.SetName("in")
+		outputs.SetFilterContext(srcCtx.FilterContext())
+		if err := fg.Parse(s.graphSpec, inputs, outputs); err != nil {
+			return fmt.Errorf("filter parse %q: %w", s.graphSpec, err)
+		}
+	} else {
+		// Stage parse so hw_device_ctx can be attached to each filter
+		// before it's initialized (hwupload would otherwise fail to init).
+		seg, err := fg.ParseSegment(s.graphSpec)
+		if err != nil {
+			return fmt.Errorf("segment parse %q: %w", s.graphSpec, err)
+		}
+		defer seg.Free()
+		if err := seg.CreateFilters(0); err != nil {
+			return fmt.Errorf("segment create filters: %w", err)
+		}
+		if err := seg.ApplyOpts(0); err != nil {
+			return fmt.Errorf("segment apply opts: %w", err)
+		}
+		for _, chain := range seg.Chains() {
+			for _, params := range chain.Filters() {
+				if fc := params.FilterContext(); fc != nil {
+					fc.SetHardwareDeviceContext(s.hwDevice)
+				}
+			}
+		}
+		if err := seg.Init(0); err != nil {
+			return fmt.Errorf("segment init: %w", err)
+		}
+		segIn := astiav.AllocFilterInOut()
+		defer segIn.Free()
+		segOut := astiav.AllocFilterInOut()
+		defer segOut.Free()
+		if err := seg.Link(0, segIn, segOut); err != nil {
+			return fmt.Errorf("segment link: %w", err)
+		}
+		for io := segIn; io != nil; io = io.Next() {
+			if err := srcCtx.FilterContext().LinkTo(0, io.FilterContext(), 0); err != nil {
+				return fmt.Errorf("link buffersrc: %w", err)
+			}
+		}
+		for io := segOut; io != nil; io = io.Next() {
+			if err := io.FilterContext().LinkTo(0, sinkCtx.FilterContext(), 0); err != nil {
+				return fmt.Errorf("link buffersink: %w", err)
+			}
+		}
 	}
 	if err := fg.Configure(); err != nil {
 		return fmt.Errorf("filter configure: %w", err)

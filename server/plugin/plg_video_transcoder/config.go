@@ -10,6 +10,7 @@ import (
 var (
 	plugin_enable    func() bool
 	blacklist_format func() string
+	video_encoder    func() string
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 			}
 			f.Name = "enable_transcoder"
 			f.Type = "enable"
-			f.Target = []string{"transcoding_blacklist_format"}
+			f.Target = []string{"transcoding_blacklist_format", "transcoding_video_encoder"}
 			f.Description = "Enable/Disable on demand video transcoding. The transcoder"
 			f.Default = true
 			return f
@@ -41,5 +42,25 @@ func init() {
 			}
 			return f
 		}).String()
+	}
+	video_encoder = func() string {
+		encoder := Config.Get("features.video.encoder").Schema(func(f *FormElement) *FormElement {
+			if f == nil {
+				f = &FormElement{}
+			}
+			f.Id = "transcoding_video_encoder"
+			f.Name = "encoder"
+			f.Type = "select"
+			f.Description = "Video encoder used for on demand HLS transcoding"
+			f.Default = "libx264"
+			f.Opts = []string{"libx264", "h264_vaapi"}
+			return f
+		}).String()
+		switch encoder {
+		case "libx264", "h264_vaapi":
+			return encoder
+		default:
+			return "libx264"
+		}
 	}
 }

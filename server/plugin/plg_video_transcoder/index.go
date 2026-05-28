@@ -26,6 +26,7 @@ const (
 func init() {
 	Hooks.Register.Onload(func() {
 		blacklist_format()
+		video_encoder()
 		if !plugin_enable() {
 			return
 		} else if _, err := exec.LookPath("ffmpeg"); err != nil {
