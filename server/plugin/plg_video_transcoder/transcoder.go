@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	astiav.SetLogLevel(astiav.LogLevelError)
+	astiav.SetLogLevel(astiav.LogLevelFatal)
 }
 
 func transcodeVideoSegment(cachePath string, segmentNumber int, w io.Writer) error {
@@ -42,7 +42,7 @@ func transcodeVideoSegment(cachePath string, segmentNumber int, w io.Writer) err
 	case "h264_vaapi":
 		if hwDevice, err = astiav.CreateHardwareDeviceContext(
 			astiav.HardwareDeviceTypeVAAPI,
-			"/dev/dri/renderD128",
+			"",
 			nil,
 			0,
 		); err != nil {
@@ -64,6 +64,31 @@ func transcodeVideoSegment(cachePath string, segmentNumber int, w io.Writer) err
 		p.encCtx.SetPixelFormat(astiav.PixelFormatVaapi)
 		p.encCtx.SetHardwareFramesContext(hwFrames)
 		graphSpec = fmt.Sprintf("format=nv12,hwupload,scale_vaapi=%d:%d", outW, outH)
+	case "h264_nvenc":
+		if hwDevice, err = astiav.CreateHardwareDeviceContext(
+			astiav.HardwareDeviceTypeCUDA,
+			"",
+			nil,
+			0,
+		); err != nil {
+			return fmt.Errorf("cuda device: %w", err)
+		}
+		defer hwDevice.Free()
+		hwFrames := astiav.AllocHardwareFramesContext(hwDevice)
+		if hwFrames == nil {
+			return errors.New("cuda frames context is nil")
+		}
+		defer hwFrames.Free()
+		hwFrames.SetHardwarePixelFormat(astiav.PixelFormatCuda)
+		hwFrames.SetSoftwarePixelFormat(astiav.PixelFormatNv12)
+		hwFrames.SetWidth(outW)
+		hwFrames.SetHeight(outH)
+		if err := hwFrames.Initialize(); err != nil {
+			return fmt.Errorf("cuda frames init: %w", err)
+		}
+		p.encCtx.SetPixelFormat(astiav.PixelFormatCuda)
+		p.encCtx.SetHardwareFramesContext(hwFrames)
+		graphSpec = fmt.Sprintf("format=nv12,hwupload_cuda,scale_cuda=%d:%d", outW, outH)
 	case "libx264":
 		p.encCtx.SetPixelFormat(astiav.PixelFormatYuv420P)
 		encOpts.Set("preset", "veryfast", 0)

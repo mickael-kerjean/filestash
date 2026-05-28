@@ -44,7 +44,7 @@ func init() {
 		}).String()
 	}
 	video_encoder = func() string {
-		encoder := Config.Get("features.video.encoder").Schema(func(f *FormElement) *FormElement {
+		return Config.Get("features.video.encoder").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
 				f = &FormElement{}
 			}
@@ -53,14 +53,8 @@ func init() {
 			f.Type = "select"
 			f.Description = "Video encoder used for on demand HLS transcoding"
 			f.Default = "libx264"
-			f.Opts = []string{"libx264", "h264_vaapi"}
+			f.Opts = []string{"libx264", "h264_vaapi", "h264_nvenc"}
 			return f
 		}).String()
-		switch encoder {
-		case "libx264", "h264_vaapi":
-			return encoder
-		default:
-			return "libx264"
-		}
 	}
 }
