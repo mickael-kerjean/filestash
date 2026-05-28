@@ -1,15 +1,11 @@
 package plg_video_transcoder
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
-	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 
@@ -23,7 +19,7 @@ func playlistVideoHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		res.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
-	p, err := ffprobe(cachePath)
+	duration, err := probeDuration(cachePath)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		return
@@ -35,11 +31,11 @@ func playlistVideoHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 	response += "#EXT-X-ALLOW-CACHE:YES\n"
 	response += "#EXT-X-PLAYLIST-TYPE:VOD\n"
 	response += fmt.Sprintf("#EXT-X-TARGETDURATION:%d\n", HLS_VIDEO_SEGMENT_LENGTH)
-	total := int(math.Ceil(p.Format.Duration / float64(HLS_VIDEO_SEGMENT_LENGTH)))
+	total := int(math.Ceil(duration / float64(HLS_VIDEO_SEGMENT_LENGTH)))
 	for i := 0; i < total; i++ {
 		response += fmt.Sprintf("#EXTINF:%.4f, nodesc\n", math.Min(
 			float64(HLS_VIDEO_SEGMENT_LENGTH),
-			p.Format.Duration-float64(i*HLS_VIDEO_SEGMENT_LENGTH),
+			duration-float64(i*HLS_VIDEO_SEGMENT_LENGTH),
 		))
 		response += fmt.Sprintf("/hls/video_%d.ts?path=%s\n", i, cacheName)
 	}
@@ -55,7 +51,7 @@ func playlistAudioHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		res.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
-	p, err := ffprobe(cachePath)
+	duration, err := probeDuration(cachePath)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		return
@@ -67,11 +63,11 @@ func playlistAudioHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 	response += "#EXT-X-ALLOW-CACHE:YES\n"
 	response += "#EXT-X-PLAYLIST-TYPE:VOD\n"
 	response += fmt.Sprintf("#EXT-X-TARGETDURATION:%d\n", HLS_AUDIO_SEGMENT_LENGTH)
-	total := int(math.Ceil(p.Format.Duration / float64(HLS_AUDIO_SEGMENT_LENGTH)))
+	total := int(math.Ceil(duration / float64(HLS_AUDIO_SEGMENT_LENGTH)))
 	for i := 0; i < total; i++ {
 		response += fmt.Sprintf("#EXTINF:%.4f,\n", math.Min(
 			float64(HLS_AUDIO_SEGMENT_LENGTH),
-			p.Format.Duration-float64(i*HLS_AUDIO_SEGMENT_LENGTH),
+			duration-float64(i*HLS_AUDIO_SEGMENT_LENGTH),
 		))
 		response += fmt.Sprintf("/hls/audio_%d.ts?path=%s\n", i, cacheName)
 	}
@@ -117,37 +113,4 @@ func hlsVideoHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if err := transcodeVideoSegment(cachePath, segmentNumber, res); err != nil {
 		Log.Error("plg_video_transcoder::video::run %s", err.Error())
 	}
-}
-
-type FFProbeData struct {
-	Format struct {
-		Duration float64 `json:"duration,string"`
-		BitRate  int     `json:"bit_rate,string"`
-	} `json: "format"`
-	Streams []struct {
-		CodecType   string `json:"codec_type"`
-		CodecName   string `json:"codec_name"`
-		PixelFormat string `json:"pix_fmt"`
-	} `json:"streams"`
-}
-
-func ffprobe(videoPath string) (FFProbeData, error) {
-	var stream bytes.Buffer
-	var probe FFProbeData
-
-	cmd := exec.Command(
-		"ffprobe", strings.Split(fmt.Sprintf(
-			"-v quiet -print_format json -show_format -show_streams %s",
-			videoPath,
-		), " ")...,
-	)
-	cmd.Stdout = &stream
-	if err := cmd.Run(); err != nil {
-		return probe, nil
-	}
-	cmd.Run()
-	if err := json.Unmarshal([]byte(stream.String()), &probe); err != nil {
-		return probe, err
-	}
-	return probe, nil
 }

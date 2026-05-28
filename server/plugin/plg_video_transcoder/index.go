@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -28,12 +27,6 @@ func init() {
 		blacklist_format()
 		video_encoder()
 		if !plugin_enable() {
-			return
-		} else if _, err := exec.LookPath("ffmpeg"); err != nil {
-			Log.Warning("plg_video_thumbnail::init error=ffmpeg_not_installed")
-			return
-		} else if _, err := exec.LookPath("ffprobe"); err != nil {
-			Log.Warning("plg_video_thumbnail::init error=ffprobe_not_installed")
 			return
 		}
 

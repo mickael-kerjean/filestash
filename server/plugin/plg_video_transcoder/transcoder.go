@@ -169,3 +169,19 @@ func transcodeAudioSegment(cachePath string, segmentNumber int, w io.Writer) err
 		(segmentNumber+1)*HLS_AUDIO_SEGMENT_LENGTH,
 	)
 }
+
+func probeDuration(path string) (float64, error) {
+	inFmt := astiav.AllocFormatContext()
+	if inFmt == nil {
+		return 0, errors.New("input format context is nil")
+	}
+	defer inFmt.Free()
+	if err := inFmt.OpenInput(path, nil, nil); err != nil {
+		return 0, err
+	}
+	defer inFmt.CloseInput()
+	if err := inFmt.FindStreamInfo(nil); err != nil {
+		return 0, err
+	}
+	return float64(inFmt.Duration()) / float64(astiav.TimeBase), nil
+}
