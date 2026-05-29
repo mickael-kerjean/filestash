@@ -56,6 +56,7 @@ export function $renderInput(options = {}) {
             path = [],
             datalist = null,
             options = null,
+            options_label = null,
             pattern = null,
         } = props;
 
@@ -231,12 +232,14 @@ export function $renderInput(options = {}) {
             if (!($select instanceof HTMLSelectElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
             else if (value) $select.value = value || props.default;
             attrs.map((setAttribute) => setAttribute($select));
-            (options || []).forEach((name) => {
+            (options || []).forEach((name, index) => {
                 const $option = createElement(`
                     <option></option>
                 `);
-                $option.textContent = name;
+                const label = Array.isArray(options_label) ? options_label[index] : null;
+                $option.textContent = (label || ((name === "" && placeholder) ? placeholder : name));
                 $option.setAttribute("name", name);
+                $option.setAttribute("value", name);
                 if (name === (value || props.default)) {
                     $option.setAttribute("selected", "");
                 }
