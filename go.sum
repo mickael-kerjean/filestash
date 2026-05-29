@@ -30,6 +30,8 @@ github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be h1:9AeTilPcZAjCFI
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be/go.mod h1:ySMOLuWl6zY27l47sB3qLNK6tF2fkHG55UZxx8oIVo4=
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5/go.mod h1:wHh0iHkYZB8zMSxRWpUBQtwG5a7fFgvEO+odwuTv2gs=
+github.com/asticode/go-astikit v0.59.0 h1:tjbwDym+MTSxqkAhJoHRZmHMXK6Jv4vGx+97FptKH6k=
+github.com/asticode/go-astikit v0.59.0/go.mod h1:fV43j20UZYfXzP9oBn33udkvCvDvCDhzjVqoLFuuYZE=
 github.com/aws/aws-sdk-go v1.55.8 h1:JRmEUbU52aJQZ2AjX4q4Wu7t4uZjOu71uyNmaWlUkJQ=
 github.com/aws/aws-sdk-go v1.55.8/go.mod h1:ZkViS9AqA6otK+JBBNH2++sx1sgxrPKcSzPPvQkUtXk=
 github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59 h1:WWB576BN5zNSZc/M9d/10pqEx5VHNhaQ/yOVAkmj5Yo=
@@ -165,6 +167,8 @@ github.com/mattn/go-isatty v0.0.21 h1:xYae+lCNBP7QuW4PUnNG61ffM4hVIfm+zUzDuSzYLG
 github.com/mattn/go-isatty v0.0.21/go.mod h1:ZXfXG4SQHsB/w3ZeOYbR0PrPwLy+n6xiMrJlRFqopa4=
 github.com/mattn/go-sqlite3 v1.14.42 h1:MigqEP4ZmHw3aIdIT7T+9TLa90Z6smwcthx+Azv4Cgo=
 github.com/mattn/go-sqlite3 v1.14.42/go.mod h1:pjEuOr8IwzLJP2MfGeTb0A35jauH+C2kbHKBr7yXKVQ=
+github.com/mickael-kerjean/go-astiav v0.0.0-20260528033519-fa661b1d66b5 h1:ChbYAe1Hcpew66FuHCX5/fyd9xORZ7N2afrpWNO5bUM=
+github.com/mickael-kerjean/go-astiav v0.0.0-20260528033519-fa661b1d66b5/go.mod h1:TWaLiOFVU5s04sstqhEHQCnxChWtDDvHwb/1tR3Y0WY=
 github.com/mickael-kerjean/goftp v0.0.0-20260421114701-956d21f038b7 h1:S9eqG1ThGnl0PtJQEb0NpjZA+3t7Pl5weKcsb0GJkyo=
 github.com/mickael-kerjean/goftp v0.0.0-20260421114701-956d21f038b7/go.mod h1:w67UQ+CKrGekamytP5ZOdAJfXowIC3bw590so7mkFqA=
 github.com/mickael-kerjean/net v0.0.0-20191120063050-2457c043ba06 h1:427Mpu5edwuFuDBdqOm6EgRohYqZ9Oomd+87ryW2Uls=

@@ -4,6 +4,7 @@ go 1.26
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.6.4
+	github.com/asticode/go-astikit v0.59.0
 	github.com/aws/aws-sdk-go v1.55.8
 	github.com/bluekeyes/go-gitdiff v0.8.1
 	github.com/bmatcuk/doublestar/v4 v4.10.0
@@ -21,6 +22,7 @@ require (
 	github.com/hirochachacha/go-smb2 v1.1.0
 	github.com/lib/pq v1.12.3
 	github.com/mattn/go-sqlite3 v1.14.42
+	github.com/mickael-kerjean/go-astiav v0.0.0-20260528033519-fa661b1d66b5
 	github.com/mickael-kerjean/goftp v0.0.0-20260421114701-956d21f038b7
 	github.com/mickael-kerjean/net v0.0.0-20191120063050-2457c043ba06
 	github.com/mitchellh/hashstructure v1.1.0
