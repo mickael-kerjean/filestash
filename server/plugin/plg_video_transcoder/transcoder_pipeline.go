@@ -19,15 +19,43 @@ type pipeline struct {
 
 	encCodec *astiav.Codec
 	encCtx   *astiav.CodecContext
+	encOpts  *astiav.Dictionary
 
 	outFmt    *astiav.FormatContext
 	outStream *astiav.Stream
 
 	srcCtx  *astiav.BuffersrcFilterContext
 	sinkCtx *astiav.BuffersinkFilterContext
+
+	hwDevice *astiav.HardwareDeviceContext
+}
+
+func (p *pipeline) Device(hwType astiav.HardwareDeviceType, hwPixFmt astiav.PixelFormat, w, h int) error {
+	hwDevice, err := astiav.CreateHardwareDeviceContext(hwType, "", nil, 0)
+	if err != nil {
+		return fmt.Errorf("%s device: %w", hwType.Name(), err)
+	}
+	p.closer.Add(hwDevice.Free)
+	hwFrames := astiav.AllocHardwareFramesContext(hwDevice)
+	if hwFrames == nil {
+		return fmt.Errorf("%s frames context is nil", hwType.Name())
+	}
+	defer hwFrames.Free()
+	hwFrames.SetHardwarePixelFormat(hwPixFmt)
+	hwFrames.SetSoftwarePixelFormat(astiav.PixelFormatNv12)
+	hwFrames.SetWidth(w)
+	hwFrames.SetHeight(h)
+	if err := hwFrames.Initialize(); err != nil {
+		return fmt.Errorf("%s frames init: %w", hwType.Name(), err)
+	}
+	p.encCtx.SetPixelFormat(hwPixFmt)
+	p.encCtx.SetHardwareFramesContext(hwFrames)
+	p.hwDevice = hwDevice
+	return nil
 }
 
 func NewPipeline(path string, mediaType astiav.MediaType, encName string) (p *pipeline, err error) {
+	// stage 1: encoder side
 	p = &pipeline{closer: astikit.NewCloser()}
 	if p.encCodec = astiav.FindEncoderByName(encName); p.encCodec == nil {
 		return nil, fmt.Errorf("encoder %q not found", encName)
@@ -36,6 +64,8 @@ func NewPipeline(path string, mediaType astiav.MediaType, encName string) (p *pi
 		return p, errors.New("enc ctx is nil")
 	}
 	p.closer.Add(p.encCtx.Free)
+	p.encOpts = astiav.NewDictionary()
+	p.closer.Add(p.encOpts.Free)
 	defer func() {
 		if err != nil {
 			p.Close()
@@ -43,6 +73,7 @@ func NewPipeline(path string, mediaType astiav.MediaType, encName string) (p *pi
 		}
 	}()
 
+	// stage 2: input side
 	p.inFmt = astiav.AllocFormatContext()
 	if p.inFmt == nil {
 		return p, errors.New("input fmt ctx is nil")
@@ -56,20 +87,12 @@ func NewPipeline(path string, mediaType astiav.MediaType, encName string) (p *pi
 		return p, fmt.Errorf("find stream info: %w", err)
 	}
 
-	for _, s := range p.inFmt.Streams() {
-		if s.CodecParameters().MediaType() == mediaType {
-			p.inStream = s
-			break
-		}
+	// stage 3: decoder side
+	stream, decCodec, err := p.inFmt.FindBestStream(mediaType, -1, -1)
+	if err != nil {
+		return p, fmt.Errorf("no %s stream: %w", mediaType, err)
 	}
-	if p.inStream == nil {
-		return p, fmt.Errorf("no %s stream", mediaType)
-	}
-
-	decCodec := astiav.FindDecoder(p.inStream.CodecParameters().CodecID())
-	if decCodec == nil {
-		return p, errors.New("decoder not found")
-	}
+	p.inStream = stream
 	p.decCtx = astiav.AllocCodecContext(decCodec)
 	if p.decCtx == nil {
 		return p, errors.New("dec ctx is nil")
@@ -78,10 +101,29 @@ func NewPipeline(path string, mediaType astiav.MediaType, encName string) (p *pi
 	if err = p.inStream.CodecParameters().ToCodecContext(p.decCtx); err != nil {
 		return p, fmt.Errorf("dec params: %w", err)
 	}
-	if mediaType == astiav.MediaTypeVideo {
+	tb := p.inStream.TimeBase()
+	p.decCtx.SetTimeBase(tb)
+	p.encCtx.SetTimeBase(tb)
+
+	// stage 4: per-media config
+	switch mediaType {
+	case astiav.MediaTypeVideo:
 		p.decCtx.SetFramerate(p.inFmt.GuessFrameRate(p.inStream, nil))
+		p.encCtx.SetFramerate(p.decCtx.Framerate())
+		p.encCtx.SetSampleAspectRatio(p.decCtx.SampleAspectRatio())
+	case astiav.MediaTypeAudio:
+		channelLayout := p.decCtx.ChannelLayout()
+		if v := p.encCodec.ChannelLayouts(); len(v) > 0 {
+			channelLayout = v[0]
+		}
+		sampleFmt := p.decCtx.SampleFormat()
+		if v := p.encCodec.SampleFormats(); len(v) > 0 {
+			sampleFmt = v[0]
+		}
+		p.encCtx.SetChannelLayout(channelLayout)
+		p.encCtx.SetSampleFormat(sampleFmt)
+		p.encCtx.SetSampleRate(p.decCtx.SampleRate())
 	}
-	p.decCtx.SetTimeBase(p.inStream.TimeBase())
 	if err = p.decCtx.Open(decCodec, nil); err != nil {
 		return p, fmt.Errorf("open decoder: %w", err)
 	}
@@ -92,33 +134,26 @@ func (p *pipeline) Close() {
 	p.closer.Close()
 }
 
-func (p *pipeline) Open(w io.Writer, encOpts *astiav.Dictionary) error {
-	outFmt, err := astiav.AllocOutputFormatContext(nil, "mpegts", "")
-	if err != nil {
+func (p *pipeline) Open(w io.Writer) (err error) {
+	if p.outFmt, err = astiav.AllocOutputFormatContext(nil, "mpegts", ""); err != nil {
 		return fmt.Errorf("alloc out fmt: %w", err)
 	}
-	p.outFmt = outFmt
-	p.closer.Add(outFmt.Free)
-
-	if outFmt.OutputFormat().Flags().Has(astiav.IOFormatFlagGlobalheader) {
-		p.encCtx.SetFlags(p.encCtx.Flags().Add(astiav.CodecContextFlagGlobalHeader))
-	}
-	if err := p.encCtx.Open(p.encCodec, encOpts); err != nil {
+	p.closer.Add(p.outFmt.Free)
+	if err := p.encCtx.Open(p.encCodec, p.encOpts); err != nil {
 		return fmt.Errorf("open encoder: %w", err)
 	}
-
 	ioCtx, err := astiav.AllocIOContext(
 		65536, true, nil, nil,
-		func(b []byte) (int, error) { return w.Write(b) },
+		func(b []byte) (int, error) {
+			return w.Write(b)
+		},
 	)
 	if err != nil {
 		return fmt.Errorf("alloc io ctx: %w", err)
 	}
+	p.outFmt.SetPb(ioCtx)
 	p.closer.Add(ioCtx.Free)
-	outFmt.SetPb(ioCtx)
-
-	p.outStream = outFmt.NewStream(nil)
-	if p.outStream == nil {
+	if p.outStream = p.outFmt.NewStream(nil); p.outStream == nil {
 		return errors.New("out stream is nil")
 	}
 	if err := p.outStream.CodecParameters().FromCodecContext(p.encCtx); err != nil {
@@ -128,103 +163,94 @@ func (p *pipeline) Open(w io.Writer, encOpts *astiav.Dictionary) error {
 	return nil
 }
 
-type FilterGraphSpec struct {
-	srcFilter, sinkFilter string
-	applyParams           func(*astiav.BuffersrcFilterContextParameters)
-	graphSpec             string
-	hwDevice              *astiav.HardwareDeviceContext
-}
-
-func (p *pipeline) Build(s FilterGraphSpec) error {
+func (p *pipeline) Build(graphSpec string) (err error) {
 	fg := astiav.AllocFilterGraph()
 	if fg == nil {
 		return errors.New("filter graph is nil")
 	}
 	p.closer.Add(fg.Free)
 
-	srcF := astiav.FindFilterByName(s.srcFilter)
-	sinkF := astiav.FindFilterByName(s.sinkFilter)
-	if srcF == nil || sinkF == nil {
-		return fmt.Errorf("filter %s/%s missing", s.srcFilter, s.sinkFilter)
-	}
-
-	srcParams := astiav.AllocBuffersrcFilterContextParameters()
+	var (
+		srcName   = ""
+		sinkName  = ""
+		srcParams = astiav.AllocBuffersrcFilterContextParameters()
+	)
+	srcParams.SetTimeBase(p.inStream.TimeBase())
 	defer srcParams.Free()
-	s.applyParams(srcParams)
-
-	srcCtx, err := fg.NewBuffersrcFilterContext(srcF, "in")
-	if err != nil {
+	switch p.decCtx.MediaType() {
+	case astiav.MediaTypeVideo:
+		srcName, sinkName = "buffer", "buffersink"
+		srcParams.SetWidth(p.decCtx.Width())
+		srcParams.SetHeight(p.decCtx.Height())
+		srcParams.SetPixelFormat(p.decCtx.PixelFormat())
+		srcParams.SetSampleAspectRatio(p.decCtx.SampleAspectRatio())
+	case astiav.MediaTypeAudio:
+		srcName, sinkName = "abuffer", "abuffersink"
+		srcParams.SetChannelLayout(p.decCtx.ChannelLayout())
+		srcParams.SetSampleFormat(p.decCtx.SampleFormat())
+		srcParams.SetSampleRate(p.decCtx.SampleRate())
+	default:
+		return fmt.Errorf("unsupported media type %s", p.decCtx.MediaType())
+	}
+	srcF, sinkF := astiav.FindFilterByName(srcName), astiav.FindFilterByName(sinkName)
+	if srcF == nil || sinkF == nil {
+		return fmt.Errorf("filter %s/%s missing", srcName, sinkName)
+	}
+	if p.srcCtx, err = fg.NewBuffersrcFilterContext(srcF, "in"); err != nil {
 		return fmt.Errorf("new buffersrc: %w", err)
 	}
-	sinkCtx, err := fg.NewBuffersinkFilterContext(sinkF, "out")
-	if err != nil {
+	if p.sinkCtx, err = fg.NewBuffersinkFilterContext(sinkF, "out"); err != nil {
 		return fmt.Errorf("new buffersink: %w", err)
 	}
-	if err := srcCtx.SetParameters(srcParams); err != nil {
+	if err := p.srcCtx.SetParameters(srcParams); err != nil {
 		return fmt.Errorf("buffersrc params: %w", err)
 	}
-	if err := srcCtx.Initialize(nil); err != nil {
+	if err := p.srcCtx.Initialize(nil); err != nil {
 		return fmt.Errorf("buffersrc init: %w", err)
 	}
 
-	if s.hwDevice == nil {
-		inputs := astiav.AllocFilterInOut()
-		defer inputs.Free()
-		inputs.SetName("out")
-		inputs.SetFilterContext(sinkCtx.FilterContext())
-		outputs := astiav.AllocFilterInOut()
-		defer outputs.Free()
-		outputs.SetName("in")
-		outputs.SetFilterContext(srcCtx.FilterContext())
-		if err := fg.Parse(s.graphSpec, inputs, outputs); err != nil {
-			return fmt.Errorf("filter parse %q: %w", s.graphSpec, err)
-		}
-	} else {
-		// Stage parse so hw_device_ctx can be attached to each filter
-		// before it's initialized (hwupload would otherwise fail to init).
-		seg, err := fg.ParseSegment(s.graphSpec)
-		if err != nil {
-			return fmt.Errorf("segment parse %q: %w", s.graphSpec, err)
-		}
-		defer seg.Free()
-		if err := seg.CreateFilters(0); err != nil {
-			return fmt.Errorf("segment create filters: %w", err)
-		}
-		if err := seg.ApplyOpts(0); err != nil {
-			return fmt.Errorf("segment apply opts: %w", err)
-		}
+	seg, err := fg.ParseSegment(graphSpec)
+	if err != nil {
+		return fmt.Errorf("segment parse %q: %w", graphSpec, err)
+	}
+	defer seg.Free()
+	if err := seg.CreateFilters(0); err != nil {
+		return fmt.Errorf("segment create filters: %w", err)
+	}
+	if err := seg.ApplyOpts(0); err != nil {
+		return fmt.Errorf("segment apply opts: %w", err)
+	}
+	if p.hwDevice != nil {
 		for _, chain := range seg.Chains() {
 			for _, params := range chain.Filters() {
 				if fc := params.FilterContext(); fc != nil {
-					fc.SetHardwareDeviceContext(s.hwDevice)
+					fc.SetHardwareDeviceContext(p.hwDevice)
 				}
 			}
 		}
-		if err := seg.Init(0); err != nil {
-			return fmt.Errorf("segment init: %w", err)
+	}
+	if err := seg.Init(0); err != nil {
+		return fmt.Errorf("segment init: %w", err)
+	}
+	segIn, segOut := astiav.AllocFilterInOut(), astiav.AllocFilterInOut()
+	defer segIn.Free()
+	defer segOut.Free()
+	if err := seg.Link(0, segIn, segOut); err != nil {
+		return fmt.Errorf("segment link: %w", err)
+	}
+	for io := segIn; io != nil; io = io.Next() {
+		if err := p.srcCtx.FilterContext().LinkTo(0, io.FilterContext(), 0); err != nil {
+			return fmt.Errorf("link buffersrc: %w", err)
 		}
-		segIn := astiav.AllocFilterInOut()
-		defer segIn.Free()
-		segOut := astiav.AllocFilterInOut()
-		defer segOut.Free()
-		if err := seg.Link(0, segIn, segOut); err != nil {
-			return fmt.Errorf("segment link: %w", err)
-		}
-		for io := segIn; io != nil; io = io.Next() {
-			if err := srcCtx.FilterContext().LinkTo(0, io.FilterContext(), 0); err != nil {
-				return fmt.Errorf("link buffersrc: %w", err)
-			}
-		}
-		for io := segOut; io != nil; io = io.Next() {
-			if err := io.FilterContext().LinkTo(0, sinkCtx.FilterContext(), 0); err != nil {
-				return fmt.Errorf("link buffersink: %w", err)
-			}
+	}
+	for io := segOut; io != nil; io = io.Next() {
+		if err := io.FilterContext().LinkTo(0, p.sinkCtx.FilterContext(), 0); err != nil {
+			return fmt.Errorf("link buffersink: %w", err)
 		}
 	}
 	if err := fg.Configure(); err != nil {
 		return fmt.Errorf("filter configure: %w", err)
 	}
-	p.srcCtx, p.sinkCtx = srcCtx, sinkCtx
 	return nil
 }
 
@@ -371,4 +397,20 @@ func (p *pipeline) Run(startSec, endSec int) error {
 		return fmt.Errorf("write trailer: %w", err)
 	}
 	return nil
+}
+
+func probeDuration(path string) (float64, error) {
+	inFmt := astiav.AllocFormatContext()
+	if inFmt == nil {
+		return 0, errors.New("input format context is nil")
+	}
+	defer inFmt.Free()
+	if err := inFmt.OpenInput(path, nil, nil); err != nil {
+		return 0, err
+	}
+	defer inFmt.CloseInput()
+	if err := inFmt.FindStreamInfo(nil); err != nil {
+		return 0, err
+	}
+	return float64(inFmt.Duration()) / float64(astiav.TimeBase), nil
 }
