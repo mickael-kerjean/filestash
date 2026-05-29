@@ -22,11 +22,10 @@ pipeline {
         stage("Build") {
             steps {
                 script {
-                    docker.image("golang:1.26-bookworm").inside("--user=root") {
-                        sh "apt update -y && apt install -y libbrotli-dev brotli"
+                    docker.image("golang:1.26-trixie").inside("--user=root") {
                         sh "sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go"
                         sh "make init"
-                        sh "make build"
+                        sh "CGO_ENABLED=0 make build"
                     }
                 }
             }
