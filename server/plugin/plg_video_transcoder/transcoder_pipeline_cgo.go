@@ -1,3 +1,5 @@
+//go:build cgo
+
 package plg_video_transcoder
 
 import (
