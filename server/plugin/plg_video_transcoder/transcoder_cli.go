@@ -9,6 +9,7 @@ import (
 	"io"
 	"os/exec"
 	"strconv"
+	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
@@ -44,10 +45,11 @@ func transcodeVideoSegment(cachePath string, segmentNumber int, w io.Writer) err
 		)
 	case "h264_nvenc":
 		args = append([]string{
-			"-hwaccel", "cuda", "-hwaccel_output_format", "cuda",
+			"-init_hw_device", "cuda=hw",
+			"-filter_hw_device", "hw",
 		}, args...)
 		args = append(args,
-			"-vf", fmt.Sprintf("scale_cuda=w=-2:h=%d:format=nv12", VIDEO_MAX_HEIGHT),
+			"-vf", fmt.Sprintf("format=nv12,hwupload_cuda,scale_cuda=w=-2:h=%d", VIDEO_MAX_HEIGHT),
 			"-c:v", "h264_nvenc",
 		)
 	case "libx264":
@@ -121,7 +123,9 @@ func runFFmpeg(args []string, w io.Writer) error {
 	}
 	msg, _ := io.ReadAll(stderr)
 	if err := cmd.Wait(); err != nil {
-		return fmt.Errorf("ffmpeg: %w: %s", err, string(msg))
+		if flat := strings.Join(strings.Fields(string(msg)), " "); !strings.Contains(flat, "Broken pipe") {
+			return fmt.Errorf("ffmpeg: %w: %s", err, flat)
+		}
 	}
 	return nil
 }
