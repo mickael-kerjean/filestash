@@ -1,8 +1,10 @@
-package plg_search_sqlitefts
+package workflow
 
 import (
+	"container/heap"
 	"context"
 	"encoding/json"
+	"path/filepath"
 	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -12,7 +14,13 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/crawler"
 )
 
-type StepIndexer struct{}
+type StepIndexer struct {
+	Daemon SearchDaemon
+}
+
+type SearchDaemon interface {
+	GetCrawler(app *App, force bool) (Crawler, error)
+}
 
 var runningIndexers sync.Map
 
@@ -57,14 +65,27 @@ func (this StepIndexer) Execute(params map[string]string, input map[string]strin
 		Context: context.Background(),
 		Session: session,
 	}
-	backend, err := NewBackend(app, app.Session)
+	app.Backend, err = NewBackend(app, app.Session)
 	if err != nil {
 		Log.Warning("plg_search_sqlitefts::workflow message=cannot_create_backend err=%s", err.Error())
 		return input, err
 	}
-	app.Backend = backend
-	DaemonState.HintLs(app, EnforceDirectory(params["path"]))
-	crwlr := GetCrawler(app)
+	path, err := ctrl.PathBuilder(app, EnforceDirectory(params["path"]))
+	if err != nil {
+		Log.Warning("plg_search_sqlitefts::workflow message=path_builder err=%s", err.Error())
+		return input, err
+	}
+	crwlr, err := this.Daemon.GetCrawler(app, true)
+	if err != nil {
+		Log.Warning("plg_search_sqlitefts::workflow message=cannot_create_crawler err=%s", err.Error())
+		return input, err
+	}
+	heap.Push(&crwlr.FoldersUnknown, &Document{
+		Type:        "directory",
+		Path:        path,
+		InitialPath: path,
+		Name:        filepath.Base(path),
+	})
 
 	tr, err := crwlr.State.Change()
 	if err != nil {
@@ -92,12 +113,7 @@ func (this StepIndexer) Execute(params map[string]string, input map[string]strin
 				inflight++
 				cond.L.Unlock()
 
-				path, err := ctrl.PathBuilder(app, doc.Path)
-				if err != nil {
-					Log.Warning("plg_search_sqlitefts::workflow message=path_builder path=%s err=%s", doc.Path, err.Error())
-					break
-				}
-				files, err := crwlr.Backend.Ls(path)
+				files, err := crwlr.Backend.Ls(doc.Path)
 				if err != nil {
 					Log.Warning("plg_search_sqlitefts::workflow message=ls_error path=%s err=%s", doc.Path, err.Error())
 				}

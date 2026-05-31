@@ -1,4 +1,4 @@
-package plg_search_sqlitefts
+package crawler
 
 import (
 	"time"
@@ -9,6 +9,8 @@ import (
 )
 
 func (this *Crawler) Run() {
+	this.mu.Lock()
+	defer this.mu.Unlock()
 	if this.CurrentPhase == "" {
 		this.CurrentPhase = PHASE_EXPLORE
 	}

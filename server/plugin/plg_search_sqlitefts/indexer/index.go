@@ -99,7 +99,7 @@ func (this sqliteIndex) Change() (Manager, error) {
 	if err != nil {
 		return nil, toErr(err)
 	}
-	return sqliteQueries{tx}, nil
+	return sqliteQueries{tx, this.db}, nil
 }
 
 func (this sqliteIndex) Close() error {
@@ -108,10 +108,15 @@ func (this sqliteIndex) Close() error {
 
 type sqliteQueries struct {
 	tx *sql.Tx
+	db *sql.DB
 }
 
 func (this sqliteQueries) Commit() error {
-	return this.tx.Commit()
+	if err := this.tx.Commit(); err != nil {
+		return toErr(err)
+	}
+	this.db.Exec("PRAGMA wal_checkpoint(TRUNCATE)")
+	return nil
 }
 
 func (this sqliteQueries) IndexTimeGet(path string) (time.Time, error) {

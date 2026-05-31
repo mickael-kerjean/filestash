@@ -1,4 +1,4 @@
-package plg_search_sqlitefts
+package crawler
 
 import (
 	"container/heap"

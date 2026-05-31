@@ -1,20 +1,31 @@
 package plg_search_sqlitefts
 
 import (
+	"container/heap"
+	"path/filepath"
+
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/crawler"
 )
 
-type SearchEngine struct{}
+type SearchEngine struct {
+	Daemon searchDaemon
+}
+
+type searchDaemon interface {
+	GetCrawler(app *App, create bool) (Crawler, error)
+}
 
 func (this SearchEngine) Query(app App, path string, keyword string) ([]IFile, error) {
-	DaemonState.HintLs(&app, path)
-	s := GetCrawler(&app)
-	if s == nil {
-		return nil, ErrNotReachable
+	crwlr, err := this.Daemon.GetCrawler(&app, true)
+	if err != nil {
+		return nil, err
 	}
-	if path == "" {
-		path = "/"
-	}
-	return s.State.Search(path, keyword)
+	heap.Push(&crwlr.FoldersUnknown, &Document{
+		Type:        "directory",
+		Path:        path,
+		InitialPath: path,
+		Name:        filepath.Base(path),
+	})
+	return crwlr.State.Search(path, keyword)
 }
