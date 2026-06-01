@@ -80,7 +80,7 @@ func segmentHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	res.Header().Set("Content-Type", "video/mp2t")
-	if err := transcodeSegment(cachePath, segmentNumber, res); err != nil {
+	if err := transcodeSegment(req.Context(), cachePath, segmentNumber, res); err != nil {
 		Log.Error("plg_video_transcoder::segment::run %s", err.Error())
 	}
 }
