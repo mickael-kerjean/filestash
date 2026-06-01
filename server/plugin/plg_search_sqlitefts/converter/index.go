@@ -4,31 +4,31 @@ import (
 	"io"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model/formater"
+	"github.com/mickael-kerjean/filestash/server/pkg/textify"
 )
 
 func Convert(path string, reader io.ReadCloser) (out io.ReadCloser, err error) {
 	switch GetMimeType(path) {
 	case "text/plain":
-		out, err = formater.TxtFormater(reader)
+		out, err = textify.Txt(reader)
 	case "text/org":
-		out, err = formater.TxtFormater(reader)
+		out, err = textify.Txt(reader)
 	case "text/markdown":
-		out, err = formater.TxtFormater(reader)
+		out, err = textify.Txt(reader)
 	case "application/x-form":
-		out, err = formater.TxtFormater(reader)
+		out, err = textify.Txt(reader)
 	case "application/pdf":
-		out, err = formater.PdfFormater(reader)
+		out, err = textify.PDF(reader)
 	case "application/excel":
-		out, err = formater.OfficeFormater(reader)
+		out, err = textify.Office(reader)
 	case "application/powerpoint":
-		out, err = formater.OfficeFormater(reader)
+		out, err = textify.Office(reader)
 	case "application/vnd.ms-powerpoint":
-		out, err = formater.OfficeFormater(reader)
+		out, err = textify.Office(reader)
 	case "application/word":
-		out, err = formater.OfficeFormater(reader)
+		out, err = textify.Office(reader)
 	case "application/msword":
-		out, err = formater.OfficeFormater(reader)
+		out, err = textify.Office(reader)
 	default:
 		err = ErrNotImplemented
 	}

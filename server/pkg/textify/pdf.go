@@ -1,4 +1,4 @@
-package formater
+package textify
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"os/exec"
 )
 
-func PdfFormater(r io.ReadCloser) (io.ReadCloser, error) {
+func PDF(r io.ReadCloser) (io.ReadCloser, error) {
 	tmpName := fmt.Sprintf("/tmp/pdf_%d.docx", rand.Intn(1000000))
 	defer os.Remove(tmpName)
 	f, err := os.OpenFile(tmpName, os.O_CREATE|os.O_WRONLY, os.ModePerm)

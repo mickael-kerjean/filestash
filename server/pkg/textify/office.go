@@ -1,4 +1,4 @@
-package formater
+package textify
 
 import (
 	"archive/zip"
@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func OfficeFormater(r io.ReadCloser) (io.ReadCloser, error) {
+func Office(r io.ReadCloser) (io.ReadCloser, error) {
 	tmpName := fmt.Sprintf("/tmp/docx_%d.docx", rand.Intn(1000000))
 	defer os.Remove(tmpName)
 	f, err := os.OpenFile(tmpName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
