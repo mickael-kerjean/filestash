@@ -95,6 +95,9 @@ func NewPipeline(path string, mediaType astiav.MediaType, encName string) (p *pi
 		return p, fmt.Errorf("no %s stream: %w", mediaType, err)
 	}
 	p.inStream = stream
+	if mediaType == astiav.MediaTypeVideo && encName == "h264_v4l2m2m" {
+		decCodec = astiav.FindDecoderByName(encName)
+	}
 	p.decCtx = astiav.AllocCodecContext(decCodec)
 	if p.decCtx == nil {
 		return p, errors.New("dec ctx is nil")

@@ -53,7 +53,7 @@ func init() {
 			f.Type = "select"
 			f.Description = "Video encoder used for on demand HLS transcoding"
 			f.Default = "libx264"
-			f.Opts = []string{"libx264", "h264_vaapi", "h264_nvenc"}
+			f.Opts = []string{"libx264", "h264_vaapi", "h264_nvenc", "h264_v4l2m2m"}
 			return f
 		}).String()
 	}

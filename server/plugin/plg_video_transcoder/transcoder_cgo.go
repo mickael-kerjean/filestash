@@ -45,6 +45,14 @@ func transcodeVideoSegment(cachePath string, segmentNumber int, w io.Writer) err
 			return err
 		}
 		graphSpec = fmt.Sprintf("format=nv12,hwupload_cuda,scale_cuda=%d:%d", outW, outH)
+	case "h264_v4l2m2m":
+		p.encCtx.SetPixelFormat(astiav.PixelFormatYuv420P)
+		p.encCtx.SetBitRate(2500000)
+		if outW == p.decCtx.Width() && outH == p.decCtx.Height() {
+			graphSpec = "format=yuv420p"
+		} else {
+			graphSpec = fmt.Sprintf("scale=%d:%d,format=yuv420p", outW, outH)
+		}
 	case "libx264":
 		p.encCtx.SetPixelFormat(astiav.PixelFormatYuv420P)
 		p.encOpts.Set("preset", "veryfast", 0)

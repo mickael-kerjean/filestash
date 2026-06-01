@@ -52,6 +52,14 @@ func transcodeVideoSegment(cachePath string, segmentNumber int, w io.Writer) err
 			"-vf", fmt.Sprintf("format=nv12,hwupload_cuda,scale_cuda=w=-2:h=%d", VIDEO_MAX_HEIGHT),
 			"-c:v", "h264_nvenc",
 		)
+	case "h264_v4l2m2m":
+		args = append(args,
+			"-vf", fmt.Sprintf("scale=-2:%d,format=yuv420p", VIDEO_MAX_HEIGHT),
+			"-c:v", "h264_v4l2m2m",
+			"-b:v", "2500k",
+			"-num_output_buffers", "32",
+			"-num_capture_buffers", "32",
+		)
 	case "libx264":
 		args = append(args,
 			"-vf", fmt.Sprintf("scale=-2:%d,format=yuv420p", VIDEO_MAX_HEIGHT),
