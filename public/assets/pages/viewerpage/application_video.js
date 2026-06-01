@@ -140,6 +140,7 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
             const hls = new Hls({
                 debug: !!new URLSearchParams(location.search).get("debug"),
                 manifestLoadPolicy: loadPolicy,
+                maxMaxBufferLength: 20,
             });
             const sources = window.overrides["video-map-sources"]([{
                 src: getDownloadUrl(),

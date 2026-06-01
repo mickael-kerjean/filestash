@@ -1,25 +1,18 @@
-//go:build !cgo
-
-package plg_video_transcoder
+package ffmpeg
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os/exec"
 	"strconv"
-	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
-const (
-	VIDEO_MAX_HEIGHT = 720
-	AUDIO_BITRATE    = 128000
-)
-
-func transcodeVideoSegment(cachePath string, segmentNumber int, w io.Writer) error {
+func transcodeVideoSegment(ctx context.Context, cachePath string, segmentNumber int, w io.Writer) error {
 	start := segmentNumber * HLS_VIDEO_SEGMENT_LENGTH
 	args := []string{
 		"-hide_banner", "-loglevel", "error",
@@ -33,7 +26,7 @@ func transcodeVideoSegment(cachePath string, segmentNumber int, w io.Writer) err
 		"-output_ts_offset", fmt.Sprintf("%d.00", start),
 	}
 
-	switch video_encoder() {
+	switch ENCODER {
 	case "h264_vaapi":
 		args = append([]string{
 			"-init_hw_device", "vaapi=va:/dev/dri/renderD128",
@@ -71,10 +64,10 @@ func transcodeVideoSegment(cachePath string, segmentNumber int, w io.Writer) err
 	}
 
 	args = append(args, "-f", "mpegts", "pipe:1")
-	return runFFmpeg(args, w)
+	return runFFmpeg(ctx, args, w)
 }
 
-func transcodeAudioSegment(cachePath string, segmentNumber int, w io.Writer) error {
+func transcodeAudioSegment(ctx context.Context, cachePath string, segmentNumber int, w io.Writer) error {
 	start := segmentNumber * HLS_AUDIO_SEGMENT_LENGTH
 	args := []string{
 		"-hide_banner", "-loglevel", "error",
@@ -87,7 +80,27 @@ func transcodeAudioSegment(cachePath string, segmentNumber int, w io.Writer) err
 		"-output_ts_offset", fmt.Sprintf("%d.00", start),
 		"-f", "mpegts", "pipe:1",
 	}
-	return runFFmpeg(args, w)
+	return runFFmpeg(ctx, args, w)
+}
+
+func runFFmpeg(ctx context.Context, args []string, w io.Writer) error {
+	cmd := exec.CommandContext(ctx, "ffmpeg", args...)
+	cmd.Stdout = w
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("ffmpeg start: %w", err)
+	}
+	msg, _ := io.ReadAll(stderr)
+	if err := cmd.Wait(); err != nil {
+		if ctx.Err() != nil {
+			return nil
+		}
+		return fmt.Errorf("ffmpeg: %w: %s", err, msg)
+	}
+	return nil
 }
 
 func probeDuration(path string) (float64, error) {
@@ -117,23 +130,4 @@ func probeDuration(path string) (float64, error) {
 		return 0, fmt.Errorf("ffprobe duration: %w", err)
 	}
 	return d, nil
-}
-
-func runFFmpeg(args []string, w io.Writer) error {
-	cmd := exec.Command("ffmpeg", args...)
-	cmd.Stdout = w
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("ffmpeg start: %w", err)
-	}
-	msg, _ := io.ReadAll(stderr)
-	if err := cmd.Wait(); err != nil {
-		if flat := strings.Join(strings.Fields(string(msg)), " "); !strings.Contains(flat, "Broken pipe") {
-			return fmt.Errorf("ffmpeg: %w: %s", err, flat)
-		}
-	}
-	return nil
 }
