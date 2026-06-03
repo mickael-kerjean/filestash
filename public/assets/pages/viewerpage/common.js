@@ -11,7 +11,12 @@ export function getFilename() {
 }
 
 export function getDownloadUrl() {
-    return forwardURLParams("api/files/cat?path=" + encodeURIComponent(getCurrentPath()), ["share"]);
+    return forwardURLParams(
+        "api/files/cat?"+
+            "path=" + encodeURIComponent(getCurrentPath()) + "&"+
+            "name=" + encodeURIComponent(getFilename()),
+        ["share"],
+    );
 }
 
 export function getCurrentPath(start = "/view/") {
