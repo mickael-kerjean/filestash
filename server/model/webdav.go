@@ -79,6 +79,7 @@ func (this *WebdavFs) OpenFile(ctx context.Context, name string, flag int, perm 
 		backend: this.backend,
 		cache:   cachePath,
 		fwrite:  fwriteFile(),
+		isDir:   false,
 	}
 	return this.webdavFile, nil
 }
@@ -105,11 +106,8 @@ func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error
 		return this.webdavFile.Stat()
 	}
 	fullname := this.fullpath(name)
-	if isMicrosoftWebDAVClient(this.req) && this.req.Method == "PROPFIND" {
-		if name == "" {
-			fullname = this.chroot
-		}
-		fullname = EnforceDirectory(fullname)
+	if name == "" {
+		fullname = this.chroot
 	}
 	if fullname == "" {
 		return nil, os.ErrNotExist
@@ -118,6 +116,7 @@ func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error
 		path:    fullname,
 		backend: this.backend,
 		cache:   filepath.Join(GetAbsolutePath(TMP_PATH), "webdav_"+Hash(this.id+name, 20)),
+		isDir:   strings.HasSuffix(fullname, "/"),
 	}
 	return this.webdavFile.Stat()
 }
@@ -143,6 +142,7 @@ type WebdavFile struct {
 	fread   *os.File
 	fwrite  *os.File
 	files   []os.FileInfo
+	isDir   bool
 }
 
 func (this *WebdavFile) Read(p []byte) (n int, err error) {
@@ -206,6 +206,7 @@ func (this *WebdavFile) Stat() (os.FileInfo, error) {
 		if err != nil {
 			return nil, os.ErrNotExist
 		}
+		this.isDir = true
 		return this, nil
 	}
 	baseDir := filepath.Base(this.path)
@@ -216,6 +217,7 @@ func (this *WebdavFile) Stat() (os.FileInfo, error) {
 	found := false
 	for i := range files {
 		if files[i].Name() == baseDir {
+			this.isDir = files[i].IsDir()
 			found = true
 			break
 		}
@@ -301,10 +303,7 @@ func (this WebdavFile) ModTime() time.Time {
 	return time.Now()
 }
 func (this WebdavFile) IsDir() bool {
-	if strings.HasSuffix(this.path, "/") {
-		return true
-	}
-	return false
+	return this.isDir
 }
 
 func (this WebdavFile) Sys() interface{} {
@@ -333,8 +332,4 @@ func NewWebdavLock() webdav.LockSystem {
 		lock = webdav.NewMemLS()
 	}
 	return lock
-}
-
-func isMicrosoftWebDAVClient(req *http.Request) bool {
-	return strings.HasPrefix(req.Header.Get("User-Agent"), "Microsoft-WebDAV-MiniRedir/")
 }
