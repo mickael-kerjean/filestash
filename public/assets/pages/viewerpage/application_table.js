@@ -34,7 +34,7 @@ export default async function(render, { mime, getDownloadUrl, getFilename, hasMe
     render($page);
     const $menubar = renderMenubar(
         qs($page, "component-menubar"),
-        buttonDownload(getFilename(), getDownloadUrl()),
+        buttonDownload(getDownloadUrl()),
     );
     const $dom = {
         thead: qs($page, ".thead"),

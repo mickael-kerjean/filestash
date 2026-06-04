@@ -32,7 +32,7 @@ function ctrlPDFNative(render, { getFilename, getDownloadUrl }) {
         </div>
     `);
     render($page);
-    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
+    renderMenubar(qs($page, "component-menubar"), buttonDownload(getDownloadUrl()));
 
     const removeLoader = createLoader(qs($page, `[data-bind="pdf"]`));
     effect(onLoad(qs($page, "embed")).pipe(

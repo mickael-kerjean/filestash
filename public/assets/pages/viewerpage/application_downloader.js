@@ -14,7 +14,7 @@ export default async function(render, { acl$, getFilename, getDownloadUrl, hasMe
         <div class="component_filedownloader">
             <component-menubar filename="${safe(getFilename())}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="download_button no-select">
-                <a download="${safe(getFilename())}" href="${safe(getDownloadUrl())}">${t("DOWNLOAD")}</a>
+                <a href="${safe(getDownloadUrl())}">${t("DOWNLOAD")}</a>
                 <component-icon name="loading" class="hidden"></component-icon>
             </div>
         </div>

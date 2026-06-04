@@ -66,7 +66,7 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
     render($page);
     renderMenubar(
         qs($page, "component-menubar"),
-        buttonDownload(getFilename(), getDownloadUrl()),
+        buttonDownload(getDownloadUrl()),
         buttonFullscreen(qs($page, "video")),
     );
     transition(qs($page, ".video_container"));

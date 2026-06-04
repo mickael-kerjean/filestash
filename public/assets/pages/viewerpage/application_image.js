@@ -54,7 +54,7 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
 
     renderMenubar(
         $menubar,
-        buttonDownload(getFilename(), getDownloadUrl()),
+        buttonDownload(getDownloadUrl()),
         buttonFullscreen(qs($page, ".component_image_container")),
         mime === "image/jpeg" && buttonInfo({ toggle: toggleInfo }),
         ["image/jpeg", "image/png"].indexOf(mime) !== -1 && buttonChromecast(getFilename(), getDownloadUrl()),

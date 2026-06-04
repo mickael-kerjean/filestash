@@ -16,7 +16,7 @@ export default function(render, { getFilename, getDownloadUrl }) {
         </div>
     `);
     render($page);
-    renderMenubar(qs($page, "component-menubar"), buttonDownload(getFilename(), getDownloadUrl()));
+    renderMenubar(qs($page, "component-menubar"), buttonDownload(getDownloadUrl()));
 
     const rendition$ = new rxjs.ReplaySubject(1);
 

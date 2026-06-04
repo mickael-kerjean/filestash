@@ -37,7 +37,7 @@ export default async function(render, { mime, acl$, getDownloadUrl = nop, getFil
 
     const $menubar = renderMenubar(
         qs($page, "component-menubar"),
-        buttonDownload(getFilename(), getDownloadUrl()),
+        buttonDownload(getDownloadUrl()),
     );
     const $draw = qs($page, ".drawarea");
     const $toolbar = qs($page, ".toolbar");

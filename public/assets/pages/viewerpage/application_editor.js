@@ -38,7 +38,7 @@ export default async function(render, { acl$, getFilename, getDownloadUrl, mime 
         fab: () => qs($page, `[is="component-fab"]`),
     };
     render($page);
-    renderMenubar($dom.menubar(), buttonDownload(getFilename(), getDownloadUrl()));
+    renderMenubar($dom.menubar(), buttonDownload(getDownloadUrl()));
 
     const content$ = new rxjs.ReplaySubject(1);
 

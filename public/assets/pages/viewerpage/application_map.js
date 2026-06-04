@@ -24,7 +24,7 @@ export default async function(render, { mime, getDownloadUrl = nop, getFilename 
     render($page);
     const $menubar = renderMenubar(
         qs($page, "component-menubar"),
-        buttonDownload(getFilename(), getDownloadUrl()),
+        buttonDownload(getDownloadUrl()),
     );
     const map = window.L.map("map");
     const removeLoader = createLoader(qs($page, "#map"));
