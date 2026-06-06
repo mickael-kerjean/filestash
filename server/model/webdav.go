@@ -84,20 +84,38 @@ func (this *WebdavFs) OpenFile(ctx context.Context, name string, flag int, perm 
 	return this.webdavFile, nil
 }
 
+// statIsDir uses a throwaway WebdavFile on purpose. WebdavFs.Stat caches the
+// first file it sees and returns it on every later call, ignoring the name
+// argument. During a MOVE the library stats the destination before Rename, so
+// going through it would answer for the wrong path.
+func (this WebdavFs) statIsDir(fullname string) bool {
+	f := &WebdavFile{path: fullname, backend: this.backend}
+	info, err := f.Stat()
+	return err == nil && info.IsDir()
+}
+
 func (this WebdavFs) RemoveAll(ctx context.Context, name string) error {
-	if name = this.fullpath(name); name == "" {
+	fullname := this.fullpath(name)
+	if fullname == "" {
 		return os.ErrNotExist
 	}
-	return this.backend.Rm(name)
+	if strings.HasSuffix(fullname, "/") == false && this.statIsDir(fullname) {
+		fullname = EnforceDirectory(fullname)
+	}
+	return this.backend.Rm(fullname)
 }
 
 func (this WebdavFs) Rename(ctx context.Context, oldName, newName string) error {
-	if oldName = this.fullpath(oldName); oldName == "" {
-		return os.ErrNotExist
-	} else if newName = this.fullpath(newName); newName == "" {
+	oldPath := this.fullpath(oldName)
+	newPath := this.fullpath(newName)
+	if oldPath == "" || newPath == "" {
 		return os.ErrNotExist
 	}
-	return this.backend.Mv(oldName, newName)
+	if strings.HasSuffix(oldPath, "/") == false && this.statIsDir(oldPath) {
+		oldPath = EnforceDirectory(oldPath)
+		newPath = EnforceDirectory(newPath)
+	}
+	return this.backend.Mv(oldPath, newPath)
 }
 
 func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error) {
