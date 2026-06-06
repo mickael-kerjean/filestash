@@ -167,6 +167,9 @@ func (this NfsShare) LoginForm() Form {
 }
 
 func (this NfsShare) Meta(path string) Metadata {
+	if this.uid == 0 {
+		return Metadata{}
+	}
 	this.mu.Lock()
 	defer this.mu.Unlock()
 	f, _, err := this.v.Lookup(strings.TrimSuffix(path, "/"))
