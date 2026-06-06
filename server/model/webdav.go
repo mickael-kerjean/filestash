@@ -194,7 +194,7 @@ func (this *WebdavFile) Readdir(count int) ([]os.FileInfo, error) {
 	if strings.HasPrefix(filepath.Base(this.path), ".") {
 		return nil, os.ErrNotExist
 	}
-	f, err := this.backend.Ls(this.path)
+	f, err := this.backend.Ls(EnforceDirectory(this.path))
 	this.files = f
 	return f, err
 }
