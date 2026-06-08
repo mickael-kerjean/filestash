@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"text/template"
@@ -453,7 +454,7 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 	}
 
 	quality := 11
-	if isDebug {
+	if isDebug || runtime.NumCPU() <= 4 {
 		quality = 8
 	}
 	chunks, chunksBr, chunksGzip, etags := buildChunks(quality)
