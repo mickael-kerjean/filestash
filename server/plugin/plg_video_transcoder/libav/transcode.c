@@ -317,10 +317,6 @@ static int open_output(ctx *c, uintptr_t writer, char *errbuf, int errlen) {
 	return 0;
 }
 
-// build_filter wires buffersrc -> graph_spec -> buffersink. For video, src is
-// the first decoded frame: the buffersrc is configured from it so it inherits
-// the frame's hw_frames_ctx when decoding on the GPU (only known once decoding
-// starts, hence the lazy build). Audio has no src and is set up from the decoder.
 static int build_filter(ctx *c, stream *s, AVFrame *src, char *errbuf, int errlen) {
 	s->graph = avfilter_graph_alloc();
 	if (!s->graph) {

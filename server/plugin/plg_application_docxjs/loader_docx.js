@@ -13,7 +13,7 @@ export default async function(render, { getDownloadUrl, getFilename, $menubar, a
         <div class="component_docx"></div>
     `);
     render($page);
-    $menubar.add(buttonDownload(getFilename(), getDownloadUrl()));
+    $menubar.add(buttonDownload(getDownloadUrl()));
 
     const removeLoader = createLoader($page);
     effect(ajax({ url: getDownloadUrl(), responseType: "arraybuffer" }).pipe(

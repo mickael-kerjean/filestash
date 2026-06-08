@@ -46,7 +46,7 @@ export default async function(render, { mime, getDownloadUrl, getFilename, $menu
 
     // feature2: toolbar init
     if (canWrite) {
-        $menubar.add(buttonDownload(filename, getDownloadUrl()));
+        $menubar.add(buttonDownload(getDownloadUrl()));
         if (isWriter(mime)) {
             $menubar.add($toolbar.bullet);
             $menubar.add($toolbar.alignment);
