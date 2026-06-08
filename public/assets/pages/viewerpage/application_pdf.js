@@ -25,7 +25,7 @@ function ctrlPDFNative(render, { getFilename, getDownloadUrl }) {
             <div data-bind="pdf">
                 <embed
                     class="hidden"
-                    src="${safe(getDownloadUrl())}#toolbar=0"
+                    src="${safe(getDownloadUrl(false))}#toolbar=0"
                     type="application/pdf"
                 />
             </div>
@@ -56,7 +56,7 @@ async function ctrlPDFJs(render, { getFilename, getDownloadUrl }) {
     const createBr = () => $container.appendChild(createElement(`<div style="height:${document.body.clientWidth > 600 ? 20 : 5}px">&nbsp;</div>`));
     const removeLoader = createLoader($container);
     const base = qs(document.head, "base").getAttribute("href");
-    effect(rxjs.from(window.pdfjsLib.getDocument(base + getDownloadUrl()).promise).pipe(
+    effect(rxjs.from(window.pdfjsLib.getDocument(base + getDownloadUrl(false)).promise).pipe(
         removeLoader,
         rxjs.mergeMap(async(pdf) => {
             createBr();

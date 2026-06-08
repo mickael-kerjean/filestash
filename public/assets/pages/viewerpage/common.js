@@ -10,13 +10,10 @@ export function getFilename() {
     return basename(getCurrentPath()) || "&nbsp;";
 }
 
-export function getDownloadUrl() {
-    return forwardURLParams(
-        "api/files/cat?"+
-            "path=" + encodeURIComponent(getCurrentPath()) + "&"+
-            "name=" + encodeURIComponent(getFilename()),
-        ["share"],
-    );
+export function getDownloadUrl(withName = true) {
+    let url = "api/files/cat?path=" + encodeURIComponent(getCurrentPath());
+    if (withName) url += "&name=" + encodeURIComponent(getFilename());
+    return forwardURLParams(url, ["share"]);
 }
 
 export function getCurrentPath(start = "/view/") {
