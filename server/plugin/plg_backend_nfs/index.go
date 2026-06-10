@@ -56,7 +56,6 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	if params["machine_name"] == "" {
 		params["machine_name"] = "Filestash"
 	}
-	params["username"] = params["uid"]
 
 	if c := NfsCache.Get(params); c != nil {
 		d := c.(*NfsShare)
@@ -90,14 +89,21 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 		return nil, err
 	}
 
-	s := &NfsShare{mount, v, auth, new(sync.Mutex), new(sync.WaitGroup), uid, gid, toGids(gids)}
-	s.wg.Add(1)
+	this.mount = mount
+	this.v = v
+	this.auth = auth
+	this.mu = new(sync.Mutex)
+	this.wg = new(sync.WaitGroup)
+	this.uid = uid
+	this.gid = gid
+	this.gids = toGids(gids)
+	this.wg.Add(1)
 	go func() {
 		<-app.Context.Done()
-		s.wg.Done()
+		this.wg.Done()
 	}()
-	NfsCache.Set(params, s)
-	return s, nil
+	NfsCache.Set(params, &this)
+	return &this, nil
 }
 
 func toGids(gids []GroupLabel) []uint32 {
