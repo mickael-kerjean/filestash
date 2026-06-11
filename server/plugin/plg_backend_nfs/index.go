@@ -74,29 +74,24 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 		return d, nil
 	}
 
-	uid, gid, gids := ExtractUserInfo(params["uid"], params["gid"], params["gids"])
-	Log.Debug("plg_backend_nfs::userInfo user=%s uid=%d gid=%d gids=%v", params["uid"], uid, gid, gids)
-	mount, err := nfs.DialMount(params["hostname"])
-	if err != nil {
-		return nil, err
-	}
-	auth := NewAuthUnix(params["machine_name"], uid, gid, gids, params["gids"])
-	v, err := mount.Mount(
-		params["target"],
-		auth,
+	var (
+		gids []GroupLabel
+		err  error
 	)
-	if err != nil {
+	this.uid, this.gid, gids = ExtractUserInfo(params["uid"], params["gid"], params["gids"])
+	if this.mount, err = nfs.DialMount(params["hostname"]); err != nil {
 		return nil, err
 	}
-
-	this.mount = mount
-	this.v = v
-	this.auth = auth
+	this.auth = NewAuthUnix(params["machine_name"], this.uid, this.gid, gids, params["gids"])
+	if this.v, err = this.mount.Mount(
+		params["target"],
+		this.auth,
+	); err != nil {
+		return nil, err
+	}
+	this.gids = toGids(gids)
 	this.mu = new(sync.Mutex)
 	this.wg = new(sync.WaitGroup)
-	this.uid = uid
-	this.gid = gid
-	this.gids = toGids(gids)
 	this.wg.Add(1)
 	go func() {
 		<-app.Context.Done()
@@ -104,14 +99,6 @@ func (this NfsShare) Init(params map[string]string, app *App) (IBackend, error) 
 	}()
 	NfsCache.Set(params, &this)
 	return &this, nil
-}
-
-func toGids(gids []GroupLabel) []uint32 {
-	g := make([]uint32, len(gids))
-	for i, _ := range gids {
-		g[i] = gids[i].Id
-	}
-	return g
 }
 
 func (this NfsShare) LoginForm() Form {
@@ -284,7 +271,25 @@ func (this NfsShare) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (this NfsShare) Stat(path string) (os.FileInfo, error) {
-	return nil, ErrNotImplemented
+	this.mu.Lock()
+	defer this.mu.Unlock()
+
+	f, _, err := this.v.Lookup(this.nfsPath(path))
+	if err != nil {
+		return nil, err
+	} else if f == nil {
+		return nil, ErrNotFound
+	}
+	file := File{FName: filepath.Base(path), FType: "file"}
+	fattr, ok := f.(*nfs.Fattr)
+	if ok == false || fattr == nil {
+		return nil, ErrNotFound
+	} else if fattr.Type == 2 {
+		file.FType = "directory"
+	}
+	file.FSize = int64(fattr.Filesize)
+	file.FTime = int64(fattr.Ctime.Seconds)
+	return file, nil
 }
 
 func (this NfsShare) Cat(path string) (io.ReadCloser, error) {

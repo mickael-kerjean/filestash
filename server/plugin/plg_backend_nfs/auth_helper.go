@@ -48,6 +48,14 @@ func ExtractUserInfo(uidHint string, gidHint string, gidsHint string) (uint32, u
 	return 0, 0, []GroupLabel{}
 }
 
+func toGids(gids []GroupLabel) []uint32 {
+	g := make([]uint32, len(gids))
+	for i, _ := range gids {
+		g[i] = gids[i].Id
+	}
+	return g
+}
+
 func extractFromEtcPasswd(username string) (uint32, uint32, error) {
 	if v := cacheForEtc.Get(map[string]string{"username": username}); v != nil {
 		inCache := v.([]int)
