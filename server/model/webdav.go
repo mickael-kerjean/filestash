@@ -79,24 +79,43 @@ func (this *WebdavFs) OpenFile(ctx context.Context, name string, flag int, perm 
 		backend: this.backend,
 		cache:   cachePath,
 		fwrite:  fwriteFile(),
+		isDir:   false,
 	}
 	return this.webdavFile, nil
 }
 
+// statIsDir uses a throwaway WebdavFile on purpose. WebdavFs.Stat caches the
+// first file it sees and returns it on every later call, ignoring the name
+// argument. During a MOVE the library stats the destination before Rename, so
+// going through it would answer for the wrong path.
+func (this WebdavFs) statIsDir(fullname string) bool {
+	f := &WebdavFile{path: fullname, backend: this.backend}
+	info, err := f.Stat()
+	return err == nil && info.IsDir()
+}
+
 func (this WebdavFs) RemoveAll(ctx context.Context, name string) error {
-	if name = this.fullpath(name); name == "" {
+	fullname := this.fullpath(name)
+	if fullname == "" {
 		return os.ErrNotExist
 	}
-	return this.backend.Rm(name)
+	if strings.HasSuffix(fullname, "/") == false && this.statIsDir(fullname) {
+		fullname = EnforceDirectory(fullname)
+	}
+	return this.backend.Rm(fullname)
 }
 
 func (this WebdavFs) Rename(ctx context.Context, oldName, newName string) error {
-	if oldName = this.fullpath(oldName); oldName == "" {
-		return os.ErrNotExist
-	} else if newName = this.fullpath(newName); newName == "" {
+	oldPath := this.fullpath(oldName)
+	newPath := this.fullpath(newName)
+	if oldPath == "" || newPath == "" {
 		return os.ErrNotExist
 	}
-	return this.backend.Mv(oldName, newName)
+	if strings.HasSuffix(oldPath, "/") == false && this.statIsDir(oldPath) {
+		oldPath = EnforceDirectory(oldPath)
+		newPath = EnforceDirectory(newPath)
+	}
+	return this.backend.Mv(oldPath, newPath)
 }
 
 func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error) {
@@ -105,11 +124,8 @@ func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error
 		return this.webdavFile.Stat()
 	}
 	fullname := this.fullpath(name)
-	if isMicrosoftWebDAVClient(this.req) && this.req.Method == "PROPFIND" {
-		if name == "" {
-			fullname = this.chroot
-		}
-		fullname = EnforceDirectory(fullname)
+	if name == "" {
+		fullname = this.chroot
 	}
 	if fullname == "" {
 		return nil, os.ErrNotExist
@@ -118,6 +134,7 @@ func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error
 		path:    fullname,
 		backend: this.backend,
 		cache:   filepath.Join(GetAbsolutePath(TMP_PATH), "webdav_"+Hash(this.id+name, 20)),
+		isDir:   strings.HasSuffix(fullname, "/"),
 	}
 	return this.webdavFile.Stat()
 }
@@ -143,6 +160,7 @@ type WebdavFile struct {
 	fread   *os.File
 	fwrite  *os.File
 	files   []os.FileInfo
+	isDir   bool
 }
 
 func (this *WebdavFile) Read(p []byte) (n int, err error) {
@@ -194,7 +212,7 @@ func (this *WebdavFile) Readdir(count int) ([]os.FileInfo, error) {
 	if strings.HasPrefix(filepath.Base(this.path), ".") {
 		return nil, os.ErrNotExist
 	}
-	f, err := this.backend.Ls(this.path)
+	f, err := this.backend.Ls(EnforceDirectory(this.path))
 	this.files = f
 	return f, err
 }
@@ -206,6 +224,7 @@ func (this *WebdavFile) Stat() (os.FileInfo, error) {
 		if err != nil {
 			return nil, os.ErrNotExist
 		}
+		this.isDir = true
 		return this, nil
 	}
 	baseDir := filepath.Base(this.path)
@@ -216,6 +235,7 @@ func (this *WebdavFile) Stat() (os.FileInfo, error) {
 	found := false
 	for i := range files {
 		if files[i].Name() == baseDir {
+			this.isDir = files[i].IsDir()
 			found = true
 			break
 		}
@@ -301,10 +321,7 @@ func (this WebdavFile) ModTime() time.Time {
 	return time.Now()
 }
 func (this WebdavFile) IsDir() bool {
-	if strings.HasSuffix(this.path, "/") {
-		return true
-	}
-	return false
+	return this.isDir
 }
 
 func (this WebdavFile) Sys() interface{} {
@@ -333,8 +350,4 @@ func NewWebdavLock() webdav.LockSystem {
 		lock = webdav.NewMemLS()
 	}
 	return lock
-}
-
-func isMicrosoftWebDAVClient(req *http.Request) bool {
-	return strings.HasPrefix(req.Header.Get("User-Agent"), "Microsoft-WebDAV-MiniRedir/")
 }
