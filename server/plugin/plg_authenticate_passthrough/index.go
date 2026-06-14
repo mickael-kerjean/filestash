@@ -43,7 +43,7 @@ func (this Passthrough) EntryPoint(idpParams map[string]string, req *http.Reques
 	case "direct":
 		res.WriteHeader(http.StatusOK)
 		res.Write([]byte(Page(`
-            <form action="` + WithBase("/api/session/auth/"+getParams) + `" method="post"></form>
+            <form id="PLG_AUTHENTICATE_PASSTHROUGH" action="` + WithBase("/api/session/auth/"+getParams) + `" method="post"></form>
             <script>document.querySelector("form").submit();</script>
         `)))
 	case "password_only":
