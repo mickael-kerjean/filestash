@@ -53,7 +53,7 @@ pipeline {
                         sh "cp ./test/assets/* /tmp/"
                         sh "go generate ./test/unit_go/..."
                         sh "go get ./..."
-                        sh "go test -count=1 \$(go list ./server/... | grep -v \"server/plugin\" | grep -v \"server/generator\")"
+                        sh "CGO_ENABLED=0 go test -count=1 \$(go list ./server/... | grep -v \"server/plugin\" | grep -v \"server/generator\")"
                     }
                     // test e2e
                     docker.image("machines/puppeteer:latest").inside("--user=root") {
