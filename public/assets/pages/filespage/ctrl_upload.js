@@ -600,10 +600,10 @@ async function processFiles(filelist) {
         return new Promise((resolve) => {
             const reader = new window.FileReader();
             const tid = setTimeout(() => reader.abort(), 1000);
-            reader.onload = () => resolve("file");
+            reader.onload = () => { resolve("file"); clearTimeout(tid); };
             reader.onabort = () => resolve("file");
             reader.onerror = () => { resolve("directory"); clearTimeout(tid); };
-            reader.readAsArrayBuffer(file);
+            reader.readAsArrayBuffer(file.slice(0, 1024));
         });
     };
     for (const currentFile of filelist) {
