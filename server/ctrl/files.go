@@ -1105,13 +1105,19 @@ func PathBuilder(ctx *App, path string) (string, error) {
 	if path == "" {
 		return "", NewError("No path available", 400)
 	}
-	sessionPath := ctx.Session["path"]
-	basePath := filepath.ToSlash(filepath.Join(sessionPath, path))
-	if path[len(path)-1:] == "/" && basePath != "/" {
-		basePath += "/"
+	chroot := ctx.Session["path"]
+	fullpath := filepath.ToSlash(filepath.Join(chroot, path))
+	if strings.HasSuffix(path, "/") && fullpath != "/" {
+		fullpath += "/"
 	}
-	if strings.HasPrefix(basePath, ctx.Session["path"]) == false {
-		return "", ErrFilesystemError
+
+	if !strings.HasPrefix(fullpath, EnforceDirectory(chroot)) {
+		if strings.HasSuffix(chroot, "/") {
+			return "", ErrFilesystemError
+		}
+		return chroot, nil
+	} else if !strings.HasSuffix(chroot, "/") && strings.HasSuffix(chroot, path) {
+		return chroot, nil
 	}
-	return basePath, nil
+	return fullpath, nil
 }
