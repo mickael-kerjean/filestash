@@ -1,39 +1,15 @@
 package plg_backend_nop
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func init() {
 	Backend.Register("blackhole", BlackHole{})
-}
-
-type LargeFile struct {
-	Counter int
-}
-
-func (this *LargeFile) Read(p []byte) (n int, err error) {
-	if this.Counter <= 0 {
-		return 0, io.EOF
-	}
-	this.Counter = this.Counter - len(p)
-	lenp := len(p)
-	if lenp > 0 {
-		p[0] = '_'
-	}
-	for i := 0; i < lenp; i += 100 {
-		p[i] = '_'
-	}
-	return lenp, nil
-}
-
-func (this LargeFile) Close() error {
-	return nil
 }
 
 type BlackHole struct{}
@@ -70,34 +46,13 @@ func (this BlackHole) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (this BlackHole) Stat(path string) (os.FileInfo, error) {
-	if path == "/" {
-		return File{FType: "directory"}, nil
-	}
-	return File{FName: filepath.Base(path), FType: "file"}, nil
+	s, err := getSize(path)
+	return File{FName: filepath.Base(path), FType: "file", FSize: s}, err
 }
 
 func (this BlackHole) Cat(path string) (io.ReadCloser, error) {
-	path = strings.TrimPrefix(path, "/")
-	if strings.HasSuffix(path, ".bin") == false {
-		return nil, ErrNotImplemented
-	}
-	path = strings.TrimSuffix(path, ".bin")
-	order := 1
-	if strings.HasSuffix(path, "K") {
-		path = strings.TrimSuffix(path, "K")
-		order = order * 1024
-	} else if strings.HasSuffix(path, "M") {
-		path = strings.TrimSuffix(path, "M")
-		order = order * 1024 * 1024
-	} else if strings.HasSuffix(path, "G") {
-		path = strings.TrimSuffix(path, "G")
-		order = order * 1024 * 1024 * 1024
-	}
-	i, err := strconv.Atoi(path)
-	if err != nil {
-		return nil, ErrNotImplemented
-	}
-	return &LargeFile{i * order}, nil
+	s, err := getSize(path)
+	return &LargeFile{s}, err
 }
 
 func (this BlackHole) Mkdir(path string) error {
@@ -113,14 +68,8 @@ func (this BlackHole) Mv(from, to string) error {
 }
 
 func (this BlackHole) Save(path string, content io.Reader) error {
-	b := make([]byte, 32*1024*1024) // 32MB
-	for {
-		_, err := content.Read(b)
-		if err == io.EOF {
-			break
-		}
-	}
-	return nil
+	_, err := io.Copy(io.Discard, content)
+	return err
 }
 
 func (this BlackHole) Touch(path string) error {
