@@ -23,7 +23,7 @@ pipeline {
             steps {
                 script {
                     docker.image("golang:1.26-trixie").inside("--user=root") {
-                        sh "sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go"
+                        sh "sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go && git config --global --add safe.directory '*'"
                         sh "make init"
                         sh "CGO_ENABLED=0 make build"
                     }
@@ -50,7 +50,8 @@ pipeline {
                     }
                     // test backend
                     docker.image("golang:1.26-bookworm").inside("--user=root") {
-                        sh "cp ./test/assets/* /tmp/"
+                        sh "cp ./test/assets/* /tmp/ && git config --global --add safe.directory '*'"
+                        sh "make init"
                         sh "go generate ./test/unit_go/..."
                         sh "go get ./..."
                         sh "CGO_ENABLED=0 go test -count=1 \$(go list ./server/... | grep -v \"server/plugin\" | grep -v \"server/generator\")"
