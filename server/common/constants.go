@@ -9,7 +9,6 @@ import (
 //go:generate go run ../generator/constants.go
 var (
 	APP_VERSION       = "v0.6"
-	COOKIE_NAME_AUTH  = "auth"
 	COOKIE_NAME_PROOF = "proof"
 	COOKIE_NAME_ADMIN = "admin"
 	COOKIE_PATH_ADMIN = "/admin/api/"

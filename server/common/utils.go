@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 )
 
@@ -92,11 +91,4 @@ func PrettyPrint(json_dirty []byte) []byte {
 	}
 	json_pretty.Write([]byte("\n"))
 	return json_pretty.Bytes()
-}
-
-func CookieName(idx int) string {
-	if idx == 0 {
-		return COOKIE_NAME_AUTH
-	}
-	return COOKIE_NAME_AUTH + strconv.Itoa(idx)
 }

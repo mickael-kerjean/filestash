@@ -11,6 +11,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
+	"github.com/mickael-kerjean/filestash/server/pkg/token"
 
 	"github.com/gorilla/mux"
 )
@@ -62,7 +63,7 @@ func SessionStart(fn HandlerFunc) HandlerFunc {
 			SendErrorResult(res, err)
 			return
 		}
-		ctx.Authorization = _extractAuthorization(req)
+		ctx.Authorization = token.Extract(req)
 		if ctx.Session, err = _extractSession(req, ctx); err != nil {
 			RecoverFromBadCookie(res)
 			SendErrorResult(res, err)
@@ -85,7 +86,7 @@ func SessionStart(fn HandlerFunc) HandlerFunc {
 func SessionTry(fn HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		ctx.Share, _ = _extractShare(req)
-		ctx.Authorization = _extractAuthorization(req)
+		ctx.Authorization = token.Extract(req)
 		ctx.Session, _ = _extractSession(req, ctx)
 		ctx.Backend, _ = _extractBackend(req, ctx)
 
@@ -118,7 +119,7 @@ func CanManageShare(fn HandlerFunc) HandlerFunc {
 		// the user that's currently logged in can manage the link. 2 scenarios here:
 		// 1) scenario 1: the user is the very same one that generated the shared link in the first place
 		ctx.Share = Share{}
-		ctx.Authorization = _extractAuthorization(req)
+		ctx.Authorization = token.Extract(req)
 		if ctx.Session, err = _extractSession(req, ctx); err != nil {
 			Log.Debug("middleware::session::share 'cannot extract session - %s'", err.Error())
 			SendErrorResult(res, err)
@@ -135,7 +136,7 @@ func CanManageShare(fn HandlerFunc) HandlerFunc {
 			SendErrorResult(res, err)
 			return
 		}
-		ctx.Authorization = _extractAuthorization(req)
+		ctx.Authorization = token.Extract(req)
 		if ctx.Session, err = _extractSession(req, ctx); err != nil {
 			Log.Debug("middleware::session::share 'cannot extract session 2 - %s'", err.Error())
 			SendErrorResult(res, err)
@@ -155,36 +156,6 @@ func CanManageShare(fn HandlerFunc) HandlerFunc {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	})
-}
-
-func _extractAuthorization(req *http.Request) (token string) {
-	// strategy 1: split cookie
-	index := 0
-	for {
-		cookie, err := req.Cookie(CookieName(index))
-		if err != nil {
-			break
-		}
-		index++
-		token += cookie.Value
-	}
-	if token != "" {
-		return token
-	}
-	// strategy 2: Authorization header
-	authHeader := req.Header.Get("Authorization")
-	if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
-		return strings.TrimPrefix(req.Header.Get("Authorization"), "Bearer ")
-	}
-	// strategy 3: Authorization query param
-	if auth := req.URL.Query().Get("authorization"); auth != "" {
-		return auth
-	}
-	// strategy 4: Authorization from basic auth/
-	if u, p, ok := req.BasicAuth(); ok && u == "authorization" {
-		return p
-	}
-	return ""
 }
 
 func _extractShareId(req *http.Request) string {

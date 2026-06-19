@@ -3,11 +3,14 @@ package ctrl
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
 	"strings"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/model"
+	"github.com/mickael-kerjean/filestash/server/pkg/token"
+
+	"github.com/gorilla/mux"
 )
 
 func ShareList(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -43,17 +46,7 @@ func ShareUpsert(ctx *App, res http.ResponseWriter, req *http.Request) {
 		Id: share_id,
 		Auth: func() string {
 			if ctx.Share.Id == "" {
-				str := ""
-				index := 0
-				for {
-					cookie, err := req.Cookie(CookieName(index))
-					if err != nil {
-						break
-					}
-					index++
-					str += cookie.Value
-				}
-				return str
+				return token.Extract(req)
 			}
 			return ctx.Share.Auth
 		}(),
