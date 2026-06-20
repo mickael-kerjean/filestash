@@ -63,10 +63,8 @@ export default async function(render) {
         rxjs.tap(({ buckets, start, end, max }) => {
             const $root = document.createDocumentFragment();
             const $chart = createElement(`<div class="chart"></div>`);
-            let display = true;
             for (let i = 0; i < buckets.length; i++) {
                 if (buckets[i] < 0) {
-                    display = false;
                     continue;
                 }
                 const $bar = createElement(`<div class="bar" title="${buckets[i]}"></div>`);
@@ -82,7 +80,7 @@ export default async function(render) {
                     <span>${new Date(end).toLocaleTimeString()}</span>
                 </div>
             `));
-            if (display) render($root);
+            render($root);
         }),
         rxjs.catchError((err) => rxjs.EMPTY),
     ));
