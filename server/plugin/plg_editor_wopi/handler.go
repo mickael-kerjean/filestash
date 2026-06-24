@@ -107,7 +107,7 @@ func wopiToCommonAPI(fn HandlerFunc) HandlerFunc {
 		if len(tmp) < 2 {
 			return "", ""
 		}
-		bpath, err := base64.StdEncoding.DecodeString(tmp[1])
+		bpath, err := base64.URLEncoding.DecodeString(tmp[1])
 		if err != nil {
 			return "", ""
 		} else if len(tmp) > 2 {
@@ -278,7 +278,7 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 		"id":   GenerateID(ctx.Session),
 		"path": fullpath,
 	})
-	wopiSRC += "::" + base64.StdEncoding.EncodeToString([]byte(fullpath))
+	wopiSRC += "::" + base64.URLEncoding.EncodeToString([]byte(fullpath))
 	if ctx.Share.Id != "" {
 		wopiSRC += "::" + ctx.Share.Id
 	}
