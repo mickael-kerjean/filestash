@@ -14,7 +14,7 @@ body.dark-mode .component_filedownloader {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 3px;
     display: inline-block;
-    color: rgba(255,255,255,0.6);
+    color: rgba(255,255,255,0.75);
     margin-top: 50px;
     text-transform: uppercase;
     font-weight: bold;
