@@ -161,10 +161,20 @@ export function save(path, size) {
             if (basepath === currentPath()) removeLoading(virtualFiles$, basepath, filename);
             else onDestroy(() => removeLoading(virtualFiles$, basepath, filename));
             onDestroy(() => statePop(virtualFiles$, basepath, filename));
-            await fscache().update(basepath, ({ files = [], ...rest }) => ({
-                files: files.concat([file]),
-                ...rest,
-            }));
+
+            const isOverwrite = ((await fscache().get(basepath))?.files || []).some((f) => f.name === filename);
+            if (isOverwrite) {
+                await fscache().update(basepath, ({ files = [], ...rest }) => ({
+                    files: files.map((f) => f.name === filename ? { ...f, size, time: file.time } : f),
+                    ...rest,
+                }));
+                statePop(virtualFiles$, basepath, filename);
+            } else {
+                await fscache().update(basepath, ({ files = [], ...rest }) => ({
+                    files: files.concat([file]),
+                    ...rest,
+                }));
+            }
             hooks.mutation.emit({ op: "save", path: basepath });
         }
 
