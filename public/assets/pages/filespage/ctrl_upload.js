@@ -57,6 +57,7 @@ function componentUploadFAB(render, { workers$ }) {
         rxjs.tap(async(e) => {
             workers$.next({ loading: true });
             workers$.next(await processFiles(e.target.files));
+            e.target.value = "";
         }),
     ));
     render($page);
