@@ -162,7 +162,7 @@ function componentLeft(render, { $scroll, getSelectionLength$ }) {
                 const path = expandSelection()[0].path;
                 return rxjs.from(componentDelete(
                     createModal(modalOpt),
-                    basename(path.replace(new RegExp("/$"), "")).substr(0, 15),
+                    basename(path.replace(new RegExp("/$"), "")).substr(0, 15).trim(),
                 )).pipe(rxjs.mergeMap(() => {
                     const selection = expandSelection()[0].path;
                     clearSelection();
