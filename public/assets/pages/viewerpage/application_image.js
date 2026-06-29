@@ -1,13 +1,11 @@
-import { createElement, createRender, onDestroy } from "../../lib/skeleton/index.js";
-import { toHref } from "../../lib/skeleton/router.js";
+import { createElement, createRender } from "../../lib/skeleton/index.js";
 import rxjs, { effect, onLoad, onClick } from "../../lib/rx.js";
 import ajax from "../../lib/ajax.js";
 import { animate } from "../../lib/animate.js";
-import { extname } from "../../lib/path.js";
 import { qs, safe } from "../../lib/dom.js";
-import { get as getConfig } from "../../model/config.js";
+import { getSession } from "../../model/session.js";
 import { load as loadPlugin } from "../../model/plugin.js";
-import { Chromecast } from "../../model/chromecast.js";
+import chromecast from "../../lib/chromecast.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
 import notification from "../../components/notification.js";
@@ -57,7 +55,7 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
         buttonDownload(getDownloadUrl()),
         buttonFullscreen(qs($page, ".component_image_container")),
         mime === "image/jpeg" && buttonInfo({ toggle: toggleInfo }),
-        ["image/jpeg", "image/png"].indexOf(mime) !== -1 && buttonChromecast(getFilename(), getDownloadUrl()),
+        ["image/jpeg", "image/png"].indexOf(mime) !== -1 && buttonChromecast(getFilename(), getDownloadUrl(), mime),
     );
 
     effect(rxjs.from(loadPlugin(mime)).pipe(
@@ -114,7 +112,7 @@ export function init() {
     return Promise.all([
         loadCSS(import.meta.url, "./application_image.css"),
         loadCSS(import.meta.url, "./component_menubar.css"),
-        initPagination(), initInformation(), Chromecast.init(),
+        initPagination(), initInformation(), chromecast.init(),
     ]);
 }
 
@@ -131,51 +129,19 @@ function buttonInfo({ toggle }) {
     return $el;
 }
 
-function buttonChromecast(filename, downloadURL) {
-    const context = Chromecast.context();
-    if (!context) return;
-
-    const chromecastSetup = (event) => {
-        switch (event.sessionState) {
-        case window.cast.framework.SessionState.SESSION_STARTED:
-            chromecastLoader();
-            break;
-        }
-    };
-    const chromecastLoader = () => {
-        const session = Chromecast.session();
-        if (!session) return;
-
-        const link = Chromecast.createLink("/" + toHref(downloadURL));
-        const media = new window.chrome.cast.media.MediaInfo(
-            link,
-            getConfig("mime", {})[extname(filename)],
-        );
-        media.metadata = new window.chrome.cast.media.PhotoMediaMetadata();
-        media.metadata.title = filename;
-        media.metadata.images = [
-            new window.chrome.cast.Image(location.origin + "/" + toHref("/assets/icons/photo.png")),
-        ];
-        try {
-            const req = Chromecast.createRequest(media);
-            session.loadMedia(req);
-        } catch (err) {
-            console.error(err);
-            notification.error(t("Cannot establish a connection"));
-        }
-    };
-
-    context.addEventListener(
-        window.cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
-        chromecastSetup,
-    );
-    onDestroy(() => context.removeEventListener(
-        window.cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
-        chromecastSetup,
+function buttonChromecast(filename, downloadURL, mime) {
+    effect(chromecast.ready("IMAGE").pipe(
+        rxjs.mergeMap(async () => {
+            const session = chromecast.session();
+            if (!session) return;
+            const bearer = (await getSession().toPromise())?.authorization;
+            const link = chromecast.createLink(downloadURL, bearer);
+            const media = new window.chrome.cast.media.MediaInfo(link, mime);
+            media.metadata = new window.chrome.cast.media.PhotoMediaMetadata();
+            media.metadata.title = filename;
+            media.contentId = link;
+            await session.loadMedia(new window.chrome.cast.media.LoadRequest(media));
+        }),
     ));
-
-    const media = Chromecast.media();
-    if (media && media.media && media.media.mediaCategory === "IMAGE") chromecastLoader();
-
-    return document.createElement("google-cast-launcher");
+    return chromecast.$dom();
 }

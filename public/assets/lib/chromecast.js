@@ -1,53 +1,45 @@
+import rxjs from "../../lib/rx.js";
+import { toHref } from "./skeleton/router.js";
+import { get as getConfig } from "../model/config.js";
+
 class ChromecastManager {
     init() {
-        // TODO: additional rules for setup
-        const src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
-        if (document.head.querySelector(`script[src="${src}"]`)) return Promise.resolve();
-
-        return new Promise((done) => {
-            const script = document.createElement("script");
-            script.src = src;
-            script.onerror = () => done();
+        if (navigator.onLine === false) return Promise.resolve();
+        if (!getConfig("enable_chromecast", false)) {
+            return Promise.resolve();
+        } else if (!("chrome" in window)) {
+            return Promise.resolve();
+        } else if (["localhost", "127.0.0.1"].includes(location.hostname)) {
+            return Promise.resolve();
+        }
+        return new Promise((resolve) => {
+            if (document.head.querySelector("script#chromecast")) return resolve(null);
+            const $script = document.createElement("script");
+            $script.id = "chromecast";
+            $script.src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
+            $script.onerror = () => resolve(null);
             window["__onGCastApiAvailable"] = function(isAvailable) {
                 if (isAvailable) window.cast.framework.CastContext.getInstance().setOptions({
                     receiverApplicationId: window.chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
                     autoJoinPolicy: window.chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
                 });
-                done();
+                resolve(null);
             };
-            document.head.appendChild(script);
+            document.head.appendChild($script);
         });
     }
-
-    origin() {
-        return location.origin;
-    };
 
     isAvailable() {
         if (!window.chrome) return false;
         else if (!window.chrome.cast) return false;
-        return window.chrome.cast.isAvailable;
+        return !!window.chrome.cast.isAvailable;
     }
 
-    // createLink(apiPath) {
-    //     const target = new URL(this.origin() + apiPath);
-    //     const shareID = new window.URL(location.href).searchParams.get("share");
-    //     if (shareID) target.searchParams.append("share", shareID);
-    //     return target.toString();
-    // }
-
-    createRequest(mediaInfo, authorization) {
-        if (!authorization) Promise.reject(new Error("Invalid account"));
-
-        // TODO: it would be much much nicer to set the authorization in an HTTP header
-        // but this would require to create a custom web receiver app, setup accounts on
-        // google, etc,... Until that happens, we're setting the authorization within the
-        // url. Once we have that app, the authorisation will come from a customData field
-        // of a chrome.cast.media.LoadRequest
-        const target = new URL(mediaInfo.contentId);
-        target.searchParams.append("authorization", window.Session.authorization);
-        mediaInfo.contentId = target.toString();
-        return new window.chrome.cast.media.LoadRequest(mediaInfo);
+    createLink(apiPath, token) {
+        const target = new URL(location.origin + "/" + toHref(apiPath));
+        if (token) target.searchParams.append("authorization", token);
+        if (target.searchParams.has("name")) target.searchParams.delete("name");
+        return target.toString();
     }
 
     context() {
@@ -61,10 +53,24 @@ class ChromecastManager {
         return context.getCurrentSession();
     }
 
-    media() {
-        const session = this.session();
-        if (!session) return;
-        return session.getMediaSession();
+    $dom() {
+        return document.createElement("google-cast-launcher");
+    }
+
+    ready(currentMedia) {
+        const context = this.context();
+        if (!context) return rxjs.EMPTY;
+        return rxjs.merge(
+            rxjs.fromEvent(context, window.cast.framework.CastContextEventType.SESSION_STATE_CHANGED).pipe(
+                rxjs.filter(({ sessionState }) => [window.cast.framework.SessionState.SESSION_STARTED, window.cast.framework.SessionState.SESSION_RESUMED].includes(sessionState)),
+            ),
+            currentMedia ? new rxjs.Observable((subscriber) => {
+                const session = this.session();
+                if (!session) return;
+                const media = session.getMediaSession();
+                if (media && media.media && media.media.mediaCategory === currentMedia) subscriber.next();
+            }) : rxjs.EMPTY,
+        );
     }
 }
 
