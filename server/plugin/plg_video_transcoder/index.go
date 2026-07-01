@@ -1,6 +1,7 @@
 package plg_video_transcoder
 
 import (
+	_ "embed"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/ctrl"
 
 	"github.com/gorilla/mux"
 )
@@ -17,6 +19,9 @@ const (
 	CLEAR_CACHE_AFTER = 12
 	VIDEO_CACHE_PATH  = "data/cache/video/"
 )
+
+//go:embed index.js
+var indexJS string
 
 func init() {
 	Hooks.Register.Onload(func() {
@@ -32,7 +37,10 @@ func init() {
 
 		Hooks.Register.ProcessFileContentBeforeSend(createPlaylist)
 		Hooks.Register.HttpEndpoint(func(r *mux.Router) error {
-			r.HandleFunc(OverrideVideoSourceMapper, createVideoMap)
+			r.HandleFunc(
+				WithBase("/assets/"+BUILD_REF+"/pages/viewerpage/application_video/sources.js"),
+				createVideoMap,
+			)
 			serveHLSChunks(r)
 			return nil
 		})
@@ -71,20 +79,12 @@ func createPlaylist(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, re
 
 func createVideoMap(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", GetMimeType(req.URL.String()))
-	if plugin_enable() == false {
+	out, err := TmplExec(indexJS, map[string]string{
+		"enabled":   fmt.Sprintf("%v", plugin_enable()),
+		"blacklist": blacklist_format(),
+	})
+	if err != nil {
 		return
 	}
-	res.Write([]byte(`window.overrides["video-map-sources"] = function(sources){`))
-	res.Write([]byte(`    return sources.map(function(source){`))
-
-	blacklists := strings.Split(blacklist_format(), ",")
-	for i := 0; i < len(blacklists); i++ {
-		blacklists[i] = strings.TrimSpace(blacklists[i])
-		res.Write([]byte(fmt.Sprintf(`if(source.type == "%s"){ return source; } `, GetMimeType("."+blacklists[i]))))
-	}
-	res.Write([]byte(`        source.src = source.src + "&transcode=hls";`))
-	res.Write([]byte(`        source.type = "application/x-mpegURL";`))
-	res.Write([]byte(`        return source;`))
-	res.Write([]byte(`    })`))
-	res.Write([]byte(`}`))
+	res.Write([]byte(out))
 }

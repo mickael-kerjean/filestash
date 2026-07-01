@@ -241,10 +241,10 @@ var tmplFuncs = template.FuncMap{
 			return fmt.Sprintf("%v", val), nil
 		}
 	},
-	"toLower": func(data string) (string, error) {
-		return strings.ToLower(data), nil
+	"splitList": func(sep string, s string) []string {
+		return strings.Split(s, sep)
 	},
-	"toUpper": func(data string) (string, error) {
-		return strings.ToUpper(data), nil
-	},
+	"toLower": strings.ToLower,
+	"toUpper": strings.ToUpper,
+	"trim":    strings.TrimSpace,
 }

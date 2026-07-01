@@ -1,19 +1,20 @@
-import { createElement, onDestroy } from "../../lib/skeleton/index.js";
+import { createElement } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideYIn } from "../../lib/animate.js";
-import { qs, qsa, safe } from "../../lib/dom.js";
+import { qs, safe } from "../../lib/dom.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
 import { ApplicationError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
 import Hls from "../../lib/vendor/hlsjs/hls.js";
-import { loadCSS, loadJS } from "../../helpers/loader.js";
-
+import { loadCSS } from "../../helpers/loader.js";
 import ctrlError from "../ctrl_error.js";
 
+import createSources from "./application_video/sources.js";
 import { transition } from "./common.js";
 import { formatTimecode } from "./common_player.js";
 import { ICON } from "./common_icon.js";
 import { renderMenubar, buttonDownload, buttonFullscreen, buttonChromecast } from "./component_menubar.js";
+import ctrlDownloader, { init as initDownloader } from "./application_downloader.js";
 
 import "../../components/icon.js";
 
@@ -21,7 +22,7 @@ const STATUS_PLAYING = "PLAYING";
 const STATUS_PAUSED = "PAUSED";
 const STATUS_BUFFERING = "BUFFERING";
 
-export default function(render, { getFilename, getDownloadUrl, mime }) {
+export default function(render, { getFilename, getDownloadUrl, acl$, mime }) {
     const $page = createElement(`
         <div class="component_videoplayer">
             <component-menubar filename="${safe(getFilename())}"></component-menubar>
@@ -66,6 +67,7 @@ export default function(render, { getFilename, getDownloadUrl, mime }) {
     render($page);
     transition(qs($page, ".video_container"));
 
+    const init$ = new rxjs.Subject();
     const $video = qs($page, "video");
     const $loader = qs($page, ".loader");
     const $control = {
@@ -80,7 +82,9 @@ export default function(render, { getFilename, getDownloadUrl, mime }) {
         icon_low: qs($page, `img[alt="volume_low"]`),
         icon_normal: qs($page, `img[alt="volume"]`),
     };
-    const $menubar = renderMenubar(
+    const $hint = qs($page, ".hint");
+    const $progress = qs($page, ".progress");
+    renderMenubar(
         qs($page, "component-menubar"),
         buttonDownload(getDownloadUrl()),
         buttonFullscreen($video),
@@ -140,27 +144,43 @@ export default function(render, { getFilename, getDownloadUrl, mime }) {
     };
 
     // feature1: setup the dom
-    const setup$ = rxjs.of(null).pipe(
-        rxjs.map(() => {
-            const sources = window.overrides["video-map-sources"]([{
-                src: getDownloadUrl(),
-                type: mime,
-            }]);
-            console.log(sources)
-            for (let i=0; i<sources.length; i++) {
+    effect(rxjs.of(createSources(mime, getDownloadUrl())).pipe(
+        rxjs.mergeMap((sources) => {
+            const $sources = [];
+            for (const [type, src] of sources) {
                 const $source = document.createElement("source");
-                $source.setAttribute("type", sources[i].type);
-                $source.setAttribute("src", sources[i].src);
-                $video.appendChild($source);
+                $source.setAttribute("type", type);
+                $source.setAttribute("src", src);
+                if ($video.canPlayType(type)) $sources.push($source);
             }
-            return sources;
+
+            // Native Playback -> best case
+            if ($sources.length > 0) {
+                $video.append(...$sources);
+                return rxjs.merge(
+                    rxjs.fromEvent($video, "loadeddata"),
+                    ...$sources.map(($source) => rxjs.fromEvent($source, "error").pipe(rxjs.mergeMap(() =>
+                        rxjs.throwError(() => new ApplicationError("Not Supported", JSON.stringify({ type: $source.type, src: $source.src }, null, 2))),
+                    ))),
+                );
+            }
+
+            // MSE Playback -> fallback as it break $video.remote functionalities
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                for (const [type, src] of sources) {
+                    if (type !== "application/x-mpegURL") continue;
+                    hls.loadSource(src);
+                    hls.attachMedia($video);
+                    return rxjs.fromEvent($video, "loadeddata");
+                }
+            }
+
+            return rxjs.from(initDownloader()).pipe(rxjs.mergeMap(() => {
+                ctrlDownloader(render, { acl$, getFilename, getDownloadUrl });
+                return rxjs.EMPTY;
+            }));
         }),
-        rxjs.mergeMap((sources) => rxjs.merge(
-            rxjs.fromEvent($video, "loadeddata"),
-            ...[...qsa($page, "source")].map(($source) => rxjs.fromEvent($source, "error").pipe(rxjs.tap(() => {
-                throw new ApplicationError("NOT_SUPPORTED", JSON.stringify({ mime, sources }, null, 2));
-            }))),
-        )),
         rxjs.mergeMap(() => {
             $loader.replaceChildren(createElement(`<img src="${ICON.PLAY}" />`));
             animate($loader, {
@@ -174,94 +194,137 @@ export default function(render, { getFilename, getDownloadUrl, mime }) {
             return rxjs.race(
                 rxjs.fromEvent($loader, "click").pipe(rxjs.mapTo($loader)),
                 rxjs.fromEvent(document, "keydown").pipe(rxjs.filter((e) => e.code === "Space"), rxjs.first()),
-            ).pipe(rxjs.mapTo($loader));
+            );
         }),
-        rxjs.tap(($loader) => {
+        rxjs.tap(() => {
             setStatus(STATUS_PLAYING);
-            animate($control, { time: 300, keyframes: slideYIn(5) });
+            animate($control.main, { time: 300, keyframes: slideYIn(5) });
         }),
         rxjs.catchError(ctrlError()),
-        rxjs.share(),
-    );
-    effect(setup$);
-    effect(setup$.pipe(rxjs.mergeMap(() => rxjs.fromEvent($video, "error").pipe(rxjs.tap(() => {
-        // console.error(err);
-        // notify.send(t("Not supported"), "error");
-        // setIsPlaying(false);
-        // setIsLoading(false);
-    })))));
+        rxjs.tap(() => init$.next()),
+    ));
 
     // feature2: player control - volume
-    effect(setup$.pipe(
-        rxjs.switchMap(() => rxjs.fromEvent($volume.range, "input").pipe(rxjs.map((e) => e.target.value))),
-        rxjs.startWith(settings_get("volume") === null ? 80 : settings_get("volume")),
-        rxjs.tap((volume) => setVolume(parseInt(volume))),
-    ));
+    effect(rxjs.combineLatest(
+        rxjs.fromEvent($volume.range, "input").pipe(
+            rxjs.map((e) => parseInt(e.target.value)),
+            rxjs.startWith(settings_get("volume") === null ? 80 : settings_get("volume")),
+        ),
+        rxjs.merge(
+            rxjs.fromEvent($volume.icon_mute, "click"),
+            rxjs.fromEvent($volume.icon_low, "click"),
+            rxjs.fromEvent($volume.icon_normal, "click"),
+        ).pipe(
+            rxjs.startWith(false),
+            rxjs.scan((isMuted) => !isMuted, true),
+        ),
+    ).pipe(rxjs.tap(([volume, isMuted]) => {
+        if (isMuted) setVolume(0);
+        else setVolume(volume);
+    })));
 
     // feature3: player control - play/pause
-    effect(setup$.pipe(
-        rxjs.mergeMap(() => rxjs.merge(
-            rxjs.fromEvent($control.play, "click").pipe(rxjs.mapTo(STATUS_PLAYING)),
-            rxjs.fromEvent($control.pause, "click").pipe(rxjs.mapTo(STATUS_PAUSED)),
-            rxjs.fromEvent($video, "ended").pipe(rxjs.mapTo(STATUS_PAUSED)),
-            rxjs.fromEvent($video, "waiting").pipe(rxjs.mapTo(STATUS_BUFFERING)),
-            rxjs.fromEvent($video, "playing").pipe(rxjs.mapTo(STATUS_PLAYING)),
-        )),
+    effect(rxjs.merge(
+        rxjs.fromEvent($control.play, "click").pipe(rxjs.mapTo(STATUS_PLAYING)),
+        rxjs.fromEvent($control.pause, "click").pipe(rxjs.mapTo(STATUS_PAUSED)),
+        rxjs.fromEvent($video, "ended").pipe(rxjs.mapTo(STATUS_PAUSED)),
+        rxjs.fromEvent($video, "waiting").pipe(rxjs.mapTo(STATUS_BUFFERING)),
+        rxjs.fromEvent($video, "playing").pipe(rxjs.mapTo(STATUS_PLAYING)),
+    ).pipe(
+        rxjs.skipUntil(init$),
         rxjs.debounceTime(50),
-        rxjs.tap((status) => setStatus(status)),
+        rxjs.tap(setStatus),
     ));
 
-    // feature4: hint
-    const $hint = qs($page, `.hint`);
-    effect(setup$.pipe(
-        rxjs.switchMap(() => rxjs.fromEvent(qs($page, ".progress"), "mousemove")),
+    // feature4: player control - seek
+    effect(rxjs.fromEvent($progress, "click").pipe(
+        rxjs.skipUntil(init$),
         rxjs.map((e) => {
-            const rec = e.target.getBoundingClientRect();
-            const width = e.clientX - rec.x;
-            const time = $video.duration * width / rec.width;
-            let posX = width;
-            posX = Math.max(posX, 30);
-            posX = Math.min(posX, e.target.clientWidth - 30);
-            return { x: `${posX}px`, time };
+            let $progress = e.target;
+            if (e.target.classList.contains("progress") === false) {
+                $progress = e.target.parentElement;
+            }
+            const rec = $progress.getBoundingClientRect();
+            return (e.clientX - rec.x) / rec.width;
         }),
-        rxjs.tap(({ x, time }) => {
+        rxjs.tap((n) => {
+            if (n < 2/100) {
+                setStatus(STATUS_PAUSED);
+                n = 0;
+            }
+            setSeek(n * $video.duration, true);
+        }),
+    ));
+
+    // feature5: render the progress bar
+    effect(rxjs.fromEvent($video, "timeupdate").pipe(
+        rxjs.skipUntil(init$),
+        rxjs.tap(() => setSeek($video.currentTime)),
+    ));
+
+    // feature6: render loading buffer
+    effect(rxjs.fromEvent($video, "timeupdate").pipe(
+        rxjs.skipUntil(init$),
+        rxjs.tap(() => {
+            const $container = qs($page, `[data-bind="progress-buffer"]`);
+            if ($video.buffered.length !== $container.children.length) {
+                $container.innerHTML = "";
+                for (let i = 0; i < $video.buffered.length; i++) $container.appendChild(createElement(`
+                    <div class="progress-buffer"></div>
+                `));
+            }
+            for (let i=0; i<$video.buffered.length; i++) {
+                const width = ($video.buffered.end(i) - $video.buffered.start(i)) / $video.duration * 100;
+                const left = $video.buffered.start(i) / $video.duration * 100;
+                $container.children[i].style.left = left + "%";
+                $container.children[i].style.width = width + "%";
+            }
+        }),
+    ));
+
+    // feature7: hint
+    effect(rxjs.merge(
+        rxjs.fromEvent($progress, "mousemove"),
+        rxjs.fromEvent($progress, "mouseleave"),
+    ).pipe(
+        rxjs.skipUntil(init$),
+        rxjs.map((e) => ({
+            type: e.type,
+            clientX: e.clientX,
+            clientWidth: e.target.clientWidth,
+            rec: e.target.getBoundingClientRect(),
+            duration: $video.duration,
+        })),
+        rxjs.map(({ type, clientX, clientWidth, rec, duration }) => {
+            switch (type) {
+            case "mouseleave":
+                return { visible: false };
+            case "mousemove":
+                const width = clientX - rec.x;
+                const time = duration * width / rec.width;
+                let posX = width;
+                posX = Math.max(posX, 30);
+                posX = Math.min(posX, clientWidth - 30);
+                return { x: `${posX}px`, time, visible: true };
+            default:
+                assert.fail(`unexpected event: ${type}`);
+            }
+            return null;
+        }),
+        rxjs.tap(({ visible, x, time }) => {
+            if (!visible) return $hint.classList.add("hidden");
             $hint.classList.remove("hidden");
             $hint.style.left = x;
             $hint.textContent = formatTimecode(time);
         }),
     ));
-    effect(setup$.pipe(
-        rxjs.switchMap(() => rxjs.fromEvent(qs($page, ".progress"), "mouseleave")),
-        rxjs.tap(() => $hint.classList.add("hidden")),
-    ));
 
-    // feature5: player control - seek
-    effect(setup$.pipe(
-        rxjs.switchMap(() => rxjs.fromEvent(qs($page, ".progress"), "click").pipe(
-            rxjs.map((e) => { // TODO: use onClick instead?
-                let $progress = e.target;
-                if (e.target.classList.contains("progress") === false) {
-                    $progress = e.target.parentElement;
-                }
-                const rec = $progress.getBoundingClientRect();
-                return (e.clientX - rec.x) / rec.width;
-            }),
-            rxjs.tap((n) => {
-                if (n < 2/100) {
-                    setStatus(STATUS_PAUSED);
-                    n = 0;
-                }
-                setSeek(n * $video.duration, true);
-            }),
-        )),
-    ));
-
-    // feature6: player control - keyboard shortcut
-    effect(setup$.pipe(
-        rxjs.switchMap(() => rxjs.merge(
-            rxjs.fromEvent(document, "keydown").pipe(rxjs.map((e) => e.code)),
-            rxjs.fromEvent($video, "click").pipe(rxjs.mapTo("Space")),
-        )),
+    // feature8: player control - keyboard shortcut
+    effect(rxjs.merge(
+        rxjs.fromEvent(document, "keydown").pipe(rxjs.map((e) => e.code)),
+        rxjs.fromEvent($video, "click").pipe(rxjs.mapTo("Space")),
+    ).pipe(
+        rxjs.skipUntil(init$),
         rxjs.tap((code) => {
             switch (code) {
             case "Space":
@@ -283,6 +346,7 @@ export default function(render, { getFilename, getDownloadUrl, mime }) {
             case "KeyJ":
                 setSeek(Math.max(0, $video.currentTime - 10), true);
                 break;
+            case "Home":
             case "Digit0":
                 setSeek(0, true);
                 break;
@@ -313,50 +377,17 @@ export default function(render, { getFilename, getDownloadUrl, mime }) {
             case "Digit9":
                 setSeek($video.duration * 9 / 10, true);
                 break;
-            }
-        }),
-    ));
-
-    // feature7: render the progress bar
-    effect(setup$.pipe(
-        rxjs.mergeMap(() => rxjs.fromEvent($video, "timeupdate")),
-        rxjs.tap(() => setSeek($video.currentTime)),
-    ));
-
-    // feature8: render loading buffer
-    effect(setup$.pipe(
-        rxjs.mergeMap(() => rxjs.fromEvent($video, "timeupdate")),
-        rxjs.tap(() => {
-            const calcWidth = (i) => {
-                return ($video.buffered.end(i) - $video.buffered.start(i)) / $video.duration * 100;
-            };
-            const calcLeft = (i) => {
-                return $video.buffered.start(i) / $video.duration * 100;
-            };
-            const $container = qs($page, `[data-bind="progress-buffer"]`);
-            if ($video.buffered.length !== $container.children.length) {
-                $container.innerHTML = "";
-                const $fragment = document.createDocumentFragment();
-                Array.from({ length: $video.buffered.length })
-                    .map(() => $fragment.appendChild(createElement(`
-                        <div className="progress-buffer" style=""></div>
-                    `)));
-                $container.appendChild($fragment);
-            }
-            for (let i=0; i<$video.buffered.length; i++) {
-                $container.children[i].style.left = calcLeft(i) + "%";
-                $container.children[i].style.width = calcWidth(i) + "%";
+            case "End":
+                setSeek($video.duration, true);
+                break;
             }
         }),
     ));
 }
 
 export function init() {
-    if (!window.overrides) window.overrides = {};
     return Promise.all([
         loadCSS(import.meta.url, "./application_video.css"),
-        loadJS(import.meta.url, "/overrides/video-transcoder.js"),
-    ]).then(async() => {
-        if (typeof window.overrides["video-map-sources"] !== "function") window.overrides["video-map-sources"] = (s) => (s);
-    });
+        loadCSS(import.meta.url, "./component_menubar.css"),
+    ]);
 }

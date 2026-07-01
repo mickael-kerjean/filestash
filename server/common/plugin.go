@@ -199,19 +199,6 @@ func (this Register) Tracer(t ITracer) {
 	tracer.Register(t)
 }
 
-/*
- * UI Overrides
- * They are the means by which server plugin change the frontend behaviors.
- */
-var overrides []string
-
-func (this Register) FrontendOverrides(url string) {
-	overrides = append(overrides, url)
-}
-func (this Get) FrontendOverrides() []string {
-	return overrides
-}
-
 var xdg_open []string
 
 func (this Register) XDGOpen(jsString string) {
@@ -262,8 +249,6 @@ func (this Register) Favicon(binary []byte) {
 func (this Get) Favicon() ([]byte, string) {
 	return favicon.binary, favicon.mime
 }
-
-const OverrideVideoSourceMapper = "/overrides/video-transcoder.js"
 
 var afterload []func()
 
@@ -366,8 +351,4 @@ func (this Register) DirectoryService(d IDirectoryService) {
 
 func (this Get) DirectoryService() IDirectoryService {
 	return directory
-}
-
-func init() {
-	Hooks.Register.FrontendOverrides(OverrideVideoSourceMapper)
 }
