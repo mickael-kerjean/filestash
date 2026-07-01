@@ -99,6 +99,26 @@ export function buttonFullscreen($screen, fullscreen) {
     return $el;
 }
 
+export function buttonChromecast($media) {
+    if (!$media.remote) return null;
+    const $el = createElement(`
+        <button role="button" class="hidden">
+            <img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4IiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9IiNmMmYyZjIiPgogIDxwYXRoIGQ9Ik0xLDE4IEwxLDIxIEw0LDIxIEM0LDE5LjMgMi42NiwxOCAxLDE4IEwxLDE4IFoiPjwvcGF0aD4KICA8cGF0aCBkPSJNMSwxNCBMMSwxNiBDMy43NiwxNiA2LDE4LjIgNiwyMSBMOCwyMSBDOCwxNy4xMyA0Ljg3LDE0IDEsMTQgTDEsMTQgWiI+PC9wYXRoPgogIDxwYXRoIGQ9Ik0xLDEwIEwxLDEyIEM1Ljk3LDEyIDEwLDE2LjAgMTAsMjEgTDEyLDIxIEMxMiwxNC45MiA3LjA3LDEwIDEsMTAgTDEsMTAgWiI+PC9wYXRoPgogIDxwYXRoIGQ9Ik0yMSwzIEwzLDMgQzEuOSwzIDEsMy45IDEsNSBMMSw4IEwzLDggTDMsNSBMMjEsNSBMMjEsMTkgTDE0LDE5IEwxNCwyMSBMMjEsMjEgQzIyLjEsMjEgMjMsMjAuMSAyMywxOSBMMjMsNSBDMjMsMy45IDIyLjEsMyAyMSwzIEwyMSwzIFoiPjwvcGF0aD4KPC9zdmc+Cg==" alt="chromecast" />
+            <style>.glow > img[alt="chromecast"] { filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5)) }</style>
+        </button>
+   `);
+    const updateState = () => $media.remote.state === "connected" ? $el.classList.add("glow") : $el.classList.remove("glow");
+    updateState();
+    $media.remote.addEventListener("connect", updateState);
+    $media.remote.addEventListener("disconnect", updateState);
+    $media.remote.watchAvailability(function(isAvailable) {
+        if (!isAvailable) return $el.classList.add("hidden");
+        $el.classList.remove("hidden");
+        $el.onclick = () => $media.remote.prompt();
+    });
+    return $el;
+}
+
 export function renderMenubar($menubar, ...buttons) {
     assert.type($menubar, ComponentMenubar);
     $menubar.render(buttons.filter(($button) => $button));

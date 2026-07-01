@@ -325,6 +325,7 @@ var preload = [][]string{
 		"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs.min.js",
 		"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs-ajax.min.js",
 		"/assets/" + BUILD_REF + "/lib/vendor/rxjs/rxjs-shared.min.js",
+		"/assets/" + BUILD_REF + "/lib/chromecast.js",
 		"/assets/" + BUILD_REF + "/lib/store.js",
 		"/assets/" + BUILD_REF + "/lib/form.js",
 		"/assets/" + BUILD_REF + "/lib/path.js",
@@ -340,7 +341,6 @@ var preload = [][]string{
 
 		"/assets/" + BUILD_REF + "/locales/index.js",
 		"/assets/" + BUILD_REF + "/model/config.js",
-		"/assets/" + BUILD_REF + "/model/chromecast.js",
 		"/assets/" + BUILD_REF + "/model/session.js",
 		"/assets/" + BUILD_REF + "/model/plugin.js",
 

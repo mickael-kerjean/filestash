@@ -8,8 +8,6 @@ import { load as loadPlugin } from "../../model/plugin.js";
 import chromecast from "../../lib/chromecast.js";
 import { loadCSS } from "../../helpers/loader.js";
 import { createLoader } from "../../components/loader.js";
-import notification from "../../components/notification.js";
-import t from "../../locales/index.js";
 import ctrlError from "../ctrl_error.js";
 
 import componentInformation, { init as initInformation } from "./application_image/information.js";
@@ -55,7 +53,6 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
         buttonDownload(getDownloadUrl()),
         buttonFullscreen(qs($page, ".component_image_container")),
         mime === "image/jpeg" && buttonInfo({ toggle: toggleInfo }),
-        ["image/jpeg", "image/png"].indexOf(mime) !== -1 && buttonChromecast(getFilename(), getDownloadUrl(), mime),
     );
 
     effect(rxjs.from(loadPlugin(mime)).pipe(
@@ -106,6 +103,24 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
             componentPagination(createRender(qs($page, "[data-bind=\"component_navigation\"]")), { $img: $photo });
         }),
     ));
+
+    effect(rxjs.of(chromecast.$dom()).pipe(
+        rxjs.filter(() => chromecast.isAvailable() && ["image/jpeg", "image/png"].includes(mime)),
+        rxjs.tap(() => $menubar.add(chromecast.$dom())),
+        rxjs.mergeMap((ret) => chromecast.ready$()),
+        rxjs.filter(({ mediaCategory }) => mediaCategory === null || mediaCategory === "IMAGE"),
+        rxjs.mergeMap(async() => {
+            const session = chromecast.session();
+            if (!session) return;
+            const bearer = (await getSession().toPromise())?.authorization;
+            const link = chromecast.createLink(getDownloadUrl(), bearer);
+            const media = new window.chrome.cast.media.MediaInfo(link, mime);
+            media.metadata = new window.chrome.cast.media.PhotoMediaMetadata();
+            media.metadata.title = getFilename();
+            media.contentId = link;
+            await session.loadMedia(new window.chrome.cast.media.LoadRequest(media));
+        }),
+    ));
 }
 
 export function init() {
@@ -127,21 +142,4 @@ function buttonInfo({ toggle }) {
         rxjs.fromEvent(window, "keydown").pipe(rxjs.filter((e) => e.key === "i")),
     ).pipe(rxjs.mapTo($el), rxjs.tap(toggle)));
     return $el;
-}
-
-function buttonChromecast(filename, downloadURL, mime) {
-    effect(chromecast.ready("IMAGE").pipe(
-        rxjs.mergeMap(async () => {
-            const session = chromecast.session();
-            if (!session) return;
-            const bearer = (await getSession().toPromise())?.authorization;
-            const link = chromecast.createLink(downloadURL, bearer);
-            const media = new window.chrome.cast.media.MediaInfo(link, mime);
-            media.metadata = new window.chrome.cast.media.PhotoMediaMetadata();
-            media.metadata.title = filename;
-            media.contentId = link;
-            await session.loadMedia(new window.chrome.cast.media.LoadRequest(media));
-        }),
-    ));
-    return chromecast.$dom();
 }

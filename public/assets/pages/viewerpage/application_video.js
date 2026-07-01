@@ -1,19 +1,19 @@
 import { createElement, onDestroy } from "../../lib/skeleton/index.js";
 import rxjs, { effect } from "../../lib/rx.js";
 import { animate, slideYIn } from "../../lib/animate.js";
-import { loadCSS, loadJS } from "../../helpers/loader.js";
 import { qs, qsa, safe } from "../../lib/dom.js";
 import { settings_get, settings_put } from "../../lib/settings.js";
 import { ApplicationError } from "../../lib/error.js";
 import assert from "../../lib/assert.js";
 import Hls from "../../lib/vendor/hlsjs/hls.js";
+import { loadCSS, loadJS } from "../../helpers/loader.js";
 
 import ctrlError from "../ctrl_error.js";
 
 import { transition } from "./common.js";
 import { formatTimecode } from "./common_player.js";
 import { ICON } from "./common_icon.js";
-import { renderMenubar, buttonDownload, buttonFullscreen } from "./component_menubar.js";
+import { renderMenubar, buttonDownload, buttonFullscreen, buttonChromecast } from "./component_menubar.js";
 
 import "../../components/icon.js";
 
@@ -21,7 +21,7 @@ const STATUS_PLAYING = "PLAYING";
 const STATUS_PAUSED = "PAUSED";
 const STATUS_BUFFERING = "BUFFERING";
 
-export default function(render, { mime, getFilename, getDownloadUrl }) {
+export default function(render, { getFilename, getDownloadUrl, mime }) {
     const $page = createElement(`
         <div class="component_videoplayer">
             <component-menubar filename="${safe(getFilename())}"></component-menubar>
@@ -29,7 +29,7 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
                 <span>
                     <div class="video_screen video-state-pause is-casting-no">
                         <div class="video_wrapper">
-                            <video></video>
+                            <video controlslist="noremoteplayback"></video>
                         </div>
                         <div class="loader no-select">
                             <component-icon name="loading"></component-icon>
@@ -64,15 +64,12 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
         </div>
     `);
     render($page);
-    renderMenubar(
-        qs($page, "component-menubar"),
-        buttonDownload(getDownloadUrl()),
-        buttonFullscreen(qs($page, "video")),
-    );
     transition(qs($page, ".video_container"));
 
     const $video = qs($page, "video");
+    const $loader = qs($page, ".loader");
     const $control = {
+        main: qs($page, ".videoplayer_control"),
         play: qs($page, `.videoplayer_control [alt="play"]`),
         pause: qs($page, `.videoplayer_control [alt="pause"]`),
         loading: qs($page, `.videoplayer_control component-icon[name="loading"]`),
@@ -83,6 +80,13 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
         icon_low: qs($page, `img[alt="volume_low"]`),
         icon_normal: qs($page, `img[alt="volume"]`),
     };
+    const $menubar = renderMenubar(
+        qs($page, "component-menubar"),
+        buttonDownload(getDownloadUrl()),
+        buttonFullscreen($video),
+        buttonChromecast($video),
+    );
+
     const setVolume = (volume) => {
         settings_put("volume", volume);
         $video.volume = volume / 100;
@@ -123,6 +127,8 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
         default:
             assert.fail(status);
         }
+        $loader.classList.add("hidden");
+        $control.main.classList.remove("hidden");
     };
     const setSeek = (newTime, shouldSet = false) => {
         if (shouldSet) $video.currentTime = newTime;
@@ -136,31 +142,17 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
     // feature1: setup the dom
     const setup$ = rxjs.of(null).pipe(
         rxjs.map(() => {
-            const loadPolicy = { default: { maxLoadTimeMs: 3600000, maxTimeToFirstByteMs: Infinity, timeoutRetry: { maxNumRetry: 0 } } };
-            const hls = new Hls({
-                debug: !!new URLSearchParams(location.search).get("debug"),
-                manifestLoadPolicy: loadPolicy,
-                maxMaxBufferLength: 20,
-            });
             const sources = window.overrides["video-map-sources"]([{
                 src: getDownloadUrl(),
                 type: mime,
             }]);
+            console.log(sources)
             for (let i=0; i<sources.length; i++) {
-                if (sources[i].type !== "application/x-mpegURL") {
-                    const $source = document.createElement("source");
-                    $source.setAttribute("type", "video/mp4");
-                    $source.setAttribute("src", sources[i].src);
-                    $video.appendChild($source);
-                    return [{ ...sources[i], type: "video/mp4" }];
-                }
-                hls.loadSource(sources[i].src);
+                const $source = document.createElement("source");
+                $source.setAttribute("type", sources[i].type);
+                $source.setAttribute("src", sources[i].src);
+                $video.appendChild($source);
             }
-            hls.attachMedia($video);
-            onDestroy(() => {
-                $video.pause();
-                $video.remove();
-            });
             return sources;
         }),
         rxjs.mergeMap((sources) => rxjs.merge(
@@ -170,7 +162,6 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
             }))),
         )),
         rxjs.mergeMap(() => {
-            const $loader = qs($page, ".loader");
             $loader.replaceChildren(createElement(`<img src="${ICON.PLAY}" />`));
             animate($loader, {
                 time: 150,
@@ -186,11 +177,8 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
             ).pipe(rxjs.mapTo($loader));
         }),
         rxjs.tap(($loader) => {
-            $loader.classList.add("hidden");
-            const $control = qs($page, ".videoplayer_control");
-            $control.classList.remove("hidden");
-            animate($control, { time: 300, keyframes: slideYIn(5) });
             setStatus(STATUS_PLAYING);
+            animate($control, { time: 300, keyframes: slideYIn(5) });
         }),
         rxjs.catchError(ctrlError()),
         rxjs.share(),
@@ -294,9 +282,6 @@ export default function(render, { mime, getFilename, getDownloadUrl }) {
                 break;
             case "KeyJ":
                 setSeek(Math.max(0, $video.currentTime - 10), true);
-                break;
-            case "KeyF":
-                // TODO
                 break;
             case "Digit0":
                 setSeek(0, true);
