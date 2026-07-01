@@ -83,6 +83,39 @@ func SessionStart(fn HandlerFunc) HandlerFunc {
 	})
 }
 
+func WebdavSessionStart(fn HandlerFunc) HandlerFunc {
+	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
+		var err error
+
+		if ctx.Share, err = _extractShare(req); err != nil {
+			if err == errShareProofRequired {
+				res.Header().Set("WWW-Authenticate", `Basic realm="Filestash"`)
+				res.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			SendErrorResult(res, err)
+			return
+		}
+		ctx.Authorization = _extractAuthorization(req)
+		if ctx.Session, err = _extractSession(req, ctx); err != nil {
+			RecoverFromBadCookie(res)
+			SendErrorResult(res, err)
+			return
+		}
+		if ctx.Backend, err = _extractBackend(req, ctx); err != nil {
+			if len(ctx.Session) == 0 {
+				SendErrorResult(res, ErrNotAuthorized)
+				return
+			}
+			SendErrorResult(res, err)
+			return
+		}
+		ctx.Languages = _extractLanguages(req)
+
+		fn(ctx, res, req)
+	})
+}
+
 func SessionTry(fn HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		ctx.Share, _ = _extractShare(req)
@@ -170,6 +203,8 @@ func _extractShareId(req *http.Request) string {
 	return m
 }
 
+var errShareProofRequired = NewError("Unauthorized Shared space", 400)
+
 func _extractShare(req *http.Request) (Share, error) {
 	var err error
 	share_id := _extractShareId(req)
@@ -225,7 +260,7 @@ func _extractShare(req *http.Request) (Share, error) {
 	var requiredProof []model.Proof = model.ShareProofGetRequired(s)
 	var remainingProof []model.Proof = model.ShareProofCalculateRemainings(requiredProof, verifiedProof)
 	if len(remainingProof) != 0 {
-		return Share{}, NewError("Unauthorized Shared space", 400)
+		return Share{}, errShareProofRequired
 	}
 	return s, nil
 }
