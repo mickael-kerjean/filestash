@@ -17,12 +17,12 @@ type Local struct {
 }
 
 func (this Local) Init(params map[string]string, app *App) (IBackend, error) {
-	if err := bcrypt.CompareHashAndPassword(
+	if this.secret != "" && params["password"] == this.secret {
+		return &Local{}, nil
+	} else if err := bcrypt.CompareHashAndPassword(
 		[]byte(Config.Get("auth.admin").String()),
 		[]byte(params["password"]),
 	); err == nil {
-		return &Local{}, nil
-	} else if this.secret != "" && params["password"] == this.secret {
 		return &Local{}, nil
 	}
 	return nil, ErrAuthenticationFailed
