@@ -528,12 +528,29 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		proto = "tus"
 	}
 	if proto == "" && req.Method == http.MethodPost {
+		since := req.Header.Get("If-Unmodified-Since")
+		if since != "" {
+			expected, err := http.ParseTime(since)
+			if err != nil {
+				Log.Debug("files::save action=precondition err=%s", err.Error())
+				SendErrorResult(res, ErrNotValid)
+				return
+			} else if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() != expected.Unix() {
+				SendErrorResult(res, NewError("Modified since", http.StatusPreconditionFailed))
+				return
+			}
+		}
 		err = ctx.Backend.Save(path, req.Body)
 		req.Body.Close()
 		if err != nil {
 			Log.Debug("files::save action=backend_save err=%s", err.Error())
 			SendErrorResult(res, NewError(err.Error(), 403))
 			return
+		}
+		if since != "" {
+			if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() > 0 {
+				h.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
+			}
 		}
 		SendSuccessResult(res, nil)
 		return
