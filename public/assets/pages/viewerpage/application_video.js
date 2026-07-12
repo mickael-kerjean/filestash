@@ -28,7 +28,7 @@ export default function(render, { getFilename, getDownloadUrl, acl$, mime }) {
             <component-menubar filename="${safe(getFilename())}"></component-menubar>
             <div class="video_container">
                 <span>
-                    <div class="video_screen video-state-pause is-casting-no">
+                    <div class="video_screen">
                         <div class="video_wrapper">
                             <video controlslist="noremoteplayback"></video>
                         </div>
@@ -52,7 +52,6 @@ export default function(render, { getFilename, getDownloadUrl, acl$, mime }) {
                             <img class="component_icon hidden" draggable="false" src="${ICON.VOLUME_MUTE}" alt="volume_mute">
                             <img class="component_icon hidden" draggable="false" src="${ICON.VOLUME_LOW}" alt="volume_low">
                             <img class="component_icon hidden" draggable="false" src="${ICON.VOLUME_NORMAL}" alt="volume">
-
                             <input type="range" min="0" max="100" value="13">
                             <span class="timecode">
                                 <div class="current"></div>

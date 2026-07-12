@@ -107,7 +107,10 @@ export function buttonChromecast($media) {
             <style>.glow > img[alt="chromecast"] { filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5)) }</style>
         </button>
    `);
-    const updateState = () => $media.remote.state === "connected" ? $el.classList.add("glow") : $el.classList.remove("glow");
+    const updateState = () => {
+        $media.remote.state === "connected" ? $el.classList.add("glow") : $el.classList.remove("glow");
+        $media.remote.state === "connected" ? document.body.classList.add("casting") : document.body.classList.remove("casting");
+    }
     updateState();
     $media.remote.addEventListener("connect", updateState);
     $media.remote.addEventListener("disconnect", updateState);
