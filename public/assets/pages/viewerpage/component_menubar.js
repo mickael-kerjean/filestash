@@ -110,7 +110,7 @@ export function buttonChromecast($media) {
     const updateState = () => {
         $media.remote.state === "connected" ? $el.classList.add("glow") : $el.classList.remove("glow");
         $media.remote.state === "connected" ? document.body.classList.add("casting") : document.body.classList.remove("casting");
-    }
+    };
     updateState();
     $media.remote.addEventListener("connect", updateState);
     $media.remote.addEventListener("disconnect", updateState);
