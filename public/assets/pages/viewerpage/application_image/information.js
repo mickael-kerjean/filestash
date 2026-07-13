@@ -1,6 +1,6 @@
 import { createElement, createRender } from "../../../lib/skeleton/index.js";
 import rxjs, { effect, onClick } from "../../../lib/rx.js";
-import { qs } from "../../../lib/dom.js";
+import { qs, safe } from "../../../lib/dom.js";
 import t from "../../../locales/index.js";
 import { loadJS, loadCSS } from "../../../helpers/loader.js";
 
@@ -198,8 +198,8 @@ function componentMore(render, { metadata }) {
             break;
         default: $all.appendChild(createElement(`
             <div class="meta_key">
-                <div class="title ellipsis">${formatKey(key)}: </div>
-                <div class="value ellipsis" title="${formatValue(key)}">${formatValue(key)}</div>
+                <div class="title ellipsis">${safe(formatKey(key))}: </div>
+                <div class="value ellipsis" title="${safe(formatValue(key))}">${safe(formatValue(key))}</div>
             </div>
         `));
         }
