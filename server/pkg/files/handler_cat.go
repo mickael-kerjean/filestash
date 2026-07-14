@@ -6,12 +6,22 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 )
+
+var file_cache AppCache
+
+func init() {
+	file_cache = NewAppCache()
+	file_cache.OnEvict(func(key string, value interface{}) {
+		os.RemoveAll(filepath.Join(GetAbsolutePath(TMP_PATH), key))
+	})
+}
 
 func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	var (

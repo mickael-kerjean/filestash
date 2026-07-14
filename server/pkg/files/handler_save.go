@@ -68,54 +68,72 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	// There is 2 ways to save something:
-	// - case1: regular upload, we just insert the file in the pipe
+	// There is a few ways to save something: plain upload, via tus, via delta sync
 	proto := ""
-	if _, ok := req.Header["Tus-Resumable"]; ok {
+	if strings.HasPrefix(req.Header.Get("Content-Type"), "application/vnd.filestash.delta") {
+		proto = "delta"
+	} else if _, ok := req.Header["Tus-Resumable"]; ok {
 		proto = "tus"
 	}
-	if proto == "" && req.Method == http.MethodPost {
-		since := req.Header.Get("If-Unmodified-Since")
-		if since != "" {
-			expected, err := http.ParseTime(since)
-			if err != nil {
-				Log.Debug("files::save action=precondition err=%s", err.Error())
-				SendErrorResult(res, ErrNotValid)
-				return
-			} else if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() != expected.Unix() {
-				SendErrorResult(res, NewError("Modified since", http.StatusPreconditionFailed))
-				return
-			}
-		}
-		err = ctx.Backend.Save(path, req.Body)
-		req.Body.Close()
-		if err != nil {
-			Log.Debug("files::save action=backend_save err=%s", err.Error())
-			SendErrorResult(res, NewError(err.Error(), 403))
-			return
-		}
-		if since != "" {
-			if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() > 0 {
-				h.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
-			}
-		}
-		SendSuccessResult(res, nil)
+	switch proto {
+	case "":
+		handlerClassic(ctx, res, req, path, h)
+	case "tus":
+		handlerTUS(ctx, res, req, path, h)
+	case "delta":
+		handlerDelta(ctx, res, req, path, h)
+	default:
+		SendErrorResult(res, ErrNotImplemented)
+	}
+}
+
+func handlerClassic(ctx *App, res http.ResponseWriter, req *http.Request, path string, h http.Header) {
+	if req.Method != http.MethodPost {
+		SendErrorResult(res, ErrNotFound)
 		return
 	}
 
-	// - case2: chunked upload using the TUS protocol: https://tus.io/protocols/resumable-upload
+	since := req.Header.Get("If-Unmodified-Since")
+	if since != "" {
+		expected, err := http.ParseTime(since)
+		if err != nil {
+			Log.Debug("files::save action=precondition err=%s", err.Error())
+			SendErrorResult(res, ErrNotValid)
+			return
+		} else if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() != expected.Unix() {
+			SendErrorResult(res, NewError("Modified since", http.StatusPreconditionFailed))
+			return
+		}
+	}
+	err := ctx.Backend.Save(path, req.Body)
+	req.Body.Close()
+	if err != nil {
+		Log.Debug("files::save action=backend_save err=%s", err.Error())
+		SendErrorResult(res, NewError(err.Error(), 403))
+		return
+	}
+	if since != "" {
+		if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() > 0 {
+			h.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
+		}
+	}
+	SendSuccessResult(res, nil)
+	return
+}
+
+func handlerTUS(ctx *App, res http.ResponseWriter, req *http.Request, path string, h http.Header) {
 	cacheKey := map[string]string{
 		"path":    path,
 		"session": GenerateID(ctx.Session),
 	}
-	if proto == "tus" && req.Method == http.MethodOptions {
+	if req.Method == http.MethodOptions {
 		h.Set("Tus-Resumable", "1.0.0")
 		h.Set("Tus-Version", "1.0.0")
 		h.Set("Tus-Extension", "creation,checksum")
 		h.Set("Tus-Checksum-Algorithm", "sha1,crc32")
 		return
 	}
-	if proto == "tus" && req.Method == http.MethodHead {
+	if req.Method == http.MethodHead {
 		c := chunkedUploadCache.Get(cacheKey)
 		if c == nil {
 			SendErrorResult(res, ErrNotFound)
@@ -129,7 +147,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusNoContent)
 		return
 	}
-	if proto == "tus" && req.Method == http.MethodPost {
+	if req.Method == http.MethodPost {
 		if c := chunkedUploadCache.Get(cacheKey); c != nil {
 			chunkedUploadCache.Del(cacheKey)
 		}
@@ -154,7 +172,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusCreated)
 		return
 	}
-	if proto == "tus" && req.Method == http.MethodPatch {
+	if req.Method == http.MethodPatch {
 		if req.Header.Get("Content-Type") != "application/offset+octet-stream" {
 			SendErrorResult(res, NewError("Unsupported Media Type", 415))
 			return
@@ -230,6 +248,12 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusNoContent)
 		return
 	}
+
+	SendErrorResult(res, ErrNotFound)
+}
+
+func handlerDelta(ctx *App, res http.ResponseWriter, req *http.Request, path string, h http.Header) {
+	// TODO
 	SendErrorResult(res, ErrNotImplemented)
 }
 
