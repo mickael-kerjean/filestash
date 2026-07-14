@@ -1,4 +1,4 @@
-package model
+package permissions
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"

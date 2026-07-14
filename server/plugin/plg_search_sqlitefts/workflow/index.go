@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/ctrl"
 	. "github.com/mickael-kerjean/filestash/server/model"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/config"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/crawler"
@@ -70,7 +69,7 @@ func (this StepIndexer) Execute(params map[string]string, input map[string]strin
 		Log.Warning("plg_search_sqlitefts::workflow message=cannot_create_backend err=%s", err.Error())
 		return input, err
 	}
-	path, err := ctrl.PathBuilder(app, EnforceDirectory(params["path"]))
+	path, err := PathBuilder(app, EnforceDirectory(params["path"]))
 	if err != nil {
 		Log.Warning("plg_search_sqlitefts::workflow message=path_builder err=%s", err.Error())
 		return input, err

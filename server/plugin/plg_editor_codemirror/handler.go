@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/ctrl"
 )
 
 func HandlerPull(ctx *App, res http.ResponseWriter, req *http.Request) {

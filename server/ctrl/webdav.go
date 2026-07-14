@@ -7,6 +7,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 	"github.com/mickael-kerjean/net/webdav"
 )
 
@@ -17,9 +18,9 @@ func WebdavHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// https://github.com/golang/net/blob/master/webdav/webdav.go#L49-L68
-	canRead := model.CanRead(ctx)
-	canWrite := model.CanEdit(ctx)
-	canUpload := model.CanUpload(ctx)
+	canRead := permissions.CanRead(ctx)
+	canWrite := permissions.CanEdit(ctx)
+	canUpload := permissions.CanUpload(ctx)
 	switch req.Method {
 	case "OPTIONS", "HEAD", "GET":
 		if canRead == false {

@@ -1,10 +1,11 @@
 package ctrl
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
 	"net/http"
 	"strings"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 )
 
 func FileSearch(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -13,7 +14,7 @@ func FileSearch(ctx *App, res http.ResponseWriter, req *http.Request) {
 		path = "/"
 	}
 	q := req.URL.Query().Get("q")
-	if model.CanRead(ctx) == false {
+	if permissions.CanRead(ctx) == false {
 		Log.Debug("ctrl::search 'can not read \"%s\"'", path)
 		SendErrorResult(res, ErrPermissionDenied)
 		return

@@ -162,3 +162,24 @@ func processError(err error) error {
 	}
 	return err
 }
+
+func PathBuilder(ctx *App, path string) (string, error) {
+	if path == "" {
+		return "", NewError("No path available", 400)
+	}
+	chroot := ctx.Session["path"]
+	fullpath := filepath.ToSlash(filepath.Join(chroot, path))
+	if strings.HasSuffix(path, "/") && fullpath != "/" {
+		fullpath += "/"
+	}
+
+	if !strings.HasPrefix(fullpath, EnforceDirectory(chroot)) {
+		if strings.HasSuffix(chroot, "/") {
+			return "", ErrFilesystemError
+		}
+		return chroot, nil
+	} else if !strings.HasSuffix(chroot, "/") && strings.HasSuffix(chroot, path) {
+		return chroot, nil
+	}
+	return fullpath, nil
+}

@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/ctrl"
 	. "github.com/mickael-kerjean/filestash/server/middleware"
 	"github.com/mickael-kerjean/filestash/server/model"
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 
 	"github.com/gorilla/mux"
 )
@@ -39,7 +39,7 @@ func SiteHandler(app *App, w http.ResponseWriter, r *http.Request) {
 	} else if app.Backend == nil {
 		SendErrorResult(w, ErrNotFound)
 		return
-	} else if model.CanRead(app) == false {
+	} else if permissions.CanRead(app) == false {
 		SendErrorResult(w, ErrPermissionDenied)
 		return
 	}
@@ -47,7 +47,7 @@ func SiteHandler(app *App, w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(path, "/") {
 		path += "index.html"
 	}
-	path, err := ctrl.PathBuilder(app, path)
+	path, err := PathBuilder(app, path)
 	if err != nil {
 		SendErrorResult(w, err)
 		return
