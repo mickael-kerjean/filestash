@@ -13,6 +13,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -259,6 +260,11 @@ func handlerRDIFF(ctx *App, res http.ResponseWriter, req *http.Request, path str
 		SendErrorResult(res, ErrNotFound)
 		return
 	}
+	basePath := path
+	if hdr := req.Header.Get("X-Copy-Source"); hdr != "" {
+		root, _ := SplitPath(path)
+		basePath = JoinPath(root, filepath.Base(hdr))
+	}
 	since := req.Header.Get("If-Unmodified-Since")
 	if since != "" {
 		expected, err := http.ParseTime(since)
@@ -266,13 +272,13 @@ func handlerRDIFF(ctx *App, res http.ResponseWriter, req *http.Request, path str
 			Log.Debug("files::save::rdiff action=precondition err=%s", err.Error())
 			SendErrorResult(res, ErrNotValid)
 			return
-		} else if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() != expected.Unix() {
+		} else if finfo, err := ctx.Backend.Stat(basePath); err == nil && finfo.ModTime().Unix() != expected.Unix() {
 			SendErrorResult(res, NewError("Modified since", http.StatusPreconditionFailed))
 			return
 		}
 	}
 
-	remote, err := ctx.Backend.Cat(path)
+	remote, err := ctx.Backend.Cat(basePath)
 	if err != nil {
 		Log.Debug("files::save::rdiff action=backend_cat err=%s", err.Error())
 		SendErrorResult(res, ErrNotFound)
