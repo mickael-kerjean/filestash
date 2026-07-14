@@ -1,13 +1,17 @@
 package files
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"hash"
 	"hash/crc32"
 	"io"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,6 +19,8 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+
+	"github.com/balena-os/librsync-go"
 )
 
 var chunkedUploadCache AppCache
@@ -28,6 +34,11 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 	h.Set("Cache-Control", "no-store")
 	h.Set("Pragma", "no-cache")
 	h.Set("Connection", "Close")
+
+	if req.Method == http.MethodOptions {
+		h.Set("Accept-Post", "application/offset+octet-stream, application/vnd.filestash.delta.rdiff")
+		return
+	}
 
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
@@ -68,10 +79,9 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	// There is a few ways to save something: plain upload, via tus, via delta sync
 	proto := ""
-	if strings.HasPrefix(req.Header.Get("Content-Type"), "application/vnd.filestash.delta") {
-		proto = "delta"
+	if strings.HasPrefix(req.Header.Get("Content-Type"), "application/vnd.filestash.delta.rdiff") {
+		proto = "rdiff"
 	} else if _, ok := req.Header["Tus-Resumable"]; ok {
 		proto = "tus"
 	}
@@ -80,8 +90,8 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		handlerClassic(ctx, res, req, path, h)
 	case "tus":
 		handlerTUS(ctx, res, req, path, h)
-	case "delta":
-		handlerDelta(ctx, res, req, path, h)
+	case "rdiff":
+		handlerRDIFF(ctx, res, req, path, h)
 	default:
 		SendErrorResult(res, ErrNotImplemented)
 	}
@@ -125,13 +135,6 @@ func handlerTUS(ctx *App, res http.ResponseWriter, req *http.Request, path strin
 	cacheKey := map[string]string{
 		"path":    path,
 		"session": GenerateID(ctx.Session),
-	}
-	if req.Method == http.MethodOptions {
-		h.Set("Tus-Resumable", "1.0.0")
-		h.Set("Tus-Version", "1.0.0")
-		h.Set("Tus-Extension", "creation,checksum")
-		h.Set("Tus-Checksum-Algorithm", "sha1,crc32")
-		return
 	}
 	if req.Method == http.MethodHead {
 		c := chunkedUploadCache.Get(cacheKey)
@@ -248,13 +251,125 @@ func handlerTUS(ctx *App, res http.ResponseWriter, req *http.Request, path strin
 		res.WriteHeader(http.StatusNoContent)
 		return
 	}
-
 	SendErrorResult(res, ErrNotFound)
 }
 
-func handlerDelta(ctx *App, res http.ResponseWriter, req *http.Request, path string, h http.Header) {
-	// TODO
-	SendErrorResult(res, ErrNotImplemented)
+func handlerRDIFF(ctx *App, res http.ResponseWriter, req *http.Request, path string, h http.Header) {
+	if req.Method != http.MethodPost {
+		SendErrorResult(res, ErrNotFound)
+		return
+	}
+	since := req.Header.Get("If-Unmodified-Since")
+	if since != "" {
+		expected, err := http.ParseTime(since)
+		if err != nil {
+			Log.Debug("files::save::rdiff action=precondition err=%s", err.Error())
+			SendErrorResult(res, ErrNotValid)
+			return
+		} else if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() != expected.Unix() {
+			SendErrorResult(res, NewError("Modified since", http.StatusPreconditionFailed))
+			return
+		}
+	}
+
+	remote, err := ctx.Backend.Cat(path)
+	if err != nil {
+		Log.Debug("files::save::rdiff action=backend_cat err=%s", err.Error())
+		SendErrorResult(res, ErrNotFound)
+		return
+	}
+	defer remote.Close()
+	base := &rdiffBase{src: remote}
+	version := make([]byte, 1)
+	if _, err = io.ReadFull(req.Body, version); err != nil {
+		Log.Debug("files::save::rdiff action=envelope_version err=%s", err.Error())
+		SendErrorResult(res, ErrNotValid)
+		return
+	} else if version[0] != 1 {
+		Log.Debug("files::save::rdiff action=envelope_version err=unsupported version=%d", version[0])
+		SendErrorResult(res, ErrNotImplemented)
+		return
+	}
+
+	root, filename := SplitPath(path)
+	part := root + "." + filename + ".part_" + QuickString(8)
+	hasher := sha256.New()
+	reader, writer := io.Pipe()
+	saved := make(chan error, 1)
+	go func() {
+		saved <- ctx.Backend.Save(part, reader)
+	}()
+	abort := func(err error, status int) {
+		writer.CloseWithError(err)
+		<-saved
+		if err := ctx.Backend.Rm(part); err != nil {
+			Log.Debug("files::save::rdiff action=part_cleanup err=%s", err.Error())
+		}
+		Log.Debug("files::save::rdiff action=patch err=%s", err.Error())
+		SendErrorResult(res, NewError(err.Error(), status))
+	}
+	if err = librsync.Patch(io.NewSectionReader(base, 0, math.MaxInt64), req.Body, io.MultiWriter(writer, hasher)); err != nil {
+		abort(err, 403)
+		return
+	} else if base.err != nil {
+		abort(base.err, 403)
+		return
+	}
+	expected := make([]byte, sha256.Size)
+	if _, err = io.ReadFull(req.Body, expected); err != nil {
+		abort(err, 403)
+		return
+	}
+	writer.Close()
+	if err = <-saved; err != nil {
+		abort(err, 403)
+		return
+	}
+	if bytes.Equal(hasher.Sum(nil), expected) == false {
+		if err := ctx.Backend.Rm(part); err != nil {
+			Log.Debug("files::save::rdiff action=part_cleanup err=%s", err.Error())
+		}
+		SendErrorResult(res, NewError("Checksum Mismatch", 460))
+		return
+	}
+	if err = ctx.Backend.Mv(part, path); err != nil {
+		if ctx.Backend.Rm(path) == nil {
+			err = ctx.Backend.Mv(part, path)
+		}
+	}
+	if err != nil {
+		Log.Debug("files::save::rdiff action=commit err=%s", err.Error())
+		if err := ctx.Backend.Rm(part); err != nil {
+			Log.Debug("files::save::rdiff action=part_cleanup err=%s", err.Error())
+		}
+		SendErrorResult(res, NewError(err.Error(), 403))
+		return
+	}
+	if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.ModTime().Unix() > 0 {
+		h.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
+	}
+	SendSuccessResult(res, nil)
+}
+
+type rdiffBase struct {
+	src io.Reader
+	pos int64
+	err error
+}
+
+func (this *rdiffBase) ReadAt(p []byte, off int64) (int, error) {
+	if this.err != nil {
+		return 0, this.err
+	} else if off < this.pos {
+		this.err = errors.New("non monotonic access to the base file")
+		return 0, this.err
+	} else if _, err := io.CopyN(io.Discard, this.src, off-this.pos); err != nil {
+		this.err = err
+		return 0, err
+	}
+	n, err := io.ReadFull(this.src, p)
+	this.pos = off + int64(n)
+	return n, err
 }
 
 func createChunkedUploader(save func(path string, file io.Reader) error, path string, size uint64) *chunkedUpload {
