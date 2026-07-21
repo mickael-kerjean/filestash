@@ -6,7 +6,6 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/ctrl"
 )
 
 func get(ctx *App, w http.ResponseWriter, r *http.Request) {
