@@ -1,6 +1,7 @@
 package plg_backend_nfs
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -265,6 +266,13 @@ func (this NfsShare) Ls(path string) ([]os.FileInfo, error) {
 			}(),
 			FSize: int64(dir.Attr.Attr.Filesize),
 			FTime: int64(dir.Attr.Attr.Ctime.Seconds),
+			Metadata: map[string]any{
+				"uid":   dir.Attr.Attr.UID,
+				"gid":   dir.Attr.Attr.GID,
+				"mode":  fmt.Sprintf("%#o", dir.Attr.Attr.FileMode),
+				"atime": int64(dir.Attr.Attr.Atime.Seconds) * 1000,
+				"mtime": int64(dir.Attr.Attr.Mtime.Seconds) * 1000,
+			},
 		})
 	}
 	return files, nil

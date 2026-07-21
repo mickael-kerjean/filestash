@@ -14,6 +14,15 @@ import (
 	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 )
 
+type FileInfo struct {
+	Name     string         `json:"name"`
+	Type     string         `json:"type"`
+	Size     int64          `json:"size"`
+	Time     int64          `json:"time"`
+	Offline  bool           `json:"offline,omitempty"`
+	Metadata map[string]any `json:"metadata,omitempty"`
+}
+
 func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if permissions.CanRead(ctx) == false {
 		if permissions.CanUpload(ctx) == false {
@@ -110,12 +119,10 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 				}
 				return "directory"
 			}(entries[i].Mode()),
-			Mode: func(mode os.FileMode) uint32 {
-				return uint32(mode)
-			}(entries[i].Mode()),
 		}
-		if f, ok := entries[i].Sys().(File); ok && f.Offline == true {
-			files[i].Offline = true
+		if f, ok := entries[i].Sys().(File); ok {
+			files[i].Offline = f.Offline
+			files[i].Metadata = f.Metadata
 		}
 	}
 
