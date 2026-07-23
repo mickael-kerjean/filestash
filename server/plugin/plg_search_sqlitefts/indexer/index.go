@@ -210,7 +210,7 @@ func (this sqliteQueries) FindParent(path string) (RowMapper, error) {
 
 func (this sqliteQueries) FileMetaUpdate(path string, f fs.FileInfo) error {
 	_, err := this.tx.Exec(
-		"UPDATE file SET size = ?, modTime = ? indexTime = NULL WHERE path = ?",
+		"UPDATE file SET size = ?, modTime = ?, indexTime = NULL WHERE path = ?",
 		f.Size(), f.ModTime(), path,
 	)
 	return toErr(err)
