@@ -15,12 +15,12 @@ import (
 )
 
 type FileInfo struct {
-	Name     string         `json:"name"`
-	Type     string         `json:"type"`
-	Size     int64          `json:"size"`
-	Time     int64          `json:"time"`
-	Offline  bool           `json:"offline,omitempty"`
-	Metadata map[string]any `json:"metadata,omitempty"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	Size     int64  `json:"size"`
+	Time     int64  `json:"time"`
+	Offline  bool   `json:"offline,omitempty"`
+	Metadata any    `json:"metadata,omitempty"`
 }
 
 func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -119,10 +119,10 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 				}
 				return "directory"
 			}(entries[i].Mode()),
+			Metadata: entries[i].Sys(),
 		}
 		if f, ok := entries[i].Sys().(File); ok {
 			files[i].Offline = f.Offline
-			files[i].Metadata = f.Metadata
 		}
 	}
 

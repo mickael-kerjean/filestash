@@ -120,13 +120,13 @@ type WorkflowSpecs struct {
 }
 
 type File struct {
-	FName    string         `json:"name"`
-	FType    string         `json:"type"`
-	FTime    int64          `json:"time"`
-	FSize    int64          `json:"size"`
-	FPath    string         `json:"path,omitempty"`
-	Offline  bool           `json:"offline,omitempty"`
-	Metadata map[string]any `json:"metadata,omitempty"`
+	FName    string `json:"name"`
+	FType    string `json:"type"`
+	FTime    int64  `json:"time"`
+	FSize    int64  `json:"size"`
+	FPath    string `json:"path,omitempty"`
+	Offline  bool   `json:"offline,omitempty"`
+	Metadata any    `json:"metadata,omitempty"`
 }
 
 func (f File) Name() string {
