@@ -1,12 +1,12 @@
 package files
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -19,7 +19,9 @@ var file_cache AppCache
 func init() {
 	file_cache = NewAppCache()
 	file_cache.OnEvict(func(key string, value interface{}) {
-		os.RemoveAll(filepath.Join(GetAbsolutePath(TMP_PATH), key))
+		if tmpPath, _, ok := strings.Cut(value.(string), "::"); ok {
+			os.RemoveAll(tmpPath)
+		}
 	})
 }
 
@@ -63,11 +65,16 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// use our cache if necessary (range request) when possible
+	var mtime string
 	if req.Header.Get("range") != "" {
+		if finfo, err := ctx.Backend.Stat(path); err == nil {
+			mtime = fmt.Sprintf("%d", finfo.ModTime().Unix())
+		}
 		ctx.Session["fullpath"] = path
 		if p := file_cache.Get(ctx.Session); p != nil {
-			f, err := os.OpenFile(p.(string), os.O_RDONLY, os.ModePerm)
-			if err == nil {
+			if tmpPath, cachedMtime, _ := strings.Cut(p.(string), "::"); cachedMtime != mtime {
+				file_cache.Del(ctx.Session)
+			} else if f, err := os.OpenFile(tmpPath, os.O_RDONLY, os.ModePerm); err == nil {
 				file = f
 				if fi, err := f.Stat(); err == nil {
 					contentLength = fi.Size()
@@ -161,7 +168,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 				SendErrorResult(res, err)
 				return
 			}
-			file_cache.Set(ctx.Session, tmpPath)
+			file_cache.Set(ctx.Session, tmpPath+"::"+mtime)
 			if _, err = io.Copy(f, file); err != nil {
 				f.Close()
 				file.Close()
@@ -243,32 +250,43 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header.Set("Content-Disposition", "attachment; filename=\""+fname+"\"")
 	}
 	header.Set("Accept-Ranges", "bytes")
+	header.Set("Vary", "Accept")
 
-	if req.Method != http.MethodHead {
-		size := 32
-		if thumb != "true" {
-			switch Config.Get("general.buffer_size").String() {
-			case "small":
-				size = 32
-			case "medium":
-				size = 128
-			case "large":
-				size = 2 * 1024
-			}
+	if req.Method == http.MethodHead {
+		file.Close()
+		return
+	}
+	size := 32
+	if thumb != "true" {
+		switch Config.Get("general.buffer_size").String() {
+		case "small":
+			size = 32
+		case "medium":
+			size = 128
+		case "large":
+			size = 2 * 1024
 		}
-		buf := make([]byte, size*1024)
-		if f, ok := file.(io.ReadSeeker); ok && len(ranges) > 0 {
-			if _, err = f.Seek(ranges[0][0], io.SeekStart); err == nil {
-				header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", ranges[0][0], ranges[0][1], contentLength))
-				header.Set("Content-Length", fmt.Sprintf("%d", ranges[0][1]-ranges[0][0]+1))
-				res.WriteHeader(http.StatusPartialContent)
-				io.CopyBuffer(res, io.LimitReader(f, ranges[0][1]-ranges[0][0]+1), buf)
-			} else {
-				res.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
-			}
+	}
+	buf := make([]byte, size*1024)
+	if f, ok := file.(io.ReadSeeker); ok && len(ranges) > 0 {
+		if _, err = f.Seek(ranges[0][0], io.SeekStart); err == nil {
+			header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", ranges[0][0], ranges[0][1], contentLength))
+			header.Set("Content-Length", fmt.Sprintf("%d", ranges[0][1]-ranges[0][0]+1))
+			res.WriteHeader(http.StatusPartialContent)
+			io.CopyBuffer(res, io.LimitReader(f, ranges[0][1]-ranges[0][0]+1), buf)
 		} else {
-			io.CopyBuffer(res, file, buf)
+			res.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
 		}
+	} else if strings.Contains(req.Header.Get("Accept"), "application/vnd.filestash.delta.rdiff") {
+		header.Set("Cache-Control", "no-store")
+		header.Set("Content-Type", "application/vnd.filestash.delta.rdiff")
+		header.Del("Content-Length")
+		hasher := sha256.New()
+		if err = rdiffSignature(io.TeeReader(file, hasher), res); err == nil {
+			_, err = res.Write(hasher.Sum(nil))
+		}
+	} else {
+		io.CopyBuffer(res, file, buf)
 	}
 	file.Close()
 }

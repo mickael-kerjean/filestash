@@ -6,12 +6,10 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"hash"
 	"hash/crc32"
 	"io"
-	"math"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -20,8 +18,6 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
-
-	"github.com/balena-os/librsync-go"
 )
 
 var chunkedUploadCache AppCache
@@ -285,18 +281,6 @@ func handlerRDIFF(ctx *App, res http.ResponseWriter, req *http.Request, path str
 		return
 	}
 	defer remote.Close()
-	base := &rdiffBase{src: remote}
-	version := make([]byte, 1)
-	if _, err = io.ReadFull(req.Body, version); err != nil {
-		Log.Debug("files::save::rdiff action=envelope_version err=%s", err.Error())
-		SendErrorResult(res, ErrNotValid)
-		return
-	} else if version[0] != 1 {
-		Log.Debug("files::save::rdiff action=envelope_version err=unsupported version=%d", version[0])
-		SendErrorResult(res, ErrNotImplemented)
-		return
-	}
-
 	root, filename := SplitPath(path)
 	part := root + "." + filename + ".part_" + QuickString(8)
 	hasher := sha256.New()
@@ -314,11 +298,8 @@ func handlerRDIFF(ctx *App, res http.ResponseWriter, req *http.Request, path str
 		Log.Debug("files::save::rdiff action=patch err=%s", err.Error())
 		SendErrorResult(res, NewError(err.Error(), status))
 	}
-	if err = librsync.Patch(io.NewSectionReader(base, 0, math.MaxInt64), req.Body, io.MultiWriter(writer, hasher)); err != nil {
+	if err = rdiffPatch(remote, req.Body, io.MultiWriter(writer, hasher)); err != nil {
 		abort(err, 403)
-		return
-	} else if base.err != nil {
-		abort(base.err, 403)
 		return
 	}
 	expected := make([]byte, sha256.Size)
@@ -355,27 +336,6 @@ func handlerRDIFF(ctx *App, res http.ResponseWriter, req *http.Request, path str
 		h.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
 	}
 	SendSuccessResult(res, nil)
-}
-
-type rdiffBase struct {
-	src io.Reader
-	pos int64
-	err error
-}
-
-func (this *rdiffBase) ReadAt(p []byte, off int64) (int, error) {
-	if this.err != nil {
-		return 0, this.err
-	} else if off < this.pos {
-		this.err = errors.New("non monotonic access to the base file")
-		return 0, this.err
-	} else if _, err := io.CopyN(io.Discard, this.src, off-this.pos); err != nil {
-		this.err = err
-		return 0, err
-	}
-	n, err := io.ReadFull(this.src, p)
-	this.pos = off + int64(n)
-	return n, err
 }
 
 func createChunkedUploader(save func(path string, file io.Reader) error, path string, size uint64) *chunkedUpload {
