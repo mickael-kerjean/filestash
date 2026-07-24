@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/config"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/crawler"
 )
 
@@ -27,5 +28,8 @@ func (this SearchEngine) Query(app App, path string, keyword string) ([]IFile, e
 		InitialPath: path,
 		Name:        filepath.Base(path),
 	})
+	if SEARCH_GLOBAL() {
+		path = "/"
+	}
 	return crwlr.State.Search(path, keyword)
 }

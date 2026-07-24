@@ -17,6 +17,7 @@ func init() {
 		CYCLE_TIME()
 		MAX_INDEXING_FSIZE()
 		INDEXING_EXT()
+		SEARCH_GLOBAL()
 	})
 }
 
@@ -147,4 +148,17 @@ var INDEXING_EXT = func() string {
 		f.Default = "org,txt,docx,pdf,md,form,xlsx,pptx"
 		return f
 	}).String()
+}
+
+var SEARCH_GLOBAL = func() bool {
+	return Config.Get("features.search.global").Schema(func(f *FormElement) *FormElement {
+		if f == nil {
+			f = &FormElement{}
+		}
+		f.Name = "global"
+		f.Type = "boolean"
+		f.Description = "Search results are the same regardless of the folder the user is in"
+		f.Default = false
+		return f
+	}).Bool()
 }
