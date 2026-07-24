@@ -86,7 +86,7 @@ func Build(r *mux.Router) {
 	// Webdav server / Shared Link
 	middlewares = []Middleware{IndexHeaders, SecureHeaders, PluginInjector}
 	r.HandleFunc(WithBase("/s/{share}"), NewMiddlewareChain(ServeFrontofficeHandler, middlewares)).Methods("GET")
-	middlewares = []Middleware{WebdavBlacklist, SessionStart, PluginInjector}
+	middlewares = []Middleware{WebdavBlacklist, WebdavSessionStart, PluginInjector}
 	r.PathPrefix(WithBase("/s/{share}")).Handler(NewMiddlewareChain(WebdavHandler, middlewares))
 
 	// Application Resources
