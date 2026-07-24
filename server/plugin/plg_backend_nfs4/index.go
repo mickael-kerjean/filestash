@@ -2,12 +2,14 @@ package plg_backend_nfs4
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/system"
 	"github.com/mickael-kerjean/filestash/server/plugin/plg_backend_nfs4/repo/nfs4"
 )
 
@@ -123,7 +125,16 @@ func (this Nfs4Share) Ls(path string) ([]os.FileInfo, error) {
 				return "file"
 			}(),
 			FSize: int64(info.Size),
-			FTime: int64(info.Mtime.Nanosecond()),
+			FTime: info.Mtime.Unix(),
+			Metadata: map[string]any{
+				"uid":   info.Owner,
+				"gid":   info.Group,
+				"owner": system.Username(info.Owner),
+				"group": system.Groupname(info.Group),
+				"mode":  fmt.Sprintf("%#o", info.Mode),
+				"atime": info.Atime.UnixMilli(),
+				"mtime": info.Mtime.UnixMilli(),
+			},
 		})
 	}
 	return files, nil
@@ -143,7 +154,7 @@ func (this Nfs4Share) Stat(path string) (os.FileInfo, error) {
 			return "file"
 		}(),
 		FSize: int64(finfo.Size),
-		FTime: int64(finfo.Mtime.Nanosecond()),
+		FTime: finfo.Mtime.Unix(),
 	}, nil
 }
 

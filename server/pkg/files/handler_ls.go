@@ -123,6 +123,7 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 		if f, ok := entries[i].Sys().(File); ok {
 			files[i].Offline = f.Offline
+			files[i].Metadata = f.Metadata
 		}
 	}
 

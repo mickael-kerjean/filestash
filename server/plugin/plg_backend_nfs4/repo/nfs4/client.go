@@ -21,7 +21,8 @@ const NfsReadBlockLen = 512 * 1024
 
 var standardNfsAttrs = Bitmap4{
 	1<<FATTR4_TYPE | 1<<FATTR4_SIZE,
-	1 << (FATTR4_TIME_MODIFY - 32),
+	1<<(FATTR4_MODE-32) | 1<<(FATTR4_OWNER-32) | 1<<(FATTR4_OWNER_GROUP-32) |
+		1<<(FATTR4_TIME_ACCESS-32) | 1<<(FATTR4_TIME_MODIFY-32),
 }
 
 type NfsInterface interface {
@@ -66,6 +67,10 @@ type FileInfo struct {
 	Name  string
 	IsDir bool
 	Size  uint64
+	Mode  uint32
+	Owner string
+	Group string
+	Atime time.Time
 	Mtime time.Time
 }
 
@@ -483,6 +488,29 @@ func (c *NfsClient) translateFileMeta(name string, attrs Fattr4) FileInfo {
 		curOff += 8
 	}
 
+	if len(atm) > 1 && atm[1]&(1<<(FATTR4_MODE-32)) != 0 {
+		res.Mode = binary.BigEndian.Uint32(attrs.Attr_vals[curOff : curOff+4])
+		curOff += 4
+	}
+
+	if len(atm) > 1 && atm[1]&(1<<(FATTR4_OWNER-32)) != 0 {
+		res.Owner, curOff = xdrString(attrs.Attr_vals, curOff)
+	}
+
+	if len(atm) > 1 && atm[1]&(1<<(FATTR4_OWNER_GROUP-32)) != 0 {
+		res.Group, curOff = xdrString(attrs.Attr_vals, curOff)
+	}
+
+	if len(atm) > 1 && atm[1]&(1<<(FATTR4_TIME_ACCESS-32)) != 0 {
+		atimeSec := binary.BigEndian.Uint64(attrs.Attr_vals[curOff : curOff+8])
+		curOff += 8
+
+		atimeNsec := binary.BigEndian.Uint32(attrs.Attr_vals[curOff : curOff+4])
+		curOff += 4
+
+		res.Atime = time.Unix(int64(atimeSec), int64(atimeNsec))
+	}
+
 	if len(atm) > 1 && atm[1]&(1<<(FATTR4_TIME_MODIFY-32)) != 0 {
 		mtimeSec := binary.BigEndian.Uint64(attrs.Attr_vals[curOff : curOff+8])
 		curOff += 8
@@ -495,6 +523,20 @@ func (c *NfsClient) translateFileMeta(name string, attrs Fattr4) FileInfo {
 	}
 
 	return res
+}
+
+func xdrString(vals []byte, off int) (string, int) {
+	if off+4 > len(vals) {
+		return "", off
+	}
+	length := int(binary.BigEndian.Uint32(vals[off : off+4]))
+	off += 4
+	if length < 0 || off+length > len(vals) {
+		return "", len(vals)
+	}
+	s := string(vals[off : off+length])
+	off += length + (4-length%4)%4
+	return s, off
 }
 
 func (c *NfsClient) GetFileInfo(path string) (FileInfo, error) {

@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/system"
 
 	"github.com/vmware/go-nfs-client/nfs"
 	"github.com/vmware/go-nfs-client/nfs/rpc"
@@ -269,6 +270,8 @@ func (this NfsShare) Ls(path string) ([]os.FileInfo, error) {
 			Metadata: map[string]any{
 				"uid":   dir.Attr.Attr.UID,
 				"gid":   dir.Attr.Attr.GID,
+				"owner": system.Username(fmt.Sprint(dir.Attr.Attr.UID)),
+				"group": system.Groupname(fmt.Sprint(dir.Attr.Attr.GID)),
 				"mode":  fmt.Sprintf("%#o", dir.Attr.Attr.FileMode),
 				"atime": int64(dir.Attr.Attr.Atime.Seconds) * 1000,
 				"mtime": int64(dir.Attr.Attr.Mtime.Seconds) * 1000,
