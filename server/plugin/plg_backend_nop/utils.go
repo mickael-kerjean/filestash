@@ -21,7 +21,7 @@ func (this *LargeFile) Read(p []byte) (n int, err error) {
 	if lenp > 0 {
 		p[0] = '_'
 	}
-	for i := 0; i < lenp; i += 100 {
+	for i := 0; i < lenp; i += 4096 {
 		p[i] = '_'
 	}
 	return lenp, nil
