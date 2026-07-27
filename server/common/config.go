@@ -109,6 +109,7 @@ func NewConfiguration() Configuration {
 							FormElement{Name: "iframe", Type: "text", Default: "", Description: "list of domains who can use the application from an iframe. eg: https://example.com"},
 							FormElement{Name: "enable_chromecast", Type: "boolean", Default: true, Description: "Enable users to stream content on a chromecast device. This feature requires the browser to access google's server to download the chromecast SDK."},
 							FormElement{Name: "signature", Type: "text", Default: "", Description: "Enforce signature when using URL parameters in the authentication process"},
+							FormElement{Name: "disable_manual_login", Type: "boolean", Default: false, Description: "Disable manual login via POST /api/session. Enable when authentication should only occur through the configured identity provider (SSO)."},
 						},
 					},
 				},
