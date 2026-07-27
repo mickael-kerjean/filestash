@@ -21,6 +21,6 @@ index a499e5ef..caebd17c 100644
 +        const $shell = qs($page, "component-shell");
 +        $shell.setAttribute("path", urlToPath(fromHref(location.pathname + location.hash)));
 +        effect(rxjs.fromEvent(window, "keydown").pipe(
-+            rxjs.filter((e) => ["F4", "F9", "F12"].indexOf(e.code) !== -1),
++            rxjs.filter((e) => ["F4", "F9"].indexOf(e.code) !== -1),
 +            rxjs.tap(() => $shell.classList.toggle("hidden")),
 +        ));
