@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"hash/fnv"
 	"io"
@@ -16,12 +17,12 @@ import (
 	"os"
 	"runtime"
 	"sort"
-	"sync"
+	"sync/atomic"
 )
 
 var (
-	Letters                 = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-	GCMNonce NonceGenerator = NewNonceGenerator(12)
+	Letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	GCMNonce = NewNonceGenerator()
 )
 
 func EncryptString(secret string, data string) (string, error) {
@@ -238,29 +239,19 @@ func GenerateMachineID() string {
 }
 
 type NonceGenerator struct {
-	current []byte
-	count   int
-	*sync.Mutex
+	start [4]byte
+	current atomic.Uint64
 }
 
-func NewNonceGenerator(size int) NonceGenerator {
-	firstNonce := make([]byte, size)
-	io.ReadFull(rand.Reader, firstNonce)
-	var m sync.Mutex
-	return NonceGenerator{firstNonce, size, &m}
+func NewNonceGenerator() *NonceGenerator {
+	g := NonceGenerator{}
+	io.ReadFull(rand.Reader, g.start[:])
+	return &g
 }
 
 func (this *NonceGenerator) Next() []byte {
-	this.Lock()
-	newNonce := make([]byte, this.count)
-	for i := len(this.current) - 1; i >= 0; i-- {
-		if this.current[i] < 255 {
-			this.current[i] += 1
-			break
-		}
-		this.current[i] = 0
-	}
-	newNonce = this.current
-	this.Unlock()
-	return newNonce
+	out := make([]byte, 12)
+	copy(out[:4], this.start[:])
+	binary.BigEndian.PutUint64(out[4:12], this.current.Add(1))
+	return out
 }
