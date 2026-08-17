@@ -239,19 +239,22 @@ func GenerateMachineID() string {
 }
 
 type NonceGenerator struct {
-	start [4]byte
+	start [12]byte
 	current atomic.Uint64
 }
 
 func NewNonceGenerator() *NonceGenerator {
 	g := NonceGenerator{}
-	io.ReadFull(rand.Reader, g.start[:])
+	if _, err := io.ReadFull(rand.Reader, g.start[:]); err != nil {
+		panic(err)
+	}
+	g.current.Store(binary.BigEndian.Uint64(g.start[4:]))
 	return &g
 }
 
 func (this *NonceGenerator) Next() []byte {
 	out := make([]byte, 12)
-	copy(out[:4], this.start[:])
+	copy(out[:4], this.start[:4])
 	binary.BigEndian.PutUint64(out[4:12], this.current.Add(1))
 	return out
 }
