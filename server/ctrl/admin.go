@@ -90,7 +90,6 @@ func AdminBackend(ctx *App, res http.ResponseWriter, req *http.Request) {
 		backends[key] = drivers[key].LoginForm()
 	}
 	SendSuccessResultWithEtagAndGzip(res, req, backends)
-	return
 }
 
 func AdminAuthenticationMiddleware(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -100,7 +99,6 @@ func AdminAuthenticationMiddleware(ctx *App, res http.ResponseWriter, req *http.
 		middlewares[id] = driver.Setup()
 	}
 	SendSuccessResultWithEtagAndGzip(res, req, middlewares)
-	return
 }
 
 func FetchLogHandler(ctx *App, res http.ResponseWriter, req *http.Request) {

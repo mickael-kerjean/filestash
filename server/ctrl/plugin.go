@@ -66,7 +66,6 @@ func PluginStaticHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendErrorResult(res, err)
-	return
 }
 
 func PluginDownloadHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
