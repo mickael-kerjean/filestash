@@ -56,7 +56,7 @@ func PublicConfigHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		DisplayHidden:           Config.Get("general.display_hidden").Bool(),
 		Name:                    Config.Get("general.name").String(),
 		UploadButton:            Config.Get("general.upload_button").Bool(),
-		Connections:             Config.Conn,
+		Connections:             Config.Connections(),
 		SharedLinkDefaultAccess: Config.Get("features.share.default_access").String(),
 		SharedLinkRedirect:      Config.Get("features.share.redirect").String(),
 		Logout:                  Config.Get("general.logout").String(),

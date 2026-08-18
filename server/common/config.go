@@ -7,20 +7,22 @@ import (
 	"os/user"
 	"strconv"
 	"strings"
-	"sync"
+	"sync/atomic"
 )
 
-var Config Configuration
+var Config = NewConfiguration()
 
 type Configuration struct {
-	mu    sync.RWMutex
-	cache sync.Map
+	state atomic.Pointer[configState]
+}
 
-	Form []Form
-	Conn []map[string]any
+type configState struct {
+	forms []Form
+	conn  []map[string]any
 }
 
 type ConfigElement struct {
+	key            string
 	currentElement *FormElement
 	cfg            *Configuration
 }
@@ -59,8 +61,10 @@ func InitConfig() error {
 }
 
 func NewConfiguration() Configuration {
-	return Configuration{
-		Form: []Form{
+	c := Configuration{}
+	c.state.Store(&configState{
+		conn: []map[string]any{},
+		forms: []Form{
 			Form{
 				Title: "general",
 				Elmnts: []FormElement{
@@ -137,8 +141,12 @@ func NewConfiguration() Configuration {
 				},
 			},
 		},
-		Conn: []map[string]any{},
-	}
+	})
+	return c
+}
+
+func (this *Configuration) Connections() []map[string]any {
+	return this.state.Load().conn
 }
 
 func (this Form) MarshalJSON() ([]byte, error) {
@@ -194,22 +202,28 @@ func (this *Configuration) Load() error {
 		Connections []map[string]any `json:"connections"`
 	}
 	json.Unmarshal(cFile, &d)
-	this.Conn = []map[string]any{}
+	conn := []map[string]any{}
 	if d.Connections != nil {
-		this.Conn = d.Connections
+		conn = d.Connections
 	}
 
 	// Hydrate Config with data coming from the config file
 	var raw map[string]any
 	json.Unmarshal(cFile, &raw)
-	for path, value := range flattenJSON("", raw) {
-		el := this.Get(path)
-		if el.currentElement != nil && el.currentElement.Value != value {
-			el.currentElement.Value = value
+	for {
+		old := this.state.Load()
+		next := &configState{forms: cloneForms(old.forms), conn: conn}
+		for path, value := range flattenJSON("", raw) {
+			el := find(&next.forms, path, true)
+			if el != nil && el.Value != value {
+				el.Value = value
+			}
+		}
+		if this.state.CompareAndSwap(old, next) {
+			break
 		}
 	}
 
-	this.cache.Clear()
 	Log.SetVisibility(this.Get("log.level").String())
 	for _, fn := range Hooks.Get.OnConfig() {
 		fn()
@@ -259,10 +273,9 @@ func (this *Configuration) Initialise() {
 }
 
 func (this *Configuration) Save() {
-	this.mu.RLock()
-	formBytes, err := formToJSON(Form{Form: this.Form}, func(el FormElement) any { return el.Value })
-	conn, _ := json.Marshal(this.Conn)
-	this.mu.RUnlock()
+	s := this.state.Load()
+	formBytes, err := formToJSON(Form{Form: s.forms}, func(el FormElement) any { return el.Value })
+	conn, _ := json.Marshal(s.conn)
 	if err != nil {
 		Log.Error("config::save marshal %s", err.Error())
 		return
@@ -282,89 +295,74 @@ func (this *Configuration) Save() {
 	}
 }
 
-func (this *Configuration) Get(key string) *ConfigElement {
-	if tmp, ok := this.cache.Load(key); ok {
-		return &ConfigElement{currentElement: tmp.(*FormElement), cfg: this}
-	}
+func (this *Configuration) Get(key string) ConfigElement {
+	s := this.state.Load()
+	return ConfigElement{currentElement: find(&s.forms, key, false), key: key, cfg: this}
+}
 
-	var traverse func(forms *[]Form, path []string) *FormElement
-	traverse = func(forms *[]Form, path []string) *FormElement {
-		if len(path) == 0 {
-			return nil
+func (this ConfigElement) Schema(fn func(*FormElement) *FormElement) ConfigElement {
+	for {
+		old := this.cfg.state.Load()
+		next := &configState{forms: cloneForms(old.forms), conn: old.conn}
+		el := fn(find(&next.forms, this.key, true))
+		if this.cfg.state.CompareAndSwap(old, next) {
+			this.currentElement = el
+			break
 		}
-		for i := range *forms {
-			currentForm := (*forms)[i]
-			if currentForm.Title == path[0] {
-				if len(path) == 2 {
-					// we are on a leaf
-					// 1) attempt to get a `formElement`
-					for j, el := range currentForm.Elmnts {
-						if el.Name == path[1] {
-							return &(*forms)[i].Elmnts[j]
-						}
-					}
-					// 2) `formElement` does not exist, let's create it.
-					(*forms)[i].Elmnts = append(currentForm.Elmnts, FormElement{Name: path[1], Type: "hidden"})
-					return &(*forms)[i].Elmnts[len(currentForm.Elmnts)]
-				} else {
-					// we are NOT on a leaf, let's continue our tree transversal
-					return traverse(&(*forms)[i].Form, path[1:])
-				}
+	}
+	return this
+}
+
+func (this ConfigElement) Default(value interface{}) ConfigElement {
+	shouldSave := false
+	for {
+		old := this.cfg.state.Load()
+		next := &configState{forms: cloneForms(old.forms), conn: old.conn}
+		el := find(&next.forms, this.key, true)
+		shouldSave = el.Default == nil
+		if !shouldSave {
+			if el.Default != value {
+				Log.Debug("Attempt to set multiple default config value => %+v", el)
 			}
+			this.currentElement = el
+			break
 		}
-		// append a new `form` if the current key doesn't exist
-		*forms = append(*forms, Form{Title: path[0]})
-		return traverse(forms, path)
+		el.Default = value
+		if this.cfg.state.CompareAndSwap(old, next) {
+			this.currentElement = el
+			break
+		}
 	}
-	this.mu.Lock()
-	currentElement := traverse(&this.Form, strings.Split(key, "."))
-	this.cache.Store(key, currentElement)
-	this.mu.Unlock()
-	return &ConfigElement{currentElement: currentElement, cfg: this}
-}
-
-func (this *ConfigElement) Schema(fn func(*FormElement) *FormElement) *ConfigElement {
-	fn(this.currentElement)
-	this.cfg.cache.Clear()
-	return this
-}
-
-func (this *ConfigElement) Default(value interface{}) *ConfigElement {
-	if this.currentElement == nil {
-		return this
-	}
-	this.cfg.mu.Lock()
-	shouldSave := this.currentElement.Default == nil
-	if shouldSave {
-		this.currentElement.Default = value
-	} else if this.currentElement.Default != value {
-		Log.Debug("Attempt to set multiple default config value => %+v", this.currentElement)
-	}
-	this.cfg.mu.Unlock()
 	if shouldSave {
 		this.cfg.Save()
 	}
 	return this
 }
 
-func (this *ConfigElement) Set(value interface{}) *ConfigElement {
-	if this.currentElement == nil {
-		return this
+func (this ConfigElement) Set(value interface{}) ConfigElement {
+	changed := false
+	for {
+		old := this.cfg.state.Load()
+		next := &configState{forms: cloneForms(old.forms), conn: old.conn}
+		el := find(&next.forms, this.key, true)
+		changed = el.Value != value
+		if !changed {
+			this.currentElement = el
+			break
+		}
+		el.Value = value
+		if this.cfg.state.CompareAndSwap(old, next) {
+			this.currentElement = el
+			break
+		}
 	}
-	this.cfg.mu.Lock()
-	changed := this.currentElement.Value != value
-	if changed {
-		this.currentElement.Value = value
-		this.cfg.cache.Clear()
-	}
-	this.cfg.mu.Unlock()
 	if changed {
 		this.cfg.Save()
 	}
 	return this
 }
 
-func (this *ConfigElement) String() string {
+func (this ConfigElement) String() string {
 	switch v := this.Interface().(type) {
 	case string:
 		return v
@@ -374,7 +372,7 @@ func (this *ConfigElement) String() string {
 	return ""
 }
 
-func (this *ConfigElement) Int() int {
+func (this ConfigElement) Int() int {
 	switch v := this.Interface().(type) {
 	case float64:
 		return int(v)
@@ -386,24 +384,20 @@ func (this *ConfigElement) Int() int {
 	return 0
 }
 
-func (this *ConfigElement) Bool() bool {
+func (this ConfigElement) Bool() bool {
 	if v, ok := this.Interface().(bool); ok {
 		return v
 	}
 	return false
 }
 
-func (this *ConfigElement) Interface() interface{} {
+func (this ConfigElement) Interface() interface{} {
 	if this.currentElement == nil {
 		return nil
+	} else if this.currentElement.Value == nil {
+		return this.currentElement.Default
 	}
-	this.cfg.mu.RLock()
-	el := *this.currentElement
-	this.cfg.mu.RUnlock()
-	if el.Value == nil {
-		return el.Default
-	}
-	return el.Value
+	return this.currentElement.Value
 }
 
 func (this *Configuration) MarshalJSON() ([]byte, error) {
@@ -415,7 +409,7 @@ func (this *Configuration) MarshalJSON() ([]byte, error) {
 			username = u.Name
 		}
 	}
-	return Form{Form: append(this.Form, Form{
+	return Form{Form: append(this.state.Load().forms, Form{
 		Title: "constant",
 		Elmnts: []FormElement{
 			{Name: "user", Type: "boolean", ReadOnly: true, Value: username},
@@ -440,4 +434,63 @@ func defaultValue[T string | int | bool](dval T, envName string) T {
 		}
 	}
 	return dval
+}
+
+func cloneForms(forms []Form) []Form {
+	out := make([]Form, len(forms))
+	for i := range forms {
+		out[i] = Form{
+			Title:  forms[i].Title,
+			Form:   cloneForms(forms[i].Form),
+			Elmnts: append([]FormElement{}, forms[i].Elmnts...),
+		}
+	}
+	return out
+}
+
+func find(forms *[]Form, key string, create bool) *FormElement {
+	lastDot := strings.LastIndexByte(key, '.')
+	if lastDot < 0 {
+		return nil
+	}
+	name := key[lastDot+1:]
+	cur := forms
+	for start := 0; ; {
+		rel := strings.IndexByte(key[start:lastDot], '.')
+		last := rel < 0
+		end := lastDot
+		if !last {
+			end = start + rel
+		}
+		title := key[start:end]
+		var form *Form
+		list := *cur
+		for i := range list {
+			if list[i].Title == title {
+				form = &list[i]
+				break
+			}
+		}
+		if form == nil {
+			if !create {
+				return nil
+			}
+			*cur = append(*cur, Form{Title: title})
+			form = &(*cur)[len(*cur)-1]
+		}
+		if last {
+			for j := range form.Elmnts {
+				if form.Elmnts[j].Name == name {
+					return &form.Elmnts[j]
+				}
+			}
+			if !create {
+				return nil
+			}
+			form.Elmnts = append(form.Elmnts, FormElement{Name: name, Type: "hidden"})
+			return &form.Elmnts[len(form.Elmnts)-1]
+		}
+		cur = &form.Form
+		start = end + 1
+	}
 }

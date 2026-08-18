@@ -89,7 +89,7 @@ func HealthHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 				),
 				fmt.Sprintf(
 					"connections[size=%d]",
-					len(Config.Conn),
+					len(Config.Connections()),
 				),
 				fmt.Sprintf(
 					"middleware.identity_provider[type=%s][params=%d]",
