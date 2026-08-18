@@ -244,21 +244,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 			return session, ErrNotAuthorized
 		}
 		err = json.Unmarshal([]byte(str), &session)
-		if IsDirectory(ctx.Share.Path) {
-			session["path"] = ctx.Share.Path
-		} else {
-			// when the shared link is pointing to a file, we mustn't have access to the surroundings
-			// => we need to take extra care of which path to use as a chroot
-			var path string = req.URL.Query().Get("path")
-			if strings.HasPrefix(req.URL.Path, "/api/export/") == true {
-				var re = regexp.MustCompile(`^/api/export/[^\/]+/[^\/]+/[^\/]+(\/.+)$`)
-				path = re.ReplaceAllString(req.URL.Path, `$1`)
-			}
-			if strings.HasSuffix(ctx.Share.Path, path) == false {
-				return make(map[string]string), ErrPermissionDenied
-			}
-			session["path"] = strings.TrimSuffix(ctx.Share.Path, path) + "/"
-		}
+		session["path"] = ctx.Share.Path
 		return session, err
 	}
 
