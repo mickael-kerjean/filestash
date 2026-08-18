@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"os"
 	"os/user"
-	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -280,84 +279,6 @@ func (this *Configuration) Save() {
 	buf.WriteByte('}')
 	if err := SaveConfig(PrettyPrint(buf.Bytes())); err != nil {
 		Log.Error("config::save %s", err.Error())
-	}
-}
-
-func (this *Configuration) Export() interface{} {
-	return struct {
-		Editor                  string            `json:"editor"`
-		License                 string            `json:"license"`
-		DisplayHidden           bool              `json:"display_hidden"`
-		Name                    string            `json:"name"`
-		UploadButton            bool              `json:"upload_button"`
-		Connections             interface{}       `json:"connections"`
-		SharedLinkDefaultAccess string            `json:"share_default_access"`
-		SharedLinkRedirect      string            `json:"share_redirect"`
-		Logout                  string            `json:"logout"`
-		MimeTypes               map[string]string `json:"mime"`
-		UploadPoolSize          int               `json:"upload_pool_size"`
-		UploadChunkSize         int               `json:"upload_chunk_size"`
-		RefreshAfterUpload      bool              `json:"refresh_after_upload"`
-		FilePageDefaultSort     string            `json:"default_sort"`
-		FilePageDefaultView     string            `json:"default_view"`
-		AuthMiddleware          []string          `json:"auth"`
-		Thumbnailer             []string          `json:"thumbnailer"`
-		Origin                  string            `json:"origin"`
-		Version                 string            `json:"version"`
-		EnableChromecast        bool              `json:"enable_chromecast"`
-		OpenMode                string            `json:"open_mode"`
-		EnableSearch            bool              `json:"enable_search"`
-		EnableShare             bool              `json:"enable_share"`
-		EnableTags              bool              `json:"enable_tags"`
-	}{
-		Editor:                  this.Get("general.editor").String(),
-		License:                 LICENSE,
-		DisplayHidden:           this.Get("general.display_hidden").Bool(),
-		Name:                    this.Get("general.name").String(),
-		UploadButton:            this.Get("general.upload_button").Bool(),
-		Connections:             this.Conn,
-		SharedLinkDefaultAccess: this.Get("features.share.default_access").String(),
-		SharedLinkRedirect:      this.Get("features.share.redirect").String(),
-		Logout:                  this.Get("general.logout").String(),
-		MimeTypes:               AllMimeTypes(),
-		UploadPoolSize:          this.Get("general.upload_pool_size").Int(),
-		UploadChunkSize:         this.Get("general.upload_chunk_size").Int(),
-		RefreshAfterUpload:      this.Get("general.refresh_after_upload").Bool(),
-		FilePageDefaultSort:     this.Get("general.filepage_default_sort").String(),
-		FilePageDefaultView:     this.Get("general.filepage_default_view").String(),
-		AuthMiddleware: func() []string {
-			if this.Get("middleware.identity_provider.type").String() == "" {
-				return []string{}
-			}
-			return regexp.MustCompile("\\s*,\\s*").Split(
-				this.Get("middleware.attribute_mapping.related_backend").String(), -1,
-			)
-		}(),
-		Thumbnailer: func() []string {
-			tMap := Hooks.Get.Thumbnailer()
-			out := make([]string, 0, len(tMap))
-			for k := range tMap {
-				out = append(out, k)
-			}
-			return out
-		}(),
-		Origin: func() string {
-			host := this.Get("general.host").String()
-			if host == "" {
-				return ""
-			}
-			scheme := "http://"
-			if this.Get("general.force_ssl").Bool() {
-				scheme = "https://"
-			}
-			return scheme + host
-		}(),
-		OpenMode:         this.Get("general.open_mode").String(),
-		Version:          BUILD_REF,
-		EnableChromecast: this.Get("features.protection.enable_chromecast").Bool(),
-		EnableSearch:     Hooks.Get.SearchEngine() != nil,
-		EnableShare:      this.Get("features.share.enable").Bool(),
-		EnableTags:       Hooks.Get.Metadata() != nil,
 	}
 }
 
