@@ -16,6 +16,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/model"
 	"github.com/mickael-kerjean/filestash/server/pkg/cookie"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
+	"github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -53,7 +54,7 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	ctx.Body["timestamp"] = time.Now().Format(time.RFC3339)
-	session := model.MapStringInterfaceToMapStringString(ctx.Body)
+	session := utils.MapStringInterfaceToMapStringString(ctx.Body)
 	session["path"] = EnforceDirectory(session["path"])
 
 	backend, err := model.NewBackend(ctx, session)
@@ -72,7 +73,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 			SendErrorResult(res, NewError("Can't authenticate (OAuth error)", 401))
 			return
 		}
-		session = model.MapStringInterfaceToMapStringString(ctx.Body)
+		session = utils.MapStringInterfaceToMapStringString(ctx.Body)
 		backend, err = model.NewBackend(ctx, session)
 		if err != nil {
 			Log.Debug("[auth] action=authenticate::oauth::newBackend err=%s", ferror(err))

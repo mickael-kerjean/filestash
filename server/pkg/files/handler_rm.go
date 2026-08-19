@@ -3,12 +3,14 @@ package files
 import (
 	"net/http"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func FileRm(ctx *App, res http.ResponseWriter, req *http.Request) {
-	if permissions.CanEdit(ctx) == false {
+	if CanEdit(ctx) == false {
 		Log.Debug("rm::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return

@@ -16,8 +16,10 @@ import (
 	"strings"
 	"sync"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 var chunkedUploadCache AppCache
@@ -44,8 +46,8 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if permissions.CanEdit(ctx) == false {
-		if permissions.CanUpload(ctx) == false {
+	if CanEdit(ctx) == false {
+		if CanUpload(ctx) == false {
 			Log.Debug("files::save action=permission_upload err=permission_denied")
 			SendErrorResult(res, ErrPermissionDenied)
 			return

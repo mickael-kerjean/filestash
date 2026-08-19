@@ -5,12 +5,13 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"math/rand"
 	"os"
 	"regexp"
 	"strings"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func Office(r io.ReadCloser) (io.ReadCloser, error) {

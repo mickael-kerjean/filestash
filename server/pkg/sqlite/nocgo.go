@@ -3,8 +3,8 @@
 package sqlite
 
 import (
-	"errors"
 	"database/sql"
+	"errors"
 
 	modernc "modernc.org/sqlite"
 )
