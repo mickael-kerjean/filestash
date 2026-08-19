@@ -1,4 +1,4 @@
-package ctrl
+package utils
 
 import (
 	"bytes"
@@ -12,7 +12,8 @@ import (
 	"strings"
 	"text/template"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	"github.com/mickael-kerjean/filestash/server/pkg/system"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -42,7 +43,7 @@ func TmplParams(data map[string]string) map[string]string {
 	for key, value := range data {
 		out[key] = value
 	}
-	out["machine_id"] = GenerateMachineID()
+	out["machine_id"] = system.GenerateMachineID()
 	for _, value := range os.Environ() {
 		pair := strings.SplitN(value, "=", 2)
 		if len(pair) == 2 {

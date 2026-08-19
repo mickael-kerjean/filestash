@@ -1,9 +1,9 @@
-package model
+package files
 
 import (
-	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"strings"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
@@ -71,15 +71,4 @@ func GetHome(b IBackend, base string) (string, error) {
 		return "/" + home[len(base):], nil
 	}
 	return "/", nil
-}
-
-func MapStringInterfaceToMapStringString(m map[string]interface{}) map[string]string {
-	res := make(map[string]string)
-	for key, value := range m {
-		res[key] = fmt.Sprintf("%v", value)
-		if res[key] == "<nil>" {
-			res[key] = ""
-		}
-	}
-	return res
 }

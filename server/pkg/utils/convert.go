@@ -1,8 +1,7 @@
-package common
+package utils
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -83,12 +82,13 @@ func NewReadCloserFromReader(r io.Reader) io.ReadCloser {
 	return io.NopCloser(r)
 }
 
-func PrettyPrint(json_dirty []byte) []byte {
-	var json_pretty bytes.Buffer
-	error := json.Indent(&json_pretty, json_dirty, "", "    ")
-	if error != nil {
-		return json_dirty
+func MapStringInterfaceToMapStringString(m map[string]interface{}) map[string]string {
+	res := make(map[string]string)
+	for key, value := range m {
+		res[key] = fmt.Sprintf("%v", value)
+		if res[key] == "<nil>" {
+			res[key] = ""
+		}
 	}
-	json_pretty.Write([]byte("\n"))
-	return json_pretty.Bytes()
+	return res
 }

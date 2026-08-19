@@ -1,16 +1,9 @@
-package common
+package core
 
 import (
 	"fmt"
 	"net/http"
 )
-
-func NewError(message string, status int) AppError {
-	if status == 0 {
-		status = 500
-	}
-	return AppError{message, status}
-}
 
 var (
 	ErrNotFound             = NewError("Not Found", 404)
@@ -30,6 +23,13 @@ var (
 	ErrTimeout              = NewError("Timeout", 500)
 	ErrInternal             = NewError("Internal Error", 500)
 )
+
+func NewError(message string, status int) AppError {
+	if status == 0 {
+		status = 500
+	}
+	return AppError{message, status}
+}
 
 func IsATranslatedError(err error) bool {
 	if err == ErrNotFound || err == ErrNotAllowed || err == ErrPermissionDenied ||

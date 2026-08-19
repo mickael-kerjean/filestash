@@ -1,4 +1,4 @@
-package common
+package core
 
 import (
 	"bytes"
@@ -20,8 +20,8 @@ var Log = &log{
 	},
 }
 
-func InitLogger() (err error) {
-	f, err := os.OpenFile(GetAbsolutePath(LOG_PATH, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
+func InitLogger(path string) (err error) {
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		slog.Printf("ERROR log file: %+v", err)
 		return err

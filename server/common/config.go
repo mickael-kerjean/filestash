@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"sync/atomic"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/core"
 )
 
 var Config = NewConfiguration()
@@ -25,30 +27,6 @@ type ConfigElement struct {
 	key            string
 	currentElement *FormElement
 	cfg            *Configuration
-}
-
-type Form struct {
-	Title  string
-	Form   []Form
-	Elmnts []FormElement
-}
-
-type FormElement struct {
-	Id          string      `json:"id,omitempty"`
-	Name        string      `json:"label"`
-	Type        string      `json:"type"`
-	Description string      `json:"description,omitempty"`
-	Placeholder string      `json:"placeholder,omitempty"`
-	Pattern     string      `json:"pattern,omitempty"`
-	Opts        []string    `json:"options,omitempty"`
-	Target      []string    `json:"target,omitempty"`
-	ReadOnly    bool        `json:"readonly"`
-	Default     interface{} `json:"default"`
-	Value       interface{} `json:"value"`
-	MultiValue  bool        `json:"multi,omitempty"`
-	Datalist    []string    `json:"datalist,omitempty"`
-	Order       int         `json:"-"`
-	Required    bool        `json:"required"`
 }
 
 func InitConfig() error {
@@ -149,47 +127,6 @@ func (this *Configuration) Connections() []map[string]any {
 	return this.state.Load().conn
 }
 
-func (this Form) MarshalJSON() ([]byte, error) {
-	return formToJSON(this, func(el FormElement) any { return el })
-}
-
-func formToJSON(f Form, fn func(FormElement) any) ([]byte, error) {
-	var buf bytes.Buffer
-	buf.WriteByte('{')
-	first := true
-	for _, el := range f.Elmnts {
-		v := fn(el)
-		if v == nil {
-			continue
-		}
-		if !first {
-			buf.WriteByte(',')
-		}
-		first = false
-		key, _ := json.Marshal(strings.ReplaceAll(el.Name, " ", "_"))
-		val, _ := json.Marshal(v)
-		buf.Write(key)
-		buf.WriteByte(':')
-		buf.Write(val)
-	}
-	for _, sub := range f.Form {
-		subBytes, _ := formToJSON(sub, fn)
-		if bytes.Equal(subBytes, []byte("{}")) {
-			continue
-		}
-		if !first {
-			buf.WriteByte(',')
-		}
-		first = false
-		key, _ := json.Marshal(strings.ReplaceAll(sub.Title, " ", "_"))
-		buf.Write(key)
-		buf.WriteByte(':')
-		buf.Write(subBytes)
-	}
-	buf.WriteByte('}')
-	return buf.Bytes(), nil
-}
-
 func (this *Configuration) Load() error {
 	cFile, err := LoadConfig()
 	if err != nil {
@@ -274,7 +211,7 @@ func (this *Configuration) Initialise() {
 
 func (this *Configuration) Save() {
 	s := this.state.Load()
-	formBytes, err := formToJSON(Form{Form: s.forms}, func(el FormElement) any { return el.Value })
+	formBytes, err := core.FormToJSON(Form{Form: s.forms}, func(el FormElement) any { return el.Value })
 	conn, _ := json.Marshal(s.conn)
 	if err != nil {
 		Log.Error("config::save marshal %s", err.Error())
@@ -297,7 +234,18 @@ func (this *Configuration) Save() {
 
 func (this *Configuration) Get(key string) ConfigElement {
 	s := this.state.Load()
-	return ConfigElement{currentElement: find(&s.forms, key, false), key: key, cfg: this}
+	el := find(&s.forms, key, false)
+	if el == nil {
+		for {
+			old := this.state.Load()
+			next := &configState{forms: cloneForms(old.forms), conn: old.conn}
+			el = find(&next.forms, key, true)
+			if this.state.CompareAndSwap(old, next) {
+				break
+			}
+		}
+	}
+	return ConfigElement{currentElement: el, key: key, cfg: this}
 }
 
 func (this ConfigElement) Schema(fn func(*FormElement) *FormElement) ConfigElement {

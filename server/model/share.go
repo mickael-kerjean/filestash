@@ -11,6 +11,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
+	"github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
@@ -84,7 +85,7 @@ func ShareGet(id string) (Share, error) {
 
 func ShareUpsert(p *Share) error {
 	if p.Password != nil {
-		if *p.Password == PASSWORD_DUMMY {
+		if *p.Password == utils.PASSWORD_DUMMY {
 			if s, err := ShareGet(p.Id); err != nil {
 				p.Password = s.Password
 			}

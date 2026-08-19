@@ -1,22 +1,14 @@
-package common
+package utils
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net"
 	"net/http"
 	"time"
 
+	"github.com/mickael-kerjean/filestash/server/pkg/system"
 	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
-
-var USER_AGENT = fmt.Sprintf("Filestash/%s.%s (http://filestash.app)", APP_VERSION, BUILD_DATE)
-
-func init() {
-	if IsWhiteLabel() {
-		USER_AGENT = APPNAME
-	}
-}
 
 type httpClientConfig struct {
 	transport    *http.Transport
@@ -99,6 +91,6 @@ type TransformedTransport struct {
 }
 
 func (this *TransformedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Add("User-Agent", USER_AGENT)
+	req.Header.Add("User-Agent", system.USER_AGENT)
 	return this.Orig.RoundTrip(req)
 }

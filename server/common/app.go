@@ -2,6 +2,8 @@ package common
 
 import (
 	"context"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/kernel"
 )
 
 type App struct {
@@ -13,3 +15,5 @@ type App struct {
 	Authorization string
 	Languages     []string
 }
+
+type Share = kernel.Share

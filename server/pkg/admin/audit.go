@@ -1,4 +1,4 @@
-package model
+package admin
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"

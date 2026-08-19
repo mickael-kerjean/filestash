@@ -1,4 +1,4 @@
-package common
+package utils
 
 import (
 	"bytes"
@@ -10,18 +10,19 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"hash/fnv"
 	"io"
 	"math/big"
 	mathrand "math/rand"
-	"os"
-	"runtime"
 	"sort"
 	"sync/atomic"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 )
 
 var (
-	Letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	Letters  = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	GCMNonce = NewNonceGenerator()
 )
 
@@ -138,8 +139,7 @@ func EncryptAESGCM(key []byte, plaintext []byte) ([]byte, error) {
 
 	nonce := GCMNonce.Next()
 	if gcm.NonceSize() != len(nonce) {
-		Log.Error("common::crypto nonce size isn't '12' but '%d'", gcm.NonceSize())
-		return nil, ErrNotValid
+		return nil, errors.ErrUnsupported
 	}
 	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
@@ -157,7 +157,7 @@ func DecryptAESGCM(key []byte, ciphertext []byte) ([]byte, error) {
 
 	nonceSize := gcm.NonceSize()
 	if len(ciphertext) < nonceSize {
-		return nil, NewError("ciphertext too short", 500)
+		return nil, errors.New("ciphertext too short")
 	}
 
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
@@ -214,32 +214,12 @@ func GenerateID(params map[string]string) string {
 	if p == "" {
 		return "na"
 	}
-	p += "salt=>" + SECRET_KEY
+	p += "salt=>" + env.SECRET_KEY
 	return Hash(p, 20)
 }
 
-// Create an ID that identify a machine
-func GenerateMachineID() string {
-	if runtime.GOOS == "linux" {
-		if f, err := os.OpenFile("/etc/machine-id", os.O_RDONLY, os.ModePerm); err == nil {
-			defer f.Close()
-			b := make([]byte, 32)
-			if _, err = f.Read(b); err == nil {
-				return string(b)
-			}
-		} else if f, err := os.OpenFile("/var/lib/dbus/machine-id", os.O_RDONLY, os.ModePerm); err == nil {
-			defer f.Close()
-			b := make([]byte, 32)
-			if _, err = f.Read(b); err == nil {
-				return string(b)
-			}
-		}
-	}
-	return "na"
-}
-
 type NonceGenerator struct {
-	start [12]byte
+	start   [12]byte
 	current atomic.Uint64
 }
 
