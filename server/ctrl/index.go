@@ -1,0 +1,42 @@
+package ctrl
+
+import (
+	"github.com/mickael-kerjean/filestash/server/pkg/admin"
+	"github.com/mickael-kerjean/filestash/server/pkg/files"
+	"github.com/mickael-kerjean/filestash/server/pkg/kernel"
+)
+
+// tmpl.go
+var (
+	TmplExec   = kernel.TmplExec
+	TmplParams = kernel.TmplParams
+)
+
+// files
+var (
+	FileLs         = files.FileLs
+	FileCat        = files.FileCat
+	FileAccess     = files.FileAccess
+	FileSave       = files.FileSave
+	FileMv         = files.FileMv
+	FileRm         = files.FileRm
+	FileMkdir      = files.FileMkdir
+	FileTouch      = files.FileTouch
+	FileDownloader = files.FileDownloader
+	FileExtract    = files.FileExtract
+
+	FileSearch = files.FileSearch
+	MetaSearch = files.MetaSearch
+	MetaGet    = files.MetaGet
+	MetaUpsert = files.MetaUpsert
+)
+
+// admin
+var (
+	AdminSessionGet               = admin.AdminSessionGet
+	AdminSessionAuthenticate      = admin.AdminSessionAuthenticate
+	FetchAuditHandler             = admin.FetchAuditHandler
+	FetchLogHandler               = admin.FetchLogHandler
+	AdminBackend                  = admin.AdminBackend
+	AdminAuthenticationMiddleware = admin.AdminAuthenticationMiddleware
+)

@@ -10,8 +10,10 @@ import (
 	"strconv"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 type FileInfo struct {
@@ -24,8 +26,8 @@ type FileInfo struct {
 }
 
 func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
-	if permissions.CanRead(ctx) == false {
-		if permissions.CanUpload(ctx) == false {
+	if CanRead(ctx) == false {
+		if CanUpload(ctx) == false {
 			Log.Debug("ls::permission 'permission denied'")
 			SendErrorResult(res, ErrPermissionDenied)
 			return
@@ -71,7 +73,7 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 		ctx.Context = context.WithValue(ctx.Context, "AUDIT", nil)
 	}
-	if permissions.CanEdit(ctx) == false {
+	if CanEdit(ctx) == false {
 		perms.CanCreateFile = NewBool(false)
 		perms.CanCreateDirectory = NewBool(false)
 		perms.CanRename = NewBool(false)
@@ -79,14 +81,14 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		perms.CanDelete = NewBool(false)
 		perms.CanUpload = NewBool(false)
 	}
-	if permissions.CanUpload(ctx) == false {
+	if CanUpload(ctx) == false {
 		perms.CanCreateDirectory = NewBool(false)
 		perms.CanRename = NewBool(false)
 		perms.CanMove = NewBool(false)
 		perms.CanDelete = NewBool(false)
 		perms.CanUpload = NewBool(false)
 	}
-	if permissions.CanShare(ctx) == false {
+	if CanShare(ctx) == false {
 		perms.CanShare = NewBool(false)
 	}
 

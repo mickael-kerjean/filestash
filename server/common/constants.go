@@ -2,49 +2,91 @@ package common
 
 import (
 	"os"
-	"path/filepath"
-	"strings"
+	_ "unsafe"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 )
 
-//go:generate go run ../generator/constants.go
-var (
-	APP_VERSION       = "v0.6"
-	COOKIE_NAME_PROOF = "proof"
-	COOKIE_NAME_ADMIN = "admin"
-	COOKIE_PATH_ADMIN = "/admin/api/"
-	COOKIE_PATH       = "/api/"
-	URL_SETUP         = "/admin/setup"
-)
+//go:linkname APP_VERSION github.com/mickael-kerjean/filestash/server/pkg/env.APP_VERSION
+var APP_VERSION string
+
+//go:linkname COOKIE_NAME_PROOF github.com/mickael-kerjean/filestash/server/pkg/env.COOKIE_NAME_PROOF
+var COOKIE_NAME_PROOF string
+
+//go:linkname COOKIE_NAME_ADMIN github.com/mickael-kerjean/filestash/server/pkg/env.COOKIE_NAME_ADMIN
+var COOKIE_NAME_ADMIN string
+
+//go:linkname COOKIE_PATH_ADMIN github.com/mickael-kerjean/filestash/server/pkg/env.COOKIE_PATH_ADMIN
+var COOKIE_PATH_ADMIN string
+
+//go:linkname COOKIE_PATH github.com/mickael-kerjean/filestash/server/pkg/env.COOKIE_PATH
+var COOKIE_PATH string
+
+//go:linkname URL_SETUP github.com/mickael-kerjean/filestash/server/pkg/env.URL_SETUP
+var URL_SETUP string
+
+//go:linkname CONFIG_PATH github.com/mickael-kerjean/filestash/server/pkg/env.CONFIG_PATH
+var CONFIG_PATH string
+
+//go:linkname CERT_PATH github.com/mickael-kerjean/filestash/server/pkg/env.CERT_PATH
+var CERT_PATH string
+
+//go:linkname PLUGIN_PATH github.com/mickael-kerjean/filestash/server/pkg/env.PLUGIN_PATH
+var PLUGIN_PATH string
+
+//go:linkname DB_PATH github.com/mickael-kerjean/filestash/server/pkg/env.DB_PATH
+var DB_PATH string
+
+//go:linkname FTS_PATH github.com/mickael-kerjean/filestash/server/pkg/env.FTS_PATH
+var FTS_PATH string
+
+//go:linkname LOG_PATH github.com/mickael-kerjean/filestash/server/pkg/env.LOG_PATH
+var LOG_PATH string
+
+//go:linkname TMP_PATH github.com/mickael-kerjean/filestash/server/pkg/env.TMP_PATH
+var TMP_PATH string
+
+//go:linkname APPNAME github.com/mickael-kerjean/filestash/server/pkg/env.APPNAME
+var APPNAME string
+
+//go:linkname BASE github.com/mickael-kerjean/filestash/server/pkg/env.BASE
+var BASE string
+
+//go:linkname BUILD_REF github.com/mickael-kerjean/filestash/server/pkg/env.BUILD_REF
+var BUILD_REF string
+
+//go:linkname BUILD_DATE github.com/mickael-kerjean/filestash/server/pkg/env.BUILD_DATE
+var BUILD_DATE string
+
+//go:linkname LICENSE github.com/mickael-kerjean/filestash/server/pkg/env.LICENSE
+var LICENSE string
+
+//go:linkname SECRET_KEY github.com/mickael-kerjean/filestash/server/pkg/env.SECRET_KEY
+var SECRET_KEY string
+
+//go:linkname SECRET_KEY_DERIVATE_FOR_PROOF github.com/mickael-kerjean/filestash/server/pkg/env.SECRET_KEY_DERIVATE_FOR_PROOF
+var SECRET_KEY_DERIVATE_FOR_PROOF string
+
+//go:linkname SECRET_KEY_DERIVATE_FOR_ADMIN github.com/mickael-kerjean/filestash/server/pkg/env.SECRET_KEY_DERIVATE_FOR_ADMIN
+var SECRET_KEY_DERIVATE_FOR_ADMIN string
+
+//go:linkname SECRET_KEY_DERIVATE_FOR_USER github.com/mickael-kerjean/filestash/server/pkg/env.SECRET_KEY_DERIVATE_FOR_USER
+var SECRET_KEY_DERIVATE_FOR_USER string
+
+//go:linkname SECRET_KEY_DERIVATE_FOR_HASH github.com/mickael-kerjean/filestash/server/pkg/env.SECRET_KEY_DERIVATE_FOR_HASH
+var SECRET_KEY_DERIVATE_FOR_HASH string
+
+//go:linkname SECRET_KEY_DERIVATE_FOR_SIGNATURE github.com/mickael-kerjean/filestash/server/pkg/env.SECRET_KEY_DERIVATE_FOR_SIGNATURE
+var SECRET_KEY_DERIVATE_FOR_SIGNATURE string
 
 var (
-	CONFIG_PATH = "state/config/"
-	CERT_PATH   = "state/certs/"
-	PLUGIN_PATH = "state/plugins/"
-	DB_PATH     = "state/db/"
-	FTS_PATH    = "state/search/"
-	LOG_PATH    = "state/log/"
-	TMP_PATH    = "cache/"
+	WithBase       = env.WithBase
+	TrimBase       = env.TrimBase
+	IsWhiteLabel   = env.IsWhiteLabel
+	WhiteLabelText = env.WhiteLabelText
 )
 
 func init() {
-	// STEP1: setup app
-	rootPath := "data/"
-	if p := os.Getenv("FILESTASH_PATH"); p != "" {
-		rootPath = p
-	}
-	LOG_PATH = filepath.Join(rootPath, LOG_PATH)
-	CONFIG_PATH = filepath.Join(rootPath, CONFIG_PATH)
-	DB_PATH = filepath.Join(rootPath, DB_PATH)
-	FTS_PATH = filepath.Join(rootPath, FTS_PATH)
-	CERT_PATH = filepath.Join(rootPath, CERT_PATH)
-	TMP_PATH = filepath.Join(rootPath, TMP_PATH)
-	PLUGIN_PATH = filepath.Join(rootPath, PLUGIN_PATH)
-	BASE = strings.TrimSuffix(os.Getenv("FILESTASH_BASE"), "/")
-	COOKIE_PATH_ADMIN = WithBase(COOKIE_PATH_ADMIN)
-	COOKIE_PATH = WithBase(COOKIE_PATH)
-	URL_SETUP = WithBase(URL_SETUP)
-
-	// STEP2: initialise the config
 	os.MkdirAll(GetAbsolutePath(CERT_PATH), os.ModePerm)
 	os.MkdirAll(GetAbsolutePath(DB_PATH), os.ModePerm)
 	os.MkdirAll(GetAbsolutePath(FTS_PATH), os.ModePerm)
@@ -52,52 +94,4 @@ func init() {
 	os.MkdirAll(GetAbsolutePath(PLUGIN_PATH), os.ModePerm)
 	os.RemoveAll(GetAbsolutePath(TMP_PATH))
 	os.MkdirAll(GetAbsolutePath(TMP_PATH), os.ModePerm)
-}
-
-var (
-	APPNAME                           string = "Filestash"
-	BASE                              string
-	BUILD_REF                         string
-	BUILD_DATE                        string
-	LICENSE                           string = "agpl"
-	SECRET_KEY                        string
-	SECRET_KEY_DERIVATE_FOR_PROOF     string
-	SECRET_KEY_DERIVATE_FOR_ADMIN     string
-	SECRET_KEY_DERIVATE_FOR_USER      string
-	SECRET_KEY_DERIVATE_FOR_HASH      string
-	SECRET_KEY_DERIVATE_FOR_SIGNATURE string
-)
-
-func InitSecretDerivate(secret string) {
-	SECRET_KEY = secret
-	SECRET_KEY_DERIVATE_FOR_PROOF = Hash("PROOF_"+SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_ADMIN = Hash("ADMIN_"+SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_USER = Hash("USER_"+SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_HASH = Hash("HASH_"+SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_SIGNATURE = Hash("SGN_"+SECRET_KEY, len(SECRET_KEY))
-}
-
-func WithBase(href string) string {
-	if BASE == "" {
-		return href
-	}
-	return BASE + href
-}
-
-func TrimBase(href string) string {
-	if BASE == "" {
-		return href
-	}
-	return strings.TrimPrefix(href, BASE)
-}
-
-func IsWhiteLabel() bool {
-	return APPNAME != "Filestash"
-}
-
-func WhiteLabelText(a, b string) string {
-	if IsWhiteLabel() {
-		return b
-	}
-	return a
 }

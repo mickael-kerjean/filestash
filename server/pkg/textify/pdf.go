@@ -3,11 +3,12 @@ package textify
 import (
 	"bytes"
 	"fmt"
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"io"
 	"math/rand"
 	"os"
 	"os/exec"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func PDF(r io.ReadCloser) (io.ReadCloser, error) {

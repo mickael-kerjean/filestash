@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func FileAccess(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -21,18 +23,18 @@ func FileAccess(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	allowed := []string{}
-	if permissions.CanRead(ctx) {
+	if CanRead(ctx) {
 		if perms.CanSee == nil || *perms.CanSee == true {
 			allowed = append(allowed, "GET")
 		}
 	}
-	if permissions.CanEdit(ctx) {
+	if CanEdit(ctx) {
 		if (perms.CanCreateFile == nil || *perms.CanCreateFile == true) &&
 			(perms.CanCreateDirectory == nil || *perms.CanCreateDirectory == true) {
 			allowed = append(allowed, "PUT")
 		}
 	}
-	if permissions.CanUpload(ctx) {
+	if CanUpload(ctx) {
 		if perms.CanUpload == nil || *perms.CanUpload == true {
 			allowed = append(allowed, "POST")
 		}

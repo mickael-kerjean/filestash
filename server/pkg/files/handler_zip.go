@@ -9,13 +9,15 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func FileDownloader(ctx *App, res http.ResponseWriter, req *http.Request) {
 	var err error
-	if permissions.CanRead(ctx) == false {
+	if CanRead(ctx) == false {
 		Log.Debug("downloader::permission 'permission denied'")
 		SendErrorResult(res, ErrPermissionDenied)
 		return
