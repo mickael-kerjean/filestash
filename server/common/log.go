@@ -1,25 +1,34 @@
 package common
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	slog "log"
 	"os"
-	"strings"
+	"sync"
 	"time"
 )
 
-var (
-	Log     = &log{enable: true}
-	logfile *os.File
-)
+var Log = &log{
+	enable: true,
+	out:    [2]io.Writer{io.Discard, io.Discard},
+	buf: sync.Pool{
+		New: func() any {
+			return new(bytes.Buffer)
+		},
+	},
+}
 
 func InitLogger() (err error) {
-	logfile, err = os.OpenFile(GetAbsolutePath(LOG_PATH, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	f, err := os.OpenFile(GetAbsolutePath(LOG_PATH, "access.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		slog.Printf("ERROR log file: %+v", err)
 		return err
 	}
-	logfile.WriteString("")
+	f.WriteString("")
+	Log.out[0] = f
+	Log.out[1] = os.Stdout
 	return nil
 }
 
@@ -29,62 +38,64 @@ type log struct {
 	info   bool
 	warn   bool
 	error  bool
+
+	out [2]io.Writer
+	buf sync.Pool
 }
 
 func (l *log) Info(format string, v ...interface{}) {
 	if l.info && l.enable {
-		message := fmt.Sprintf("%s SYST INFO ", l.now())
-		message = fmt.Sprintf(message+format+"\n", v...)
-
-		logfile.WriteString(message)
-		fmt.Print(strings.Replace(message, "%", "%%", -1))
+		l.Stdout("SYST INFO "+format, v...)
 	}
 }
 
 func (l *log) Warning(format string, v ...interface{}) {
 	if l.warn && l.enable {
-		message := fmt.Sprintf("%s SYST WARN ", l.now())
-		message = fmt.Sprintf(message+format+"\n", v...)
-
-		logfile.WriteString(message)
-		fmt.Print(strings.Replace(message, "%", "%%", -1))
+		l.Stdout("SYST WARN "+format, v...)
 	}
 }
 
 func (l *log) Error(format string, v ...interface{}) {
 	if l.error && l.enable {
-		message := fmt.Sprintf("%s SYST ERROR ", l.now())
-		message = fmt.Sprintf(message+format+"\n", v...)
-
-		logfile.WriteString(message)
-		fmt.Print(strings.Replace(message, "%", "%%", -1))
+		l.Stdout("SYST ERROR "+format, v...)
 	}
 }
 
 func (l *log) Debug(format string, v ...interface{}) {
 	if l.debug && l.enable {
-		message := fmt.Sprintf("%s SYST DEBUG ", l.now())
-		message = fmt.Sprintf(message+format+"\n", v...)
-
-		logfile.WriteString(message)
-		fmt.Print(strings.Replace(message, "%", "%%", -1))
+		l.Stdout("SYST DEBUG "+format, v...)
 	}
 }
 
 func (l *log) Stdout(format string, v ...interface{}) {
-	message := fmt.Sprintf("%s ", l.now())
-	message = fmt.Sprintf(message+format+"\n", v...)
-
-	logfile.WriteString(message)
-	fmt.Print(strings.Replace(message, "%", "%%", -1))
+	buf := l.buf.Get().(*bytes.Buffer)
+	defer l.buf.Put(buf)
+	buf.Reset()
+	fmt.Fprintf(buf, format, v...)
+	l.Raw(buf.Bytes())
 }
 
-func (l *log) now() string {
-	return time.Now().Format("2006/01/02 15:04:05")
+func (l *log) Raw(body []byte) {
+	buf := l.buf.Get().(*bytes.Buffer)
+	defer l.buf.Put(buf)
+	buf.Reset()
+	var ts [20]byte
+	buf.Write(time.Now().AppendFormat(ts[:0], "2006/01/02 15:04:05"))
+	buf.WriteByte(' ')
+	buf.Write(body)
+	buf.WriteByte('\n')
+	b := buf.Bytes()
+	for _, w := range l.out {
+		w.Write(b)
+	}
 }
 
 func (l *log) Close() {
-	logfile.Close()
+	for _, w := range l.out {
+		if c, ok := w.(io.Closer); ok {
+			c.Close()
+		}
+	}
 }
 
 func (l *log) SetVisibility(str string) {

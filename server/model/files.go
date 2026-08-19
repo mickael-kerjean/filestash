@@ -10,9 +10,10 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 	isAllowed := func() bool {
 		// by default, a hacker could use filestash to establish connections outside of what's
 		// define in the config file. We need to prevent this
+		connections := Config.Connections()
 		possibilities := make([]map[string]interface{}, 0)
-		for i := 0; i < len(Config.Conn); i++ {
-			d := Config.Conn[i]
+		for i := 0; i < len(connections); i++ {
+			d := connections[i]
 			if d["type"] != conn["type"] {
 				continue
 			}
@@ -36,7 +37,7 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 					continue
 				}
 			}
-			possibilities = append(possibilities, Config.Conn[i])
+			possibilities = append(possibilities, connections[i])
 		}
 		if len(possibilities) > 0 {
 			return true

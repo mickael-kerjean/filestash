@@ -13,8 +13,7 @@ func GetMimeType(p string) string {
 	if ext != "" {
 		ext = ext[1:]
 	}
-	ext = strings.ToLower(ext)
-	mType := MimeTypes[ext]
+	mType := MimeTypes[strings.ToLower(ext)]
 	if mType == "" {
 		return "application/octet-stream"
 	}

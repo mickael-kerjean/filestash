@@ -12,33 +12,43 @@ import (
 )
 
 func ApiHeaders(fn HandlerFunc) HandlerFunc {
+	var (
+		headerContentType  = []string{"application/json"}
+		headerContentCache = []string{"no-cache"}
+	)
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
-		header.Set("Content-Type", "application/json")
-		header.Set("Cache-Control", "no-cache")
-		if id := req.Header.Get("X-Request-ID"); id != "" {
-			header.Set("X-Request-ID", id)
+		header["Content-Type"] = headerContentType
+		header["Cache-Control"] = headerContentCache
+		if id := req.Header.Get("X-Request-Id"); id != "" {
+			header["X-Request-Id"] = []string{id}
 		}
 		fn(ctx, res, req)
 	})
 }
 
 func StaticHeaders(fn HandlerFunc) HandlerFunc {
+	var headerContentCache = []string{"max-age=2592000"}
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
-		header.Set("Content-Type", GetMimeType(filepath.Ext(req.URL.Path)))
-		header.Set("Cache-Control", "max-age=2592000")
+		header["Cache-Control"] = headerContentCache
+		header["Content-Type"] = []string{GetMimeType(filepath.Ext(req.URL.Path))}
 		fn(ctx, res, req)
 	})
 }
 
 func PublicCORS(fn HandlerFunc) HandlerFunc {
+	var (
+		headerAccessControlAllowOrigin  = []string{"*"}
+		headerAccessControlAllowHeaders = []string{"x-requested-with, x-request-id"}
+		headerAccessControlAllowMethods = []string{"GET, OPTIONS"}
+	)
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
-		header.Set("Access-Control-Allow-Origin", "*")
-		header.Set("Access-Control-Allow-Headers", "x-requested-with, x-request-id")
+		header["Access-Control-Allow-Origin"] = headerAccessControlAllowOrigin
+		header["Access-Control-Allow-Headers"] = headerAccessControlAllowHeaders
 		if req.Method == http.MethodOptions {
-			header.Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+			header["Access-Control-Allow-Methods"] = headerAccessControlAllowMethods
 			res.WriteHeader(http.StatusNoContent)
 			return
 		}
@@ -47,31 +57,45 @@ func PublicCORS(fn HandlerFunc) HandlerFunc {
 }
 
 func IndexHeaders(fn HandlerFunc) HandlerFunc {
+	var (
+		headerContentType         = []string{"text/html"}
+		headerCacheControl        = []string{"no-cache"}
+		headerReferrerPolicy      = []string{"same-origin"}
+		headerXContentTypeOptions = []string{"nosniff"}
+		headerXXSSProtection      = []string{"1; mode=block"}
+		headerXPoweredBy          = []string{fmt.Sprintf("Filestash/%s.%s <https://filestash.app>", APP_VERSION, BUILD_DATE)}
+		headerXFrameOptions       = []string{"DENY"}
+	)
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
-		header.Set("Content-Type", "text/html")
-		header.Set("Cache-Control", "no-cache")
-		header.Set("Referrer-Policy", "same-origin")
-		header.Set("X-Content-Type-Options", "nosniff")
-		header.Set("X-XSS-Protection", "1; mode=block")
+		header["Content-Type"] = headerContentType
+		header["Cache-Control"] = headerCacheControl
+		header["Referrer-Policy"] = headerReferrerPolicy
+		header["X-Content-Type-Options"] = headerXContentTypeOptions
+		header["X-XSS-Protection"] = headerXXSSProtection
 		if !IsWhiteLabel() {
-			header.Set("X-Powered-By", fmt.Sprintf("Filestash/%s.%s <https://filestash.app>", APP_VERSION, BUILD_DATE))
+			header["X-Powered-By"] = headerXPoweredBy
 		}
 		if ori := Config.Get("features.protection.iframe").String(); ori == "" {
-			header.Set("X-Frame-Options", "DENY")
+			header["X-Frame-Options"] = headerXFrameOptions
 		}
 		fn(ctx, res, req)
 	})
 }
 
 func SecureHeaders(fn HandlerFunc) HandlerFunc {
+	var (
+		headerStrictTransportSecurity = []string{"max-age=31536000; includeSubDomains; preload"}
+		headerXContentTypeOptions     = []string{"nosniff"}
+		headerXXSSProtection          = []string{"1; mode=block"}
+	)
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		if Config.Get("general.force_ssl").Bool() {
-			header.Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+			header["Strict-Transport-Security"] = headerStrictTransportSecurity
 		}
-		header.Set("X-Content-Type-Options", "nosniff")
-		header.Set("X-XSS-Protection", "1; mode=block")
+		header["X-Content-Type-Options"] = headerXContentTypeOptions
+		header["X-XSS-Protection"] = headerXXSSProtection
 		fn(ctx, res, req)
 	})
 }
@@ -110,10 +134,7 @@ func RateLimiter(fn HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		if limiter.Allow() == false {
 			Log.Warning("middleware::http::ratelimit too many requests")
-			SendErrorResult(
-				res,
-				NewError(http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests),
-			)
+			SendErrorResult(res, NewError(http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests))
 			return
 		}
 		fn(ctx, res, req)

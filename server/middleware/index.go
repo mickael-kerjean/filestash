@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 	"time"
+	_ "unsafe"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
@@ -20,32 +21,32 @@ func init() {
 
 func NewMiddlewareChain(fn HandlerFunc, m []Middleware) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		var resw ResponseWriter = NewResponseWriter(res)
 		var f func(*App, http.ResponseWriter, *http.Request) = fn
 		for i := len(m) - 1; i >= 0; i-- {
 			f = m[i](f)
 		}
-		app := App{
-			Context: req.Context(),
-		}
+		var (
+			app  = App{Context: req.Context()}
+			resw = NewResponseWriter(res)
+		)
 		f(&app, &resw, req)
 		if req.Body != nil {
 			req.Body.Close()
 		}
-		go logger(&app, &resw, req)
+		logger(&app, &resw, req)
 	}
 }
 
 type ResponseWriter struct {
 	http.ResponseWriter
 	status int
-	start  time.Time
+	start  int64
 }
 
 func NewResponseWriter(res http.ResponseWriter) ResponseWriter {
 	return ResponseWriter{
 		ResponseWriter: res,
-		start:          time.Now(),
+		start:          now(),
 	}
 }
 
@@ -75,3 +76,6 @@ func PluginInjector(fn HandlerFunc) HandlerFunc {
 	}
 	return fn
 }
+
+//go:linkname now runtime.nanotime
+func now() int64
