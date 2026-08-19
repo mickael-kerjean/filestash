@@ -53,6 +53,11 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if Config.Get("features.protection.disable_manual_login").Bool() {
+		Log.Stdout("AUDIT action[blocked] backend[%v] target[%s] reason=manual_login_disabled", ctx.Body["type"], ip(req))
+		SendErrorResult(res, ErrNotAllowed)
+		return
+	}
 	ctx.Body["timestamp"] = time.Now().Format(time.RFC3339)
 	session := utils.MapStringInterfaceToMapStringString(ctx.Body)
 	session["path"] = EnforceDirectory(session["path"])
