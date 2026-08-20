@@ -14,9 +14,7 @@ RUN apt-get update > /dev/null && \
     apt-get install -y libjpeg-dev libtiff-dev libpng-dev libwebp-dev libraw-dev libheif-dev libgif-dev libvips-dev > /dev/null 2>&1 && \
     apt-get install -y libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libswresample-dev libswscale-dev libavutil-dev > /dev/null 2>&1 && \
     make init && \
-    make build && \
-    mkdir -p ./dist/data/state/config/ && \
-    cp config/config.json ./dist/data/state/config/config.json
+    make build
 
 # STEP3: BUILD PROD IMAGE
 FROM debian:stable-slim
