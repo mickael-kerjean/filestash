@@ -10,7 +10,6 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/ctrl"
 
 	"github.com/gorilla/mux"
 )

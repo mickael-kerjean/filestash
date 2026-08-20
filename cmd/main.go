@@ -14,7 +14,6 @@ import (
 	_ "github.com/mickael-kerjean/filestash/server/plugin"
 
 	"github.com/mickael-kerjean/filestash/server/pkg/extension"
-	"github.com/mickael-kerjean/filestash/server/pkg/frontend"
 	"github.com/mickael-kerjean/filestash/server/pkg/workflow"
 
 	"github.com/gorilla/mux"
@@ -28,7 +27,7 @@ func Run(router *mux.Router) {
 	check(InitLogger(), "Logger init failed. err=%s")
 	check(InitConfig(), "Config init failed. err=%s")
 	check(extension.Discovery(), "Plugin Discovery failed. err=%s")
-	check(frontend.InitPluginList(embed.EmbedPluginList, extension.All()), "Plugin Initialisation failed. err=%s")
+	check(extension.InitPluginList(embed.EmbedPluginList, extension.All()), "Plugin Initialisation failed. err=%s")
 	check(workflow.Init(), "Worklow Initialisation failure. err=%s")
 	if Hooks.Get.Starter() == nil {
 		check(ErrNotFound, "Missing starter plugin. err=%s")

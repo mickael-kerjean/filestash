@@ -8,7 +8,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 
-	"github.com/mickael-kerjean/filestash/server/pkg/frontend"
+	"github.com/mickael-kerjean/filestash/server/pkg/extension"
 	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
@@ -64,7 +64,7 @@ func (this Filestash) unmarshalResults(resp io.ReadCloser, data interface{}) err
 
 func localURL() string {
 	scheme := "http"
-	if frontend.HasPlugin("plg_starter_https", "plg_starter_httpsfs", "plg_starter_web") {
+	if extension.HasPlugin("plg_starter_https", "plg_starter_httpsfs", "plg_starter_web") {
 		scheme = "https"
 	}
 	return WithBase(fmt.Sprintf("%s://localhost:%d", scheme, Config.Get("general.port").Int()))

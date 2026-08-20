@@ -160,6 +160,12 @@ var (
 	PathBuilder      = kernel.PathBuilder
 )
 
+// tmpl.go
+var (
+	TmplExec   = kernel.TmplExec
+	TmplParams = kernel.TmplParams
+)
+
 // admin.go
 var NewAdminToken = admin.NewAdminToken
 

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/ctrl"
 )
 
 func (this *Filestash) NewToken(storage string, path string, formData map[string]string) error {
