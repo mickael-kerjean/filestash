@@ -1,13 +1,15 @@
-package ctrl
+package share
 
 import (
 	"net/http"
 	"path/filepath"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+
 	"github.com/mickael-kerjean/net/webdav"
 )
 
@@ -54,8 +56,8 @@ func WebdavHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	h := &webdav.Handler{
 		Prefix:     "/s/" + ctx.Share.Id,
-		FileSystem: model.NewWebdavFs(ctx.Backend, ctx.Share.Backend, ctx.Share.Path, req),
-		LockSystem: model.NewWebdavLock(),
+		FileSystem: NewWebdavFs(ctx.Backend, ctx.Share.Backend, ctx.Share.Path, req),
+		LockSystem: NewWebdavLock(),
 	}
 	h.ServeHTTP(res, req)
 }

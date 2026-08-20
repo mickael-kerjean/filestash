@@ -59,6 +59,8 @@ var (
 	ShareDelete      = share.ShareDeleteHandler
 	ShareUpsert      = share.ShareUpsertHandler
 	ShareVerifyProof = share.ShareVerifyProofHandler
+	WebdavHandler    = share.WebdavHandler
+	WebdavBlacklist  = share.WebdavBlacklist
 )
 
 // frontend

@@ -1,4 +1,4 @@
-package model
+package share
 
 /*
  * Implementation of a webdav.FileSystem: https://godoc.org/golang.org/x/net/webdav#FileSystem that is used
@@ -17,7 +17,10 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+
 	"github.com/mickael-kerjean/net/webdav"
 )
 
