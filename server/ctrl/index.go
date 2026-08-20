@@ -5,6 +5,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/pkg/files"
 	"github.com/mickael-kerjean/filestash/server/pkg/frontend"
 	"github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	"github.com/mickael-kerjean/filestash/server/pkg/session"
 	"github.com/mickael-kerjean/filestash/server/pkg/share"
 )
 
@@ -41,6 +42,15 @@ var (
 	FetchLogHandler               = admin.FetchLogHandler
 	AdminBackend                  = admin.AdminBackend
 	AdminAuthenticationMiddleware = admin.AdminAuthenticationMiddleware
+)
+
+// session
+var (
+	SessionGet            = session.SessionGet
+	SessionAuthenticate   = session.SessionAuthenticate
+	SessionLogout         = session.SessionLogout
+	SessionOAuthBackend   = session.SessionOAuthBackend
+	SessionAuthMiddleware = session.SessionAuthMiddleware
 )
 
 // share

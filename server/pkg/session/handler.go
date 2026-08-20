@@ -1,4 +1,4 @@
-package ctrl
+package session
 
 import (
 	"encoding/base64"
@@ -11,12 +11,15 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/middleware"
-	"github.com/mickael-kerjean/filestash/server/model"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
 	"github.com/mickael-kerjean/filestash/server/pkg/cookie"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/files"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/middleware"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
-	"github.com/mickael-kerjean/filestash/server/pkg/utils"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -36,7 +39,7 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendSuccessResult(res, r)
 		return
 	}
-	home, err := model.GetHome(ctx.Backend, ctx.Session["path"])
+	home, err := GetHome(ctx.Backend, ctx.Session["path"])
 	if err != nil {
 		SendSuccessResult(res, r)
 		return
@@ -54,10 +57,10 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	ctx.Body["timestamp"] = time.Now().Format(time.RFC3339)
-	session := utils.MapStringInterfaceToMapStringString(ctx.Body)
+	session := MapStringInterfaceToMapStringString(ctx.Body)
 	session["path"] = EnforceDirectory(session["path"])
 
-	backend, err := model.NewBackend(ctx, session)
+	backend, err := NewBackend(ctx, session)
 	if err != nil {
 		Log.Debug("[auth] action=authenticate::newBackend err=%s", ferror(err))
 		Log.Stdout("AUDIT action[fail] backend[%s] user[%s] target[%s]", session["type"], backendID(session), ip(req))
@@ -73,8 +76,8 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 			SendErrorResult(res, NewError("Can't authenticate (OAuth error)", 401))
 			return
 		}
-		session = utils.MapStringInterfaceToMapStringString(ctx.Body)
-		backend, err = model.NewBackend(ctx, session)
+		session = MapStringInterfaceToMapStringString(ctx.Body)
+		backend, err = NewBackend(ctx, session)
 		if err != nil {
 			Log.Debug("[auth] action=authenticate::oauth::newBackend err=%s", ferror(err))
 			Log.Stdout("AUDIT action[fail] backend[%s] user[%s] target[%s]", session["type"], username(session), ip(req))
@@ -83,7 +86,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	home, err := model.GetHome(backend, session["path"])
+	home, err := GetHome(backend, session["path"])
 	if err != nil {
 		Log.Debug("[auth] action=authenticate::getHome err=%s", ferror(err))
 		SendErrorResult(res, ErrAuthenticationFailed)
@@ -123,7 +126,7 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 		// then close which can take a few seconds and make for a bad user experience.
 		// By pushing that connection close in a goroutine, we make sure the logout is much faster for
 		// the user while still retaining that functionality.
-		middleware.SessionTry(func(c *App, _res http.ResponseWriter, _req *http.Request) {
+		SessionTry(func(c *App, _res http.ResponseWriter, _req *http.Request) {
 			if c.Backend != nil {
 				if obj, ok := c.Backend.(interface{ Close() error }); ok {
 					obj.Close()
@@ -153,7 +156,7 @@ func SessionOAuthBackend(ctx *App, res http.ResponseWriter, req *http.Request) {
 	a := map[string]string{
 		"type": vars["service"],
 	}
-	b, err := model.NewBackend(ctx, a)
+	b, err := NewBackend(ctx, a)
 	if err != nil {
 		Log.Debug("session::oauth 'NewBackend' %+v", err)
 		SendErrorResult(res, err)
@@ -409,7 +412,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	if _, err := model.NewBackend(ctx, session); err != nil {
+	if _, err := NewBackend(ctx, session); err != nil {
 		Log.Debug("session::authMiddleware 'backend connection failed %s'", err.Error())
 		Log.Info("[auth] status=failed user=%s backend=%s::%s ip=%s err=%s", username(session), session["type"], backendID(session), ip(req), ferror(err))
 		url := "/?error=" + ErrNotValid.Error() + "&trace=backend error - " + err.Error()
