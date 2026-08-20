@@ -15,7 +15,6 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/ctrl"
 	"github.com/mickael-kerjean/filestash/server/middleware"
 	"github.com/mickael-kerjean/filestash/server/model"
 
@@ -281,7 +280,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		localip                 string
 	)
 	query := req.URL.Query()
-	path, err := ctrl.PathBuilder(ctx, query.Get("path"))
+	path, err := PathBuilder(ctx, query.Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return

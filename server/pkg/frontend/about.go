@@ -1,6 +1,8 @@
 package frontend
 
 import (
+	_ "embed"
+
 	"fmt"
 	"html"
 	"net/http"
@@ -11,6 +13,9 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/pkg/extension"
 )
+
+//go:embed static/about.html
+var htmlAbout string
 
 func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	t, _ := template.
@@ -30,62 +35,36 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 				return strings.Join(list, " ")
 			},
 		}).
-		Parse(Page(`
-	  <h1> {{ .Version }} </h1>
-	  <table>
-		<tr> <td style="width:150px;"> Commit hash </td> <td> <a href="https://github.com/mickael-kerjean/filestash/tree/{{ .CommitHash }}">{{ .CommitHash }}</a> </td> </tr>
-		<tr> <td> Binary hash </td> <td> {{ index .Checksum 0}} </td> </tr>
-		<tr> <td> Config hash </td> <td> {{ index .Checksum 1}} </td> </tr>
-		<tr> <td> License </td> <td> {{ .License }} </td> </tr>
-		<tr>
-          <td> Plugins </td>
-          <td>
-            STANDARD [<span class="small">{{ renderPlugin (index .Plugins 0) .CommitHash }}</span>]
-            <br/>
-            ENTERPRISE [<span class="small">{{ renderPlugin (index .Plugins 1) "" }}</span>]
-            <br/>
-            CUSTOM [<span class="small">{{ renderPlugin (index .Plugins 2) "" }}</span>]
-            <br/>
-            RUNTIME [<span class="small">{{ renderPlugin (index .Plugins 3) "" }}</span>]
-          </td>
-        </tr>
-	  </table>
+		Parse(Page(htmlAbout))
 
-	  <style>
-		body.common_response_page { background: var(--bg-color); }
-		table { margin: 0 auto; font-family: monospace; opacity: 0.8; max-width: 1000px; width: 95%;}
-		table td { text-align: right; padding-left: 10px; vertical-align: top; }
-        table td span.small { font-size:0.8rem; }
-        table a { color: inherit; text-decoration: none; }
-	  </style>
-	`))
-	hashFileContent := func(path string, n int) string {
-		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
-		if err != nil {
-			return ""
-		}
-		defer f.Close()
-		return HashStream(f, n)
-	}
 	t.Execute(res, struct {
 		Version    string
 		CommitHash string
-		Checksum   []string
+		Checksum   [2]string
 		License    string
-		Plugins    []string
+		Plugins    [4]string
 	}{
 		Version:    fmt.Sprintf("Filestash %s.%s", APP_VERSION, BUILD_DATE),
 		CommitHash: BUILD_REF,
-		Checksum: []string{
+		Checksum: [2]string{
 			hashFileContent(GetAbsolutePath("filestash"), 0),
 			hashFileContent(GetAbsolutePath(CONFIG_PATH, "config.json"), 0),
 		},
 		License: strings.ToUpper(LICENSE),
-		Plugins: []string{
+		Plugins: [4]string{
 			strings.Join(extension.ListOfPlugins.OSS, " "),
 			strings.Join(extension.ListOfPlugins.Enterprise, " "),
 			strings.Join(extension.ListOfPlugins.Custom, " "),
 			strings.Join(extension.ListOfPlugins.Apps, " "),
 		},
 	})
+}
+
+func hashFileContent(path string, n int) string {
+	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+	return HashStream(f, n)
 }

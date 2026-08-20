@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/ctrl"
 )
 
 func init() {

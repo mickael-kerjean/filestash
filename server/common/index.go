@@ -33,11 +33,13 @@ type HandlerFunc = core.HandlerFunc
 type AppError = utils.AppError
 type AppCache = utils.AppCache
 
-var Backend = kernel.Backend
-
 // plugin.go
 var Hooks = kernel.Hooks
-var WithID = kernel.WithID
+
+var (
+	WithID = kernel.WithID
+	Backend = kernel.Backend
+)
 
 // log.go
 var (

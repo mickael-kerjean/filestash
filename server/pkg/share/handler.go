@@ -18,7 +18,7 @@ func ShareListHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
-	listOfSharedLinks, err := ShareList(
+	listOfSharedLinks, err := List(
 		GenerateID(ctx.Session),
 		path,
 	)
@@ -77,7 +77,7 @@ func ShareUpsertHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		CanWrite:     NewBoolFromInterface(ctx.Body["can_write"]),
 		CanUpload:    NewBoolFromInterface(ctx.Body["can_upload"]),
 	}
-	if err := ShareUpsert(&s); err != nil {
+	if err := Upsert(&s); err != nil {
 		Log.Debug("share::upsert '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
@@ -87,7 +87,7 @@ func ShareUpsertHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 func ShareDeleteHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	share_target := mux.Vars(req)["share"]
-	if err := ShareDelete(share_target); err != nil {
+	if err := Delete(share_target); err != nil {
 		Log.Debug("share::delete '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
@@ -105,7 +105,7 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 
 	// 1) initialise the current context
 	share_id := mux.Vars(req)["share"]
-	s, err = ShareGet(share_id)
+	s, err = Get(share_id)
 	if err != nil {
 		Log.Debug("share::verify::init '%s'", err.Error())
 		SendErrorResult(res, err)
@@ -115,8 +115,8 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		Key:   fmt.Sprint(ctx.Body["type"]),
 		Value: fmt.Sprint(ctx.Body["value"]),
 	}
-	verifiedProof = ShareProofGetAlreadyVerified(req)
-	requiredProof = ShareProofGetRequired(s)
+	verifiedProof = Verified(req)
+	requiredProof = Required(s)
 
 	// 2) validate the current context
 	if len(verifiedProof) > 20 || len(requiredProof) > 20 {
@@ -137,7 +137,7 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 	}
 
 	// 3) process the proof sent by the user
-	submittedProof, err = ShareProofVerifier(s, submittedProof)
+	submittedProof, err = Verify(s, submittedProof)
 	if err != nil {
 		Log.Debug("share::verify::process '%s'", err.Error())
 		submittedProof.Error = NewString(err.Error())
@@ -166,7 +166,7 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 	}
 
 	// 4) Find remaining proofs: requiredProof - verifiedProof
-	remainingProof = ShareProofCalculateRemainings(requiredProof, verifiedProof)
+	remainingProof = Remainings(requiredProof, verifiedProof)
 
 	// 5) persist proofs in client cookie
 	cookie := http.Cookie{

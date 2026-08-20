@@ -1,6 +1,11 @@
 package middleware
 
-import "github.com/mickael-kerjean/filestash/server/pkg/middleware"
+import (
+	"github.com/mickael-kerjean/filestash/server/pkg/admin"
+	"github.com/mickael-kerjean/filestash/server/pkg/middleware"
+	"github.com/mickael-kerjean/filestash/server/pkg/session"
+	"github.com/mickael-kerjean/filestash/server/pkg/share"
+)
 
 var (
 	NewMiddlewareChain = middleware.NewMiddlewareChain
@@ -11,11 +16,11 @@ var (
 	SecureHeaders      = middleware.SecureHeaders
 	SecureOrigin       = middleware.SecureOrigin
 	LoggedInOnly       = middleware.LoggedInOnly
-	AdminOnly          = middleware.AdminOnly
-	SessionTry         = middleware.SessionTry
-	SessionStart       = middleware.SessionStart
 	BodyParser         = middleware.BodyParser
-	CanManageShare     = middleware.CanManageShare
 	PluginInjector     = middleware.PluginInjector
 	RateLimiter        = middleware.RateLimiter
+	AdminOnly          = admin.AdminOnly
+	SessionTry         = session.Try
+	SessionStart       = session.Start
+	CanManageShare     = share.CanManageShare(session.Start, session.FromRequest)
 )

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/middleware"
 
 	"github.com/mickael-kerjean/filestash/server/pkg/cookie"
 	"github.com/mickael-kerjean/filestash/server/pkg/files"
@@ -123,7 +122,7 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 		// then close which can take a few seconds and make for a bad user experience.
 		// By pushing that connection close in a goroutine, we make sure the logout is much faster for
 		// the user while still retaining that functionality.
-		SessionTry(func(c *App, _res http.ResponseWriter, _req *http.Request) {
+		Try(func(c *App, _res http.ResponseWriter, _req *http.Request) {
 			if c.Backend != nil {
 				if obj, ok := c.Backend.(interface{ Close() error }); ok {
 					obj.Close()

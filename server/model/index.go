@@ -15,8 +15,8 @@ var (
 )
 
 var (
-	ShareAll    = share.ShareAll
-	ShareList   = share.ShareList
-	ShareDelete = share.ShareDelete
-	ShareUpsert = share.ShareUpsert
+	ShareAll    = share.All
+	ShareList   = share.List
+	ShareDelete = share.Delete
+	ShareUpsert = share.Upsert
 )
