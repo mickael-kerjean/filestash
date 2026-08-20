@@ -3,10 +3,8 @@ package files
 import (
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/pkg/config"
-	. "github.com/mickael-kerjean/filestash/server/pkg/core"
-	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/kernel"
 )
 
 func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
@@ -49,7 +47,7 @@ func NewBackend(ctx *App, conn map[string]string) (IBackend, error) {
 	}
 
 	if isAllowed() == false {
-		return Backend.Get(BACKEND_NIL), ErrNotAllowed
+		return Backend.Get(kernel.BACKEND_NIL), ErrNotAllowed
 	}
 	return Backend.Get(conn["type"]).Init(conn, ctx)
 }

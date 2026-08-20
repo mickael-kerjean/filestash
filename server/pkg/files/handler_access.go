@@ -4,10 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/pkg/core"
-	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func FileAccess(ctx *App, res http.ResponseWriter, req *http.Request) {

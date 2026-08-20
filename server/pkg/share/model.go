@@ -10,18 +10,16 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/pkg/config"
-	. "github.com/mickael-kerjean/filestash/server/pkg/core"
-	. "github.com/mickael-kerjean/filestash/server/pkg/env"
-	. "github.com/mickael-kerjean/filestash/server/pkg/sqlite"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
+	"github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
 )
 
 func ShareList(backend string, path string) ([]Share, error) {
-	stmt, err := DB.Prepare("SELECT id, related_path, params FROM Share WHERE related_backend = ? AND related_path LIKE ? || '%' ")
+	stmt, err := sqlite.DB.Prepare("SELECT id, related_path, params FROM Share WHERE related_backend = ? AND related_path LIKE ? || '%' ")
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +40,7 @@ func ShareList(backend string, path string) ([]Share, error) {
 }
 
 func ShareAll() ([]Share, error) {
-	rows, err := DB.Query("SELECT id, related_path, params FROM Share")
+	rows, err := sqlite.DB.Query("SELECT id, related_path, params FROM Share")
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +58,7 @@ func ShareAll() ([]Share, error) {
 
 func ShareGet(id string) (Share, error) {
 	var p Share
-	stmt, err := DB.Prepare("SELECT id, related_backend, related_path, auth, params FROM share WHERE id = ?")
+	stmt, err := sqlite.DB.Prepare("SELECT id, related_backend, related_path, auth, params FROM share WHERE id = ?")
 	if err != nil {
 		return p, err
 	}
@@ -79,7 +77,7 @@ func ShareGet(id string) (Share, error) {
 
 func ShareUpsert(p *Share) error {
 	if p.Password != nil {
-		if *p.Password == PASSWORD_DUMMY {
+		if *p.Password == utils.PASSWORD_DUMMY {
 			if s, err := ShareGet(p.Id); err != nil {
 				p.Password = s.Password
 			}
@@ -89,14 +87,14 @@ func ShareUpsert(p *Share) error {
 		}
 	}
 
-	stmt, err := DB.Prepare("INSERT INTO Location(backend, path) VALUES($1, $2)")
+	stmt, err := sqlite.DB.Prepare("INSERT INTO Location(backend, path) VALUES($1, $2)")
 	if err != nil {
 		return err
 	}
 	_, err = stmt.Exec(p.Backend, p.Path)
 	if err != nil {
 		throw := true
-		if IsConstraint(err) {
+		if sqlite.IsConstraint(err) {
 			throw = false
 		}
 		if throw == true {
@@ -104,7 +102,7 @@ func ShareUpsert(p *Share) error {
 		}
 	}
 
-	stmt, err = DB.Prepare("INSERT INTO Share(id, related_backend, related_path, params, auth) VALUES($1, $2, $3, $4, $5) ON CONFLICT(id) DO UPDATE SET related_backend = $2, related_path = $3, params = $4")
+	stmt, err = sqlite.DB.Prepare("INSERT INTO Share(id, related_backend, related_path, params, auth) VALUES($1, $2, $3, $4, $5) ON CONFLICT(id) DO UPDATE SET related_backend = $2, related_path = $3, params = $4")
 	if err != nil {
 		return err
 	}
@@ -134,7 +132,7 @@ func ShareUpsert(p *Share) error {
 }
 
 func ShareDelete(id string) error {
-	stmt, err := DB.Prepare("DELETE FROM Share WHERE id = ?")
+	stmt, err := sqlite.DB.Prepare("DELETE FROM Share WHERE id = ?")
 	if err != nil {
 		return err
 	}
@@ -171,7 +169,7 @@ func ShareProofVerifier(s Share, proof Proof) (Proof, error) {
 		user := v
 
 		// prepare the verification code
-		stmt, err := DB.Prepare("INSERT INTO Verification(key, code) VALUES(?, ?)")
+		stmt, err := sqlite.DB.Prepare("INSERT INTO Verification(key, code) VALUES(?, ?)")
 		if err != nil {
 			return p, err
 		}
@@ -225,7 +223,7 @@ func ShareProofVerifier(s Share, proof Proof) (Proof, error) {
 
 	if proof.Key == "code" {
 		// find key for given code
-		stmt, err := DB.Prepare("SELECT key FROM Verification WHERE code = ? AND expire > datetime('now')")
+		stmt, err := sqlite.DB.Prepare("SELECT key FROM Verification WHERE code = ? AND expire > datetime('now')")
 		if err != nil {
 			return p, NewError("Not found", 404)
 		}
@@ -244,7 +242,7 @@ func ShareProofVerifier(s Share, proof Proof) (Proof, error) {
 		stmt.Close()
 
 		// cleanup current attempt so that it isn't used for malicious purpose
-		if stmt, err = DB.Prepare("DELETE FROM Verification WHERE code = ?"); err == nil {
+		if stmt, err = sqlite.DB.Prepare("DELETE FROM Verification WHERE code = ?"); err == nil {
 			stmt.Exec(proof.Value)
 			stmt.Close()
 		}

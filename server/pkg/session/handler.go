@@ -11,15 +11,12 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/middleware"
+
 	"github.com/mickael-kerjean/filestash/server/pkg/cookie"
-	. "github.com/mickael-kerjean/filestash/server/pkg/core"
-	. "github.com/mickael-kerjean/filestash/server/pkg/env"
-	. "github.com/mickael-kerjean/filestash/server/pkg/files"
-	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/middleware"
+	"github.com/mickael-kerjean/filestash/server/pkg/files"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -39,7 +36,7 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendSuccessResult(res, r)
 		return
 	}
-	home, err := GetHome(ctx.Backend, ctx.Session["path"])
+	home, err := files.GetHome(ctx.Backend, ctx.Session["path"])
 	if err != nil {
 		SendSuccessResult(res, r)
 		return
@@ -60,7 +57,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	session := MapStringInterfaceToMapStringString(ctx.Body)
 	session["path"] = EnforceDirectory(session["path"])
 
-	backend, err := NewBackend(ctx, session)
+	backend, err := files.NewBackend(ctx, session)
 	if err != nil {
 		Log.Debug("[auth] action=authenticate::newBackend err=%s", ferror(err))
 		Log.Stdout("AUDIT action[fail] backend[%s] user[%s] target[%s]", session["type"], backendID(session), ip(req))
@@ -77,7 +74,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 			return
 		}
 		session = MapStringInterfaceToMapStringString(ctx.Body)
-		backend, err = NewBackend(ctx, session)
+		backend, err = files.NewBackend(ctx, session)
 		if err != nil {
 			Log.Debug("[auth] action=authenticate::oauth::newBackend err=%s", ferror(err))
 			Log.Stdout("AUDIT action[fail] backend[%s] user[%s] target[%s]", session["type"], username(session), ip(req))
@@ -86,7 +83,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	home, err := GetHome(backend, session["path"])
+	home, err := files.GetHome(backend, session["path"])
 	if err != nil {
 		Log.Debug("[auth] action=authenticate::getHome err=%s", ferror(err))
 		SendErrorResult(res, ErrAuthenticationFailed)
@@ -156,7 +153,7 @@ func SessionOAuthBackend(ctx *App, res http.ResponseWriter, req *http.Request) {
 	a := map[string]string{
 		"type": vars["service"],
 	}
-	b, err := NewBackend(ctx, a)
+	b, err := files.NewBackend(ctx, a)
 	if err != nil {
 		Log.Debug("session::oauth 'NewBackend' %+v", err)
 		SendErrorResult(res, err)
@@ -412,7 +409,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	if _, err := NewBackend(ctx, session); err != nil {
+	if _, err := files.NewBackend(ctx, session); err != nil {
 		Log.Debug("session::authMiddleware 'backend connection failed %s'", err.Error())
 		Log.Info("[auth] status=failed user=%s backend=%s::%s ip=%s err=%s", username(session), session["type"], backendID(session), ip(req), ferror(err))
 		url := "/?error=" + ErrNotValid.Error() + "&trace=backend error - " + err.Error()

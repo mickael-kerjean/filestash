@@ -2,6 +2,7 @@ package workflow
 
 import (
 	. "github.com/mickael-kerjean/filestash/server/common"
+
 	_ "github.com/mickael-kerjean/filestash/server/pkg/workflow/actions"
 	. "github.com/mickael-kerjean/filestash/server/pkg/workflow/model"
 )

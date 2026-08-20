@@ -137,6 +137,7 @@ var (
 	SendSuccessResult                = kernel.SendSuccessResult
 	SendSuccessResults               = kernel.SendSuccessResults
 	SendSuccessResultWithEtagAndGzip = kernel.SendSuccessResultWithEtagAndGzip
+	SendSuccessResultsWithMetadata   = kernel.SendSuccessResultsWithMetadata
 	SendErrorResult                  = kernel.SendErrorResult
 	Page                             = kernel.Page
 	RedirectPage                     = kernel.RedirectPage

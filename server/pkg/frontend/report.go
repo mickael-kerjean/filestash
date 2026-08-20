@@ -8,11 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/pkg/config"
-	. "github.com/mickael-kerjean/filestash/server/pkg/core"
-	. "github.com/mickael-kerjean/filestash/server/pkg/env"
-	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
 func ReportHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
