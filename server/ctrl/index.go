@@ -3,6 +3,7 @@ package ctrl
 import (
 	"github.com/mickael-kerjean/filestash/server/pkg/admin"
 	"github.com/mickael-kerjean/filestash/server/pkg/files"
+	"github.com/mickael-kerjean/filestash/server/pkg/frontend"
 	"github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	"github.com/mickael-kerjean/filestash/server/pkg/share"
 )
@@ -48,4 +49,26 @@ var (
 	ShareDelete      = share.ShareDeleteHandler
 	ShareUpsert      = share.ShareUpsertHandler
 	ShareVerifyProof = share.ShareVerifyProofHandler
+)
+
+// frontend
+var (
+	ServeBackofficeHandler   = frontend.ServeBackofficeHandler
+	ServeFrontofficeHandler  = frontend.ServeFrontofficeHandler
+	ServeFavicon             = frontend.ServeFavicon
+	ServeFile                = frontend.ServeFile
+	ServeBundle              = frontend.ServeBundle
+	NotFoundHandler          = frontend.NotFoundHandler
+	ManifestHandler          = frontend.ManifestHandler
+	RobotsHandler            = frontend.RobotsHandler
+	CustomCssHandler         = frontend.CustomCssHandler
+	AboutHandler             = frontend.AboutHandler
+	InitPluginList           = frontend.InitPluginList
+	HasPlugin                = frontend.HasPlugin
+	PluginExportHandler      = frontend.PluginExportHandler
+	PluginStaticHandler      = frontend.PluginStaticHandler
+	PluginDownloadHandler    = frontend.PluginDownloadHandler
+	ReportHandler            = frontend.ReportHandler
+	WellKnownSecurityHandler = frontend.WellKnownSecurityHandler
+	HealthHandler            = frontend.HealthHandler
 )

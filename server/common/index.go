@@ -37,6 +37,7 @@ var Backend = kernel.Backend
 
 // plugin.go
 var Hooks = kernel.Hooks
+var WithID = kernel.WithID
 
 // log.go
 var (
