@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 )
 
 func FromRequest(req *http.Request, ctx *App) (map[string]string, error) {
@@ -16,7 +17,7 @@ func FromRequest(req *http.Request, ctx *App) (map[string]string, error) {
 	)
 
 	if ctx.Share.Id != "" {
-		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Share.Auth)
+		str, err = DecryptString(env.SECRET_KEY_DERIVATE_FOR_USER, ctx.Share.Auth)
 		if err != nil {
 			// This typically happen when changing the secret key
 			return session, ErrNotAuthorized
@@ -29,7 +30,7 @@ func FromRequest(req *http.Request, ctx *App) (map[string]string, error) {
 	if ctx.Authorization == "" {
 		return session, nil
 	}
-	str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Authorization)
+	str, err = DecryptString(env.SECRET_KEY_DERIVATE_FOR_USER, ctx.Authorization)
 	if err != nil {
 		// This typically happen when changing the secret key
 		Log.Debug("middleware::session decrypt error '%s'", err.Error())

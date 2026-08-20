@@ -8,6 +8,7 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 	"github.com/mickael-kerjean/filestash/server/model"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/impl"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/types"
@@ -225,7 +226,7 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 }
 
 func getBackend(token string) (IBackend, error) {
-	str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_USER, token)
+	str, err := DecryptString(env.SECRET_KEY_DERIVATE_FOR_USER, token)
 	if err != nil {
 		return nil, ErrNotAuthorized
 	}

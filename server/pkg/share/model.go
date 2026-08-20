@@ -15,6 +15,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
 	"github.com/mickael-kerjean/filestash/server/pkg/utils"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
@@ -192,7 +193,7 @@ func Verify(s Share, proof Proof) (Proof, error) {
 			Username string
 		}{
 			code,
-			user + "[" + Hash(user+SECRET_KEY_DERIVATE_FOR_HASH, 10) + "]",
+			user + "[" + Hash(user+env.SECRET_KEY_DERIVATE_FOR_HASH, 10) + "]",
 		})
 
 		p.Key = "code"
@@ -294,7 +295,7 @@ func Verified(req *http.Request) []Proof {
 	var p []Proof
 	var cookieValue string
 
-	c, _ := req.Cookie(COOKIE_NAME_PROOF)
+	c, _ := req.Cookie(env.COOKIE_NAME_PROOF)
 	if c == nil {
 		return p
 	}
@@ -302,7 +303,7 @@ func Verified(req *http.Request) []Proof {
 	if len(cookieValue) > 500 {
 		return p
 	}
-	j, err := DecryptString(SECRET_KEY_DERIVATE_FOR_PROOF, cookieValue)
+	j, err := DecryptString(env.SECRET_KEY_DERIVATE_FOR_PROOF, cookieValue)
 	if err != nil {
 		return p
 	}

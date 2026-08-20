@@ -13,6 +13,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/model"
 	"github.com/mickael-kerjean/filestash/server/pkg/share"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 
 	"github.com/gorilla/mux"
 )
@@ -112,7 +113,7 @@ func _extractShare(req *http.Request) (Share, error) {
 		if len(usr) != 3 {
 			return "", p
 		}
-		if Hash(usr[1]+SECRET_KEY_DERIVATE_FOR_HASH, 10) != usr[2] {
+		if Hash(usr[1]+env.SECRET_KEY_DERIVATE_FOR_HASH, 10) != usr[2] {
 			return "", p
 		}
 		return usr[1], p
@@ -140,7 +141,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		session map[string]string = make(map[string]string)
 	)
 	if ctx.Share.Id != "" {
-		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Share.Auth)
+		str, err = DecryptString(env.SECRET_KEY_DERIVATE_FOR_USER, ctx.Share.Auth)
 		if err != nil {
 			// This typically happen when changing the secret key
 			return session, ErrNotAuthorized
@@ -152,7 +153,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	if ctx.Authorization == "" {
 		return session, nil
 	}
-	str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Authorization)
+	str, err = DecryptString(env.SECRET_KEY_DERIVATE_FOR_USER, ctx.Authorization)
 	if err != nil {
 		// This typically happen when changing the secret key
 		Log.Debug("middleware::session decrypt error '%s'", err.Error())

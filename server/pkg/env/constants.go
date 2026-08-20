@@ -1,3 +1,4 @@
+//go:generate go run generator.go
 package env
 
 import (
@@ -6,14 +7,25 @@ import (
 	"strings"
 )
 
-//go:generate go run generator.go
 var (
-	APP_VERSION string = "v0.6"
-	APPNAME     string = "Filestash"
-	BASE        string
-	BUILD_REF   string
-	BUILD_DATE  string
-	LICENSE     string = "agpl"
+	APP_VERSION = "v0.6"
+	APPNAME     = "Filestash"
+	BASE        = strings.TrimSuffix(os.Getenv("FILESTASH_BASE"), "/")
+	LICENSE     = "agpl"
+
+	CONFIG_PATH = fromPath("state/config/")
+	CERT_PATH   = fromPath("state/certs/")
+	PLUGIN_PATH = fromPath("state/plugins/")
+	DB_PATH     = fromPath("state/db/")
+	FTS_PATH    = fromPath("state/search/")
+	LOG_PATH    = fromPath("state/log/")
+	TMP_PATH    = fromPath("cache/")
+
+	COOKIE_NAME_PROOF = "proof"
+	COOKIE_NAME_ADMIN = "admin"
+	COOKIE_PATH_ADMIN = WithBase("/admin/api/")
+	COOKIE_PATH       = WithBase("/api/")
+	URL_SETUP         = WithBase("/admin/setup")
 )
 
 var (
@@ -25,39 +37,10 @@ var (
 	SECRET_KEY_DERIVATE_FOR_SIGNATURE string
 )
 
-var (
-	CONFIG_PATH = "state/config/"
-	CERT_PATH   = "state/certs/"
-	PLUGIN_PATH = "state/plugins/"
-	DB_PATH     = "state/db/"
-	FTS_PATH    = "state/search/"
-	LOG_PATH    = "state/log/"
-	TMP_PATH    = "cache/"
-)
-
-var (
-	COOKIE_NAME_PROOF = "proof"
-	COOKIE_NAME_ADMIN = "admin"
-	COOKIE_PATH_ADMIN = "/admin/api/"
-	COOKIE_PATH       = "/api/"
-	URL_SETUP         = "/admin/setup"
-)
-
-func init() {
-	// STEP1: setup app
+func fromPath(p string) string {
 	rootPath := "data/"
 	if p := os.Getenv("FILESTASH_PATH"); p != "" {
 		rootPath = p
 	}
-	LOG_PATH = filepath.Join(rootPath, LOG_PATH)
-	CONFIG_PATH = filepath.Join(rootPath, CONFIG_PATH)
-	DB_PATH = filepath.Join(rootPath, DB_PATH)
-	FTS_PATH = filepath.Join(rootPath, FTS_PATH)
-	CERT_PATH = filepath.Join(rootPath, CERT_PATH)
-	TMP_PATH = filepath.Join(rootPath, TMP_PATH)
-	PLUGIN_PATH = filepath.Join(rootPath, PLUGIN_PATH)
-	BASE = strings.TrimSuffix(os.Getenv("FILESTASH_BASE"), "/")
-	COOKIE_PATH_ADMIN = WithBase(COOKIE_PATH_ADMIN)
-	COOKIE_PATH = WithBase(COOKIE_PATH)
-	URL_SETUP = WithBase(URL_SETUP)
+	return filepath.Join(rootPath, p)
 }

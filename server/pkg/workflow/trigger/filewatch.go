@@ -9,6 +9,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/pkg/workflow/model"
 )
 
@@ -108,7 +109,7 @@ func filewatchCallback(workflow Workflow) (map[string]string, bool) {
 
 func createBackend(token string) (IBackend, map[string]string, error) {
 	session := map[string]string{}
-	str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_USER, token)
+	str, err := DecryptString(env.SECRET_KEY_DERIVATE_FOR_USER, token)
 	if err != nil {
 		return nil, session, err
 	}

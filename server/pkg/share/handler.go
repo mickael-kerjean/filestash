@@ -8,6 +8,7 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 
 	"github.com/gorilla/mux"
 )
@@ -121,7 +122,7 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 	// 2) validate the current context
 	if len(verifiedProof) > 20 || len(requiredProof) > 20 {
 		http.SetCookie(res, &http.Cookie{
-			Name:   COOKIE_NAME_PROOF,
+			Name:   env.COOKIE_NAME_PROOF,
 			Value:  "",
 			MaxAge: -1,
 			Path:   COOKIE_PATH,
@@ -173,7 +174,7 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		Name: COOKIE_NAME_PROOF,
 		Value: func(p []Proof) string {
 			j, _ := json.Marshal(p)
-			str, _ := EncryptString(SECRET_KEY_DERIVATE_FOR_PROOF, string(j))
+			str, _ := EncryptString(env.SECRET_KEY_DERIVATE_FOR_PROOF, string(j))
 			return str
 		}(verifiedProof),
 		Path:     COOKIE_PATH,

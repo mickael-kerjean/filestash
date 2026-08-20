@@ -1,11 +1,10 @@
 package common
 
 import (
-	_ "unsafe"
-
 	"github.com/mickael-kerjean/filestash/server/pkg/admin"
 	"github.com/mickael-kerjean/filestash/server/pkg/config"
 	"github.com/mickael-kerjean/filestash/server/pkg/core"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 	"github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	"github.com/mickael-kerjean/filestash/server/pkg/mime"
 	"github.com/mickael-kerjean/filestash/server/pkg/utils"
@@ -169,6 +168,15 @@ var (
 	TmplParams = kernel.TmplParams
 )
 
+// env
+var (
+	WithBase       = env.WithBase
+	TrimBase       = env.TrimBase
+	IsWhiteLabel   = env.IsWhiteLabel
+	WhiteLabelText = env.WhiteLabelText
+)
+
+
 // admin.go
 var NewAdminToken = admin.NewAdminToken
 
@@ -176,5 +184,4 @@ func InitLogger() error {
 	return utils.InitLogger(GetAbsolutePath(LOG_PATH, "access.log"))
 }
 
-//go:linkname Config github.com/mickael-kerjean/filestash/server/pkg/config.Config
-var Config config.Configuration
+var Config = config.Config

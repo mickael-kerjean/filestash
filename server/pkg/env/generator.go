@@ -21,13 +21,12 @@ func main() {
 		os.Exit(1)
 		return
 	}
+	defer f.Close()
 	f.Write([]byte(fmt.Sprintf(`
 package env
 
-func init() {
+var (
     BUILD_REF = "%s"
     BUILD_DATE = "%s"
-}
-	`, strings.TrimSpace(b.String()), time.Now().Format("20060102"))))
-	f.Close()
+)`, strings.TrimSpace(b.String()), time.Now().Format("20060102"))))
 }

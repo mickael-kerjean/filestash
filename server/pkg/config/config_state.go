@@ -30,15 +30,6 @@ var configKeysToEncrypt []string = []string{
 	"middleware.attribute_mapping.params",
 }
 
-func InitSecretDerivate(secret string) {
-	SECRET_KEY = secret
-	SECRET_KEY_DERIVATE_FOR_PROOF = Hash("PROOF_"+SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_ADMIN = Hash("ADMIN_"+SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_USER = Hash("USER_"+SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_HASH = Hash("HASH_"+SECRET_KEY, len(SECRET_KEY))
-	SECRET_KEY_DERIVATE_FOR_SIGNATURE = Hash("SGN_"+SECRET_KEY, len(SECRET_KEY))
-}
-
 func LoadConfig() ([]byte, error) {
 	file, err := os.OpenFile(GetAbsolutePath(CONFIG_PATH, "config.json"), os.O_RDONLY, os.ModePerm)
 	if err != nil {

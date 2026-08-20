@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 
 	"github.com/gorilla/mux"
 )
@@ -48,7 +49,7 @@ func FromRequest(req *http.Request) (Share, error) {
 		if len(usr) != 3 {
 			return "", p
 		}
-		if Hash(usr[1]+SECRET_KEY_DERIVATE_FOR_HASH, 10) != usr[2] {
+		if Hash(usr[1]+env.SECRET_KEY_DERIVATE_FOR_HASH, 10) != usr[2] {
 			return "", p
 		}
 		return usr[1], p

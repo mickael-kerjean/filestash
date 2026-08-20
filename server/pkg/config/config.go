@@ -32,7 +32,6 @@ type ConfigElement struct {
 }
 
 func InitConfig() error {
-	Config = NewConfiguration()
 	if err := Config.Load(); err != nil {
 		return err
 	}
@@ -40,8 +39,8 @@ func InitConfig() error {
 	return nil
 }
 
-func NewConfiguration() Configuration {
-	c := Configuration{}
+func NewConfiguration() *Configuration {
+	c := &Configuration{}
 	c.state.Store(&configState{
 		conn: []map[string]any{},
 		forms: []Form{
@@ -202,8 +201,7 @@ func (this *Configuration) Initialise() {
 	}
 	if this.Get("general.secret_key").String() == "" {
 		shouldSave = true
-		key := RandomString(16)
-		this.Get("general.secret_key").Set(key)
+		this.Get("general.secret_key").Set(RandomString(16))
 	}
 	if shouldSave {
 		this.Save()

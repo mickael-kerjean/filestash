@@ -9,6 +9,7 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 )
 
 const (
@@ -20,7 +21,7 @@ var KEY_FOR_CODE string
 
 func init() {
 	Hooks.Register.Onload(func() {
-		KEY_FOR_CODE = Hash("MCP_CODE_"+SECRET_KEY, len(SECRET_KEY))
+		KEY_FOR_CODE = Hash("MCP_CODE_"+env.SECRET_KEY, len(env.SECRET_KEY))
 	})
 }
 
