@@ -3,7 +3,9 @@ package kernel
 import (
 	"bytes"
 	"compress/gzip"
+	_ "embed"
 	"encoding/json"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	"net/http"
 	"strings"
 
@@ -158,4 +160,16 @@ func RedirectPage(url string) string {
 </body>
 </html>
 `
+}
+
+//go:embed static/404.html
+var HtmlPage404 []byte
+
+func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if strings.Contains(req.Header.Get("accept"), "text/html") {
+		res.WriteHeader(http.StatusNotFound)
+		res.Write(HtmlPage404)
+		return
+	}
+	SendErrorResult(res, ErrNotFound)
 }

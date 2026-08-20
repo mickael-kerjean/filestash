@@ -140,6 +140,7 @@ var (
 	SendErrorResult                  = kernel.SendErrorResult
 	Page                             = kernel.Page
 	RedirectPage                     = kernel.RedirectPage
+	NotFoundHandler                  = kernel.NotFoundHandler
 )
 
 // path.go

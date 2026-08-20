@@ -34,9 +34,6 @@ import (
 var (
 	WWWDir fs.FS
 
-	//go:embed static/404.html
-	HtmlPage404 []byte
-
 	//go:embed static/loader.html
 	TmplLoader []byte
 )
@@ -98,15 +95,6 @@ func ServeFavicon(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 	r, _ := http.NewRequest(http.MethodGet, "/favicon.svg", nil)
 	ServeFile("/assets/logo/")(ctx, res, r)
-}
-
-func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
-	if strings.Contains(req.Header.Get("accept"), "text/html") {
-		res.WriteHeader(http.StatusNotFound)
-		res.Write(HtmlPage404)
-		return
-	}
-	SendErrorResult(res, ErrNotFound)
 }
 
 func ManifestHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
