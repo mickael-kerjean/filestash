@@ -5,8 +5,6 @@ import (
 	"html"
 	"net/http"
 	"os"
-	"path/filepath"
-	"regexp"
 	"strings"
 	"text/template"
 
@@ -16,65 +14,6 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
-
-var listOfPlugins = struct {
-	OSS        []string
-	Enterprise []string
-	Custom     []string
-	Apps       []string
-}{}
-
-func InitPluginList(code []byte, plgs map[string]extension.PluginImpl) error {
-	listOfPackages := regexp.MustCompile(`\t_?\s*\"(github.com/[^\"]+)`).FindAllStringSubmatch(string(code), -1)
-	for _, packageNameMatch := range listOfPackages {
-		if len(packageNameMatch) != 2 {
-			Log.Error("ctrl::static error=assertion_failed msg=invalid_match_size arg=%d", len(packageNameMatch))
-			return ErrNotValid
-		}
-		packageName := packageNameMatch[1]
-		packageShortName := filepath.Base(packageName)
-
-		if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/server/plugin/") {
-			listOfPlugins.OSS = append(listOfPlugins.OSS, packageShortName)
-		} else if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/plugins/") {
-			listOfPlugins.Enterprise = append(listOfPlugins.Enterprise, packageShortName)
-		} else if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/filestash-enterprise/customers/") {
-			listOfPlugins.Custom = append(listOfPlugins.Custom, packageShortName)
-		} else {
-			listOfPlugins.Custom = append(listOfPlugins.Custom, packageShortName)
-		}
-	}
-	for name, _ := range plgs {
-		listOfPlugins.Apps = append(listOfPlugins.Apps, name)
-	}
-	return nil
-}
-
-func HasPlugin(list ...string) bool {
-	for _, name := range list {
-		for _, p := range listOfPlugins.OSS {
-			if p == name {
-				return true
-			}
-		}
-		for _, p := range listOfPlugins.Enterprise {
-			if p == name {
-				return true
-			}
-		}
-		for _, p := range listOfPlugins.Custom {
-			if p == name {
-				return true
-			}
-		}
-		for _, p := range listOfPlugins.Apps {
-			if p == name {
-				return true
-			}
-		}
-	}
-	return false
-}
 
 func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	t, _ := template.
@@ -146,10 +85,10 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		},
 		License: strings.ToUpper(LICENSE),
 		Plugins: []string{
-			strings.Join(listOfPlugins.OSS, " "),
-			strings.Join(listOfPlugins.Enterprise, " "),
-			strings.Join(listOfPlugins.Custom, " "),
-			strings.Join(listOfPlugins.Apps, " "),
+			strings.Join(extension.ListOfPlugins.OSS, " "),
+			strings.Join(extension.ListOfPlugins.Enterprise, " "),
+			strings.Join(extension.ListOfPlugins.Custom, " "),
+			strings.Join(extension.ListOfPlugins.Apps, " "),
 		},
 	})
 }
