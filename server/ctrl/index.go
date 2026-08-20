@@ -4,6 +4,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/pkg/admin"
 	"github.com/mickael-kerjean/filestash/server/pkg/files"
 	"github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	"github.com/mickael-kerjean/filestash/server/pkg/share"
 )
 
 // tmpl.go
@@ -39,4 +40,12 @@ var (
 	FetchLogHandler               = admin.FetchLogHandler
 	AdminBackend                  = admin.AdminBackend
 	AdminAuthenticationMiddleware = admin.AdminAuthenticationMiddleware
+)
+
+// share
+var (
+	ShareList        = share.ShareListHandler
+	ShareDelete      = share.ShareDeleteHandler
+	ShareUpsert      = share.ShareUpsertHandler
+	ShareVerifyProof = share.ShareVerifyProofHandler
 )

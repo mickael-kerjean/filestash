@@ -1,4 +1,4 @@
-package model
+package share
 
 import (
 	"bytes"
@@ -10,21 +10,15 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
-	"github.com/mickael-kerjean/filestash/server/pkg/utils"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/sqlite"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
 )
-
-type Proof struct {
-	Id      string  `json:"id"`
-	Key     string  `json:"key"`
-	Value   string  `json:"-"`
-	Message *string `json:"message,omitempty"`
-	Error   *string `json:"error,omitempty"`
-}
 
 func ShareList(backend string, path string) ([]Share, error) {
 	stmt, err := DB.Prepare("SELECT id, related_path, params FROM Share WHERE related_backend = ? AND related_path LIKE ? || '%' ")
@@ -85,7 +79,7 @@ func ShareGet(id string) (Share, error) {
 
 func ShareUpsert(p *Share) error {
 	if p.Password != nil {
-		if *p.Password == utils.PASSWORD_DUMMY {
+		if *p.Password == PASSWORD_DUMMY {
 			if s, err := ShareGet(p.Id); err != nil {
 				p.Password = s.Password
 			}
@@ -102,7 +96,7 @@ func ShareUpsert(p *Share) error {
 	_, err = stmt.Exec(p.Backend, p.Path)
 	if err != nil {
 		throw := true
-		if sqlite.IsConstraint(err) {
+		if IsConstraint(err) {
 			throw = false
 		}
 		if throw == true {

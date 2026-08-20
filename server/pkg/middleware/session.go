@@ -9,10 +9,15 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/model"
 	"github.com/mickael-kerjean/filestash/server/pkg/admin"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	"github.com/mickael-kerjean/filestash/server/pkg/share"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -66,7 +71,7 @@ func SessionStart(fn HandlerFunc) HandlerFunc {
 		}
 		ctx.Authorization = token.Extract(req)
 		if ctx.Session, err = _extractSession(req, ctx); err != nil {
-			RecoverFromBadCookie(res)
+			share.RecoverFromBadCookie(res)
 			SendErrorResult(res, err)
 			return
 		}
@@ -105,7 +110,7 @@ func CanManageShare(fn HandlerFunc) HandlerFunc {
 		}
 
 		// anyone can manage a share_id that's not been attributed yet
-		s, err := model.ShareGet(share_id)
+		s, err := share.ShareGet(share_id)
 		if err != nil {
 			if err == ErrNotFound {
 				SessionStart(fn)(ctx, res, req)
@@ -182,7 +187,7 @@ func _extractShare(req *http.Request) (Share, error) {
 		return Share{}, NewError("Feature isn't enabled, contact your administrator", 405)
 	}
 
-	s, err := model.ShareGet(share_id)
+	s, err := share.ShareGet(share_id)
 	if err != nil {
 		return Share{}, nil
 	}
@@ -190,7 +195,7 @@ func _extractShare(req *http.Request) (Share, error) {
 		return Share{}, err
 	}
 
-	var verifiedProof []model.Proof = model.ShareProofGetAlreadyVerified(req)
+	var verifiedProof []share.Proof = share.ShareProofGetAlreadyVerified(req)
 	username, password := func(authHeader string) (string, string) {
 		decoded, err := base64.StdEncoding.DecodeString(
 			strings.TrimPrefix(authHeader, "Basic "),
@@ -214,17 +219,17 @@ func _extractShare(req *http.Request) (Share, error) {
 	}(req.Header.Get("Authorization"))
 
 	if s.Users != nil && username != "" {
-		if v, ok := model.ShareProofVerifierEmail(*s.Users, username); ok {
-			verifiedProof = append(verifiedProof, model.Proof{Key: "email", Value: v})
+		if v, ok := share.ShareProofVerifierEmail(*s.Users, username); ok {
+			verifiedProof = append(verifiedProof, share.Proof{Key: "email", Value: v})
 		}
 	}
 	if s.Password != nil && password != "" {
-		if v, ok := model.ShareProofVerifierPassword(*s.Password, password); ok {
-			verifiedProof = append(verifiedProof, model.Proof{Key: "password", Value: v})
+		if v, ok := share.ShareProofVerifierPassword(*s.Password, password); ok {
+			verifiedProof = append(verifiedProof, share.Proof{Key: "password", Value: v})
 		}
 	}
-	var requiredProof []model.Proof = model.ShareProofGetRequired(s)
-	var remainingProof []model.Proof = model.ShareProofCalculateRemainings(requiredProof, verifiedProof)
+	var requiredProof []share.Proof = share.ShareProofGetRequired(s)
+	var remainingProof []share.Proof = share.ShareProofCalculateRemainings(requiredProof, verifiedProof)
 	if len(remainingProof) != 0 {
 		return Share{}, NewError("Unauthorized Shared space", 400)
 	}

@@ -1,4 +1,4 @@
-package ctrl
+package share
 
 import (
 	"encoding/json"
@@ -6,20 +6,22 @@ import (
 	"net/http"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/gorilla/mux"
 )
 
-func ShareList(ctx *App, res http.ResponseWriter, req *http.Request) {
+func ShareListHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
 		return
 	}
-	listOfSharedLinks, err := model.ShareList(
+	listOfSharedLinks, err := ShareList(
 		GenerateID(ctx.Session),
 		path,
 	)
@@ -35,7 +37,7 @@ func ShareList(ctx *App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResults(res, listOfSharedLinks)
 }
 
-func ShareUpsert(ctx *App, res http.ResponseWriter, req *http.Request) {
+func ShareUpsertHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	share_id := mux.Vars(req)["share"]
 	if share_id == "private" {
 		Log.Debug("share::upsert 'private'")
@@ -78,7 +80,7 @@ func ShareUpsert(ctx *App, res http.ResponseWriter, req *http.Request) {
 		CanWrite:     NewBoolFromInterface(ctx.Body["can_write"]),
 		CanUpload:    NewBoolFromInterface(ctx.Body["can_upload"]),
 	}
-	if err := model.ShareUpsert(&s); err != nil {
+	if err := ShareUpsert(&s); err != nil {
 		Log.Debug("share::upsert '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
@@ -86,9 +88,9 @@ func ShareUpsert(ctx *App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func ShareDelete(ctx *App, res http.ResponseWriter, req *http.Request) {
+func ShareDeleteHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	share_target := mux.Vars(req)["share"]
-	if err := model.ShareDelete(share_target); err != nil {
+	if err := ShareDelete(share_target); err != nil {
 		Log.Debug("share::delete '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
@@ -96,28 +98,28 @@ func ShareDelete(ctx *App, res http.ResponseWriter, req *http.Request) {
 	SendSuccessResult(res, nil)
 }
 
-func ShareVerifyProof(ctx *App, res http.ResponseWriter, req *http.Request) {
-	var submittedProof model.Proof
-	var verifiedProof []model.Proof
-	var requiredProof []model.Proof
-	var remainingProof []model.Proof
+func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
+	var submittedProof Proof
+	var verifiedProof []Proof
+	var requiredProof []Proof
+	var remainingProof []Proof
 	var s Share
 	var err error
 
 	// 1) initialise the current context
 	share_id := mux.Vars(req)["share"]
-	s, err = model.ShareGet(share_id)
+	s, err = ShareGet(share_id)
 	if err != nil {
 		Log.Debug("share::verify::init '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
-	submittedProof = model.Proof{
+	submittedProof = Proof{
 		Key:   fmt.Sprint(ctx.Body["type"]),
 		Value: fmt.Sprint(ctx.Body["value"]),
 	}
-	verifiedProof = model.ShareProofGetAlreadyVerified(req)
-	requiredProof = model.ShareProofGetRequired(s)
+	verifiedProof = ShareProofGetAlreadyVerified(req)
+	requiredProof = ShareProofGetRequired(s)
 
 	// 2) validate the current context
 	if len(verifiedProof) > 20 || len(requiredProof) > 20 {
@@ -138,7 +140,7 @@ func ShareVerifyProof(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// 3) process the proof sent by the user
-	submittedProof, err = model.ShareProofVerifier(s, submittedProof)
+	submittedProof, err = ShareProofVerifier(s, submittedProof)
 	if err != nil {
 		Log.Debug("share::verify::process '%s'", err.Error())
 		submittedProof.Error = NewString(err.Error())
@@ -167,12 +169,12 @@ func ShareVerifyProof(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	// 4) Find remaining proofs: requiredProof - verifiedProof
-	remainingProof = model.ShareProofCalculateRemainings(requiredProof, verifiedProof)
+	remainingProof = ShareProofCalculateRemainings(requiredProof, verifiedProof)
 
 	// 5) persist proofs in client cookie
 	cookie := http.Cookie{
 		Name: COOKIE_NAME_PROOF,
-		Value: func(p []model.Proof) string {
+		Value: func(p []Proof) string {
 			j, _ := json.Marshal(p)
 			str, _ := EncryptString(SECRET_KEY_DERIVATE_FOR_PROOF, string(j))
 			return str
