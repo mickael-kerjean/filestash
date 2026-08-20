@@ -14,7 +14,6 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
-	"github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/env"
 
 	"golang.org/x/crypto/bcrypt"
@@ -23,6 +22,27 @@ import (
 
 //go:embed static/verification.html
 var tmplEmailVerification string
+
+const PASSWORD_DUMMY = "{{PASSWORD}}"
+
+func Redact(s Share) Share {
+	s.Auth = ""
+	if s.Password != nil {
+		dummy := PASSWORD_DUMMY
+		s.Password = &dummy
+	}
+	return s
+}
+
+func IsValid(s Share) error {
+	if s.Expire != nil {
+		now := time.Now().UnixNano() / 1000000
+		if now > *s.Expire {
+			return NewError("Link has expired", 410)
+		}
+	}
+	return nil
+}
 
 func List(backend string, path string) ([]Share, error) {
 	stmt, err := sqlite.DB.Prepare("SELECT id, related_path, params FROM Share WHERE related_backend = ? AND related_path LIKE ? || '%' ")
@@ -83,7 +103,7 @@ func Get(id string) (Share, error) {
 
 func Upsert(p *Share) error {
 	if p.Password != nil {
-		if *p.Password == utils.PASSWORD_DUMMY {
+		if *p.Password == PASSWORD_DUMMY {
 			if s, err := Get(p.Id); err == nil {
 				p.Password = s.Password
 			}

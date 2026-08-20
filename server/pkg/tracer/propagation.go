@@ -5,11 +5,6 @@ import (
 	"net/http"
 )
 
-type TraceContext struct {
-	TraceID string
-	SpanID  string
-}
-
 type traceContextKey struct{}
 
 func ContextWithTrace(ctx context.Context, tc TraceContext) context.Context {

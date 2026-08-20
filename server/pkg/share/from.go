@@ -28,7 +28,7 @@ func FromRequest(req *http.Request) (Share, error) {
 	if err != nil {
 		return Share{}, nil
 	}
-	if err = s.IsValid(); err != nil {
+	if err = IsValid(s); err != nil {
 		return Share{}, err
 	}
 

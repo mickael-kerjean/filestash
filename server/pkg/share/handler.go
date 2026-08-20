@@ -31,6 +31,7 @@ func ShareListHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	for i := 0; i < len(listOfSharedLinks); i++ {
 		listOfSharedLinks[i].Path = "/" + strings.TrimPrefix(listOfSharedLinks[i].Path, path)
+		listOfSharedLinks[i] = Redact(listOfSharedLinks[i])
 	}
 	SendSuccessResults(res, listOfSharedLinks)
 }
@@ -131,7 +132,7 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
-	if err := s.IsValid(); err != nil {
+	if err := IsValid(s); err != nil {
 		Log.Debug("share::verify::validate '%s'", err.Error())
 		SendErrorResult(res, err)
 		return

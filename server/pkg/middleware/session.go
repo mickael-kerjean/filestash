@@ -93,7 +93,7 @@ func _extractShare(req *http.Request) (Share, error) {
 	if err != nil {
 		return Share{}, nil
 	}
-	if err = s.IsValid(); err != nil {
+	if err = share.IsValid(s); err != nil {
 		return Share{}, err
 	}
 	verifiedProof := share.Verified(req)
