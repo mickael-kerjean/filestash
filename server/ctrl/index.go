@@ -42,6 +42,8 @@ var (
 	FetchLogHandler               = admin.FetchLogHandler
 	AdminBackend                  = admin.AdminBackend
 	AdminAuthenticationMiddleware = admin.AdminAuthenticationMiddleware
+	PrivateConfigHandler          = admin.PrivateConfigHandler
+	PrivateConfigUpdateHandler    = admin.PrivateConfigUpdateHandler
 )
 
 // session
@@ -83,4 +85,5 @@ var (
 	ReportHandler            = frontend.ReportHandler
 	WellKnownSecurityHandler = frontend.WellKnownSecurityHandler
 	HealthHandler            = frontend.HealthHandler
+	PublicConfigHandler      = frontend.PublicConfigHandler
 )
