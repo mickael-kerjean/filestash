@@ -5,11 +5,11 @@ import (
 	"github.com/mickael-kerjean/filestash/server/pkg/config"
 	"github.com/mickael-kerjean/filestash/server/pkg/core"
 	"github.com/mickael-kerjean/filestash/server/pkg/env"
+	"github.com/mickael-kerjean/filestash/server/pkg/files"
 	"github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	"github.com/mickael-kerjean/filestash/server/pkg/mime"
-	"github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/share"
-	"github.com/mickael-kerjean/filestash/server/pkg/files"
+	"github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 type App = core.App
@@ -38,7 +38,7 @@ type AppCache = utils.AppCache
 var Hooks = kernel.Hooks
 
 var (
-	WithID = kernel.WithID
+	WithID  = kernel.WithID
 	Backend = kernel.Backend
 )
 

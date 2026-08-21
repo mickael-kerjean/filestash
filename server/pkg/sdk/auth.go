@@ -38,7 +38,7 @@ func (this *Filestash) Authenticate(user, password string, storage string) error
 		return ErrInvalidPassword
 	}
 	this.Storage = storage
-	this.Token = token.ExtractFromCookies(resp.Cookies())
+	this.Token = token.FromCookies(resp.Cookies())
 	if this.Token == "" {
 		return ErrInvalidPassword
 	}
