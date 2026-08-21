@@ -25,9 +25,8 @@ RUN apt-get update > /dev/null && \
     apt-get -y upgrade > /dev/null && \
     apt-get install -y --no-install-recommends ca-certificates curl ffmpeg libbrotli1 poppler-utils && \
     useradd filestash && \
+    mkdir -p /app/data/state/ && \
     chown -R filestash:filestash /app/ && \
-    find /app/data/ -type d -exec chmod 770 {} \; && \
-    find /app/data/ -type f -exec chmod 760 {} \; && \
     chmod 730 /app/filestash && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
