@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func MetaGet(ctx *App, w http.ResponseWriter, r *http.Request) {

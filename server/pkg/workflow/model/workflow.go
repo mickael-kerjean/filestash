@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 type Workflow struct {

@@ -8,6 +8,8 @@ import (
 	"github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	"github.com/mickael-kerjean/filestash/server/pkg/mime"
 	"github.com/mickael-kerjean/filestash/server/pkg/utils"
+	"github.com/mickael-kerjean/filestash/server/pkg/share"
+	"github.com/mickael-kerjean/filestash/server/pkg/files"
 )
 
 type App = core.App
@@ -176,6 +178,19 @@ var (
 	WhiteLabelText = env.WhiteLabelText
 )
 
+// files
+var (
+	NewBackend = files.NewBackend
+	GetHome    = files.GetHome
+)
+
+// share
+var (
+	ShareAll    = share.ShareAll
+	ShareList   = share.ShareList
+	ShareDelete = share.ShareDelete
+	ShareUpsert = share.ShareUpsert
+)
 
 // admin.go
 var NewAdminToken = admin.NewAdminToken

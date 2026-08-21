@@ -3,7 +3,8 @@ package frontend
 import (
 	"net/http"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 )
 
 func ReportHandler(ctx *App, res http.ResponseWriter, req *http.Request) {

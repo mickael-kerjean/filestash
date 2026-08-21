@@ -9,11 +9,14 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/model"
-	"github.com/mickael-kerjean/filestash/server/pkg/share"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/share"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
-	"github.com/mickael-kerjean/filestash/server/pkg/env"
 
 	"github.com/gorilla/mux"
 )
@@ -35,9 +38,9 @@ func SessionStart(fn HandlerFunc) HandlerFunc {
 			SendErrorResult(res, err)
 			return
 		}
-		ctx.Authorization = token.Extract(req)
+		ctx.Authorization = token.From(req)
 		if ctx.Session, err = _extractSession(req, ctx); err != nil {
-			share.RecoverFromBadCookie(res)
+			RecoverFromBadCookie(res)
 			SendErrorResult(res, err)
 			return
 		}
@@ -58,14 +61,13 @@ func SessionStart(fn HandlerFunc) HandlerFunc {
 func SessionTry(fn HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		ctx.Share, _ = _extractShare(req)
-		ctx.Authorization = token.Extract(req)
+		ctx.Authorization = token.From(req)
 		ctx.Session, _ = _extractSession(req, ctx)
 		ctx.Backend, _ = _extractBackend(req, ctx)
 
 		fn(ctx, res, req)
 	})
 }
-
 
 func _extractShareId(req *http.Request) string {
 	share := req.URL.Query().Get("share")
@@ -89,14 +91,14 @@ func _extractShare(req *http.Request) (Share, error) {
 		Log.Debug("Share feature isn't enabled, contact your administrator")
 		return Share{}, NewError("Feature isn't enabled, contact your administrator", 405)
 	}
-	s, err := share.Get(share_id)
+	s, err := ShareGet(share_id)
 	if err != nil {
 		return Share{}, nil
 	}
-	if err = share.IsValid(s); err != nil {
+	if err = ShareIsValid(s); err != nil {
 		return Share{}, err
 	}
-	verifiedProof := share.Verified(req)
+	verifiedProof := ShareVerified(req)
 	username, password := func(authHeader string) (string, string) {
 		decoded, err := base64.StdEncoding.DecodeString(
 			strings.TrimPrefix(authHeader, "Basic "),
@@ -113,22 +115,22 @@ func _extractShare(req *http.Request) (Share, error) {
 		if len(usr) != 3 {
 			return "", p
 		}
-		if Hash(usr[1]+env.SECRET_KEY_DERIVATE_FOR_HASH, 10) != usr[2] {
+		if Hash(usr[1]+SECRET_KEY_DERIVATE_FOR_HASH, 10) != usr[2] {
 			return "", p
 		}
 		return usr[1], p
 	}(req.Header.Get("Authorization"))
 	if s.Users != nil && username != "" {
-		if v, ok := share.VerifyEmail(*s.Users, username); ok {
-			verifiedProof = append(verifiedProof, share.Proof{Key: "email", Value: v})
+		if v, ok := ShareVerifyEmail(*s.Users, username); ok {
+			verifiedProof = append(verifiedProof, Proof{Key: "email", Value: v})
 		}
 	}
 	if s.Password != nil && password != "" {
-		if v, ok := share.VerifyPassword(*s.Password, password); ok {
-			verifiedProof = append(verifiedProof, share.Proof{Key: "password", Value: v})
+		if v, ok := ShareVerifyPassword(*s.Password, password); ok {
+			verifiedProof = append(verifiedProof, Proof{Key: "password", Value: v})
 		}
 	}
-	if remainingProof := share.Remainings(share.Required(s), verifiedProof); len(remainingProof) != 0 {
+	if remainingProof := ShareRemainings(ShareRequired(s), verifiedProof); len(remainingProof) != 0 {
 		return Share{}, NewError("Unauthorized Shared space", 400)
 	}
 	return s, nil
@@ -141,7 +143,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 		session map[string]string = make(map[string]string)
 	)
 	if ctx.Share.Id != "" {
-		str, err = DecryptString(env.SECRET_KEY_DERIVATE_FOR_USER, ctx.Share.Auth)
+		str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Share.Auth)
 		if err != nil {
 			// This typically happen when changing the secret key
 			return session, ErrNotAuthorized
@@ -153,7 +155,7 @@ func _extractSession(req *http.Request, ctx *App) (map[string]string, error) {
 	if ctx.Authorization == "" {
 		return session, nil
 	}
-	str, err = DecryptString(env.SECRET_KEY_DERIVATE_FOR_USER, ctx.Authorization)
+	str, err = DecryptString(SECRET_KEY_DERIVATE_FOR_USER, ctx.Authorization)
 	if err != nil {
 		// This typically happen when changing the secret key
 		Log.Debug("middleware::session decrypt error '%s'", err.Error())

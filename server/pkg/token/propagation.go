@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	"github.com/mickael-kerjean/filestash/server/pkg/cookie"
 )
 
-func Extract(req *http.Request) string {
+func From(req *http.Request) string {
 	// strategy 1: split cookie
-	token := ExtractFromCookies(req.Cookies())
+	token := FromCookies(req.Cookies())
 	if token != "" {
 		return token
 	}
@@ -26,7 +27,7 @@ func Extract(req *http.Request) string {
 	return ""
 }
 
-func ExtractFromCookies(cookies []*http.Cookie) string {
+func FromCookies(cookies []*http.Cookie) string {
 	var (
 		token strings.Builder
 		index int

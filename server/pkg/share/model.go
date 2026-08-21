@@ -12,7 +12,9 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
 	"github.com/mickael-kerjean/filestash/server/pkg/env"
 
@@ -25,7 +27,7 @@ var tmplEmailVerification string
 
 const PASSWORD_DUMMY = "{{PASSWORD}}"
 
-func Redact(s Share) Share {
+func ShareRedact(s Share) Share {
 	s.Auth = ""
 	if s.Password != nil {
 		dummy := PASSWORD_DUMMY
@@ -34,7 +36,7 @@ func Redact(s Share) Share {
 	return s
 }
 
-func IsValid(s Share) error {
+func ShareIsValid(s Share) error {
 	if s.Expire != nil {
 		now := time.Now().UnixNano() / 1000000
 		if now > *s.Expire {
@@ -44,7 +46,7 @@ func IsValid(s Share) error {
 	return nil
 }
 
-func List(backend string, path string) ([]Share, error) {
+func ShareList(backend string, path string) ([]Share, error) {
 	stmt, err := sqlite.DB.Prepare("SELECT id, related_path, params FROM Share WHERE related_backend = ? AND related_path LIKE ? || '%' ")
 	if err != nil {
 		return nil, err
@@ -65,7 +67,7 @@ func List(backend string, path string) ([]Share, error) {
 	return sharedFiles, nil
 }
 
-func All() ([]Share, error) {
+func ShareAll() ([]Share, error) {
 	rows, err := sqlite.DB.Query("SELECT id, related_path, params FROM Share")
 	if err != nil {
 		return nil, err
@@ -82,7 +84,7 @@ func All() ([]Share, error) {
 	return sharedFiles, nil
 }
 
-func Get(id string) (Share, error) {
+func ShareGet(id string) (Share, error) {
 	var p Share
 	stmt, err := sqlite.DB.Prepare("SELECT id, related_backend, related_path, auth, params FROM share WHERE id = ?")
 	if err != nil {
@@ -101,10 +103,10 @@ func Get(id string) (Share, error) {
 	return p, nil
 }
 
-func Upsert(p *Share) error {
+func ShareUpsert(p *Share) error {
 	if p.Password != nil {
 		if *p.Password == PASSWORD_DUMMY {
-			if s, err := Get(p.Id); err == nil {
+			if s, err := ShareGet(p.Id); err == nil {
 				p.Password = s.Password
 			}
 		} else {
@@ -157,7 +159,7 @@ func Upsert(p *Share) error {
 	return err
 }
 
-func Delete(id string) error {
+func ShareDelete(id string) error {
 	stmt, err := sqlite.DB.Prepare("DELETE FROM Share WHERE id = ?")
 	if err != nil {
 		return err
@@ -166,7 +168,7 @@ func Delete(id string) error {
 	return err
 }
 
-func Verify(s Share, proof Proof) (Proof, error) {
+func ShareVerify(s Share, proof Proof) (Proof, error) {
 	p := proof
 
 	if proof.Key == "password" {
@@ -174,7 +176,7 @@ func Verify(s Share, proof Proof) (Proof, error) {
 			return p, NewError("No password required", 400)
 		}
 
-		v, ok := VerifyPassword(*s.Password, proof.Value)
+		v, ok := ShareVerifyPassword(*s.Password, proof.Value)
 		if ok == false {
 			time.Sleep(1000 * time.Millisecond)
 			return p, ErrInvalidPassword
@@ -187,7 +189,7 @@ func Verify(s Share, proof Proof) (Proof, error) {
 		if s.Users == nil {
 			return p, NewError("Authentication not required", 400)
 		}
-		v, ok := VerifyEmail(*s.Users, proof.Value)
+		v, ok := ShareVerifyEmail(*s.Users, proof.Value)
 		if ok == false {
 			time.Sleep(1000 * time.Millisecond)
 			return p, ErrNotAuthorized
@@ -282,14 +284,14 @@ func Verify(s Share, proof Proof) (Proof, error) {
 	return p, nil
 }
 
-func VerifyPassword(hashed string, given string) (string, bool) {
+func ShareVerifyPassword(hashed string, given string) (string, bool) {
 	if err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(given)); err != nil {
 		return "", false
 	}
 	return hashed, true
 }
 
-func VerifyEmail(users string, wanted string) (string, bool) {
+func ShareVerifyEmail(users string, wanted string) (string, bool) {
 	s := strings.Split(users, ",")
 	user := ""
 	for _, possibleUser := range s {
@@ -311,7 +313,7 @@ func VerifyEmail(users string, wanted string) (string, bool) {
 	return user, true
 }
 
-func Verified(req *http.Request) []Proof {
+func ShareVerified(req *http.Request) []Proof {
 	var p []Proof
 	var cookieValue string
 
@@ -331,7 +333,7 @@ func Verified(req *http.Request) []Proof {
 	return p
 }
 
-func Required(s Share) []Proof {
+func ShareRequired(s Share) []Proof {
 	var p []Proof
 	if s.Password != nil {
 		p = append(p, Proof{Key: "password", Value: *s.Password})
@@ -342,7 +344,7 @@ func Required(s Share) []Proof {
 	return p
 }
 
-func Remainings(ref []Proof, mem []Proof) []Proof {
+func ShareRemainings(ref []Proof, mem []Proof) []Proof {
 	var remainingProof []Proof
 
 	for i := 0; i < len(ref); i++ {

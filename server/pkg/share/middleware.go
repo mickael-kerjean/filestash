@@ -3,8 +3,9 @@ package share
 import (
 	"net/http"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
 
 	"github.com/gorilla/mux"
@@ -21,7 +22,7 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 			}
 
 			// anyone can manage a share_id that's not been attributed yet
-			s, err := Get(share_id)
+			s, err := ShareGet(share_id)
 			if err != nil {
 				if err == ErrNotFound {
 					sessionStart(fn)(ctx, res, req)
@@ -36,7 +37,7 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 			// the user that's currently logged in can manage the link. 2 scenarios here:
 			// 1) scenario 1: the user is the very same one that generated the shared link in the first place
 			ctx.Share = Share{}
-			ctx.Authorization = token.Extract(req)
+			ctx.Authorization = token.From(req)
 			if ctx.Session, err = extractSession(req, ctx); err != nil {
 				Log.Debug("share::middleware 'cannot extract session - %s'", err.Error())
 				SendErrorResult(res, err)
@@ -53,7 +54,7 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 				SendErrorResult(res, err)
 				return
 			}
-			ctx.Authorization = token.Extract(req)
+			ctx.Authorization = token.From(req)
 			if ctx.Session, err = extractSession(req, ctx); err != nil {
 				Log.Debug("share::middleware 'cannot extract session 2 - %s'", err.Error())
 				SendErrorResult(res, err)

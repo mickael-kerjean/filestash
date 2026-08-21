@@ -1,7 +1,7 @@
 package permissions
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 )
 
 func CanRead(ctx *App) bool {

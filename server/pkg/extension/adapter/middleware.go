@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	"github.com/mickael-kerjean/filestash/server/pkg/extension/adapter/runtime"
 )
 
@@ -17,14 +17,14 @@ type middlewareState struct {
 	next *bool
 }
 
-func MiddlewareExtension(wasm []byte) (func(common.HandlerFunc) common.HandlerFunc, error) {
+func MiddlewareExtension(wasm []byte) (func(HandlerFunc) HandlerFunc, error) {
 	rt, err := runtime.New(wasm, middlewareExports())
 	if err != nil {
 		return nil, err
 	}
 
-	return func(next common.HandlerFunc) common.HandlerFunc {
-		return func(app *common.App, w http.ResponseWriter, r *http.Request) {
+	return func(next HandlerFunc) HandlerFunc {
+		return func(app *App, w http.ResponseWriter, r *http.Request) {
 			callNext := false
 			err := rt.Call(r.Context(), "middleware", middlewareKey{}, &middlewareState{r: r, w: w, next: &callNext})
 			if errors.Is(err, runtime.ErrNoExport) || callNext {

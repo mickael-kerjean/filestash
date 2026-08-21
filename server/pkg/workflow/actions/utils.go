@@ -1,7 +1,7 @@
 package actions
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 )
 
 func Render(templateText string, variables map[string]string) string {

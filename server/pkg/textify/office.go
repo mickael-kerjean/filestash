@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func Office(r io.ReadCloser) (io.ReadCloser, error) {

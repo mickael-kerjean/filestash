@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/mickael-kerjean/filestash/server/pkg/extension"
 	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
