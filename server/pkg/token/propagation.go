@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/config"
-	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	"github.com/mickael-kerjean/filestash/server/pkg/cookie"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 )
 
 func From(req *http.Request) string {

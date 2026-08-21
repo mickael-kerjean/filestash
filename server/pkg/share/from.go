@@ -1,24 +1,24 @@
 package share
 
 import (
-	"net/http"
-	"encoding/base64"
-	"strings"
 	"bytes"
+	"encoding/base64"
+	"net/http"
 	"regexp"
+	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/config"
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/gorilla/mux"
 )
 
 func FromRequest(req *http.Request) (Share, error) {
 	var err error
-	share_id := _extractShareId(req)
-	if share_id == "" {
+	shareID := _extractShareId(req)
+	if shareID == "" {
 		return Share{}, nil
 	}
 	if Config.Get("features.share.enable").Bool() == false {
@@ -26,7 +26,7 @@ func FromRequest(req *http.Request) (Share, error) {
 		return Share{}, NewError("Feature isn't enabled, contact your administrator", 405)
 	}
 
-	s, err := ShareGet(share_id)
+	s, err := ShareGet(shareID)
 	if err != nil {
 		return Share{}, nil
 	}

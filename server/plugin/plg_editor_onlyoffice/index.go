@@ -16,7 +16,6 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	"github.com/mickael-kerjean/filestash/server/middleware"
-	"github.com/mickael-kerjean/filestash/server/model"
 
 	"github.com/gorilla/mux"
 	"github.com/patrickmn/go-cache"

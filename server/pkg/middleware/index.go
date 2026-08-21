@@ -5,8 +5,8 @@ import (
 	"time"
 	_ "unsafe"
 
-	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 )
 
 func init() {
@@ -21,16 +21,15 @@ func init() {
 }
 
 func NewMiddlewareChain(fn HandlerFunc, m []Middleware) http.HandlerFunc {
+	for i := len(m) - 1; i >= 0; i-- {
+		fn = m[i](fn)
+	}
 	return func(res http.ResponseWriter, req *http.Request) {
-		var f func(*App, http.ResponseWriter, *http.Request) = fn
-		for i := len(m) - 1; i >= 0; i-- {
-			f = m[i](f)
-		}
 		var (
 			app  = App{Context: req.Context()}
 			resw = NewResponseWriter(res)
 		)
-		f(&app, &resw, req)
+		fn(&app, &resw, req)
 		if req.Body != nil {
 			req.Body.Close()
 		}

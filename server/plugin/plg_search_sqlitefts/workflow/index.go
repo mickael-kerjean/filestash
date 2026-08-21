@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
-	. "github.com/mickael-kerjean/filestash/server/model"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/config"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/crawler"
 )
