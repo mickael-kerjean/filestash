@@ -1,8 +1,10 @@
 package extension
 
 import (
+	"go/parser"
+	"go/token"
 	"path/filepath"
-	"regexp"
+	"strconv"
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
@@ -16,13 +18,19 @@ var ListOfPlugins = struct {
 }{}
 
 func InitPluginList(code []byte, plgs map[string]PluginImpl) error {
-	listOfPackages := regexp.MustCompile(`\t_?\s*\"(github.com/[^\"]+)`).FindAllStringSubmatch(string(code), -1)
-	for _, packageNameMatch := range listOfPackages {
-		if len(packageNameMatch) != 2 {
-			Log.Error("ctrl::static error=assertion_failed msg=invalid_match_size arg=%d", len(packageNameMatch))
-			return ErrNotValid
+	file, err := parser.ParseFile(token.NewFileSet(), "index.go", code, parser.ImportsOnly)
+	if err != nil {
+		Log.Error("extension::registry error=parse_failed err=%s", err.Error())
+		return ErrNotValid
+	}
+	for _, spec := range file.Imports {
+		if spec.Name == nil || spec.Name.Name != "_" {
+			continue
 		}
-		packageName := packageNameMatch[1]
+		packageName, err := strconv.Unquote(spec.Path.Value)
+		if err != nil || strings.HasPrefix(packageName, "github.com/") == false {
+			continue
+		}
 		packageShortName := filepath.Base(packageName)
 
 		if strings.HasPrefix(packageName, "github.com/mickael-kerjean/filestash/server/plugin/") {
