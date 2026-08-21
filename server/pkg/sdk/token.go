@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func (this *Filestash) NewToken(storage string, path string, formData map[string]string) error {

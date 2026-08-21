@@ -15,15 +15,14 @@ func main() {
 	cmd.Stdout = b
 	cmd.Run()
 
-	f, err := os.OpenFile("constants_generated.go", os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	f, err := os.OpenFile("constants_generated.go", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 		return
 	}
 	defer f.Close()
-	f.Write([]byte(fmt.Sprintf(`
-package env
+	f.Write([]byte(fmt.Sprintf(`package env
 
 var (
     BUILD_REF = "%s"

@@ -4,9 +4,11 @@ import (
 	"net/http"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/files"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
-	"github.com/mickael-kerjean/filestash/server/model"
 	"github.com/mickael-kerjean/filestash/server/pkg/share"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
 )
@@ -28,7 +30,7 @@ func Start(fn HandlerFunc) HandlerFunc {
 			SendErrorResult(res, err)
 			return
 		}
-		ctx.Authorization = token.Extract(req)
+		ctx.Authorization = token.From(req)
 		if ctx.Session, err = FromRequest(req, ctx); err != nil {
 			share.RecoverFromBadCookie(res)
 			SendErrorResult(res, err)
@@ -51,7 +53,7 @@ func Start(fn HandlerFunc) HandlerFunc {
 func Try(fn HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
 		ctx.Share, _ = share.FromRequest(req)
-		ctx.Authorization = token.Extract(req)
+		ctx.Authorization = token.From(req)
 		ctx.Session, _ = FromRequest(req, ctx)
 		ctx.Backend, _ = _extractBackend(req, ctx)
 
@@ -60,7 +62,7 @@ func Try(fn HandlerFunc) HandlerFunc {
 }
 
 func _extractBackend(req *http.Request, ctx *App) (IBackend, error) {
-	return model.NewBackend(ctx, ctx.Session)
+	return NewBackend(ctx, ctx.Session)
 }
 
 func _extractLanguages(req *http.Request) []string {

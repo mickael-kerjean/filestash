@@ -4,7 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 type option func(*http.Cookie)

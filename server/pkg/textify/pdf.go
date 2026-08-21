@@ -8,7 +8,7 @@ import (
 	"os"
 	"os/exec"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func PDF(r io.ReadCloser) (io.ReadCloser, error) {

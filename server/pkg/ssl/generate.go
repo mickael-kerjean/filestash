@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func GenerateSelfSigned() (tls.Certificate, *x509.CertPool, error) {

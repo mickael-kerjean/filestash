@@ -5,7 +5,8 @@ import (
 	"time"
 	_ "unsafe"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 )
 
 func init() {

@@ -7,9 +7,10 @@ import (
 	"net/http"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"github.com/mickael-kerjean/filestash/server/pkg/env"
-	"github.com/mickael-kerjean/filestash/server/model"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/files"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/impl"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/types"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_handler_mcp/utils"
@@ -56,7 +57,7 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 	userSession := this.GetSession(uuid.New().String())
 	userSession.Token = token
 	if b, err := getBackend(userSession.Token); err == nil {
-		userSession.HomeDir, _ = model.GetHome(b, "/")
+		userSession.HomeDir, _ = GetHome(b, "/")
 		userSession.CurrDir = ToString(userSession.HomeDir, "/")
 	}
 
@@ -226,7 +227,7 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 }
 
 func getBackend(token string) (IBackend, error) {
-	str, err := DecryptString(env.SECRET_KEY_DERIVATE_FOR_USER, token)
+	str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_USER, token)
 	if err != nil {
 		return nil, ErrNotAuthorized
 	}
@@ -234,7 +235,7 @@ func getBackend(token string) (IBackend, error) {
 	if err = json.Unmarshal([]byte(str), &session); err != nil {
 		return nil, err
 	}
-	return model.NewBackend(&App{
+	return NewBackend(&App{
 		Context: context.Background(),
 	}, session)
 }

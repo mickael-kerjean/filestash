@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
 	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )

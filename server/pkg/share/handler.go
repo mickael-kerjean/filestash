@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"strings"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
-	"github.com/mickael-kerjean/filestash/server/pkg/env"
 
 	"github.com/gorilla/mux"
 )
@@ -19,7 +21,7 @@ func ShareListHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
-	listOfSharedLinks, err := List(
+	listOfSharedLinks, err := ShareList(
 		GenerateID(ctx.Session),
 		path,
 	)
@@ -31,7 +33,7 @@ func ShareListHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	for i := 0; i < len(listOfSharedLinks); i++ {
 		listOfSharedLinks[i].Path = "/" + strings.TrimPrefix(listOfSharedLinks[i].Path, path)
-		listOfSharedLinks[i] = Redact(listOfSharedLinks[i])
+		listOfSharedLinks[i] = ShareRedact(listOfSharedLinks[i])
 	}
 	SendSuccessResults(res, listOfSharedLinks)
 }
@@ -47,7 +49,7 @@ func ShareUpsertHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		Id: share_id,
 		Auth: func() string {
 			if ctx.Share.Id == "" {
-				return token.Extract(req)
+				return token.From(req)
 			}
 			return ctx.Share.Auth
 		}(),
@@ -79,7 +81,7 @@ func ShareUpsertHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		CanWrite:     NewBoolFromInterface(ctx.Body["can_write"]),
 		CanUpload:    NewBoolFromInterface(ctx.Body["can_upload"]),
 	}
-	if err := Upsert(&s); err != nil {
+	if err := ShareUpsert(&s); err != nil {
 		Log.Debug("share::upsert '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
@@ -89,7 +91,7 @@ func ShareUpsertHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 func ShareDeleteHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	share_target := mux.Vars(req)["share"]
-	if err := Delete(share_target); err != nil {
+	if err := ShareDelete(share_target); err != nil {
 		Log.Debug("share::delete '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
@@ -107,7 +109,7 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 
 	// 1) initialise the current context
 	share_id := mux.Vars(req)["share"]
-	s, err = Get(share_id)
+	s, err = ShareGet(share_id)
 	if err != nil {
 		Log.Debug("share::verify::init '%s'", err.Error())
 		SendErrorResult(res, err)
@@ -117,13 +119,13 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		Key:   fmt.Sprint(ctx.Body["type"]),
 		Value: fmt.Sprint(ctx.Body["value"]),
 	}
-	verifiedProof = Verified(req)
-	requiredProof = Required(s)
+	verifiedProof = ShareVerified(req)
+	requiredProof = ShareRequired(s)
 
 	// 2) validate the current context
 	if len(verifiedProof) > 20 || len(requiredProof) > 20 {
 		http.SetCookie(res, &http.Cookie{
-			Name:   env.COOKIE_NAME_PROOF,
+			Name:   COOKIE_NAME_PROOF,
 			Value:  "",
 			MaxAge: -1,
 			Path:   COOKIE_PATH,
@@ -132,14 +134,14 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
-	if err := IsValid(s); err != nil {
+	if err := ShareIsValid(s); err != nil {
 		Log.Debug("share::verify::validate '%s'", err.Error())
 		SendErrorResult(res, err)
 		return
 	}
 
 	// 3) process the proof sent by the user
-	submittedProof, err = Verify(s, submittedProof)
+	submittedProof, err = ShareVerify(s, submittedProof)
 	if err != nil {
 		Log.Debug("share::verify::process '%s'", err.Error())
 		submittedProof.Error = NewString(err.Error())
@@ -168,14 +170,14 @@ func ShareVerifyProofHandler(ctx *App, res http.ResponseWriter, req *http.Reques
 	}
 
 	// 4) Find remaining proofs: requiredProof - verifiedProof
-	remainingProof = Remainings(requiredProof, verifiedProof)
+	remainingProof = ShareRemainings(requiredProof, verifiedProof)
 
 	// 5) persist proofs in client cookie
 	cookie := http.Cookie{
 		Name: COOKIE_NAME_PROOF,
 		Value: func(p []Proof) string {
 			j, _ := json.Marshal(p)
-			str, _ := EncryptString(env.SECRET_KEY_DERIVATE_FOR_PROOF, string(j))
+			str, _ := EncryptString(SECRET_KEY_DERIVATE_FOR_PROOF, string(j))
 			return str
 		}(verifiedProof),
 		Path:     COOKIE_PATH,

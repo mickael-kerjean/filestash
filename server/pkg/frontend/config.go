@@ -4,7 +4,11 @@ import (
 	"net/http"
 	"regexp"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/mime"
 )
 
 func PublicConfigHandler(ctx *App, res http.ResponseWriter, req *http.Request) {

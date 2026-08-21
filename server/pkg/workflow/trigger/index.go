@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	. "github.com/mickael-kerjean/filestash/server/pkg/workflow/model"
 )
 

@@ -7,7 +7,9 @@ import (
 	"bytes"
 	"regexp"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/env"
 
 	"github.com/gorilla/mux"
@@ -24,15 +26,15 @@ func FromRequest(req *http.Request) (Share, error) {
 		return Share{}, NewError("Feature isn't enabled, contact your administrator", 405)
 	}
 
-	s, err := Get(share_id)
+	s, err := ShareGet(share_id)
 	if err != nil {
 		return Share{}, nil
 	}
-	if err = IsValid(s); err != nil {
+	if err = ShareIsValid(s); err != nil {
 		return Share{}, err
 	}
 
-	verifiedProof := Verified(req)
+	verifiedProof := ShareVerified(req)
 	username, password := func(authHeader string) (string, string) {
 		decoded, err := base64.StdEncoding.DecodeString(
 			strings.TrimPrefix(authHeader, "Basic "),
@@ -55,16 +57,16 @@ func FromRequest(req *http.Request) (Share, error) {
 		return usr[1], p
 	}(req.Header.Get("Authorization"))
 	if s.Users != nil && username != "" {
-		if v, ok := VerifyEmail(*s.Users, username); ok {
+		if v, ok := ShareVerifyEmail(*s.Users, username); ok {
 			verifiedProof = append(verifiedProof, Proof{Key: "email", Value: v})
 		}
 	}
 	if s.Password != nil && password != "" {
-		if v, ok := VerifyPassword(*s.Password, password); ok {
+		if v, ok := ShareVerifyPassword(*s.Password, password); ok {
 			verifiedProof = append(verifiedProof, Proof{Key: "password", Value: v})
 		}
 	}
-	if remainingProof := Remainings(Required(s), verifiedProof); len(remainingProof) != 0 {
+	if remainingProof := ShareRemainings(ShareRequired(s), verifiedProof); len(remainingProof) != 0 {
 		return Share{}, NewError("Unauthorized Shared space", 400)
 	}
 	return s, nil

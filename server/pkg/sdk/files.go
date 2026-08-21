@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func (this Filestash) Ls(path string) ([]os.FileInfo, error) {

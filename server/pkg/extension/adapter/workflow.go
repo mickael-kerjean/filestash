@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	"github.com/mickael-kerjean/filestash/server/pkg/extension/adapter/runtime"
 )
 
@@ -13,14 +13,14 @@ type workflowActionKey struct{}
 type workflowActionState struct {
 	rt *runtime.Runtime
 
-	manifest common.WorkflowSpecs
+	manifest WorkflowSpecs
 	params   map[string]string
 	input    map[string]string
 	output   map[string]string
 	err      error
 }
 
-func WorkflowActionExtension(wasm []byte) (common.IAction, error) {
+func WorkflowActionExtension(wasm []byte) (IAction, error) {
 	was := &workflowActionState{}
 	rt, err := runtime.New(wasm, workflowActionExports())
 	if err != nil {
@@ -63,7 +63,7 @@ func workflowActionExports() runtime.Option {
 	})
 }
 
-func (this *workflowActionState) Manifest() common.WorkflowSpecs {
+func (this *workflowActionState) Manifest() WorkflowSpecs {
 	this.rt.Call(context.Background(), "manifest", workflowActionKey{}, this)
 	return this.manifest
 }

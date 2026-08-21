@@ -15,11 +15,11 @@ var (
 	PublicCORS         = middleware.PublicCORS
 	SecureHeaders      = middleware.SecureHeaders
 	SecureOrigin       = middleware.SecureOrigin
-	LoggedInOnly       = middleware.LoggedInOnly
 	BodyParser         = middleware.BodyParser
 	PluginInjector     = middleware.PluginInjector
 	RateLimiter        = middleware.RateLimiter
 	AdminOnly          = admin.AdminOnly
+	LoggedInOnly       = session.LoggedInOnly
 	SessionTry         = session.Try
 	SessionStart       = session.Start
 	CanManageShare     = share.CanManageShare(session.Start, session.FromRequest)

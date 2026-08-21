@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"net/url"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 

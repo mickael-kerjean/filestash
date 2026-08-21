@@ -1,7 +1,8 @@
 package ssl
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 var (

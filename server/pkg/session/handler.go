@@ -11,11 +11,14 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/common"
+	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 
 	"github.com/mickael-kerjean/filestash/server/pkg/cookie"
 	"github.com/mickael-kerjean/filestash/server/pkg/files"
-	"github.com/mickael-kerjean/filestash/server/pkg/env"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
 
 	"github.com/gorilla/mux"
@@ -96,7 +99,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, NewError(err.Error(), 500))
 		return
 	}
-	obfuscate, err := EncryptString(env.SECRET_KEY_DERIVATE_FOR_USER, string(s))
+	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_USER, string(s))
 	if err != nil {
 		Log.Debug("[auth] action=authenticate::encrypt err=%s", ferror(err))
 		SendErrorResult(res, NewError(err.Error(), 500))
@@ -343,9 +346,9 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			}
 		}
 		if attributes = strings.TrimSpace(attributes); attributes != "" {
-			v, err := DecryptString(env.SECRET_KEY_DERIVATE_FOR_SIGNATURE, signature)
+			v, err := DecryptString(SECRET_KEY_DERIVATE_FOR_SIGNATURE, signature)
 			if err != nil || attributes != v {
-				v, _ = EncryptString(env.SECRET_KEY_DERIVATE_FOR_SIGNATURE, attributes)
+				v, _ = EncryptString(SECRET_KEY_DERIVATE_FOR_SIGNATURE, attributes)
 				Log.Debug("callback signature is required, signature=%s", v)
 				http.Redirect(
 					res, req,
@@ -427,7 +430,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
-	obfuscate, err := EncryptString(env.SECRET_KEY_DERIVATE_FOR_USER, string(s))
+	obfuscate, err := EncryptString(SECRET_KEY_DERIVATE_FOR_USER, string(s))
 	if err != nil {
 		Log.Debug("session::authMiddleware 'encryption error - %s", err.Error())
 		SendErrorResult(res, ErrNotValid)

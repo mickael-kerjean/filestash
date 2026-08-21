@@ -8,7 +8,6 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 	. "github.com/mickael-kerjean/filestash/server/middleware"
-	"github.com/mickael-kerjean/filestash/server/model"
 	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 
 	"github.com/gorilla/mux"
@@ -83,7 +82,7 @@ func SiteHandler(app *App, w http.ResponseWriter, r *http.Request) {
 }
 
 func SharesListHandler(app *App, w http.ResponseWriter, r *http.Request) {
-	shares, err := model.ShareAll()
+	shares, err := ShareAll()
 	if err != nil {
 		SendErrorResult(w, err)
 		return
