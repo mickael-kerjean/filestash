@@ -209,6 +209,9 @@ func (this S3Backend) Ls(path string) (files []os.FileInfo, err error) {
 		}
 		return files, nil
 	}
+	if p.path != "" {
+		p.path = EnforceDirectory(p.path)
+	}
 	client := s3.New(this.createSession(p.bucket))
 	start := time.Now()
 	err = client.ListObjectsV2PagesWithContext(
@@ -398,11 +401,15 @@ func (this S3Backend) Rm(path string) error {
 			wg.Done()
 		}()
 	}
+	prefix := p.path
+	if prefix != "" {
+		prefix = EnforceDirectory(prefix)
+	}
 	err = client.ListObjectsV2PagesWithContext(
 		ctx,
 		&s3.ListObjectsV2Input{
 			Bucket: aws.String(p.bucket),
-			Prefix: aws.String(p.path),
+			Prefix: aws.String(prefix),
 		},
 		func(objs *s3.ListObjectsV2Output, lastPage bool) bool {
 			if ctx.Err() != nil {
@@ -514,11 +521,19 @@ func (this S3Backend) Mv(from string, to string) error {
 			wg.Done()
 		}()
 	}
+	fromPrefix := f.path
+	if fromPrefix != "" {
+		fromPrefix = EnforceDirectory(fromPrefix)
+	}
+	toPrefix := t.path
+	if toPrefix != "" {
+		toPrefix = EnforceDirectory(toPrefix)
+	}
 	err = client.ListObjectsV2PagesWithContext(
 		ctx,
 		&s3.ListObjectsV2Input{
 			Bucket: aws.String(f.bucket),
-			Prefix: aws.String(f.path),
+			Prefix: aws.String(fromPrefix),
 		},
 		func(objs *s3.ListObjectsV2Output, lastPage bool) bool {
 			if ctx.Err() != nil {
@@ -527,7 +542,7 @@ func (this S3Backend) Mv(from string, to string) error {
 			for _, object := range objs.Contents {
 				jobChan <- []S3Path{
 					{f.bucket, *object.Key},
-					{t.bucket, t.path + strings.TrimPrefix(*object.Key, f.path)},
+					{t.bucket, toPrefix + strings.TrimPrefix(*object.Key, fromPrefix)},
 				}
 			}
 			return aws.BoolValue(objs.IsTruncated)
