@@ -249,14 +249,24 @@ func (this *Configuration) Get(key string) ConfigElement {
 }
 
 func (this ConfigElement) Schema(fn func(*FormElement) *FormElement) ConfigElement {
+	current := this.cfg.state.Load()
+	if current != nil {
+		if el := find(&current.forms, this.key, false); el != nil {
+			probe := *el
+			if res := fn(&probe); res != nil && el.Type == res.Type && el.Value == res.Value {
+				this.currentElement = el
+				return this
+			}
+		}
+	}
 	for {
-		old := this.cfg.state.Load()
-		next := &configState{forms: cloneForms(old.forms), conn: old.conn}
+		next := &configState{forms: cloneForms(current.forms), conn: current.conn}
 		el := fn(find(&next.forms, this.key, true))
-		if this.cfg.state.CompareAndSwap(old, next) {
+		if this.cfg.state.CompareAndSwap(current, next) {
 			this.currentElement = el
 			break
 		}
+		current = this.cfg.state.Load()
 	}
 	return this
 }

@@ -12,8 +12,8 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 type FileInfo struct {
@@ -121,11 +121,13 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 				}
 				return "directory"
 			}(entries[i].Mode()),
-			Metadata: entries[i].Sys(),
 		}
-		if f, ok := entries[i].Sys().(File); ok {
-			files[i].Offline = f.Offline
-			files[i].Metadata = f.Metadata
+		switch file := entries[i].(type) {
+		case File:
+			files[i].Offline = file.Offline
+			files[i].Metadata = file.Metadata
+		default:
+			files[i].Metadata = file.Sys()
 		}
 	}
 

@@ -16,6 +16,7 @@ import (
 	"math/big"
 	mathrand "math/rand"
 	"sort"
+	"sync"
 	"sync/atomic"
 
 	"github.com/mickael-kerjean/filestash/server/pkg/env"
@@ -172,22 +173,22 @@ func compress(something []byte) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
+var zrPool = sync.Pool{
+	New: func() any {
+		nop := []byte{120, 156, 3, 0, 0, 0, 0, 1}
+		r, _ := zlib.NewReader(bytes.NewReader(nop))
+		return r
+	},
+}
+
 func decompress(something []byte) ([]byte, error) {
-	b := bytes.NewBuffer(something)
-	r, err := zlib.NewReader(b)
-	if err != nil {
-		return []byte(""), nil
+	r := zrPool.Get().(io.ReadCloser)
+	defer zrPool.Put(r)
+	if err := r.(zlib.Resetter).Reset(bytes.NewReader(something), nil); err != nil {
+		return nil, err
 	}
-	r.Close()
+	defer r.Close()
 	return io.ReadAll(r)
-}
-
-func sign(something []byte) ([]byte, error) {
-	return something, nil
-}
-
-func verify(something []byte) ([]byte, error) {
-	return something, nil
 }
 
 // Create a unique ID that can be use to identify different session

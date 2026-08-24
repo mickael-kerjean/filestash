@@ -9,21 +9,29 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/config"
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/mime"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
-var file_cache AppCache
+var (
+	fileCache  AppCache
+	bufferPool = sync.Pool{
+		New: func() any {
+			return new([]byte)
+		},
+	}
+)
 
 func init() {
-	file_cache = NewAppCache()
-	file_cache.OnEvict(func(key string, value interface{}) {
+	fileCache = NewAppCache()
+	fileCache.OnEvict(func(key string, value interface{}) {
 		if tmpPath, _, ok := strings.Cut(value.(string), "::"); ok {
 			os.RemoveAll(tmpPath)
 		}
@@ -76,9 +84,9 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 			mtime = fmt.Sprintf("%d", finfo.ModTime().Unix())
 		}
 		ctx.Session["fullpath"] = path
-		if p := file_cache.Get(ctx.Session); p != nil {
+		if p := fileCache.Get(ctx.Session); p != nil {
 			if tmpPath, cachedMtime, _ := strings.Cut(p.(string), "::"); cachedMtime != mtime {
-				file_cache.Del(ctx.Session)
+				fileCache.Del(ctx.Session)
 			} else if f, err := os.OpenFile(tmpPath, os.O_RDONLY, os.ModePerm); err == nil {
 				file = f
 				if fi, err := f.Stat(); err == nil {
@@ -173,7 +181,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 				SendErrorResult(res, err)
 				return
 			}
-			file_cache.Set(ctx.Session, tmpPath+"::"+mtime)
+			fileCache.Set(ctx.Session, tmpPath+"::"+mtime)
 			if _, err = io.Copy(f, file); err != nil {
 				f.Close()
 				file.Close()
@@ -272,13 +280,17 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 			size = 2 * 1024
 		}
 	}
-	buf := make([]byte, size*1024)
+	buf := bufferPool.Get().(*[]byte)
+	if len(*buf) < size*1024 {
+		*buf = make([]byte, size*1024)
+	}
+	defer bufferPool.Put(buf)
 	if f, ok := file.(io.ReadSeeker); ok && len(ranges) > 0 {
 		if _, err = f.Seek(ranges[0][0], io.SeekStart); err == nil {
 			header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", ranges[0][0], ranges[0][1], contentLength))
 			header.Set("Content-Length", fmt.Sprintf("%d", ranges[0][1]-ranges[0][0]+1))
 			res.WriteHeader(http.StatusPartialContent)
-			io.CopyBuffer(res, io.LimitReader(f, ranges[0][1]-ranges[0][0]+1), buf)
+			io.CopyBuffer(res, io.LimitReader(f, ranges[0][1]-ranges[0][0]+1), *buf)
 		} else {
 			res.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
 		}
@@ -291,7 +303,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 			_, err = res.Write(hasher.Sum(nil))
 		}
 	} else {
-		io.CopyBuffer(res, file, buf)
+		io.CopyBuffer(res, file, *buf)
 	}
 	file.Close()
 }

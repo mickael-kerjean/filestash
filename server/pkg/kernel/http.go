@@ -1,15 +1,17 @@
 package kernel
 
 import (
+	_ "embed"
+
 	"bytes"
 	"compress/gzip"
-	_ "embed"
 	"encoding/json"
-	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	"net/http"
 	"strings"
+	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/config"
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
@@ -74,23 +76,14 @@ func SendSuccessResultWithEtagAndGzip(res http.ResponseWriter, req *http.Request
 }
 
 func SendSuccessResults(res http.ResponseWriter, data interface{}) {
-	encoder := json.NewEncoder(res)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", IndentSize)
-	encoder.Encode(APISuccessResults{"ok", data})
+	SendRaw(res, APISuccessResults{"ok", data})
 }
 
 func SendSuccessResultsWithMetadata(res http.ResponseWriter, data interface{}, p interface{}) {
-	encoder := json.NewEncoder(res)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", IndentSize)
-	encoder.Encode(APISuccessResultsWithMetadata{"ok", data, p})
+	SendRaw(res, APISuccessResultsWithMetadata{"ok", data, p})
 }
 
 func SendErrorResult(res http.ResponseWriter, err error) {
-	encoder := json.NewEncoder(res)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", IndentSize)
 	obj, ok := err.(interface{ Status() int })
 	if ok == true {
 		res.WriteHeader(obj.Status())
@@ -103,14 +96,33 @@ func SendErrorResult(res http.ResponseWriter, err error) {
 		}
 		return strings.ToUpper(string(r[0])) + string(r[1:])
 	}(err.Error())
-	encoder.Encode(APIErrorMessage{"error", m})
+	SendRaw(res, APIErrorMessage{"error", m})
+}
+
+type jsonEncoder struct {
+	buf bytes.Buffer
+	*json.Encoder
+}
+
+var encoderPool = sync.Pool{
+	New: func() any {
+		p := &jsonEncoder{}
+		p.Encoder = json.NewEncoder(&p.buf)
+		p.SetEscapeHTML(false)
+		p.SetIndent("", IndentSize)
+		return p
+	},
 }
 
 func SendRaw(res http.ResponseWriter, data interface{}) {
-	encoder := json.NewEncoder(res)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", IndentSize)
-	encoder.Encode(data)
+	p := encoderPool.Get().(*jsonEncoder)
+	p.buf.Reset()
+	if p.Encode(data) == nil {
+		res.Write(p.buf.Bytes())
+	}
+	if p.buf.Cap() <= 1_000_000 {
+		encoderPool.Put(p)
+	}
 }
 
 func Page(stuff string) string {
