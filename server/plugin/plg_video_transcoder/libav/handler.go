@@ -36,7 +36,7 @@ func RegisterRoutes(r *mux.Router, dir string, enc string) {
 
 func playlistHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	cacheName := req.URL.Query().Get("path")
-	cachePath := GetAbsolutePath(VIDEO_CACHE_PATH, cacheName)
+	cachePath := JoinPath(GetAbsolutePath(VIDEO_CACHE_PATH), cacheName)
 	if _, err := os.Stat(cachePath); os.IsNotExist(err) {
 		res.WriteHeader(http.StatusServiceUnavailable)
 		return
@@ -73,7 +73,7 @@ func segmentHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	cachePath := GetAbsolutePath(VIDEO_CACHE_PATH, req.URL.Query().Get("path"))
+	cachePath := JoinPath(GetAbsolutePath(VIDEO_CACHE_PATH), req.URL.Query().Get("path"))
 	if _, err := os.Stat(cachePath); os.IsNotExist(err) {
 		Log.Info("[plugin hls]: invalid video")
 		res.WriteHeader(http.StatusServiceUnavailable)
