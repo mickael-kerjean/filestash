@@ -345,9 +345,13 @@ func (b Sftp) Stat(path string) (os.FileInfo, error) {
 }
 
 func (b Sftp) Close() error {
-	err0 := b.SFTPClient.Close()
-	err1 := b.SSHClient.Close()
-
+	var err0, err1 error
+	if b.SFTPClient != nil {
+		err0 = b.SFTPClient.Close()
+	}
+	if b.SSHClient != nil {
+		err1 = b.SSHClient.Close()
+	}
 	if err0 != nil {
 		return err0
 	}
