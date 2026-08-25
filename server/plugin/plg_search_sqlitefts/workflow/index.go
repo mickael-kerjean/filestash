@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/config"
 	. "github.com/mickael-kerjean/filestash/server/plugin/plg_search_sqlitefts/crawler"
 )
@@ -44,7 +45,7 @@ func (this StepIndexer) Manifest() WorkflowSpecs {
 }
 
 func (this StepIndexer) Execute(params map[string]string, input map[string]string) (map[string]string, error) {
-	str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_USER, params["token"])
+	str, err := DecryptString(env.SECRET_KEY_DERIVATE_FOR_USER, params["token"])
 	if err != nil {
 		Log.Warning("plg_search_sqlitefts::workflow message=invalid_token err=%s", err.Error())
 		return input, err
