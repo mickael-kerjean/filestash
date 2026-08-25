@@ -127,7 +127,7 @@ func (d Dropbox) Cat(path string) (io.ReadCloser, error) {
 			Path string `json:"path"`
 		}{d.path(path)}
 		json, _ := io.ReadAll(d.toReader(arg))
-		req.Header.Set("Dropbox-API-Arg", string(json))
+		req.Header.Set("Dropbox-Api-Arg", string(json))
 	})
 	if err != nil {
 		return nil, err
@@ -188,7 +188,7 @@ func (d Dropbox) Save(path string, file io.Reader) error {
 			Mode       string `json:"mode"`
 		}{d.path(path), false, "overwrite"}
 		json, _ := io.ReadAll(d.toReader(arg))
-		req.Header.Set("Dropbox-API-Arg", string(json))
+		req.Header.Set("Dropbox-Api-Arg", string(json))
 		req.Header.Set("Content-Type", "application/octet-stream")
 	})
 	if err != nil {

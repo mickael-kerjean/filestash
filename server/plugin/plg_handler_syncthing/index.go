@@ -84,7 +84,7 @@ func init() {
 func AuthBasic(credentials func() (string, string), fn http.Handler) http.HandlerFunc {
 	var notAuthorised = func(res http.ResponseWriter, req *http.Request) {
 		time.Sleep(1 * time.Second)
-		res.Header().Set("WWW-Authenticate", `Basic realm="User protect", charset="UTF-8"`)
+		res.Header().Set("Www-Authenticate", `Basic realm="User protect", charset="UTF-8"`)
 		res.WriteHeader(http.StatusUnauthorized)
 		res.Write([]byte("Not Authorised"))
 		return

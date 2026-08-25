@@ -35,7 +35,7 @@ func (s *Syncthing) makeAPICall(endpoint string, params map[string]string) ([]by
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("X-API-Key", s.apiKey)
+	req.Header.Set("X-Api-Key", s.apiKey)
 	resp, err := s.client.Do(req)
 	if err != nil {
 		return nil, err

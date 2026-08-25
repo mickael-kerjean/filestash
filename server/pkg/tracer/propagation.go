@@ -18,16 +18,16 @@ func TraceFromContext(ctx context.Context) TraceContext {
 
 func Extract(r *http.Request) TraceContext {
 	return TraceContext{
-		TraceID: r.Header.Get("X-Request-ID"),
-		SpanID:  r.Header.Get("X-Parent-Span-ID"),
+		TraceID: r.Header.Get("X-Request-Id"),
+		SpanID:  r.Header.Get("X-Parent-Span-Id"),
 	}
 }
 
 func Inject(tc TraceContext, r *http.Request) {
 	if tc.TraceID != "" {
-		r.Header.Set("X-Request-ID", tc.TraceID)
+		r.Header.Set("X-Request-Id", tc.TraceID)
 		if tc.SpanID != "" {
-			r.Header.Set("X-Parent-Span-ID", tc.SpanID)
+			r.Header.Set("X-Parent-Span-Id", tc.SpanID)
 		}
 	}
 }

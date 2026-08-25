@@ -79,7 +79,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	// use our cache if necessary (range request) when possible
 	var mtime string
-	if req.Header.Get("range") != "" {
+	if req.Header.Get("Range") != "" {
 		if finfo, err := ctx.Backend.Stat(path); err == nil {
 			mtime = fmt.Sprintf("%d", finfo.ModTime().Unix())
 		}
@@ -118,7 +118,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 			mType = "text/plain"
 		}
 		header.Set("Content-Type", mType)
-		if req.Header.Get("range") != "" {
+		if req.Header.Get("Range") != "" {
 			needToCreateCache = true
 		}
 	}
@@ -166,7 +166,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	// => range request requires a seeker to work, some backend support it, some don't. 2 strategies:
 	// 1. backend support Seek: use what the current backend gives us
 	// 2. backend doesn't support Seek: build up a cache so that subsequent call don't trigger multiple downloads
-	if req.Header.Get("range") != "" && needToCreateCache == true {
+	if req.Header.Get("Range") != "" && needToCreateCache == true {
 		if obj, ok := file.(io.Seeker); ok == true {
 			if size, err := obj.Seek(0, io.SeekEnd); err == nil {
 				if _, err = obj.Seek(0, io.SeekStart); err == nil {
@@ -212,9 +212,9 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	// Range request: find how much data we need to send
 	var ranges [][]int64
-	if req.Header.Get("range") != "" {
+	if req.Header.Get("Range") != "" {
 		ranges = make([][]int64, 0)
-		for _, r := range strings.Split(strings.TrimPrefix(req.Header.Get("range"), "bytes="), ",") {
+		for _, r := range strings.Split(strings.TrimPrefix(req.Header.Get("Range"), "bytes="), ",") {
 			r = strings.TrimSpace(r)
 			if r == "" {
 				continue

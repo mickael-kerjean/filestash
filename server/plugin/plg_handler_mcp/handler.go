@@ -41,8 +41,8 @@ func (this *Server) sseHandler(_ *App, w http.ResponseWriter, r *http.Request) {
 	token := ExtractToken(r)
 	if token == "" {
 		Log.Debug("plg_handler_mcp::sse msg=invalid_token")
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("WWW-Authenticate", "Bearer resource_metadata=\""+this.baseURL(r)+"/.well-known/oauth-protected-resource\"")
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Www-Authenticate", "Bearer resource_metadata=\""+this.baseURL(r)+"/.well-known/oauth-protected-resource\"")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(JSONRPCResponse{
 			JSONRPC: "2.0",

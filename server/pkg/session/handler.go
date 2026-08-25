@@ -13,9 +13,9 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/config"
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
-	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 
 	"github.com/mickael-kerjean/filestash/server/pkg/cookie"
 	"github.com/mickael-kerjean/filestash/server/pkg/files"
@@ -107,7 +107,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 	token.Inject(res, req, obfuscate)
 	if Config.Get("features.protection.iframe").String() != "" {
-		res.Header().Set("bearer", obfuscate)
+		res.Header().Set("Bearer", obfuscate)
 	}
 	Log.Stdout("AUDIT action[login] backend[%s] user[%s] target[%s]", session["type"], username(session), ip(req))
 	SendSuccessResult(res, Session{

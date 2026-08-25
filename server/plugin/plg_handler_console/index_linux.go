@@ -65,7 +65,7 @@ func init() {
 
 var notAuthorised = func(res http.ResponseWriter, req *http.Request) {
 	time.Sleep(1 * time.Second)
-	res.Header().Set("WWW-Authenticate", `Basic realm="User protect", charset="UTF-8"`)
+	res.Header().Set("Www-Authenticate", `Basic realm="User protect", charset="UTF-8"`)
 	res.WriteHeader(http.StatusUnauthorized)
 	res.Write([]byte("Not Authorised"))
 	return
@@ -284,7 +284,7 @@ func htmlIndex(pathPrefix string) []byte {
   <body>
     <div id="terminal"></div>
     <div id="error-message"></div>
-    <script>` + AppScript(pathPrefix) + `</script>    
+    <script>` + AppScript(pathPrefix) + `</script>
   </body>
 </html>`)
 }

@@ -178,7 +178,7 @@ func RedirectPage(url string) string {
 var HtmlPage404 []byte
 
 func NotFoundHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
-	if strings.Contains(req.Header.Get("accept"), "text/html") {
+	if strings.Contains(req.Header.Get("Accept"), "text/html") {
 		res.WriteHeader(http.StatusNotFound)
 		res.Write(HtmlPage404)
 		return

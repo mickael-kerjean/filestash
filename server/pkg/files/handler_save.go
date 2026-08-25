@@ -18,8 +18,8 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 var chunkedUploadCache AppCache
@@ -183,7 +183,7 @@ func handlerTUS(ctx *App, res http.ResponseWriter, req *http.Request, path strin
 			hash             hash.Hash
 			expectedChecksum string
 		)
-		if checksumHeader := req.Header.Get("upload-checksum"); checksumHeader != "" {
+		if checksumHeader := req.Header.Get("Upload-Checksum"); checksumHeader != "" {
 			parts := strings.SplitN(checksumHeader, " ", 2)
 			if len(parts) != 2 {
 				SendErrorResult(res, NewError("Bad Request", 400))

@@ -35,11 +35,11 @@ func basicAdmin(fn HandlerFunc) HandlerFunc {
 	return HandlerFunc(func(ctx *App, w http.ResponseWriter, r *http.Request) {
 		user, pass, ok := r.BasicAuth()
 		if !ok || user != "admin" {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+			w.Header().Set("Www-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		} else if err := bcrypt.CompareHashAndPassword([]byte(Config.Get("auth.admin").String()), []byte(pass)); err != nil {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+			w.Header().Set("Www-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
