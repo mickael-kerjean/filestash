@@ -101,7 +101,8 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if file == nil {
 		if file, err = ctx.Backend.Cat(path); err != nil {
 			if req.Method == http.MethodHead {
-				if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.IsDir() {
+				var finfo os.FileInfo
+				if finfo, err = ctx.Backend.Stat(path); err == nil && finfo.IsDir() {
 					if finfo.ModTime().Unix() > 0 {
 						header.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
 					}

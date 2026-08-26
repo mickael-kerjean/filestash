@@ -285,25 +285,38 @@ func (this S3Backend) Stat(path string) (os.FileInfo, error) {
 		Key:    aws.String(p.path),
 	}
 	obj, err := client.HeadObjectWithContext(this.app.Context, input)
-	if err != nil {
-		awsErr, ok := err.(awserr.Error)
-		if ok == false || awsErr.Code() != "NotFound" {
-			return nil, err
+	if err == nil {
+		if obj.ContentLength == nil || obj.LastModified == nil {
+			return nil, ErrNotValid
 		}
 		return File{
 			FName: filepath.Base(path),
-			FType: "directory",
-			FTime: -1,
+			FType: "file",
+			FSize: (*obj.ContentLength),
+			FTime: (*obj.LastModified).Unix(),
 		}, nil
-	} else if obj.ContentLength == nil || obj.LastModified == nil {
-		return nil, ErrNotValid
+	}
+	awsErr, ok := err.(awserr.Error)
+	if !ok {
+		return nil, err
+	} else if awsErr.Code() != "NotFound" {
+		return nil, err
+	}
+	list, err := client.ListObjectsV2WithContext(this.app.Context, &s3.ListObjectsV2Input{
+		Bucket:  aws.String(p.bucket),
+		Prefix:  aws.String(EnforceDirectory(p.path)),
+		MaxKeys: aws.Int64(1),
+	})
+	if err != nil {
+		return nil, err
+	} else if list == nil || list.KeyCount == nil || *list.KeyCount == 0 {
+		return nil, ErrNotFound
 	}
 	return File{
 		FName: filepath.Base(path),
-		FType: "file",
-		FSize: (*obj.ContentLength),
-		FTime: (*obj.LastModified).Unix(),
-	}, err
+		FType: "directory",
+		FTime: -1,
+	}, nil
 }
 
 func (this S3Backend) Cat(path string) (io.ReadCloser, error) {
