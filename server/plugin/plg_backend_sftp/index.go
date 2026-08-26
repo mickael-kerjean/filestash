@@ -284,33 +284,19 @@ func (b Sftp) Mkdir(path string) error {
 
 func (b Sftp) Rm(path string) error {
 	if IsDirectory(path) {
-		list, err := b.SFTPClient.ReadDir(path)
+		err := b.rmSsh(path)
 		if err != nil {
-			return b.err(err)
+			Log.Info("plg_backend_sftp::sftp could not rm -r via the SSH session, falling back to SFTP method", "error", err.Error())
+		} else {
+			return nil
 		}
-		for _, entry := range list {
-			p := path + entry.Name()
-			if entry.IsDir() {
-				p += "/"
-				err := b.Rm(p)
-				if err != nil {
-					return b.err(err)
-				}
-			} else {
-				err := b.SFTPClient.Remove(p)
-				if err != nil {
-					return b.err(err)
-				}
-			}
-		}
-		err = b.SFTPClient.RemoveDirectory(path)
-		if err != nil {
-			return b.err(err)
-		}
-	} else {
-		err := b.SFTPClient.Remove(path)
+	}
+
+	err := b.SFTPClient.RemoveAll(path)
+	if err != nil {
 		return b.err(err)
 	}
+
 	return nil
 }
 
@@ -430,4 +416,19 @@ func (b Sftp) err(e error) error {
 	default:
 		return NewError("Oops! Something went wrong", 500)
 	}
+}
+
+func (b Sftp) rmSsh(path string) error {
+	session, err := b.SSHClient.NewSession()
+	if err != nil {
+		return err
+	}
+
+	defer session.Close()
+	err = session.Run("rm -r '" + strings.ReplaceAll(path, "'", "'\\''") + "'")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
