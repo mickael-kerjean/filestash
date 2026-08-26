@@ -1,16 +1,20 @@
 package common
 
 import (
+	_ "unsafe"
+
 	"github.com/mickael-kerjean/filestash/server/pkg/env"
 )
+
+//go:linkname APPNAME github.com/mickael-kerjean/filestash/server/pkg/env.APPNAME
+//go:linkname LICENSE github.com/mickael-kerjean/filestash/server/pkg/env.LICENSE
 
 var (
 	APP_VERSION       = env.APP_VERSION
 	BUILD_REF         = env.BUILD_REF
 	BUILD_DATE        = env.BUILD_DATE
-	LICENSE           = env.LICENSE
 	APPNAME           = env.APPNAME
-
+	LICENSE           = env.LICENSE
 	BASE              = env.BASE
 	URL_SETUP         = env.URL_SETUP
 	CONFIG_PATH       = env.CONFIG_PATH

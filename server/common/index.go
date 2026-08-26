@@ -175,6 +175,8 @@ var (
 	WithBase       = env.WithBase
 	TrimBase       = env.TrimBase
 	IsWhiteLabel   = env.IsWhiteLabel
+	LicensedAs     = env.LicensedAs
+	WithBrand      = env.WithBrand
 	WhiteLabelText = env.WhiteLabelText
 )
 
