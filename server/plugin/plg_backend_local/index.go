@@ -77,7 +77,13 @@ func (this Local) Ls(path string) ([]os.FileInfo, error) {
 		f.Close()
 		return nil, err
 	}
-	return files, f.Close()
+	out := files[:0]
+	for _, file := range files {
+		if file.Mode().IsRegular() || file.IsDir() {
+			out = append(out, file)
+		}
+	}
+	return out, f.Close()
 }
 
 func (this Local) Stat(path string) (os.FileInfo, error) {
