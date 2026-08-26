@@ -110,7 +110,7 @@ func SecureOrigin(fn HandlerFunc) HandlerFunc {
 		if host := Config.Get("general.host").String(); host != "" {
 			host = strings.TrimPrefix(host, "http://")
 			host = strings.TrimPrefix(host, "https://")
-			if req.Host != host && req.Host != fmt.Sprintf("%s:443", host) {
+			if req.Host != host && req.Host != host+":443" {
 				if strings.HasPrefix(req.URL.Path, "/admin/") == false {
 					Log.Error("Request coming from \"%s\" was blocked, only traffic from \"%s\" is allowed. You can change this from the admin console under configure -> host", req.Host, host)
 					SendErrorResult(res, ErrNotAllowed)

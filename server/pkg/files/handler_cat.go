@@ -81,7 +81,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	var mtime string
 	if req.Header.Get("Range") != "" {
 		if finfo, err := ctx.Backend.Stat(path); err == nil {
-			mtime = fmt.Sprintf("%d", finfo.ModTime().Unix())
+			mtime = strconv.FormatInt(finfo.ModTime().Unix(), 10)
 		}
 		ctx.Session["fullpath"] = path
 		if p := fileCache.Get(ctx.Session); p != nil {
@@ -254,7 +254,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	// publish headers
 	if contentLength >= 0 {
-		header.Set("Content-Length", fmt.Sprintf("%d", contentLength))
+		header.Set("Content-Length", strconv.FormatInt(contentLength, 10))
 	}
 	if disable_csp() == false {
 		header.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; font-src data:; script-src-elem 'self'")
@@ -288,7 +288,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if f, ok := file.(io.ReadSeeker); ok && len(ranges) > 0 {
 		if _, err = f.Seek(ranges[0][0], io.SeekStart); err == nil {
 			header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", ranges[0][0], ranges[0][1], contentLength))
-			header.Set("Content-Length", fmt.Sprintf("%d", ranges[0][1]-ranges[0][0]+1))
+			header.Set("Content-Length", strconv.FormatInt(ranges[0][1]-ranges[0][0]+1, 10))
 			res.WriteHeader(http.StatusPartialContent)
 			io.CopyBuffer(res, io.LimitReader(f, ranges[0][1]-ranges[0][0]+1), *buf)
 		} else {

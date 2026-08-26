@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -48,7 +47,7 @@ type AppError struct {
 }
 
 func (e AppError) Error() string {
-	return fmt.Sprintf("%s", e.message)
+	return e.message
 }
 func (e AppError) Status() int {
 	return e.status

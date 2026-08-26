@@ -194,7 +194,7 @@ func decompress(something []byte) ([]byte, error) {
 // Create a unique ID that can be use to identify different session
 func GenerateID(params map[string]string) string {
 	p := ""
-	orderedKeys := make([]string, len(params))
+	orderedKeys := make([]string, 0, len(params))
 	for key, _ := range params {
 		orderedKeys = append(orderedKeys, key)
 	}
