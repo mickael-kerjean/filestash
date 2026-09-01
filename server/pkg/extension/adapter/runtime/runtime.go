@@ -43,6 +43,10 @@ func New(wasm []byte, opts ...Option) (*Runtime, error) {
 	return &Runtime{ctx: ctx, wrt: wrt, mod: mod}, nil
 }
 
+func (r *Runtime) HasExport(name string) bool {
+	return r.mod.ExportedFunction(name) != nil
+}
+
 func (r *Runtime) Call(ctx context.Context, fnName string, key, val any) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

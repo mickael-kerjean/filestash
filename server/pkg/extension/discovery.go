@@ -52,26 +52,24 @@ func Discovery() error {
 					return err
 				}
 				Hooks.Register.Favicon(b)
-			case "middleware":
+			case "abi":
 				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
 				if err != nil {
 					return err
 				}
-				m, err := adapter.MiddlewareExtension(b)
+				in, err := adapter.NewInstance(b)
 				if err != nil {
 					return err
 				}
-				Hooks.Register.Middleware(m)
-			case "workflow::action":
-				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
-				if err != nil {
-					return err
+				if in.Provides("authorisation") {
+					Hooks.Register.AuthorisationMiddleware(in.Authorisation())
 				}
-				a, err := adapter.WorkflowActionExtension(b)
-				if err != nil {
-					return err
+				if in.Provides("middleware") {
+					Hooks.Register.Middleware(in.Middleware())
 				}
-				Hooks.Register.WorkflowAction(a)
+				if in.Provides("http") {
+					Hooks.Register.HttpEndpoint(in.Http())
+				}
 			case "xdg-open": // noop
 			default:
 				return fmt.Errorf("%w: %s", ErrNotImplemented, impl.Modules[i]["type"])
