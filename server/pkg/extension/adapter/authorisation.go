@@ -22,9 +22,9 @@ func stateAuthorisation(ctx context.Context) *authData {
 
 func exportAuthorisation(b *runtime.HostModuleBuilder) {
 	b.Export("ffi_authorisation_pull_path", func(ctx context.Context, mem runtime.IMemory, outPtr, outCap uint32) uint32 {
-		return mem.Write(outPtr, outCap, []byte(stateAuthorisation(ctx).path))
+		return mem.WriteString(outPtr, outCap, stateAuthorisation(ctx).path)
 	}).Export("ffi_authorisation_pull_target", func(ctx context.Context, mem runtime.IMemory, outPtr, outCap uint32) uint32 {
-		return mem.Write(outPtr, outCap, []byte(stateAuthorisation(ctx).target))
+		return mem.WriteString(outPtr, outCap, stateAuthorisation(ctx).target)
 	}).Export("ffi_authorisation_push_allow", func(ctx context.Context) {
 		stateAuthorisation(ctx).allow = true
 	})

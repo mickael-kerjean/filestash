@@ -38,11 +38,12 @@ type route struct {
 }
 
 func exportHttp(b *runtime.HostModuleBuilder) {
-	b.Export("ffi_http_push_route", func(ctx context.Context, mem runtime.IMemory, mPtr, mLen, pPtr, pLen, wPtr, wLen uint32) {
+	b.Export("ffi_http_push_route", func(ctx context.Context, mem runtime.IMemory, rPtr, rLen, wPtr, wLen uint32) {
 		routes, _ := ctx.Value(routesKey{}).(*[]route)
+		line := strings.SplitN(string(mem.Read(rPtr, rLen)), " ", 2)
 		r := route{
-			method: string(mem.Read(mPtr, mLen)),
-			path:   string(mem.Read(pPtr, pLen)),
+			method: line[0],
+			path:   line[1],
 		}
 		if names := string(mem.Read(wPtr, wLen)); names != "" {
 			r.middleware = strings.Split(names, ",")

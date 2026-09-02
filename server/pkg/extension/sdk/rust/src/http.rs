@@ -3,10 +3,8 @@ use crate::{Request, Response};
 #[link(wasm_import_module = "env")]
 extern "C" {
     fn ffi_http_push_route(
-        method: *const u8,
-        method_len: u32,
-        path: *const u8,
-        path_len: u32,
+        route: *const u8,
+        route_len: u32,
         middleware: *const u8,
         middleware_len: u32,
     );
@@ -50,13 +48,12 @@ impl<A> Router<A> {
 
     pub fn describe(&self) {
         for route in &self.routes {
+            let line = format!("{} {}", route.method, route.path);
             let middleware = route.middleware.join(",");
             unsafe {
                 ffi_http_push_route(
-                    route.method.as_ptr(),
-                    route.method.len() as u32,
-                    route.path.as_ptr(),
-                    route.path.len() as u32,
+                    line.as_ptr(),
+                    line.len() as u32,
                     middleware.as_ptr(),
                     middleware.len() as u32,
                 );

@@ -15,6 +15,7 @@ type Instance struct {
 func NewInstance(wasm []byte) (*Instance, error) {
 	rt, err := runtime.New(wasm, runtime.WithExports(func(b *runtime.HostModuleBuilder) {
 		exportShared(b)
+		exportAuthentication(b)
 		exportAuthorisation(b)
 		exportMiddleware(b)
 		exportHttp(b)
@@ -70,10 +71,10 @@ func exportShared(b *runtime.HostModuleBuilder) {
 	}).Export("resp_write", func(ctx context.Context, mem runtime.IMemory, ptr, length uint32) {
 		stateHttp(ctx).w.Write(mem.Read(ptr, length))
 	}).Export("req_method", func(ctx context.Context, mem runtime.IMemory, outPtr, outCap uint32) uint32 {
-		return mem.Write(outPtr, outCap, []byte(stateHttp(ctx).r.Method))
+		return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.Method)
 	}).Export("req_path", func(ctx context.Context, mem runtime.IMemory, outPtr, outCap uint32) uint32 {
-		return mem.Write(outPtr, outCap, []byte(stateHttp(ctx).r.URL.Path))
+		return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.URL.Path)
 	}).Export("req_header", func(ctx context.Context, mem runtime.IMemory, nPtr, nLen, outPtr, outCap uint32) uint32 {
-		return mem.Write(outPtr, outCap, []byte(stateHttp(ctx).r.Header.Get(string(mem.Read(nPtr, nLen)))))
+		return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.Header.Get(string(mem.Read(nPtr, nLen))))
 	})
 }

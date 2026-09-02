@@ -14,8 +14,9 @@ type Runtime struct {
 	wrt wazero.Runtime
 	ctx context.Context
 
-	mu  sync.Mutex
-	mod api.Module
+	mu     sync.Mutex
+	mod    api.Module
+	_cache map[string]api.Function
 }
 
 func New(wasm []byte, opts ...Option) (*Runtime, error) {
@@ -40,7 +41,7 @@ func New(wasm []byte, opts ...Option) (*Runtime, error) {
 		wrt.Close(ctx)
 		return nil, err
 	}
-	return &Runtime{ctx: ctx, wrt: wrt, mod: mod}, nil
+	return &Runtime{ctx: ctx, wrt: wrt, mod: mod, _cache: map[string]api.Function{}}, nil
 }
 
 func (r *Runtime) HasExport(name string) bool {
@@ -50,7 +51,11 @@ func (r *Runtime) HasExport(name string) bool {
 func (r *Runtime) Call(ctx context.Context, fnName string, key, val any) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	fn := r.mod.ExportedFunction(fnName)
+	fn, ok := r._cache[fnName]
+	if !ok {
+		fn = r.mod.ExportedFunction(fnName)
+		r._cache[fnName] = fn
+	}
 	if fn == nil {
 		return fmt.Errorf("%w: %s", ErrNoExport, fnName)
 	}
