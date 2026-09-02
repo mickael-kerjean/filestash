@@ -9,7 +9,6 @@ mod middleware;
 mod request;
 mod response;
 
-pub use app::App;
 pub use authorisation::{Authorisation, Decision};
 pub use context::Context;
 pub use http::{Handler, Http, Router};

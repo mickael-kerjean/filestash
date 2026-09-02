@@ -1,12 +1,7 @@
 use filestash::*;
 
+#[derive(Default)]
 pub struct Plugin;
-
-impl App for Plugin {
-    fn new() -> Self {
-        Plugin
-    }
-}
 
 impl OnDestroy for Plugin {
     fn on_destroy(&self) {

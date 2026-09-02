@@ -1,12 +1,8 @@
-pub trait App {
-    fn new() -> Self;
-}
-
 #[macro_export]
 macro_rules! register {
     ($app:ident : $head:ident $(+ $rest:ident)*) => {
         ::std::thread_local! {
-            static APP: $app = <$app as $crate::App>::new();
+            static APP: $app = <$app as ::std::default::Default>::default();
         }
 
         #[no_mangle]

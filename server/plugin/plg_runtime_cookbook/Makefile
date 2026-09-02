@@ -7,14 +7,14 @@ all:
 	$(MAKE) -C onQuit
 	$(MAKE) -C socket
 	$(MAKE) -C filesystem
-	zip -j example.zip manifest.json \
+	zip -j cookbook.zip manifest.json \
 		http/$(RELEASE)/endpoint.wasm \
 		onInit/$(RELEASE)/oninit.wasm \
 		onChange/$(RELEASE)/onchange.wasm \
 		onQuit/$(RELEASE)/onquit.wasm \
 		socket/$(RELEASE)/socket.wasm \
 		filesystem/$(RELEASE)/filesystem.wasm
-	mv example.zip ../../../dist/data/state/plugins/
+	mv cookbook.zip ../../../dist/data/state/plugins/
 
 init:
 	rustup target add wasm32-wasip1

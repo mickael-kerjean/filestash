@@ -1,12 +1,7 @@
 use filestash::*;
 
+#[derive(Default)]
 pub struct Page;
-
-impl App for Page {
-    fn new() -> Self {
-        Page
-    }
-}
 
 impl Http for Page {
     fn routes(r: &mut Router<Self>) {
