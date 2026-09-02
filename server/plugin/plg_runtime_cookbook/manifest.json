@@ -1,0 +1,16 @@
+{
+    "author": "Filestash Pty Ltd",
+    "version": "v0.0",
+    "modules": [
+        { "type": "abi", "entrypoint": "endpoint.wasm" },
+        { "type": "abi", "entrypoint": "oninit.wasm" },
+        { "type": "abi", "entrypoint": "onchange.wasm" },
+        { "type": "abi", "entrypoint": "onquit.wasm" },
+        { "type": "abi", "entrypoint": "socket.wasm" },
+        { "type": "abi", "entrypoint": "filesystem.wasm" }
+    ],
+    "permissions": [
+        "tcp://demo.filestash.app:443",
+        "file:///{{ .TMP_PATH }}"
+    ]
+}

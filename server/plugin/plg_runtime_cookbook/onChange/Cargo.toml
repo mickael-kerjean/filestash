@@ -1,0 +1,15 @@
+[package]
+name = "onchange"
+edition = "2021"
+
+[lib]
+path = "lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+filestash = { path = "../../../pkg/extension/sdk/rust" }
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true

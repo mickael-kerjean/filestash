@@ -1,0 +1,251 @@
+--- a/library/std/src/sys/net/connection/wasip1.rs
++++ b/library/std/src/sys/net/connection/wasip1.rs
+@@ -2,7 +2,8 @@
+ 
+ use crate::fmt;
+ use crate::io::{self, BorrowedCursor, IoSlice, IoSliceMut};
+-use crate::net::{Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr, ToSocketAddrs};
++use crate::net::{Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr, SocketAddrV4, ToSocketAddrs};
++use crate::sync::atomic::{AtomicBool, Ordering};
+ use crate::os::wasi::io::{AsFd, AsRawFd, BorrowedFd, FromRawFd, IntoRawFd, RawFd};
+ use crate::sys::fd::FileDesc;
+ use crate::sys::{AsInner, FromInner, IntoInner, err2io, unsupported};
+@@ -12,6 +13,7 @@
+ 
+ pub struct TcpStream {
+     inner: Socket,
++    nonblocking: AtomicBool,
+ }
+ 
+ impl AsInner<FileDesc> for Socket {
+@@ -58,29 +60,76 @@
+     }
+ }
+ 
++mod sock {
++    #[link(wasm_import_module = "wasi_snapshot_preview1")]
++    unsafe extern "C" {
++        pub fn sock_connect(ip: *const u8, port: u32, fd_out: *mut u32) -> u32;
++        pub fn sock_resolve(
++            node: *const u8,
++            node_len: u32,
++            port: u32,
++            out: *mut u8,
++            max: u32,
++            count_out: *mut u32,
++        ) -> u32;
++        pub fn sock_send(fd: u32, buf: *const u8, len: u32, n_out: *mut u32) -> u32;
++        pub fn sock_recv(fd: u32, buf: *mut u8, len: u32, n_out: *mut u32) -> u32;
++    }
++}
++
++fn cvt_sock(errno: u32) -> io::Result<()> {
++    match errno {
++        0 => Ok(()),
++        2 => Err(io::Error::new(io::ErrorKind::PermissionDenied, "host not allowed")),
++        8 => Err(io::Error::new(io::ErrorKind::NotConnected, "bad socket descriptor")),
++        14 => Err(io::Error::new(io::ErrorKind::ConnectionRefused, "connection refused")),
++        28 => Err(io::Error::new(io::ErrorKind::InvalidInput, "invalid argument")),
++        _ => Err(io::Error::new(io::ErrorKind::Uncategorized, "socket io error")),
++    }
++}
++
+ impl TcpStream {
+-    pub fn connect<A: ToSocketAddrs>(_: A) -> io::Result<TcpStream> {
+-        unsupported()
++    pub fn connect<A: ToSocketAddrs>(addr: A) -> io::Result<TcpStream> {
++        let mut last_err = None;
++        for addr in addr.to_socket_addrs()? {
++            match Self::connect_one(&addr) {
++                Ok(stream) => return Ok(stream),
++                Err(e) => last_err = Some(e),
++            }
++        }
++        Err(last_err.unwrap_or_else(|| {
++            io::Error::new(io::ErrorKind::InvalidInput, "could not resolve to any addresses")
++        }))
+     }
+ 
+-    pub fn connect_timeout(_: &SocketAddr, _: Duration) -> io::Result<TcpStream> {
+-        unsupported()
++    fn connect_one(addr: &SocketAddr) -> io::Result<TcpStream> {
++        let SocketAddr::V4(v4) = addr else {
++            return Err(io::Error::new(io::ErrorKind::Unsupported, "only ipv4 is supported"));
++        };
++        let ip = v4.ip().octets();
++        let mut fd: u32 = 0;
++        cvt_sock(unsafe { sock::sock_connect(ip.as_ptr(), v4.port() as u32, &mut fd) })?;
++        Ok(TcpStream::from_inner(unsafe { Socket::from_raw_fd(fd as RawFd) }))
++    }
++
++    pub fn connect_timeout(addr: &SocketAddr, _: Duration) -> io::Result<TcpStream> {
++        Self::connect_one(addr)
+     }
+ 
+     pub fn set_read_timeout(&self, _: Option<Duration>) -> io::Result<()> {
+-        unsupported()
++        Ok(())
+     }
+ 
+     pub fn set_write_timeout(&self, _: Option<Duration>) -> io::Result<()> {
+-        unsupported()
++        Ok(())
+     }
+ 
+     pub fn read_timeout(&self) -> io::Result<Option<Duration>> {
+-        unsupported()
++        Ok(None)
+     }
+ 
+     pub fn write_timeout(&self) -> io::Result<Option<Duration>> {
+-        unsupported()
++        Ok(None)
+     }
+ 
+     pub fn peek(&self, _: &mut [u8]) -> io::Result<usize> {
+@@ -88,31 +137,52 @@
+     }
+ 
+     pub fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
+-        self.read_vectored(&mut [IoSliceMut::new(buf)])
++        if self.nonblocking.load(Ordering::Relaxed) {
++            return Err(io::Error::from(io::ErrorKind::WouldBlock));
++        }
++        let mut n: u32 = 0;
++        cvt_sock(unsafe {
++            sock::sock_recv(self.inner.as_raw_fd() as u32, buf.as_mut_ptr(), buf.len() as u32, &mut n)
++        })?;
++        Ok(n as usize)
+     }
+ 
+-    pub fn read_buf(&self, buf: BorrowedCursor<'_, u8>) -> io::Result<()> {
+-        self.socket().as_inner().read_buf(buf)
++    pub fn read_buf(&self, mut buf: BorrowedCursor<'_, u8>) -> io::Result<()> {
++        let mut tmp = [0u8; 8192];
++        let max = tmp.len().min(buf.capacity());
++        let n = self.read(&mut tmp[..max])?;
++        buf.append(&tmp[..n]);
++        Ok(())
+     }
+ 
+     pub fn read_vectored(&self, bufs: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
+-        self.socket().as_inner().read_vectored(bufs)
++        match bufs.iter_mut().find(|b| !b.is_empty()) {
++            Some(buf) => self.read(&mut buf[..]),
++            None => Ok(0),
++        }
+     }
+ 
+     pub fn is_read_vectored(&self) -> bool {
+-        true
++        false
+     }
+ 
+     pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
+-        self.write_vectored(&[IoSlice::new(buf)])
++        let mut n: u32 = 0;
++        cvt_sock(unsafe {
++            sock::sock_send(self.inner.as_raw_fd() as u32, buf.as_ptr(), buf.len() as u32, &mut n)
++        })?;
++        Ok(n as usize)
+     }
+ 
+     pub fn write_vectored(&self, bufs: &[IoSlice<'_>]) -> io::Result<usize> {
+-        self.socket().as_inner().write_vectored(bufs)
++        match bufs.iter().find(|b| !b.is_empty()) {
++            Some(buf) => self.write(&buf[..]),
++            None => Ok(0),
++        }
+     }
+ 
+     pub fn is_write_vectored(&self) -> bool {
+-        true
++        false
+     }
+ 
+     pub fn peer_addr(&self) -> io::Result<SocketAddr> {
+@@ -154,11 +224,11 @@
+     }
+ 
+     pub fn set_nodelay(&self, _: bool) -> io::Result<()> {
+-        unsupported()
++        Ok(())
+     }
+ 
+     pub fn nodelay(&self) -> io::Result<bool> {
+-        unsupported()
++        Ok(true)
+     }
+ 
+     pub fn set_ttl(&self, _: u32) -> io::Result<()> {
+@@ -174,23 +244,8 @@
+     }
+ 
+     pub fn set_nonblocking(&self, state: bool) -> io::Result<()> {
+-        let fdstat = unsafe {
+-            wasip1::fd_fdstat_get(self.socket().as_inner().as_raw_fd() as wasip1::Fd)
+-                .map_err(err2io)?
+-        };
+-
+-        let mut flags = fdstat.fs_flags;
+-
+-        if state {
+-            flags |= wasip1::FDFLAGS_NONBLOCK;
+-        } else {
+-            flags &= !wasip1::FDFLAGS_NONBLOCK;
+-        }
+-
+-        unsafe {
+-            wasip1::fd_fdstat_set_flags(self.socket().as_inner().as_raw_fd() as wasip1::Fd, flags)
+-                .map_err(err2io)
+-        }
++        self.nonblocking.store(state, Ordering::Relaxed);
++        Ok(())
+     }
+ 
+     #[inline]
+@@ -205,7 +260,7 @@
+ 
+ impl FromInner<Socket> for TcpStream {
+     fn from_inner(socket: Socket) -> TcpStream {
+-        TcpStream { inner: socket }
++        TcpStream { inner: socket, nonblocking: AtomicBool::new(false) }
+     }
+ }
+ 
+@@ -484,15 +539,31 @@
+     }
+ }
+ 
+-pub struct LookupHost(!);
++pub struct LookupHost {
++    ips: [u8; 32],
++    count: usize,
++    pos: usize,
++    port: u16,
++}
+ 
+ impl Iterator for LookupHost {
+     type Item = SocketAddr;
+     fn next(&mut self) -> Option<SocketAddr> {
+-        self.0
++        if self.pos >= self.count {
++            return None;
++        }
++        let i = self.pos * 4;
++        self.pos += 1;
++        let ip = Ipv4Addr::new(self.ips[i], self.ips[i + 1], self.ips[i + 2], self.ips[i + 3]);
++        Some(SocketAddr::V4(SocketAddrV4::new(ip, self.port)))
+     }
+ }
+ 
+-pub fn lookup_host(_host: &str, _port: u16) -> io::Result<LookupHost> {
+-    unsupported()
++pub fn lookup_host(host: &str, port: u16) -> io::Result<LookupHost> {
++    let mut ips = [0u8; 32];
++    let mut count: u32 = 0;
++    cvt_sock(unsafe {
++        sock::sock_resolve(host.as_ptr(), host.len() as u32, port as u32, ips.as_mut_ptr(), 8, &mut count)
++    })?;
++    Ok(LookupHost { ips, count: (count as usize).min(8), pos: 0, port })
+ }

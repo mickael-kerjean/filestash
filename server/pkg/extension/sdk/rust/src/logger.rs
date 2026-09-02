@@ -19,5 +19,5 @@ static LOGGER: Logger = Logger;
 
 pub fn init() {
     let _ = log::set_logger(&LOGGER);
-    log::set_max_level(log::LevelFilter::Trace);
+    log::set_max_level(log::LevelFilter::Info);
 }

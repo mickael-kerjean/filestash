@@ -19,6 +19,7 @@ import (
 
 var middlewares = map[string]Middleware{
 	"api_headers":    middleware.ApiHeaders,
+	"index_headers":  middleware.IndexHeaders,
 	"secure_headers": middleware.SecureHeaders,
 	"session_start":  session.Start,
 	"session_try":    session.Try,

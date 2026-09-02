@@ -85,6 +85,33 @@ macro_rules! register {
         }
     };
 
+    (@capability $anchor:ident, $app:ident, OnInit) => {
+        #[no_mangle]
+        pub extern "C" fn capability_on_init() {}
+        #[no_mangle]
+        pub extern "C" fn on_init() {
+            $anchor.with(|app| <$app as $crate::OnInit>::on_init(app));
+        }
+    };
+
+    (@capability $anchor:ident, $app:ident, OnChanges) => {
+        #[no_mangle]
+        pub extern "C" fn capability_on_changes() {}
+        #[no_mangle]
+        pub extern "C" fn on_changes() {
+            $anchor.with(|app| <$app as $crate::OnChanges>::on_changes(app));
+        }
+    };
+
+    (@capability $anchor:ident, $app:ident, OnDestroy) => {
+        #[no_mangle]
+        pub extern "C" fn capability_on_destroy() {}
+        #[no_mangle]
+        pub extern "C" fn on_destroy() {
+            $anchor.with(|app| <$app as $crate::OnDestroy>::on_destroy(app));
+        }
+    };
+
     (@capability $anchor:ident, $app:ident, Middleware) => {
         #[no_mangle]
         pub extern "C" fn capability_middleware() {}

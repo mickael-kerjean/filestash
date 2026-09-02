@@ -19,7 +19,6 @@ func NewInstance(wasm []byte, permissions ...string) (*Instance, error) {
 	}
 	rt, err := runtime.New(wasm, append(opts, runtime.WithExports(func(b *runtime.HostModuleBuilder) {
 		exportShared(b)
-		exportAuthentication(b)
 		exportAuthorisation(b)
 		exportMiddleware(b)
 		exportHttp(b)

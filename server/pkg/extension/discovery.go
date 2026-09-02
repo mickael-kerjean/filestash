@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mickael-kerjean/filestash/server/pkg/config"
 	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	"github.com/mickael-kerjean/filestash/server/pkg/extension/adapter"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
@@ -69,6 +70,15 @@ func Discovery() error {
 				}
 				if in.Provides("http") {
 					Hooks.Register.HttpEndpoint(in.Http())
+				}
+				if in.Provides("on_init") {
+					Hooks.Register.Onload(in.OnInit())
+				}
+				if in.Provides("on_changes") {
+					config.RegisterChange(in.OnChanges())
+				}
+				if in.Provides("on_destroy") {
+					Hooks.Register.OnQuit(in.OnDestroy())
 				}
 			case "xdg-open": // noop
 			default:
