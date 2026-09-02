@@ -12,14 +12,18 @@ type Instance struct {
 	rt *runtime.Runtime
 }
 
-func NewInstance(wasm []byte) (*Instance, error) {
-	rt, err := runtime.New(wasm, runtime.WithExports(func(b *runtime.HostModuleBuilder) {
+func NewInstance(wasm []byte, permissions ...string) (*Instance, error) {
+	opts, err := mounts(permissions)
+	if err != nil {
+		return nil, err
+	}
+	rt, err := runtime.New(wasm, append(opts, runtime.WithExports(func(b *runtime.HostModuleBuilder) {
 		exportShared(b)
 		exportAuthentication(b)
 		exportAuthorisation(b)
 		exportMiddleware(b)
 		exportHttp(b)
-	}))
+	}))...)
 	if err != nil {
 		return nil, err
 	}

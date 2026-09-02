@@ -57,7 +57,7 @@ func Discovery() error {
 				if err != nil {
 					return err
 				}
-				in, err := adapter.NewInstance(b)
+				in, err := adapter.NewInstance(b, impl.Permissions...)
 				if err != nil {
 					return err
 				}

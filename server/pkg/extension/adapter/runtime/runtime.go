@@ -7,41 +7,53 @@ import (
 
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
-	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 )
 
 type Runtime struct {
-	wrt wazero.Runtime
-	ctx context.Context
+	wrt  wazero.Runtime
+	ctx  context.Context
+	sock *SocketConfig
 
 	mu     sync.Mutex
 	mod    api.Module
 	_cache map[string]api.Function
 }
 
-func New(wasm []byte, opts ...Option) (*Runtime, error) {
-	ctx := context.Background()
-	wrt := wazero.NewRuntime(ctx)
-	wasi_snapshot_preview1.MustInstantiate(ctx, wrt)
+func New(wasm []byte, opts ...Option) (_ *Runtime, err error) {
+	var (
+		ctx = context.Background()
+		c   = &config{
+			wrt:  wazero.NewRuntime(ctx),
+			fs:   NewFSConfig(),
+			sock: NewSocketConfig(),
+		}
+	)
+	defer func() {
+		if err != nil {
+			c.wrt.Close(ctx)
+		}
+	}()
+	compiled, err := c.wrt.CompileModule(ctx, wasm)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, opt := range opts {
-		if err := opt(wrt); err != nil {
-			wrt.Close(ctx)
+		if err = opt(c); err != nil {
 			return nil, err
 		}
 	}
-
-	compiled, err := wrt.CompileModule(ctx, wasm)
-	if err != nil {
-		wrt.Close(ctx)
+	if err = c.sock.Apply(ctx, c); err != nil {
 		return nil, err
 	}
-	mod, err := wrt.InstantiateModule(ctx, compiled, wazero.NewModuleConfig())
-	if err != nil {
-		wrt.Close(ctx)
+	if err = c.fs.Apply(ctx, c); err != nil {
 		return nil, err
 	}
-	return &Runtime{ctx: ctx, wrt: wrt, mod: mod, _cache: map[string]api.Function{}}, nil
+	mod, err := c.wrt.InstantiateModule(ctx, compiled, c.mod)
+	if err != nil {
+		return nil, err
+	}
+	return &Runtime{ctx: ctx, wrt: c.wrt, sock: c.sock, mod: mod, _cache: map[string]api.Function{}}, nil
 }
 
 func (r *Runtime) HasExport(name string) bool {
@@ -64,5 +76,6 @@ func (r *Runtime) Call(ctx context.Context, fnName string, key, val any) error {
 }
 
 func (r *Runtime) Close() {
+	r.sock.close()
 	r.wrt.Close(r.ctx)
 }

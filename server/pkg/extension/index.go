@@ -3,9 +3,10 @@ package extension
 var plugins = map[string]PluginImpl{}
 
 type PluginImpl struct {
-	Author  string              `json:"author"`
-	Version string              `json:"version"`
-	Modules []map[string]string `json:"modules"`
+	Author      string              `json:"author"`
+	Version     string              `json:"version"`
+	Modules     []map[string]string `json:"modules"`
+	Permissions []string            `json:"permissions"`
 }
 
 func All() map[string]PluginImpl {
