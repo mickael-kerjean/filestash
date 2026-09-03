@@ -3,13 +3,17 @@
 # What is this?
 
 <p>
-    It started as a storage agnostic Dropbox-like file manager that works with every storage protocol: <a href="https://www.filestash.app/ftp-client.html">FTP</a>, <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, and <a href="https://www.filestash.app/docs/plugin/#storage">about 20 more</a>.
+    Filestash started as a storage agnostic Dropbox-like file manager that speaks every storage protocol (<a href="https://www.filestash.app/ftp-client.html">FTP</a>, <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, and <a href="https://www.filestash.app/docs/plugin/#storage">about 20 more</a>). It grew into what we want to be the world's best file management platform, centered around <strong>3 pillars</strong>:
 </p>
+
+<ol>
+    <li><strong>Web client</strong> <i>(the file manager available from your browser)</i>: <a href="https://www.filestash.app/docs/install-and-upgrade/#configuration">documentation</a> / <a href="https://www.filestash.app/img/screenshots/feature1.png">screenshot</a> </li>
+    <li><strong>Native client</strong> <i>(to sync your data on your device)</i>: <a href="https://github.com/mickael-kerjean/fdrive">repo</a> / screenshots for <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-mac.png">mac</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-windows.png">windows</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-linux.png">linux</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-android.png">android</a> & <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-iphone.png">iphone</a></li>
+    <li><strong>Gateways</strong> <i>(to expose your storages over any protocol)</i>: <a href="https://www.filestash.app/docs/guide/sftp-gateway.html#working-example">showcase</a> </li>
+</ol>
+
 <p>
-    It grew into what we want to be the world's best file management platform. Around the core engine sit 3 pillars: the web client, a <a href="https://github.com/mickael-kerjean/fdrive">native drive client</a>, and <a href="https://www.filestash.app/docs/guide/storage-gateway.html">gateways</a> to expose storages over any protocol.
-</p>
-<p>
-    The engine follows one rule: everything that's not a fundamental truth of the universe lives in a plugin. Where other platforms are take-it-or-leave-it, ours gives you a rock solid core and a plugin system to handle opinions, so however deep requirements go, the only limit won't be technical but your own creativity.
+    The philosophy that guides this project is: "anything that's not a fundamental truth of the universe lives in a plugin". That keeps the core lean and fast, and the opinions replaceable, so when your requirements get deep or weird, the answer is a plugin, not a fork.
 </p>
 
 <p>
@@ -19,7 +23,7 @@
 # Key Features
 
 <ul>
-    <li><a href="#vision--philosophy">Plugin Driven Architecture</a>: everything that matters is a plugin, browse the <a href="https://www.filestash.app/docs/plugin/">ecosystem</a> or <a href="https://www.filestash.app/docs/guide/plugin-development.html?origin=github">build your own</a>. With this approach, you get exactly what you need without overhead and bloat.</li>
+    <li><a href="#plugins">Plugin Driven Architecture</a>: everything that matters is a plugin, browse the <a href="https://www.filestash.app/docs/plugin/">ecosystem</a> or <a href="https://www.filestash.app/docs/guide/plugin-development.html?origin=github">build your own</a>. With this approach, you get exactly what you need without overhead and bloat.</li>
     <li>Universal Access: the web client is just one way to access your data (albeit an awesome one, handcrafted in vanilla JS). <a href="https://www.filestash.app/docs/api/#api">APIs</a> and <a href="https://www.filestash.app/docs/guide/storage-gateway.html?origin=github">Gateways</a> let you also expose your data over protocols like <a href="https://www.filestash.app/docs/guide/sftp-gateway.html?origin=github">SFTP</a>, S3, FTP, WebDAV, <a href="https://www.filestash.app/docs/guide/mcp-gateway.html?origin=github">MCP</a>, and AS2.</li>
     <li><a href="https://www.filestash.app/docs/plugin/#storage">Integrations</a>: our explicit goal is to support 100% of storage and authentication technologies on the market. Beyond your usual options, you can go much further, like a <a href="https://www.filestash.app/docs/guide/virtual-filesystem.html?origin=github">virtual filesystem</a> delegating authentication to your <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_authenticate_wordpress">WordPress site</a> and using its roles to drive <a href="https://www.filestash.app/docs/guide/authorization.html#option-2-rbac">RBAC authorization</a>.</li>
     <li><a href="https://www.filestash.app/docs/guide/workflow-engine.html">Workflow Engine</a>: automate anything that happens to your files by chaining actions on events, from simple notifications via Slack or email to full on MFT pipelines and everything in between.</li>
@@ -48,42 +52,68 @@
         <img src="https://www.filestash.app/img/screenshots/theme_ibm.png" height="150" />
     </li>
     <li>AI features for <a href="https://www.filestash.app/docs/guide/search.html">search</a>, <a href="https://www.filestash.app/features/smart-folder.html">smart folders</a> and OCRs.</li>
-    <li>... and much <sub>much <sub>more (versioning, audit, public site, antivirus, quota, chat, chromecast support, on demand video transcoding, mounting shared links as network drive, ....)</sub></sub><br> As a rule of thumb, if your problem involves files, we either already <a href="https://www.filestash.app/docs/plugin/">have a plugin</a> for it or can make a plugin for it
+    <li>... and much <sub>much <sub>more (versioning, audit, public site, antivirus, quota, chat, chromecast support, on demand video transcoding, mounting shared links as network drive, ...)</sub></sub><br> As a rule of thumb, if your problem involves files, we either already <a href="https://www.filestash.app/docs/plugin/">have a plugin</a> for it or can make a plugin for it</li>
 </ul>
 
+# Plugins
+
+**Malleability** isn't an afterthought, it's the whole architecture:
+
+> anything that's not a fundamental truth of the universe lives in a plugin
+
+Taken literally, the "truths of the universe" are a set of [core interfaces](https://github.com/mickael-kerjean/filestash/tree/master/server/pkg/core), one for every key component of Filestash, and they're yours to implement (storage, authentication, authorisation, search, thumbnailing, apps, middleware, frontend changes, ...)
+
+The oldest one is the storage interface, the one at work whenever you connect to a storage:
+
+```go
+type IBackend interface {
+	Ls(path string) ([]os.FileInfo, error)
+	Stat(path string) (os.FileInfo, error)
+	Cat(path string) (io.ReadCloser, error)
+	Mkdir(path string) error
+	Rm(path string) error
+	Mv(from string, to string) error
+	Save(path string, file io.Reader) error
+	Touch(path string) error
+}
+```
+
+Historically, plugins were made in Go and [compiled in](https://www.filestash.app/docs/guide/plugin-development.html#compiled-plugin). Today there's a second path: [runtime plugins](https://www.filestash.app/docs/guide/plugin-development.html#runtime-plugins), a zip you drop in the plugins folder. The zip can reshape the frontend and it can carry wasm implementing the very same core interfaces. That wasm runs in a VM with tight control on permissions: no declared network host, no way to phone home. Installing a plugin doesn't mean trusting it with everything.
+
+For example:
+```rust
+use filestash::*;
+
+#[derive(Default)]
+pub struct Plugin;
+
+impl Authorisation for Plugin {
+    fn ls(&self, _ctx: &Context, path: &str) -> Decision {
+        self.check(path)
+    }
+    fn cat(&self, _ctx: &Context, path: &str) -> Decision { ... }
+    fn stat(&self, _ctx: &Context, path: &str) -> Decision { ... }
+}
+
+impl Plugin {
+    fn check(&self, path: &str) -> Decision {
+        if path.split("/").any(|segment| segment == "top_secret") {
+            log::warn!("[TOPSECRET] access denied !!");
+            return Decision::Deny;
+        }
+        Decision::Allow
+    }
+}
+
+register!(Plugin: Authorisation);
+```
+These few lines give you a readonly view of your data where every folder named "top_secret" is off limits. For more examples, browse the [plugin folder](https://github.com/mickael-kerjean/filestash/tree/master/server/plugin), [the runtime plugin cookbook](https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_runtime_cookbook), and [the plugin marketplace](https://www.filestash.app/docs/plugin).
+
+And to be clear, code is the power-user path, there are [no code options](https://www.filestash.app/docs/guide/authorization.html)
 
 # Getting Started
 
 To install Filestash, head to the [Getting started](https://www.filestash.app/docs/?origin=github) guide. If you want to leverage plugins, head over to the [inventory](https://www.filestash.app/docs/plugin/?origin=github), or learn about [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github).
-
-If you want guidance and expert help on your file management problem, [book a call](https://www.filestash.app/tunnel/demo/?origin=github) and let's figure out if Filestash is the right platform for you.
-
-
-# Vision & Philosophy
-
-Our goal is simple: **to build the best file management platform ever made. Period.** But "best" means different things to different people, so we made everything pluggable. The core defines interfaces, plugins implement them. Disagree with our implementation? Write your own. Anything that isn't a fundamental truth of the universe and might spark a debate belongs in a plugin. Literally every piece listed in the key features is a plugin you can swap for another implementation or remove entirely.
-
-Say you want to give your users a Dropbox like experience on top of your existing FTP server (remember the [FTP guy during the Dropbox launch on HN](https://news.ycombinator.com/item?id=9224)?). All the [FTP plugin](https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_backend_ftp) does is implement this interface:
-```go
-type IBackend interface {
-	Ls(path string) ([]os.FileInfo, error)           // list files in a folder
-	Stat(path string) (os.FileInfo, error)           // file stat
-	Cat(path string) (io.ReadCloser, error)          // download a file
-	Mkdir(path string) error                         // create a folder
-	Rm(path string) error                            // remove something
-	Mv(from string, to string) error                 // rename something
-	Save(path string, file io.Reader) error          // save a file
-	Touch(path string) error                         // create a file
-
-	// I have omitted 2 other methods, a first one to enable connections reuse and
-	// another one to declare what should the login form be like.
-}
-```
-
-There are interfaces you can implement for every key component of Filestash: from storage, to authentication, <a href="https://www.filestash.app/docs/guide/authorization.html">authorisation</a>, custom apps, <a href="https://www.filestash.app/docs/guide/search.html">search</a>, thumbnailing, frontend patches, middleware, endpoint creation and a few others documented in the [plugin development guide](https://www.filestash.app/docs/guide/plugin-development.html).
-
-To see what's currently installed in your instance, head over to [/about](https://demo.filestash.app/about). The inventory of plugins is [documented here](https://www.filestash.app/docs/plugin/)
-
 
 # Support
 
@@ -94,8 +124,14 @@ To see what's currently installed in your instance, head over to [/about](https:
   - [Open Collective](https://opencollective.com/filestash)
 
 
+# Why
+
+Familiar with the infamous comment from Dropbox's launch on HN? In my memory it goes like this:
+
+<img src="https://raw.githubusercontent.com/mickael-kerjean/filestash_images/master/.assets/hn.png" />
+
 # Credits
 
-Filestash stands on the shoulder of: [contributors](https://github.com/mickael-kerjean/filestash/graphs/contributors), folks developing [awesome libraries](https://github.com/mickael-kerjean/filestash/blob/master/go.mod), a whole bunch of C stuff (the [C standard library](https://imgs.xkcd.com/comics/dependency.png), [libjpeg](https://libjpeg-turbo.org/), [libpng](https://www.libpng.org/pub/png/libpng.html), [libgif](https://giflib.sourceforge.net/), [libraw](https://www.libraw.org/about) and many more), [fontawesome](https://fontawesome.com), [material](https://material.io/icons/), [Browser stack](https://www.browserstack.com/) to let us test on real devices, and the many guys from Nebraska and elsewhere who have been thanklessly maintaining the critical pieces that Filestash sits on top:
+Filestash stands on the shoulder of: [contributors](https://github.com/mickael-kerjean/filestash/graphs/contributors), folks developing [awesome libraries](https://github.com/mickael-kerjean/filestash/blob/master/go.mod), [BrandonM](https://news.ycombinator.com/user?id=BrandonM), a whole bunch of C stuff (the [C standard library](https://imgs.xkcd.com/comics/dependency.png), [libjpeg](https://libjpeg-turbo.org/), [libpng](https://www.libpng.org/pub/png/libpng.html), [libgif](https://giflib.sourceforge.net/), [libraw](https://www.libraw.org/about) and many more), [fontawesome](https://fontawesome.com), [material](https://material.io/icons/), [Browser stack](https://www.browserstack.com/) to let us test on real devices, and the many guys from Nebraska and elsewhere who have been thanklessly maintaining the critical pieces that Filestash sits on top:
 
 <img src="https://imgs.xkcd.com/comics/dependency.png" alt="credit to the nebraska guy on xkcd" />
