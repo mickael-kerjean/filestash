@@ -7,7 +7,8 @@
         { "type": "abi", "entrypoint": "onchange.wasm" },
         { "type": "abi", "entrypoint": "onquit.wasm" },
         { "type": "abi", "entrypoint": "socket.wasm" },
-        { "type": "abi", "entrypoint": "filesystem.wasm" }
+        { "type": "abi", "entrypoint": "filesystem.wasm" },
+        { "type": "abi", "entrypoint": "authorisation.wasm" }
     ],
     "permissions": [
         "tcp://demo.filestash.app:443",

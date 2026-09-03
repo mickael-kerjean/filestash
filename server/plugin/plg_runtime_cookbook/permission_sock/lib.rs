@@ -3,7 +3,7 @@ use filestash::*;
 #[derive(Default)]
 pub struct Plugin;
 
-impl OnInit for Plugin {
+impl Lifecycle for Plugin {
     fn on_init(&self) {
         match ureq::get("https://demo.filestash.app/healthz").call() {
             Ok(mut r) => match r.body_mut().read_to_string() {

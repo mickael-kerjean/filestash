@@ -12,7 +12,7 @@ mod response;
 pub use authorisation::{Authorisation, Decision};
 pub use context::Context;
 pub use http::{Handler, Http, Router};
-pub use lifecycle::{OnChanges, OnDestroy, OnInit};
+pub use lifecycle::{Lifecycle, OnChanges, OnDestroy, OnInit};
 pub use middleware::{Middleware, Next};
 pub use request::Request;
 pub use response::Response;

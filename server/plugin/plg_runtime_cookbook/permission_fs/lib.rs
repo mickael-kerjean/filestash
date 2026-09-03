@@ -5,19 +5,17 @@ use std::io::Write;
 #[derive(Default)]
 pub struct Plugin;
 
-impl OnInit for Plugin {
+impl Lifecycle for Plugin {
     fn on_init(&self) {
-        append("the server has started\n");
+        fswrite("the server has started\n");
     }
-}
 
-impl OnDestroy for Plugin {
     fn on_destroy(&self) {
-        append("the server has stopped\n");
+        fswrite("the server has stopped\n");
     }
 }
 
-fn append(line: &str) {
+fn fswrite(line: &str) {
     let mut file = OpenOptions::new()
         .create(true)
         .append(true)
