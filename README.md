@@ -3,16 +3,15 @@
 # What is this?
 
 <p>
-    Filestash started as a storage agnostic Dropbox-like file manager integrating with every storage protocol (<a href="https://www.filestash.app/ftp-client.html">FTP</a>, <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, and <a href="https://www.filestash.app/docs/plugin/#storage">about 20 more</a>).
-</p>
-<p>
-    It grew into what we want to be the world's best file management platform centered around 3 pillars:
-    <ol>
-        <li> The web client: a file manager available from your browser </li>
-        <li> <a href="https://github.com/mickael-kerjean/fdrive">The native client</a>: to sync your data on your device </li>
-        <li> <a href="https://www.filestash.app/docs/guide/storage-gateway.html">Gateways</a>: to expose your storages over any protocol </li>
-    </ol>
+    Filestash started as a storage agnostic Dropbox-like file manager integrating with every storage protocol (<a href="https://www.filestash.app/ftp-client.html">FTP</a>, <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, and <a href="https://www.filestash.app/docs/plugin/#storage">about 20 more</a>). It grew into what we want to be the world's best file management platform centered around 3 pillars:
 
+<ol>
+    <li> The web client: a file manager available from your browser </li>
+    <li> <a href="https://github.com/mickael-kerjean/fdrive">The native client</a>: to sync your data on your device </li>
+    <li> <a href="https://www.filestash.app/docs/guide/storage-gateway.html">Gateways</a>: to expose your storages over any protocol </li>
+</ol>
+
+</p>
     The philosophy that guide this project is: "anything that's not a fundamental truth of the universe live in a plugin". That gives you a lean and fast core with a solid plugin system to handle opinions, so however deep requirements go, the only limit won't be technical but your own skills and creativity.
 </p>
 
