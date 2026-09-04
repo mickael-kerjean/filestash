@@ -19,5 +19,5 @@ impl Next {
 }
 
 pub trait Middleware {
-    fn handle(&self, req: &Request, res: &mut Response) -> Next;
+    fn handle(&self, req: &impl Request, res: &mut impl Response) -> Next;
 }

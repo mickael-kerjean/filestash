@@ -2,8 +2,10 @@ package adapter
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
+	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	"github.com/mickael-kerjean/filestash/server/pkg/extension/adapter/runtime"
 	"github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
@@ -41,6 +43,7 @@ type appKey struct{}
 
 type httpKey struct{}
 type httpData struct {
+	ctx  *App
 	r    *http.Request
 	w    http.ResponseWriter
 	next bool
@@ -79,5 +82,21 @@ func exportShared(b *runtime.HostModuleBuilder) {
 		return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.URL.Path)
 	}).Export("req_header", func(ctx context.Context, mem runtime.IMemory, nPtr, nLen, outPtr, outCap uint32) uint32 {
 		return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.Header.Get(string(mem.Read(nPtr, nLen))))
+	}).Export("req_url_query", func(ctx context.Context, mem runtime.IMemory, nPtr, nLen, outPtr, outCap uint32) uint32 {
+		return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.URL.Query().Get(string(mem.Read(nPtr, nLen))))
+	}).Export("app_body", func(ctx context.Context, mem runtime.IMemory, outPtr, outCap uint32) uint32 {
+		body := stateHttp(ctx).ctx.Body
+		byt, err := json.Marshal(body)
+		if err != nil || body == nil {
+			return mem.WriteString(outPtr, outCap, "{}")
+		}
+		return mem.Write(outPtr, outCap, byt)
+	}).Export("app_session", func(ctx context.Context, mem runtime.IMemory, outPtr, outCap uint32) uint32 {
+		session := stateHttp(ctx).ctx.Session
+		byt, err := json.Marshal(session)
+		if err != nil || session == nil {
+			return mem.WriteString(outPtr, outCap, "{}")
+		}
+		return mem.Write(outPtr, outCap, byt)
 	})
 }

@@ -1,22 +1,27 @@
 use crate::ffi;
 
-pub struct Response;
+#[derive(Default)]
+pub struct ResponseImpl;
 
-impl Response {
-    pub fn status(&mut self, code: u16) -> &mut Self {
+#[cfg_attr(feature = "mock", mockall::automock)]
+pub trait Response {
+    fn status(&mut self, code: u16);
+    fn header(&mut self, key: &str, value: &str);
+    fn write(&mut self, data: &[u8]);
+}
+
+impl Response for ResponseImpl {
+    fn status(&mut self, code: u16) {
         unsafe { ffi::resp_status(code as u32) };
-        self
     }
 
-    pub fn header(&mut self, key: &str, value: &str) -> &mut Self {
+    fn header(&mut self, key: &str, value: &str) {
         unsafe {
             ffi::resp_header(key.as_ptr(), key.len() as u32, value.as_ptr(), value.len() as u32)
         };
-        self
     }
 
-    pub fn write(&mut self, data: &[u8]) -> &mut Self {
+    fn write(&mut self, data: &[u8]) {
         unsafe { ffi::resp_write(data.as_ptr(), data.len() as u32) };
-        self
     }
 }

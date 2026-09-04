@@ -1,4 +1,4 @@
-use crate::{Request, Response};
+use crate::{RequestImpl, Response, ResponseImpl, ContextImpl};
 
 #[link(wasm_import_module = "env")]
 extern "C" {
@@ -10,7 +10,7 @@ extern "C" {
     );
 }
 
-pub type Handler<A> = fn(&A, &Request, &mut Response);
+pub type Handler<A> = fn(&A, &ContextImpl, &RequestImpl, &mut ResponseImpl);
 
 struct Route<A> {
     method: &'static str,
@@ -28,6 +28,10 @@ impl<A> Router<A> {
         Router { routes: Vec::new() }
     }
 
+    pub fn head(&mut self, path: &'static str, middleware: &'static [&'static str], handler: Handler<A>) -> &mut Self {
+        self.route("HEAD", path, middleware, handler)
+    }
+
     pub fn get(&mut self, path: &'static str, middleware: &'static [&'static str], handler: Handler<A>) -> &mut Self {
         self.route("GET", path, middleware, handler)
     }
@@ -36,14 +40,27 @@ impl<A> Router<A> {
         self.route("PUT", path, middleware, handler)
     }
 
-    pub fn dispatch(&self, app: &A, method: &str, path: &str, req: &Request, res: &mut Response) {
+    pub fn post(&mut self, path: &'static str, middleware: &'static [&'static str], handler: Handler<A>) -> &mut Self {
+        self.route("POST", path, middleware, handler)
+    }
+
+    pub fn delete(&mut self, path: &'static str, middleware: &'static [&'static str], handler: Handler<A>) -> &mut Self {
+        self.route("DELETE", path, middleware, handler)
+    }
+
+    pub fn patch(&mut self, path: &'static str, middleware: &'static [&'static str], handler: Handler<A>) -> &mut Self {
+        self.route("PATCH", path, middleware, handler)
+    }
+
+    pub fn dispatch(&self, app: &A, method: &str, path: &str, req: &RequestImpl, res: &mut ResponseImpl) {
         for route in &self.routes {
             if route.method == method && route.path == path {
-                (route.handler)(app, req, res);
+                (route.handler)(app, &ContextImpl{}, req, res);
                 return;
             }
         }
         res.status(404);
+        res.write(b"{\"status\": \"error\", \"message\": \"not_found\"}");
     }
 
     pub fn describe(&self) {

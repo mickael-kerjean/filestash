@@ -70,7 +70,7 @@ func (in *Instance) Http() func(*mux.Router) error {
 			}
 			router.HandleFunc(rt.path, middleware.NewMiddlewareChain(
 				func(app *App, w http.ResponseWriter, r *http.Request) {
-					if err := in.rt.Call(r.Context(), "http", httpKey{}, &httpData{r: r, w: w}); err != nil {
+					if err := in.rt.Call(r.Context(), "http", httpKey{}, &httpData{r: r, w: w, ctx: app}); err != nil {
 						utils.Log.Error("extension::adapter http path=%s err=%s", r.URL.Path, err.Error())
 					}
 				},

@@ -21,43 +21,43 @@ macro_rules! register {
         #[no_mangle]
         pub extern "C" fn authorisation_ls() {
             let path = $crate::authorisation::authorisation_pull_path();
-            $anchor.with(|app| <$app as $crate::Authorisation>::ls(app, &$crate::Context, &path)).apply();
+            $anchor.with(|app| <$app as $crate::Authorisation>::ls(app, &$crate::ContextImpl, &path)).apply();
         }
         #[no_mangle]
         pub extern "C" fn authorisation_cat() {
             let path = $crate::authorisation::authorisation_pull_path();
-            $anchor.with(|app| <$app as $crate::Authorisation>::cat(app, &$crate::Context, &path)).apply();
+            $anchor.with(|app| <$app as $crate::Authorisation>::cat(app, &$crate::ContextImpl, &path)).apply();
         }
         #[no_mangle]
         pub extern "C" fn authorisation_stat() {
             let path = $crate::authorisation::authorisation_pull_path();
-            $anchor.with(|app| <$app as $crate::Authorisation>::stat(app, &$crate::Context, &path)).apply();
+            $anchor.with(|app| <$app as $crate::Authorisation>::stat(app, &$crate::ContextImpl, &path)).apply();
         }
         #[no_mangle]
         pub extern "C" fn authorisation_mkdir() {
             let path = $crate::authorisation::authorisation_pull_path();
-            $anchor.with(|app| <$app as $crate::Authorisation>::mkdir(app, &$crate::Context, &path)).apply();
+            $anchor.with(|app| <$app as $crate::Authorisation>::mkdir(app, &$crate::ContextImpl, &path)).apply();
         }
         #[no_mangle]
         pub extern "C" fn authorisation_rm() {
             let path = $crate::authorisation::authorisation_pull_path();
-            $anchor.with(|app| <$app as $crate::Authorisation>::rm(app, &$crate::Context, &path)).apply();
+            $anchor.with(|app| <$app as $crate::Authorisation>::rm(app, &$crate::ContextImpl, &path)).apply();
         }
         #[no_mangle]
         pub extern "C" fn authorisation_mv() {
             let from = $crate::authorisation::authorisation_pull_path();
             let to = $crate::authorisation::authorisation_pull_target();
-            $anchor.with(|app| <$app as $crate::Authorisation>::mv(app, &$crate::Context, &from, &to)).apply();
+            $anchor.with(|app| <$app as $crate::Authorisation>::mv(app, &$crate::ContextImpl, &from, &to)).apply();
         }
         #[no_mangle]
         pub extern "C" fn authorisation_save() {
             let path = $crate::authorisation::authorisation_pull_path();
-            $anchor.with(|app| <$app as $crate::Authorisation>::save(app, &$crate::Context, &path)).apply();
+            $anchor.with(|app| <$app as $crate::Authorisation>::save(app, &$crate::ContextImpl, &path)).apply();
         }
         #[no_mangle]
         pub extern "C" fn authorisation_touch() {
             let path = $crate::authorisation::authorisation_pull_path();
-            $anchor.with(|app| <$app as $crate::Authorisation>::touch(app, &$crate::Context, &path)).apply();
+            $anchor.with(|app| <$app as $crate::Authorisation>::touch(app, &$crate::ContextImpl, &path)).apply();
         }
     };
 
@@ -72,12 +72,12 @@ macro_rules! register {
         }
         #[no_mangle]
         pub extern "C" fn http() {
-            let method = $crate::Request.method();
-            let path = $crate::Request.path();
+            let method = $crate::RequestImpl.method();
+            let path = $crate::RequestImpl.path();
             let mut router = $crate::Router::new();
             <$app as $crate::Http>::routes(&mut router);
-            let mut res = $crate::Response;
-            $anchor.with(|app| router.dispatch(app, &method, &path, &$crate::Request, &mut res));
+            let mut res = $crate::ResponseImpl;
+            $anchor.with(|app| router.dispatch(app, &method, &path, &$crate::RequestImpl, &mut res));
         }
     };
 
@@ -115,7 +115,7 @@ macro_rules! register {
         pub extern "C" fn middleware() {
             let mut res = $crate::Response;
             $anchor
-                .with(|app| <$app as $crate::Middleware>::handle(app, &$crate::Request, &mut res))
+                .with(|app| <$app as $crate::Middleware>::handle(app, &$crate::RequestImpl, &mut res))
                 .apply();
         }
     };

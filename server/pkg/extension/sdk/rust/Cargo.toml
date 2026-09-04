@@ -5,3 +5,7 @@ edition = "2021"
 
 [dependencies]
 log = "0.4"
+mockall = { version = "0.13", optional = true }
+
+[features]
+mock = ["dep:mockall"]

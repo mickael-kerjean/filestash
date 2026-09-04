@@ -29,28 +29,28 @@ impl Decision {
 }
 
 pub trait Authorisation {
-    fn ls(&self, _ctx: &Context, _path: &str) -> Decision {
+    fn ls(&self, _ctx: &impl Context, _path: &str) -> Decision {
         Decision::Deny
     }
-    fn cat(&self, _ctx: &Context, _path: &str) -> Decision {
+    fn cat(&self, _ctx: &impl Context, _path: &str) -> Decision {
         Decision::Deny
     }
-    fn stat(&self, _ctx: &Context, _path: &str) -> Decision {
+    fn stat(&self, _ctx: &impl Context, _path: &str) -> Decision {
         Decision::Deny
     }
-    fn mkdir(&self, _ctx: &Context, _path: &str) -> Decision {
+    fn mkdir(&self, _ctx: &impl Context, _path: &str) -> Decision {
         Decision::Deny
     }
-    fn rm(&self, _ctx: &Context, _path: &str) -> Decision {
+    fn rm(&self, _ctx: &impl Context, _path: &str) -> Decision {
         Decision::Deny
     }
-    fn mv(&self, _ctx: &Context, _from: &str, _to: &str) -> Decision {
+    fn mv(&self, _ctx: &impl Context, _from: &str, _to: &str) -> Decision {
         Decision::Deny
     }
-    fn save(&self, _ctx: &Context, _path: &str) -> Decision {
+    fn save(&self, _ctx: &impl Context, _path: &str) -> Decision {
         Decision::Deny
     }
-    fn touch(&self, _ctx: &Context, _path: &str) -> Decision {
+    fn touch(&self, _ctx: &impl Context, _path: &str) -> Decision {
         Decision::Deny
     }
 }
