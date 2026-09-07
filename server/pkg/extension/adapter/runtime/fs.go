@@ -3,6 +3,7 @@ package runtime
 import (
 	"context"
 	"crypto/rand"
+	"os"
 
 	"github.com/tetratelabs/wazero"
 )
@@ -22,6 +23,7 @@ func (f *FSConfig) WithDirMount(host string, guest string) *FSConfig {
 
 func (f *FSConfig) Apply(ctx context.Context, c *config) error {
 	c.mod = wazero.NewModuleConfig().
+		WithStderr(os.Stderr).
 		WithFSConfig(f.inner).
 		WithSysWalltime().
 		WithSysNanotime().
