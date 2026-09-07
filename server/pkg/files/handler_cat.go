@@ -33,6 +33,7 @@ func init() {
 	fileCache = NewAppCache()
 	fileCache.OnEvict(func(key string, value interface{}) {
 		if tmpPath, _, ok := strings.Cut(value.(string), "::"); ok {
+			os.Truncate(tmpPath, 0)
 			os.RemoveAll(tmpPath)
 		}
 	})
