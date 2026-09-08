@@ -40,13 +40,14 @@ func assertFS(path string) {
 		}
 	}
 	fmt.Printf(`
-===========================================================================
-  FATAL ERROR   `+APPNAME+` can't write onto its own folder
-  DIAGNOSIS     the folder belongs to uid=%d but the process runs as uid=%d
-  FIX           chown -R %d:%d %s
-===========================================================================
-Shutting down ...
-`, stat.Uid, uid, uid, gid, GetAbsolutePath(""))
+=================================================================================
+ FATAL ERROR   %s can't write onto its own folder
+=================================================================================
+ TEST RESULT   expected application folder owner to be uid=%d, got uid=%d
+ HOW TO FIX    chown -R %d:%d %s
+=================================================================================
+ shutting down ...
+`, APPNAME, uid, stat.Uid, uid, gid, GetAbsolutePath(""))
 	time.Sleep(5 * time.Second)
 	os.Exit(1)
 }
