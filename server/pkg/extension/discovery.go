@@ -62,6 +62,14 @@ func Discovery() error {
 				if err != nil {
 					return err
 				}
+				if in.Provides("authentication") {
+					impl := in.Authentication()
+					for _, elmnt := range impl.Setup().Elmnts {
+						if elmnt.Name == "type" {
+							Hooks.Register.AuthenticationMiddleware(fmt.Sprintf("%s", elmnt.Value), impl)
+						}
+					}
+				}
 				if in.Provides("authorisation") {
 					Hooks.Register.AuthorisationMiddleware(in.Authorisation())
 				}

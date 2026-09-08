@@ -61,6 +61,35 @@ macro_rules! register {
         }
     };
 
+    (@capability $anchor:ident, $app:ident, Authentication) => {
+        #[no_mangle]
+        pub extern "C" fn capability_authentication() {}
+        #[no_mangle]
+        pub extern "C" fn authentication_setup() {
+            $crate::authentication::authentication_push_setup(
+                &<$app as $crate::Authentication>::setup(),
+            );
+        }
+        #[no_mangle]
+        pub extern "C" fn authentication_entrypoint() {
+            let idp = $crate::authentication::authentication_pull_idp();
+            let mut res = $crate::ResponseImpl;
+            if let Err(err) = <$app as $crate::Authentication>::entrypoint(idp, &$crate::RequestImpl, &mut res) {
+                $crate::authentication::authentication_push_error(&err);
+            }
+        }
+        #[no_mangle]
+        pub extern "C" fn authentication_callback() {
+            let form = $crate::authentication::authentication_pull_form();
+            let idp = $crate::authentication::authentication_pull_idp();
+            let mut res = $crate::ResponseImpl;
+            match <$app as $crate::Authentication>::callback(form, idp, &mut res) {
+                Ok(session) => $crate::authentication::authentication_push_session(&session),
+                Err(err) => $crate::authentication::authentication_push_error(&err),
+            }
+        }
+    };
+
     (@capability $anchor:ident, $app:ident, Http) => {
         #[no_mangle]
         pub extern "C" fn capability_http() {}

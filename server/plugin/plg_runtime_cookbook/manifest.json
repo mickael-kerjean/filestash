@@ -8,6 +8,7 @@
         { "type": "abi", "entrypoint": "onquit.wasm" },
         { "type": "abi", "entrypoint": "socket.wasm" },
         { "type": "abi", "entrypoint": "filesystem.wasm" },
+        { "type": "abi", "entrypoint": "authentication.wasm" },
         { "type": "abi", "entrypoint": "authorisation.wasm" }
     ],
     "permissions": [

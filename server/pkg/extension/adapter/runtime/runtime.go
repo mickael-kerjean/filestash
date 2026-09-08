@@ -70,8 +70,10 @@ func (r *Runtime) Call(ctx context.Context, fnName string, key, val any) error {
 	}
 	if fn == nil {
 		return fmt.Errorf("%w: %s", ErrNoExport, fnName)
+	} else if key != nil {
+		ctx = context.WithValue(ctx, key, val)
 	}
-	_, err := fn.Call(context.WithValue(ctx, key, val))
+	_, err := fn.Call(ctx)
 	return err
 }
 

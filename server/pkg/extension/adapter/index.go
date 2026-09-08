@@ -21,6 +21,7 @@ func NewInstance(wasm []byte, permissions ...string) (*Instance, error) {
 	}
 	rt, err := runtime.New(wasm, append(opts, runtime.WithExports(func(b *runtime.HostModuleBuilder) {
 		exportShared(b)
+		exportAuthentication(b)
 		exportAuthorisation(b)
 		exportMiddleware(b)
 		exportHttp(b)
@@ -43,15 +44,18 @@ type appKey struct{}
 
 type httpKey struct{}
 type httpData struct {
-	ctx  *App
-	r    *http.Request
-	w    http.ResponseWriter
-	next bool
+	ctx *App
+	r   *http.Request
+	w   http.ResponseWriter
 }
 
 func stateHttp(ctx context.Context) *httpData {
 	d, _ := ctx.Value(httpKey{}).(*httpData)
 	return d
+}
+
+func withHttp(ctx context.Context, app *App, w http.ResponseWriter, r *http.Request) context.Context {
+	return context.WithValue(ctx, httpKey{}, &httpData{ctx: app, r: r, w: w})
 }
 
 func exportShared(b *runtime.HostModuleBuilder) {

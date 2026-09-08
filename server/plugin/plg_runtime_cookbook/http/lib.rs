@@ -10,10 +10,9 @@ impl Http for Page {
 }
 
 impl Page {
-    fn index(&self, _req: &Request, res: &mut Response) {
-        res.header("Content-Type", "text/html; charset=utf-8")
-            .status(200)
-            .write(b"<!DOCTYPE html><h1>Hello from a Filestash plugin</h1>");
+    fn index(&self, _ctx: &impl Context, _req: &impl Request, res: &mut impl Response) {
+        res.header("Content-Type", "text/html");
+        res.write(b"<h1>Hello from a Filestash plugin</h1>");
     }
 }
 

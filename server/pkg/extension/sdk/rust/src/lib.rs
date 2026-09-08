@@ -1,5 +1,6 @@
 mod app;
 pub mod authorisation;
+pub mod authentication;
 mod context;
 mod ffi;
 mod http;
@@ -8,14 +9,19 @@ pub mod logger;
 mod middleware;
 mod request;
 mod response;
+mod form;
+mod error;
 
 pub use authorisation::{Authorisation, Decision};
+pub use authentication::{Authentication};
 pub use http::{Handler, Http, Router};
 pub use lifecycle::{Lifecycle, OnChanges, OnDestroy, OnInit};
 pub use middleware::{Middleware, Next};
 pub use request::{Request, RequestImpl};
 pub use response::{Response, ResponseImpl};
 pub use context::{Context, ContextImpl};
+pub use form::{Form};
+pub use error::{Error};
 
 pub use log;
 

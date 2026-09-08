@@ -4,13 +4,13 @@ use filestash::*;
 pub struct Plugin;
 
 impl Authorisation for Plugin {
-    fn ls(&self, _ctx: &Context, path: &str) -> Decision {
+    fn ls(&self, _ctx: &impl Context, path: &str) -> Decision {
         self.check(path)
     }
-    fn cat(&self, _ctx: &Context, path: &str) -> Decision {
+    fn cat(&self, _ctx: &impl Context, path: &str) -> Decision {
         self.check(path)
     }
-    fn stat(&self, _ctx: &Context, path: &str) -> Decision {
+    fn stat(&self, _ctx: &impl Context, path: &str) -> Decision {
         self.check(path)
     }
 }

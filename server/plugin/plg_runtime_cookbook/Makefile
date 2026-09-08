@@ -8,6 +8,7 @@ all:
 	$(MAKE) -C permission_sock
 	$(MAKE) -C permission_fs
 	$(MAKE) -C authorisation
+	$(MAKE) -C authentication
 	zip -j cookbook.zip manifest.json \
 		http/$(RELEASE)/endpoint.wasm \
 		onInit/$(RELEASE)/oninit.wasm \
@@ -15,7 +16,8 @@ all:
 		onQuit/$(RELEASE)/onquit.wasm \
 		permission_sock/$(RELEASE)/socket.wasm \
 		permission_fs/$(RELEASE)/filesystem.wasm \
-		authorisation/$(RELEASE)/authorisation.wasm
+		authorisation/$(RELEASE)/authorisation.wasm \
+		authentication/$(RELEASE)/authentication.wasm
 	mv cookbook.zip ../../../dist/data/state/plugins/
 
 init:
@@ -30,3 +32,4 @@ clean:
 	$(MAKE) -C permission_sock clean
 	$(MAKE) -C permission_fs clean
 	$(MAKE) -C authorisation clean
+	$(MAKE) -C authentication clean
