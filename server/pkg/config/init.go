@@ -17,11 +17,16 @@ func InitSecretDerivate(secret string) {
 }
 
 func init() {
-	os.MkdirAll(GetAbsolutePath(env.CERT_PATH), os.ModePerm)
-	os.MkdirAll(GetAbsolutePath(env.DB_PATH), os.ModePerm)
-	os.MkdirAll(GetAbsolutePath(env.FTS_PATH), os.ModePerm)
 	os.MkdirAll(GetAbsolutePath(env.LOG_PATH), os.ModePerm)
 	os.MkdirAll(GetAbsolutePath(env.PLUGIN_PATH), os.ModePerm)
+	os.MkdirAll(GetAbsolutePath(env.DB_PATH), os.ModePerm)
+	os.MkdirAll(GetAbsolutePath(env.CERT_PATH), os.ModePerm)
+	os.MkdirAll(GetAbsolutePath(env.FTS_PATH), os.ModePerm)
 	os.RemoveAll(GetAbsolutePath(env.TMP_PATH))
 	os.MkdirAll(GetAbsolutePath(env.TMP_PATH), os.ModePerm)
+
+	assertFS(GetAbsolutePath(env.LOG_PATH))
+	assertFS(GetAbsolutePath(env.PLUGIN_PATH))
+	assertFS(GetAbsolutePath(env.DB_PATH))
+	assertFS(GetAbsolutePath(env.TMP_PATH))
 }
