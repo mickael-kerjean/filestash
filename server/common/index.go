@@ -175,9 +175,9 @@ var (
 	WithBase       = env.WithBase
 	TrimBase       = env.TrimBase
 	IsWhiteLabel   = env.IsWhiteLabel
-	LicensedAs     = env.LicensedAs
-	WithBrand      = env.WithBrand
 	WhiteLabelText = env.WhiteLabelText
+	PROGRAM_LICENSE = env.PROGRAM_LICENSE
+	PROGRAM_NAME    = env.PROGRAM_NAME
 )
 
 // files
