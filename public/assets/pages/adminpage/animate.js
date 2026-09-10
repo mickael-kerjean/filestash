@@ -7,4 +7,4 @@ export default function($node) {
     });
 }
 
-export const cssHideMenu = ".component_menu_sidebar{transform: translateX(-300px)}";
+export const cssHideMenu = ".component_menu_sidebar{transform: translateX(-525px)}";
