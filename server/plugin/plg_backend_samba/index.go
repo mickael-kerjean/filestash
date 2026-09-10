@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/hirochachacha/go-smb2"
@@ -18,9 +19,13 @@ var SambaCache AppCache
 func init() {
 	Backend.Register("samba", Samba{})
 
-	SambaCache = NewAppCache(30)
+	SambaCache = NewAppCache()
 	SambaCache.OnEvict(func(key string, value interface{}) {
 		smb := value.(*Samba)
+		if smb.inflight.Load() != 0 {
+			SambaCache.SetKey(key, smb)
+			return
+		}
 		for key, _ := range smb.share {
 			if err := smb.share[key].Umount(); err != nil {
 				Log.Warning("samba: error unmounting share: %v", err)
@@ -33,8 +38,9 @@ func init() {
 }
 
 type Samba struct {
-	session *smb2.Session
-	share   map[string]*smb2.Share
+	share    map[string]*smb2.Share
+	inflight *atomic.Int32
+	session  *smb2.Session
 }
 
 func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
@@ -71,6 +77,7 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 
 	smb.share = make(map[string]*smb2.Share, 0)
+	smb.inflight = &atomic.Int32{}
 	smb.session, err = (&smb2.Dialer{
 		Initiator: &smb2.NTLMInitiator{
 			User: func() string {
@@ -218,9 +225,22 @@ func (smb Samba) Cat(path string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	f, err := share.Open(path)
-	return f, fromSambaErr(err)
+	if err != nil {
+		return nil, fromSambaErr(err)
+	}
+	smb.inflight.Add(1)
+	return &inflightReader{f, smb.inflight}, nil
+}
+
+type inflightReader struct {
+	*smb2.File
+	inflight *atomic.Int32
+}
+
+func (r *inflightReader) Close() error {
+	r.inflight.Add(-1)
+	return r.File.Close()
 }
 
 func (smb Samba) Mkdir(path string) error {
@@ -255,6 +275,8 @@ func (smb Samba) Mv(from, to string) error {
 }
 
 func (smb Samba) Save(path string, content io.Reader) error {
+	smb.inflight.Add(1)
+	defer smb.inflight.Add(-1)
 	share, path, err := smb.toSambaPath(path)
 	if err != nil {
 		return err
