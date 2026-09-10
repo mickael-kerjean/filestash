@@ -7,13 +7,13 @@
 </p>
 
 <ol>
-    <li><strong>Web client</strong> <i>(the file manager available from your browser)</i>: <a href="https://www.filestash.app/docs/install-and-upgrade/#configuration">documentation</a> / <a href="https://www.filestash.app/img/screenshots/feature1.png">screenshot</a> </li>
+    <li><strong>Web client</strong> <i>(the file manager available from your browser)</i>: <a href="https://www.filestash.app/docs/install-and-upgrade/#configuration">documentation</a> / <a href="https://www.filestash.app/img/screenshots/feature1.png">screenshot</a> / <a href="https://demo.filestash.app">demo</a></li>
     <li><strong>Native client</strong> <i>(to sync your data on your device)</i>: <a href="https://github.com/mickael-kerjean/fdrive">repo</a> / screenshots for <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-mac.png">mac</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-windows.png">windows</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-linux.png">linux</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-android.png">android</a> & <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-iphone.png">iphone</a></li>
     <li><strong>Gateways</strong> <i>(to expose your storages over any protocol)</i>: <a href="https://www.filestash.app/docs/guide/sftp-gateway.html#working-example">showcase</a> </li>
 </ol>
 
 <p>
-    The philosophy that guides this project is: "anything that's not a fundamental truth of the universe lives in a plugin". That keeps the core lean and fast, and the opinions replaceable, so when your requirements get deep or weird, the answer is a plugin, not a fork.
+    The philosophy that guides this project is: "anything that's not a fundamental truth of the universe lives in a plugin". That keeps the core lean and fast, and the opinions replaceable, so when your requirements get deep or weird, the answer is a plugin, not a fork. You only carry the bloat you really need.
 </p>
 
 <p>
