@@ -30,7 +30,7 @@ func Discovery() error {
 		}
 		name, impl, err := initModule(fname)
 		if err != nil {
-			Log.Error("could not initialise module name=%s err=%s", entry.Name(), err.Error())
+			Log.Error("[pkg/extension/discovery] msg=could_not_initialise_module name=%s err=%s", entry.Name(), err.Error())
 			continue
 		}
 		for i := 0; i < len(impl.Modules); i++ {
@@ -56,10 +56,12 @@ func Discovery() error {
 			case "abi":
 				b, err := GetPluginFile(name, impl.Modules[i]["entrypoint"])
 				if err != nil {
+					Log.Debug("[pkg/extension/discovery] msg=could_not_extract_plugin_entrypoint name=%s path=%s", fname, impl.Modules[i]["entrypoint"])
 					return err
 				}
 				in, err := adapter.NewInstance(b, impl.Permissions...)
 				if err != nil {
+					Log.Debug("[pkg/extension/discovery] msg=could_not_create_wasm_executor name=%s err=%s", fname, err.Error())
 					return err
 				}
 				if in.Provides("authentication") {
