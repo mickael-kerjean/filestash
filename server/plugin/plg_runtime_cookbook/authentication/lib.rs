@@ -11,12 +11,15 @@ impl Authentication for Plugin {
             Form {
                 label: String::from("type"),
                 kind: String::from("hidden"),
-                value: Some(String::from("test")),
+                value: String::from("test"),
+                ..Default::default()
+
             },
             Form {
                 label: String::from("banner"),
                 kind: String::from("text"),
-                value: Some(String::from("An authentication plugin that always say yes")),
+                value: String::from("An authentication plugin that always say yes"),
+                ..Default::default()
             },
         ]
     }
