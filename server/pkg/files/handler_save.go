@@ -86,7 +86,9 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		handlerRDIFF(ctx, res, req, path, h)
 	default:
 		SendErrorResult(res, ErrNotImplemented)
+		return
 	}
+	markDirty(ctx, req, path)
 }
 
 func handlerClassic(ctx *App, res http.ResponseWriter, req *http.Request, path string, h http.Header) {

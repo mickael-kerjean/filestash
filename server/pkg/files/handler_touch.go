@@ -38,4 +38,5 @@ func FileTouch(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, nil)
+	markDirty(ctx, req, path)
 }

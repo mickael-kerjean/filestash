@@ -49,4 +49,6 @@ func FileMv(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, nil)
+	markDirty(ctx, req, from)
+	markDirty(ctx, req, to)
 }

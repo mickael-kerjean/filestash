@@ -1,6 +1,7 @@
 package files
 
 import (
+	"strings"
 	"net/http"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
@@ -38,4 +39,5 @@ func FileMkdir(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, nil)
+	markDirty(ctx, req, strings.TrimSuffix(path, "/"))
 }
