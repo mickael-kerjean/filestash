@@ -6,11 +6,13 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
-	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	"github.com/mickael-kerjean/filestash/server/pkg/journal"
 )
 
 func FileMkdir(ctx *App, res http.ResponseWriter, req *http.Request) {
-	if CanUpload(ctx) == false {
+	if permissions.CanUpload(ctx) == false {
 		Log.Debug("mkdir::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
@@ -38,5 +40,5 @@ func FileMkdir(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, nil)
-	EventWatch(ctx, req, "mkdir", path)
+	journal.Send(ctx, req, "mkdir", path)
 }

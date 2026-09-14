@@ -17,8 +17,10 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	"github.com/mickael-kerjean/filestash/server/pkg/journal"
 )
 
 func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -39,8 +41,8 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if CanEdit(ctx) == false {
-		if CanUpload(ctx) == false {
+	if permissions.CanEdit(ctx) == false {
+		if permissions.CanUpload(ctx) == false {
 			Log.Debug("files::save action=permission_upload err=permission_denied")
 			SendErrorResult(res, ErrPermissionDenied)
 			return
@@ -88,7 +90,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, ErrNotImplemented)
 		return
 	}
-	EventWatch(ctx, req, "save", path)
+	journal.Send(ctx, req, "save", path)
 }
 
 func handlerClassic(ctx *App, res http.ResponseWriter, req *http.Request, path string, h http.Header) {

@@ -12,8 +12,10 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/journal"
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 )
 
 type FileInfo struct {
@@ -26,8 +28,8 @@ type FileInfo struct {
 }
 
 func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
-	if CanRead(ctx) == false {
-		if CanUpload(ctx) == false {
+	if permissions.CanRead(ctx) == false {
+		if permissions.CanUpload(ctx) == false {
 			Log.Debug("ls::permission 'permission denied'")
 			SendErrorResult(res, ErrPermissionDenied)
 			return
@@ -73,7 +75,7 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		}
 		ctx.Context = context.WithValue(ctx.Context, "AUDIT", nil)
 	}
-	if CanEdit(ctx) == false {
+	if permissions.CanEdit(ctx) == false {
 		perms.CanCreateFile = NewBool(false)
 		perms.CanCreateDirectory = NewBool(false)
 		perms.CanRename = NewBool(false)
@@ -81,14 +83,14 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		perms.CanDelete = NewBool(false)
 		perms.CanUpload = NewBool(false)
 	}
-	if CanUpload(ctx) == false {
+	if permissions.CanUpload(ctx) == false {
 		perms.CanCreateDirectory = NewBool(false)
 		perms.CanRename = NewBool(false)
 		perms.CanMove = NewBool(false)
 		perms.CanDelete = NewBool(false)
 		perms.CanUpload = NewBool(false)
 	}
-	if CanShare(ctx) == false {
+	if permissions.CanShare(ctx) == false {
 		perms.CanShare = NewBool(false)
 	}
 
@@ -135,7 +137,8 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Etag", etagValue)
 	if etagValue != "" && req.Header.Get("If-None-Match") == etagValue {
 		res.WriteHeader(http.StatusNotModified)
-		return
+	} else {
+		SendSuccessResultsWithMetadata(res, files, perms)
 	}
-	SendSuccessResultsWithMetadata(res, files, perms)
+	journal.Send(ctx, req, "ls", path)
 }

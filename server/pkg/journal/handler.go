@@ -1,12 +1,10 @@
-package files
+package journal
 
 import (
-	"container/ring"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
@@ -14,30 +12,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
-var (
-	journal = ring.New(5000)
-	gate    = sync.NewCond(&sync.Mutex{})
-)
-
-func init() {
-	t := time.Now().UTC()
-	for i := 0; i < journal.Len(); i++ {
-		journal.Value = mutation{Time: t}
-		journal = journal.Next()
-	}
-}
-
-type mutation struct {
-	Operation string    `json:"operation"`
-	Path      string    `json:"path"`
-	Target    string    `json:"target,omitempty"`
-	Echo      bool      `json:"echo"`
-	StorageID string    `json:"-"`
-	Time      time.Time `json:"-"`
-	UserAgent string    `json:"-"`
-}
-
-func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
+func Handler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	flusher, ok := res.(http.Flusher)
 	if !ok {
 		SendErrorResult(res, NewError("streaming not supported", 500))
@@ -66,9 +41,9 @@ func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 		} else if firstRun == false {
 			gate.Wait()
 		}
-		changes := make([]mutation, 0, 10)
+		changes := make([]fileop, 0, 10)
 		for i, len, curr := 0, journal.Len(), journal.Prev(); i < len; i, curr = i+1, curr.Prev() {
-			el := curr.Value.(mutation)
+			el := curr.Value.(fileop)
 			if el.Time.Before(checkpoint) || el.Time.Equal(checkpoint) {
 				break
 			}
@@ -84,28 +59,9 @@ func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 		for i := len(changes); i > 0; i-- {
 			el := changes[i-1]
 			data, _ := json.Marshal(el)
-			fmt.Fprintf(res, "id: %s\nevent: mutation\ndata: %s\n\n", el.Time.Format(time.RFC3339Nano), data)
+			fmt.Fprintf(res, "id: %s\nevent: %s\ndata: %s\n\n", el.Time.Format(time.RFC3339Nano), el.Kind, data)
 			checkpoint = changes[0].Time
 		}
 		flusher.Flush()
 	}
-}
-
-func EventWatch(ctx *App, req *http.Request, op string, path string, target ...string) {
-	t := time.Now()
-	go func() {
-		cVal := mutation{
-			Operation: op,
-			Path:      path,
-			Target:    strings.Join(target, ","),
-			Time:      t.UTC(),
-			StorageID: GenerateID(ctx.Session),
-			UserAgent: req.Header.Get("User-Agent"),
-		}
-		gate.L.Lock()
-		journal.Value = cVal
-		journal = journal.Next()
-		gate.Broadcast()
-		gate.L.Unlock()
-	}()
 }

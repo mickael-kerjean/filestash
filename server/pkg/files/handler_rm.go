@@ -6,11 +6,13 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
-	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	"github.com/mickael-kerjean/filestash/server/pkg/journal"
 )
 
 func FileRm(ctx *App, res http.ResponseWriter, req *http.Request) {
-	if CanEdit(ctx) == false {
+	if permissions.CanEdit(ctx) == false {
 		Log.Debug("rm::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
@@ -38,5 +40,5 @@ func FileRm(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, nil)
-	EventWatch(ctx, req, "rm", path)
+	journal.Send(ctx, req, "rm", path)
 }

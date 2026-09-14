@@ -6,11 +6,13 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
-	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	"github.com/mickael-kerjean/filestash/server/pkg/journal"
 )
 
 func FileMv(ctx *App, res http.ResponseWriter, req *http.Request) {
-	if CanEdit(ctx) == false {
+	if permissions.CanEdit(ctx) == false {
 		Log.Debug("mv::permission 'permission denied'")
 		SendErrorResult(res, NewError("Permission denied", 403))
 		return
@@ -49,5 +51,5 @@ func FileMv(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, nil)
-	EventWatch(ctx, req, "mv", from, to)
+	journal.Send(ctx, req, "mv", from, to)
 }

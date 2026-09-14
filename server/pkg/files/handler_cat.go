@@ -16,8 +16,10 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/mime"
-	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	"github.com/mickael-kerjean/filestash/server/pkg/journal"
 )
 
 var (
@@ -54,7 +56,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		MaxAge: -1,
 		Path:   "/",
 	})
-	if CanRead(ctx) == false {
+	if permissions.CanRead(ctx) == false {
 		Log.Debug("cat::permission 'permission denied'")
 		SendErrorResult(res, ErrPermissionDenied)
 		return
@@ -308,4 +310,5 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		io.CopyBuffer(res, file, *buf)
 	}
 	file.Close()
+	journal.Send(ctx, req, "cat", path)
 }
