@@ -24,6 +24,8 @@ func FileRm(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	op := journal.RecordFile(ctx, req, "rm", path)
+	defer op.Close(res)
 
 	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
 		if err = auth.Rm(ctx, path); err != nil {
@@ -40,5 +42,4 @@ func FileRm(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, nil)
-	journal.Send(ctx, req, "rm", path)
 }

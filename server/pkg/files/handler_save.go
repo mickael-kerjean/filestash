@@ -40,6 +40,8 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	op := journal.RecordFile(ctx, req, "save", path)
+	defer op.Close(res)
 
 	if permissions.CanEdit(ctx) == false {
 		if permissions.CanUpload(ctx) == false {
@@ -90,7 +92,6 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, ErrNotImplemented)
 		return
 	}
-	journal.Send(ctx, req, "save", path)
 }
 
 func handlerClassic(ctx *App, res http.ResponseWriter, req *http.Request, path string, h http.Header) {

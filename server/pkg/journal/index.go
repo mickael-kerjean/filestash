@@ -14,7 +14,7 @@ var (
 func init() {
 	t := time.Now().UTC()
 	for i := 0; i < journal.Len(); i++ {
-		journal.Value = fileop{Time: t}
+		journal.Value = Observation[Nop]{Time: t}
 		journal = journal.Next()
 	}
 }

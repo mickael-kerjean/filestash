@@ -14,7 +14,6 @@ import (
 
 	"github.com/mickael-kerjean/filestash/server/pkg/admin"
 	"github.com/mickael-kerjean/filestash/server/pkg/files"
-	"github.com/mickael-kerjean/filestash/server/pkg/journal"
 	"github.com/mickael-kerjean/filestash/server/pkg/frontend"
 	"github.com/mickael-kerjean/filestash/server/pkg/session"
 	"github.com/mickael-kerjean/filestash/server/pkg/share"
@@ -72,7 +71,7 @@ func Build(r *mux.Router) {
 	router.HandleFunc("/rm", NewMiddlewareChain(files.FileRm, middlewares)).Methods("POST")
 	router.HandleFunc("/mkdir", NewMiddlewareChain(files.FileMkdir, middlewares)).Methods("POST")
 	router.HandleFunc("/touch", NewMiddlewareChain(files.FileTouch, middlewares)).Methods("POST")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, LoggedInOnly, PluginInjector}
+	router.HandleFunc("/watch", NewMiddlewareChain(files.FileWatch, middlewares)).Methods("GET")
 	router.HandleFunc("/search", NewMiddlewareChain(files.FileSearch, middlewares)).Methods("GET")
 
 	// API for Shared link
@@ -114,8 +113,6 @@ func Build(r *mux.Router) {
 	r.HandleFunc(WithBase("/favicon.ico"), NewMiddlewareChain(frontend.ServeFavicon, middlewares)).Methods("GET")
 
 	// Other endpoints
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly}
-	r.HandleFunc(WithBase("/api/watch"), NewMiddlewareChain(journal.Handler, middlewares)).Methods("GET")
 	middlewares = []Middleware{ApiHeaders, PluginInjector, PublicCORS}
 	r.HandleFunc(WithBase("/report"), NewMiddlewareChain(frontend.ReportHandler, middlewares)).Methods("POST", "OPTIONS")
 	middlewares = []Middleware{IndexHeaders, SecureHeaders, PluginInjector}

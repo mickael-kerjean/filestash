@@ -24,6 +24,8 @@ func FileTouch(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	op := journal.RecordFile(ctx, req, "touch", path)
+	defer op.Close(res)
 
 	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
 		if err = auth.Touch(ctx, path); err != nil {
@@ -40,5 +42,4 @@ func FileTouch(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, nil)
-	journal.Send(ctx, req, "touch", path)
 }

@@ -43,6 +43,9 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	op := journal.RecordFile(ctx, req, "ls", path)
+	defer op.Close(res)
+
 	perms := Metadata{}
 	if obj, ok := ctx.Backend.(interface{ Meta(path string) Metadata }); ok {
 		perms = obj.Meta(path)
@@ -137,8 +140,7 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Etag", etagValue)
 	if etagValue != "" && req.Header.Get("If-None-Match") == etagValue {
 		res.WriteHeader(http.StatusNotModified)
-	} else {
-		SendSuccessResultsWithMetadata(res, files, perms)
+		return
 	}
-	journal.Send(ctx, req, "ls", path)
+	SendSuccessResultsWithMetadata(res, files, perms)
 }

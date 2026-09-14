@@ -67,6 +67,12 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	cmd := "cat"
+	if req.Method == http.MethodHead {
+		cmd = "stat"
+	}
+	op := journal.RecordFile(ctx, req, cmd, path)
+	defer op.Close(res)
 
 	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
 		if req.Method == http.MethodHead {
@@ -310,5 +316,4 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		io.CopyBuffer(res, file, *buf)
 	}
 	file.Close()
-	journal.Send(ctx, req, "cat", path)
 }

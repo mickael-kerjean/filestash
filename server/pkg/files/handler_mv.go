@@ -35,6 +35,8 @@ func FileMv(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, NewError("missing path parameter", 400))
 		return
 	}
+	op := journal.RecordFile(ctx, req, "mv", from, to)
+	defer op.Close(res)
 
 	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
 		if err = auth.Mv(ctx, from, to); err != nil {
@@ -51,5 +53,4 @@ func FileMv(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, nil)
-	journal.Send(ctx, req, "mv", from, to)
 }

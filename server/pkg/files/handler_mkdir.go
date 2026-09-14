@@ -24,6 +24,8 @@ func FileMkdir(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	op := journal.RecordFile(ctx, req, "mkdir", path)
+	defer op.Close(res)
 
 	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
 		if err = auth.Mkdir(ctx, path); err != nil {
@@ -40,5 +42,4 @@ func FileMkdir(ctx *App, res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	SendSuccessResult(res, nil)
-	journal.Send(ctx, req, "mkdir", path)
 }
