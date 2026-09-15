@@ -6,17 +6,18 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/middleware"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
 type Observation[T Payload] struct {
-	Kind      string
-	At        time.Time
-	UserAgent string
-	Payload   T
-	Done      bool
-	Error     error
-	onClose   func(http.ResponseWriter)
-	Emit      func(Observation[T])
+	Kind    string
+	At      time.Time
+	Payload T
+	Trace   tracer.TraceContext
+	Done    bool
+	Error   error
+	Emit    func(Observation[T])
 }
 
 type IObservation interface {

@@ -18,8 +18,9 @@ func TraceFromContext(ctx context.Context) TraceContext {
 
 func Extract(r *http.Request) TraceContext {
 	return TraceContext{
-		TraceID: r.Header.Get("X-Request-Id"),
-		SpanID:  r.Header.Get("X-Parent-Span-Id"),
+		UserAgent: r.Header.Get("User-Agent"),
+		TraceID:   r.Header.Get("X-Request-Id"),
+		SpanID:    r.Header.Get("X-Parent-Span-Id"),
 	}
 }
 

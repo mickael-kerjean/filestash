@@ -8,13 +8,14 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
 func RecordFile(ctx *App, req *http.Request, topic string, path string, target ...string) Observation[FileOp] {
 	return NewObservation(Observation[FileOp]{
-		Kind:      "fs",
-		At:        time.Now().UTC(),
-		UserAgent: req.Header.Get("User-Agent"),
+		At:   time.Now().UTC(),
+		Kind: "fs",
 		Payload: FileOp{
 			Operation: topic,
 			Mutation:  slices.Contains([]string{"mv", "rm", "mkdir", "touch", "save"}, topic),
@@ -22,19 +23,20 @@ func RecordFile(ctx *App, req *http.Request, topic string, path string, target .
 			Target:    strings.Join(target, ","),
 			StorageID: GenerateID(ctx.Session),
 		},
-		Emit: emit[FileOp],
+		Trace: tracer.Extract(req),
+		Emit:  emit[FileOp],
 	})
 }
 
 func RecordSession(ctx *App, req *http.Request, cmd string) Observation[SessionOp] {
 	return NewObservation(Observation[SessionOp]{
-		Kind:      "session",
-		At:        time.Now().UTC(),
-		UserAgent: req.Header.Get("User-Agent"),
+		At:   time.Now().UTC(),
+		Kind: "session",
 		Payload: SessionOp{
 			Operation: cmd,
 		},
-		Emit: emit[SessionOp],
+		Trace: tracer.Extract(req),
+		Emit:  emit[SessionOp],
 	})
 }
 

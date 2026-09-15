@@ -20,6 +20,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/pkg/cookie"
 	"github.com/mickael-kerjean/filestash/server/pkg/files"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
+	"github.com/mickael-kerjean/filestash/server/pkg/journal"
 
 	"github.com/gorilla/mux"
 )
@@ -32,6 +33,8 @@ type Session struct {
 }
 
 func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
+	op := journal.RecordSession(ctx, req, "get")
+	defer op.Close(res)
 	r := Session{
 		IsAuth: false,
 	}
@@ -56,6 +59,8 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
+	op := journal.RecordSession(ctx, req, "auth")
+	defer op.Close(res)
 	ctx.Body["timestamp"] = time.Now().Format(time.RFC3339)
 	session := MapStringInterfaceToMapStringString(ctx.Body)
 	session["path"] = EnforceDirectory(session["path"])
@@ -119,6 +124,8 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
+	op := journal.RecordSession(ctx, req, "logout")
+	defer op.Close(res)
 	go func() {
 		// user typically expect the logout to feel instant but in our case we still need to make sure
 		// the connection is closed as lot of backend requires to hold an active session which we cache.
@@ -152,6 +159,8 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionOAuthBackend(ctx *App, res http.ResponseWriter, req *http.Request) {
+	op := journal.RecordSession(ctx, req, "oauth")
+	defer op.Close(res)
 	vars := mux.Vars(req)
 	a := map[string]string{
 		"type": vars["service"],
@@ -189,6 +198,8 @@ func SessionOAuthBackend(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request) {
+	op := journal.RecordSession(ctx, req, "middleware")
+	defer op.Close(res)
 	SSOCookieName := "ssoref"
 
 	// Step0: Initialisation

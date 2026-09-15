@@ -49,23 +49,24 @@ func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	for {
 		select {
-		case changes, more := <- events:
+		case changes, more := <-events:
 			if !more {
 				return
 			}
 			for _, change := range changes {
-				out := struct {
+				data, _ := json.Marshal(struct {
 					Echo      bool   `json:"echo"`
 					Operation string `json:"operation"`
 					Path      string `json:"path"`
 					Target    string `json:"target,omitempty"`
+					Trace     string `json:"trace,omitempty"`
 				}{
-					Echo:      change.UserAgent == userAgent,
+					Echo:      change.Trace.UserAgent == userAgent,
 					Operation: change.Payload.Operation,
 					Path:      strings.TrimPrefix(change.Payload.Path, ctx.Session["path"]),
 					Target:    strings.TrimPrefix(change.Payload.Target, ctx.Session["path"]),
-				}
-				data, _ := json.Marshal(out)
+					Trace:     change.Trace.TraceID,
+				})
 				fmt.Fprintf(
 					res,
 					"id: %s\nevent: %s\ndata: %s\n\n",

@@ -15,6 +15,7 @@ type SpanOptions struct {
 }
 
 type TraceContext struct {
-	TraceID string
-	SpanID  string
+	UserAgent string
+	TraceID   string
+	SpanID    string
 }
