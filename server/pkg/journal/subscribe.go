@@ -10,7 +10,7 @@ func Listen[T Payload](ctx context.Context, since time.Time, filter func(Observa
 	out := make(chan []Observation[T])
 	go func() {
 		for firstRun, checkpoint := true, since; ; firstRun = false {
-			changes := make([]Observation[T], 0, 1)
+			changes := make([]Observation[T], 0, 10)
 			gate.L.Lock()
 			if ctx.Err() != nil {
 				gate.L.Unlock()
@@ -32,7 +32,9 @@ func Listen[T Payload](ctx context.Context, since time.Time, filter func(Observa
 			}
 			gate.L.Unlock()
 			slices.Reverse(changes)
-			out <- changes
+			if len(changes) > 0 {
+				out <- changes
+			}
 		}
 	}()
 	go func() {

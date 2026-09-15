@@ -13,6 +13,8 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
+const heartbeatPeriod = 15 * time.Second
+
 func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 	flusher, ok := res.(http.Flusher)
 	if !ok {
@@ -38,29 +40,43 @@ func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Cache-Control", "no-cache")
 	res.Header().Set("Connection", "keep-alive")
 	flusher.Flush()
-	for changes := range Listen[FileOp](req.Context(), checkpoint, func(el Observation[FileOp]) bool {
+
+	events := Listen[FileOp](req.Context(), checkpoint, func(el Observation[FileOp]) bool {
 		return el.Payload.StorageID == storageID && el.Payload.Mutation && el.Done && el.Error == nil
-	}) {
-		for _, change := range changes {
-			out := struct {
-				Echo      bool   `json:"echo"`
-				Operation string `json:"operation"`
-				Path      string `json:"path"`
-				Target    string `json:"target,omitempty"`
-			}{
-				Echo:      change.UserAgent == userAgent,
-				Operation: change.Payload.Operation,
-				Path:      strings.TrimPrefix(change.Payload.Path, ctx.Session["path"]),
-				Target:    strings.TrimPrefix(change.Payload.Target, ctx.Session["path"]),
+	})
+	heartbeat := time.NewTicker(heartbeatPeriod)
+	defer heartbeat.Stop()
+
+	for {
+		select {
+		case changes, more := <- events:
+			if !more {
+				return
 			}
-			data, _ := json.Marshal(out)
-			fmt.Fprintf(
-				res,
-				"id: %s\nevent: %s\ndata: %s\n\n",
-				change.Time().Format(time.RFC3339Nano),
-				change.Kind,
-				data,
-			)
+			for _, change := range changes {
+				out := struct {
+					Echo      bool   `json:"echo"`
+					Operation string `json:"operation"`
+					Path      string `json:"path"`
+					Target    string `json:"target,omitempty"`
+				}{
+					Echo:      change.UserAgent == userAgent,
+					Operation: change.Payload.Operation,
+					Path:      strings.TrimPrefix(change.Payload.Path, ctx.Session["path"]),
+					Target:    strings.TrimPrefix(change.Payload.Target, ctx.Session["path"]),
+				}
+				data, _ := json.Marshal(out)
+				fmt.Fprintf(
+					res,
+					"id: %s\nevent: %s\ndata: %s\n\n",
+					change.Time().Format(time.RFC3339Nano),
+					change.Kind,
+					data,
+				)
+			}
+			heartbeat.Reset(heartbeatPeriod)
+		case <-heartbeat.C:
+			fmt.Fprintf(res, "event: heartbeat\ndata: {}\n\n")
 		}
 		flusher.Flush()
 	}
