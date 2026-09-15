@@ -38,7 +38,7 @@ func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Cache-Control", "no-cache")
 	res.Header().Set("Connection", "keep-alive")
 	flusher.Flush()
-	for changes := range Listen(req.Context(), checkpoint, func(el Observation[FileOp]) bool {
+	for changes := range Listen[FileOp](req.Context(), checkpoint, func(el Observation[FileOp]) bool {
 		return el.Payload.StorageID == storageID && el.Payload.Mutation && el.Done && el.Error == nil
 	}) {
 		for _, change := range changes {
@@ -57,7 +57,7 @@ func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 			fmt.Fprintf(
 				res,
 				"id: %s\nevent: %s\ndata: %s\n\n",
-				change.Time.Format(time.RFC3339Nano),
+				change.Time().Format(time.RFC3339Nano),
 				change.Kind,
 				data,
 			)

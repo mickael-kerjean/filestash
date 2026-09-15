@@ -1,23 +1,14 @@
 package journal
 
 import (
-	"container/ring"
 	"sync"
 	"time"
 )
 
 var (
-	journal = ring.New(5000)
+	journal = NewRing[IObservation](5000, Observation[Nop]{ At: time.Now().UTC() })
 	gate    = sync.NewCond(&sync.Mutex{})
 )
-
-func init() {
-	t := time.Now().UTC()
-	for i := 0; i < journal.Len(); i++ {
-		journal.Value = Observation[Nop]{Time: t}
-		journal = journal.Next()
-	}
-}
 
 type Payload interface {
 	FileOp | SessionOp | Nop
@@ -36,7 +27,3 @@ type SessionOp struct {
 }
 
 type Nop struct{}
-
-type Timestamp interface {
-	Timestamp() time.Time
-}

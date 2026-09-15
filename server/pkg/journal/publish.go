@@ -13,7 +13,7 @@ import (
 func RecordFile(ctx *App, req *http.Request, topic string, path string, target ...string) Observation[FileOp] {
 	return NewObservation(Observation[FileOp]{
 		Kind:      "fs",
-		Time:      time.Now().UTC(),
+		At:        time.Now().UTC(),
 		UserAgent: req.Header.Get("User-Agent"),
 		Payload: FileOp{
 			Operation: topic,
@@ -29,7 +29,7 @@ func RecordFile(ctx *App, req *http.Request, topic string, path string, target .
 func RecordSession(ctx *App, req *http.Request, cmd string) Observation[SessionOp] {
 	return NewObservation(Observation[SessionOp]{
 		Kind:      "session",
-		Time:      time.Now().UTC(),
+		At:        time.Now().UTC(),
 		UserAgent: req.Header.Get("User-Agent"),
 		Payload: SessionOp{
 			Operation: cmd,
@@ -40,7 +40,7 @@ func RecordSession(ctx *App, req *http.Request, cmd string) Observation[SessionO
 
 func emit[T Payload](val Observation[T]) {
 	gate.L.Lock()
-	journal.Value = val
+	journal.Set(val)
 	journal = journal.Next()
 	gate.Broadcast()
 	gate.L.Unlock()

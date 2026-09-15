@@ -10,7 +10,7 @@ import (
 
 type Observation[T Payload] struct {
 	Kind      string
-	Time      time.Time
+	At        time.Time
 	UserAgent string
 	Payload   T
 	Done      bool
@@ -19,13 +19,17 @@ type Observation[T Payload] struct {
 	Emit      func(Observation[T])
 }
 
+type IObservation interface {
+	Time() time.Time
+}
+
 func NewObservation[T Payload](ob Observation[T]) Observation[T] {
 	ob.Emit(ob)
 	return ob
 }
 
 func (this Observation[T]) Close(res http.ResponseWriter) {
-	this.Time = time.Now().UTC()
+	this.At = time.Now().UTC()
 	this.Done = true
 	if obj, ok := res.(*ResponseWriter); ok {
 		status := obj.Status()
@@ -36,6 +40,6 @@ func (this Observation[T]) Close(res http.ResponseWriter) {
 	this.Emit(this)
 }
 
-func (this Observation[T]) Timestamp() time.Time {
-	return this.Time
+func (this Observation[T]) Time() time.Time {
+	return this.At
 }

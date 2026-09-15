@@ -20,15 +20,15 @@ func Listen[T Payload](ctx context.Context, since time.Time, filter func(Observa
 				gate.Wait()
 			}
 			for i, len, curr := 0, journal.Len(), journal.Prev(); i < len; i, curr = i+1, curr.Prev() {
-				if !curr.Value.(Timestamp).Timestamp().After(checkpoint) {
+				if !curr.Get().Time().After(checkpoint) {
 					break
 				}
-				if el, ok := curr.Value.(Observation[T]); ok && filter(el) {
+				if el, ok := curr.Get().(Observation[T]); ok && filter(el) {
 					changes = append(changes, el)
 				}
 			}
-			if journal.Prev().Value.(Timestamp).Timestamp().After(checkpoint) {
-				checkpoint = journal.Prev().Value.(Timestamp).Timestamp()
+			if journal.Prev().Get().Time().After(checkpoint) {
+				checkpoint = journal.Prev().Get().Time()
 			}
 			gate.L.Unlock()
 			slices.Reverse(changes)
