@@ -35,6 +35,7 @@ func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 		checkpoint = time.Now()
 	}
 	storageID := GenerateID(ctx.Session)
+	chroot := EnforceDirectory(ctx.Session["path"])
 	userAgent := req.Header.Get("User-Agent")
 	res.Header().Set("Content-Type", "text/event-stream")
 	res.Header().Set("Cache-Control", "no-cache")
@@ -55,30 +56,38 @@ func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 			}
 			for _, change := range changes {
 				data, _ := json.Marshal(struct {
+					Kind      string `json:"kind"`
 					Echo      bool   `json:"echo"`
-					Operation string `json:"operation"`
+					Operation string `json:"op"`
 					Path      string `json:"path"`
 					Target    string `json:"target,omitempty"`
 					Trace     string `json:"trace,omitempty"`
 				}{
+					Kind:      change.Kind,
 					Echo:      change.Trace.UserAgent == userAgent,
 					Operation: change.Payload.Operation,
-					Path:      strings.TrimPrefix(change.Payload.Path, ctx.Session["path"]),
-					Target:    strings.TrimPrefix(change.Payload.Target, ctx.Session["path"]),
+					Path:      clientpath(change.Payload.Path, chroot),
+					Target:    clientpath(change.Payload.Target, chroot),
 					Trace:     change.Trace.TraceID,
 				})
 				fmt.Fprintf(
 					res,
-					"id: %s\nevent: %s\ndata: %s\n\n",
+					"id: %s\ndata: %s\n\n",
 					change.Time().Format(time.RFC3339Nano),
-					change.Kind,
 					data,
 				)
 			}
 			heartbeat.Reset(heartbeatPeriod)
 		case <-heartbeat.C:
-			fmt.Fprintf(res, "event: heartbeat\ndata: {}\n\n")
+			fmt.Fprintf(res, "data: {\"kind\":\"heartbeat\"}\n\n")
 		}
 		flusher.Flush()
 	}
+}
+
+func clientpath(fullpath string, chroot string) string {
+	if fullpath == "" {
+		return fullpath
+	}
+	return "/" + strings.TrimPrefix(fullpath, chroot)
 }

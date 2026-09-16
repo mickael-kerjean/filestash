@@ -71,8 +71,9 @@ func Build(r *mux.Router) {
 	router.HandleFunc("/rm", NewMiddlewareChain(files.FileRm, middlewares)).Methods("POST")
 	router.HandleFunc("/mkdir", NewMiddlewareChain(files.FileMkdir, middlewares)).Methods("POST")
 	router.HandleFunc("/touch", NewMiddlewareChain(files.FileTouch, middlewares)).Methods("POST")
-	router.HandleFunc("/watch", NewMiddlewareChain(files.FileWatch, middlewares)).Methods("GET")
 	router.HandleFunc("/search", NewMiddlewareChain(files.FileSearch, middlewares)).Methods("GET")
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly}
+	router.HandleFunc("/watch", NewMiddlewareChain(files.FileWatch, middlewares)).Methods("GET")
 
 	// API for Shared link
 	router = r.PathPrefix(WithBase("/api/share")).Subrouter()
