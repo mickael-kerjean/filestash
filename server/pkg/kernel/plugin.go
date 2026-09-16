@@ -7,6 +7,8 @@ import (
 	"io/fs"
 	"net/http"
 	"path/filepath"
+	"reflect"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -284,7 +286,14 @@ func (this Get) OnConfig() []func() {
 var middlewares []func(HandlerFunc) HandlerFunc
 
 func (this Register) Middleware(m func(HandlerFunc) HandlerFunc) {
+	fname := func(m func(HandlerFunc) HandlerFunc) string {
+		name := runtime.FuncForPC(reflect.ValueOf(m).Pointer()).Name()
+		return name[strings.LastIndex(name, ".")+1:]
+	}
 	middlewares = append(middlewares, m)
+	sort.SliceStable(middlewares, func(i, j int) bool {
+		return fname(middlewares[i]) > fname(middlewares[j])
+	})
 }
 
 func (this Get) Middleware() []func(HandlerFunc) HandlerFunc {
