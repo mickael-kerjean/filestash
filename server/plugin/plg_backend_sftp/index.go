@@ -266,7 +266,13 @@ func (b Sftp) Home() (string, error) {
 
 func (b Sftp) Ls(path string) ([]os.FileInfo, error) {
 	files, err := b.SFTPClient.ReadDir(path)
-	return files, b.err(err)
+	filtered := files[:0]
+  	for _, file := range files {
+  		if file.IsDir() || file.Mode().IsRegular() {
+  			filtered = append(filtered, file)
+  		}
+  	}
+  	return filtered, b.err(err)
 }
 
 func (b Sftp) Cat(path string) (io.ReadCloser, error) {
