@@ -4,6 +4,8 @@ import (
 	"container/heap"
 	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"sync"
 
@@ -69,6 +71,11 @@ func (this StepIndexer) Execute(params map[string]string, input map[string]strin
 		Log.Warning("plg_search_sqlitefts::workflow message=cannot_create_backend err=%s", err.Error())
 		return input, err
 	}
+	handler := HandlerFunc(func(ctx *App, _ http.ResponseWriter, req *http.Request) {})
+	for _, middleware := range Hooks.Get.Middleware() {
+		handler = middleware(handler)
+	}
+	handler(app, httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, WithBase("/api/files/ls"), nil))
 	path, err := PathBuilder(app, EnforceDirectory(params["path"]))
 	if err != nil {
 		Log.Warning("plg_search_sqlitefts::workflow message=path_builder err=%s", err.Error())

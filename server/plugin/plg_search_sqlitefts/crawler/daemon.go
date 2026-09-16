@@ -3,6 +3,8 @@ package crawler
 import (
 	"container/heap"
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"sync"
 
@@ -132,6 +134,11 @@ func (this *daemonState) HintLs(app *App, path string) {
 		return
 	}
 	app.Backend = crawlerBackend
+	handler := HandlerFunc(func(ctx *App, _ http.ResponseWriter, req *http.Request) {})
+	for _, middleware := range Hooks.Get.Middleware() {
+		handler = middleware(handler)
+	}
+	handler(app, httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, WithBase("/api/files/ls"), nil))
 	s, err := this.createCrawler(app)
 	if err != nil {
 		Log.Warning("plg_search_sqlitefs::init message=cannot_create_crawler err=%s", err.Error())
