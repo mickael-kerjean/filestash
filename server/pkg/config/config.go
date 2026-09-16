@@ -129,6 +129,13 @@ func (this *Configuration) Connections() []map[string]any {
 }
 
 func (this *Configuration) Load() error {
+	if IsWhiteLabel() {
+		schema := Config.state.Load()
+		schema.forms[0].Elmnts[0].Default = APPNAME
+		schema.forms[0].Elmnts[0].Placeholder = ""
+		Config.state.Store(schema)
+	}
+
 	cFile, err := LoadConfig()
 	if err != nil {
 		Log.Error("config::load %s", err)
