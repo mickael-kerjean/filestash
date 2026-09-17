@@ -60,6 +60,9 @@ func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 				return
 			}
 			for _, change := range changes {
+				if !strings.HasPrefix(change.Payload.Path, chroot) {
+					continue
+				}
 				data, _ := json.Marshal(struct {
 					Kind      string `json:"kind"`
 					Echo      bool   `json:"echo"`

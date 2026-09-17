@@ -72,7 +72,7 @@ func Build(r *mux.Router) {
 	router.HandleFunc("/mkdir", NewMiddlewareChain(files.FileMkdir, middlewares)).Methods("POST")
 	router.HandleFunc("/touch", NewMiddlewareChain(files.FileTouch, middlewares)).Methods("POST")
 	router.HandleFunc("/search", NewMiddlewareChain(files.FileSearch, middlewares)).Methods("GET")
-	middlewares = []Middleware{ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly}
+	middlewares = []Middleware{ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly, PluginInjector}
 	router.HandleFunc("/watch", NewMiddlewareChain(files.FileWatch, middlewares)).Methods("GET")
 
 	// API for Shared link
