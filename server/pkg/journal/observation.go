@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/pkg/middleware"
-
 	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
@@ -32,7 +30,7 @@ func NewObservation[T Payload](ob Observation[T]) Observation[T] {
 func (this Observation[T]) Close(res http.ResponseWriter) {
 	this.At = time.Now().UTC()
 	this.Done = true
-	if obj, ok := res.(*ResponseWriter); ok {
+	if obj, ok := res.(interface{ Status() int }); ok {
 		status := obj.Status()
 		if status >= 400 {
 			this.Error = fmt.Errorf("status %d", status)
