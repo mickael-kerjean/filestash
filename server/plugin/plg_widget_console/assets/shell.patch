@@ -2,17 +2,12 @@ diff --git a/public/assets/components/decorator_shell_filemanager.js b/public/as
 index a499e5ef..caebd17c 100644
 --- a/public/assets/components/decorator_shell_filemanager.js
 +++ b/public/assets/components/decorator_shell_filemanager.js
-@@ -6,3 +6,4 @@ import { animate, slideYOut } from "../lib/animate.js";
- import { qs, safe } from "../lib/dom.js";
- import { loadCSS } from "../helpers/loader.js";
- import { init as initBreadcrumb } from "../components/breadcrumb.js";
-+import { init as initShell } from "../components/shell.js";
-@@ -18,3 +19,4 @@ export default function(ctrl) {
+@@ -18,3 +18,4 @@ export default function(ctrl) {
                  <component-breadcrumb path="${safe(urlToPath(history.state.previous))}"></component-breadcrumb>
                  <main id="main" data-bind="filemanager-children"></main>
              </div>
 +            <component-shell class="hidden" path="${safe(urlToPath(history.state.previous))}"></component-shell>
-@@ -51,3 +53,11 @@ export default function(ctrl) {
+@@ -51,3 +52,12 @@ export default function(ctrl) {
                  navigate(p.join("/") + "/" + location.hash);
              }),
          ));
@@ -22,5 +17,6 @@ index a499e5ef..caebd17c 100644
 +        $shell.setAttribute("path", urlToPath(fromHref(location.pathname + location.hash)));
 +        effect(rxjs.fromEvent(window, "keydown").pipe(
 +            rxjs.filter((e) => ["F4", "F9"].indexOf(e.code) !== -1),
++            rxjs.switchMap(() => import(new URL("../components/shell.js", import.meta.url).href)),
 +            rxjs.tap(() => $shell.classList.toggle("hidden")),
 +        ));
