@@ -10,7 +10,6 @@
         "isolatedModules": true,
         "noEmit": true,
         "noErrorTruncation": true,
-        "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noImplicitOverride": true,

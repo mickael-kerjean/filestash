@@ -4,7 +4,7 @@ export class AjaxError extends Error {
         this.name = this.constructor.name;
         this.errCode = code;
         this.errOrig = err;
-        this.traceID = traceID;
+        this.requestID = traceID;
     }
 
     code() {
@@ -17,6 +17,10 @@ export class AjaxError extends Error {
 
     type() {
         return "AjaxError";
+    }
+
+    traceID() {
+        return this.requestID;
     }
 }
 

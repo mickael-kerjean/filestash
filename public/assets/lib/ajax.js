@@ -94,7 +94,7 @@ function processError(xhr, err) {
     })(responseText);
 
     if (window.navigator.onLine === false) {
-        return new AjaxError("Connection Lost", err, "NO_INTERNET");
+        return new AjaxError("Connection Lost", err, "NO_INTERNET", err.request.headers["x-request-id"]);
     }
     switch (parseInt(xhr?.status)) {
     case 500:
@@ -138,6 +138,6 @@ function processError(xhr, err) {
             return new AjaxError(responseText, err, "INTERNAL_SERVER_ERROR", err.request.headers["x-request-id"]);
         }
     default:
-        return new AjaxError(message || "Oups something went wrong", err, "HTTP_ERROR" , err.request.headers["x-request-id"]);
+        return new AjaxError(message || "Oups something went wrong", err, "HTTP_ERROR", err.request.headers["x-request-id"]);
     }
 }
