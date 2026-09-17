@@ -40,7 +40,7 @@ func FileSave(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
-	op := journal.RecordFile(ctx, req, "save", path)
+	op := journal.PublishFS(ctx, req, "save", path)
 	defer op.Close(res)
 
 	if permissions.CanEdit(ctx) == false {

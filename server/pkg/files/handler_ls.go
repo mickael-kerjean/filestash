@@ -43,7 +43,7 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
-	op := journal.RecordFile(ctx, req, "ls", path)
+	op := journal.PublishFS(ctx, req, "ls", path)
 	defer op.Close(res)
 
 	perms := Metadata{}

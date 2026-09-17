@@ -33,7 +33,7 @@ type Session struct {
 }
 
 func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
-	op := journal.RecordSession(ctx, req, "get")
+	op := journal.PublishSession(ctx, req, "get")
 	defer op.Close(res)
 	r := Session{
 		IsAuth: false,
@@ -59,7 +59,7 @@ func SessionGet(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
-	op := journal.RecordSession(ctx, req, "auth")
+	op := journal.PublishSession(ctx, req, "auth")
 	defer op.Close(res)
 	ctx.Body["timestamp"] = time.Now().Format(time.RFC3339)
 	session := MapStringInterfaceToMapStringString(ctx.Body)
@@ -124,7 +124,7 @@ func SessionAuthenticate(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
-	op := journal.RecordSession(ctx, req, "logout")
+	op := journal.PublishSession(ctx, req, "logout")
 	defer op.Close(res)
 	go func() {
 		// user typically expect the logout to feel instant but in our case we still need to make sure
@@ -159,7 +159,7 @@ func SessionLogout(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionOAuthBackend(ctx *App, res http.ResponseWriter, req *http.Request) {
-	op := journal.RecordSession(ctx, req, "oauth")
+	op := journal.PublishSession(ctx, req, "oauth")
 	defer op.Close(res)
 	vars := mux.Vars(req)
 	a := map[string]string{
@@ -198,7 +198,7 @@ func SessionOAuthBackend(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request) {
-	op := journal.RecordSession(ctx, req, "middleware")
+	op := journal.PublishSession(ctx, req, "middleware")
 	defer op.Close(res)
 	SSOCookieName := "ssoref"
 

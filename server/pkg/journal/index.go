@@ -11,7 +11,7 @@ var (
 )
 
 type Payload interface {
-	FileOp | SessionOp | Nop
+	FileOp | SessionOp | EventOp | Nop
 }
 
 type FileOp struct {
@@ -25,5 +25,7 @@ type FileOp struct {
 type SessionOp struct {
 	Operation string `json:"operation"`
 }
+
+type EventOp map[string]any
 
 type Nop struct{}

@@ -8,9 +8,10 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
-	. "github.com/mickael-kerjean/filestash/server/pkg/journal"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/journal"
 )
 
 const heartbeatPeriod = 15 * time.Second
@@ -42,15 +43,19 @@ func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Connection", "keep-alive")
 	flusher.Flush()
 
-	events := Listen[FileOp](req.Context(), checkpoint, func(el Observation[FileOp]) bool {
-		return el.Payload.StorageID == storageID && el.Payload.Mutation && el.Done && el.Error == nil
-	})
+	stream := journal.Subscribe[journal.FileOp](
+		req.Context(),
+		checkpoint,
+		func(el journal.Observation[journal.FileOp]) bool {
+			return el.Payload.StorageID == storageID && el.Payload.Mutation && el.Done && el.Error == nil
+		},
+	)
 	heartbeat := time.NewTicker(heartbeatPeriod)
 	defer heartbeat.Stop()
 
 	for {
 		select {
-		case changes, more := <-events:
+		case changes, more := <-stream:
 			if !more {
 				return
 			}

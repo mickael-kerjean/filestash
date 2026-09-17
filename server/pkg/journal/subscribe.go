@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func Listen[T Payload](ctx context.Context, since time.Time, filter func(Observation[T]) bool) <-chan []Observation[T] {
+func Subscribe[T Payload](ctx context.Context, since time.Time, filter func(Observation[T]) bool) <-chan []Observation[T] {
 	out := make(chan []Observation[T])
 	go func() {
 		for firstRun, checkpoint := true, since; ; firstRun = false {

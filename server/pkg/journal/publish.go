@@ -12,7 +12,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 )
 
-func RecordFile(ctx *App, req *http.Request, topic string, path string, target ...string) Observation[FileOp] {
+func PublishFS(ctx *App, req *http.Request, topic string, path string, target ...string) Observation[FileOp] {
 	return NewObservation(Observation[FileOp]{
 		At:   time.Now().UTC(),
 		Kind: "fs",
@@ -28,7 +28,7 @@ func RecordFile(ctx *App, req *http.Request, topic string, path string, target .
 	})
 }
 
-func RecordSession(ctx *App, req *http.Request, cmd string) Observation[SessionOp] {
+func PublishSession(ctx *App, req *http.Request, cmd string) Observation[SessionOp] {
 	return NewObservation(Observation[SessionOp]{
 		At:   time.Now().UTC(),
 		Kind: "session",
@@ -37,6 +37,16 @@ func RecordSession(ctx *App, req *http.Request, cmd string) Observation[SessionO
 		},
 		Trace: tracer.Extract(req),
 		Emit:  emit[SessionOp],
+	})
+}
+
+func PublishEvent(ctx *App, req *http.Request, data EventOp) Observation[EventOp] {
+	return NewObservation(Observation[EventOp]{
+		At:   time.Now().UTC(),
+		Kind: "event",
+		Payload: data,
+		Trace: tracer.Extract(req),
+		Emit:  emit[EventOp],
 	})
 }
 

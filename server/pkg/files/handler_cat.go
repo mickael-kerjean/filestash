@@ -71,7 +71,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodHead {
 		cmd = "stat"
 	}
-	op := journal.RecordFile(ctx, req, cmd, path)
+	op := journal.PublishFS(ctx, req, cmd, path)
 	defer op.Close(res)
 
 	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
