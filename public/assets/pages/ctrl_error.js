@@ -76,6 +76,7 @@ function processError(err) {
 type:    ${err.type()}
 code:    ${err.code()}
 message: ${err.message}
+traceID: ${err.traceID}
 trace:   ${err.stack}`;
     } else if (err instanceof ApplicationError) {
         msg = t(err.message);

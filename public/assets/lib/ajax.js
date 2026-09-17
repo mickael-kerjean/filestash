@@ -29,7 +29,7 @@ export default function(opts) {
                 const result = res.xhr.responseText;
                 res.responseJSON = JSON.parse(result);
                 if (res.responseJSON.status !== "ok") {
-                    throw new AjaxError("Oups something went wrong", result);
+                    throw new AjaxError("Oups something went wrong", result, "STATUS_NOT_OK", res.responseHeaders["x-request-id"]);
                 }
             }
             return res;
@@ -100,44 +100,44 @@ function processError(xhr, err) {
     case 500:
         return new AjaxError(
             message || "Oups something went wrong with our servers",
-            err, "INTERNAL_SERVER_ERROR"
+            err, "INTERNAL_SERVER_ERROR", err.request.headers["x-request-id"],
         );
     case 401:
         return new AjaxError(
             message || "Authentication error",
-            err, "Unauthorized"
+            err, "Unauthorized", err.request.headers["x-request-id"],
         );
     case 403:
         return new AjaxError(
             message || "You can't do that",
-            err, "FORBIDDEN"
+            err, "FORBIDDEN", err.request.headers["x-request-id"],
         );
     case 413:
         return new AjaxError(
             message || "Payload too large",
-            err, "PAYLOAD_TOO_LARGE"
+            err, "PAYLOAD_TOO_LARGE", err.request.headers["x-request-id"],
         );
     case 502:
         return new AjaxError(
             message || "The destination is acting weird",
-            err, "BAD_GATEWAY"
+            err, "BAD_GATEWAY", err.request.headers["x-request-id"],
         );
     case 409:
         return new AjaxError(
             message || "Oups you just ran into a conflict",
-            err, "CONFLICT"
+            err, "CONFLICT", err.request.headers["x-request-id"],
         );
     case 0:
         switch (responseText) {
         case "":
             return new AjaxError(
                 "Service unavailable, if the problem persist, contact your administrator",
-                err, "INTERNAL_SERVER_ERROR"
+                err, "INTERNAL_SERVER_ERROR", err.request.headers["x-request-id"],
             );
         default:
-            return new AjaxError(responseText, err, "INTERNAL_SERVER_ERROR");
+            return new AjaxError(responseText, err, "INTERNAL_SERVER_ERROR", err.request.headers["x-request-id"]);
         }
     default:
-        return new AjaxError(message || "Oups something went wrong", err);
+        return new AjaxError(message || "Oups something went wrong", err, "HTTP_ERROR" , err.request.headers["x-request-id"]);
     }
 }
