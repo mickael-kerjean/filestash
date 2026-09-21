@@ -15,6 +15,7 @@ type Observation[T Payload] struct {
 	Trace   tracer.TraceContext
 	Done    bool
 	Error   error
+	Session map[string]string
 	Emit    func(Observation[T])
 }
 
@@ -23,11 +24,17 @@ type IObservation interface {
 }
 
 func NewObservation[T Payload](ob Observation[T]) Observation[T] {
+	if ob.Emit == nil {
+		return ob
+	}
 	ob.Emit(ob)
 	return ob
 }
 
 func (this Observation[T]) Close(res http.ResponseWriter) {
+	if this.Emit == nil {
+		return
+	}
 	this.At = time.Now().UTC()
 	this.Done = true
 	if obj, ok := res.(interface{ Status() int }); ok {

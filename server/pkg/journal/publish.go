@@ -13,6 +13,9 @@ import (
 )
 
 func PublishFS(ctx *App, req *http.Request, topic string, path string, target ...string) Observation[FileOp] {
+	if subscribers.Load() == 0 {
+		return NewObservation(Observation[FileOp]{})
+	}
 	return NewObservation(Observation[FileOp]{
 		At:   time.Now().UTC(),
 		Kind: "fs",
@@ -23,30 +26,39 @@ func PublishFS(ctx *App, req *http.Request, topic string, path string, target ..
 			Target:    strings.Join(target, ","),
 			StorageID: GenerateID(ctx.Session),
 		},
-		Trace: tracer.Extract(req),
-		Emit:  emit[FileOp],
+		Session: ctx.Session,
+		Trace:   tracer.Extract(req),
+		Emit:    emit[FileOp],
 	})
 }
 
 func PublishSession(ctx *App, req *http.Request, cmd string) Observation[SessionOp] {
+	if subscribers.Load() == 0 {
+		return NewObservation(Observation[SessionOp]{})
+	}
 	return NewObservation(Observation[SessionOp]{
 		At:   time.Now().UTC(),
 		Kind: "session",
 		Payload: SessionOp{
 			Operation: cmd,
 		},
-		Trace: tracer.Extract(req),
-		Emit:  emit[SessionOp],
+		Session: ctx.Session,
+		Trace:   tracer.Extract(req),
+		Emit:    emit[SessionOp],
 	})
 }
 
 func PublishEvent(ctx *App, req *http.Request, data EventOp) Observation[EventOp] {
+	if subscribers.Load() == 0 {
+		return NewObservation(Observation[EventOp]{})
+	}
 	return NewObservation(Observation[EventOp]{
-		At:   time.Now().UTC(),
-		Kind: "event",
+		At:      time.Now().UTC(),
+		Kind:    "event",
 		Payload: data,
-		Trace: tracer.Extract(req),
-		Emit:  emit[EventOp],
+		Trace:   tracer.Extract(req),
+		Session: ctx.Session,
+		Emit:    emit[EventOp],
 	})
 }
 

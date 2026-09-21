@@ -2,12 +2,14 @@ package journal
 
 import (
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
 var (
-	journal = NewRing[IObservation](5000, Observation[Nop]{ At: time.Now().UTC() })
-	gate    = sync.NewCond(&sync.Mutex{})
+	journal     = NewRing[IObservation](5000, Observation[Nop]{At: time.Now().UTC()})
+	gate        = sync.NewCond(&sync.Mutex{})
+	subscribers = atomic.Int64{}
 )
 
 type Payload interface {

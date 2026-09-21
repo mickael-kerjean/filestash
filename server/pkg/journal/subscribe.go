@@ -8,7 +8,9 @@ import (
 
 func Subscribe[T Payload](ctx context.Context, since time.Time, filter func(Observation[T]) bool) <-chan []Observation[T] {
 	out := make(chan []Observation[T])
+	subscribers.Add(1)
 	go func() {
+		defer subscribers.Add(-1)
 		for firstRun, checkpoint := true, since; ; firstRun = false {
 			changes := make([]Observation[T], 0, 10)
 			gate.L.Lock()
