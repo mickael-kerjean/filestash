@@ -1,15 +1,15 @@
 package admin
 
 import (
-	"net/http"
 	"encoding/json"
+	"net/http"
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/config"
-	. "github.com/mickael-kerjean/filestash/server/pkg/env"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func AdminOnly(fn HandlerFunc) HandlerFunc {
@@ -19,24 +19,32 @@ func AdminOnly(fn HandlerFunc) HandlerFunc {
 			if authStr == "" {
 				c, err := req.Cookie(COOKIE_NAME_ADMIN)
 				if err != nil {
-					SendErrorResult(res, ErrPermissionDenied)
+					sendAdminError(res, req, ErrPermissionDenied)
 					return
 				}
 				authStr = c.Value
 			}
 			str, err := DecryptString(SECRET_KEY_DERIVATE_FOR_ADMIN, authStr)
 			if err != nil {
-				SendErrorResult(res, ErrPermissionDenied)
+				sendAdminError(res, req, ErrPermissionDenied)
 				return
 			}
 			token := AdminToken{}
 			json.Unmarshal([]byte(str), &token)
 
 			if token.IsValid() == false || token.IsAdmin() == false {
-				SendErrorResult(res, ErrPermissionDenied)
+				sendAdminError(res, req, ErrPermissionDenied)
 				return
 			}
 		}
 		fn(ctx, res, req)
 	})
+}
+
+func sendAdminError(res http.ResponseWriter, req *http.Request, err error) {
+	if strings.Contains(req.Header.Get("Accept"), "text/html") {
+		http.Redirect(res, req, WithBase("/admin/")+"?next="+req.URL.String(), http.StatusFound)
+		return
+	}
+	SendErrorResult(res, err)
 }
