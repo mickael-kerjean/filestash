@@ -113,7 +113,7 @@ And to be clear, code is the power-user path, there are [no code options](https:
 
 # Getting Started
 
-To install Filestash, head to the [Getting started](https://www.filestash.app/docs/?origin=github) guide. If you want to leverage plugins, head over to the [inventory](https://www.filestash.app/docs/plugin/?origin=github), or learn about [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github).
+To install Filestash, head to the [Getting started](https://www.filestash.app/docs/?origin=github) guide. You can also deploy it with one click using [Easypanel](https://easypanel.io)'s [Filestash template](https://easypanel.io/templates/filestash), a self-hosted Docker deployment platform. If you want to leverage plugins, head over to the [inventory](https://www.filestash.app/docs/plugin/?origin=github), or learn about [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github).
 
 # Support
 
