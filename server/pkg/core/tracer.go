@@ -15,7 +15,7 @@ type SpanOptions struct {
 }
 
 type TraceContext struct {
-	UserAgent string
-	TraceID   string
-	SpanID    string
+	UserAgent string `json:"user-agent"`
+	TraceID   string `json:"traceID"`
+	SpanID    string `json:"spanID"`
 }

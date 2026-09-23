@@ -15,7 +15,6 @@ type Observation[T Payload] struct {
 	Trace   tracer.TraceContext
 	Done    bool
 	Error   error
-	Session map[string]string
 	Emit    func(Observation[T])
 }
 

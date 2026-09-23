@@ -25,7 +25,8 @@ type FileOp struct {
 }
 
 type SessionOp struct {
-	Operation string `json:"operation"`
+	Operation string            `json:"operation"`
+	Session   map[string]string `json:"session"`
 }
 
 type EventOp map[string]any

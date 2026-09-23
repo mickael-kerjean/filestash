@@ -26,9 +26,8 @@ func PublishFS(ctx *App, req *http.Request, topic string, path string, target ..
 			Target:    strings.Join(target, ","),
 			StorageID: GenerateID(ctx.Session),
 		},
-		Session: ctx.Session,
-		Trace:   tracer.Extract(req),
-		Emit:    emit[FileOp],
+		Trace: tracer.Extract(req),
+		Emit:  emit[FileOp],
 	})
 }
 
@@ -41,10 +40,10 @@ func PublishSession(ctx *App, req *http.Request, cmd string) Observation[Session
 		Kind: "session",
 		Payload: SessionOp{
 			Operation: cmd,
+			Session:   ctx.Session,
 		},
-		Session: ctx.Session,
-		Trace:   tracer.Extract(req),
-		Emit:    emit[SessionOp],
+		Trace: tracer.Extract(req),
+		Emit:  emit[SessionOp],
 	})
 }
 
@@ -57,7 +56,6 @@ func PublishEvent(ctx *App, req *http.Request, data EventOp) Observation[EventOp
 		Kind:    "event",
 		Payload: data,
 		Trace:   tracer.Extract(req),
-		Session: ctx.Session,
 		Emit:    emit[EventOp],
 	})
 }
