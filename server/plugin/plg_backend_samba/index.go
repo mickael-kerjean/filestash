@@ -229,18 +229,7 @@ func (smb Samba) Cat(path string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, fromSambaErr(err)
 	}
-	smb.inflight.Add(1)
-	return &inflightReader{f, smb.inflight}, nil
-}
-
-type inflightReader struct {
-	*smb2.File
-	inflight *atomic.Int32
-}
-
-func (r *inflightReader) Close() error {
-	r.inflight.Add(-1)
-	return r.File.Close()
+	return NewReadahead(f, smb.inflight), nil
 }
 
 func (smb Samba) Mkdir(path string) error {
