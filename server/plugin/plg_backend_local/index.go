@@ -1,11 +1,13 @@
 package plg_backend_local
 
 import (
-	. "github.com/mickael-kerjean/filestash/server/common"
-	"golang.org/x/crypto/bcrypt"
 	"io"
 	"os"
 	"os/user"
+
+	. "github.com/mickael-kerjean/filestash/server/common"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func init() {
@@ -112,7 +114,7 @@ func (this Local) Cat(path string) (io.ReadCloser, error) {
 		f.Close()
 		return nil, ErrNotFound
 	}
-	return f, nil
+	return NewDirect(f, fs), nil
 }
 
 func (this Local) Mkdir(path string) error {
