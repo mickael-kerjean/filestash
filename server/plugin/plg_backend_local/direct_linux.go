@@ -87,6 +87,11 @@ func alignedBuffer(size int) []byte {
 }
 
 func (this *direct) Close() error {
+	select {
+	case <-this.done:
+		return os.ErrClosed
+	default:
+	}
 	close(this.done)
 	return this.f.Close()
 }
