@@ -17,6 +17,7 @@ import (
 	"github.com/mickael-kerjean/filestash/server/pkg/frontend"
 	"github.com/mickael-kerjean/filestash/server/pkg/session"
 	"github.com/mickael-kerjean/filestash/server/pkg/share"
+	"github.com/mickael-kerjean/filestash/server/pkg/token"
 	"github.com/mickael-kerjean/filestash/server/pkg/workflow"
 )
 
@@ -30,6 +31,8 @@ func Build(r *mux.Router) {
 	router = r.PathPrefix(WithBase("/api/session")).Subrouter()
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, PluginInjector}
 	router.HandleFunc("", NewMiddlewareChain(session.SessionGet, middlewares)).Methods("GET")
+	middlewares = []Middleware{SecureHeaders, SessionStart}
+	router.HandleFunc("/token", NewMiddlewareChain(token.Handler, middlewares)).Methods("GET")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, RateLimiter, BodyParser, PluginInjector}
 	router.HandleFunc("", NewMiddlewareChain(session.SessionAuthenticate, middlewares)).Methods("POST")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, PluginInjector}

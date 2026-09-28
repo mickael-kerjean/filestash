@@ -1,0 +1,21 @@
+{{ if or (eq .Platform `"Linux"`) (not .Platform) }}
+<code class="component_token" onclick="getSelection().selectAllChildren(this)">{{ .Token }}</code>
+{{ else }}
+<svg viewBox="0 0 24 24" width="64" height="64"><path d="M20 6 9 17l-5-5" fill="none" stroke="#313538" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+{{ end }}
+<style>
+	body {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.component_token {
+		display: block;
+		max-width: 450px;
+		padding: 10px;
+		background: white;
+		border-radius: 2px;
+		box-shadow: 2px 2px 2px rgb(0 0 0 / 5%);
+		word-break: break-all;
+	}
+</style>
