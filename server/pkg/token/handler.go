@@ -28,10 +28,8 @@ func Handler(ctx *App, res http.ResponseWriter, req *http.Request) {
 			res,
 			struct {
 				Token    string
-				Platform string
 			}{
 				Token:    ctx.Authorization,
-				Platform: req.Header.Get("Sec-Ch-Ua-Platform"),
 			},
 		)
 }
