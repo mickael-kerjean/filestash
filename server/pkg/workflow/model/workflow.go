@@ -20,7 +20,7 @@ type Workflow struct {
 
 type Step struct {
 	Name   string            `json:"name"`
-	Params map[string]string `json:"params",omitzero`
+	Params map[string]string `json:"params,omitempty"`
 	Done   bool              `json:"done,omitempty"`
 }
 
