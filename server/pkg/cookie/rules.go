@@ -2,7 +2,6 @@ package cookie
 
 import (
 	"net/http"
-	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/config"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
@@ -22,15 +21,26 @@ func WithRules(req *http.Request) option {
 		c.HttpOnly = true
 		c.SameSite = http.SameSiteStrictMode
 		if Config.Get("features.protection.iframe").String() != "" {
-			if f := req.Header.Get("Referer"); strings.HasPrefix(f, "https://") {
+			if isTLS(req) {
 				c.Secure = true
 				c.SameSite = http.SameSiteNoneMode
 				c.Partitioned = true
 			} else {
-				Log.Warning("you are trying to access Filestash from a non secure origin ('%s') and with iframe enabled. Either use SSL or disable iframe from the admin console.", f)
+				Log.Warning("iframe is enabled but Filestash is not served over TLS. Either use SSL (set X-Forwarded-Proto from your reverse proxy or enable force_ssl) or disable iframe from the admin console.")
 			}
 		}
 	}
+}
+
+func isTLS(req *http.Request) bool {
+	if req.TLS != nil {
+		return true
+	} else if req.Header.Get("X-Forwarded-Proto") == "https" {
+		return true
+	} else if Config.Get("general.force_ssl").Bool() {
+		return true
+	}
+	return false
 }
 
 func WithSameSite(val http.SameSite) option {
