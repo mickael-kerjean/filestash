@@ -107,12 +107,6 @@ func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error
 		return this.webdavFile.Stat()
 	}
 	fullname := this.fullpath(name)
-	if isMicrosoftWebDAVClient(this.req) && this.req.Method == "PROPFIND" {
-		if name == "" {
-			fullname = this.chroot
-		}
-		fullname = EnforceDirectory(fullname)
-	}
 	if fullname == "" {
 		return nil, os.ErrNotExist
 	}
@@ -125,11 +119,20 @@ func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error
 }
 
 func (this WebdavFs) fullpath(path string) string {
-	p := filepath.Join(this.chroot, path)
-	if strings.HasSuffix(path, "/") == true && strings.HasSuffix(p, "/") == false {
-		p += "/"
+	var (
+		p             = filepath.Join(this.chroot, path)
+		isPathAFolder = strings.HasSuffix(path, "/")
+		isChrootAFile = strings.HasSuffix(this.chroot, "/") == false
+	)
+	if isChrootAFile {
+		if p != this.chroot {
+			return ""
+		}
+		return p
+	} else if isPathAFolder {
+		p = EnforceDirectory(p)
 	}
-	if strings.HasPrefix(p, this.chroot) == false {
+	if strings.HasPrefix(EnforceDirectory(p), this.chroot) == false {
 		return ""
 	}
 	return p
@@ -219,6 +222,9 @@ func (this *WebdavFile) Stat() (os.FileInfo, error) {
 	for i := range files {
 		if files[i].Name() == baseDir {
 			found = true
+			if files[i].IsDir() {
+				this.path = EnforceDirectory(this.path)
+			}
 			break
 		}
 	}
@@ -335,8 +341,4 @@ func NewWebdavLock() webdav.LockSystem {
 		lock = webdav.NewMemLS()
 	}
 	return lock
-}
-
-func isMicrosoftWebDAVClient(req *http.Request) bool {
-	return strings.HasPrefix(req.Header.Get("User-Agent"), "Microsoft-WebDAV-MiniRedir/")
 }
