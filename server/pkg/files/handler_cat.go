@@ -13,32 +13,18 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/config"
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
-	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/mime"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
-	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 	"github.com/mickael-kerjean/filestash/server/pkg/journal"
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 )
 
-var (
-	fileCache  AppCache
-	bufferPool = sync.Pool{
-		New: func() any {
-			return new([]byte)
-		},
-	}
-)
-
-func init() {
-	fileCache = NewAppCache()
-	fileCache.OnEvict(func(key string, value interface{}) {
-		if tmpPath, _, ok := strings.Cut(value.(string), "::"); ok {
-			os.Truncate(tmpPath, 0)
-			os.RemoveAll(tmpPath)
-		}
-	})
+var bufferPool = sync.Pool{
+	New: func() any {
+		return new([]byte)
+	},
 }
 
 func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -46,7 +32,8 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 		file              io.ReadCloser
 		fileMutation      bool        = false
 		contentLength     int64       = -1
-		needToCreateCache bool        = false
+		isRangeRequest    bool        = req.Header.Get("Range") != ""
+		isCacheMiss       bool        = false
 		query             url.Values  = req.URL.Query()
 		header            http.Header = res.Header()
 	)
@@ -88,20 +75,13 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 
 	// use our cache if necessary (range request) when possible
 	var mtime string
-	if req.Header.Get("Range") != "" {
+	if isRangeRequest {
 		if finfo, err := ctx.Backend.Stat(path); err == nil {
 			mtime = strconv.FormatInt(finfo.ModTime().Unix(), 10)
 		}
-		ctx.Session["fullpath"] = path
-		if p := fileCache.Get(ctx.Session); p != nil {
-			if tmpPath, cachedMtime, _ := strings.Cut(p.(string), "::"); cachedMtime != mtime {
-				fileCache.Del(ctx.Session)
-			} else if f, err := os.OpenFile(tmpPath, os.O_RDONLY, os.ModePerm); err == nil {
-				file = f
-				if fi, err := f.Stat(); err == nil {
-					contentLength = fi.Size()
-				}
-			}
+		if f, size, ok := cache.Open(ctx, path, mtime); ok {
+			file = f
+			contentLength = size
 		}
 	}
 
@@ -128,8 +108,8 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 			mType = "text/plain"
 		}
 		header.Set("Content-Type", mType)
-		if req.Header.Get("Range") != "" {
-			needToCreateCache = true
+		if isRangeRequest {
+			isCacheMiss = true
 		}
 	}
 
@@ -176,53 +156,23 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	// => range request requires a seeker to work, some backend support it, some don't. 2 strategies:
 	// 1. backend support Seek: use what the current backend gives us
 	// 2. backend doesn't support Seek: build up a cache so that subsequent call don't trigger multiple downloads
-	if req.Header.Get("Range") != "" && needToCreateCache == true {
+	if isRangeRequest && isCacheMiss {
 		if obj, ok := file.(io.Seeker); ok == true {
 			if size, err := obj.Seek(0, io.SeekEnd); err == nil {
 				if _, err = obj.Seek(0, io.SeekStart); err == nil {
 					contentLength = size
 				}
 			}
-		} else {
-			tmpPath := GetAbsolutePath(TMP_PATH, "file_"+QuickString(20)+".dat")
-			f, err := os.OpenFile(tmpPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
-			if err != nil {
-				Log.Debug("cat::range0 '%s'", err.Error())
-				SendErrorResult(res, err)
-				return
-			}
-			fileCache.Set(ctx.Session, tmpPath+"::"+mtime)
-			if _, err = io.Copy(f, file); err != nil {
-				f.Close()
-				file.Close()
-				Log.Debug("cat::range1 '%s'", err.Error())
-				SendErrorResult(res, err)
-				return
-			}
-			if err = f.Sync(); err != nil {
-				f.Close()
-				file.Close()
-				Log.Debug("cat::range2 '%s'", err.Error())
-				SendErrorResult(res, err)
-				return
-			}
-			f.Close()
-			file.Close()
-			if f, err = os.OpenFile(tmpPath, os.O_RDONLY, os.ModePerm); err != nil {
-				Log.Debug("cat::range3 '%s'", err.Error())
-				SendErrorResult(res, err)
-				return
-			}
-			if fi, err := f.Stat(); err == nil {
-				contentLength = fi.Size()
-			}
-			file = f
+		} else if file, contentLength, err = cache.Create(ctx, path, mtime, file); err != nil {
+			Log.Debug("cat::range '%s'", err.Error())
+			SendErrorResult(res, err)
+			return
 		}
 	}
 
 	// Range request: find how much data we need to send
 	var ranges [][]int64
-	if req.Header.Get("Range") != "" {
+	if isRangeRequest {
 		ranges = make([][]int64, 0)
 		for _, r := range strings.Split(strings.TrimPrefix(req.Header.Get("Range"), "bytes="), ",") {
 			r = strings.TrimSpace(r)
