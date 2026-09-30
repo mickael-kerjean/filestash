@@ -14,7 +14,7 @@ func WellKnownSecurityHandler(ctx *App, res http.ResponseWriter, req *http.Reque
 		return
 	}
 	res.WriteHeader(http.StatusOK)
-	res.Write([]byte("# If you would like to report a security issue\n"))
-	res.Write([]byte("# you may report it to me via email\n"))
-	res.Write([]byte("Contact: support@filestash.app\n"))
+	res.Write([]byte("Contact: https://github.com/mickael-kerjean/filestash/security/advisories/new\n"))
+	res.Write([]byte("Contact: mailto:support@filestash.app\n"))
+	res.Write([]byte("Expires: 2029-12-31T23:59:59Z\n"))
 }
