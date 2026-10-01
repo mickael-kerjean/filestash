@@ -23,9 +23,15 @@ pipeline {
             steps {
                 script {
                     docker.image("golang:1.26-trixie").inside("--user=root") {
-                        sh "sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go && git config --global --add safe.directory '*'"
-                        sh "make init"
-                        sh "CGO_ENABLED=0 make build"
+                        sh '''
+                        git config --global --add safe.directory '*'
+                        sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go
+                        make init
+                        CGO_ENABLED=0 GOARCH=amd64 go build --tags fts5 -o dist/release/filestash_linux_amd64.bin cmd/main.go
+                        CGO_ENABLED=0 GOARCH=arm64 go build --tags fts5 -o dist/release/filestash_linux_arm64.bin cmd/main.go
+                        cp dist/release/filestash_linux_amd64.bin dist/filestash
+                        cd dist/release && sha256sum * > SHA256SUMS
+                        '''
                     }
                 }
             }
@@ -70,13 +76,16 @@ pipeline {
 
         stage("Release") {
             steps {
+                withCredentials([sshUserPrivateKey(credentialsId: "app-filestash-hal", keyFileVariable: "KEY", usernameVariable: "USER")]) {
+                    sh 'scp -i "$KEY" dist/release/* "$USER@hal.filestash.app:/mnt/me-kerjean-pages/projects/filestash/downloads/latest/"'
+                }
                 sh "docker buildx build --no-cache --platform linux/amd64,linux/arm64 -t machines/filestash:latest --push ./docker/"
             }
         }
     }
     post {
         always {
-            cleanWs()
+            cleanWs(disableDeferredWipeout: true, deleteDirs: true)
         }
     }
 }
