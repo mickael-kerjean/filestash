@@ -120,11 +120,14 @@ func (this sqliteQueries) Commit() error {
 }
 
 func (this sqliteQueries) IndexTimeGet(path string) (time.Time, error) {
-	var t string
+	var t sql.NullString
 	if err := this.tx.QueryRow("SELECT indexTime FROM file WHERE path = ?", path).Scan(&t); err != nil {
 		return time.Now(), toErr(err)
 	}
-	tm, err := time.Parse(time.RFC3339, t)
+	if !t.Valid {
+		return time.Time{}, nil
+	}
+	tm, err := time.Parse(time.RFC3339, t.String)
 	if err != nil {
 		return tm, toErr(err)
 	}
@@ -210,7 +213,7 @@ func (this sqliteQueries) FindParent(path string) (RowMapper, error) {
 
 func (this sqliteQueries) FileMetaUpdate(path string, f fs.FileInfo) error {
 	_, err := this.tx.Exec(
-		"UPDATE file SET size = ?, modTime = ?, indexTime = NULL WHERE path = ?",
+		"UPDATE file SET size = ?, modTime = ?, indexTime = CASE WHEN type = 'file' THEN NULL ELSE indexTime END WHERE path = ?",
 		f.Size(), f.ModTime(), path,
 	)
 	return toErr(err)
