@@ -30,9 +30,9 @@ pipeline {
                         sh '''
                         sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go
                         make init
-                        CGO_ENABLED=0 GOARCH=amd64 go build --tags fts5 -o dist/release/filestash_linux_amd64.bin cmd/main.go
-                        CGO_ENABLED=0 GOARCH=arm64 go build --tags fts5 -o dist/release/filestash_linux_arm64.bin cmd/main.go
-                        cp dist/release/filestash_linux_amd64.bin dist/filestash
+                        CGO_ENABLED=0 GOARCH=amd64 go build -trimpath -ldflags="-s -w" --tags fts5 -o dist/release/filestash_linux_amd64.bin cmd/main.go
+                        CGO_ENABLED=0 GOARCH=arm64 go build -trimpath -ldflags="-s -w" --tags fts5 -o dist/release/filestash_linux_arm64.bin cmd/main.go
+                        CGO_ENABLED=0 GOARCH=arm64 go build --tags fts5 -o dist/filestash cmd/main.go
                         cd dist/release && sha256sum * > SHA256SUMS
                         '''
                     }
