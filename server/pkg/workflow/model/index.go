@@ -14,6 +14,7 @@ func InitState() (err error) {
 	if err != nil {
 		return err
 	}
+	db.SetMaxOpenConns(1)
 
 	db.Exec(`
 	CREATE TABLE IF NOT EXISTS workflows (
