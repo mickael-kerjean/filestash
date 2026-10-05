@@ -23,8 +23,8 @@ const (
 
 func init() {
 	DavCache = NewAppCache(2, 1)
-	Backend.Register(CARDDAV, Dav{})
-	Backend.Register(CALDAV, Dav{})
+	Backend.Register(CARDDAV, Dav{which: CARDDAV})
+	Backend.Register(CALDAV, Dav{which: CALDAV})
 }
 
 type Dav struct {
@@ -39,6 +39,11 @@ func (this Dav) Init(params map[string]string, app *App) (IBackend, error) {
 		backend := b.(*Dav)
 		return backend, nil
 	}
+
+	if this.which != params["type"] {
+		return nil, NewError("Invalid backend type for the dav plugin. Expected " + this.which, 500)
+	}
+
 	backend := Dav{
 		url:    strings.ReplaceAll(params["url"], "%{username}", url.PathEscape(params["username"])),
 		which:  params["type"],
