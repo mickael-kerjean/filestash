@@ -28,7 +28,7 @@ import { tagFilter } from "./model_tag.js";
 
 const handleSuccess = (text) => rxjs.tap(() => notification.info(text));
 const handleError = rxjs.catchError((err) => {
-    notification.error(err.message);
+    notification.error(t(err.message));
     throw err;
 });
 const handleErrorRedirectLogin = rxjs.catchError((err) => {
