@@ -101,7 +101,7 @@ export const ls = (path) => {
                 }
                 if (fullpath === path) subscriber.next();
             };
-            source.onerror = (err) => subscriber.error(err);
+            source.onerror = (err) => source.close();
             return () => source.close();
         }),
     ).pipe(
