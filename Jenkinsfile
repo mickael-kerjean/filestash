@@ -31,9 +31,9 @@ pipeline {
                         sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go
                         make init
                         CGO_ENABLED=0 make build
+                        find ./public \\( -name '*.map' -o -name pdf.sandbox.js -o -path '*/vendor/*.html' -o -path '*/codemirror/demo' -o -path '*/codemirror/doc' -o -path '*/codemirror/src' -o -path '*/codemirror/theme' -o -path '*/codemirror/bin' \\) -prune -exec rm -rf {} +
                         CGO_ENABLED=0 GOARCH=amd64 go build -trimpath -ldflags="-s -w" --tags fts5 -o dist/release/filestash_linux_amd64.bin cmd/main.go
                         CGO_ENABLED=0 GOARCH=arm64 go build -trimpath -ldflags="-s -w" --tags fts5 -o dist/release/filestash_linux_arm64.bin cmd/main.go
-                        cd dist/release && sha256sum * > SHA256SUMS
                         '''
                     }
                 }
