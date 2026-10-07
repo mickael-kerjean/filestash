@@ -79,6 +79,16 @@ pipeline {
 
         stage("Release") {
             steps {
+                script {
+                    docker.image("alpine").inside() {
+                        sh '''
+                        wget -q -O /tmp/upx.tar.xz https://github.com/upx/upx/releases/download/v5.2.1/upx-5.2.1-amd64_linux.tar.xz
+                        echo "402162aad30af47e60dbd767fb2e64ca394ace9727ba1f40283641f1d1b91657  /tmp/upx.tar.xz" | sha256sum -c
+                        tar -xJf /tmp/upx.tar.xz -C /tmp
+                        /tmp/upx-5.2.1-amd64_linux/upx --ultra-brute dist/release/*.bin
+                        '''
+                    }
+                }
                 withCredentials([sshUserPrivateKey(credentialsId: "app-filestash-hal", keyFileVariable: "KEY", usernameVariable: "USER")]) {
                     sh 'scp -i "$KEY" dist/release/* "$USER@hal.filestash.app:/mnt/me-kerjean-pages/projects/filestash/downloads/latest/"'
                 }
