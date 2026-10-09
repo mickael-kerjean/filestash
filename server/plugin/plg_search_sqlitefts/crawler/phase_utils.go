@@ -17,7 +17,9 @@ func updateFile(path string, backend IBackend, tx indexer.Manager) error {
 	}
 	reader, err := backend.Cat(path)
 	if err != nil {
-		tx.RemoveAll(path)
+		if err == ErrNotFound {
+			tx.RemoveAll(path)
+		}
 		return err
 	}
 	defer reader.Close()
@@ -40,7 +42,9 @@ func updateFolder(path string, backend IBackend, tx indexer.Manager) error {
 	// Fetch list of folders as in the remote filesystem
 	currFiles, err := backend.Ls(path)
 	if err != nil {
-		tx.RemoveAll(path)
+		if err == ErrNotFound {
+			tx.RemoveAll(path)
+		}
 		return err
 	}
 

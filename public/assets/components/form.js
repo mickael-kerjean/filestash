@@ -145,7 +145,7 @@ export function $renderInput(options = {}) {
                 />
             `);
             if (!($input instanceof HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
-            else if (value) $input.value = value;
+            else if (typeof value === "number") $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
             return $input;
         }
