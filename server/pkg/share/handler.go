@@ -9,8 +9,8 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -71,15 +71,13 @@ func ShareUpsertHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 			}
 			return leftPath + rightPath
 		}(),
-		Password:     NewStringpFromInterface(ctx.Body["password"]),
-		Users:        NewStringpFromInterface(ctx.Body["users"]),
-		Expire:       NewInt64pFromInterface(ctx.Body["expire"]),
-		Url:          NewStringpFromInterface(ctx.Body["url"]),
-		CanManageOwn: NewBoolFromInterface(ctx.Body["can_manage_own"]),
-		CanShare:     NewBoolFromInterface(ctx.Body["can_share"]),
-		CanRead:      NewBoolFromInterface(ctx.Body["can_read"]),
-		CanWrite:     NewBoolFromInterface(ctx.Body["can_write"]),
-		CanUpload:    NewBoolFromInterface(ctx.Body["can_upload"]),
+		Password:  NewStringpFromInterface(ctx.Body["password"]),
+		Users:     NewStringpFromInterface(ctx.Body["users"]),
+		Expire:    NewInt64pFromInterface(ctx.Body["expire"]),
+		Url:       NewStringpFromInterface(ctx.Body["url"]),
+		CanRead:   NewBoolFromInterface(ctx.Body["can_read"]),
+		CanWrite:  NewBoolFromInterface(ctx.Body["can_write"]),
+		CanUpload: NewBoolFromInterface(ctx.Body["can_upload"]),
 	}
 	if err := ShareUpsert(&s); err != nil {
 		Log.Debug("share::upsert '%s'", err.Error())

@@ -14,9 +14,9 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/config"
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
-	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
 	"github.com/mickael-kerjean/filestash/server/pkg/env"
+	"github.com/mickael-kerjean/filestash/server/pkg/sqlite"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
@@ -135,25 +135,21 @@ func ShareUpsert(p *Share) error {
 		return err
 	}
 	j, _ := json.Marshal(&struct {
-		Password     *string `json:"password,omitempty"`
-		Users        *string `json:"users,omitempty"`
-		Expire       *int64  `json:"expire,omitempty"`
-		Url          *string `json:"url,omitempty"`
-		CanShare     bool    `json:"can_share"`
-		CanManageOwn bool    `json:"can_manage_own"`
-		CanRead      bool    `json:"can_read"`
-		CanWrite     bool    `json:"can_write"`
-		CanUpload    bool    `json:"can_upload"`
+		Password  *string `json:"password,omitempty"`
+		Users     *string `json:"users,omitempty"`
+		Expire    *int64  `json:"expire,omitempty"`
+		Url       *string `json:"url,omitempty"`
+		CanRead   bool    `json:"can_read"`
+		CanWrite  bool    `json:"can_write"`
+		CanUpload bool    `json:"can_upload"`
 	}{
-		Password:     p.Password,
-		Users:        p.Users,
-		Expire:       p.Expire,
-		Url:          p.Url,
-		CanShare:     p.CanShare,
-		CanManageOwn: p.CanManageOwn,
-		CanRead:      p.CanRead,
-		CanWrite:     p.CanWrite,
-		CanUpload:    p.CanUpload,
+		Password:  p.Password,
+		Users:     p.Users,
+		Expire:    p.Expire,
+		Url:       p.Url,
+		CanRead:   p.CanRead,
+		CanWrite:  p.CanWrite,
+		CanUpload: p.CanUpload,
 	})
 	_, err = stmt.Exec(p.Id, p.Backend, p.Path, j, p.Auth)
 	return err
@@ -201,7 +197,7 @@ func ShareVerify(s Share, proof Proof) (Proof, error) {
 		if err != nil {
 			return p, err
 		}
-		code := RandomString(4)
+		code := RandomString(6)
 		if _, err := stmt.Exec("email::"+user, code); err != nil {
 			return p, err
 		}

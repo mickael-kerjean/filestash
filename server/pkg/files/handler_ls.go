@@ -93,9 +93,6 @@ func FileLs(ctx *App, res http.ResponseWriter, req *http.Request) {
 		perms.CanDelete = NewBool(false)
 		perms.CanUpload = NewBool(false)
 	}
-	if permissions.CanShare(ctx) == false {
-		perms.CanShare = NewBool(false)
-	}
 
 	entries, err := ctx.Backend.Ls(path)
 	if err != nil {

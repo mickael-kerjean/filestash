@@ -5,8 +5,8 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -21,11 +21,17 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 				return
 			}
 
-			// anyone can manage a share_id that's not been attributed yet
+			// unattributed share_id can be claimed by a logged in user (beside a shared links)
 			s, err := ShareGet(share_id)
 			if err != nil {
 				if err == ErrNotFound {
-					sessionStart(fn)(ctx, res, req)
+					sessionStart(func(ctx *App, res http.ResponseWriter, req *http.Request) {
+						if ctx.Share.Id != "" {
+							SendErrorResult(res, ErrPermissionDenied)
+							return
+						}
+						fn(ctx, res, req)
+					})(ctx, res, req)
 					return
 				}
 				Log.Debug("share::middleware 'cannot get share - %s'", err.Error())
@@ -33,8 +39,7 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 				return
 			}
 
-			// In a scenario where the shared link has already been atributed, we need to make sure
-			// the user that's currently logged in can manage the link. 2 scenarios here:
+			// In a scenario where the shared link has already been atributed, we have 2 scenarios:
 			// 1) scenario 1: the user is the very same one that generated the shared link in the first place
 			ctx.Share = Share{}
 			ctx.Authorization = token.From(req)
@@ -48,29 +53,6 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 				return
 			}
 			// 2) scenario 2: the user is different than the one that has generated the shared link
-			// in this scenario, the link owner might have granted for user the right to reshare links
-			if ctx.Share, err = FromRequest(req); err != nil {
-				Log.Debug("share::middleware 'cannot extract share - %s'", err.Error())
-				SendErrorResult(res, err)
-				return
-			}
-			ctx.Authorization = token.From(req)
-			if ctx.Session, err = extractSession(req, ctx); err != nil {
-				Log.Debug("share::middleware 'cannot extract session 2 - %s'", err.Error())
-				SendErrorResult(res, err)
-				return
-			}
-
-			id := GenerateID(ctx.Session)
-			if s.Backend == id {
-				if s.CanShare == true {
-					fn(ctx, res, req)
-					return
-				}
-				Log.Debug("share::middleware 'permission denied - s.CanShare[%+v] s.Backend[%s]'", s.CanShare, s.Backend)
-			} else {
-				Log.Debug("share::middleware 'permission denied - s.CanShare[%+v] s.Backend[%s] GenerateID[%s]'", s.CanShare, s.Backend, id)
-			}
 			SendErrorResult(res, ErrPermissionDenied)
 			return
 		})

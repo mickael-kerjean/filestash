@@ -24,10 +24,3 @@ func CanUpload(ctx *App) bool {
 	}
 	return true
 }
-
-func CanShare(ctx *App) bool {
-	if ctx.Share.Id != "" {
-		return ctx.Share.CanShare
-	}
-	return true
-}
