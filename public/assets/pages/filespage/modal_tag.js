@@ -23,7 +23,7 @@ export default async function(render, { path }) {
     const $modal = createElement(`
         <div class="component_tag">
             <form class="${shareID ? "hidden" : ""}">
-                <input name="tag" type="text" placeholder="${t("Add a Tag")}" value="">
+                <input name="tag" type="text" placeholder="+ ${t("Tag")}" value="">
             </form>
             <div class="scroll-y" data-bind="taglist">
                 ${generateSkeleton(1)}
