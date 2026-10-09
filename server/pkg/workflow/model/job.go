@@ -16,7 +16,7 @@ type Job struct {
 	UpdatedAt       string `json:"updated_at"`
 }
 
-func CreateJob(workflowID string, input map[string]string) error {
+func CreateJob(workflowID string, input map[string]string, maxQueue int) error {
 	workflow, err := GetWorkflow(workflowID)
 	if err != nil {
 		return err
@@ -34,6 +34,13 @@ func CreateJob(workflowID string, input map[string]string) error {
 		return err
 	}
 	defer tx.Rollback()
+	var queued int
+	if err = tx.QueryRow(
+		`SELECT COUNT(*) FROM jobs WHERE related_workflow = ? AND status = 'READY'`,
+		workflowID,
+	).Scan(&queued); err == nil && queued >= maxQueue {
+		return ErrCongestion
+	}
 	if _, err = tx.Exec(`
 		INSERT INTO jobs (related_workflow, status, steps, input)
 			VALUES (?, 'READY', ?, ?)

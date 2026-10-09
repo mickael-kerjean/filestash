@@ -3,8 +3,8 @@ package workflow
 import (
 	"time"
 
-	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
+	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	. "github.com/mickael-kerjean/filestash/server/pkg/workflow/model"
 )
@@ -28,7 +28,11 @@ func Init() error {
 		}
 		go func(t chan ITriggerEvent) {
 			for trigger := range t {
-				if err := CreateJob(trigger.WorkflowID(), trigger.Input()); err != nil {
+				workflowID := trigger.WorkflowID()
+				if err := CreateJob(workflowID, trigger.Input(), PluginMaxQueue()); err == ErrCongestion {
+					Log.Warning("[workflow] action=createJob workflow=%s err=queue_full", workflowID)
+					continue
+				} else if err != nil {
 					Log.Error("[workflow] action=createJob err=%s", err.Error())
 				}
 				select {

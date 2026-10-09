@@ -44,8 +44,8 @@ func InitState() (err error) {
 
 	db.Exec(`
 	UPDATE jobs
-		SET status = 'READY', updated_at = CURRENT_TIMESTAMP
-		WHERE status IN ('RUNNING', 'CLAIMED')`)
+		SET status = 'FAILURE', updated_at = CURRENT_TIMESTAMP
+		WHERE status IN ('READY', 'PENDING', 'CLAIMED', 'RUNNING')`)
 
 	return nil
 }
