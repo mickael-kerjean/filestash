@@ -3,21 +3,25 @@
 # What is this?
 
 <p>
-    Filestash started as a storage agnostic Dropbox-like file manager that speaks every storage protocol (<a href="https://www.filestash.app/ftp-client.html">FTP</a>, <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, and <a href="https://www.filestash.app/docs/plugin/#storage">about 20 more</a>). It grew into what we want to be the world's best file management platform, centered around <strong>3 separate products</strong>:
+    Filestash started as a storage agnostic Dropbox-like file manager that speaks every storage protocol (<a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, <a href="https://www.filestash.app/ftp-client.html">FTP</a>, NFS, and <a href="https://www.filestash.app/docs/plugin/#storage">about 20 more</a>).
+</p>
+
+<p>
+    It grew into what we want to be the world's best file management platform. The world has enough silos to lock your data in. What is missing is the tooling to give those silos the Dropbox++ treatment with:
 </p>
 
 <ol>
     <li><strong>Web client</strong> <i>(the file manager available from your browser)</i>: <a href="https://www.filestash.app/docs/install-and-upgrade/#configuration">documentation</a> / <a href="https://www.filestash.app/img/screenshots/feature1.png">screenshot</a> / <a href="https://demo.filestash.app">demo</a></li>
-    <li><strong>Native client</strong> <i>(to sync your data on your device)</i>: <a href="https://github.com/mickael-kerjean/fdrive">repo</a> / screenshots for <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-mac.png">mac</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-windows.png">windows</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-linux.png">linux</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-android.png">android</a> & <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-iphone.png">iphone</a></li>
-    <li><strong>Gateways</strong> <i>(to expose your storages over any protocol)</i>: <a href="https://www.filestash.app/docs/guide/sftp-gateway.html#working-example">showcase</a> </li>
+    <li><strong>Native client</strong> <i>(the folder that syncs across your devices)</i>: <a href="https://github.com/mickael-kerjean/fdrive">repo</a> / screenshots for <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-mac.png">mac</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-windows.png">windows</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-linux.png">linux</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-android.png">android</a>,  <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-iphone.png">iphone</a>, and our <a href="https://github.com/mickael-kerjean/fdrive/tree/master/crates/fdrive-docker">docker storage driver</a></li>
+    <li><strong>Gateways</strong> <i>(to expose your data over any protocol)</i>: <a href="https://www.filestash.app/docs/guide/sftp-gateway.html#working-example">showcase</a> </li>
 </ol>
 
 <p>
-    The philosophy that guides this project is: "anything that's not a fundamental truth of the universe lives in a plugin". That keeps the core lean and fast, and the opinions replaceable, so when your requirements get deep or weird, the answer is a plugin, not a fork. You only carry the bloat you really need.
+    Originally made for humans, that tooling now extends to agents as <a href="https://www.filestash.app/docs/guide/agents.html">a filesystem where every access is controlled and every action is monitored</a>.
 </p>
 
 <p>
-    <a href="http://demo.filestash.app"><img src="https://www.filestash.app/img/illustration/filestash-integrations.png" alt="storage + auth architecture" /></a>
+    The philosophy that guides this project is: "anything that's not a fundamental truth of the universe lives in a plugin". That keeps the core lean and fast, and the opinions replaceable, so when your requirements get deep or weird, the answer is a plugin.
 </p>
 
 # Key Features
