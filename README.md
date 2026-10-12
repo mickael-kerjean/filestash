@@ -7,7 +7,7 @@
 </p>
 
 <p>
-    It grew into what we want to be the world's best file management platform. The world has enough silos to lock your data in. What is missing is the tooling to give those silos the Dropbox++ treatment with:
+    It grew into what we want to be the world's best file management platform. The world has enough silos to lock your data in. What is missing is the tooling to give those existing silos the Dropbox++ treatment with:
 </p>
 
 <ol>
