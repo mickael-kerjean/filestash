@@ -38,14 +38,15 @@ func Start(fn HandlerFunc) HandlerFunc {
 		}
 		if ctx.Backend, err = _extractBackend(req, ctx); err != nil {
 			if len(ctx.Session) == 0 {
+				Log.Debug("middleware::session::start action=extractBackend reason=no+session error=%q", err)
 				SendErrorResult(res, ErrNotAuthorized)
 				return
 			}
+			Log.Debug("middleware::session::start action=extractBackend error=%q", err)
 			SendErrorResult(res, err)
 			return
 		}
 		ctx.Languages = _extractLanguages(req)
-
 		fn(ctx, res, req)
 	})
 }
