@@ -100,7 +100,7 @@ async function componentMap(render, { metadata }) {
     render($page);
 
     await new Promise((resolve) => setTimeout(resolve, 500));
-    const TILE_SERVER = "https://tile.openstreetmap.org/${z}/${x}/${y}.png";
+    const TILE_SERVER = "https://tile.openstreetmap.de/${z}/${x}/${y}.png";
     const TILE_SIZE = Math.floor($page.clientWidth / 3 * 100) / 100;
     if (TILE_SIZE === 0) return;
     $page.style.height = "${TILE_SIZE*3}px;";
