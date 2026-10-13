@@ -300,9 +300,14 @@ func (this Get) Middleware() []func(HandlerFunc) HandlerFunc {
 	return middlewares
 }
 
-var staticOverrides = map[string][]byte{}
+type patch struct {
+	id   string
+	diff []byte
+}
 
-func (this Register) StaticPatch(patchFile []byte, opts ...Option) { // idempotent
+var patches = []patch{}
+
+func (this Register) StaticPatch(patchFile []byte, opts ...Option) {
 	options := Options{}
 	for _, opt := range opts {
 		opt(&options)
@@ -310,13 +315,28 @@ func (this Register) StaticPatch(patchFile []byte, opts ...Option) { // idempote
 	if options.ID == "" {
 		options.ID = QuickHash(string(patchFile), 10)
 	}
-	staticOverrides[options.ID] = patchFile
+	inserted := false
+	for i := 0; i < len(patches); i++ {
+		if patches[i].id == options.ID {
+			patches[i].diff = patchFile
+			inserted = true
+		}
+	}
+	if !inserted {
+		patches = append(patches, patch{
+			id:   options.ID,
+			diff: patchFile,
+		})
+	}
+	sort.SliceStable(patches, func(i, j int) bool {
+		return patches[i].id > patches[j].id
+	})
 }
 
 func (this Get) StaticPatch() [][]byte {
 	s := [][]byte{}
-	for _, v := range staticOverrides {
-		s = append(s, v)
+	for _, v := range patches {
+		s = append(s, v.diff)
 	}
 	return s
 }
