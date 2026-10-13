@@ -13,6 +13,7 @@ import (
 	_ "github.com/mickael-kerjean/filestash/server/pkg"
 	_ "github.com/mickael-kerjean/filestash/server/plugin"
 
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
 	"github.com/mickael-kerjean/filestash/server/pkg/extension"
 	"github.com/mickael-kerjean/filestash/server/pkg/workflow"
 
@@ -40,7 +41,7 @@ func Run(router *mux.Router) {
 	}
 	server.Build(router)
 	server.PluginRoutes(router)
-	if os.Getenv("DEBUG") == "true" {
+	if env.DEBUG {
 		server.DebugRoutes(router)
 	}
 	server.CatchAll(router)

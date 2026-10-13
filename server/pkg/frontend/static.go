@@ -20,13 +20,13 @@ import (
 
 	. "github.com/mickael-kerjean/filestash"
 
+	"github.com/mickael-kerjean/filestash/server/pkg/compress"
 	. "github.com/mickael-kerjean/filestash/server/pkg/config"
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/mime"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
-	"github.com/mickael-kerjean/filestash/server/pkg/compress"
 
 	"github.com/bluekeyes/go-gitdiff/gitdiff"
 )
@@ -400,7 +400,6 @@ var preload = [][]string{
 }
 
 func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
-	isDebug := os.Getenv("DEBUG") == "true"
 	buildChunks := func(quality int) (chunks [][]byte, chunksBr [][]byte, chunksGzip [][]byte, etags []string) {
 		numChunks := len(preload)
 		chunks = make([][]byte, numChunks+1)
@@ -448,13 +447,13 @@ func ServeBundle() func(*App, http.ResponseWriter, *http.Request) {
 	}
 
 	quality := 11
-	if isDebug || runtime.NumCPU() <= 4 {
+	if DEBUG || runtime.NumCPU() <= 4 {
 		quality = 8
 	}
 	chunks, chunksBr, chunksGzip, etags := buildChunks(quality)
 
 	return func(ctx *App, res http.ResponseWriter, req *http.Request) {
-		if isDebug {
+		if DEBUG {
 			chunks, chunksBr, chunksGzip, etags = buildChunks(quality)
 		}
 		chunkIndex := 0
@@ -507,6 +506,9 @@ func applyPatch(filePath string) (file *bytes.Buffer) {
 		patchFiles, _, err := gitdiff.Parse(NewReadCloserFromBytes(patch))
 		if err != nil {
 			Log.Debug("ctrl::static cannot parse patch file - %s", err.Error())
+			if DEBUG {
+				os.Exit(1)
+			}
 			return nil
 		}
 		for i := 0; i < len(patchFiles); i++ {
@@ -522,6 +524,9 @@ func applyPatch(filePath string) (file *bytes.Buffer) {
 				patchFiles[i],
 			); err != nil {
 				Log.Debug("ctrl::static err=cannot_apply_patch path=%s err=%s", patchFiles[i].NewName, err.Error())
+				if DEBUG {
+					os.Exit(1)
+				}
 				return nil
 			}
 			outputBuffer = patched

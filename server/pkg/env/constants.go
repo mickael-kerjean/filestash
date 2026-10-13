@@ -12,6 +12,7 @@ var (
 	APPNAME     = "Filestash"
 	BASE        = strings.TrimSuffix(os.Getenv("FILESTASH_BASE"), "/")
 	LICENSE     = "agpl"
+	DEBUG       = os.Getenv("DEBUG") == "true"
 
 	CONFIG_PATH = fromPath("state/config/")
 	CERT_PATH   = fromPath("state/certs/")
