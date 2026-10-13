@@ -19,8 +19,9 @@ var (
 var EmbedPluginList []byte
 
 func init() {
-	if !DEBUG {
-		fsPublic, _ := fs.Sub(wwwPublic, "public")
-		WWWPublic = http.FS(fsPublic)
+	if _, err := os.Stat("./public/"); DEBUG && err == nil {
+		return
 	}
+	fsPublic, _ := fs.Sub(wwwPublic, "public")
+	WWWPublic = http.FS(fsPublic)
 }
