@@ -38,9 +38,9 @@ export default function(render, { path }) {
     const role$ = new rxjs.BehaviorSubject(null);
 
     const state = {
-        /** @type {object} */       form: {},
+        /** @type {object} */ form: {},
         /** @type {any[] | null} */ links: null,
-        /** @type {string} */       slug: randomString(7),
+        /** @type {string} */ slug: randomString(7),
     };
 
     // feature: select
