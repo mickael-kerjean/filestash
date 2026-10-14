@@ -38,8 +38,9 @@ export default function(render, { path }) {
     const role$ = new rxjs.BehaviorSubject(null);
 
     const state = {
-        /** @type {object} */ form: {},
+        /** @type {object} */       form: {},
         /** @type {any[] | null} */ links: null,
+        /** @type {string} */       slug: randomString(7),
     };
 
     // feature: select
@@ -67,6 +68,7 @@ export default function(render, { path }) {
         ctrl(createRender(qs($modal, `[data-bind="share-body"]`)), {
             formState: {
                 path,
+                slug: state.slug,
                 ...state.form,
             },
             formLinks: state.links,
@@ -88,6 +90,7 @@ export default function(render, { path }) {
                     body,
                     url: `api/share/${id}`,
                 }).toPromise();
+                state.slug = randomString(7);
                 assert.truthy(state.links).push({
                     ...body,
                     path: body.path.substring(currentPath().length - 1),
@@ -188,13 +191,13 @@ async function ctrlCreateShare(render, { save, formState }) {
         location.origin + enc(currentPath()),
         enc(formState.path),
     );
-    let id = formState.id || randomString(7);
+    let id = formState.id || formState.slug;
     const $page = createElement(`
         <div>
             <h2 class="no-select pointer">${t("Advanced")}<span><img class="component_icon" draggable="false" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+CiAgPHBhdGggc3R5bGU9ImZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MC41MzMzMzMyMSIgZD0ibSA3LjcwNSw4LjA0NSA0LjU5LDQuNTggNC41OSwtNC41OCAxLjQxLDEuNDEgLTYsNiAtNiwtNiB6IiAvPgogIDxwYXRoIGZpbGw9Im5vbmUiIGQ9Ik0wLS4yNWgyNHYyNEgweiIgLz4KPC9zdmc+Cg==" alt="arrow_bottom"></span></h2>
             <form class="share--content restrictions no-select"></form>
             <div class="shared-link">
-                <input name="create" class="copy" type="text" readonly="" value="${location.origin}${toHref("/s/" + id)}">
+                <input name="create" class="copy" type="text" readonly="" value="${compactURL(location.origin + toHref("/s/" + id))}">
                 <button title="Copy URL">
                     <img class="component_icon" draggable="false" src="${IMAGE.COPY}" alt="copy">
                 </button>
@@ -297,8 +300,8 @@ async function ctrlCreateShare(render, { save, formState }) {
     };
     // sync editable custom link input with link id
     effect(rxjs.fromEvent(qs($form, `[name="url"]`), "keyup").pipe(rxjs.tap((e) => {
-        id = e.target.value.replaceAll(new RegExp("[^0-9A-Za-z\-]", "g"), "");
-        qs(assert.type($form.closest(".component_share"), HTMLElement), `input[name="create"]`).value = `${location.origin}${toHref("/s/" + id)}`;
+        id = e.target.value.replaceAll(new RegExp("[^0-9A-Za-z\-]", "g"), "") || formState.id || formState.slug;
+        qs(assert.type($form.closest(".component_share"), HTMLElement), `input[name="create"]`).value = compactURL(location.origin + toHref("/s/" + id));
     })));
 
     // feature: create a shared link
@@ -354,6 +357,14 @@ function shareObjToRole({ can_read, can_write, can_upload }) {
         return "editor";
     }
     return undefined;
+}
+
+function compactURL(url, max = 38) {
+    const { host, pathname } = new URL(url);
+    const room = max - pathname.length;
+    if (url.length <= max) return url;
+    else if (host.length <= room) return host + pathname;
+    return "..." + host.substring(host.length - room + 3) + pathname;
 }
 
 export function copyToClipboard(str) {
