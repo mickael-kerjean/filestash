@@ -84,14 +84,15 @@ export default function(render, { path }) {
                 role$.next(role);
             },
             save: async({ id, ...data }) => {
-                const body = { id, path, ...data, ...roleToShareObj(role$.value) };
+                const body = { path, ...data, ...roleToShareObj(role$.value) };
                 await ajax({
-                    method: "POST",
+                    method: "PUT",
                     body,
                     url: `api/share/${id}`,
                 }).toPromise();
                 state.slug = randomString(7);
                 assert.truthy(state.links).push({
+                    id,
                     ...body,
                     path: body.path.substring(currentPath().length - 1),
                 });
