@@ -25,9 +25,12 @@ func ApiHeaders(fn HandlerFunc) HandlerFunc {
 		header := res.Header()
 		header["Content-Type"] = headerContentType
 		header["Cache-Control"] = headerContentCache
-		if id := req.Header.Get("X-Request-Id"); id != "" {
-			header["X-Request-Id"] = []string{id}
+		requestID := req.Header["X-Request-Id"]
+		if len(requestID) != 1 || requestID[0] == "" {
+			requestID = []string{QuickString(32)}
+			req.Header["X-Request-Id"] = requestID
 		}
+		header["X-Request-Id"] = requestID
 		fn(ctx, res, req)
 	})
 }
