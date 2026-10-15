@@ -83,7 +83,7 @@ export default function(render, { path }) {
                 };
                 role$.next(role);
             },
-            save: async({ id, ...data }) => {
+            save: async({ id, url, ...data }) => {
                 const body = { path, ...data, ...roleToShareObj(role$.value) };
                 await ajax({
                     method: "PUT",

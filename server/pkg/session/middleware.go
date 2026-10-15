@@ -32,7 +32,6 @@ func Start(fn HandlerFunc) HandlerFunc {
 		}
 		ctx.Authorization = token.From(req)
 		if ctx.Session, err = FromRequest(req, ctx); err != nil {
-			share.RecoverFromBadCookie(res)
 			SendErrorResult(res, err)
 			return
 		}

@@ -252,6 +252,7 @@ export function $renderInput(options = {}) {
                 />
             `);
             if (!($input instanceof HTMLInputElement)) throw new ApplicationError("INTERNAL_ERROR", "assumption failed: missing input");
+            else if (typeof value === "number") $input.value = new Date(value).toISOString().slice(0, 10);
             else if (value) $input.value = value;
             attrs.map((setAttribute) => setAttribute($input));
             return $input;

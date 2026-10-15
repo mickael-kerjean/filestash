@@ -24,7 +24,6 @@ type Metadata struct {
 	CanMove            *bool      `json:"can_move,omitempty"`
 	CanUpload          *bool      `json:"can_upload,omitempty"`
 	CanDelete          *bool      `json:"can_delete,omitempty"`
-	CanShare           *bool      `json:"can_share,omitempty"`
 	HideExtension      *bool      `json:"hide_extension,omitempty"`
 	RefreshOnCreate    *bool      `json:"refresh_on_create,omitempty"`
 	Expire             *time.Time `json:"-"`

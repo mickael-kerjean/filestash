@@ -14,15 +14,15 @@ import (
 func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, *App) (map[string]string, error)) Middleware {
 	return func(fn HandlerFunc) HandlerFunc {
 		return HandlerFunc(func(ctx *App, res http.ResponseWriter, req *http.Request) {
-			share_id := mux.Vars(req)["share"]
-			if share_id == "" {
-				Log.Debug("share::middleware 'invalid share id'")
+			shareID := mux.Vars(req)["share"]
+			if shareID == "" {
+				Log.Debug("pkg::share::middleware reason=invalid+share+id")
 				SendErrorResult(res, ErrNotValid)
 				return
 			}
 
 			// unattributed share_id can be claimed by a logged in user (beside a shared links)
-			s, err := ShareGet(share_id)
+			s, err := ShareGet(shareID)
 			if err != nil {
 				if err == ErrNotFound {
 					sessionStart(func(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -34,7 +34,7 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 					})(ctx, res, req)
 					return
 				}
-				Log.Debug("share::middleware 'cannot get share - %s'", err.Error())
+				Log.Debug("pkg::share::middleware reason=cannot+get+share err=%q", err.Error())
 				SendErrorResult(res, err)
 				return
 			}
@@ -44,7 +44,7 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 			ctx.Share = Share{}
 			ctx.Authorization = token.From(req)
 			if ctx.Session, err = extractSession(req, ctx); err != nil {
-				Log.Debug("share::middleware 'cannot extract session - %s'", err.Error())
+				Log.Debug("pkg::share::middleware reason=cannot+extract+session err=%q", err.Error())
 				SendErrorResult(res, err)
 				return
 			}
@@ -54,7 +54,6 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 			}
 			// 2) scenario 2: the user is different than the one that has generated the shared link
 			SendErrorResult(res, ErrPermissionDenied)
-			return
 		})
 	}
 }

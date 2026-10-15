@@ -8,7 +8,6 @@ type Share struct {
 	Password  *string `json:"password,omitempty"`
 	Users     *string `json:"users,omitempty"`
 	Expire    *int64  `json:"expire,omitempty"`
-	Url       *string `json:"url,omitempty"`
 	CanRead   bool    `json:"can_read"`
 	CanWrite  bool    `json:"can_write"`
 	CanUpload bool    `json:"can_upload"`
