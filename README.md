@@ -12,13 +12,10 @@
 
 <ol>
     <li><strong>Web client</strong> <i>(the file manager available from your browser)</i>: <a href="https://www.filestash.app/docs/install-and-upgrade/#configuration">documentation</a> / <a href="https://www.filestash.app/img/screenshots/feature1.png">screenshot</a> / <a href="https://demo.filestash.app">demo</a></li>
-    <li><strong>Native client</strong> <i>(the folder that syncs across your devices)</i>: <a href="https://github.com/mickael-kerjean/fdrive">repo</a> / screenshots for <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-mac.png">mac</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-windows.png">windows</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-linux.png">linux</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-android.png">android</a>,  <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-iphone.png">iphone</a>, and our <a href="https://github.com/mickael-kerjean/fdrive/tree/master/crates/fdrive-docker">docker storage driver</a></li>
+    <li><strong>Native client for humans</strong> <i>(the folder that syncs across your devices)</i>: <a href="https://github.com/mickael-kerjean/fdrive">repo</a> / screenshots for <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-mac.png">mac</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-windows.png">windows</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-linux.png">linux</a>, <a href="https://downloads.filestash.app/img/app-filestash-www-img-screenshots-fdrive-android.png">android</a></li>
+    <li><strong>Native client for agents</strong> <i>(A shared folder that syncs for your agents)</i>: <a href="https://www.filestash.app/agents/">documentation</a> / <a href="https://www.filestash.app/docs/guide/agents.html#example">demo</a> </li>
     <li><strong>Gateways</strong> <i>(to expose your data over any protocol)</i>: <a href="https://www.filestash.app/docs/guide/sftp-gateway.html#working-example">showcase</a> </li>
 </ol>
-
-<p>
-    Originally made for humans, that tooling now extends to agents as <a href="https://www.filestash.app/docs/guide/agents.html">a filesystem where every access is controlled and every action is monitored</a>.
-</p>
 
 <p>
     The philosophy that guides this project is: "anything that's not a fundamental truth of the universe lives in a plugin". That keeps the core lean and fast, and the opinions replaceable, so when your requirements get deep or weird, the answer is a plugin.
@@ -136,6 +133,6 @@ Familiar with the infamous comment from Dropbox's launch on HN? In my memory it 
 
 # Credits
 
-Filestash stands on the shoulder of: [contributors](https://github.com/mickael-kerjean/filestash/graphs/contributors), folks developing [awesome libraries](https://github.com/mickael-kerjean/filestash/blob/master/go.mod), [BrandonM](https://news.ycombinator.com/user?id=BrandonM), a whole bunch of C stuff (the [C standard library](https://imgs.xkcd.com/comics/dependency.png), [libjpeg](https://libjpeg-turbo.org/), [libpng](https://www.libpng.org/pub/png/libpng.html), [libgif](https://giflib.sourceforge.net/), [libraw](https://www.libraw.org/about) and many more), [fontawesome](https://fontawesome.com), [material](https://material.io/icons/), [Browser stack](https://www.browserstack.com/) to let us test on real devices, and the many guys from Nebraska and elsewhere who have been thanklessly maintaining the critical pieces that Filestash sits on top:
+Filestash stands on the shoulders of: [contributors](https://github.com/mickael-kerjean/filestash/graphs/contributors), folks developing [awesome libraries](https://github.com/mickael-kerjean/filestash/blob/master/go.mod), [BrandonM](https://news.ycombinator.com/user?id=BrandonM), a whole bunch of C stuff (the [C standard library](https://imgs.xkcd.com/comics/dependency.png), [libjpeg](https://libjpeg-turbo.org/), [libpng](https://www.libpng.org/pub/png/libpng.html), [libgif](https://giflib.sourceforge.net/), [libraw](https://www.libraw.org/about) and many more), [fontawesome](https://fontawesome.com), [material](https://material.io/icons/), [Browser stack](https://www.browserstack.com/) to let us test on real devices, and the many guys from Nebraska and elsewhere who have been thanklessly maintaining the critical pieces that Filestash sits on top:
 
 <img src="https://imgs.xkcd.com/comics/dependency.png" alt="credit to the nebraska guy on xkcd" />
