@@ -158,11 +158,13 @@ func ShareVerify(share Share, proof Proof) (Proof, error) {
 		t := template.New("email")
 		t.Parse(tmplEmailVerification)
 		t.Execute(&b, struct {
-			Code     string
-			Username string
+			Code       string
+			Username   string
+			WhiteLabel bool
 		}{
 			code,
 			user + "[" + Hash(user+env.SECRET_KEY_DERIVATE_FOR_HASH, 10) + "]",
+			env.IsWhiteLabel(),
 		})
 		p.Key = "code"
 		p.Message = NewString("We've sent you a message with a verification code")
