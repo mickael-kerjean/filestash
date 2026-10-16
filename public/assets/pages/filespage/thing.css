@@ -178,6 +178,7 @@
     margin: 0;
     display: block;
     border-radius: 3px;
+    position: initial;
 }
 .list > .component_thing.view-grid > img.component_icon.thumbnail.placeholder {
     position: absolute;
