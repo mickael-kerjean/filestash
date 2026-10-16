@@ -13,6 +13,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/mickael-kerjean/filestash/server/pkg/cookie"
+	"github.com/mickael-kerjean/filestash/server/pkg/files"
 	"github.com/mickael-kerjean/filestash/server/pkg/token"
 
 	"github.com/gorilla/mux"
@@ -51,6 +52,12 @@ func ShareUpsertHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 	shareID := mux.Vars(req)["share"]
 	path, err := PathBuilder(ctx, NewStringFromInterface(ctx.Body["path"]))
 	if err != nil {
+		SendErrorResult(res, err)
+		return
+	} else if backend, err := files.NewBackend(ctx, ctx.Session); err != nil {
+		SendErrorResult(res, err)
+		return
+	} else if _, err = backend.Stat(path); err != nil {
 		SendErrorResult(res, err)
 		return
 	}
