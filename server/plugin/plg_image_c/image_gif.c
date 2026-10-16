@@ -102,7 +102,7 @@ int gif_to_webp(int inputDesc, int outputDesc, int targetSize) {
 }
 
 // adapted from https://android.googlesource.com/platform/external/giflib/+/dc07290edccc2c3fc4062da835306f809cea1fdc/dgif_lib.c
-// we got rid of unecessary stuff for our use case and reduce the processing
+// we got rid of unnecessary stuff for our use case and reduced the processing
 // to the first frame only which isn't possible using stock libgif functions
 int DGifSlurp2(GifFileType *GifFile) {
   clock_t t = clock();

@@ -39,7 +39,7 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 				return
 			}
 
-			// In a scenario where the shared link has already been atributed, we have 2 scenarios:
+			// In a scenario where the shared link has already been attributed, we have 2 scenarios:
 			// 1) scenario 1: the user is the very same one that generated the shared link in the first place
 			ctx.Share = Share{}
 			ctx.Authorization = token.From(req)

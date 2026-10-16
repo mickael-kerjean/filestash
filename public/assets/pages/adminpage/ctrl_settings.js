@@ -66,7 +66,7 @@ export default AdminHOC(async function(render) {
     ));
 });
 
-// the config contains stuff wich we don't want to show in this page such as:
+// the config contains stuff which we don't want to show in this page such as:
 // - the middleware info which is set in the backend page
 // - the connections info which is set in the backend page
 // - the constant info which is for the setup page

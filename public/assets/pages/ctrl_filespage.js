@@ -44,7 +44,7 @@ export default WithShell(function(render) {
     // feature4: render the upload button
     componentUpload(createRender(qs($page, "[is=\"component_upload\"]")));
 
-    // feature5: move accross windows
+    // feature5: move across windows
     componentMove();
 
     // feature6: accessibility / skip links
