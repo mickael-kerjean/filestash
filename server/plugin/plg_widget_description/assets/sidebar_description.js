@@ -34,6 +34,7 @@ export default async function(render, { path }) {
 
     effect(getDescription(path).pipe(
         rxjs.tap(({ text }) => $DOM.textarea.value = text),
+        rxjs.catchError(() => rxjs.EMPTY),
     ));
 
     effect(rxjs.fromEvent($DOM.textarea, "input").pipe(
