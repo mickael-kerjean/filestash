@@ -91,6 +91,83 @@ register({
     },
 });
 
+register({
+    id: "sudo",
+    description: "don't panic. mostly harmless",
+    run(shell, { args }) {
+        if (localStorage.getItem("ricked") !== null) {
+            const choices = [
+                "With great power comes .... \"no\", not today.",
+                "Who do you think you are, root?",
+                "whoami returned error 418: you are a teapot, not root",
+                "I'm going to pretend I didn't see that",
+                "Bold of you to assume you're in the sudoers file",
+            ];
+            shell.term.writeln(choices[Math.floor(Math.random() * choices.length)]);
+            shell.prompt();
+            return;
+        }
+        localStorage.setItem("ricked", "true");
+        const w = 480, h = 360;
+        const left = window.screenX + (window.outerWidth - w) / 2;
+        const top = window.screenY + (window.outerHeight - h) / 2;
+        const popup = window.open("", "rickroll", `popup,width=${w},height=${h},left=${left},top=${top}`);
+        const dance = () => sub.add(rxjs.interval(30).pipe(
+            rxjs.takeWhile(() => popup && !popup.closed),
+            rxjs.map((i) => i * 30 * Math.PI / 531), // one hop per beat, the song is at 113bpm
+        ).subscribe((t) => popup.moveTo(
+            left + Math.round(120 * Math.sin(t / 2)),
+            top - Math.round(40 * Math.abs(Math.sin(t))),
+        )));
+        const sub = rxjs.from(new Promise((resolve) => {
+            if (!popup) return resolve();
+            popup.document.title = "Never gonna give you root";
+            popup.document.body.style = "margin:0;height:100vh;background:#000;display:flex;align-items:center;justify-content:center;";
+            popup.document.body.appendChild(Object.assign(popup.document.createElement("img"), {
+                src: "https://upload.wikimedia.org/wikipedia/en/3/39/First_seconds_of_Never_Gonna_Give_You_Up.gif",
+                onload: resolve,
+                onerror: resolve,
+                style: "max-width:100%;max-height:100%;",
+            }));
+        })).pipe(
+            rxjs.concatMap(() => rxjs.from([
+                [dance, 0], ["never ", 0], ...Array(20).fill([".", 50]),
+                ["\r\nnever ", 500], ["gonna ", 200], ["give ", 200], ["you ", 200], ["root", 200],
+                ["\r\nnever ", 500], ["gonna ", 200], ["give ", 200], ["you ", 200],
+                ["r", 200], ...Array(7).fill(["o", 100]), ["t", 100],
+                ["\r\n\r\n", 2000], [() => popup?.close(), 0],
+                ...[
+                    "The Guide has this to say about the console widget:",
+                    "    Countless beings have typed sudo into it with great confidence. All",
+                    "    of them were disappointed. Most of them were rickrolled.",
+                    "",
+                    "Every command you type takes the scenic route:",
+                    "",
+                    "    browser → console plugin → Filestash API over ajax → identity provider plugin",
+                    "            → authorisation plugin → storage plugin → your storage",
+                    "",
+                    "",
+                    "Every command gets exactly as far as a click would: same route, same",
+                    "permissions, no shortcuts however loudly you ask. This has made a lot",
+                    "of sysadmins very relieved, and has been widely regarded as a good move.",
+                    "",
+                    "Every stop along the way is a plugin. So is nearly everything else you haven't",
+                    "seen yet. The console is merely one of them, and by no means the most improbable.",
+                    "",
+                    "Don't panic. Turn to §42",
+                ].flatMap((line) => [...[...line].map((char) => [char, 20]), ["\r\n", 200]]),
+                ["\r\n", 0], [() => shell.prompt(), 0],
+            ])),
+            rxjs.concatMap(([text, wait]) => rxjs.of(text).pipe(rxjs.delay(wait))),
+            rxjs.tap((text) => typeof text === "function" ? text() : shell.term.write(text)),
+        ).subscribe();
+        return () => {
+            sub.unsubscribe();
+            popup?.close();
+        };
+    },
+});
+
 // register({
 //     id: "xdg-open",
 //     description: "Open a file",
