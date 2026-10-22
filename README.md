@@ -118,7 +118,7 @@ And to be clear, code is the power-user path, there are [no code options](https:
 
 <details><summary>Engineering manual</summary><a href="https://www.filestash.app/docs/guide/plugin-development.html">create your own plugins</a>, <a href="https://www.filestash.app/2026/09/10/rust-runtime-plugin/">rust plugins</a>, <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_runtime_cookbook">runtime plugin cookbook</a>, <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin">plugin collection</a></details>
 
-<details><summary>Important ROT13 transmission intercepted</summary><a href="https://en.wikipedia.org/wiki/ROT13">Svaq gur Onory svfu</a></details>
+<details><summary>🐟 Mostly harmless ROT13 transmission intercepted</summary><a href="https://en.wikipedia.org/wiki/ROT13">Svaq gur Onory svfu</a></details>
 
 # Support
 
