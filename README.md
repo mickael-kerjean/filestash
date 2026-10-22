@@ -114,7 +114,11 @@ And to be clear, code is the power-user path, there are [no code options](https:
 
 # Getting Started
 
-To install Filestash, head to the [Getting started](https://www.filestash.app/docs/?origin=github) guide. If you want to leverage plugins, head over to the [inventory](https://www.filestash.app/docs/plugin/?origin=github), or learn about [developing your own plugins](https://www.filestash.app/docs/guide/plugin-development.html?origin=github).
+<details><summary>Standard installation procedure</summary><a href="https://www.filestash.app/docs/?origin=github">the guide</a>, <a href="https://www.filestash.app/docs/plugin/?origin=github">plugin inventory</a></details>
+
+<details><summary>Engineering manual</summary><a href="https://www.filestash.app/docs/guide/plugin-development.html">create your own plugins</a>, <a href="https://www.filestash.app/2026/09/10/rust-runtime-plugin/">rust plugins</a>, <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin/plg_runtime_cookbook">runtime plugin cookbook</a>, <a href="https://github.com/mickael-kerjean/filestash/tree/master/server/plugin">plugin collection</a></details>
+
+<details><summary>Important ROT13 transmission intercepted</summary><a href="https://en.wikipedia.org/wiki/ROT13">Svaq gur Onory svfu</a></details>
 
 # Support
 
