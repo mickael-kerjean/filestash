@@ -3,7 +3,7 @@
 # What is this?
 
 <p>
-    Filestash began in 2017 as a Dropbox-like file manager that speaks every storage protocol: <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, <a href="https://www.filestash.app/ftp-client.html">FTP</a>, NFS, and <a href="https://www.filestash.app/docs/plugin/#storage">the rest</a> <sub>(probably the oddest <a href="https://demo.filestash.app/login?type=webdav&url=https://webdav.filestash.app/&next=/view/Documents/office.docx">Babel fish</a> in the Universe)</sub>
+    Filestash began in 2017 as a Dropbox-like file manager that speaks every storage protocol: <a href="https://www.filestash.app/ssh-file-transfer.html">SFTP</a>, <a href="https://www.filestash.app/s3-browser.html">S3</a>, <a href="https://www.filestash.app/smb-client.html">SMB</a>, <a href="https://www.filestash.app/webdav-client.html">WebDAV</a>, IPFS, <a href="https://www.filestash.app/ftp-client.html">FTP</a>, NFS, and <a href="https://www.filestash.app/docs/plugin/#storage">everything else</a> <sub>(probably the oddest <a href="https://demo.filestash.app/login?type=webdav&url=https://webdav.filestash.app/&next=/view/Documents/office.docx">Babel fish</a> in the Universe)</sub>
 </p>
 
 <p>
