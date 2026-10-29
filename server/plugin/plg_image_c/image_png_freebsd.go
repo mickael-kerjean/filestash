@@ -1,7 +1,7 @@
 package plg_image_c
 
 // #include "image_png.h"
-// #cgo LDFLAGS: -L /usr/local/lib -L /usr/lib -L /lib -l:libsharpyuv.a -l:libpng.a -l:libz.a -l:libwebp.a -l:libpthread.a -fopenmp
+// #cgo LDFLAGS: -L /usr/local/lib -L /usr/lib -L /lib -l:libsharpyuv.a -l:libpng.a -l:libz.a -l:libwebp.a -fopenmp
 // #cgo CFLAGS: -I /usr/local/include
 import "C"
 
