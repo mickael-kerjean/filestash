@@ -4,18 +4,19 @@ import (
 	"net/http"
 	"net/url"
 
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 type Filestash struct {
-	Token    string
-	URL      string
-	Insecure bool
-	Storage  string
 	Client   *http.Client
-	Trace    tracer.TraceContext
+	Headers  http.Header
+	Insecure bool
 	onDone   func(error) error
+	Storage  string
+	Token    string
+	Trace    tracer.TraceContext
+	URL      string
 }
 
 func NewClient() Filestash {
@@ -34,6 +35,11 @@ func NewClient() Filestash {
 
 func (this Filestash) WithTrace(tc tracer.TraceContext) Filestash {
 	this.Trace = tc
+	return this
+}
+
+func (this Filestash) WithHeaders(headers http.Header) Filestash {
+	this.Headers = headers
 	return this
 }
 

@@ -25,6 +25,9 @@ func (this Filestash) request(method string, url string, body io.Reader) (_ io.R
 	req.Host = Config.Get("general.host").String()
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", this.Token))
 	req.Header.Set("X-Requested-With", "SDKHttpRequest")
+	for k, v := range this.Headers {
+		req.Header[k] = v
+	}
 	tracer.Inject(this.Trace, req)
 
 	resp, err := this.Client.Do(req)
