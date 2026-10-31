@@ -168,7 +168,9 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
         $iframe.onerror = () => postParent({type: "error", msg: "Not Found" });
 
         window.addEventListener("message", (event) => {
-            let msg = JSON.parse(event.data);
+            if (typeof event.data !== "string") return;
+            let msg;
+            try { msg = JSON.parse(event.data); } catch (err) { return; }
             if (!msg) return;
             switch(msg.MessageId) {
                 case "App_LoadingStatus": if (["Initialized", "Document_Loaded"].indexOf(msg.Values.Status) !== -1) {
