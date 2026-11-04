@@ -112,3 +112,15 @@ func (s S3Backend) path(p string) S3Path {
 		path,
 	}
 }
+
+func (s S3Backend) metadata() map[string]*string {
+	out := map[string]*string{}
+	for _, kval := range strings.Split(s.params["metadata"], ",") {
+		key, value, ok := strings.Cut(strings.TrimSpace(kval), "=")
+		if !ok || key == "" {
+			continue
+		}
+		out[key] = NewString(value)
+	}
+	return out
+}

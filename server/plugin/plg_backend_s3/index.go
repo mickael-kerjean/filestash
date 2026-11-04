@@ -123,8 +123,8 @@ func (this S3Backend) LoginForm() Form {
 				Type:        "enable",
 				Placeholder: "Advanced",
 				Target: []string{
-					"s3_region", "s3_endpoint", "s3_role_arn", "s3_session_token",
-					"s3_path", "s3_encryption_key", "s3_number_thread", "s3_timeout",
+					"s3_region", "s3_endpoint", "s3_role_arn", "s3_session_token", "s3_path",
+					"s3_encryption_key", "s3_number_thread", "s3_timeout", "s3_metadata",
 				},
 			},
 			FormElement{
@@ -168,6 +168,12 @@ func (this S3Backend) LoginForm() Form {
 				Name:        "number_thread",
 				Type:        "text",
 				Placeholder: "Num. Thread",
+			},
+			FormElement{
+				Id:          "s3_metadata",
+				Name:        "metadata",
+				Type:        "text",
+				Placeholder: "Metadata: file-owner=1000,file-group=1000",
 			},
 			FormElement{
 				Id:          "s3_timeout",
@@ -363,8 +369,9 @@ func (this S3Backend) Mkdir(path string) error {
 		return err
 	}
 	_, err := client.PutObjectWithContext(this.app.Context, &s3.PutObjectInput{
-		Bucket: aws.String(p.bucket),
-		Key:    aws.String(EnforceDirectory(p.path)),
+		Bucket:   aws.String(p.bucket),
+		Key:      aws.String(EnforceDirectory(p.path)),
+		Metadata: this.metadata(),
 	})
 	return err
 }
@@ -570,6 +577,7 @@ func (this S3Backend) Touch(path string) error {
 		Bucket:        aws.String(p.bucket),
 		Key:           aws.String(p.path),
 		ContentType:   aws.String(GetMimeType(path)),
+		Metadata:      this.metadata(),
 	}
 	if this.params["encryption_key"] != "" {
 		input.SSECustomerAlgorithm = aws.String("AES256")
@@ -590,6 +598,7 @@ func (this S3Backend) Save(path string, file io.Reader) error {
 		Bucket:      aws.String(p.bucket),
 		Key:         aws.String(p.path),
 		ContentType: aws.String(GetMimeType(path)),
+		Metadata:    this.metadata(),
 	}
 	if this.params["encryption_key"] != "" {
 		input.SSECustomerAlgorithm = aws.String("AES256")
