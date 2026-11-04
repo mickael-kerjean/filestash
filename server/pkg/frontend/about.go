@@ -14,6 +14,7 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/env"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+
 	"github.com/mickael-kerjean/filestash/server/pkg/extension"
 )
 
@@ -50,7 +51,10 @@ func AboutHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		Version:    fmt.Sprintf("Filestash %s.%s", APP_VERSION, BUILD_DATE),
 		CommitHash: BUILD_REF,
 		Checksum: [2]string{
-			hashFileContent(GetAbsolutePath("filestash"), 0),
+			hashFileContent(func() string {
+				exe, _ := os.Executable()
+				return exe
+			}(), 0),
 			hashFileContent(GetAbsolutePath(CONFIG_PATH, "config.json"), 0),
 		},
 		License: strings.ToUpper(LICENSE),
