@@ -15,7 +15,10 @@ import (
 	"time"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+
 	"github.com/mickael-kerjean/filestash/server/middleware"
+	"github.com/mickael-kerjean/filestash/server/pkg/env"
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 
 	"github.com/gorilla/mux"
 	"github.com/patrickmn/go-cache"
@@ -42,8 +45,6 @@ type onlyOfficeCacheData struct {
 }
 
 func init() {
-	SECRET_KEY_DERIVATE_FOR_ONLYOFFICE = Hash("ONLYOFFICE_"+SECRET_KEY, len(SECRET_KEY))
-	onlyoffice_cache = cache.New(720*time.Minute, 720*time.Minute)
 	plugin_enable = func() bool {
 		return Config.Get("features.office.enable").Schema(func(f *FormElement) *FormElement {
 			if f == nil {
@@ -164,6 +165,9 @@ func init() {
 	}
 
 	Hooks.Register.Onload(func() {
+		SECRET_KEY_DERIVATE_FOR_ONLYOFFICE = Hash("ONLYOFFICE_"+env.SECRET_KEY, len(env.SECRET_KEY))
+		onlyoffice_cache = cache.New(720*time.Minute, 720*time.Minute)
+
 		plugin_enable()
 		server_url()
 		can_chat()
@@ -255,7 +259,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		Log.Warning("plg_editor_onlyoffice::handler request_disabled")
 		return
 	}
-	if model.CanRead(ctx) == false {
+	if permissions.CanRead(ctx) == false {
 		SendErrorResult(res, ErrPermissionDenied)
 		return
 	} else if server_url() == "" {
@@ -296,7 +300,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 
 	filename = filepath.Base(path)
 	oodsMode = func() string {
-		if model.CanEdit(ctx) == false {
+		if permissions.CanEdit(ctx) == false {
 			return "view"
 		}
 		return "edit"
