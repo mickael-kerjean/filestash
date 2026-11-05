@@ -6,8 +6,8 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func FileSearch(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -45,6 +45,13 @@ func FileSearch(ctx *App, res http.ResponseWriter, req *http.Request) {
 						return "directory"
 					}
 					return "file"
+				}(),
+				FTime: func() int64 {
+					t := searchResults[i].ModTime()
+					if t.IsZero() {
+						return 0
+					}
+					return t.Unix()
 				}(),
 				FPath: "/" + strings.TrimPrefix(
 					searchResults[i].Path(),
