@@ -25,6 +25,7 @@ func main() {
 }
 
 func Run(router *mux.Router) {
+	check(env.Init(), "Environment assertion failed. err=%s")
 	check(InitLogger(), "Logger init failed. err=%s")
 	check(InitConfig(), "Config init failed. err=%s")
 	check(extension.Discovery(), "Plugin Discovery failed. err=%s")

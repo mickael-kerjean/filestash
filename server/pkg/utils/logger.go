@@ -20,7 +20,7 @@ var Log = &log{
 	},
 }
 
-func InitLogger(path string) (err error) {
+func InitLogger(path string) error {
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		slog.Printf("ERROR log file: %+v", err)
