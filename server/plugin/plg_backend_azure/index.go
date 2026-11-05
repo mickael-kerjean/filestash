@@ -89,9 +89,13 @@ func (this *AzureBlob) Ls(path string) ([]os.FileInfo, error) {
 		return files, nil
 	}
 
+	prefix := ap.blobName
+	if prefix != "" {
+		prefix = EnforceDirectory(prefix)
+	}
 	client := this.client.ServiceClient().NewContainerClient(ap.containerName)
 	pager := client.NewListBlobsHierarchyPager("/", &container.ListBlobsHierarchyOptions{
-		Prefix: &ap.blobName,
+		Prefix: &prefix,
 	})
 	for pager.More() {
 		resp, err := pager.NextPage(this.ctx)
@@ -243,9 +247,13 @@ func (this *AzureBlob) Rm(path string) error {
 		_, err := this.client.DeleteBlob(this.ctx, ap.containerName, ap.blobName, nil)
 		return err
 	}
+	prefix := ap.blobName
+	if prefix != "" {
+		prefix = EnforceDirectory(prefix)
+	}
 	pager := this.client.NewListBlobsFlatPager(ap.containerName, &container.ListBlobsFlatOptions{
 		Include: container.ListBlobsInclude{Snapshots: true, Versions: true},
-		Prefix:  &ap.blobName,
+		Prefix:  &prefix,
 	})
 	for pager.More() {
 		resp, err := pager.NextPage(this.ctx)
@@ -289,9 +297,17 @@ func (this *AzureBlob) Mv(from string, to string) error {
 	}
 
 	// CASE 2: Move a directory
+	fromPrefix := apFrom.blobName
+	if fromPrefix != "" {
+		fromPrefix = EnforceDirectory(fromPrefix)
+	}
+	toPrefix := apTo.blobName
+	if toPrefix != "" {
+		toPrefix = EnforceDirectory(toPrefix)
+	}
 	pager := this.client.NewListBlobsFlatPager(apFrom.containerName, &container.ListBlobsFlatOptions{
 		Include: container.ListBlobsInclude{Snapshots: true, Versions: true},
-		Prefix:  &apFrom.blobName,
+		Prefix:  &fromPrefix,
 	})
 	for pager.More() {
 		resp, err := pager.NextPage(this.ctx)
@@ -305,7 +321,7 @@ func (this *AzureBlob) Mv(from string, to string) error {
 				return ErrNotValid
 			}
 			oldName := *blob.Name
-			newName := strings.Replace(oldName, apFrom.blobName, apTo.blobName, 1)
+			newName := strings.Replace(oldName, fromPrefix, toPrefix, 1)
 			sourceClient := this.client.ServiceClient().NewContainerClient(apFrom.containerName).NewBlockBlobClient(oldName)
 			destClient := this.client.ServiceClient().NewContainerClient(apTo.containerName).NewBlockBlobClient(newName)
 			if _, err := destClient.StartCopyFromURL(
