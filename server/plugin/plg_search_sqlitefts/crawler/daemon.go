@@ -3,6 +3,7 @@ package crawler
 import (
 	"container/heap"
 	"context"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -128,7 +129,7 @@ func (this *daemonState) HintLs(app *App, path string) {
 	}
 	// instantiate the new indexer
 	app.Context = context.Background()
-	crawlerBackend, err := app.Backend.Init(app.Session, app)
+	crawlerBackend, err := app.Backend.Init(maps.Clone(app.Session), app)
 	if err != nil {
 		Log.Warning("plg_search_sqlitefs::init message=cannot_create_crawler err=%s", err.Error())
 		return
