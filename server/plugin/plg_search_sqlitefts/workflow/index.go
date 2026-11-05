@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"context"
 	"encoding/json"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -62,20 +63,10 @@ func (this StepIndexer) Execute(params map[string]string, input map[string]strin
 		return input, nil
 	}
 	defer runningIndexers.Delete(id)
-	app := &App{
-		Context: context.Background(),
-		Session: session,
-	}
-	app.Backend, err = NewBackend(app, app.Session)
+	app, err := createApp(session)
 	if err != nil {
-		Log.Warning("plg_search_sqlitefts::workflow message=cannot_create_backend err=%s", err.Error())
 		return input, err
 	}
-	handler := HandlerFunc(func(ctx *App, _ http.ResponseWriter, req *http.Request) {})
-	for _, middleware := range Hooks.Get.Middleware() {
-		handler = middleware(handler)
-	}
-	handler(app, httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, WithBase("/api/files/ls"), nil))
 	path, err := PathBuilder(app, EnforceDirectory(params["path"]))
 	if err != nil {
 		Log.Warning("plg_search_sqlitefts::workflow message=path_builder err=%s", err.Error())
@@ -107,6 +98,10 @@ func (this StepIndexer) Execute(params map[string]string, input map[string]strin
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			worker, err := createApp(session)
+			if err != nil {
+				return
+			}
 			cond.L.Lock()
 			for crwlr.FoldersUnknown.Len() > 0 || inflight > 0 {
 				for crwlr.FoldersUnknown.Len() == 0 && inflight > 0 {
@@ -119,7 +114,7 @@ func (this StepIndexer) Execute(params map[string]string, input map[string]strin
 				inflight++
 				cond.L.Unlock()
 
-				files, err := crwlr.Backend.Ls(doc.Path)
+				files, err := worker.Backend.Ls(doc.Path)
 				if err != nil {
 					Log.Warning("plg_search_sqlitefts::workflow message=ls_error path=%s err=%s", doc.Path, err.Error())
 				}
@@ -139,4 +134,23 @@ func (this StepIndexer) Execute(params map[string]string, input map[string]strin
 		Log.Warning("plg_search_sqlitefts::workflow message=commit_error err=%s", err.Error())
 	}
 	return input, nil
+}
+
+func createApp(session map[string]string) (*App, error) {
+	app := &App{
+		Context: context.Background(),
+		Session: maps.Clone(session),
+	}
+	backend, err := NewBackend(app, app.Session)
+	if err != nil {
+		Log.Warning("plg_search_sqlitefts::workflow message=cannot_create_backend err=%s", err.Error())
+		return nil, err
+	}
+	app.Backend = backend
+	handler := HandlerFunc(func(ctx *App, _ http.ResponseWriter, req *http.Request) {})
+	for _, middleware := range Hooks.Get.Middleware() {
+		handler = middleware(handler)
+	}
+	handler(app, httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, WithBase("/api/files/ls"), nil))
+	return app, nil
 }
