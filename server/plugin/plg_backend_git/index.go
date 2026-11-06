@@ -125,7 +125,7 @@ func (g Git) LoginForm() Form {
 			},
 			{
 				Name:        "password",
-				Type:        "long_password",
+				Type:        "password",
 				Placeholder: "Password",
 			},
 			{
