@@ -85,7 +85,11 @@ func exportShared(b *runtime.HostModuleBuilder) {
 	}).Export("req_path", func(ctx context.Context, mem runtime.IMemory, outPtr, outCap uint32) uint32 {
 		return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.URL.Path)
 	}).Export("req_header", func(ctx context.Context, mem runtime.IMemory, nPtr, nLen, outPtr, outCap uint32) uint32 {
-		return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.Header.Get(string(mem.Read(nPtr, nLen))))
+		name := string(mem.Read(nPtr, nLen))
+		if http.CanonicalHeaderKey(name) == "Host" {
+			return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.Host)
+		}
+		return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.Header.Get(name))
 	}).Export("req_url_query", func(ctx context.Context, mem runtime.IMemory, nPtr, nLen, outPtr, outCap uint32) uint32 {
 		return mem.WriteString(outPtr, outCap, stateHttp(ctx).r.URL.Query().Get(string(mem.Read(nPtr, nLen))))
 	}).Export("app_body", func(ctx context.Context, mem runtime.IMemory, outPtr, outCap uint32) uint32 {
