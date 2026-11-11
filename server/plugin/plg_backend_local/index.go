@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"os/user"
+	"runtime"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 
@@ -66,11 +67,14 @@ func ensurePath(path string) string {
 	if _, err := os.Stat(path); err != nil {
 		return "/"
 	}
-	return path
+	return fromOSPath(path)
 }
 
 func (this Local) Ls(path string) ([]os.FileInfo, error) {
-	f, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
+	if path == "/" && runtime.GOOS == "windows" {
+		return listDrives()
+	}
+	f, err := SafeOsOpenFile(osPath(path), os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +93,7 @@ func (this Local) Ls(path string) ([]os.FileInfo, error) {
 }
 
 func (this Local) Stat(path string) (os.FileInfo, error) {
-	f, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
+	f, err := SafeOsOpenFile(osPath(path), os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +106,7 @@ func (this Local) Stat(path string) (os.FileInfo, error) {
 }
 
 func (this Local) Cat(path string) (io.ReadCloser, error) {
-	f, err := SafeOsOpenFile(path, os.O_RDONLY, os.ModePerm)
+	f, err := SafeOsOpenFile(osPath(path), os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
@@ -118,19 +122,19 @@ func (this Local) Cat(path string) (io.ReadCloser, error) {
 }
 
 func (this Local) Mkdir(path string) error {
-	return SafeOsMkdir(path, 0755)
+	return SafeOsMkdir(osPath(path), 0755)
 }
 
 func (this Local) Rm(path string) error {
-	return SafeOsRemoveAll(path)
+	return SafeOsRemoveAll(osPath(path))
 }
 
 func (this Local) Mv(from, to string) error {
-	return SafeOsRename(from, to)
+	return SafeOsRename(osPath(from), osPath(to))
 }
 
 func (this Local) Save(path string, content io.Reader) error {
-	f, err := SafeOsOpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
+	f, err := SafeOsOpenFile(osPath(path), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
 	if err != nil {
 		return err
 	}
@@ -142,7 +146,7 @@ func (this Local) Save(path string, content io.Reader) error {
 }
 
 func (this Local) Touch(path string) error {
-	f, err := SafeOsOpenFile(path, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	f, err := SafeOsOpenFile(osPath(path), os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return err
 	}
