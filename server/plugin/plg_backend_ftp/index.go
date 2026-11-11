@@ -112,13 +112,21 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 		}
 		return cfg
 	}
+	verify := func(client *goftp.Client) error {
+		home, err := client.Getwd()
+		if err != nil {
+			home = "/"
+		}
+		_, err = client.ReadDir(home)
+		return err
+	}
 	for i := 0; i < len(connectStrategy); i++ {
 		if connectStrategy[i] == "ftp" {
 			client, err := goftp.DialConfig(cfgBuilder(5*time.Second, false), hostname)
 			if err != nil {
 				Log.Debug("plg_backend_ftp::ftp dial %s", err.Error())
 				continue
-			} else if _, err := client.ReadDir("/"); err != nil {
+			} else if err := verify(client); err != nil {
 				client.Close()
 				Log.Debug("plg_backend_ftp::ftp verify %s", err.Error())
 				continue
@@ -138,7 +146,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 			if err != nil {
 				Log.Debug("plg_backend_ftp::ftps::implicit dial %s", err.Error())
 				continue
-			} else if _, err := client.ReadDir("/"); err != nil {
+			} else if err := verify(client); err != nil {
 				Log.Debug("plg_backend_ftp::ftps::implicit verify %s", err.Error())
 				client.Close()
 				continue
@@ -153,7 +161,7 @@ func (f Ftp) Init(params map[string]string, app *App) (IBackend, error) {
 			if err != nil {
 				Log.Debug("plg_backend_ftp::ftps::explicit dial '%s'", err.Error())
 				continue
-			} else if _, err := client.ReadDir("/"); err != nil {
+			} else if err := verify(client); err != nil {
 				Log.Debug("plg_backend_ftp::ftps::explicit verify %s", err.Error())
 				client.Close()
 				continue
