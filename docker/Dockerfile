@@ -6,7 +6,7 @@ ARG GIT_BRANCH=master
 RUN git clone --depth 1 --single-branch --branch ${GIT_BRANCH} ${GIT_REPO}
 
 # STEP2: BUILD BACKEND
-FROM golang:1.26-trixie AS builder_backend
+FROM golang:1.26.10-trixie AS builder_backend
 WORKDIR /home/filestash/
 COPY --from=builder_prepare /home/filestash/ .
 RUN apt-get update > /dev/null && \
