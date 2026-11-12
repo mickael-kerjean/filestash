@@ -52,7 +52,7 @@ func (this *Crawler) DiscoverPush(doc *Document, files []os.FileInfo, tx indexer
 		}
 		if f.IsDir() {
 			var performPush bool = false
-			p := filepath.Join(doc.Path, name) + "/"
+			p := filepath.ToSlash(filepath.Join(doc.Path, name)) + "/"
 			if err := dbInsert(doc.Path, f, tx); err == nil {
 				performPush = true
 			} else if err == indexer.ErrConstraint {

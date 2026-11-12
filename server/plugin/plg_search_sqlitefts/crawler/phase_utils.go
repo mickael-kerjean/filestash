@@ -99,7 +99,7 @@ func updateFolder(path string, backend IBackend, tx indexer.Manager) error {
 			}
 		}
 		if previousFilenameStillExist == false {
-			p := filepath.Join(path, previousFiles[i].Name())
+			p := filepath.ToSlash(filepath.Join(path, previousFiles[i].Name()))
 			if previousFiles[i].IsDir() {
 				p += "/"
 			}
@@ -118,7 +118,7 @@ func dbUpsert(parent string, f os.FileInfo, tx indexer.Manager) error {
 }
 
 func dbUpdate(parent string, f fs.FileInfo, tx indexer.Manager) error {
-	path := filepath.Join(parent, f.Name())
+	path := filepath.ToSlash(filepath.Join(parent, f.Name()))
 	if f.IsDir() {
 		path += "/"
 	}

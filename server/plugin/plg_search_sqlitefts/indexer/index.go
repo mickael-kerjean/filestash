@@ -232,7 +232,7 @@ func (this sqliteQueries) FileContentUpdate(path string, reader io.ReadCloser) e
 
 func (this sqliteQueries) FileCreate(f fs.FileInfo, parentPath string, withUpsert bool) (err error) {
 	name := f.Name()
-	path := filepath.Join(parentPath, f.Name())
+	path := filepath.ToSlash(filepath.Join(parentPath, f.Name()))
 	if f.IsDir() {
 		sql := "INSERT INTO file(path, parent, filename, type, size, modTime, indexTime) VALUES(?, ?, ?, ?, ?, ?, ?)"
 		if withUpsert {
