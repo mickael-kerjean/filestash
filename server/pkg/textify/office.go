@@ -8,6 +8,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -15,7 +16,7 @@ import (
 )
 
 func Office(r io.ReadCloser) (io.ReadCloser, error) {
-	tmpName := fmt.Sprintf("/tmp/docx_%d.docx", rand.Intn(1000000))
+	tmpName := filepath.Join(os.TempDir(), fmt.Sprintf("docx_%d.docx", rand.Intn(1000000)))
 	defer os.Remove(tmpName)
 	f, err := os.OpenFile(tmpName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
@@ -23,8 +24,10 @@ func Office(r io.ReadCloser) (io.ReadCloser, error) {
 	}
 	_, err = io.Copy(f, r)
 	if err != nil {
+		f.Close()
 		return nil, err
 	}
+	f.Close()
 	z, err := zip.OpenReader(tmpName)
 	if err != nil {
 		return nil, err

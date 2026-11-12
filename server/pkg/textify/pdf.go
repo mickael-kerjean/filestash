@@ -7,12 +7,13 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func PDF(r io.ReadCloser) (io.ReadCloser, error) {
-	tmpName := fmt.Sprintf("/tmp/pdf_%d.dat", rand.Intn(1000000))
+	tmpName := filepath.Join(os.TempDir(), fmt.Sprintf("pdf_%d.dat", rand.Intn(1000000)))
 	defer os.Remove(tmpName)
 	f, err := os.OpenFile(tmpName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
