@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -14,9 +15,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
+var (
 	CLEAR_CACHE_AFTER = 12
-	VIDEO_CACHE_PATH  = "data/cache/video/"
+	VIDEO_CACHE_PATH  = filepath.Join(TMP_PATH, "video")
 )
 
 //go:embed index.js
@@ -68,7 +69,7 @@ func createPlaylist(reader io.ReadCloser, ctx *App, res *http.ResponseWriter, re
 		}
 		io.Copy(f, reader)
 		f.Close()
-		time.AfterFunc(CLEAR_CACHE_AFTER*time.Hour, func() { os.Remove(cachePath) })
+		time.AfterFunc(time.Duration(CLEAR_CACHE_AFTER)*time.Hour, func() { os.Remove(cachePath) })
 	}
 	reader.Close()
 

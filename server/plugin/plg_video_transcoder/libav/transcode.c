@@ -263,6 +263,7 @@ static int configure_video(stream *s, const FFRequest *req, char *errbuf, int er
 		}
 	} else if (strcmp(name, "libx264") == 0) {
 		s->enc->pix_fmt = AV_PIX_FMT_YUV420P;
+		s->enc->max_b_frames = 0;
 		av_dict_set(&s->enc_opts, "preset", "veryfast", 0);
 		av_dict_set(&s->enc_opts, "x264opts",
 		            "subme=0:me_range=4:rc_lookahead=10:me=dia:no_chroma_me:8x8dct=0:partitions=none", 0);

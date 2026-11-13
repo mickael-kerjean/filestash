@@ -8,14 +8,13 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 )
 
-const (
-	VideoCachePath = "data/cache/video-thumbnail/"
-)
+var VideoCachePath = filepath.Join(TMP_PATH, "video-thumbnail")
 
 var plugin_enable = func() bool {
 	return Config.Get("features.video.enable_thumbnail").Schema(func(f *FormElement) *FormElement {

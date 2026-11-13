@@ -56,7 +56,7 @@ func transcodeVideoSegment(ctx context.Context, cachePath string, segmentNumber 
 	case "libx264":
 		args = append(args,
 			"-vf", fmt.Sprintf("scale=-2:%d,format=yuv420p", VIDEO_MAX_HEIGHT),
-			"-c:v", "libx264", "-preset", "veryfast",
+			"-c:v", "libx264", "-preset", "veryfast", "-bf", "0",
 			"-x264opts", "subme=0:me_range=4:rc_lookahead=10:me=dia:no_chroma_me:8x8dct=0:partitions=none",
 		)
 	default:
