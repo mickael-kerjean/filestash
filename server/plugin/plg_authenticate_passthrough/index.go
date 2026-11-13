@@ -77,8 +77,5 @@ func (this Passthrough) EntryPoint(idpParams map[string]string, req *http.Reques
 }
 
 func (this Passthrough) Callback(formData map[string]string, idpParams map[string]string, res http.ResponseWriter) (map[string]string, error) {
-	return map[string]string{
-		"user":     formData["user"],
-		"password": formData["password"],
-	}, nil
+	return formData, nil
 }
