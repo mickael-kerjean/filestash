@@ -18,8 +18,11 @@ export default function(render, { endpoint = "" }) {
     render($page);
 
     effect(rxjs.fromEvent(window, "message").pipe(
-        rxjs.filter((event) => event.origin === location.origin),
-        rxjs.map((event) => JSON.parse(event.data)),
+        rxjs.filter((event) => event.origin === location.origin && typeof event.data === "string"),
+        rxjs.map((event) => {
+            try { return JSON.parse(event.data); }
+            catch (err) { return {}; }
+        }),
         rxjs.tap(({ type, msg }) => {
             switch (type) {
             case "error":
