@@ -40,6 +40,7 @@ export async function init() {
             selectedLanguage = userLanguage;
         }
     }
+    document.documentElement.setAttribute("lang", selectedLanguage);
     if (selectedLanguage === "en") {
         return Promise.resolve();
     }
