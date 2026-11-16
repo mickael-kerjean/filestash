@@ -270,7 +270,7 @@ export function $renderInput(options = {}) {
             return $input;
         }
         case "image": {
-            const $img = createElement("<img />");
+            const $img = createElement("<img alt=\"preview\" />");
             $img.setAttribute("id", id);
             $img.setAttribute("src", value);
             return $img;
@@ -289,7 +289,7 @@ export function $renderInput(options = {}) {
             const draw = (val) => {
                 $preview.innerHTML = "";
                 if ((val || "").substring(0, 10) === "data:image") $preview.appendChild(createElement(`
-                    <img class="full-width" src="${safe(val)}" />
+                    <img class="full-width" src="${safe(val)}" alt="preview" />
                 `));
                 else if ((val || "").substring(0, 20) === "data:application/pdf") $preview.appendChild(createElement(`
                     <object class="full-width" type="application/pdf" data="${safe(val)}" style="height:250px;" />

@@ -181,7 +181,7 @@ export default function(render, { getFilename, getDownloadUrl, acl$, mime }) {
             }));
         }),
         rxjs.mergeMap(() => {
-            $loader.replaceChildren(createElement(`<img src="${ICON.PLAY}" />`));
+            $loader.replaceChildren(createElement(`<img src="${ICON.PLAY}" alt="play" />`));
             animate($loader, {
                 time: 150,
                 keyframes: [

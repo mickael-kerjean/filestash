@@ -13,11 +13,11 @@ export default function(render, removeLabel) {
 function renderDesktop(render, removeLabel) {
     const $modal = createElement(`
         <div>
-            <span style="white-space: nowrap;">
+            <label for="modal-delete-input" style="white-space: nowrap;">
                 <span class="no-select">${t("Confirm by typing")} "</span>${removeLabel}<span class="no-select">"</span>
-            </span>
+            </label>
             <form style="margin-top: 10px;">
-                <input class="component_input" type="text" autocomplete="new-password" value="">
+                <input id="modal-delete-input" class="component_input" type="text" autocomplete="new-password" value="">
                 <div class="modal-error-message"></div>
             </form>
         </div>

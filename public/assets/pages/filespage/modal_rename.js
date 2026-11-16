@@ -14,9 +14,9 @@ export default function(render, filename) {
 function renderDesktop(render, filename) {
     const $modal = createElement(`
         <div>
-            ${t("Rename as")}:
+            <label for="modal-rename-input">${t("Rename as")}:</label>
             <form style="margin-top: 10px;">
-                <input class="component_input" type="text" autocomplete="new-password" value="">
+                <input id="modal-rename-input" class="component_input" type="text" autocomplete="new-password" value="">
                 <div class="modal-error-message"></div>
             </form>
         </div>

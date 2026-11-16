@@ -128,7 +128,7 @@ async function componentMap(render, { metadata }) {
         };
     }(lat, lng, 11));
     const $tiles = createElement(`
-        <div class="bigpicture">
+        <div class="bigpicture" aria-hidden="true">
             <div class="line">
                 <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, -1, -1)}" class="btl" style="height: ${TILE_SIZE}px;">
                 <img crossorigin="anonymous" src="${mapper.tile(TILE_SERVER, 0, -1)}" style="height: ${TILE_SIZE}px;">

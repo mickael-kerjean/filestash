@@ -57,9 +57,11 @@ body:not(.dark-mode) .component_audioplayer .audioplayer_container {
     margin-left: -5px;
     width: 60px;
     cursor: pointer;
-    outline: none;
     -webkit-appearance: none;
     background: transparent;
+}
+body:not([data-accessibility="strict"]) .component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"] {
+    outline: none;
 }
 .component_audioplayer .audioplayer_container .audioplayer_box .audioplayer_control .buttons input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;

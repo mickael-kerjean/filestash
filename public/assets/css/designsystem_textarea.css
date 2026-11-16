@@ -13,7 +13,6 @@
     font-size: 16px;
     padding: 5px 0px 5px 0px;
     margin: 0 0 8px 0;
-    outline: none;
     box-sizing: border-box;
     color: inherit;
     vertical-align: top;
@@ -23,6 +22,9 @@
     line-height: 18px;
     border-bottom: 2px solid rgba(70, 99, 114, 0.1);
     transition: border-color 0.2s ease-out;
+}
+body:not([data-accessibility="strict"]) .component_textarea {
+    outline: none;
 }
 .component_textarea[rows="1"] {
     max-height: 30px;

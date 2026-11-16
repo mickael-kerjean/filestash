@@ -27,7 +27,7 @@ export default function(render, { getFilename, getDownloadUrl, mime, hasMenubar 
             <component-menubar filename="${safe(getFilename())}" class="${!hasMenubar && "hidden"}"></component-menubar>
             <div class="component_image_container">
                 <div class="images_wrapper no-select">
-                    <img class="photo idle hidden" draggable="false" />
+                    <img class="photo idle hidden" draggable="false" alt="preview" />
                     <div data-bind="component_navigation"></div>
                 </div>
                 <div class="images_aside scroll-y"></div>

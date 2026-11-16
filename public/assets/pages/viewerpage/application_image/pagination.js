@@ -31,14 +31,14 @@ export default async function(render, { $img }) {
     if (state.length <= 1) return;
     const $page = createFragment(`
         <div class="component_pager left hidden">
-            <a data-link>
+            <a data-link aria-label="previous">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="15 18 9 12 15 6"/>
                 </svg>
             </a>
         </div>
         <div class="component_pager right hidden">
-            <a>
+            <a aria-label="next">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>

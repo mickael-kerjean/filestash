@@ -70,9 +70,11 @@ button::-moz-focus-inner {
     border: 0;
 }
 
-input, textarea, select {
-    transition: border 0.2s;
+body:not([data-accessibility="strict"]) input,
+body:not([data-accessibility="strict"]) textarea,
+body:not([data-accessibility="strict"]) select {
     outline: none;
+    transition: border 0.2s;
 }
 
 body:not([data-accessibility="strict"]) button:focus,
