@@ -83,6 +83,7 @@ func WOPIHandler_GetFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		io.Copy(w, f)
+		f.Close()
 	})
 }
 
