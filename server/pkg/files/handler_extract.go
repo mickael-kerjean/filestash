@@ -13,8 +13,8 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
-	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 	. "github.com/mickael-kerjean/filestash/server/pkg/permissions"
+	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 )
 
 func FileExtract(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -39,6 +39,7 @@ func FileExtract(ctx *App, res http.ResponseWriter, req *http.Request) {
 	}
 
 	c, cancel := context.WithTimeout(ctx.Context, time.Duration(zip_timeout())*time.Second)
+	defer cancel()
 	extractPath := func(base string, path string) (string, error) {
 		base = EnforceDirectory(filepath.Dir(base))
 		path = filepath.Join(base, path)
@@ -64,6 +65,7 @@ func FileExtract(ctx *App, res http.ResponseWriter, req *http.Request) {
 			return nil
 		}
 		defer os.Remove(f.Name())
+		defer f.Close()
 		io.Copy(f, zipFile)
 		s, err := f.Stat()
 		if err != nil {
@@ -89,7 +91,9 @@ func FileExtract(ctx *App, res http.ResponseWriter, req *http.Request) {
 					continue
 				}
 				p = strings.Join(spl[0:i], "/")
-				p, err = extractPath(path, p)
+				if p, err = extractPath(path, p); err != nil {
+					continue
+				}
 				if strings.HasSuffix(p, "/") == false {
 					p += "/"
 				}
