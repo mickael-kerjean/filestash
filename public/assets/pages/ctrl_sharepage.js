@@ -54,7 +54,7 @@ function ctrlEmail(render, { shareID, setState }) {
         <div class="component_container component_page_sharelogin">
             <form>
                 <div class="input_group">
-                    <input type="email" name="email" placeholder="${t("Your email address")}" class="component_input" autocomplete>
+                    <input type="email" name="email" placeholder="${t("Your email address")}" class="component_input" autocomplete="email">
                     <button class="transparent">
                         <component-icon name="arrow_right"></component-icon>
                     </button>

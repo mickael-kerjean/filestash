@@ -248,6 +248,7 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 				}
 				return b
 			}(),
+			"accessibility": Config.Get("general.accessibility").Bool(),
 		}
 		calculatedEtag := QuickHash(base+BUILD_REF+LICENSE+sign, 10)
 		head.Set("ETag", calculatedEtag)

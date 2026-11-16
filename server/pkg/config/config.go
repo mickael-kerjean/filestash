@@ -66,6 +66,7 @@ func NewConfiguration() *Configuration {
 					FormElement{Name: "cookie_timeout", Type: "number", Default: 60 * 24 * 7, Description: "Authentication Cookie expiration in minutes. Default: 60 * 24 * 7 = 1 week"},
 					FormElement{Name: "extended_session", Type: "boolean", Default: false, Description: "Store extra auth data in session"},
 					FormElement{Name: "custom_css", Type: "long_text", Default: "", Description: "Setcustom css code for your instance"},
+					FormElement{Name: "accessibility", Type: "boolean", Default: false, Description: "Strict WCAG 2.1 AA mode"},
 				},
 			},
 			Form{
