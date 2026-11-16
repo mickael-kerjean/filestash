@@ -75,10 +75,10 @@ func (this Htpasswd) EntryPoint(idpParams map[string]string, req *http.Request, 
 	res.Write([]byte(Page(`
       <form method="post" class="component_middleware">
         <label>
-          <input type="text" name="user" value="" placeholder="User" autocorrect="off" autocapitalize="off" />
+          <input type="text" name="user" value="" placeholder="User" autocorrect="off" autocapitalize="off" autocomplete="username" />
         </label>
         <label>
-          <input type="password" name="password" value="" placeholder="Password" />
+          <input type="password" name="password" value="" placeholder="Password" autocomplete="current-password" />
         </label>
         <button>CONNECT</button>
         ` + getFlash() + `
