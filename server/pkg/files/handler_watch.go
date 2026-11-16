@@ -12,11 +12,16 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
 
 	"github.com/mickael-kerjean/filestash/server/pkg/journal"
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 )
 
 const heartbeatPeriod = 15 * time.Second
 
 func FileWatch(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if permissions.CanRead(ctx) == false {
+		SendErrorResult(res, ErrPermissionDenied)
+		return
+	}
 	flusher, ok := res.(http.Flusher)
 	if !ok {
 		SendErrorResult(res, NewError("streaming not supported", 500))
