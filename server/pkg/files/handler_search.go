@@ -13,7 +13,8 @@ import (
 func FileSearch(ctx *App, res http.ResponseWriter, req *http.Request) {
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
-		path = "/"
+		SendErrorResult(res, err)
+		return
 	}
 	q := req.URL.Query().Get("q")
 	if CanRead(ctx) == false {
