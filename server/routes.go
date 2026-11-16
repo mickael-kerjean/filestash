@@ -64,9 +64,9 @@ func Build(r *mux.Router) {
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SessionStart, LoggedInOnly, PluginInjector}
 	router.HandleFunc("/cat", NewMiddlewareChain(files.FileCat, middlewares)).Methods("GET", "HEAD")
 	router.HandleFunc("/zip", NewMiddlewareChain(files.FileDownloader, middlewares)).Methods("GET")
-	router.HandleFunc("/unzip", NewMiddlewareChain(files.FileExtract, middlewares)).Methods("POST")
 	middlewares = []Middleware{ApiHeaders, SecureHeaders, SecureOrigin, SessionStart, LoggedInOnly, PluginInjector}
 	router.HandleFunc("/cat", NewMiddlewareChain(files.FileAccess, middlewares)).Methods("OPTIONS")
+	router.HandleFunc("/unzip", NewMiddlewareChain(files.FileExtract, middlewares)).Methods("POST")
 	router.HandleFunc("/cat", NewMiddlewareChain(files.FileSave, middlewares)).Methods("POST", "PATCH")
 	router.HandleFunc("/save", NewMiddlewareChain(files.FileSave, middlewares)).Methods("POST", "PATCH", "HEAD", "OPTIONS")
 	router.HandleFunc("/ls", NewMiddlewareChain(files.FileLs, middlewares)).Methods("GET")
