@@ -62,7 +62,21 @@ func WOPIHandler_CheckFileInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func WOPIHandler_GetFile(w http.ResponseWriter, r *http.Request) {
+	if plugin_enable() == false {
+		SendErrorResult(w, ErrNotFound)
+		return
+	}
 	WOPIExecute(w, r)(func(ctx *App, fullpath string, w http.ResponseWriter) {
+		if permissions.CanRead(ctx) == false {
+			SendErrorResult(w, ErrPermissionDenied)
+			return
+		}
+		for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+			if err := auth.Cat(ctx, fullpath); err != nil {
+				SendErrorResult(w, ErrNotAuthorized)
+				return
+			}
+		}
 		f, err := ctx.Backend.Cat(fullpath)
 		if err != nil {
 			SendErrorResult(w, err)
@@ -74,7 +88,21 @@ func WOPIHandler_GetFile(w http.ResponseWriter, r *http.Request) {
 
 func WOPIHandler_PutFile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+	if plugin_enable() == false {
+		SendErrorResult(w, ErrNotFound)
+		return
+	}
 	WOPIExecute(w, r)(func(ctx *App, fullpath string, w http.ResponseWriter) {
+		if permissions.CanEdit(ctx) == false {
+			SendErrorResult(w, ErrPermissionDenied)
+			return
+		}
+		for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+			if err := auth.Save(ctx, fullpath); err != nil {
+				SendErrorResult(w, ErrNotAuthorized)
+				return
+			}
+		}
 		err := ctx.Backend.Save(fullpath, r.Body)
 		if err != nil {
 			SendErrorResult(w, err)
