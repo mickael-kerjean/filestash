@@ -18,7 +18,7 @@ import (
 )
 
 func FileExtract(ctx *App, res http.ResponseWriter, req *http.Request) {
-	if CanRead(ctx) == false {
+	if CanRead(ctx) == false || CanEdit(ctx) == false {
 		Log.Debug("extract::permission 'permission denied'")
 		SendErrorResult(res, ErrPermissionDenied)
 		return
