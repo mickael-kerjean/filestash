@@ -43,6 +43,25 @@ func server_url() string {
 	}).String()
 }
 
+func default_action() string {
+	return Config.Get("features.office.office_action").Schema(func(f *FormElement) *FormElement {
+		if f == nil {
+			f = &FormElement{}
+		}
+		f.Id = "office_action"
+		f.Name = "office_action"
+		f.Type = "text"
+		f.Description = "Action to take when opening a document. See relevant documentation for for possible options."
+		f.Default = "edit"
+		f.Placeholder = "Eg: (collabora) edit, interactivepreview, view, view_comment"
+		if u := os.Getenv("OFFICE_ACTION"); u != "" {
+			f.Default = u
+			f.Placeholder = fmt.Sprintf("Default: '%s'", u)
+		}
+		return f
+	}).String()
+}
+
 func origin() string {
 	return Config.Get("features.office.filestash_server").Schema(func(f *FormElement) *FormElement {
 		if f == nil {
