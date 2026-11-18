@@ -249,6 +249,7 @@ type WOPIApp struct {
 type WOPIAction struct {
 	Ext    string `xml:"ext,attr"`
 	URLSrc string `xml:"urlsrc,attr"`
+	Name   string `xml:"name,attr"`
 }
 
 func wopiDiscovery(ctx *App, fullpath string) (string, error) {
