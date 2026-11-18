@@ -60,14 +60,16 @@ export function $renderInput(options = {}) {
         } = props;
 
         const attrs = [];
-        attrs.push(($node) => $node.setAttribute("name", path.join(".")));
+        attrs.push(($node) => {
+            $node.setAttribute("name", path.join("."));
+            $node.setAttribute("autocorrect", "off");
+            $node.setAttribute("autocapitalize", "off");
+            $node.setAttribute("spellcheck", "false");
+        });
         if (id) attrs.push(($node) => $node.setAttribute("id", id));
         if (placeholder) attrs.push(($node) => $node.setAttribute("placeholder", placeholder));
         if (!autocomplete || props.autocomplete === false) attrs.push(($node) => {
             $node.setAttribute("autocomplete", "off");
-            $node.setAttribute("autocorrect", "off");
-            $node.setAttribute("autocapitalize", "off");
-            $node.setAttribute("spellcheck", "off");
             if (type === "password") {
                 $node.setAttribute("data-lpignore", "true"); // LastPass
                 $node.setAttribute("data-1p-ignore", "true"); // 1Password
