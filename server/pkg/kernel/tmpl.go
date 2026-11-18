@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"math/big"
 	"os"
 	"regexp"
@@ -38,10 +39,10 @@ func TmplExec(params string, input map[string]string) (string, error) {
 	return b.String(), nil
 }
 
-func TmplParams(data map[string]string) map[string]string {
+func TmplParams(data ...map[string]string) map[string]string {
 	out := map[string]string{}
-	for key, value := range data {
-		out[key] = value
+	for _, value := range data {
+		maps.Copy(out, value)
 	}
 	out["machine_id"] = system.GenerateMachineID()
 	for _, value := range os.Environ() {

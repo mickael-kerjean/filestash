@@ -85,7 +85,7 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		return
 	}
 	for k, v := range idpParams {
-		out, err := TmplExec(NewStringFromInterface(v), idpParams)
+		out, err := TmplExec(NewStringFromInterface(v), TmplParams(formData, idpParams))
 		if err != nil {
 			http.Redirect(
 				res, req,
