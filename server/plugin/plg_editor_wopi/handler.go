@@ -279,7 +279,7 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 	for _, netZone := range discovery.NetZones {
 		for _, app := range netZone.Apps {
 			for _, action := range app.Actions {
-				if action.Name == default_action() {
+				if action.Name == default_action() && action.Ext == fileType {
 					urlsrc = action.URLSrc
 				}
 			}
