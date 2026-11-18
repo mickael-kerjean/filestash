@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"slices"
 	"strings"
 	"time"
@@ -202,13 +203,26 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 			templateBind[key] = value
 		}
 	}
-	redirectURI := templateBind["next"]
-	if redirectURI == "" {
-		redirectURI = WithBase("/")
-	}
-	if templateBind["nav"] != "" {
-		redirectURI += "?nav=" + templateBind["nav"]
-	}
+	redirectURI := func(nextURL string, nav string) string {
+		link, err := url.Parse(nextURL)
+		if err != nil {
+			return WithBase("/")
+		} else if link.Path == "" {
+			link.Path = WithBase("/")
+		} else if strings.HasPrefix(link.Path, "//") {
+			link.Path = WithBase("/")
+		}
+		q := link.Query()
+		if nav != "" {
+			q.Set("nav", nav)
+		}
+		return (&url.URL{
+			Path:     link.Path,
+			RawPath:  link.RawPath,
+			RawQuery: q.Encode(),
+			Fragment: link.Fragment,
+		}).String()
+	}(templateBind["next"], templateBind["nav"])
 
 	// Step3: create a backend connection object
 	session, err := func(tb map[string]string) (map[string]string, error) {
