@@ -155,8 +155,8 @@ var tmplFuncs = template.FuncMap{
 		}
 		return strings.Join(chunks, ", "), nil
 	},
-	"debug": func(data string) (string, error) {
-		Log.Debug("ctrl/tmpl data=%s", data)
+	"debug": func(data any) (any, error) {
+		Log.Debug("ctrl/tmpl data=%#v", data)
 		return data, nil
 	},
 	"decryptGCM": func(key string, str string) (string, error) {
