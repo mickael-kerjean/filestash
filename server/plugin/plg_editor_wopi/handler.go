@@ -249,6 +249,7 @@ type WOPIApp struct {
 type WOPIAction struct {
 	Ext    string `xml:"ext,attr"`
 	URLSrc string `xml:"urlsrc,attr"`
+	Name   string `xml:"name,attr"`
 }
 
 func wopiDiscovery(ctx *App, fullpath string) (string, error) {
@@ -272,13 +273,13 @@ func wopiDiscovery(ctx *App, fullpath string) (string, error) {
 		return "", err
 	}
 
-	// STEP3: find the right URLsrc for the desired filetype
+	// STEP3: find the right URLsrc for the desired action as defined in config
 	var urlsrc = ""
 	fileType := strings.TrimPrefix(filepath.Ext(fullpath), ".")
 	for _, netZone := range discovery.NetZones {
 		for _, app := range netZone.Apps {
 			for _, action := range app.Actions {
-				if action.Ext == fileType {
+				if action.Name == default_action() && action.Ext == fileType {
 					urlsrc = action.URLSrc
 				}
 			}
