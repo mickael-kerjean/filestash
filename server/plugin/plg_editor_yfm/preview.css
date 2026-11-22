@@ -1,0 +1,15 @@
+:root {
+    color-scheme: light dark;
+}
+
+body {
+    margin: 0;
+    color: CanvasText;
+    background: Canvas;
+    font-family: system-ui, sans-serif;
+}
+
+main {
+    padding: 20px clamp(14px, 4vw, 42px);
+    overflow-wrap: anywhere;
+}

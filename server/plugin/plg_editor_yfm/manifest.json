@@ -1,0 +1,12 @@
+{
+  "author": "Filestash YFM contributors",
+  "version": "v0.1.0",
+  "modules": [
+    {
+      "type": "xdg-open",
+      "mime": "text/markdown",
+      "entrypoint": "editor.js",
+      "application": "editor"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+.with-yfm-preview > .CodeMirror {
+    right: 50%;
+}
+
+filestash-yfm-preview {
+    position: absolute;
+    inset: 0 0 0 50%;
+    display: flex;
+    flex-direction: column;
+    border-inline-start: 1px solid var(--light);
+    background: var(--bg-color);
+}
+
+filestash-yfm-preview[hidden] {
+    display: none;
+}
+
+filestash-yfm-preview iframe {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    border: 0;
+}
+
+.yfm-preview-status {
+    padding: 8px 16px;
+    white-space: pre-line;
+    overflow: auto;
+    max-height: 25%;
+    font-size: 0.85rem;
+}
+
+.yfm-preview-status:empty {
+    display: none;
+}
+
+.component_menubar .action-item .yfm-preview-toggle {
+    padding: 4px 10px;
+    white-space: nowrap;
+    font: inherit;
+}
+
+.component_menubar .action-item .yfm-preview-toggle[aria-pressed="true"] {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+@media (max-width: 760px) {
+    .with-yfm-preview > .CodeMirror {
+        inset: 0 0 50%;
+        height: 50%;
+    }
+
+    filestash-yfm-preview {
+        inset: 50% 0 0;
+        border-inline-start: 0;
+        border-block-start: 1px solid var(--light);
+    }
+}

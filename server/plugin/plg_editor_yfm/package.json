@@ -1,0 +1,16 @@
+{
+  "name": "filestash-editor-yfm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@diplodoc/transform": "4.78.14"
+  },
+  "devDependencies": {
+    "esbuild": "0.27.7",
+    "esbuild-plugins-node-modules-polyfill": "1.8.2"
+  }
+}
