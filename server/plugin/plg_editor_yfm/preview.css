@@ -1,12 +1,71 @@
 :root {
-    color-scheme: light dark;
+    color-scheme: light;
+    --preview-text: #25282c;
+    --preview-background: #fff;
+    --yfm-color-text: var(--preview-text);
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    scrollbar-color: #626a78 #1e1f22;
+    --preview-text: #e8eaf0;
+    --preview-background: #1e1f22;
+    --yfm-color-base: var(--preview-background);
+    --yfm-color-border: #41454e;
+    --yfm-color-link: #79b8ff;
+    --yfm-color-link-hover: #b2d6ff;
+    --yfm-color-accent: #79b8ff;
+    --yfm-color-inline-code: #b8dbff;
+    --yfm-color-inline-code-background: #2d3542;
+    --yfm-color-code-background: #2b2e36;
+    --yfm-color-code-hovered-background: #3a404b;
+    --yfm-color-line-numbers: #afb7c4;
+    --yfm-color-note-info-background: #222f43;
+    --yfm-color-note-tip-background: #20362d;
+    --yfm-color-note-warning-background: #3a3020;
+    --yfm-color-note-important-background: #42282c;
+    --yfm-color-table: var(--preview-text);
+    --yfm-color-table-background: var(--preview-background);
+    --yfm-color-table-border: #41454e;
+    --yfm-color-table-head-background: #292c33;
+    --yfm-color-table-stripe-row-background: #24262c;
+    --yfm-color-term-title: var(--yfm-color-link);
+    --yfm-color-term-title-hover: var(--yfm-color-link-hover);
+    --yfm-color-term-dfn-background: #2b2e36;
+    --yfm-color-term-dfn-pseudo-shadow: #41454e;
+    --yfm-color-modal-content: #2b2e36;
+    --g-color-text-primary: var(--preview-text);
+    --g-color-text-secondary: #b4bdcb;
+    --g-color-line-generic: #41454e;
+    --g-color-base-simple-hover: #2b2e36;
+}
+
+:root[data-theme="dark"] .yfm .yfm-cut-title {
+    color: var(--preview-text);
+}
+
+:root[data-theme="dark"] .yfm .yfm-cut-title::before {
+    filter: invert(1);
+}
+
+.yfm .yfm-clipboard-inline-code {
+    transition-property: background-color;
 }
 
 body {
     margin: 0;
-    color: CanvasText;
-    background: Canvas;
+    color: var(--preview-text);
+    background: var(--preview-background);
     font-family: system-ui, sans-serif;
+}
+
+.yfm-scroll-anchor {
+    display: block;
+    height: 0;
+}
+
+.yfm > .yfm-scroll-anchor:first-child + :not(h2, h3, h4, h5, h6) {
+    margin-top: 0;
 }
 
 main {

@@ -1,8 +1,8 @@
 # YFM preview for Filestash
 
-Open a `.md` file and select **YFM preview** in the editor toolbar. The preview updates as you type. Use the Filestash save button to write the Markdown source.
+Open a `.md` file and select **YFM preview** in the editor toolbar. The preview updates as you type and follows the Filestash theme. Drag the divider or focus it and use the arrow keys to resize the panes. Scrolling in either pane follows document blocks in the other. Use the Filestash save button to write the Markdown source.
 
-The preview uses Diplodoc Transform and its browser runtime for YFM tabs, cuts, notes, tables, and other document markup. Includes and local images are read through Filestash using the current session or share. Relative paths inside an included file are resolved from that file's directory.
+The preview uses Diplodoc Transform and its browser runtime for YFM tabs, cuts, notes, tables, and other document markup. Includes and local images are read through Filestash using the current session or share. Relative paths inside an included file are resolved from that file's directory. External hyperlinks open on click. The preview blocks automatic requests for remote images.
 
 The plugin renders individual documents and their Markdown includes. Diplodoc project settings such as `.yfm`, `toc.yaml`, and `presets.yaml` are part of the site build. Raw HTML is escaped and embedded frames are omitted. The preview bounds file sizes, the number of images and includes, and include expansion.
 

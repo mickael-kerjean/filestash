@@ -41,7 +41,7 @@ await build({
     ],
 });
 
-const files = ["manifest.json", "editor.js", "editor.css", "preview.html", "preview.js", "preview.css"];
+const files = ["manifest.json", "editor.js", "editor-split.js", "editor.css", "preview.html", "preview.js", "preview.css"];
 await Promise.all(files.map((name) => copyFile(root + name, output + "/" + name)));
 await copyFile(transform + "/LICENSE", output + "/LICENSE.diplodoc");
 for (const [kind, name] of [["css", "yfm.css"], ["js", "yfm.js"]]) {

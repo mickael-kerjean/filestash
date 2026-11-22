@@ -13,6 +13,7 @@ const MAX_INCLUDE_EXPANSIONS = 128;
 const MAX_FILE_BYTES = 512 * 1024;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const MAX_IMAGES = 12;
+const SCROLL_ANCHOR = "filestash_scroll_anchor";
 let active;
 
 self.addEventListener("message", async ({data}) => {
@@ -29,9 +30,12 @@ self.addEventListener("message", async ({data}) => {
 async function render({source, path, downloadUrl, viewBase, lang}, signal) {
     if (source.length > 2 * 1024 * 1024) throw new Error("This document is too large to preview.");
     const api = new URL(downloadUrl);
-    if (api.origin !== self.location.origin) throw new Error("Invalid Filestash download URL.");
+    if (api.origin !== self.location.origin || !api.pathname.endsWith("/api/files/cat")) {
+        throw new Error("Invalid Filestash download URL.");
+    }
     const share = api.searchParams.get("share");
-    api.searchParams.delete("name");
+    api.search = "";
+    if (share) api.searchParams.set("share", share);
     const loaded = new Map();
     const images = new Map();
     const warnings = new Set();
@@ -61,12 +65,12 @@ async function render({source, path, downloadUrl, viewBase, lang}, signal) {
                 for (const token of block.children || []) {
                     if (token.type === "image") {
                         const target = resolveTarget(currentPath, token.attrGet("src"));
-                        if (!target) continue;
-                        if (!images.has(target.path) && images.size < MAX_IMAGES) images.set(target.path, null);
-                        token.attrSet("src", images.get(target.path) || "");
+                        if (target && !images.has(target.path) && images.size < MAX_IMAGES) images.set(target.path, null);
+                        token.attrSet("src", (target && images.get(target.path)) || "");
                     }
-                    if (token.type === "link_open") {
-                        const target = resolveTarget(currentPath, token.attrGet("href"));
+                    const hrefValue = token.attrGet("href");
+                    if (hrefValue) {
+                        const target = resolveTarget(currentPath, hrefValue);
                         if (!target) continue;
                         if (/\.(md|markdown)$/i.test(target.path)) {
                             const href = new URL(viewBase + target.path.split("/").map(encodeURIComponent).join("/"));
@@ -75,7 +79,9 @@ async function render({source, path, downloadUrl, viewBase, lang}, signal) {
                             if (target.hash) href.searchParams.set("yfm-anchor", target.hash);
                             token.attrSet("href", href.href);
                         } else {
-                            token.attrSet("href", fileURL(target.path).href);
+                            const href = fileURL(target.path);
+                            href.searchParams.set("name", target.path.split("/").at(-1).replaceAll('"', "_") || "file");
+                            token.attrSet("href", href.href);
                         }
                     }
                 }
@@ -96,9 +102,16 @@ async function render({source, path, downloadUrl, viewBase, lang}, signal) {
             root: ROOT + "/",
             lang,
             allowHTML: false,
-            sanitizeOptions: {...defaultOptions, allowedSchemesByTag: {img: ["http", "https", "data"]}},
+            sanitizeOptions: {
+                ...defaultOptions,
+                allowedSchemesByTag: {img: ["data"]},
+                allowedAttributes: {
+                    ...defaultOptions.allowedAttributes,
+                    "*": [...defaultOptions.allowedAttributes["*"], "data-yfm-line"],
+                },
+            },
             disableCircularError: true,
-            plugins: [...defaultPlugins, includes, rewriteLinks],
+            plugins: [...defaultPlugins, includes, rewriteLinks, scrollMarkers],
         }).result.html;
     }
 
@@ -108,8 +121,8 @@ async function render({source, path, downloadUrl, viewBase, lang}, signal) {
         if (!pending.length || loaded.size >= MAX_INCLUDES) break;
         await Promise.all(pending.slice(0, MAX_INCLUDES - loaded.size).map(async (file) => {
             try {
-                const path = decodeURI(file.slice(ROOT.length));
-                if (!/\.(md|markdown)$/i.test(path)) throw new Error("Markdown include required.");
+                const path = storagePath(decodeURIComponent(file.slice(ROOT.length)));
+                if (!path || !/\.(md|markdown)$/i.test(path)) throw new Error("Markdown include required.");
                 const response = await fetchFile(fileURL(path), signal);
                 loaded.set(file, new TextDecoder("utf-8", {fatal: true}).decode(await readBytes(response, MAX_FILE_BYTES)));
             } catch {
@@ -139,21 +152,61 @@ async function render({source, path, downloadUrl, viewBase, lang}, signal) {
 }
 
 function resolveTarget(from, href) {
-    if (!href || /^[a-z][a-z\d+.-]*:|^[#?]|^\/\//i.test(href)) return null;
+    if (!href || /^[a-z][a-z\d+.-]*:|^[#?]|^\/\/|\\/i.test(href)) return null;
     const url = new URL(href, "https://storage.invalid" + from.slice(ROOT.length).split("/").map(encodeURIComponent).join("/"));
     if (url.origin !== "https://storage.invalid") return null;
     let path;
     try {
-        path = decodeURIComponent(url.pathname);
+        path = storagePath(decodeURIComponent(url.pathname));
     } catch {
         return null;
     }
-    return {path: resolve("/", path), hash: url.hash};
+    return path && {path, hash: url.hash};
+}
+
+function storagePath(path) {
+    if (!path.startsWith("/") || /[\\\x00-\x1f\x7f]/.test(path)) return null;
+    return resolve("/", path);
+}
+
+function scrollMarkers(md) {
+    const lines = new WeakMap();
+    function marker(state, line) {
+        const token = new state.Token(SCROLL_ANCHOR, "span", 0);
+        token.meta = {line};
+        return token;
+    }
+    md.renderer.rules[SCROLL_ANCHOR] = (tokens, index) =>
+        `<span class="yfm-scroll-anchor" aria-hidden="true" data-yfm-line="${tokens[index].meta.line}"></span>\n`;
+
+    md.core.ruler.before("includes", SCROLL_ANCHOR, (state) => {
+        if (state.inlineMode || state.env.includes?.length) return;
+        let depth = 0;
+        state.tokens = state.tokens.flatMap((token, index, tokens) => {
+            const topLevel = depth === 0;
+            depth += token.nesting;
+            if (!topLevel || token.hidden || token.nesting < 0) return [token];
+            const next = tokens[index + 1];
+            const line = (token.map || (token.type === "tabs_open" && next?.map))?.[0];
+            if (line === undefined) return [token];
+            // The include rule replaces the directive's tokens with the included document.
+            if (token.type === "paragraph_open" && /^{%\s*include\b/.test(next?.content || "")) {
+                return [marker(state, line), token];
+            }
+            lines.set(token, line);
+            return [token];
+        });
+    });
+    md.core.ruler.push(SCROLL_ANCHOR + "_render", (state) => {
+        if (state.inlineMode || state.env.includes?.length) return;
+        state.tokens = state.tokens.flatMap((token) => lines.has(token) ? [marker(state, lines.get(token)), token] : [token]);
+    });
 }
 
 async function fetchFile(url, signal) {
     const response = await fetch(url, {
         credentials: "same-origin",
+        cache: "no-store",
         redirect: "error",
         signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),
     });

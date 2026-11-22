@@ -1,3 +1,5 @@
+import {addDivider, editorScrollPosition, editorScrollTarget} from "./editor-split.js";
+
 const assetURL = (file) => new URL(file, import.meta.url).href;
 const stylesheet = new Promise((resolve, reject) => {
     const link = document.createElement("link");
@@ -20,9 +22,12 @@ export default function(Base, {$menubar, getDownloadUrl}) {
     return class extends Base {
         constructor(editor) {
             super(editor);
-            const download = new URL(getDownloadUrl(false), document.baseURI);
-            const path = download.searchParams.get("path");
+            const original = new URL(getDownloadUrl(false), document.baseURI);
+            const path = original.searchParams.get("path");
             if (!path) return;
+            const download = new URL("api/files/cat", document.baseURI);
+            const share = original.searchParams.get("share");
+            if (share) download.searchParams.set("share", share);
             const lang = (document.documentElement.lang || navigator.language).split("-")[0];
             const isRussian = lang === "ru";
             const label = isRussian ? "Превью YFM" : "YFM preview";
@@ -45,16 +50,42 @@ export default function(Base, {$menubar, getDownloadUrl}) {
             status.setAttribute("role", "status");
             panel.append(status);
             host.append(panel);
+            const divider = addDivider(host, editor, isRussian ? "Размер панели редактора" : "Editor pane size");
 
             let worker, frame, timer, result;
             let requestId = 0;
             let frameReady = false;
             let anchor = params.get("yfm-anchor");
+            let ignoreEditorTop;
+            const theme = () => document.body.classList.contains("dark-mode") ? "dark" : "light";
+            const themeObserver = new MutationObserver(() => post({type: "theme", theme: theme()}));
+
+            function post(message) {
+                if (frameReady) frame.contentWindow.postMessage(message, "*");
+            }
 
             function updateFrame() {
                 if (!frameReady || !result) return;
-                frame.contentWindow.postMessage({html: result.html, anchor}, "*");
+                post({type: "render", html: result.html, anchor, theme: theme(),
+                    position: editorScrollPosition(editor), lines: editor.lineCount()});
                 if (result.html) anchor = null;
+            }
+
+            function onEditorScroll() {
+                if (Math.abs(editor.getScrollInfo().top - ignoreEditorTop) < 1) return;
+                ignoreEditorTop = undefined;
+                post({type: "scroll", position: editorScrollPosition(editor)});
+            }
+
+            function onPreviewMessage(event) {
+                if (event.origin !== "null" || event.source !== frame?.contentWindow || event.data?.type !== "scroll") return;
+                const {position} = event.data;
+                if (position !== "top" && position !== "bottom" && (!Number.isFinite(position) || position < 0)) return;
+                const target = editorScrollTarget(editor, position);
+                if (Math.abs(editor.getScrollInfo().top - target) < 1) return;
+                ignoreEditorTop = target;
+                editor.scrollTo(null, target);
+                ignoreEditorTop = editor.getScrollInfo().top;
             }
 
             function requestRender() {
@@ -70,12 +101,17 @@ export default function(Base, {$menubar, getDownloadUrl}) {
                 requestId++;
                 clearTimeout(timer);
                 editor.off("changes", requestRender);
+                editor.off("scroll", onEditorScroll);
+                window.removeEventListener("message", onPreviewMessage);
+                themeObserver.disconnect();
+                divider.hide();
                 worker?.terminate();
                 worker = null;
                 frame?.remove();
                 frame = null;
                 frameReady = false;
                 result = null;
+                ignoreEditorTop = undefined;
             }
 
             panel.cleanup = stop;
@@ -99,6 +135,7 @@ export default function(Base, {$menubar, getDownloadUrl}) {
                 try {
                     await stylesheet;
                     if (!panel.isConnected || opening !== requestId) return;
+                    divider.show();
                     editor.refresh();
                     worker = new Worker(assetURL("render.js"));
                     worker.onmessage = ({data}) => {
@@ -120,7 +157,10 @@ export default function(Base, {$menubar, getDownloadUrl}) {
                     }, {once: true});
                     frame.src = assetURL("preview.html");
                     panel.append(frame);
+                    window.addEventListener("message", onPreviewMessage);
+                    themeObserver.observe(document.body, {attributes: true, attributeFilter: ["class"]});
                     editor.on("changes", requestRender);
+                    editor.on("scroll", onEditorScroll);
                     requestRender();
                 } catch (error) {
                     status.textContent = error.message;

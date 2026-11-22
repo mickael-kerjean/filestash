@@ -1,18 +1,54 @@
 .with-yfm-preview > .CodeMirror {
-    right: 50%;
+    right: calc(100% - var(--yfm-split, 50%));
+}
+
+.dark-mode .with-yfm-preview > .CodeMirror {
+    scrollbar-color: #626a78 #232426;
 }
 
 filestash-yfm-preview {
     position: absolute;
-    inset: 0 0 0 50%;
+    inset: 0 0 0 var(--yfm-split, 50%);
     display: flex;
     flex-direction: column;
-    border-inline-start: 1px solid var(--light);
     background: var(--bg-color);
 }
 
-filestash-yfm-preview[hidden] {
+filestash-yfm-preview[hidden], .yfm-divider[hidden] {
     display: none;
+}
+
+.yfm-divider {
+    position: absolute;
+    z-index: 7;
+    inset: 0 auto 0 calc(var(--yfm-split, 50%) - 5px);
+    width: 10px;
+    cursor: col-resize;
+    touch-action: none;
+}
+
+.yfm-divider::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 5px;
+    width: 1px;
+    background: var(--border);
+}
+
+.yfm-divider:is(:hover, :focus-visible)::before,
+.yfm-resizing .yfm-divider::before {
+    background: var(--primary);
+    width: 3px;
+}
+
+.yfm-resizing {
+    cursor: col-resize;
+    user-select: none;
+}
+
+.yfm-resizing > .CodeMirror,
+.yfm-resizing iframe {
+    pointer-events: none;
 }
 
 filestash-yfm-preview iframe {
@@ -48,13 +84,33 @@ filestash-yfm-preview iframe {
 
 @media (max-width: 760px) {
     .with-yfm-preview > .CodeMirror {
-        inset: 0 0 50%;
-        height: 50%;
+        inset: 0 0 auto;
+        height: var(--yfm-split, 50%);
     }
 
     filestash-yfm-preview {
-        inset: 50% 0 0;
-        border-inline-start: 0;
-        border-block-start: 1px solid var(--light);
+        inset: var(--yfm-split, 50%) 0 0;
+    }
+
+    .yfm-divider {
+        inset: calc(var(--yfm-split, 50%) - 5px) 0 auto;
+        width: 100%;
+        height: 10px;
+    }
+
+    .yfm-divider::before {
+        inset: 5px 0 auto;
+        width: 100%;
+        height: 1px;
+    }
+
+    .yfm-divider:is(:hover, :focus-visible)::before,
+    .yfm-resizing .yfm-divider::before {
+        width: 100%;
+        height: 3px;
+    }
+
+    .yfm-divider, .yfm-resizing {
+        cursor: row-resize;
     }
 }
