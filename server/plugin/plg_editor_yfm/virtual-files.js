@@ -2,8 +2,11 @@
 export const files = Object.create(null);
 export const missing = new Set();
 
-export function resetFiles() {
+export function resetFiles(loaded) {
     for (const path of Object.keys(files)) delete files[path];
+    for (const [path, text] of loaded) {
+        if (text !== null) files[path] = text || "\n";
+    }
     missing.clear();
 }
 

@@ -1,11 +1,12 @@
 const preview = document.getElementById("preview");
 const scroller = document.scrollingElement;
+const parentOrigin = new URL(location.href).origin;
 let sourceLines = 0;
 let scrollPoints;
 let ignoreScrollTop;
 
 window.addEventListener("message", (event) => {
-    if (event.source !== window.parent || event.origin !== new URL(location.href).origin) return;
+    if (event.source !== window.parent || event.origin !== parentOrigin || !event.data) return;
     const message = event.data;
     if (message.type === "scroll") {
         scrollToSource(message.position);
@@ -44,7 +45,7 @@ window.addEventListener("scroll", () => {
     const max = scroller.scrollHeight - scroller.clientHeight;
     if (max < 1) return;
     const position = top < 1 ? "top" : max - top < 1 ? "bottom" : interpolate(top, "top", "line");
-    window.parent.postMessage({type: "scroll", position}, new URL(location.href).origin);
+    window.parent.postMessage({type: "scroll", position}, parentOrigin);
 });
 
 function scrollToSource(position) {

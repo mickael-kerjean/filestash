@@ -1,20 +1,52 @@
 # YFM preview for Filestash
 
-Open a `.md` file and select **YFM preview** in the editor toolbar. The preview updates as you type and follows the Filestash theme. Drag the divider or focus it and use the arrow keys to resize the panes. Scrolling in either pane follows document blocks in the other. Use the Filestash save button to write the Markdown source.
+Preview [Yandex Flavored Markdown (YFM)](https://diplodoc.com/docs/en/syntax/)
+alongside the source in Filestash's Markdown editor. YFM is the Markdown dialect
+used by Diplodoc for documentation. The preview uses
+[Diplodoc Transform](https://github.com/diplodoc-platform/transform) to render
+interactive tabs, collapsible sections, notes, tables and file includes.
 
-The preview uses Diplodoc Transform and its browser runtime for YFM tabs, cuts, notes, tables, and other document markup. Includes and local images are read through Filestash using the current session or share. Relative paths inside an included file are resolved from that file's directory. External hyperlinks open on click. The preview blocks automatic requests for remote images.
+## Install
 
-The plugin renders individual documents and their Markdown includes. Diplodoc project settings such as `.yfm`, `toc.yaml`, and `presets.yaml` are part of the site build. Raw HTML is escaped and embedded frames are omitted. The preview bounds file sizes, the number of images and includes, and include expansion.
+This is a Filestash [runtime plugin](https://www.filestash.app/docs/guide/plugin-development.html#runtime-plugins)
+and requires a Filestash build with the CodeMirror editor extension hook.
+Filestash loads `editor_yfm.zip` from `state/plugins/` inside its data directory
+at startup.
 
-## Build and install
-
-With Node.js 22+, npm, and zip installed, run the following in this directory.
+Building requires Make, Node.js 24+, npm 11.5.1+ and zip. Run the command
+below from this directory.
 
 ```sh
-npm ci
-npm run build
+make install FILESTASH_PATH=/path/to/filestash/data
 ```
 
-Copy `dist/editor_yfm.zip` to `state/plugins/` under the Filestash data directory (`FILESTASH_PATH`), then restart Filestash. This archive uses Filestash's `xdg-open` extension API and can be installed independently of the source build on versions with the CodeMirror editor extension hook.
+If you run Filestash from the repository's `dist/` directory with its default
+data path, run `make install` without arguments. Use `make` to produce only
+`dist/editor_yfm.zip` for deployment on another instance.
 
-Upload the contents of [example](example/) into the same folder and open `YFM-demo.md` to try the plugin.
+Restart Filestash, then open a `.md` file and select **YFM preview** in the
+toolbar. The preview updates while you type and scrolls with the source. Drag
+the divider or use the arrow keys while it is focused. Save with the regular
+editor button.
+
+## Try it
+
+Paste this into any Markdown file and open its preview.
+
+```markdown
+{% note tip "Live preview" %}
+
+Edit this line to see the preview update.
+
+{% endnote %}
+```
+
+For tabs, a cut and a relative include, open [YFM-demo.md](example/YFM-demo.md)
+from a storage connected to Filestash. Keep the `snippets/` folder beside it.
+
+## Preview scope
+
+Includes and local images are read through the current Filestash session or
+share. Relative links in an include resolve from that file. The preview escapes
+raw HTML and omits remote images and embedded frames. Site-wide settings such
+as `.yfm`, `toc.yaml` and `presets.yaml` are handled by the Diplodoc site build.

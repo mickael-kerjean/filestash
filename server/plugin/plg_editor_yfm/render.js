@@ -13,6 +13,7 @@ const MAX_INCLUDE_EXPANSIONS = 128;
 const MAX_FILE_BYTES = 512 * 1024;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const MAX_IMAGES = 12;
+const MARKDOWN = /\.(md|markdown)$/i;
 const SCROLL_ANCHOR = "filestash_scroll_anchor";
 let active;
 
@@ -27,20 +28,19 @@ self.addEventListener("message", async ({data}) => {
     }
 });
 
-async function render({source, path, downloadUrl, viewBase, lang}, signal) {
+async function render({source, downloadUrl, viewBase, lang}, signal) {
     if (source.length > 2 * 1024 * 1024) throw new Error("This document is too large to preview.");
     const api = new URL(downloadUrl);
     if (api.origin !== self.location.origin || !api.pathname.endsWith("/api/files/cat")) {
         throw new Error("Invalid Filestash download URL.");
     }
+    const documentPath = ROOT + api.searchParams.get("path");
     const share = api.searchParams.get("share");
     api.search = "";
     if (share) api.searchParams.set("share", share);
     const loaded = new Map();
     const images = new Map();
     const warnings = new Set();
-    const documentPath = ROOT + path;
-    let html;
     let includeExpansions;
 
     function fileURL(file) {
@@ -72,7 +72,7 @@ async function render({source, path, downloadUrl, viewBase, lang}, signal) {
                     if (hrefValue) {
                         const target = resolveTarget(currentPath, hrefValue);
                         if (!target) continue;
-                        if (/\.(md|markdown)$/i.test(target.path)) {
+                        if (MARKDOWN.test(target.path)) {
                             const href = new URL(viewBase + target.path.split("/").map(encodeURIComponent).join("/"));
                             if (share) href.searchParams.set("share", share);
                             href.searchParams.set("yfm", "1");
@@ -91,12 +91,9 @@ async function render({source, path, downloadUrl, viewBase, lang}, signal) {
 
     function compile() {
         signal.throwIfAborted();
-        resetFiles();
+        resetFiles(loaded);
         log.clear();
         includeExpansions = 0;
-        for (const [file, text] of loaded) {
-            if (text !== null) files[file] = text || "\n";
-        }
         return transform(source, {
             path: documentPath,
             root: ROOT + "/",
@@ -115,14 +112,15 @@ async function render({source, path, downloadUrl, viewBase, lang}, signal) {
         }).result.html;
     }
 
-    for (let round = 0; round < MAX_INCLUDE_ROUNDS; round++) {
-        html = compile();
+    // Discover includes with Diplodoc, then re-render once their contents are available.
+    let html = compile();
+    for (let round = 0; round < MAX_INCLUDE_ROUNDS && loaded.size < MAX_INCLUDES; round++) {
         const pending = [...missing].filter((file) => file.startsWith(ROOT + "/") && !loaded.has(file));
-        if (!pending.length || loaded.size >= MAX_INCLUDES) break;
+        if (!pending.length) break;
         await Promise.all(pending.slice(0, MAX_INCLUDES - loaded.size).map(async (file) => {
             try {
                 const path = storagePath(decodeURIComponent(file.slice(ROOT.length)));
-                if (!path || !/\.(md|markdown)$/i.test(path)) throw new Error("Markdown include required.");
+                if (!path || !MARKDOWN.test(path)) throw new Error("Markdown include required.");
                 const response = await fetchFile(fileURL(path), signal);
                 loaded.set(file, new TextDecoder("utf-8", {fatal: true}).decode(await readBytes(response, MAX_FILE_BYTES)));
             } catch {
@@ -130,6 +128,7 @@ async function render({source, path, downloadUrl, viewBase, lang}, signal) {
                 warnings.add("Include unavailable: " + file.slice(ROOT.length));
             }
         }));
+        html = compile();
     }
     if ([...missing].some((file) => !loaded.has(file))) warnings.add("Some includes could not be resolved.");
 

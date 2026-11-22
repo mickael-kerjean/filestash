@@ -1,5 +1,4 @@
-# Фрагмент документа
+# Details
 
-Этот абзац хранится в отдельном файле. Директива `include notitle` вставляет фрагмент без заголовка.
-
-Ссылка на [исходный документ](../YFM-demo.md) вычисляется относительно фрагмента.
+This paragraph comes from a separate Markdown file.
+The [link back to the demo](../YFM-demo.md) is relative to this file.
