@@ -21,9 +21,20 @@ await build({
     target: ["es2022"],
     plugins: [
         {
-            name: "filestash-virtual-files",
+            name: "diplodoc-browser",
             setup(build) {
                 build.onResolve({filter: /^(node:)?fs$/}, () => ({path: root + "virtual-files.js"}));
+                // Diplodoc packages still import these Markdown-it v13 paths.
+                build.onResolve({filter: /^markdown-it\/lib\/(common\/utils|token)$/}, ({path}) => ({
+                    path: fileURLToPath(import.meta.resolve(path + ".mjs")),
+                }));
+                // source-map-resolve expects the decoder's old CommonJS export.
+                build.onLoad({filter: /[\\/]source-map-resolve[\\/]index\.js$/}, async ({path}) => {
+                    const code = await readFile(path, "utf8");
+                    return {
+                        contents: code.replace('require("decode-uri-component")', 'require("decode-uri-component").default'),
+                    };
+                });
             },
         },
         nodeModulesPolyfillPlugin({globals: {process: true, Buffer: true}}),

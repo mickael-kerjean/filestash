@@ -12,5 +12,9 @@
   "devDependencies": {
     "esbuild": "0.27.7",
     "esbuild-plugins-node-modules-polyfill": "1.8.2"
+  },
+  "overrides": {
+    "decode-uri-component": "0.5.1",
+    "markdown-it": "14.3.3"
   }
 }

@@ -38,6 +38,7 @@ filestash-yfm-preview iframe {
     padding: 4px 10px;
     white-space: nowrap;
     font: inherit;
+    color: inherit;
 }
 
 .component_menubar .action-item .yfm-preview-toggle[aria-pressed="true"] {
