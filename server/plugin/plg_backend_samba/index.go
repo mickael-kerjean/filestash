@@ -80,6 +80,9 @@ func (this Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	if params["port"] == "" {
 		params["port"] = "445"
 	}
+	if params["host"] == "" {
+		params["host"] = "127.0.0.1"
+	}
 	if c := SambaCache.Get(params); c != nil {
 		out := *c.(*Samba)
 		out.app = app
