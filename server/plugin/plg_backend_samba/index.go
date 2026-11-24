@@ -38,6 +38,9 @@ func init() {
 		if err := smb.session.Close(); err != nil {
 			Log.Warning("samba: error logging out: %v", err)
 		}
+		if smb.kerberos != nil {
+			smb.kerberos.Close()
+		}
 	})
 }
 
@@ -45,6 +48,7 @@ type Samba struct {
 	share    map[string]*smb2.Share
 	inflight *atomic.Int32
 	session  *smb2.Session
+	kerberos *auth.KerberosCredential
 	app      *App
 }
 
@@ -53,7 +57,7 @@ func (this Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		params["host"] = "smb://" + params["host"]
 	}
 	if u, err := url.Parse(params["host"]); err == nil {
-		params["host"] = u.Host
+		params["host"] = u.Hostname()
 		if params["port"] == "" {
 			params["port"] = u.Port()
 		}
@@ -81,27 +85,50 @@ func (this Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	if err != nil {
 		port = 445
 	}
+	var cred smb2.Credentials = &auth.NTLMCredential{
+		User: func() string {
+			if params["username"] == "" {
+				return "Guest"
+			}
+			return params["username"]
+		}(),
+		Password: params["password"],
+		Domain:   NewString(params["domain"]),
+	}
+	if params["kerberos"] != "" {
+		krb5Path := GetAbsolutePath(TMP_PATH, "krb5_"+Hash(params["kerberos"], 16)+".conf")
+		if err = os.WriteFile(krb5Path, []byte(params["kerberos"]), 0600); err != nil {
+			Log.Debug("plg_backend_samba::fs action=write error=%q", err)
+			return nil, err
+		}
+		if this.kerberos, err = auth.NewKerberosCredential(auth.KerberosPassword{
+			ConfigFile: krb5Path,
+			User:       params["username"],
+			Realm:      params["domain"],
+			Password:   params["password"],
+		}); err != nil {
+			Log.Debug("plg_backend_samba::kerberos action=new error=%q", err)
+			return nil, err
+		}
+		cred = this.kerberos
+	}
+
 	this.app = app
 	this.inflight = &atomic.Int32{}
 	this.share = make(map[string]*smb2.Share, 0)
 	this.session, err = (&smb2.Dialer{
-		Credentials: &auth.NTLMCredential{
-			User: func() string {
-				if params["username"] == "" {
-					return "Guest"
-				}
-				return params["username"]
-			}(),
-			Password: params["password"],
-			Domain:   NewString(params["domain"]),
-		},
+		Credentials: cred,
 		TransportDialer: smb2.TCPDialer{
 			Port:   port,
 			Dialer: &net.Dialer{Timeout: 10 * time.Second},
 			Tracer: withTracer(host, params["username"]),
 		},
 	}).Dial(this.app.Context, params["host"])
+
 	if err != nil {
+		if this.kerberos != nil {
+			this.kerberos.Close()
+		}
 		Log.Debug("plg_backend_samba::smbdial host[%s] err[%s] username[%s] domain[%s]", host, err.Error(), params["username"], params["domain"])
 		return nil, err
 	}
@@ -155,7 +182,7 @@ func (this Samba) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"samba_port", "samba_path", "samba_domain", "samba_share"},
+				Target:      []string{"samba_port", "samba_path", "samba_domain", "samba_share", "samba_kerberos"},
 			},
 			{
 				Id:          "samba_path",
@@ -180,6 +207,12 @@ func (this Samba) LoginForm() Form {
 				Name:        "share",
 				Type:        "text",
 				Placeholder: "Share Name",
+			},
+			{
+				Id:          "samba_kerberos",
+				Name:        "kerberos",
+				Type:        "long_text",
+				Placeholder: "[libdefaults]\ndefault_realm = EXAMPLE.COM\ndns_lookup_kdc = true",
 			},
 		},
 	}
