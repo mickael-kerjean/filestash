@@ -261,6 +261,8 @@ github.com/mattn/go-sqlite3 v1.14.42 h1:MigqEP4ZmHw3aIdIT7T+9TLa90Z6smwcthx+Azv4
 github.com/mattn/go-sqlite3 v1.14.42/go.mod h1:pjEuOr8IwzLJP2MfGeTb0A35jauH+C2kbHKBr7yXKVQ=
 github.com/mickael-kerjean/go-smb2 v0.0.0-20260924063307-ee7f96e1a9a4 h1:FCEI+Kxoz52g0rNxYsestmFtpLXD9b4kYLq5dqy50ug=
 github.com/mickael-kerjean/go-smb2 v0.0.0-20260924063307-ee7f96e1a9a4/go.mod h1:8F1A4d5EZzrGu5R7PU163UcMRDJQl4FtcxjBfsY8TZE=
+github.com/mickael-kerjean/go-smb2/v2 v2.0.0-20261124055144-bd0425e3facd h1:6NsBjtkgTrjBGPnJ1l/esrQaeR3ou/xmdPFZykhkKMY=
+github.com/mickael-kerjean/go-smb2/v2 v2.0.0-20261124055144-bd0425e3facd/go.mod h1:QNbGa7DLr6mAXOcazPYjdkJiyz2iknjUkeAYOG/musw=
 github.com/mickael-kerjean/goftp v0.0.0-20260421114701-956d21f038b7 h1:S9eqG1ThGnl0PtJQEb0NpjZA+3t7Pl5weKcsb0GJkyo=
 github.com/mickael-kerjean/goftp v0.0.0-20260421114701-956d21f038b7/go.mod h1:w67UQ+CKrGekamytP5ZOdAJfXowIC3bw590so7mkFqA=
 github.com/mickael-kerjean/net v0.0.0-20191120063050-2457c043ba06 h1:427Mpu5edwuFuDBdqOm6EgRohYqZ9Oomd+87ryW2Uls=
