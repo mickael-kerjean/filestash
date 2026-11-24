@@ -3,6 +3,7 @@ package plg_backend_samba
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
@@ -11,8 +12,8 @@ import (
 	"github.com/hirochachacha/go-smb2/v2/x/wire"
 )
 
-func withTracer(host string, user string) func(ctx context.Context, cmd wire.Command, msgId uint64) (done func(error)) {
-	return func(ctx context.Context, cmd wire.Command, msgID uint64) func(error) {
+func withTracer(host string, user string) func(context.Context, wire.Command, uint64, uint16) func(error) {
+	return func(ctx context.Context, cmd wire.Command, msgID uint64, dialect uint16) func(error) {
 		span := tracer.StartSpan(tracer.TraceFromContext(ctx), cmd.String(), tracer.SpanOptions{
 			Kind:    tracer.KindClient,
 			Service: "smb",
@@ -20,6 +21,7 @@ func withTracer(host string, user string) func(ctx context.Context, cmd wire.Com
 				"smb.host":       host,
 				"smb.user":       user,
 				"smb.message_id": strconv.FormatUint(msgID, 10),
+				"smb.dialect":    fmt.Sprintf("0x%04x", dialect),
 			},
 		})
 		return func(err error) {
