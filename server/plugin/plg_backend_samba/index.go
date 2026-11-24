@@ -71,9 +71,9 @@ func (this Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		params["port"] = "445"
 	}
 	if c := SambaCache.Get(params); c != nil {
-		out := c.(*Samba)
+		out := *c.(*Samba)
 		out.app = app
-		return out, nil
+		return &out, nil
 	}
 
 	host := fmt.Sprintf("%s:%s", params["host"], params["port"])
