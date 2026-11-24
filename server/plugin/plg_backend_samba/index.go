@@ -98,8 +98,8 @@ func (this Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		TransportDialer: smb2.TCPDialer{
 			Port:   port,
 			Dialer: &net.Dialer{Timeout: 10 * time.Second},
+			Tracer: withTracer(host, params["username"]),
 		},
-		Tracer: withTracer(host, params["username"]),
 	}).Dial(this.app.Context, params["host"])
 	if err != nil {
 		Log.Debug("plg_backend_samba::smbdial host[%s] err[%s] username[%s] domain[%s]", host, err.Error(), params["username"], params["domain"])

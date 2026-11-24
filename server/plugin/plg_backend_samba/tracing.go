@@ -7,20 +7,19 @@ import (
 
 	"github.com/mickael-kerjean/filestash/server/pkg/tracer"
 
-	"github.com/hirochachacha/go-smb2/v2"
 	"github.com/hirochachacha/go-smb2/v2/x/protocol"
+	"github.com/hirochachacha/go-smb2/v2/x/wire"
 )
 
-func withTracer(host string, user string) smb2.Tracer {
-	return func(ctx context.Context, req smb2.RequestInfo) func(error) {
-		span := tracer.StartSpan(tracer.TraceFromContext(ctx), req.Command.String(), tracer.SpanOptions{
+func withTracer(host string, user string) func(ctx context.Context, cmd wire.Command, msgId uint64) (done func(error)) {
+	return func(ctx context.Context, cmd wire.Command, msgID uint64) func(error) {
+		span := tracer.StartSpan(tracer.TraceFromContext(ctx), cmd.String(), tracer.SpanOptions{
 			Kind:    tracer.KindClient,
 			Service: "smb",
 			Attributes: map[string]string{
 				"smb.host":       host,
 				"smb.user":       user,
-				"smb.message_id": strconv.FormatUint(req.MessageId, 10),
-				"smb.encrypted":  strconv.FormatBool(req.Encrypted),
+				"smb.message_id": strconv.FormatUint(msgID, 10),
 			},
 		})
 		return func(err error) {
@@ -33,7 +32,7 @@ func withTracer(host string, user string) smb2.Tracer {
 }
 
 func isError(err error) bool {
-	var (
+	const (
 		STATUS_NO_MORE_FILES uint32 = 0x80000006
 		STATUS_END_OF_FILE   uint32 = 0xC0000011
 	)
