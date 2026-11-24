@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -27,7 +28,7 @@ func ApiHeaders(fn HandlerFunc) HandlerFunc {
 		header["Cache-Control"] = headerContentCache
 		requestID := req.Header["X-Request-Id"]
 		if len(requestID) != 1 || requestID[0] == "" {
-			requestID = []string{QuickString(32)}
+			requestID = []string{fmt.Sprintf("%016x%016x", rand.Uint64(), rand.Uint64())}
 			req.Header["X-Request-Id"] = requestID
 		}
 		header["X-Request-Id"] = requestID
