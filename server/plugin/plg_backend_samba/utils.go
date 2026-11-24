@@ -1,6 +1,7 @@
 package plg_backend_samba
 
 import (
+	"errors"
 	"os"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
@@ -8,9 +9,9 @@ import (
 
 func fromSambaErr(err error) error {
 	switch {
-	case os.IsPermission(err):
+	case errors.Is(err, os.ErrPermission):
 		return ErrPermissionDenied
-	case os.IsNotExist(err):
+	case errors.Is(err, os.ErrNotExist):
 		return ErrNotFound
 	default:
 		return err
