@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -29,13 +28,13 @@ var bufferPool = sync.Pool{
 
 func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	var (
-		file              io.ReadCloser
-		fileMutation      bool        = false
-		contentLength     int64       = -1
-		isRangeRequest    bool        = req.Header.Get("Range") != ""
-		isCacheMiss       bool        = false
-		query             url.Values  = req.URL.Query()
-		header            http.Header = res.Header()
+		file           io.ReadCloser
+		fileMutation   bool        = false
+		contentLength  int64       = -1
+		isRangeRequest bool        = req.Header.Get("Range") != ""
+		isCacheMiss    bool        = false
+		query          url.Values  = req.URL.Query()
+		header         http.Header = res.Header()
 	)
 	http.SetCookie(res, &http.Cookie{
 		Name:   "download",
@@ -90,8 +89,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 	if file == nil {
 		if file, err = ctx.Backend.Cat(path); err != nil {
 			if req.Method == http.MethodHead {
-				var finfo os.FileInfo
-				if finfo, err = ctx.Backend.Stat(path); err == nil && finfo.IsDir() {
+				if finfo, err := ctx.Backend.Stat(path); err == nil && finfo.IsDir() {
 					if finfo.ModTime().Unix() > 0 {
 						header.Set("Last-Modified", finfo.ModTime().UTC().Format(http.TimeFormat))
 					}
@@ -100,7 +98,7 @@ func FileCat(ctx *App, res http.ResponseWriter, req *http.Request) {
 					return
 				}
 			}
-			Log.Debug("cat::backend '%s'", err.Error())
+			Log.Debug("cat::backend err=%q", err)
 			SendErrorResult(res, err)
 			return
 		}
