@@ -211,6 +211,20 @@ func (this Samba) Ls(path string) ([]os.FileInfo, error) {
 	return fs, fromSambaErr(err)
 }
 
+func (this Samba) Meta(path string) Metadata {
+	if path == "/" {
+		return Metadata{
+			CanCreateFile:      NewBool(false),
+			CanCreateDirectory: NewBool(false),
+			CanRename:          NewBool(false),
+			CanMove:            NewBool(false),
+			CanUpload:          NewBool(false),
+			CanDelete:          NewBool(false),
+		}
+	}
+	return Metadata{}
+}
+
 func (this Samba) Stat(path string) (os.FileInfo, error) {
 	if path == "/" {
 		for key, _ := range this.share {
