@@ -1,17 +1,21 @@
 package plg_backend_samba
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 
-	"github.com/hirochachacha/go-smb2"
 	. "github.com/mickael-kerjean/filestash/server/common"
+
+	"github.com/hirochachacha/go-smb2/v2"
+	"github.com/hirochachacha/go-smb2/v2/auth"
 )
 
 var SambaCache AppCache
@@ -27,11 +31,11 @@ func init() {
 			return
 		}
 		for key, _ := range smb.share {
-			if err := smb.share[key].Umount(); err != nil {
+			if err := smb.share[key].Unmount(context.Background()); err != nil {
 				Log.Warning("samba: error unmounting share: %v", err)
 			}
 		}
-		if err := smb.session.Logoff(); err != nil {
+		if err := smb.session.Close(); err != nil {
 			Log.Warning("samba: error logging out: %v", err)
 		}
 	})
@@ -70,16 +74,14 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	}
 
 	host := fmt.Sprintf("%s:%s", params["host"], params["port"])
-	conn, err := net.DialTimeout("tcp", host, 10*time.Second)
+	port, err := strconv.Atoi(params["port"])
 	if err != nil {
-		Log.Debug("plg_backend_samba::netdial host[%s] err[%s]", host, err.Error())
-		return nil, err
+		port = 445
 	}
-
 	smb.share = make(map[string]*smb2.Share, 0)
 	smb.inflight = &atomic.Int32{}
 	smb.session, err = (&smb2.Dialer{
-		Initiator: &smb2.NTLMInitiator{
+		Credentials: &auth.NTLMCredential{
 			User: func() string {
 				if params["username"] == "" {
 					return "Guest"
@@ -87,15 +89,19 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 				return params["username"]
 			}(),
 			Password: params["password"],
-			Domain:   params["domain"],
+			Domain:   NewString(params["domain"]),
 		},
-	}).Dial(conn)
+		TransportDialer: smb2.TCPDialer{
+			Port:   port,
+			Dialer: &net.Dialer{Timeout: 10 * time.Second},
+		},
+	}).Dial(context.Background(), params["host"])
 	if err != nil {
 		Log.Debug("plg_backend_samba::smbdial host[%s] err[%s] username[%s] domain[%s]", host, err.Error(), params["username"], params["domain"])
 		return nil, err
 	}
 	if params["share"] == "" {
-		names, err := smb.session.ListSharenames()
+		names, err := smb.session.ListShareNames(context.Background())
 		if err != nil {
 			Log.Debug("plg_backend_samba::list host[%s] err[%s]", host, err.Error())
 			return nil, err
@@ -104,12 +110,12 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 			if strings.HasSuffix(name, "$") {
 				continue
 			}
-			if m, err := smb.session.Mount(name); err == nil {
+			if m, err := smb.session.Mount(context.Background(), name); err == nil {
 				smb.share[name] = m
 			}
 		}
 	} else {
-		if m, err := smb.session.Mount(params["share"]); err == nil {
+		if m, err := smb.session.Mount(context.Background(), params["share"]); err == nil {
 			smb.share[params["share"]] = m
 		}
 	}
@@ -190,13 +196,13 @@ func (smb Samba) Ls(path string) ([]os.FileInfo, error) {
 		return nil, err
 	}
 
-	dir, err := share.Open(path)
+	dir, err := share.Open(context.Background(), path)
 	if err != nil {
 		return nil, fromSambaErr(err)
 	}
-	defer dir.Close()
+	defer dir.Close(context.Background())
 
-	fs, err := dir.Readdir(-1)
+	fs, err := dir.Readdir(context.Background(), -1)
 	return fs, fromSambaErr(err)
 }
 
@@ -216,7 +222,7 @@ func (smb Samba) Stat(path string) (os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	f, err := share.Stat(path)
+	f, err := share.Stat(context.Background(), path)
 	return f, fromSambaErr(err)
 }
 
@@ -225,7 +231,7 @@ func (smb Samba) Cat(path string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	f, err := share.Open(path)
+	f, err := share.Open(context.Background(), path)
 	if err != nil {
 		return nil, fromSambaErr(err)
 	}
@@ -237,7 +243,7 @@ func (smb Samba) Mkdir(path string) error {
 	if err != nil {
 		return err
 	}
-	return fromSambaErr(share.Mkdir(path, os.ModeDir))
+	return fromSambaErr(share.Mkdir(context.Background(), path, os.ModeDir))
 }
 
 func (smb Samba) Rm(path string) error {
@@ -245,7 +251,7 @@ func (smb Samba) Rm(path string) error {
 	if err != nil {
 		return err
 	}
-	return fromSambaErr(share.RemoveAll(path))
+	return fromSambaErr(share.RemoveAll(context.Background(), path))
 }
 
 func (smb Samba) Mv(from, to string) error {
@@ -260,7 +266,7 @@ func (smb Samba) Mv(from, to string) error {
 	if fromShare != toShare {
 		return ErrNotImplemented
 	}
-	return fromSambaErr(fromShare.Rename(fromPath, toPath))
+	return fromSambaErr(fromShare.Rename(context.Background(), fromPath, toPath))
 }
 
 func (smb Samba) Save(path string, content io.Reader) error {
@@ -270,15 +276,15 @@ func (smb Samba) Save(path string, content io.Reader) error {
 	if err != nil {
 		return err
 	}
-	f, err := share.Create(path)
+	f, err := share.Create(context.Background(), path)
 	if err != nil {
 		return fromSambaErr(err)
 	}
-	if _, err = io.Copy(f, content); err != nil {
-		f.Close()
+	if _, err = f.ReadFrom(context.Background(), content); err != nil {
+		f.Close(context.Background())
 		return fromSambaErr(err)
 	}
-	return f.Close()
+	return f.Close(context.Background())
 }
 
 func (smb Samba) Touch(path string) error {
@@ -286,11 +292,11 @@ func (smb Samba) Touch(path string) error {
 	if err != nil {
 		return err
 	}
-	f, err := share.Create(path)
+	f, err := share.Create(context.Background(), path)
 	if err != nil {
 		return fromSambaErr(err)
 	}
-	return fromSambaErr(f.Close())
+	return fromSambaErr(f.Close(context.Background()))
 }
 
 func (smb Samba) toSambaPath(path string) (*smb2.Share, string, error) {

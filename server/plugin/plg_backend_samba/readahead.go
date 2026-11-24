@@ -1,11 +1,12 @@
 package plg_backend_samba
 
 import (
+	"context"
 	"errors"
 	"io"
 	"sync/atomic"
 
-	"github.com/hirochachacha/go-smb2"
+	"github.com/hirochachacha/go-smb2/v2"
 )
 
 const (
@@ -34,7 +35,7 @@ func (this *readahead) Seek(offset int64, whence int) (int64, error) {
 	if this.queue != nil {
 		return 0, errors.New("seek not supported after read")
 	}
-	return this.f.Seek(offset, whence)
+	return this.f.Seek(context.Background(), offset, whence)
 }
 
 func (this *readahead) Read(p []byte) (int, error) {
@@ -58,16 +59,16 @@ func (this *readahead) Close() error {
 		<-c
 	}
 	this.inflight.Add(-1)
-	return this.f.Close()
+	return this.f.Close(context.Background())
 }
 
 func (this *readahead) request() {
 	c := make(chan chunk, 1)
 	this.queue = append(this.queue, c)
-	end, _ := this.f.Seek(readaheadChunk, io.SeekCurrent)
+	end, _ := this.f.Seek(context.Background(), readaheadChunk, io.SeekCurrent)
 	go func() {
 		buf := make([]byte, readaheadChunk)
-		n, err := this.f.ReadAt(buf, end-readaheadChunk)
+		n, err := this.f.ReadAt(context.Background(), buf, end-readaheadChunk)
 		c <- chunk{buf[:n], err}
 	}()
 }
