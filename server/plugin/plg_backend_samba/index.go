@@ -45,9 +45,10 @@ type Samba struct {
 	share    map[string]*smb2.Share
 	inflight *atomic.Int32
 	session  *smb2.Session
+	app      *App
 }
 
-func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
+func (this Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	if strings.HasPrefix(params["host"], "smb://") == false {
 		params["host"] = "smb://" + params["host"]
 	}
@@ -70,7 +71,9 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		params["port"] = "445"
 	}
 	if c := SambaCache.Get(params); c != nil {
-		return c.(*Samba), nil
+		out := c.(*Samba)
+		out.app = app
+		return out, nil
 	}
 
 	host := fmt.Sprintf("%s:%s", params["host"], params["port"])
@@ -78,9 +81,10 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 	if err != nil {
 		port = 445
 	}
-	smb.share = make(map[string]*smb2.Share, 0)
-	smb.inflight = &atomic.Int32{}
-	smb.session, err = (&smb2.Dialer{
+	this.app = app
+	this.inflight = &atomic.Int32{}
+	this.share = make(map[string]*smb2.Share, 0)
+	this.session, err = (&smb2.Dialer{
 		Credentials: &auth.NTLMCredential{
 			User: func() string {
 				if params["username"] == "" {
@@ -95,13 +99,14 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 			Port:   port,
 			Dialer: &net.Dialer{Timeout: 10 * time.Second},
 		},
-	}).Dial(context.Background(), params["host"])
+		Tracer: withTracer(host, params["username"]),
+	}).Dial(this.app.Context, params["host"])
 	if err != nil {
 		Log.Debug("plg_backend_samba::smbdial host[%s] err[%s] username[%s] domain[%s]", host, err.Error(), params["username"], params["domain"])
 		return nil, err
 	}
 	if params["share"] == "" {
-		names, err := smb.session.ListShareNames(context.Background())
+		names, err := this.session.ListShareNames(this.app.Context)
 		if err != nil {
 			Log.Debug("plg_backend_samba::list host[%s] err[%s]", host, err.Error())
 			return nil, err
@@ -110,20 +115,20 @@ func (smb Samba) Init(params map[string]string, app *App) (IBackend, error) {
 			if strings.HasSuffix(name, "$") {
 				continue
 			}
-			if m, err := smb.session.Mount(context.Background(), name); err == nil {
-				smb.share[name] = m
+			if m, err := this.session.Mount(this.app.Context, name); err == nil {
+				this.share[name] = m
 			}
 		}
 	} else {
-		if m, err := smb.session.Mount(context.Background(), params["share"]); err == nil {
-			smb.share[params["share"]] = m
+		if m, err := this.session.Mount(this.app.Context, params["share"]); err == nil {
+			this.share[params["share"]] = m
 		}
 	}
-	SambaCache.Set(params, &smb)
-	return &smb, nil
+	SambaCache.Set(params, &this)
+	return &this, nil
 }
 
-func (smb Samba) LoginForm() Form {
+func (this Samba) LoginForm() Form {
 	return Form{
 		Elmnts: []FormElement{
 			{
@@ -180,10 +185,10 @@ func (smb Samba) LoginForm() Form {
 	}
 }
 
-func (smb Samba) Ls(path string) ([]os.FileInfo, error) {
+func (this Samba) Ls(path string) ([]os.FileInfo, error) {
 	if path == "/" {
 		f := make([]os.FileInfo, 0)
-		for key, _ := range smb.share {
+		for key, _ := range this.share {
 			f = append(f, File{
 				FName: key,
 				FType: "directory",
@@ -191,24 +196,24 @@ func (smb Samba) Ls(path string) ([]os.FileInfo, error) {
 		}
 		return f, nil
 	}
-	share, path, err := smb.toSambaPath(path)
+	share, path, err := this.toSambaPath(path)
 	if err != nil {
 		return nil, err
 	}
 
-	dir, err := share.Open(context.Background(), path)
+	dir, err := share.Open(this.app.Context, path)
 	if err != nil {
 		return nil, fromSambaErr(err)
 	}
-	defer dir.Close(context.Background())
+	defer dir.Close(this.app.Context)
 
-	fs, err := dir.Readdir(context.Background(), -1)
+	fs, err := dir.Readdir(this.app.Context, -1)
 	return fs, fromSambaErr(err)
 }
 
-func (smb Samba) Stat(path string) (os.FileInfo, error) {
+func (this Samba) Stat(path string) (os.FileInfo, error) {
 	if path == "/" {
-		for key, _ := range smb.share {
+		for key, _ := range this.share {
 			return File{
 				FName: key,
 				FType: "directory",
@@ -218,107 +223,96 @@ func (smb Samba) Stat(path string) (os.FileInfo, error) {
 		}
 		return nil, ErrNotFound
 	}
-	share, path, err := smb.toSambaPath(path)
+	share, path, err := this.toSambaPath(path)
 	if err != nil {
 		return nil, err
 	}
-	f, err := share.Stat(context.Background(), path)
+	f, err := share.Stat(this.app.Context, path)
 	return f, fromSambaErr(err)
 }
 
-func (smb Samba) Cat(path string) (io.ReadCloser, error) {
-	share, path, err := smb.toSambaPath(path)
+func (this Samba) Cat(path string) (io.ReadCloser, error) {
+	share, path, err := this.toSambaPath(path)
 	if err != nil {
 		return nil, err
 	}
-	f, err := share.Open(context.Background(), path)
+	f, err := share.Open(this.app.Context, path)
 	if err != nil {
 		return nil, fromSambaErr(err)
 	}
-	return NewReadahead(f, smb.inflight), nil
+	return NewReadahead(this.app.Context, f, this.inflight), nil
 }
 
-func (smb Samba) Mkdir(path string) error {
-	share, path, err := smb.toSambaPath(path)
+func (this Samba) Mkdir(path string) error {
+	share, path, err := this.toSambaPath(path)
 	if err != nil {
 		return err
 	}
-	return fromSambaErr(share.Mkdir(context.Background(), path, os.ModeDir))
+	return fromSambaErr(share.Mkdir(this.app.Context, path, os.ModeDir))
 }
 
-func (smb Samba) Rm(path string) error {
-	share, path, err := smb.toSambaPath(path)
+func (this Samba) Rm(path string) error {
+	share, path, err := this.toSambaPath(path)
 	if err != nil {
 		return err
 	}
-	return fromSambaErr(share.RemoveAll(context.Background(), path))
+	return fromSambaErr(share.RemoveAll(this.app.Context, path))
 }
 
-func (smb Samba) Mv(from, to string) error {
-	fromShare, fromPath, err := smb.toSambaPath(from)
+func (this Samba) Mv(from, to string) error {
+	fromShare, fromPath, err := this.toSambaPath(from)
 	if err != nil {
 		return err
 	}
-	toShare, toPath, err := smb.toSambaPath(to)
+	toShare, toPath, err := this.toSambaPath(to)
 	if err != nil {
 		return err
 	}
 	if fromShare != toShare {
 		return ErrNotImplemented
 	}
-	return fromSambaErr(fromShare.Rename(context.Background(), fromPath, toPath))
+	return fromSambaErr(fromShare.Rename(this.app.Context, fromPath, toPath))
 }
 
-func (smb Samba) Save(path string, content io.Reader) error {
-	smb.inflight.Add(1)
-	defer smb.inflight.Add(-1)
-	share, path, err := smb.toSambaPath(path)
+func (this Samba) Save(path string, content io.Reader) error {
+	this.inflight.Add(1)
+	defer this.inflight.Add(-1)
+	share, path, err := this.toSambaPath(path)
 	if err != nil {
 		return err
 	}
-	f, err := share.Create(context.Background(), path)
+	f, err := share.Create(this.app.Context, path)
 	if err != nil {
 		return fromSambaErr(err)
 	}
-	if _, err = f.ReadFrom(context.Background(), content); err != nil {
-		f.Close(context.Background())
+	if _, err = f.ReadFrom(this.app.Context, content); err != nil {
+		f.Close(this.app.Context)
 		return fromSambaErr(err)
 	}
-	return f.Close(context.Background())
+	return f.Close(this.app.Context)
 }
 
-func (smb Samba) Touch(path string) error {
-	share, path, err := smb.toSambaPath(path)
+func (this Samba) Touch(path string) error {
+	share, path, err := this.toSambaPath(path)
 	if err != nil {
 		return err
 	}
-	f, err := share.Create(context.Background(), path)
+	f, err := share.Create(this.app.Context, path)
 	if err != nil {
 		return fromSambaErr(err)
 	}
-	return fromSambaErr(f.Close(context.Background()))
+	return fromSambaErr(f.Close(this.app.Context))
 }
 
-func (smb Samba) toSambaPath(path string) (*smb2.Share, string, error) {
+func (this Samba) toSambaPath(path string) (*smb2.Share, string, error) {
 	p := strings.Split(strings.Trim(path, "/"), "/")
 	if len(p) == 0 {
 		return nil, "", ErrNotAllowed
 	}
 	sharename := p[0]
 	oPath := strings.TrimLeft(strings.Join(p[1:], "\\"), "\\")
-	if smb.share[sharename] == nil {
+	if this.share[sharename] == nil {
 		return nil, "", ErrNotFound
 	}
-	return smb.share[sharename], oPath, nil
-}
-
-func fromSambaErr(err error) error {
-	switch {
-	case os.IsPermission(err):
-		return ErrPermissionDenied
-	case os.IsNotExist(err):
-		return ErrNotFound
-	default:
-		return err
-	}
+	return this.share[sharename], oPath, nil
 }
