@@ -14,6 +14,12 @@ import (
 
 	. "github.com/mickael-kerjean/filestash/server/common"
 
+	krbclient "github.com/go-krb5/krb5/client"
+	krbconfig "github.com/go-krb5/krb5/config"
+	krbnametype "github.com/go-krb5/krb5/iana/nametype"
+	krbspnego "github.com/go-krb5/krb5/spnego"
+	krbtypes "github.com/go-krb5/krb5/types"
+
 	"github.com/hirochachacha/go-smb2/v2"
 	"github.com/hirochachacha/go-smb2/v2/auth"
 )
@@ -39,7 +45,7 @@ func init() {
 			Log.Warning("samba: error logging out: %v", err)
 		}
 		if smb.kerberos != nil {
-			smb.kerberos.Close()
+			smb.kerberos.Destroy()
 		}
 	})
 }
@@ -48,7 +54,7 @@ type Samba struct {
 	share    map[string]*smb2.Share
 	inflight *atomic.Int32
 	session  *smb2.Session
-	kerberos *auth.KerberosCredential
+	kerberos *krbclient.Client
 	app      *App
 }
 
@@ -96,21 +102,32 @@ func (this Samba) Init(params map[string]string, app *App) (IBackend, error) {
 		Domain:   NewString(params["domain"]),
 	}
 	if params["kerberos"] != "" {
-		krb5Path := GetAbsolutePath(TMP_PATH, "krb5_"+Hash(params["kerberos"], 16)+".conf")
-		if err = os.WriteFile(krb5Path, []byte(params["kerberos"]), 0600); err != nil {
-			Log.Debug("plg_backend_samba::fs action=write error=%q", err)
+		krb5conf, err := krbconfig.NewFromString(params["kerberos"])
+		if err != nil {
+			Log.Debug("plg_backend_samba::kerberos action=config error=%q", err)
 			return nil, err
 		}
-		if this.kerberos, err = auth.NewKerberosCredential(auth.KerberosPassword{
-			ConfigFile: krb5Path,
-			User:       params["username"],
-			Realm:      params["domain"],
-			Password:   params["password"],
-		}); err != nil {
-			Log.Debug("plg_backend_samba::kerberos action=new error=%q", err)
+		this.kerberos = krbclient.NewWithPassword(params["username"], params["domain"], params["password"], krb5conf)
+		if err = this.kerberos.Login(); err != nil {
+			this.kerberos.Destroy()
+			Log.Debug("plg_backend_samba::kerberos action=login error=%q", err)
 			return nil, err
 		}
-		cred = this.kerberos
+		spn := "cifs/" + params["host"]
+		ticket := auth.KerberosTicket{Client: this.kerberos}
+		if params["impersonate"] == "" {
+			ticket.Ticket, ticket.SessionKey, err = this.kerberos.GetServiceTicket(spn)
+		} else {
+			imp, err := this.kerberos.Impersonate(krbtypes.NewPrincipalName(krbnametype.KRB_NT_PRINCIPAL, params["impersonate"]), this.kerberos.Credentials.Realm(), spn)
+			if err != nil {
+				this.kerberos.Destroy()
+				Log.Debug("plg_backend_samba::kerberos action=ticket impersonate=%q error=%q", params["impersonate"], err)
+				return nil, err
+			}
+			ticket.Ticket, ticket.SessionKey = imp.Ticket, imp.SessionKey
+			ticket.Options = []krbspnego.KRB5TokenOption{krbspnego.OnBehalfOf(imp)}
+		}
+		cred = ticket
 	}
 
 	this.app = app
@@ -127,7 +144,7 @@ func (this Samba) Init(params map[string]string, app *App) (IBackend, error) {
 
 	if err != nil {
 		if this.kerberos != nil {
-			this.kerberos.Close()
+			this.kerberos.Destroy()
 		}
 		Log.Debug("plg_backend_samba::smbdial host[%s] err[%s] username[%s] domain[%s]", host, err.Error(), params["username"], params["domain"])
 		return nil, err
@@ -182,7 +199,7 @@ func (this Samba) LoginForm() Form {
 				Name:        "advanced",
 				Type:        "enable",
 				Placeholder: "Advanced",
-				Target:      []string{"samba_port", "samba_path", "samba_domain", "samba_share", "samba_kerberos"},
+				Target:      []string{"samba_port", "samba_path", "samba_domain", "samba_share", "samba_kerberos", "samba_impersonate"},
 			},
 			{
 				Id:          "samba_path",
@@ -213,6 +230,12 @@ func (this Samba) LoginForm() Form {
 				Name:        "kerberos",
 				Type:        "long_text",
 				Placeholder: "[libdefaults]\ndefault_realm = EXAMPLE.COM\ndns_lookup_kdc = true",
+			},
+			{
+				Id:          "samba_impersonate",
+				Name:        "impersonate",
+				Type:        "text",
+				Placeholder: "Impersonate User",
 			},
 		},
 	}
