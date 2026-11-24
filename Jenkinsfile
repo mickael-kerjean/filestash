@@ -26,7 +26,7 @@ pipeline {
         stage("Build") {
             steps {
                 script {
-                    docker.image("golang:1.26-trixie").inside() {
+                    docker.image("golang:1.27-trixie").inside() {
                         sh '''
                         sed -i 's|plg_image_c|plg_image_golang|' server/plugin/index.go
                         make init
@@ -43,7 +43,7 @@ pipeline {
             steps {
                 script {
                     // smoke test
-                    docker.image("golang:1.26-bookworm").inside() {
+                    docker.image("golang:1.27-bookworm").inside() {
                         sh 'timeout 5 ./dist/filestash > access.log || code=$?; if [ $code -ne 124 ]; then exit $code; fi'
                         sh "cat access.log"
                         sh "cat access.log | grep -q \"\\[http\\] starting\""
@@ -58,7 +58,7 @@ pipeline {
                         // sh "cd public && npm run test"
                     }
                     // test backend
-                    docker.image("golang:1.26-bookworm").inside() {
+                    docker.image("golang:1.27-bookworm").inside() {
                         sh "cp ./test/assets/* /tmp/"
                         sh "make init"
                         sh "go generate ./test/unit_go/..."
