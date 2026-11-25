@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	. "github.com/mickael-kerjean/filestash/server/common"
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 )
 
 func HandlerPull(ctx *App, res http.ResponseWriter, req *http.Request) {
@@ -60,6 +61,10 @@ func HandlerPull(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func HandlerPush(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if permissions.CanEdit(ctx) == false {
+		SendErrorResult(res, ErrPermissionDenied)
+		return
+	}
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
@@ -86,6 +91,10 @@ func HandlerPush(ctx *App, res http.ResponseWriter, req *http.Request) {
 }
 
 func HandlerReset(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if permissions.CanEdit(ctx) == false {
+		SendErrorResult(res, ErrPermissionDenied)
+		return
+	}
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
 		SendErrorResult(res, err)
