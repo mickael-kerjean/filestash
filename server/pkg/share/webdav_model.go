@@ -58,7 +58,7 @@ func (this WebdavFs) Mkdir(ctx context.Context, name string, perm os.FileMode) e
 }
 
 func (this *WebdavFs) OpenFile(ctx context.Context, name string, flag int, perm os.FileMode) (webdav.File, error) {
-	cachePath := filepath.Join(GetAbsolutePath(TMP_PATH), "webdav_"+Hash(this.id+name, 20))
+	cachePath := filepath.Join(GetAbsolutePath(TMP_PATH), "webdav_"+Hash(this.id+this.chroot+name, 20))
 	fwriteFile := func() *os.File {
 		if this.req.Method == "PUT" {
 			f, err := os.OpenFile(cachePath+"_writer", os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.ModePerm)
@@ -113,7 +113,7 @@ func (this *WebdavFs) Stat(ctx context.Context, name string) (os.FileInfo, error
 	this.webdavFile = &WebdavFile{
 		path:    fullname,
 		backend: this.backend,
-		cache:   filepath.Join(GetAbsolutePath(TMP_PATH), "webdav_"+Hash(this.id+name, 20)),
+		cache:   filepath.Join(GetAbsolutePath(TMP_PATH), "webdav_"+Hash(this.id+this.chroot+name, 20)),
 	}
 	return this.webdavFile.Stat()
 }
