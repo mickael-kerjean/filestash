@@ -296,7 +296,7 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		return
 	}
 	key = HashStream(f, 20)
-	key = Hash(key+userId+path, 20)
+	key = Hash(key+userId+path+fmt.Sprint(permissions.CanEdit(ctx)), 20)
 
 	filename = filepath.Base(path)
 	oodsMode = func() string {
@@ -404,8 +404,18 @@ func IframeContentHandler(ctx *App, res http.ResponseWriter, req *http.Request) 
 		}
 		return ""
 	}(path)
+	cData := &onlyOfficeCacheData{path, nil, ctx.Backend.Cat}
+	if permissions.CanEdit(ctx) {
+		cData.Save = ctx.Backend.Save
+		for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+			if auth.Save(ctx, path) != nil {
+				cData.Save = nil
+				break
+			}
+		}
+	}
+	onlyoffice_cache.Set(key, cData, cache.DefaultExpiration)
 	filetype = strings.TrimPrefix(filepath.Ext(filename), ".")
-	onlyoffice_cache.Set(key, &onlyOfficeCacheData{path, ctx.Backend.Save, ctx.Backend.Cat}, cache.DefaultExpiration)
 
 	tmpl, err := template.New("onlyoffice").Parse(`<!DOCTYPE html>
 <html lang="en">
@@ -583,13 +593,19 @@ func OnlyOfficeEventHandler(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 		cData, valid := saveObject.(*onlyOfficeCacheData)
-		if valid == false {
+		if valid == false || cData.Save == nil {
 			res.WriteHeader(http.StatusInternalServerError)
 			res.Write([]byte(`{"error": 1, "message": "[internal error] invalid save handler"}`))
 			return
 		}
-
-		r, err := http.NewRequest("GET", event.Url, nil)
+		u, err := url.Parse(event.Url)
+		if err != nil {
+			res.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		s, _ := url.Parse(server_url())
+		u.Scheme, u.Host, u.Path = s.Scheme, s.Host, strings.TrimPrefix(u.Path, "/onlyoffice/static")
+		r, err := http.NewRequest("GET", u.String(), nil)
 		if err != nil {
 			res.WriteHeader(http.StatusInternalServerError)
 			res.Write([]byte(`{"error": 1, "message": "couldn't fetch the document on the oods server"}`))
