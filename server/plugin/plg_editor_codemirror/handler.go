@@ -10,6 +10,10 @@ import (
 )
 
 func HandlerPull(ctx *App, res http.ResponseWriter, req *http.Request) {
+	if permissions.CanRead(ctx) == false {
+		SendErrorResult(res, ErrPermissionDenied)
+		return
+	}
 	clientID := req.URL.Query().Get("clientID")
 	path, err := PathBuilder(ctx, req.URL.Query().Get("path"))
 	if err != nil {
