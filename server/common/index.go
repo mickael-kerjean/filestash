@@ -30,6 +30,7 @@ type WorkflowSpecs = core.WorkflowSpecs
 type IAuthentication = core.IAuthentication
 type Middleware = core.Middleware
 type HandlerFunc = core.HandlerFunc
+type DirectoryUser = core.DirectoryUser
 
 type AppError = utils.AppError
 type AppCache = utils.AppCache
@@ -172,10 +173,10 @@ var (
 
 // env
 var (
-	WithBase       = env.WithBase
-	TrimBase       = env.TrimBase
-	IsWhiteLabel   = env.IsWhiteLabel
-	WhiteLabelText = env.WhiteLabelText
+	WithBase        = env.WithBase
+	TrimBase        = env.TrimBase
+	IsWhiteLabel    = env.IsWhiteLabel
+	WhiteLabelText  = env.WhiteLabelText
 	PROGRAM_LICENSE = env.PROGRAM_LICENSE
 	PROGRAM_NAME    = env.PROGRAM_NAME
 )
