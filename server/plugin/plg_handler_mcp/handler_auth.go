@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -137,9 +138,8 @@ func (this Server) RegisterHandler(ctx *App, w http.ResponseWriter, r *http.Requ
 }
 
 func (this Server) CallbackHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
-	uri := req.URL.Query().Get("redirect_uri")
-	state := req.URL.Query().Get("state")
-	if uri == "" {
+	uri, err := url.Parse(req.URL.Query().Get("redirect_uri"))
+	if err != nil || uri.Host == "" || (uri.Scheme != "https" && uri.Scheme != "http") {
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
@@ -148,9 +148,30 @@ func (this Server) CallbackHandler(ctx *App, res http.ResponseWriter, req *http.
 		SendErrorResult(res, ErrNotValid)
 		return
 	}
-	uri += "?code=" + code
-	if state != "" {
-		uri += "&state=" + state
+	q := uri.Query()
+	q.Set("code", code)
+	if state := req.URL.Query().Get("state"); state != "" {
+		q.Set("state", state)
 	}
-	http.Redirect(res, req, uri, http.StatusSeeOther)
+	uri.RawQuery = q.Encode()
+	html, _ := TmplExec(`
+        <h1>Authorize access</h1>
+        <p>
+            <code>{{ .host | html }}</code> want to access your data <br>
+            <a class="btn" href="{{ .allow | html }}">Allow</a>
+            <a class="btn" href="{{ .deny | html }}">Deny</a>
+            <style>a.btn { text-decoration: none; padding: 5px; margin: 10px 5px; display: inline-block; width: 100px; }</style>
+        </p>
+        `,
+		map[string]string{
+			"host":  uri.Hostname(),
+			"allow": uri.String(),
+			"deny":  WithBase("/?error=Permission%20Denied&trace=mcp%20authorization%20denied%20by%20user"),
+		},
+	)
+	res.Header().Set("Content-Type", "text/html; charset=utf-8")
+	res.Header().Set("X-Frame-Options", "DENY")
+	res.Header().Set("Content-Security-Policy", "frame-ancestors 'none'")
+	res.Header().Set("Cache-Control", "no-store")
+	res.Write([]byte(Page(html)))
 }
