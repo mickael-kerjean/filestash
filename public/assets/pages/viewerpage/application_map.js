@@ -89,10 +89,10 @@ function loadGeoJSON(map, content) {
             if (n > 10000) return;
             const { group = "global", ...props } = feature.properties || {};
             const featureObject = (function() {
-                if (props["name"]) shape = shape.bindPopup(props["name"]);
+                if (props["name"]) shape = shape.bindPopup(safe(props["name"]));
                 switch (props["popup::type"]) {
                 case "text":
-                    shape = shape.bindPopup(props["popup::content"]);
+                    shape = shape.bindPopup(safe(props["popup::content"]));
                     break;
                 case "html":
                     shape = shape.bindPopup((function() {
