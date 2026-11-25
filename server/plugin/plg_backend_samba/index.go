@@ -232,7 +232,7 @@ func (this Samba) LoginForm() Form {
 				Id:          "samba_kerberos",
 				Name:        "kerberos",
 				Type:        "long_text",
-				Placeholder: "[libdefaults]\ndefault_realm = EXAMPLE.COM\ndns_lookup_kdc = true",
+				Placeholder: "[libdefaults]\ndefault_realm = EXAMPLE.COM\ndns_lookup_kdc = true\nforwardable = true",
 			},
 			{
 				Id:          "samba_impersonate",
