@@ -179,4 +179,4 @@ require (
 
 replace github.com/pkg/sftp => github.com/mickael-kerjean/pkg-sftp v0.0.0-20260723110711-dbfdb51a990e
 
-replace github.com/hirochachacha/go-smb2/v2 => github.com/mickael-kerjean/go-smb2/v2 v2.0.0-20261124114008-e8be52b9ee38
+replace github.com/hirochachacha/go-smb2/v2 => github.com/mickael-kerjean/go-smb2/v2 v2.0.0-20261125093615-1dd72a84d0b7

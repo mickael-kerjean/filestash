@@ -273,6 +273,8 @@ github.com/mickael-kerjean/go-smb2/v2 v2.0.0-20261124072830-3dd94aa425c9 h1:vqJ6
 github.com/mickael-kerjean/go-smb2/v2 v2.0.0-20261124072830-3dd94aa425c9/go.mod h1:QNbGa7DLr6mAXOcazPYjdkJiyz2iknjUkeAYOG/musw=
 github.com/mickael-kerjean/go-smb2/v2 v2.0.0-20261124114008-e8be52b9ee38 h1:P0RFx+7YUzs34vxCe9OfN2ozaVn+I3mIiPIRxCCSVdA=
 github.com/mickael-kerjean/go-smb2/v2 v2.0.0-20261124114008-e8be52b9ee38/go.mod h1:hpNdcLmsqq03YiZgsEpIAwmWvzQGxG50LERYLkAtE1A=
+github.com/mickael-kerjean/go-smb2/v2 v2.0.0-20261125093615-1dd72a84d0b7 h1:zcVFV3NnYObIS4oA3Mht+ehhMVUC048TjBEYJv27FKY=
+github.com/mickael-kerjean/go-smb2/v2 v2.0.0-20261125093615-1dd72a84d0b7/go.mod h1:hpNdcLmsqq03YiZgsEpIAwmWvzQGxG50LERYLkAtE1A=
 github.com/mickael-kerjean/goftp v0.0.0-20260421114701-956d21f038b7 h1:S9eqG1ThGnl0PtJQEb0NpjZA+3t7Pl5weKcsb0GJkyo=
 github.com/mickael-kerjean/goftp v0.0.0-20260421114701-956d21f038b7/go.mod h1:w67UQ+CKrGekamytP5ZOdAJfXowIC3bw590so7mkFqA=
 github.com/mickael-kerjean/net v0.0.0-20191120063050-2457c043ba06 h1:427Mpu5edwuFuDBdqOm6EgRohYqZ9Oomd+87ryW2Uls=
