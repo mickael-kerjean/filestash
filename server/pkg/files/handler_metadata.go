@@ -8,9 +8,16 @@ import (
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
 	. "github.com/mickael-kerjean/filestash/server/pkg/utils"
+
+	"github.com/mickael-kerjean/filestash/server/pkg/permissions"
 )
 
 func MetaGet(ctx *App, w http.ResponseWriter, r *http.Request) {
+	if permissions.CanRead(ctx) == false {
+		Log.Debug("meta::permission::get 'permission denied'")
+		SendErrorResult(w, ErrPermissionDenied)
+		return
+	}
 	m := Hooks.Get.Metadata()
 	if m == nil {
 		SendErrorResult(w, ErrNotImplemented)
@@ -30,6 +37,11 @@ func MetaGet(ctx *App, w http.ResponseWriter, r *http.Request) {
 }
 
 func MetaUpsert(ctx *App, w http.ResponseWriter, r *http.Request) {
+	if permissions.CanEdit(ctx) == false {
+		Log.Debug("meta::permission::upsert 'permission denied'")
+		SendErrorResult(w, ErrPermissionDenied)
+		return
+	}
 	m := Hooks.Get.Metadata()
 	if m == nil {
 		SendErrorResult(w, ErrNotImplemented)
@@ -53,6 +65,11 @@ func MetaUpsert(ctx *App, w http.ResponseWriter, r *http.Request) {
 }
 
 func MetaSearch(ctx *App, w http.ResponseWriter, r *http.Request) {
+	if permissions.CanRead(ctx) == false {
+		Log.Debug("meta::permission::search 'permission denied'")
+		SendErrorResult(w, ErrPermissionDenied)
+		return
+	}
 	m := Hooks.Get.Metadata()
 	if m == nil {
 		SendErrorResult(w, ErrNotImplemented)
