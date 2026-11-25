@@ -61,6 +61,12 @@ func ShareUpsertHandler(ctx *App, res http.ResponseWriter, req *http.Request) {
 		SendErrorResult(res, err)
 		return
 	}
+	for _, auth := range Hooks.Get.AuthorisationMiddleware() {
+		if err := auth.Stat(ctx, path); err != nil {
+			SendErrorResult(res, ErrNotAuthorized)
+			return
+		}
+	}
 	share := Share{
 		Id:        shareID,
 		Auth:      token.From(req),
