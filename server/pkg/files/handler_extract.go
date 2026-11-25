@@ -132,8 +132,10 @@ func FileExtract(ctx *App, res http.ResponseWriter, req *http.Request) {
 			Log.Debug("extract::path '%s'", err.Error())
 			SendErrorResult(res, err)
 			return
-		}
-		if err = extractZip(paths[i]); err != nil {
+		} else if root, _ := PathBuilder(ctx, "/"); !strings.HasPrefix(EnforceDirectory(filepath.Dir(paths[i])), root) {
+			SendErrorResult(res, ErrPermissionDenied)
+			return
+		} else if err = extractZip(paths[i]); err != nil {
 			SendErrorResult(res, err)
 			return
 		}
