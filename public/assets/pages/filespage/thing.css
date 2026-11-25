@@ -28,6 +28,7 @@
     max-width: 750px;
     vertical-align: bottom;
     color: inherit;
+    white-space: pre;
 }
 .component_thing form {
     display: inline-block;
