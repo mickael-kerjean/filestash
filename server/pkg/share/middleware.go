@@ -2,6 +2,7 @@ package share
 
 import (
 	"net/http"
+	"strings"
 
 	. "github.com/mickael-kerjean/filestash/server/pkg/core"
 	. "github.com/mickael-kerjean/filestash/server/pkg/kernel"
@@ -40,20 +41,23 @@ func CanManageShare(sessionStart Middleware, extractSession func(*http.Request, 
 			}
 
 			// In a scenario where the shared link has already been attributed, we have 2 scenarios:
-			// 1) scenario 1: the user is the very same one that generated the shared link in the first place
+			// 1) scenario 1: the user is different than the one that has generated the shared link
 			ctx.Share = Share{}
 			ctx.Authorization = token.From(req)
 			if ctx.Session, err = extractSession(req, ctx); err != nil {
 				Log.Debug("pkg::share::middleware reason=cannot+extract+session err=%q", err.Error())
 				SendErrorResult(res, err)
 				return
-			}
-			if s.Backend == GenerateID(ctx.Session) {
-				fn(ctx, res, req)
+			} else if s.Backend != GenerateID(ctx.Session) {
+				SendErrorResult(res, ErrPermissionDenied)
+				return
+			} else if root, _ := PathBuilder(ctx, "/"); !strings.HasPrefix(s.Path, root) {
+				SendErrorResult(res, ErrPermissionDenied)
 				return
 			}
-			// 2) scenario 2: the user is different than the one that has generated the shared link
-			SendErrorResult(res, ErrPermissionDenied)
+
+			// 2) scenario 2: the user is the very same one that generated the shared link in the first place
+			fn(ctx, res, req)
 		})
 	}
 }
