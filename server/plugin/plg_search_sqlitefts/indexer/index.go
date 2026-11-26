@@ -49,7 +49,7 @@ func (this *sqliteIndex) Init() error {
 	if this.id == "" {
 		path = "fts.sql"
 	}
-	db, err := sql.Open("sqlite3", GetAbsolutePath(FTS_PATH, path)+"?_journal_mode=wal")
+	db, err := sql.Open("sqlite3", GetAbsolutePath(FTS_PATH, path)+"?_journal_mode=wal&_pragma=journal_mode(WAL)")
 	if err != nil {
 		Log.Warning("search::init can't open database (%v)", err)
 		return toErr(err)
