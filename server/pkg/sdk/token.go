@@ -28,7 +28,8 @@ func (this *Filestash) NewToken(storage string, path string, formData map[string
 	for k, v := range mapping {
 		out, err := TmplExec(NewStringFromInterface(v), TmplParams(formData))
 		if err != nil {
-			Log.Debug("sdk::NewToken action=tmplExec key=%s err=%s", k, err.Error())
+			Log.Warning("sdk::NewToken action=tmplExec key=%s[%q] err=%s", storage, k, err.Error())
+			return err
 		}
 		session[k] = out
 	}

@@ -88,6 +88,11 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 	for k, v := range idpParams {
 		out, err := TmplExec(NewStringFromInterface(v), TmplParams(formData, idpParams))
 		if err != nil {
+			key := fmt.Sprintf("%s[%q]", Config.Get("middleware.identity_provider.type").String(), k)
+			Log.Warning("session::authMiddleware action=tmplExec scope=idp key=%s err=%q", key, err.Error())
+			if !DEBUG {
+				err = fmt.Errorf("invalid template for %s, check the logs or run with DEBUG=true for details", key)
+			}
 			http.Redirect(
 				res, req,
 				"/?error=Not%20Valid&trace=idp - "+err.Error(),
@@ -238,7 +243,11 @@ func SessionAuthMiddleware(ctx *App, res http.ResponseWriter, req *http.Request)
 		for k, v := range globalMapping[label] {
 			out, err := TmplExec(NewStringFromInterface(v), tb)
 			if err != nil {
-				Log.Debug("session::authMiddleware action=tmplExec err=%s", err.Error())
+				Log.Warning("session::authMiddleware action=tmplExec key=%s.%s err=%q", label, k, err.Error())
+				if !DEBUG {
+					err = fmt.Errorf("invalid template for %s[%q], check the logs or run with DEBUG=true for details", label, k)
+				}
+				return map[string]string{}, err
 			}
 			mappingToUse[k] = out
 		}

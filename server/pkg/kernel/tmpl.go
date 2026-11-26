@@ -26,15 +26,16 @@ func TmplExec(params string, input map[string]string) (string, error) {
 	tmpl, err := template.
 		New("ctrl::session::auth_middleware").
 		Funcs(tmplFuncs).
+		Option("missingkey=error").
 		Parse(params)
 	if err != nil {
 		Log.Debug("tmpl::execute action=parse err=%s", err.Error())
-		return params, err
+		return "", err
 	}
 	var b bytes.Buffer
 	if err = tmpl.Execute(&b, input); err != nil {
 		Log.Debug("tmpl::execute action=execute err%s", err.Error())
-		return params, err
+		return "", err
 	}
 	return b.String(), nil
 }
