@@ -28,6 +28,7 @@ type ITrigger = core.ITrigger
 type ITriggerEvent = core.ITriggerEvent
 type WorkflowSpecs = core.WorkflowSpecs
 type IAuthentication = core.IAuthentication
+type ISearch = core.ISearch
 type Middleware = core.Middleware
 type HandlerFunc = core.HandlerFunc
 type DirectoryUser = core.DirectoryUser
