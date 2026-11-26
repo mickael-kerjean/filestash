@@ -2,8 +2,10 @@ package plg_backend_s3
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -41,7 +43,12 @@ func init() {
 
 func (this S3Backend) Init(params map[string]string, app *App) (IBackend, error) {
 	if params["encryption_key"] != "" && len(params["encryption_key"]) != 32 {
-		return nil, NewError(fmt.Sprintf("Encryption key needs to be 32 characters (current: %d)", len(params["encryption_key"])), 400)
+		decoded, err := base64.StdEncoding.DecodeString(params["encryption_key"])
+		if err != nil || len(decoded) != 32 {
+			return nil, NewError(fmt.Sprintf("Encryption key needs to be 32 characters (current: %d)", len(params["encryption_key"])), 400)
+		}
+		params = maps.Clone(params)
+		params["encryption_key"] = string(decoded)
 	}
 	region := params["region"]
 	if region == "" {
