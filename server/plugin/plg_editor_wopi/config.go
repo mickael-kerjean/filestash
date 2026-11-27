@@ -14,7 +14,7 @@ func plugin_enable() bool {
 		}
 		f.Name = "enable"
 		f.Type = "enable"
-		f.Target = []string{"office_server", "filestash_server", "rewrite_discovery_url"}
+		f.Target = []string{"office_server", "filestash_server", "rewrite_discovery_url", "office_action"}
 		f.Description = "Enable/Disable the wopi office suite and options to manage word, excel and powerpoint documents."
 		f.Default = false
 		if u := os.Getenv("OFFICE_URL"); u != "" {
@@ -36,6 +36,25 @@ func server_url() string {
 		f.Default = "http://127.0.0.1:9980"
 		f.Placeholder = "Eg: http://127.0.0.1:9980"
 		if u := os.Getenv("OFFICE_URL"); u != "" {
+			f.Default = u
+			f.Placeholder = fmt.Sprintf("Default: '%s'", u)
+		}
+		return f
+	}).String()
+}
+
+func default_action() string {
+	return Config.Get("features.office.office_action").Schema(func(f *FormElement) *FormElement {
+		if f == nil {
+			f = &FormElement{}
+		}
+		f.Id = "office_action"
+		f.Name = "office_action"
+		f.Type = "text"
+		f.Description = "Action to take when opening a document. See application specific documentation for for possible options."
+		f.Default = "edit"
+		f.Placeholder = "Eg: (for collabora) edit, interactivepreview, view, view_comment"
+		if u := os.Getenv("OFFICE_ACTION"); u != "" {
 			f.Default = u
 			f.Placeholder = fmt.Sprintf("Default: '%s'", u)
 		}
