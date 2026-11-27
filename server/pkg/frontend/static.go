@@ -249,6 +249,7 @@ func ServeIndex(indexPath string) func(*App, http.ResponseWriter, *http.Request)
 				return b
 			}(),
 			"accessibility": Config.Get("general.accessibility").Bool(),
+			"feature_nyan":  LICENSE == "agpl" || os.Getenv("FEATURE_NYAN") == "true",
 		}
 		calculatedEtag := QuickHash(base+BUILD_REF+LICENSE+sign, 10)
 		head.Set("ETag", calculatedEtag)

@@ -18,7 +18,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="application-name" content="{{ .appname }}">
         <meta name="viewport" content="width=device-width, initial-scale=1.0{{ if not .accessibility }}, maximum-scale=1{{ end }}">
-        <script>{{ if .license | eq "agpl" }}{{ template "loader-cat" }}{{ else }}{{ template "loader-basic" }}{{ end }}</script>
+        <script>{{ if .feature_nyan }}{{ template "loader-cat" }}{{ else }}{{ template "loader-basic" }}{{ end }}</script>
     </head>
     <body {{ if .accessibility }}data-accessibility="strict"{{ end }}>
         <div id="app"><component-bootscreen></component-bootscreen></div>
